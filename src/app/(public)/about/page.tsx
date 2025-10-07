@@ -6,7 +6,6 @@ import { Database, Code, Wind, Feather, Type } from 'lucide-react';
 import Image from 'next/image';
 import React from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { GradientIcon } from '@/components/ui/gradient-icon';
 
 export default function AboutPage() {
   const { settings } = useAuth();
@@ -21,9 +20,8 @@ export default function AboutPage() {
   ];
 
   return (
-    <div className="flex-1 z-10 w-full">
+    <div className="container flex-1 z-10 w-full">
         <section className="w-full">
-          <div className="container px-4 md:px-6">
             <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
                <div className="mx-auto aspect-video overflow-hidden rounded-xl w-full relative shadow-lg order-first lg:order-last">
                 <Image
@@ -47,11 +45,9 @@ export default function AboutPage() {
                 </p>
               </div>
             </div>
-          </div>
         </section>
 
         <section className="w-full py-12 md:py-16 mt-12 md:mt-16 bg-transparent">
-          <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <div className="inline-block rounded-lg bg-background/20 text-slate-900/80 px-3 py-1 text-sm font-semibold border border-border/30">
@@ -64,34 +60,23 @@ export default function AboutPage() {
               </div>
             </div>
             <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 md:gap-12 lg:grid-cols-3 lg:max-w-none mt-12">
-              {techStack.map((tech) => (
+              {techStack.map((tech) => {
+                 const Icon = tech.icon;
+                 return (
                  <div 
                     key={tech.name}
                     className="group relative rounded-2xl p-6 text-left h-full transition-all duration-300 overflow-hidden bg-background/20 backdrop-blur-sm shadow-lg hover:shadow-primary/20 hover:-translate-y-2 border border-white/30"
-                    style={{'--x': '50%', '--y': '50%'} as React.CSSProperties}
-                    onMouseMove={(e) => {
-                        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                        e.currentTarget.style.setProperty('--x', `${e.clientX - rect.left}px`);
-                        e.currentTarget.style.setProperty('--y', `${e.clientY - rect.top}px`);
-                    }}
                   >
-                   <div 
-                      className="absolute inset-0 pointer-events-none -z-10"
-                      style={{
-                        background: `radial-gradient(400px circle at var(--x) var(--y), hsl(var(--primary) / 0.15), transparent 80%)`,
-                      }}
-                    />
                    <div className="relative z-10 flex flex-col items-start justify-start h-full">
                      <div className="w-full h-12 mb-4 bg-black rounded-lg flex items-center justify-center">
-                        <GradientIcon icon={tech.icon} size="xl" className="w-8 h-8" />
+                        <Icon className="w-8 h-8 text-white"/>
                      </div>
                      <h3 className="text-xl font-bold font-headline mb-2 text-slate-900">{tech.name}</h3>
                      <p className="text-sm text-slate-900/80">{tech.description}</p>
                    </div>
                  </div>
-              ))}
+              )})}
             </div>
-          </div>
         </section>
     </div>
   );

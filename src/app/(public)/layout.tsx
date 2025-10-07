@@ -18,7 +18,7 @@ export default function PublicLayout({
   const { user, isLoading } = useAuth();
   
   return (
-    <div className="relative flex flex-col min-h-screen items-center antialiased bg-blue-300 text-slate-900">
+    <div className="relative flex flex-col min-h-screen items-center antialiased bg-blue-600 text-slate-900">
         
         <DecorativeHeaderBackground />
         

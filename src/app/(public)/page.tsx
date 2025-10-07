@@ -5,14 +5,9 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Layers3, UserCog, Feather, ArrowRight, GraduationCap, Users, Shield, BookOpen, BarChart3 } from 'lucide-react';
+import { Layers3, UserCog, Feather, ArrowRight, GraduationCap, Users, BookOpen, BarChart3 } from 'lucide-react';
 import React from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { GradientIcon } from '@/components/ui/gradient-icon';
-import { IconGraduationCap } from '@/components/icons/icon-graduation-cap';
-import { IconUserCog } from '@/components/icons/icon-user-cog';
-import { IconUsersRound } from '@/components/icons/icon-users-round';
-
 
 const features = [
   {
@@ -31,11 +26,6 @@ const features = [
     description: 'Define roles (Admin, Instructor, Estudiante) para administrar el acceso de forma segura y ordenada.',
   },
   {
-    icon: Shield,
-    title: 'Seguridad Corporativa',
-    description: 'Implementa políticas de contraseña, 2FA y audita la actividad para proteger la información de tu empresa.',
-  },
-   {
     icon: Feather,
     title: 'Experiencia Fluida',
     description: 'Una interfaz rápida, intuitiva y optimizada para cualquier dispositivo, diseñada para aprender sin fricciones.',
@@ -49,17 +39,17 @@ const features = [
 
 const benefits = [
   {
-    icon: IconGraduationCap,
+    icon: GraduationCap,
     title: 'Para Estudiantes',
     description: 'Aprende a tu ritmo, sigue tu progreso y obtén certificados.',
   },
   {
-    icon: IconUserCog,
+    icon: UserCog,
     title: 'Para Instructores',
     description: 'Crea contenido interactivo y analiza el rendimiento de tus alumnos.',
   },
   {
-    icon: IconUsersRound,
+    icon: Users,
     title: 'Para Administradores',
     description: 'Control total sobre usuarios, contenido y la configuración de la plataforma.',
   },
@@ -71,9 +61,8 @@ export default function LandingPage() {
   const benefitsImageUrl = settings?.benefitsImageUrl || "https://placehold.co/600x400/38bdf8/ffffff?text=Beneficios";
 
   return (
-      <div className="flex-1 z-10 w-full text-slate-900">
+      <div className="container flex-1 z-10 w-full text-slate-900">
         <section className="w-full">
-          <div className="container px-4 md:px-6">
             <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-4">
@@ -109,11 +98,9 @@ export default function LandingPage() {
                 />
               </div>
             </div>
-          </div>
         </section>
         
         <section className="w-full bg-transparent py-12 md:py-16 mt-12 md:mt-16">
-            <div className="container px-4 md:px-6">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
                         <div className="inline-block rounded-lg bg-white/20 text-slate-900/80 px-3 py-1 text-sm font-semibold border border-white/30">
@@ -126,39 +113,27 @@ export default function LandingPage() {
                     </div>
                 </div>
                 <div className="mx-auto grid max-w-5xl items-start gap-6 py-12 lg:grid-cols-3 lg:gap-8">
-                   {features.map((feature) => (
+                   {features.map((feature) => {
+                     const Icon = feature.icon;
+                     return (
                      <div 
                         key={feature.title}
                         className="group relative rounded-2xl p-6 text-left h-full transition-all duration-300 overflow-hidden bg-background/20 backdrop-blur-sm shadow-lg hover:shadow-primary/20 hover:-translate-y-2 border border-white/30"
-                        style={{'--x': '50%', '--y': '50%'} as React.CSSProperties}
-                        onMouseMove={(e) => {
-                            const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                            e.currentTarget.style.setProperty('--x', `${e.clientX - rect.left}px`);
-                            e.currentTarget.style.setProperty('--y', `${e.clientY - rect.top}px`);
-                        }}
                       >
-                       <div 
-                          className="absolute inset-0 pointer-events-none -z-10"
-                          style={{
-                            background: `radial-gradient(400px circle at var(--x) var(--y), hsl(var(--primary) / 0.15), transparent 80%)`,
-                          }}
-                        />
                        <div className="relative z-10 flex flex-col items-start justify-start h-full">
                          <div className="w-full h-12 mb-4 bg-black rounded-lg flex items-center justify-center">
-                            <GradientIcon icon={feature.icon} className="w-8 h-8" />
+                            <Icon className="w-8 h-8 text-white"/>
                          </div>
                          <h3 className="text-xl font-bold font-headline mb-2">{feature.title}</h3>
                          <p className="text-sm text-slate-900/80">{feature.description}</p>
                        </div>
                      </div>
-                   ))}
+                   )})}
                 </div>
-            </div>
         </section>
 
         <section className="w-full py-12 md:py-16">
-            <div className="container px-4 md:px-6">
-                <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
+            <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
                      <div className="mx-auto aspect-video overflow-hidden rounded-xl w-full relative shadow-lg">
                         <Image
                             src={benefitsImageUrl}
@@ -186,11 +161,9 @@ export default function LandingPage() {
                        })}
                     </div>
                 </div>
-            </div>
         </section>
         
          <section className="w-full text-center py-12 md:py-16">
-            <div className="container px-4 md:px-6">
                  <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">¿Listo para Iniciar?</h2>
                  <p className="max-w-2xl mx-auto mt-4 text-slate-900/70 md:text-xl">
                     Únete a las empresas que ya están revolucionando su forma de capacitar. Comienza gratis hoy mismo.
@@ -200,7 +173,6 @@ export default function LandingPage() {
                       Crear Mi Cuenta
                     </Link>
                   </Button>
-            </div>
         </section>
       </div>
   );
