@@ -89,7 +89,7 @@ export default function LandingPage() {
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-4">
                   <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline">
-                    Tu Ecosistema de Aprendizaje Corporativo
+                    La Plataforma E-learning que Impulsa tu Talento Corporativo
                   </h1>
                   <p className="max-w-[600px] text-foreground/80 md:text-xl">
                     Centraliza, gestiona y escala la formación de tus equipos con una herramienta potente, intuitiva y personalizable.
@@ -140,7 +140,12 @@ export default function LandingPage() {
                    {features.map((feature) => (
                      <div 
                         key={feature.title}
-                        className="relative rounded-2xl p-6 text-left h-full transition-all duration-300 overflow-hidden bg-background/20 shadow-lg hover:shadow-primary/20 hover:-translate-y-2 border border-border/30"
+                        className="group relative rounded-2xl p-6 text-left h-full transition-all duration-300 overflow-hidden bg-background/20 backdrop-blur-sm shadow-lg hover:shadow-primary/20 hover:-translate-y-2 border border-border/30 before:pointer-events-none before:absolute before:-left-40 before:-top-40 before:h-80 before:w-80 before:translate-x-[var(--x)] before:translate-y-[var(--y)] before:rounded-full before:bg-primary/50 before:opacity-0 before:blur-3xl before:transition-opacity before:duration-500 hover:before:opacity-20"
+                        onMouseMove={(e) => {
+                            const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                            e.currentTarget.style.setProperty('--x', `${e.clientX - rect.left}px`);
+                            e.currentTarget.style.setProperty('--y', `${e.clientY - rect.top}px`);
+                        }}
                       >
                        <div className="relative z-10 flex flex-col items-start justify-start h-full">
                          <div className="mb-4 bg-gradient-to-br from-primary/20 to-accent/20 p-3 rounded-lg border border-border/30">
