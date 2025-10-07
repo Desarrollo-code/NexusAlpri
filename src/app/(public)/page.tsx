@@ -5,11 +5,11 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Layers3, UserCog } from 'lucide-react';
+import { Layers3, UserCog, Feather, Shield } from 'lucide-react';
 import React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { GradientIcon } from '@/components/ui/gradient-icon';
-import { IconBookOpen, IconGraduationCap, IconUsersRound, IconBarChart3, IconShieldCheck, IconZap } from '@/components/icons';
+import { IconBookOpen, IconGraduationCap, IconUsersRound, IconBarChart3 } from '@/components/icons';
 import { ArrowRight } from 'lucide-react';
 
 
@@ -30,12 +30,12 @@ const features = [
     description: 'Define roles (Admin, Instructor, Estudiante) para administrar el acceso de forma segura y ordenada.',
   },
   {
-    icon: IconShieldCheck,
+    icon: Shield,
     title: 'Seguridad Corporativa',
     description: 'Implementa políticas de contraseña, 2FA y audita la actividad para proteger la información de tu empresa.',
   },
    {
-    icon: IconZap,
+    icon: Feather,
     title: 'Experiencia Fluida',
     description: 'Una interfaz rápida, intuitiva y optimizada para cualquier dispositivo, diseñada para aprender sin fricciones.',
   },
@@ -70,7 +70,7 @@ export default function LandingPage() {
   const benefitsImageUrl = settings?.benefitsImageUrl || "https://placehold.co/600x400/38bdf8/ffffff?text=Beneficios";
 
   return (
-      <div className="flex-1 z-10 w-full text-foreground">
+      <div className="flex-1 z-10 w-full text-slate-800">
         <section className="w-full">
           <div className="container px-4 md:px-6">
             <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
@@ -79,7 +79,7 @@ export default function LandingPage() {
                   <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline">
                     La Plataforma E-learning que Impulsa tu Talento Corporativo
                   </h1>
-                  <p className="max-w-[600px] text-foreground/80 md:text-xl">
+                  <p className="max-w-[600px] text-slate-800/80 md:text-xl">
                     Centraliza, gestiona y escala la formación de tus equipos con una herramienta potente, intuitiva y personalizable.
                   </p>
                 </div>
@@ -89,7 +89,7 @@ export default function LandingPage() {
                       Empezar Ahora <ArrowRight className="ml-2 h-4 w-4"/>
                     </Link>
                   </Button>
-                  <Button variant="outline" asChild size="lg" className="bg-transparent border-foreground/30 hover:bg-background/20 hover:text-foreground">
+                  <Button variant="outline" asChild size="lg" className="bg-transparent border-slate-800/30 hover:bg-white/20 hover:text-slate-900">
                     <Link href="/about">
                       Saber más
                     </Link>
@@ -115,11 +115,11 @@ export default function LandingPage() {
             <div className="container px-4 md:px-6">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
-                        <div className="inline-block rounded-lg bg-background/20 text-foreground/80 px-3 py-1 text-sm font-semibold border border-border/30">
+                        <div className="inline-block rounded-lg bg-white/20 text-slate-800/80 px-3 py-1 text-sm font-semibold border border-white/30">
                             Capacidades
                         </div>
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Una Solución Integral de Formación</h2>
-                        <p className="max-w-[900px] text-foreground/70 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                        <p className="max-w-[900px] text-slate-800/70 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                             Desde la creación de contenido interactivo hasta el análisis detallado del rendimiento, NexusAlpri te ofrece todo lo necesario para un ciclo de aprendizaje completo.
                         </p>
                     </div>
@@ -128,7 +128,7 @@ export default function LandingPage() {
                    {features.map((feature) => (
                      <div 
                         key={feature.title}
-                        className="group relative rounded-2xl p-6 text-left h-full transition-all duration-300 overflow-hidden bg-background/20 backdrop-blur-sm shadow-lg hover:shadow-primary/20 hover:-translate-y-2 border border-border/30"
+                        className="group relative rounded-2xl p-6 text-left h-full transition-all duration-300 overflow-hidden bg-background/20 backdrop-blur-sm shadow-lg hover:shadow-primary/20 hover:-translate-y-2 border border-white/30"
                         style={{'--x': '50%', '--y': '50%'} as React.CSSProperties}
                         onMouseMove={(e) => {
                             const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
@@ -147,7 +147,7 @@ export default function LandingPage() {
                             <GradientIcon icon={feature.icon} size="xl" />
                          </div>
                          <h3 className="text-xl font-bold font-headline mb-2">{feature.title}</h3>
-                         <p className="text-sm text-foreground/70">{feature.description}</p>
+                         <p className="text-sm text-slate-800/70">{feature.description}</p>
                        </div>
                      </div>
                    ))}
@@ -174,7 +174,7 @@ export default function LandingPage() {
                             <GradientIcon icon={benefit.icon} size="xl" />
                             <div className="flex-grow">
                                 <h3 className="text-xl font-bold">{benefit.title}</h3>
-                                <p className="text-foreground/70">{benefit.description}</p>
+                                <p className="text-slate-800/70">{benefit.description}</p>
                             </div>
                           </div>
                        ))}
@@ -186,7 +186,7 @@ export default function LandingPage() {
          <section className="w-full text-center py-12 md:py-16">
             <div className="container px-4 md:px-6">
                  <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">¿Listo para Iniciar?</h2>
-                 <p className="max-w-2xl mx-auto mt-4 text-foreground/70 md:text-xl">
+                 <p className="max-w-2xl mx-auto mt-4 text-slate-800/70 md:text-xl">
                     Únete a las empresas que ya están revolucionando su forma de capacitar. Comienza gratis hoy mismo.
                  </p>
                   <Button asChild size="lg" className="mt-8 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg">
