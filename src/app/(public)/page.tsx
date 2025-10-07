@@ -5,36 +5,47 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Layers3, UserCog, Feather, ArrowRight, GraduationCap, Users, BookOpen, BarChart3 } from 'lucide-react';
+import { Layers3, ArrowUp, UserCog, Feather, ArrowRight, GraduationCap, Users, BookOpen, BarChart3 } from 'lucide-react';
 import React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 
+const IconCommunity = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+        <path d="M12 14c-2.76 0-5 2.24-5 5h10c0-2.76-2.24-5-5-5zm7.5-3.5c0-1.93-1.57-3.5-3.5-3.5s-3.5 1.57-3.5 3.5 1.57 3.5 3.5 3.5 3.5-1.57 3.5-3.5z"/>
+        <path fillRule="evenodd" clipRule="evenodd" d="M14.5 7.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+        <path d="M4.5 10.5c1.93 0 3.5-1.57 3.5-3.5S6.43 3.5 4.5 3.5 1 5.07 1 7s1.57 3.5 3.5 3.5z" />
+    </svg>
+);
+
+
 const features = [
   {
-    icon: Layers3,
+    icon: (props: any) => (
+        <div className="w-16 h-16 rounded-full bg-black flex items-center justify-center">
+            <Layers3 {...props} className="h-8 w-8 text-white"/>
+        </div>
+    ),
     title: 'Contenido Centralizado',
     description: 'Crea cursos con un editor visual, combinando videos, quizzes y documentos sin esfuerzo.',
   },
   {
-    icon: BarChart3,
-    title: 'Analíticas de Progreso',
-    description: 'Obtén métricas claras sobre el avance de tus equipos para tomar decisiones basadas en datos.',
+    icon: (props: any) => (
+        <div className="w-16 h-16 rounded-full bg-blue-200 flex items-center justify-center">
+            <ArrowUp {...props} className="h-8 w-8 text-blue-800"/>
+        </div>
+    ),
+    title: 'Seguimiento Detallado',
+    description: 'Observa el progreso individual, identifica áreas de mejora y genera reportes personalizados fácilmente.',
   },
   {
-    icon: Users,
-    title: 'Gestión de Usuarios',
-    description: 'Define roles (Admin, Instructor, Estudiante) para administrar el acceso de forma segura y ordenada.',
+    icon: (props: any) => (
+        <div className="w-16 h-16 rounded-full bg-green-400 flex items-center justify-center">
+            <IconCommunity {...props} className="h-8 w-8 text-green-900" />
+        </div>
+    ),
+    title: 'Comunidad Interactiva',
+    description: 'Fomenta la colaboración con foros, chats y actividades grupales dinámicas.',
   },
-  {
-    icon: Feather,
-    title: 'Experiencia Fluida',
-    description: 'Una interfaz rápida, intuitiva y optimizada para cualquier dispositivo, diseñada para aprender sin fricciones.',
-  },
-  {
-    icon: BookOpen,
-    title: 'Biblioteca de Recursos',
-    description: 'Centraliza manuales, políticas y guías importantes en un único repositorio accesible para todos.',
-  }
 ];
 
 const benefits = [
@@ -62,7 +73,7 @@ export default function LandingPage() {
 
   return (
       <div className="container flex-1 z-10 w-full">
-        <section className="w-full">
+        <section className="w-full py-8 md:py-12 mt-8 md:mt-12">
             <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-4">
@@ -118,21 +129,19 @@ export default function LandingPage() {
                      return (
                      <div 
                         key={feature.title}
-                        className="group relative rounded-2xl p-6 text-left h-full transition-all duration-300 overflow-hidden bg-background/20 backdrop-blur-sm shadow-lg hover:shadow-primary/20 hover:-translate-y-2 border border-white/30"
+                        className="group relative rounded-2xl p-6 text-center h-full transition-all duration-300 overflow-hidden bg-primary backdrop-blur-sm shadow-lg hover:shadow-primary/20 hover:-translate-y-2 border border-white/30 text-primary-foreground"
                       >
-                       <div className="relative z-10 flex flex-col items-start justify-start h-full">
-                         <div className="w-full h-12 mb-4 bg-black rounded-lg flex items-center justify-center">
-                            <Icon className="w-8 h-8 text-white"/>
-                         </div>
-                         <h3 className="text-xl font-bold font-headline mb-2 text-slate-900">{feature.title}</h3>
-                         <p className="text-sm text-slate-900/80">{feature.description}</p>
+                       <div className="relative z-10 flex flex-col items-center justify-start h-full gap-4">
+                         <Icon className="w-12 h-12"/>
+                         <h3 className="text-xl font-bold font-headline mb-2">{feature.title}</h3>
+                         <p className="text-sm text-primary-foreground/80">{feature.description}</p>
                        </div>
                      </div>
                    )})}
                 </div>
         </section>
 
-        <section className="w-full py-8 md:py-12">
+        <section className="w-full py-8 md:py-12 mt-8 md:mt-12">
             <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
                      <div className="mx-auto aspect-video overflow-hidden rounded-xl w-full relative shadow-lg">
                         <Image
@@ -163,7 +172,7 @@ export default function LandingPage() {
                 </div>
         </section>
         
-         <section className="w-full text-center py-8 md:py-12">
+         <section className="w-full text-center py-8 md:py-12 mt-8 md:mt-12">
                  <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900">¿Listo para Iniciar?</h2>
                  <p className="max-w-2xl mx-auto mt-4 text-slate-900/70 md:text-xl">
                     Únete a las empresas que ya están revolucionando su forma de capacitar. Comienza gratis hoy mismo.
