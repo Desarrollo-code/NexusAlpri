@@ -21,3 +21,4 @@ export const IconCalendarDays = (props: SVGProps<SVGSVGElement>) => (
     <line x1="3" x2="21" y1="10" y2="10" stroke="#ef4444" />
   </svg>
 );
+

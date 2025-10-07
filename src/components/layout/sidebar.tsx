@@ -147,14 +147,14 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         "flex items-center gap-3 py-3 rounded-lg transition-all duration-300 font-medium group/menu-item relative",
         isCollapsed && !isMobile ? "justify-center px-0" : "px-4",
         isActive
-          ? "bg-sidebar-accent/10 text-sidebar-foreground"
+          ? "bg-primary text-primary-foreground shadow"
           : "text-sidebar-muted-foreground hover:bg-white/5 hover:text-sidebar-foreground"
       )}>
         <GradientIcon icon={item.icon} isActive={isActive} />
         {showText && <span className="whitespace-nowrap">{item.label}</span>}
       </div>
   );
-  
+
   if (!item.path) {
     return <div className="cursor-not-allowed">{content}</div>
   }
@@ -186,7 +186,7 @@ export const SidebarFooter = () => {
   if (isMobile) return null; // No collapse button on mobile
 
   return (
-    <div className={cn("p-3 border-t border-sidebar-border flex items-center", isCollapsed ? "justify-center" : "justify-end")}>
+    <div className={cn("p-3 flex items-center", isCollapsed ? "justify-center" : "justify-end")}>
         <Button
           onClick={toggleSidebar}
           variant="ghost"
