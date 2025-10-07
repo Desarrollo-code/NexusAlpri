@@ -82,8 +82,8 @@ export default function AboutPage() {
                       }}
                     />
                    <div className="relative z-10 flex flex-col items-start justify-start h-full">
-                     <div className="w-full h-16 mb-4 bg-black rounded-lg flex items-center justify-center">
-                        <GradientIcon icon={tech.icon} size="xl" className="w-10 h-10" />
+                     <div className="w-full h-12 mb-4 bg-black rounded-lg flex items-center justify-center">
+                        <GradientIcon icon={tech.icon} size="xl" className="w-8 h-8" />
                      </div>
                      <h3 className="text-xl font-bold font-headline mb-2 text-slate-900">{tech.name}</h3>
                      <p className="text-sm text-slate-900/80">{tech.description}</p>

@@ -1,4 +1,3 @@
-
 // src/app/(public)/page.tsx
 'use client'; 
 
@@ -6,10 +5,13 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Layers3, UserCog, Feather, ArrowRight, GraduationCap, Users, Shield, BarChart3, BookOpen } from 'lucide-react';
+import { Layers3, UserCog, Feather, ArrowRight, GraduationCap, Users, Shield, BookOpen, BarChart3 } from 'lucide-react';
 import React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { GradientIcon } from '@/components/ui/gradient-icon';
+import { IconGraduationCap } from '@/components/icons/icon-graduation-cap';
+import { IconUserCog } from '@/components/icons/icon-user-cog';
+import { IconUsersRound } from '@/components/icons/icon-users-round';
 
 
 const features = [
@@ -47,17 +49,17 @@ const features = [
 
 const benefits = [
   {
-    icon: GraduationCap,
+    icon: IconGraduationCap,
     title: 'Para Estudiantes',
     description: 'Aprende a tu ritmo, sigue tu progreso y obtén certificados.',
   },
   {
-    icon: UserCog,
+    icon: IconUserCog,
     title: 'Para Instructores',
     description: 'Crea contenido interactivo y analiza el rendimiento de tus alumnos.',
   },
   {
-    icon: Users,
+    icon: IconUsersRound,
     title: 'Para Administradores',
     description: 'Control total sobre usuarios, contenido y la configuración de la plataforma.',
   },
@@ -142,8 +144,8 @@ export default function LandingPage() {
                           }}
                         />
                        <div className="relative z-10 flex flex-col items-start justify-start h-full">
-                         <div className="w-full h-16 mb-4 bg-black rounded-lg flex items-center justify-center">
-                            <GradientIcon icon={feature.icon} className="w-10 h-10" />
+                         <div className="w-full h-12 mb-4 bg-black rounded-lg flex items-center justify-center">
+                            <GradientIcon icon={feature.icon} className="w-8 h-8" />
                          </div>
                          <h3 className="text-xl font-bold font-headline mb-2">{feature.title}</h3>
                          <p className="text-sm text-slate-900/80">{feature.description}</p>
