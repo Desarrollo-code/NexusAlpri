@@ -8,14 +8,14 @@ import { Separator } from '../ui/separator';
 
 export function Footer() {
   return (
-    <footer className="bg-transparent text-white/60 hidden md:block">
+    <footer className="bg-transparent text-slate-800/60 hidden md:block">
       <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row justify-center items-center gap-4 text-center">
             <p className="text-sm">&copy; {new Date().getFullYear()} NexusAlpri. Todos los derechos reservados.</p>
-            <Separator orientation="vertical" className="h-4 hidden md:block !bg-white/20" />
+            <Separator orientation="vertical" className="h-4 hidden md:block !bg-slate-800/20" />
             <div className="flex items-center gap-2 text-sm">
                 <span>Desarrollado con ❤️ por</span>
-                <span className="font-bold text-white/80">Alprigrama</span>
+                <span className="font-bold text-slate-800/80">Alprigrama</span>
             </div>
         </div>
       </div>
