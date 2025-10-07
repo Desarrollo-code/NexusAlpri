@@ -3,6 +3,7 @@
 
 import { cn } from "@/lib/utils";
 import { type LucideProps } from "lucide-react";
+import React from 'react';
 
 interface GradientIconProps extends LucideProps {
   icon: React.ComponentType<LucideProps>;
@@ -24,17 +25,40 @@ export const GradientIcon = ({
     'lg': 'w-7 h-7',
     'xl': 'w-8 h-8',
   };
-  
+
+  const gradientId = React.useId();
+
   return (
-    <Icon
-      className={cn(
-        "shrink-0",
-        sizeClasses[size],
-        "transition-colors duration-200",
-        isActive ? 'text-primary' : 'text-muted-foreground group-hover/menu-item:text-foreground',
-        className
-      )}
-      {...props}
-    />
+    <svg 
+        className={cn(sizeClasses[size], "shrink-0", className)}
+        fill="none" 
+        strokeWidth="2"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+          {isActive ? (
+            <>
+              <stop offset="0%" style={{ stopColor: 'hsl(var(--primary-foreground))', stopOpacity: 1 }} />
+              <stop offset="100%" style={{ stopColor: 'hsl(var(--primary-foreground))', stopOpacity: 0.8 }} />
+            </>
+          ) : (
+             <>
+              <stop offset="0%" style={{ stopColor: 'hsl(var(--primary))', stopOpacity: 1 }} />
+              <stop offset="100%" style={{ stopColor: 'hsl(var(--accent))', stopOpacity: 1 }} />
+            </>
+          )}
+        </linearGradient>
+      </defs>
+      <Icon
+        stroke={`url(#${gradientId})`}
+        {...props}
+        className={cn(
+            "transition-colors duration-200",
+            !isActive && "group-hover/menu-item:stroke-[hsl(var(--primary))]"
+        )}
+      />
+    </svg>
   );
 };
