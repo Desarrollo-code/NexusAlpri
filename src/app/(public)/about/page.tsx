@@ -21,7 +21,7 @@ export default function AboutPage() {
 
   return (
     <div className="container flex-1 z-10 w-full">
-        <section className="w-full py-8 md:py-12 mt-8 md:mt-12">
+        <section className="w-full py-6 md:py-8 mt-6 md:mt-8">
             <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
                <div className="mx-auto aspect-video overflow-hidden rounded-xl w-full relative shadow-lg order-first lg:order-last">
                 <Image
@@ -47,7 +47,7 @@ export default function AboutPage() {
             </div>
         </section>
 
-        <section className="w-full bg-transparent py-8 md:py-12 mt-8 md:mt-12">
+        <section className="w-full bg-transparent py-6 md:py-8 mt-6 md:mt-8">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <div className="inline-block rounded-lg bg-background/20 text-slate-900/80 px-3 py-1 text-sm font-semibold border border-border/30">
@@ -68,7 +68,7 @@ export default function AboutPage() {
                     className="group relative rounded-2xl p-6 text-left h-full transition-all duration-300 overflow-hidden bg-background/20 backdrop-blur-sm shadow-lg hover:shadow-primary/20 hover:-translate-y-2 border border-white/30"
                   >
                    <div className="relative z-10 flex flex-col items-start justify-start h-full">
-                     <div className="w-full h-12 mb-4 bg-black rounded-lg flex items-center justify-center">
+                     <div className="w-12 h-12 rounded-lg bg-black flex items-center justify-center">
                         <Icon className="w-8 h-8 text-white"/>
                      </div>
                      <h3 className="text-xl font-bold font-headline mb-2 text-slate-900">{tech.name}</h3>

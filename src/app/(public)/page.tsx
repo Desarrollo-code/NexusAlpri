@@ -12,8 +12,8 @@ import { useAuth } from '@/contexts/auth-context';
 const features = [
   {
     icon: (props: any) => (
-        <div className="w-16 h-16 rounded-full bg-black flex items-center justify-center">
-            <Layers3 {...props} className="h-10 w-10 text-white"/>
+        <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center">
+            <Layers3 {...props} className="h-8 w-8 text-white"/>
         </div>
     ),
     title: 'Contenido Centralizado',
@@ -21,8 +21,8 @@ const features = [
   },
   {
     icon: (props: any) => (
-        <div className="w-16 h-16 rounded-full bg-blue-200 flex items-center justify-center">
-            <ArrowUp {...props} className="h-10 w-10 text-blue-800" strokeWidth={3}/>
+        <div className="w-12 h-12 rounded-full bg-blue-200 flex items-center justify-center">
+            <ArrowUp {...props} className="h-8 w-8 text-blue-800" strokeWidth={3}/>
         </div>
     ),
     title: 'Seguimiento Detallado',
@@ -30,8 +30,8 @@ const features = [
   },
   {
     icon: (props: any) => (
-        <div className="w-16 h-16 rounded-full bg-green-400 flex items-center justify-center">
-            <Users {...props} className="h-10 w-10 text-green-900" />
+        <div className="w-12 h-12 rounded-full bg-green-400 flex items-center justify-center">
+            <Users {...props} className="h-8 w-8 text-green-900" />
         </div>
     ),
     title: 'Comunidad Interactiva',
@@ -64,7 +64,7 @@ export default function LandingPage() {
 
   return (
       <div className="container flex-1 z-10 w-full">
-        <section className="w-full py-8 md:py-12 mt-8 md:mt-12">
+        <section className="w-full py-6 md:py-8 mt-6 md:mt-8">
             <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-4">
@@ -102,7 +102,7 @@ export default function LandingPage() {
             </div>
         </section>
         
-        <section className="w-full bg-transparent py-8 md:py-12 mt-8 md:mt-12">
+        <section className="w-full bg-transparent py-6 md:py-8 mt-6 md:mt-8">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
                         <div className="inline-block rounded-lg bg-white/20 text-slate-900/80 px-3 py-1 text-sm font-semibold border border-white/30">
@@ -132,7 +132,7 @@ export default function LandingPage() {
                 </div>
         </section>
 
-        <section className="w-full py-8 md:py-12 mt-8 md:mt-12">
+        <section className="w-full py-6 md:py-8 mt-6 md:mt-8">
             <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
                      <div className="mx-auto aspect-video overflow-hidden rounded-xl w-full relative shadow-lg">
                         <Image
@@ -163,7 +163,7 @@ export default function LandingPage() {
                 </div>
         </section>
         
-         <section className="w-full text-center py-8 md:py-12 mt-8 md:mt-12">
+         <section className="w-full text-center py-6 md:py-8 mt-6 md:mt-8">
                  <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900">¿Listo para Iniciar?</h2>
                  <p className="max-w-2xl mx-auto mt-4 text-slate-900/70 md:text-xl">
                     Únete a las empresas que ya están revolucionando su forma de capacitar. Comienza gratis hoy mismo.
