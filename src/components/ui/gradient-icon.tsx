@@ -20,17 +20,17 @@ export const GradientIcon = ({
 }: GradientIconProps) => {
 
   const sizeClasses = {
-    'sm': 'w-5 h-5',
-    'default': 'w-6 h-6',
-    'lg': 'w-7 h-7',
-    'xl': 'w-8 h-8',
+    'sm': 'w-4 h-4',
+    'default': 'w-5 h-5', // Tamaño unificado
+    'lg': 'w-6 h-6',
+    'xl': 'w-7 h-7',
   };
 
   const gradientId = React.useId();
 
   return (
     <svg 
-        className={cn("w-full h-full flex items-center justify-center", sizeClasses[size], className)}
+        className={cn("flex items-center justify-center", sizeClasses[size], className)}
         fill="none" 
         strokeWidth="2"
         viewBox="0 0 24 24"
@@ -55,7 +55,7 @@ export const GradientIcon = ({
         stroke={`url(#${gradientId})`}
         {...props}
         className={cn(
-            "transition-colors duration-200",
+            "transition-colors duration-200 w-full h-full",
             !isActive && "group-hover/menu-item:stroke-[hsl(var(--primary))]"
         )}
       />

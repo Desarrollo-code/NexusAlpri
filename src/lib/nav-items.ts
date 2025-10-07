@@ -2,144 +2,142 @@ import type { NavItem, UserRole } from '@/types';
 import {
   Bell,
   GitCommitHorizontal,
+  LayoutGrid,
+  BookOpen,
+  GraduationCap,
+  Notebook,
+  Folder,
+  Megaphone,
+  CalendarDays,
+  FileText,
+  Shield,
+  BookMarked,
+  TrendingUp,
+  Sparkles,
+  Award,
+  BarChart3,
+  UsersRound,
+  ShieldAlert,
+  Settings, 
 } from 'lucide-react';
-import { 
-    IconLayoutGrid, 
-    IconBookOpen,
-    IconGraduationCap,
-    IconNotebook,
-    IconFolder,
-    IconMegaphone,
-    IconCalendarDays,
-    IconFileText,
-    IconShield,
-    IconBookMarked,
-    IconTrendingUp,
-    IconSparkles,
-    IconAward,
-    IconBarChart3,
-    IconUsersRound,
-    IconShieldAlert,
-    IconSettings, 
-} from '@/components/icons';
 
 const NAVIGATION_ITEMS: NavItem[] = [
   {
     id: 'dashboard',
     label: 'Panel Principal',
-    icon: IconLayoutGrid,
+    icon: LayoutGrid,
     path: '/dashboard',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
   },
   {
     id: 'courses',
     label: 'Catálogo de Cursos',
-    icon: IconBookOpen,
+    icon: BookOpen,
     path: '/courses',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
   },
   {
     id: 'my-courses',
     label: 'Mis Cursos',
-    icon: IconGraduationCap,
+    icon: GraduationCap,
     path: '/my-courses',
     roles: ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR']
   },
   {
     id: 'my-notes',
     label: 'Mis Apuntes',
-    icon: IconNotebook,
+    icon: Notebook,
     path: '/my-notes',
     roles: ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'],
   },
   {
     id: 'resources',
     label: 'Biblioteca',
-    icon: IconFolder,
+    icon: Folder,
     path: '/resources',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
   },
   {
     id: 'communications',
     label: 'Comunicaciones',
-    icon: IconMegaphone,
+    icon: Megaphone,
     path: '/announcements',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
   },
   {
     id: 'calendar',
     label: 'Calendario',
-    icon: IconCalendarDays,
+    icon: CalendarDays,
     path: '/calendar',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
   },
    {
     id: 'forms',
     label: 'Formularios',
-    icon: IconFileText,
+    icon: FileText,
     path: '/forms',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
   },
   {
     id: 'admin',
     label: 'Administración',
-    icon: IconShield,
+    icon: Shield,
     roles: ['ADMINISTRATOR', 'INSTRUCTOR'],
     color: 'hsl(var(--destructive))',
     children: [
       {
         id: 'manage-courses',
         label: 'Gestionar Cursos',
-        icon: IconBookMarked,
+        icon: BookMarked,
         path: '/manage-courses',
         roles: ['ADMINISTRATOR', 'INSTRUCTOR']
       },
       {
         id: 'enrollments',
         label: 'Inscripciones',
-        icon: IconTrendingUp,
+        icon: TrendingUp,
         path: '/enrollments',
         roles: ['ADMINISTRATOR', 'INSTRUCTOR']
       },
        {
         id: 'motivations',
         label: 'Motivaciones',
-        icon: IconSparkles,
+        icon: Sparkles,
         path: '/admin/motivations',
         roles: ['ADMINISTRATOR', 'INSTRUCTOR'],
       },
       {
         id: 'certificates',
         label: 'Certificados',
-        icon: IconAward,
+        icon: Award,
         path: '/admin/certificates',
         roles: ['ADMINISTRATOR'],
       },
       {
         id: 'analytics',
         label: 'Analíticas',
-        icon: IconBarChart3,
+        icon: BarChart3,
         path: '/analytics',
         roles: ['ADMINISTRATOR']
       },
       {
         id: 'users',
         label: 'Usuarios',
-        icon: IconUsersRound,
+        icon: UsersRound,
         path: '/users',
         roles: ['ADMINISTRATOR']
       },
       {
         id: 'security-audit',
         label: 'Seguridad',
-        icon: IconShieldAlert,
+        icon: ShieldAlert,
         path: '/security-audit',
         roles: ['ADMINISTRATOR']
       },
       {
         id: 'settings',
         label: 'Configuración',
-        icon: IconSettings,
+        icon: Settings,
         path: '/settings',
         roles: ['ADMINISTRATOR']
       },
