@@ -66,21 +66,6 @@ export default function LandingPage() {
   const landingImageUrl = settings?.landingImageUrl || "https://placehold.co/600x600/38bdf8/ffffff?text=NexusAlpri";
   const benefitsImageUrl = settings?.benefitsImageUrl || "https://placehold.co/600x400/38bdf8/ffffff?text=Beneficios";
 
-  const testimonials = [
-    {
-      name: 'Ana García',
-      role: 'Líder de Capacitación, TechCorp',
-      testimony: 'NexusAlpri transformó nuestra formación interna. La facilidad para crear contenido y el seguimiento automático nos ahorraron cientos de horas.',
-      avatar: 'https://placehold.co/100x100/ffffff/333333?text=AG'
-    },
-    {
-      name: 'Carlos Mendoza',
-      role: 'Gerente de Ventas, InnovaSolutions',
-      testimony: 'La capacidad de crear quizzes y ver las analíticas nos ha permitido identificar brechas de conocimiento en nuestro equipo de ventas y actuar sobre ellas.',
-       avatar: 'https://placehold.co/100x100/ffffff/333333?text=CM'
-    }
-  ]
-
   return (
       <div className="flex-1 z-10 w-full text-foreground">
         <section className="w-full">
@@ -185,39 +170,6 @@ export default function LandingPage() {
                        ))}
                     </div>
                 </div>
-            </div>
-        </section>
-        
-        <section className="w-full bg-transparent py-12 md:py-16 mt-12">
-            <div className="container px-4 md:px-6">
-                <div className="flex flex-col items-center justify-center space-y-4 text-center">
-                    <div className="space-y-2">
-                        <div className="inline-block rounded-lg bg-background/20 text-foreground/80 px-3 py-1 text-sm font-semibold border border-border/30">
-                            Testimonios
-                        </div>
-                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">La Voz de Nuestros Clientes</h2>
-                    </div>
-                </div>
-                 <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 py-12">
-                    {testimonials.map((testimonial) => (
-                        <Card key={testimonial.name} className="bg-background/20 border-border/30 text-foreground">
-                           <CardContent className="pt-6">
-                             <blockquote className="text-lg font-semibold leading-snug">
-                               “{testimonial.testimony}”
-                             </blockquote>
-                           </CardContent>
-                           <CardFooter>
-                              <div className="flex items-center gap-3">
-                                <Image className="rounded-full" src={testimonial.avatar} height={40} width={40} alt={testimonial.name} data-ai-hint="portrait person" quality={100} />
-                                <div>
-                                    <p className="font-semibold">{testimonial.name}</p>
-                                    <p className="text-sm text-foreground/70">{testimonial.role}</p>
-                                </div>
-                              </div>
-                           </CardFooter>
-                        </Card>
-                    ))}
-                 </div>
             </div>
         </section>
         
