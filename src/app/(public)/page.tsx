@@ -5,10 +5,13 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Layers3, BarChart3, Users, ShieldCheck, Zap, BookOpen, UserCheck, ArrowRight } from 'lucide-react';
+import { Layers3, BarChart3, ShieldCheck, Zap, UserCog } from 'lucide-react';
 import React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { GradientIcon } from '@/components/ui/gradient-icon';
+import { IconBookOpen, IconGraduationCap, IconUsersRound } from '@/components/icons';
+import { ArrowRight } from 'lucide-react';
+
 
 const features = [
   {
@@ -22,7 +25,7 @@ const features = [
     description: 'Obtén métricas claras sobre el avance de tus equipos para tomar decisiones basadas en datos.',
   },
   {
-    icon: Users,
+    icon: IconUsersRound,
     title: 'Gestión de Usuarios',
     description: 'Define roles (Admin, Instructor, Estudiante) para administrar el acceso de forma segura y ordenada.',
   },
@@ -37,7 +40,7 @@ const features = [
     description: 'Una interfaz rápida, intuitiva y optimizada para cualquier dispositivo, diseñada para aprender sin fricciones.',
   },
   {
-    icon: BookOpen,
+    icon: IconBookOpen,
     title: 'Biblioteca de Recursos',
     description: 'Centraliza manuales, políticas y guías importantes en un único repositorio accesible para todos.',
   }
@@ -45,19 +48,19 @@ const features = [
 
 const benefits = [
   {
-    icon: BookOpen,
+    icon: IconGraduationCap,
     title: 'Para Estudiantes',
-    description: 'Accede a tus cursos desde cualquier lugar, sigue tu progreso y obtén certificados al finalizar.',
+    description: 'Aprende a tu ritmo, sigue tu progreso y obtén certificados.',
   },
   {
-    icon: UserCheck,
+    icon: UserCog,
     title: 'Para Instructores',
-    description: 'Crea y gestiona tu contenido con una interfaz drag-and-drop y analiza el rendimiento de tus alumnos.',
+    description: 'Crea contenido interactivo y analiza el rendimiento de tus alumnos.',
   },
   {
-    icon: Users,
+    icon: IconUsersRound,
     title: 'Para Administradores',
-    description: 'Supervisa toda la actividad, gestiona usuarios y personaliza la plataforma a la medida de tu empresa.',
+    description: 'Control total sobre usuarios, contenido y la configuración de la plataforma.',
   },
 ];
 
@@ -125,13 +128,14 @@ export default function LandingPage() {
                    {features.map((feature) => (
                      <div 
                         key={feature.title}
-                        className="group relative rounded-2xl p-6 text-left h-full transition-all duration-300 overflow-hidden bg-background/20 backdrop-blur-sm shadow-lg hover:shadow-primary/20 hover:-translate-y-2 border border-border/30 before:pointer-events-none before:absolute before:-left-40 before:-top-40 before:h-80 before:w-80 before:translate-x-[var(--x)] before:translate-y-[var(--y)] before:rounded-full before:bg-primary/50 before:opacity-0 before:blur-3xl before:transition-opacity before:duration-500 hover:before:opacity-20"
+                        className="group relative rounded-2xl p-6 text-left h-full transition-all duration-300 overflow-hidden bg-background/20 backdrop-blur-sm shadow-lg hover:shadow-primary/20 hover:-translate-y-2 border border-border/30"
                         onMouseMove={(e) => {
                             const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                             e.currentTarget.style.setProperty('--x', `${e.clientX - rect.left}px`);
                             e.currentTarget.style.setProperty('--y', `${e.clientY - rect.top}px`);
                         }}
                       >
+                       <div className="absolute inset-0 pointer-events-none -z-10 before:absolute before:left-1/2 before:top-1/2 before:h-48 before:w-48 before:-translate-x-1/2 before:-translate-y-1/2 before:rounded-full before:bg-primary/50 before:opacity-0 before:blur-3xl before:transition-opacity before:duration-500 group-hover:before:opacity-20" />
                        <div className="relative z-10 flex flex-col items-start justify-start h-full">
                          <div className="mb-4 bg-gradient-to-br from-primary/20 to-accent/20 p-3 rounded-lg border border-border/30">
                             <GradientIcon icon={feature.icon} size="xl" />
