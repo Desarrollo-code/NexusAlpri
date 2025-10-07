@@ -20,3 +20,4 @@ export * from './icon-server';
 export * from './icon-shield-alert';
 export * from './icon-settings';
 export * from './icon-user-cog';
+export * from './icon-message-square';

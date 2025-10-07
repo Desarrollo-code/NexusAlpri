@@ -19,6 +19,7 @@ import {
   UsersRound,
   ShieldAlert,
   Settings, 
+  MessageSquare,
 } from 'lucide-react';
 
 const NAVIGATION_ITEMS: NavItem[] = [
@@ -42,6 +43,13 @@ const NAVIGATION_ITEMS: NavItem[] = [
     icon: GraduationCap,
     path: '/my-courses',
     roles: ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR']
+  },
+   {
+    id: 'messages',
+    label: 'Mensajes',
+    icon: MessageSquare,
+    path: '/messages',
+    roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
   },
   {
     id: 'my-notes',

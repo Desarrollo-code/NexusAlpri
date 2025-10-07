@@ -1,18 +1,33 @@
 // src/components/profile/user-profile-card.tsx
 'use client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
 import { getInitials } from '@/lib/utils';
 import { getRoleInSpanish } from '@/lib/security-log-utils';
 import type { User } from '@/types';
 import { VerifiedBadge } from '../ui/verified-badge';
+import { Button } from '../ui/button';
+import { MessageSquare } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/auth-context';
 
 interface UserProfileCardProps {
     user: User;
 }
 
 export const UserProfileCard = ({ user }: UserProfileCardProps) => {
+    const router = useRouter();
+    const { user: currentUser } = useAuth();
+
+    const handleSendMessage = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        router.push(`/messages?new=${user.id}`);
+    };
+    
+    // El botón de mensaje no debe mostrarse para el propio usuario
+    const showMessageButton = currentUser?.id !== user.id;
+
     return (
         <Card className="profile-card border-none shadow-none">
             <div className="card__img">
@@ -24,7 +39,7 @@ export const UserProfileCard = ({ user }: UserProfileCardProps) => {
                     <AvatarFallback><Identicon userId={user.id} /></AvatarFallback>
                 </Avatar>
             </div>
-            <CardContent className="px-6 pb-6 pt-4">
+            <CardHeader className="p-4 pb-2">
                 <CardTitle className="text-xl font-bold font-headline flex items-center justify-center gap-2">
                     {user.name}
                     <VerifiedBadge role={user.role} />
@@ -32,7 +47,14 @@ export const UserProfileCard = ({ user }: UserProfileCardProps) => {
                 <CardDescription className="card__subtitle">
                     {user.email}
                 </CardDescription>
-                <div className="mt-4 text-sm font-semibold text-primary">{getRoleInSpanish(user.role)}</div>
+                <div className="mt-2 text-sm font-semibold text-primary">{getRoleInSpanish(user.role)}</div>
+            </CardHeader>
+            <CardContent className="p-4 pt-2">
+                {showMessageButton && (
+                    <Button size="sm" className="w-full" onClick={handleSendMessage}>
+                        <MessageSquare className="mr-2 h-4 w-4"/> Enviar Mensaje
+                    </Button>
+                )}
             </CardContent>
         </Card>
     );
