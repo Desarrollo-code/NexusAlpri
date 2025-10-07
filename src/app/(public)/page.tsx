@@ -144,7 +144,7 @@ export default function LandingPage() {
                           }}
                         />
                        <div className="relative z-10 flex flex-col items-start justify-start h-full">
-                         <div className="w-full h-24 mb-4 bg-black rounded-lg flex items-center justify-center">
+                         <div className="w-full h-20 mb-4 bg-black rounded-lg flex items-center justify-center">
                             <GradientIcon icon={feature.icon} className="w-16 h-16" />
                          </div>
                          <h3 className="text-xl font-bold font-headline mb-2">{feature.title}</h3>
