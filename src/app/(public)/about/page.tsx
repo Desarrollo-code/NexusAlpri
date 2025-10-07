@@ -36,7 +36,7 @@ export default function AboutPage() {
                 />
               </div>
               <div className="space-y-4 order-last lg:order-first">
-                <div className="inline-block rounded-lg bg-background/20 text-slate-800/80 px-3 py-1 text-sm font-semibold border border-border/30">
+                <div className="inline-block rounded-lg bg-background/20 text-slate-900/80 px-3 py-1 text-sm font-semibold border border-border/30">
                   Nuestra Misión
                 </div>
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl font-headline text-slate-900">
@@ -54,7 +54,7 @@ export default function AboutPage() {
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
-                <div className="inline-block rounded-lg bg-background/20 text-slate-800/80 px-3 py-1 text-sm font-semibold border border-border/30">
+                <div className="inline-block rounded-lg bg-background/20 text-slate-900/80 px-3 py-1 text-sm font-semibold border border-border/30">
                   Tecnología
                 </div>
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900">Ingeniería para la Excelencia</h2>
@@ -82,11 +82,11 @@ export default function AboutPage() {
                       }}
                     />
                    <div className="relative z-10 flex flex-col items-start justify-start h-full">
-                     <div className="mb-4 bg-black p-3 rounded-lg border border-border/10 flex items-center justify-center">
+                     <div className="w-full h-24 mb-4 bg-black rounded-lg flex items-center justify-center">
                         <GradientIcon icon={tech.icon} size="xl" className="w-full h-full flex items-center justify-center" />
                      </div>
                      <h3 className="text-xl font-bold font-headline mb-2 text-slate-900">{tech.name}</h3>
-                     <p className="text-sm text-slate-800/70">{tech.description}</p>
+                     <p className="text-sm text-slate-900/80">{tech.description}</p>
                    </div>
                  </div>
               ))}
