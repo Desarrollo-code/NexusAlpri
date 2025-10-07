@@ -198,37 +198,6 @@
   }
 }
 
-/* Animaciones para el nuevo fondo de aurora */
-@keyframes aurora-1 {
-    0%, 100% { transform: translate(0%, 0%) scale(1); opacity: 0.2; }
-    25% { transform: translate(20%, -10%) scale(1.1); opacity: 0.3; }
-    50% { transform: translate(10%, 20%) scale(0.9); opacity: 0.25; }
-    75% { transform: translate(-10%, 10%) scale(1.2); opacity: 0.3; }
-}
-@keyframes aurora-2 {
-    0%, 100% { transform: translate(0%, 0%) scale(1); opacity: 0.2; }
-    25% { transform: translate(-15%, 10%) scale(0.9); opacity: 0.25; }
-    50% { transform: translate(10%, -15%) scale(1.1); opacity: 0.3; }
-    75% { transform: translate(5%, 5%) scale(1); opacity: 0.2; }
-}
-@keyframes aurora-3 {
-    0%, 100% { transform: translate(0%, 0%) scale(1); opacity: 0.15; }
-    25% { transform: translate(10%, 15%) scale(1.2); opacity: 0.2; }
-    50% { transform: translate(-15%, -10%) scale(0.8); opacity: 0.1; }
-    75% { transform: translate(5%, -5%) scale(1.1); opacity: 0.18; }
-}
-
-.animate-aurora-1 {
-    animation: aurora-1 20s ease-in-out infinite;
-}
-.animate-aurora-2 {
-    animation: aurora-2 25s ease-in-out infinite;
-}
-.animate-aurora-3 {
-    animation: aurora-3 18s ease-in-out infinite;
-}
-
-
 .quill-editor .ql-toolbar {
   @apply rounded-t-lg border-b bg-muted/50;
 }
