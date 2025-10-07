@@ -148,6 +148,8 @@ model User {
   eventParticipations EventParticipation[]
   assignedCourses CourseAssignment[] @relation("UserAssignments")
   assignedByMe    CourseAssignment[] @relation("AssignedBy")
+  conversations Conversation[] @relation("UserConversations")
+  messages      Message[]
 
   @@map("users")
 }
@@ -691,4 +693,33 @@ model CertificateTemplate {
   courses              Course[]
 
   @@map("certificate_templates")
+}
+
+
+
+model Conversation {
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  participants User[]    @relation("UserConversations")
+  messages     Message[]
+
+  // Índice para buscar conversaciones por participantes
+  @@index([createdAt])
+}
+
+model Message {
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  content   String    @db.Text
+  isRead    Boolean   @default(false)
+  
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
 }
