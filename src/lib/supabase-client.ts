@@ -9,9 +9,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error('Las variables de entorno de Supabase (URL y Anon Key) deben ser proporcionadas.');
 }
 
-if (!supabaseServiceKey) {
-    console.warn('ADVERTENCIA: La variable SUPABASE_SERVICE_ROLE_KEY no está configurada. El cliente de administrador de Supabase no estará disponible y las operaciones de backend fallarán.');
-}
+// Nuevo: Cliente para el lado del cliente (navegador), necesario para Realtime
+export const supabaseBrowserClient = createClient(supabaseUrl, supabaseAnonKey);
+
 
 // Cliente de administrador para el lado del servidor (API Routes)
 // Este cliente puede saltarse las políticas de RLS. Úsalo con cuidado y solo en el backend.

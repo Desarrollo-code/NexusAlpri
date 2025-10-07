@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Send, ArrowLeft, Search, PlusCircle, UserPlus, Info, MessageSquare } from 'lucide-react';
+import { Loader2, Send, ArrowLeft, Search, UserPlus, Info, MessageSquare } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -18,6 +18,7 @@ import { ScrollArea } from '../ui/scroll-area';
 import { User } from '@/types';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../ui/command';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
+import { useRealtimeChat } from '@/hooks/use-realtime-chat';
 
 // Tipos
 type Participant = { id: string; name: string | null; avatar: string | null };
@@ -135,6 +136,14 @@ export function ChatClient() {
 
     const newChatUserId = searchParams.get('new');
     
+    const handleNewMessage = useCallback((newMessage: Message) => {
+        setMessages(prevMessages => [...prevMessages, newMessage]);
+        // Actualizar la lista de conversaciones para que el último mensaje se muestre
+        setConversations(prev => prev.map(c => c.id === newMessage.conversationId ? {...c, messages: [newMessage]} : c).sort((a,b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()));
+    }, []);
+
+    useRealtimeChat(activeConversation?.id ?? null, handleNewMessage);
+    
     // Fetch all conversations
     const fetchConversations = useCallback(async () => {
         try {
@@ -176,7 +185,6 @@ export function ChatClient() {
                 setActiveConversation(existingConvo);
                 router.replace('/messages', { scroll: false }); // Limpiar URL
             } else {
-                // Si no hay conversación, el modal de nuevo chat se abrirá para que el usuario confirme
                 setIsNewChatModalOpen(true);
             }
         }
@@ -198,20 +206,14 @@ export function ChatClient() {
             
             setNewMessage('');
             
-            // Actualizar UI
-            if (activeConversation && activeConversation.participants.some(p => p.id === recipientId)) {
-                setMessages(prev => [...prev, sentMessage]);
-            }
-            
-            // Refrescar la lista de conversaciones para que la nueva o actualizada aparezca al principio
-            fetchConversations();
-            
             // Si era una conversación temporal, la reemplazamos por la real
+            // y la hacemos la activa.
             if (activeConversation?.id.startsWith('temp-')) {
-                const realConvo = await fetch(`/api/conversations`).then(res => res.json()).then(convos => convos.find((c: Conversation) => c.participants.some(p => p.id === recipientId)));
+                const convoRes = await fetch('/api/conversations');
+                const allConvos = await convoRes.json();
+                const realConvo = allConvos.find((c: Conversation) => c.participants.some(p => p.id === recipientId));
                 if (realConvo) setActiveConversation(realConvo);
             }
-
 
         } catch (err) {
             toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
@@ -233,6 +235,7 @@ export function ChatClient() {
                 messages: [],
                 updatedAt: new Date().toISOString()
             };
+            setConversations(prev => [tempConvo, ...prev]);
             setActiveConversation(tempConvo);
         }
     };
