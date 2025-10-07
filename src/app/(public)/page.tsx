@@ -1,45 +1,45 @@
 // src/app/(public)/page.tsx
-'use client'; // Convertido a Client Component
+'use client'; 
 
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Layers3, BarChart3, Users, ShieldCheck, Zap, Heart, BookOpen, UserCheck } from 'lucide-react';
+import { Layers3, BarChart3, Users, ShieldCheck, Zap, BookOpen, UserCheck } from 'lucide-react';
 import React from 'react';
-import { useAuth } from '@/contexts/auth-context'; // Importar el hook de autenticación
+import { useAuth } from '@/contexts/auth-context';
 import { GradientIcon } from '@/components/ui/gradient-icon';
 
 const features = [
   {
     icon: Layers3,
-    title: 'Gestión de Contenido Intuitiva',
-    description: 'Crea y organiza cursos con un editor de arrastrar y soltar, sin complicaciones técnicas.',
+    title: 'Contenido Centralizado',
+    description: 'Crea cursos con un editor visual, combinando videos, quizzes y documentos sin esfuerzo.',
   },
   {
     icon: BarChart3,
-    title: 'Seguimiento y Analíticas',
-    description: 'Mide el progreso y el rendimiento con dashboards detallados para tomar decisiones informadas.',
+    title: 'Analíticas de Progreso',
+    description: 'Obtén métricas claras sobre el avance de tus equipos para tomar decisiones basadas en datos.',
   },
   {
     icon: Users,
-    title: 'Roles y Permisos Granulares',
-    description: 'Un sistema robusto (Admin, Instructor, Estudiante) para administrar el acceso de forma segura.',
+    title: 'Gestión de Usuarios',
+    description: 'Define roles (Admin, Instructor, Estudiante) para administrar el acceso de forma segura y ordenada.',
   },
   {
     icon: ShieldCheck,
     title: 'Seguridad Corporativa',
-    description: 'Políticas de seguridad, auditorías y control total sobre los datos de tu organización.',
+    description: 'Implementa políticas de contraseña, 2FA y audita la actividad para proteger la información de tu empresa.',
   },
    {
     icon: Zap,
-    title: 'Experiencia de Usuario Moderna',
-    description: 'Una interfaz rápida, intuitiva y optimizada para cualquier dispositivo, centrada en el aprendizaje.',
+    title: 'Experiencia Fluida',
+    description: 'Una interfaz rápida, intuitiva y optimizada para cualquier dispositivo, diseñada para aprender sin fricciones.',
   },
   {
-    icon: Heart,
-    title: 'Gamificación Integrada',
-    description: 'Involucra a tus equipos con puntos de experiencia y logros para aumentar la motivación.',
+    icon: BookOpen,
+    title: 'Biblioteca de Recursos',
+    description: 'Centraliza manuales, políticas y guías importantes en un único repositorio accesible para todos.',
   }
 ];
 
@@ -62,7 +62,6 @@ const benefits = [
 ];
 
 export default function LandingPage() {
-  // Obtener la configuración desde el contexto en lugar de la base de datos
   const { settings } = useAuth();
   const landingImageUrl = settings?.landingImageUrl || "https://placehold.co/600x600.png";
   const benefitsImageUrl = settings?.benefitsImageUrl || "https://placehold.co/600x400.png";
@@ -90,12 +89,10 @@ export default function LandingPage() {
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-4">
                   <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline text-foreground">
-                    Despierta el Potencial.
-                    <br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-blue-500">Transforma tu Equipo.</span>
+                    La Plataforma E-learning que Impulsa tu Talento Corporativo
                   </h1>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                    NexusAlpri es la plataforma de e-learning corporativa que se adapta a ti. Intuitiva, potente y segura.
+                    Centraliza, gestiona y escala la formación de tus equipos con una herramienta potente, intuitiva y personalizable.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
@@ -135,11 +132,11 @@ export default function LandingPage() {
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
                         <div className="inline-block rounded-lg bg-secondary text-secondary-foreground px-3 py-1 text-sm font-semibold">
-                            Características Principales
+                            Capacidades
                         </div>
-                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-foreground">Una Plataforma Todo en Uno</h2>
+                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-foreground">Una Solución Integral de Formación</h2>
                         <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                            Desde la creación de contenido hasta el análisis de resultados, todo lo que necesitas para potenciar el talento de tu equipo está aquí.
+                            Desde la creación de contenido interactivo hasta el análisis detallado del rendimiento, NexusAlpri te ofrece todo lo necesario para un ciclo de aprendizaje completo.
                         </p>
                     </div>
                 </div>
@@ -197,7 +194,7 @@ export default function LandingPage() {
                         <div className="inline-block rounded-lg bg-secondary text-secondary-foreground px-3 py-1 text-sm font-semibold">
                             Testimonios
                         </div>
-                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-foreground">Lo que Nuestros Clientes Dicen</h2>
+                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-foreground">La Voz de Nuestros Clientes</h2>
                     </div>
                 </div>
                  <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 py-12">
@@ -225,13 +222,13 @@ export default function LandingPage() {
         
          <section className="w-full text-center py-12 md:py-16">
             <div className="container px-4 md:px-6">
-                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-foreground">¿Listo para Empezar?</h2>
+                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-foreground">¿Listo para Iniciar?</h2>
                  <p className="max-w-2xl mx-auto mt-4 text-muted-foreground md:text-xl">
-                    Únete a las empresas que ya están revolucionando su forma de capacitar.
+                    Únete a las empresas que ya están revolucionando su forma de capacitar. Comienza gratis hoy mismo.
                  </p>
                   <Button asChild size="lg" className="mt-8">
                     <Link href="/sign-up">
-                      Crear Mi Cuenta Gratis
+                      Crear Mi Cuenta
                     </Link>
                   </Button>
             </div>

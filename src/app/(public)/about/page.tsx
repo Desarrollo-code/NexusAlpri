@@ -1,24 +1,23 @@
 // src/app/(public)/about/page.tsx
-'use client'; // Convertido a Client Component
+'use client'; 
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Database, Code, Wind, Feather } from 'lucide-react';
 import Image from 'next/image';
 import React from 'react';
-import { useAuth } from '@/contexts/auth-context'; // Importar el hook de autenticación
+import { useAuth } from '@/contexts/auth-context';
 import { GradientIcon } from '@/components/ui/gradient-icon';
 
 export default function AboutPage() {
-  // Obtener la configuración desde el contexto en lugar de la base de datos
   const { settings } = useAuth();
   const aboutImageUrl = settings?.aboutImageUrl || "https://placehold.co/600x400.png";
 
   const techStack = [
-    { name: 'Next.js', description: 'Framework de React para producción.', icon: Code, color: "text-blue-400" },
-    { name: 'TypeScript', description: 'Superset de JavaScript con tipos.', icon: Code, color: "text-blue-400" },
-    { name: 'Prisma', description: 'ORM de nueva generación para Node.js.', icon: Database, color: "text-emerald-400" },
-    { name: 'Tailwind CSS', description: 'Framework de CSS "utility-first".', icon: Wind, color: "text-cyan-400" },
-    { name: 'ShadCN UI', description: 'Componentes UI reutilizables.', icon: Feather, color: "text-pink-400" },
+    { name: 'Next.js', description: 'Para un rendimiento excepcional y una experiencia de usuario fluida gracias a su arquitectura híbrida.', icon: Code, color: "text-blue-400" },
+    { name: 'TypeScript', description: 'Para un código más seguro, mantenible y escalable, reduciendo errores en producción.', icon: Code, color: "text-blue-400" },
+    { name: 'Prisma', description: 'Como ORM de nueva generación, simplifica y asegura las interacciones con la base de datos.', icon: Database, color: "text-emerald-400" },
+    { name: 'Tailwind CSS', description: 'Nos permite construir interfaces complejas y personalizadas de forma rápida y consistente.', icon: Wind, color: "text-cyan-400" },
+    { name: 'ShadCN UI', description: 'Para componentes de UI accesibles, reutilizables y estéticamente agradables desde el primer día.', icon: Feather, color: "text-pink-400" },
   ];
 
   return (
@@ -41,10 +40,10 @@ export default function AboutPage() {
                   Nuestra Misión
                 </div>
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl font-headline text-foreground">
-                  Potenciando el Conocimiento, Impulsando el Crecimiento
+                  Democratizando la Formación Corporativa de Alto Nivel
                 </h1>
                 <p className="max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  NexusAlpri nació de la necesidad de una plataforma de e-learning corporativa que fuera a la vez potente y fácil de usar. Creemos que la formación continua es el motor del éxito organizacional y nuestra misión es proporcionar las herramientas para hacerlo posible.
+                  NexusAlpri nació para resolver una necesidad crítica: las empresas necesitaban una herramienta de e-learning que fuera tan potente como las soluciones empresariales, pero tan intuitiva como las aplicaciones de uso diario. Nuestra misión es simple: empoderar a cada organización para que construya una cultura de aprendizaje continuo, sin las barreras del costo o la complejidad técnica.
                 </p>
               </div>
             </div>
@@ -58,9 +57,9 @@ export default function AboutPage() {
                 <div className="inline-block rounded-lg bg-secondary text-secondary-foreground px-3 py-1 text-sm font-semibold">
                   Tecnología
                 </div>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-foreground">Construido con Herramientas Modernas</h2>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-foreground">Ingeniería para la Excelencia</h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Utilizamos un stack tecnológico de vanguardia para asegurar una experiencia de usuario rápida, segura y escalable.
+                  Hemos seleccionado cuidadosamente un stack tecnológico moderno y robusto, enfocado en ofrecer una experiencia de usuario rápida, segura y preparada para el futuro.
                 </p>
               </div>
             </div>
