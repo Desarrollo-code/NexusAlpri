@@ -61,12 +61,12 @@ export default function LandingPage() {
   const benefitsImageUrl = settings?.benefitsImageUrl || "https://placehold.co/600x400/38bdf8/ffffff?text=Beneficios";
 
   return (
-      <div className="container flex-1 z-10 w-full text-slate-900">
+      <div className="container flex-1 z-10 w-full">
         <section className="w-full">
             <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-4">
-                  <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline">
+                  <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline text-slate-900">
                     La Plataforma E-learning que Impulsa tu Talento Corporativo
                   </h1>
                   <p className="max-w-[600px] text-slate-900/70 md:text-xl">
@@ -100,13 +100,13 @@ export default function LandingPage() {
             </div>
         </section>
         
-        <section className="w-full bg-transparent py-12 md:py-16 mt-12 md:mt-16">
+        <section className="w-full bg-transparent py-8 md:py-12 mt-8 md:mt-12">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
                         <div className="inline-block rounded-lg bg-white/20 text-slate-900/80 px-3 py-1 text-sm font-semibold border border-white/30">
                             Capacidades
                         </div>
-                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Una Solución Integral de Formación</h2>
+                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900">Una Solución Integral de Formación</h2>
                         <p className="max-w-[900px] text-slate-900/70 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                             Desde la creación de contenido interactivo hasta el análisis detallado del rendimiento, NexusAlpri te ofrece todo lo necesario para un ciclo de aprendizaje completo.
                         </p>
@@ -124,7 +124,7 @@ export default function LandingPage() {
                          <div className="w-full h-12 mb-4 bg-black rounded-lg flex items-center justify-center">
                             <Icon className="w-8 h-8 text-white"/>
                          </div>
-                         <h3 className="text-xl font-bold font-headline mb-2">{feature.title}</h3>
+                         <h3 className="text-xl font-bold font-headline mb-2 text-slate-900">{feature.title}</h3>
                          <p className="text-sm text-slate-900/80">{feature.description}</p>
                        </div>
                      </div>
@@ -132,7 +132,7 @@ export default function LandingPage() {
                 </div>
         </section>
 
-        <section className="w-full py-12 md:py-16">
+        <section className="w-full py-8 md:py-12">
             <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
                      <div className="mx-auto aspect-video overflow-hidden rounded-xl w-full relative shadow-lg">
                         <Image
@@ -153,7 +153,7 @@ export default function LandingPage() {
                                 <Icon className="w-6 h-6" />
                               </div>
                               <div className="flex-grow">
-                                  <h3 className="text-xl font-bold">{benefit.title}</h3>
+                                  <h3 className="text-xl font-bold text-slate-900">{benefit.title}</h3>
                                   <p className="text-slate-900/70">{benefit.description}</p>
                               </div>
                             </div>
@@ -163,8 +163,8 @@ export default function LandingPage() {
                 </div>
         </section>
         
-         <section className="w-full text-center py-12 md:py-16">
-                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">¿Listo para Iniciar?</h2>
+         <section className="w-full text-center py-8 md:py-12">
+                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900">¿Listo para Iniciar?</h2>
                  <p className="max-w-2xl mx-auto mt-4 text-slate-900/70 md:text-xl">
                     Únete a las empresas que ya están revolucionando su forma de capacitar. Comienza gratis hoy mismo.
                  </p>

@@ -47,7 +47,7 @@ export default function AboutPage() {
             </div>
         </section>
 
-        <section className="w-full py-12 md:py-16 mt-12 md:mt-16 bg-transparent">
+        <section className="w-full py-8 md:py-12 mt-8 md:mt-12 bg-transparent">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <div className="inline-block rounded-lg bg-background/20 text-slate-900/80 px-3 py-1 text-sm font-semibold border border-border/30">
