@@ -36,13 +36,13 @@ export default function AboutPage() {
                 />
               </div>
               <div className="space-y-4 order-last lg:order-first">
-                <div className="inline-block rounded-lg bg-background/20 text-slate-100/80 px-3 py-1 text-sm font-semibold border border-border/30">
+                <div className="inline-block rounded-lg bg-background/20 text-slate-800/80 px-3 py-1 text-sm font-semibold border border-border/30">
                   Nuestra Misión
                 </div>
-                <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl font-headline text-slate-100">
+                <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl font-headline text-slate-900">
                   Democratizar la Formación Corporativa de Alto Nivel
                 </h1>
-                <p className="max-w-[600px] text-slate-100/70 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                <p className="max-w-[600px] text-slate-900/70 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                   NexusAlpri nació para resolver una necesidad crítica: las empresas necesitaban una herramienta de e-learning que fuera tan potente como las soluciones empresariales, pero tan intuitiva como las aplicaciones de uso diario. Nuestra misión es simple: empoderar a cada organización para que construya una cultura de aprendizaje continuo, sin las barreras del costo o la complejidad técnica.
                 </p>
               </div>
@@ -54,11 +54,11 @@ export default function AboutPage() {
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
-                <div className="inline-block rounded-lg bg-background/20 text-slate-100/80 px-3 py-1 text-sm font-semibold border border-border/30">
+                <div className="inline-block rounded-lg bg-background/20 text-slate-800/80 px-3 py-1 text-sm font-semibold border border-border/30">
                   Tecnología
                 </div>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-100">Ingeniería para la Excelencia</h2>
-                <p className="max-w-[900px] text-slate-100/70 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900">Ingeniería para la Excelencia</h2>
+                <p className="max-w-[900px] text-slate-900/70 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                   Hemos seleccionado cuidadosamente un stack tecnológico moderno y robusto, enfocado en ofrecer una experiencia de usuario rápida, segura y preparada para el futuro.
                 </p>
               </div>
@@ -83,10 +83,10 @@ export default function AboutPage() {
                     />
                    <div className="relative z-10 flex flex-col items-start justify-start h-full">
                      <div className="mb-4 bg-black p-3 rounded-lg border border-border/10 flex items-center justify-center">
-                        <GradientIcon icon={tech.icon} size="xl" />
+                        <GradientIcon icon={tech.icon} size="xl" className="w-full h-full flex items-center justify-center" />
                      </div>
-                     <h3 className="text-xl font-bold font-headline mb-2">{tech.name}</h3>
-                     <p className="text-sm text-slate-300">{tech.description}</p>
+                     <h3 className="text-xl font-bold font-headline mb-2 text-slate-900">{tech.name}</h3>
+                     <p className="text-sm text-slate-800/70">{tech.description}</p>
                    </div>
                  </div>
               ))}
