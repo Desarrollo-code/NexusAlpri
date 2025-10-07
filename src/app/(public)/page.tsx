@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Layers3, UserCog, Feather, Shield, ArrowRight, GraduationCap, Users } from 'lucide-react';
+import { Layers3, UserCog, Feather, ArrowRight, GraduationCap, Users, Shield } from 'lucide-react';
 import React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { GradientIcon } from '@/components/ui/gradient-icon';
@@ -26,7 +26,7 @@ const features = [
     description: 'Obtén métricas claras sobre el avance de tus equipos para tomar decisiones basadas en datos.',
   },
   {
-    icon: IconUsersRound,
+    icon: Users,
     title: 'Gestión de Usuarios',
     description: 'Define roles (Admin, Instructor, Estudiante) para administrar el acceso de forma segura y ordenada.',
   },
@@ -144,8 +144,8 @@ export default function LandingPage() {
                           }}
                         />
                        <div className="relative z-10 flex flex-col items-start justify-start h-full">
-                         <div className="mb-4 bg-black p-3 rounded-lg border border-border/10 flex items-center justify-center">
-                            <GradientIcon icon={feature.icon} size="xl" className="w-full h-full flex items-center justify-center" />
+                         <div className="w-full h-32 mb-4 bg-black rounded-lg flex items-center justify-center">
+                            <GradientIcon icon={feature.icon} className="w-16 h-16" />
                          </div>
                          <h3 className="text-xl font-bold font-headline mb-2">{feature.title}</h3>
                          <p className="text-sm text-slate-900/80">{feature.description}</p>
