@@ -5,11 +5,11 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Layers3, BarChart3, ShieldCheck, Zap, UserCog } from 'lucide-react';
+import { Layers3, UserCog } from 'lucide-react';
 import React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { GradientIcon } from '@/components/ui/gradient-icon';
-import { IconBookOpen, IconGraduationCap, IconUsersRound } from '@/components/icons';
+import { IconBookOpen, IconGraduationCap, IconUsersRound, IconBarChart3, IconShieldCheck, IconZap } from '@/components/icons';
 import { ArrowRight } from 'lucide-react';
 
 
@@ -20,7 +20,7 @@ const features = [
     description: 'Crea cursos con un editor visual, combinando videos, quizzes y documentos sin esfuerzo.',
   },
   {
-    icon: BarChart3,
+    icon: IconBarChart3,
     title: 'Analíticas de Progreso',
     description: 'Obtén métricas claras sobre el avance de tus equipos para tomar decisiones basadas en datos.',
   },
@@ -30,12 +30,12 @@ const features = [
     description: 'Define roles (Admin, Instructor, Estudiante) para administrar el acceso de forma segura y ordenada.',
   },
   {
-    icon: ShieldCheck,
+    icon: IconShieldCheck,
     title: 'Seguridad Corporativa',
     description: 'Implementa políticas de contraseña, 2FA y audita la actividad para proteger la información de tu empresa.',
   },
    {
-    icon: Zap,
+    icon: IconZap,
     title: 'Experiencia Fluida',
     description: 'Una interfaz rápida, intuitiva y optimizada para cualquier dispositivo, diseñada para aprender sin fricciones.',
   },
@@ -129,15 +129,21 @@ export default function LandingPage() {
                      <div 
                         key={feature.title}
                         className="group relative rounded-2xl p-6 text-left h-full transition-all duration-300 overflow-hidden bg-background/20 backdrop-blur-sm shadow-lg hover:shadow-primary/20 hover:-translate-y-2 border border-border/30"
+                        style={{'--x': '50%', '--y': '50%'} as React.CSSProperties}
                         onMouseMove={(e) => {
                             const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                             e.currentTarget.style.setProperty('--x', `${e.clientX - rect.left}px`);
                             e.currentTarget.style.setProperty('--y', `${e.clientY - rect.top}px`);
                         }}
                       >
-                       <div className="absolute inset-0 pointer-events-none -z-10 before:absolute before:left-1/2 before:top-1/2 before:h-48 before:w-48 before:-translate-x-1/2 before:-translate-y-1/2 before:rounded-full before:bg-primary/50 before:opacity-0 before:blur-3xl before:transition-opacity before:duration-500 group-hover:before:opacity-20" />
+                       <div 
+                          className="absolute inset-0 pointer-events-none -z-10"
+                          style={{
+                            background: `radial-gradient(400px circle at var(--x) var(--y), hsl(var(--primary) / 0.15), transparent 80%)`,
+                          }}
+                        />
                        <div className="relative z-10 flex flex-col items-start justify-start h-full">
-                         <div className="mb-4 bg-gradient-to-br from-primary/20 to-accent/20 p-3 rounded-lg border border-border/30">
+                         <div className="mb-4 bg-black/30 p-3 rounded-lg border border-border/10">
                             <GradientIcon icon={feature.icon} size="xl" />
                          </div>
                          <h3 className="text-xl font-bold font-headline mb-2">{feature.title}</h3>
