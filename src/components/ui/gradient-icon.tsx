@@ -30,7 +30,7 @@ export const GradientIcon = ({
 
   return (
     <svg 
-        className={cn(sizeClasses[size], "shrink-0", className)}
+        className={cn("w-full h-full flex items-center justify-center", sizeClasses[size], className)}
         fill="none" 
         strokeWidth="2"
         viewBox="0 0 24 24"
