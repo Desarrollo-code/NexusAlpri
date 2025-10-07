@@ -9,7 +9,11 @@ import { Layers3, UserCog, Feather, Shield, ArrowRight } from 'lucide-react';
 import React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { GradientIcon } from '@/components/ui/gradient-icon';
-import { IconBookOpen, IconGraduationCap, IconUsersRound, IconBarChart3 } from '@/components/icons';
+import { IconGraduationCap } from '@/components/icons/icon-graduation-cap';
+import { IconUsersRound } from '@/components/icons/icon-users-round';
+import { IconUserCog } from '@/components/icons/icon-user-cog';
+import { IconBookOpen } from '@/components/icons';
+import { IconBarChart3 } from '@/components/icons';
 
 
 const features = [
@@ -52,7 +56,7 @@ const benefits = [
     description: 'Aprende a tu ritmo, sigue tu progreso y obtén certificados.',
   },
   {
-    icon: UserCog,
+    icon: IconUserCog,
     title: 'Para Instructores',
     description: 'Crea contenido interactivo y analiza el rendimiento de tus alumnos.',
   },
@@ -168,15 +172,20 @@ export default function LandingPage() {
                         />
                      </div>
                     <div className="space-y-8">
-                       {benefits.map((benefit, i) => (
-                          <div key={benefit.title} className="flex items-start gap-4">
-                            <GradientIcon icon={benefit.icon} size="xl" />
-                            <div className="flex-grow">
-                                <h3 className="text-xl font-bold">{benefit.title}</h3>
-                                <p className="text-slate-100/70">{benefit.description}</p>
+                       {benefits.map((benefit, i) => {
+                          const Icon = benefit.icon;
+                          return (
+                            <div key={benefit.title} className="flex items-start gap-4">
+                              <div className="w-12 h-12 flex-shrink-0">
+                                <Icon className="w-full h-full" />
+                              </div>
+                              <div className="flex-grow">
+                                  <h3 className="text-xl font-bold">{benefit.title}</h3>
+                                  <p className="text-slate-100/70">{benefit.description}</p>
+                              </div>
                             </div>
-                          </div>
-                       ))}
+                          )
+                       })}
                     </div>
                 </div>
             </div>
