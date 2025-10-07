@@ -9,20 +9,11 @@ import { Layers3, ArrowUp, UserCog, Feather, ArrowRight, GraduationCap, Users, B
 import React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 
-const IconCommunity = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
-        <path d="M12 14c-2.76 0-5 2.24-5 5h10c0-2.76-2.24-5-5-5zm7.5-3.5c0-1.93-1.57-3.5-3.5-3.5s-3.5 1.57-3.5 3.5 1.57 3.5 3.5 3.5 3.5-1.57 3.5-3.5z"/>
-        <path fillRule="evenodd" clipRule="evenodd" d="M14.5 7.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
-        <path d="M4.5 10.5c1.93 0 3.5-1.57 3.5-3.5S6.43 3.5 4.5 3.5 1 5.07 1 7s1.57 3.5 3.5 3.5z" />
-    </svg>
-);
-
-
 const features = [
   {
     icon: (props: any) => (
         <div className="w-16 h-16 rounded-full bg-black flex items-center justify-center">
-            <Layers3 {...props} className="h-8 w-8 text-white"/>
+            <Layers3 {...props} className="h-10 w-10 text-white"/>
         </div>
     ),
     title: 'Contenido Centralizado',
@@ -31,7 +22,7 @@ const features = [
   {
     icon: (props: any) => (
         <div className="w-16 h-16 rounded-full bg-blue-200 flex items-center justify-center">
-            <ArrowUp {...props} className="h-8 w-8 text-blue-800"/>
+            <ArrowUp {...props} className="h-10 w-10 text-blue-800" strokeWidth={3}/>
         </div>
     ),
     title: 'Seguimiento Detallado',
@@ -40,7 +31,7 @@ const features = [
   {
     icon: (props: any) => (
         <div className="w-16 h-16 rounded-full bg-green-400 flex items-center justify-center">
-            <IconCommunity {...props} className="h-8 w-8 text-green-900" />
+            <Users {...props} className="h-10 w-10 text-green-900" />
         </div>
     ),
     title: 'Comunidad Interactiva',
