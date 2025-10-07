@@ -65,17 +65,30 @@ export default function AboutPage() {
             </div>
             <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 md:gap-12 lg:grid-cols-3 lg:max-w-none mt-12">
               {techStack.map((tech) => (
-                <Card key={tech.name} className="bg-background/20 border-border/30 hover:border-primary/50 transition-colors shadow-lg hover:shadow-primary/20">
-                  <CardHeader className="flex flex-row items-center gap-4">
-                     <div className="bg-gradient-to-br from-primary/20 to-accent/20 p-3 rounded-lg border border-border/30">
-                        <GradientIcon icon={tech.icon} size="lg" className={tech.color} />
-                    </div>
-                    <CardTitle className="text-foreground">{tech.name}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-foreground/70">{tech.description}</p>
-                  </CardContent>
-                </Card>
+                 <div 
+                    key={tech.name}
+                    className="group relative rounded-2xl p-6 text-left h-full transition-all duration-300 overflow-hidden bg-background/20 backdrop-blur-sm shadow-lg hover:shadow-primary/20 hover:-translate-y-2 border border-white/30"
+                    style={{'--x': '50%', '--y': '50%'} as React.CSSProperties}
+                    onMouseMove={(e) => {
+                        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                        e.currentTarget.style.setProperty('--x', `${e.clientX - rect.left}px`);
+                        e.currentTarget.style.setProperty('--y', `${e.clientY - rect.top}px`);
+                    }}
+                  >
+                   <div 
+                      className="absolute inset-0 pointer-events-none -z-10"
+                      style={{
+                        background: `radial-gradient(400px circle at var(--x) var(--y), hsl(var(--primary) / 0.15), transparent 80%)`,
+                      }}
+                    />
+                   <div className="relative z-10 flex flex-col items-start justify-start h-full">
+                     <div className="mb-4 bg-black p-3 rounded-lg border border-border/10 flex items-center justify-center">
+                        <GradientIcon icon={tech.icon} size="xl" />
+                     </div>
+                     <h3 className="text-xl font-bold font-headline mb-2">{tech.name}</h3>
+                     <p className="text-sm text-slate-800/70">{tech.description}</p>
+                   </div>
+                 </div>
               ))}
             </div>
           </div>
