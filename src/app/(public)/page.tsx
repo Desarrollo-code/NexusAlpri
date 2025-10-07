@@ -1,3 +1,4 @@
+
 // src/app/(public)/page.tsx
 'use client'; 
 
@@ -5,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Layers3, UserCog, Feather, ArrowRight, GraduationCap, Users, Shield } from 'lucide-react';
+import { Layers3, UserCog, Feather, ArrowRight, GraduationCap, Users, Shield, BarChart3, BookOpen } from 'lucide-react';
 import React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { GradientIcon } from '@/components/ui/gradient-icon';
