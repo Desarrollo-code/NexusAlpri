@@ -2,7 +2,7 @@
 'use client'; 
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Database, Code, Wind, Feather } from 'lucide-react';
+import { Database, Code, Wind, Feather, Type } from 'lucide-react';
 import Image from 'next/image';
 import React from 'react';
 import { useAuth } from '@/contexts/auth-context';
@@ -14,7 +14,7 @@ export default function AboutPage() {
 
   const techStack = [
     { name: 'Next.js', description: 'Para un rendimiento excepcional y una experiencia de usuario fluida gracias a su arquitectura híbrida.', icon: Code, color: "text-blue-500" },
-    { name: 'TypeScript', description: 'Para un código más seguro, mantenible y escalable, reduciendo errores en producción.', icon: Code, color: "text-blue-500" },
+    { name: 'TypeScript', description: 'Para un código más seguro, mantenible y escalable, reduciendo errores en producción.', icon: Type, color: "text-blue-500" },
     { name: 'Prisma', description: 'Como ORM de nueva generación, simplifica y asegura las interacciones con la base de datos.', icon: Database, color: "text-emerald-500" },
     { name: 'Tailwind CSS', description: 'Nos permite construir interfaces complejas y personalizadas de forma rápida y consistente.', icon: Wind, color: "text-cyan-500" },
     { name: 'ShadCN UI', description: 'Para componentes de UI accesibles, reutilizables y estéticamente agradables desde el primer día.', icon: Feather, color: "text-pink-500" },
