@@ -24,7 +24,7 @@ export default function PublicLayout({
         
         {user ? <AuthenticatedPublicHeader /> : <PublicTopBar />}
         
-        <main className="flex-1 flex flex-col items-center justify-center w-full pt-24 md:pt-28 pb-16 md:pb-8">
+        <main className="flex-1 flex flex-col items-center justify-center w-full pt-24 md:pt-28 pb-16 md:pb-8 px-4">
             {isLoading ? <ColorfulLoader /> : children}
         </main>
         
