@@ -23,11 +23,11 @@ export function PublicTopBar() {
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-white/30 backdrop-blur-sm border-b border-white/20">
+    <header className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-sm border-b">
       <div className="container mx-auto flex items-center justify-between px-4 lg:px-6 h-20">
         <div className="flex items-center justify-start flex-1">
           <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
-            <div className={cn("w-12 h-12 flex items-center justify-center flex-shrink-0 rounded-lg relative overflow-hidden bg-white/50")}>
+            <div className={cn("w-12 h-12 flex items-center justify-center flex-shrink-0 rounded-lg relative overflow-hidden bg-muted")}>
               {settings?.logoUrl ? (
                   <div className="relative w-full h-full">
                       <Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" quality={100} className="object-contain p-1" />
@@ -36,22 +36,22 @@ export function PublicTopBar() {
                   <div className="w-full h-full rounded-md bg-muted" />
               )}
             </div>
-            <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-slate-900">
+            <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-foreground">
               {settings?.platformName || 'NexusAlpri'}
             </span>
           </Link>
         </div>
         
         <nav className="hidden md:flex items-center justify-center flex-1">
-          <div className="flex items-center gap-1 bg-white/20 backdrop-blur-sm p-1 rounded-full shadow-sm border border-white/30">
+          <div className="flex items-center gap-1 bg-muted/50 backdrop-blur-sm p-1 rounded-full shadow-sm border">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <Button key={item.href} variant="ghost" asChild className={cn(
-                    "transition-colors rounded-full h-9 text-slate-800/80 hover:text-slate-900",
+                    "transition-colors rounded-full h-9",
                     isActive 
-                      ? "bg-white/50 text-slate-900 font-semibold shadow" 
-                      : "hover:bg-white/30"
+                      ? "bg-background text-foreground font-semibold shadow" 
+                      : "hover:bg-background/50"
                 )}>
                     <Link href={item.href}>
                         {item.label}
