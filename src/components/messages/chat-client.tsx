@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Send, ArrowLeft, Search, PlusCircle, UserPlus, Info } from 'lucide-react';
+import { Loader2, Send, ArrowLeft, Search, PlusCircle, UserPlus, Info, MessageSquare } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
