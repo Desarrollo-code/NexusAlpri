@@ -128,7 +128,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
             <form onSubmit={handleSignInSubmit} className="space-y-4">
                  <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} className="pl-10 h-12 bg-background/50" autoComplete="email"/>
+                    <Input type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} className="pl-10 h-12 bg-background" autoComplete="email"/>
                 </div>
                  <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -139,7 +139,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                         value={password} 
                         onChange={e => setPassword(e.target.value)} 
                         disabled={isLoading}
-                        className="pl-10 h-12 bg-background/50"
+                        className="pl-10 h-12 bg-background"
                         autoComplete="current-password"
                     />
                      <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => setShowPassword(!showPassword)}>
@@ -158,11 +158,11 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
             <form onSubmit={handleSignUpSubmit} className="space-y-4">
                 <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input type="text" placeholder="Nombre" required value={name} onChange={e => setName(e.target.value)} disabled={isLoading} className="pl-10 h-12 bg-background/50" autoComplete="name" />
+                    <Input type="text" placeholder="Nombre" required value={name} onChange={e => setName(e.target.value)} disabled={isLoading} className="pl-10 h-12 bg-background" autoComplete="name" />
                 </div>
                 <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} className="pl-10 h-12 bg-background/50" autoComplete="email"/>
+                    <Input type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} className="pl-10 h-12 bg-background" autoComplete="email"/>
                 </div>
                  <div className="space-y-2">
                     <div className="relative">
@@ -176,7 +176,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                             disabled={isLoading} 
                             onFocus={() => setIsPasswordFocused(true)}
                             onBlur={() => !password && setIsPasswordFocused(false)}
-                            className="pl-10 h-12 bg-background/50"
+                            className="pl-10 h-12 bg-background"
                             autoComplete="new-password"
                         />
                          <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => setShowPassword(!showPassword)}>
