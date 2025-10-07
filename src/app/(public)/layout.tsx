@@ -18,11 +18,10 @@ export default function PublicLayout({
   const { user, isLoading } = useAuth();
   
   return (
-    <div className="relative flex flex-col min-h-screen items-center antialiased bg-background text-foreground">
+    <div className="relative flex flex-col min-h-screen items-center antialiased bg-[#111827] text-white">
         
         <DecorativeHeaderBackground />
         
-        {/* Usamos el estado del usuario para decidir qué barra mostrar */}
         {user ? <AuthenticatedPublicHeader /> : <PublicTopBar />}
         
         <main className="flex-1 flex flex-col items-center justify-center w-full pt-24 md:pt-28 pb-16 md:pb-8">

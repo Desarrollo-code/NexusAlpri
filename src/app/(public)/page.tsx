@@ -82,28 +82,28 @@ export default function LandingPage() {
   ]
 
   return (
-      <div className="flex-1 z-10 w-full">
+      <div className="flex-1 z-10 w-full text-white">
         <section className="w-full">
           <div className="container px-4 md:px-6">
             <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-4">
-                  <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline text-foreground">
+                  <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline text-white">
                     La Plataforma E-learning que Impulsa tu Talento Corporativo
                   </h1>
-                  <p className="max-w-[600px] text-muted-foreground md:text-xl">
+                  <p className="max-w-[600px] text-white/70 md:text-xl">
                     Centraliza, gestiona y escala la formación de tus equipos con una herramienta potente, intuitiva y personalizable.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <Button asChild size="lg">
+                  <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-500 text-white shadow-lg">
                     <Link
                       href="/sign-up"
                     >
                       Empezar Ahora
                     </Link>
                   </Button>
-                  <Button variant="outline" asChild size="lg">
+                  <Button variant="outline" asChild size="lg" className="bg-transparent border-white/50 hover:bg-white/10 hover:text-white">
                     <Link
                       href="/about"
                     >
@@ -112,7 +112,7 @@ export default function LandingPage() {
                   </Button>
                 </div>
               </div>
-               <div className="mx-auto aspect-square overflow-hidden rounded-xl w-full relative bg-muted">
+               <div className="mx-auto aspect-square overflow-hidden rounded-xl w-full relative bg-white/10">
                 <Image
                   src={landingImageUrl}
                   alt="Hero"
@@ -127,15 +127,15 @@ export default function LandingPage() {
           </div>
         </section>
         
-        <section className="w-full bg-muted/50 py-12 md:py-16 mt-12 md:mt-16 border-y">
+        <section className="w-full bg-transparent py-12 md:py-16 mt-12 md:mt-16">
             <div className="container px-4 md:px-6">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
-                        <div className="inline-block rounded-lg bg-secondary text-secondary-foreground px-3 py-1 text-sm font-semibold">
+                        <div className="inline-block rounded-lg bg-white/10 text-white/90 px-3 py-1 text-sm font-semibold border border-white/20">
                             Capacidades
                         </div>
-                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-foreground">Una Solución Integral de Formación</h2>
-                        <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-white">Una Solución Integral de Formación</h2>
+                        <p className="max-w-[900px] text-white/70 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                             Desde la creación de contenido interactivo hasta el análisis detallado del rendimiento, NexusAlpri te ofrece todo lo necesario para un ciclo de aprendizaje completo.
                         </p>
                     </div>
@@ -144,14 +144,14 @@ export default function LandingPage() {
                    {features.map((feature) => (
                      <div 
                         key={feature.title}
-                        className="relative rounded-2xl p-6 text-left h-full transition-all duration-300 overflow-hidden bg-card shadow-sm hover:shadow-primary/20 hover:-translate-y-2 border card-border-animated"
+                        className="relative rounded-2xl p-6 text-left h-full transition-all duration-300 overflow-hidden bg-white/5 shadow-lg hover:shadow-blue-500/20 hover:-translate-y-2 border border-white/10"
                       >
                        <div className="relative z-10 flex flex-col items-start justify-start h-full">
-                         <div className="mb-4 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 p-3 rounded-lg border">
-                            <GradientIcon icon={feature.icon} size="xl" />
+                         <div className="mb-4 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 p-3 rounded-lg border border-white/10">
+                            <GradientIcon icon={feature.icon} size="xl" className="!text-white" />
                          </div>
-                         <h3 className="text-xl font-bold font-headline mb-2 text-foreground">{feature.title}</h3>
-                         <p className="text-sm text-muted-foreground">{feature.description}</p>
+                         <h3 className="text-xl font-bold font-headline mb-2 text-white">{feature.title}</h3>
+                         <p className="text-sm text-white/70">{feature.description}</p>
                        </div>
                      </div>
                    ))}
@@ -162,7 +162,7 @@ export default function LandingPage() {
         <section className="w-full py-12 md:py-16">
             <div className="container px-4 md:px-6">
                 <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
-                     <div className="mx-auto aspect-video overflow-hidden rounded-xl w-full relative shadow-lg bg-muted">
+                     <div className="mx-auto aspect-video overflow-hidden rounded-xl w-full relative shadow-lg bg-white/10 border border-white/10">
                         <Image
                             src={benefitsImageUrl}
                             alt="Benefits"
@@ -175,10 +175,10 @@ export default function LandingPage() {
                     <div className="space-y-8">
                        {benefits.map((benefit, i) => (
                           <div key={benefit.title} className="flex items-start gap-4">
-                            <GradientIcon icon={benefit.icon} size="xl" className={i === 1 ? "text-pink-400" : "text-blue-400"}/>
+                            <GradientIcon icon={benefit.icon} size="xl" className="!text-white" />
                             <div className="flex-grow">
-                                <h3 className="text-xl font-bold text-foreground">{benefit.title}</h3>
-                                <p className="text-muted-foreground">{benefit.description}</p>
+                                <h3 className="text-xl font-bold text-white">{benefit.title}</h3>
+                                <p className="text-white/70">{benefit.description}</p>
                             </div>
                           </div>
                        ))}
@@ -187,19 +187,19 @@ export default function LandingPage() {
             </div>
         </section>
         
-        <section className="w-full bg-muted/50 py-12 md:py-16 border-y">
+        <section className="w-full bg-transparent py-12 md:py-16 mt-12">
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
-                        <div className="inline-block rounded-lg bg-secondary text-secondary-foreground px-3 py-1 text-sm font-semibold">
+                        <div className="inline-block rounded-lg bg-white/10 text-white/90 px-3 py-1 text-sm font-semibold border border-white/20">
                             Testimonios
                         </div>
-                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-foreground">La Voz de Nuestros Clientes</h2>
+                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-white">La Voz de Nuestros Clientes</h2>
                     </div>
                 </div>
                  <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 py-12">
                     {testimonials.map((testimonial) => (
-                        <Card key={testimonial.name} className="bg-card">
+                        <Card key={testimonial.name} className="bg-white/5 border-white/10 text-white">
                            <CardContent className="pt-6">
                              <blockquote className="text-lg font-semibold leading-snug">
                                “{testimonial.testimony}”
@@ -210,7 +210,7 @@ export default function LandingPage() {
                                 <Image className="rounded-full" src={testimonial.avatar} height={40} width={40} alt={testimonial.name} data-ai-hint="portrait person" quality={100} />
                                 <div>
                                     <p className="font-semibold">{testimonial.name}</p>
-                                    <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                                    <p className="text-sm text-white/70">{testimonial.role}</p>
                                 </div>
                               </div>
                            </CardFooter>
@@ -222,11 +222,11 @@ export default function LandingPage() {
         
          <section className="w-full text-center py-12 md:py-16">
             <div className="container px-4 md:px-6">
-                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-foreground">¿Listo para Iniciar?</h2>
-                 <p className="max-w-2xl mx-auto mt-4 text-muted-foreground md:text-xl">
+                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-white">¿Listo para Iniciar?</h2>
+                 <p className="max-w-2xl mx-auto mt-4 text-white/70 md:text-xl">
                     Únete a las empresas que ya están revolucionando su forma de capacitar. Comienza gratis hoy mismo.
                  </p>
-                  <Button asChild size="lg" className="mt-8">
+                  <Button asChild size="lg" className="mt-8 bg-blue-600 hover:bg-blue-500 text-white shadow-lg">
                     <Link href="/sign-up">
                       Crear Mi Cuenta
                     </Link>

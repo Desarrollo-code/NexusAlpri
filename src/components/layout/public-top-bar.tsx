@@ -23,35 +23,35 @@ export function PublicTopBar() {
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-sm border-b">
+    <header className="fixed top-0 left-0 right-0 z-40 bg-black/30 backdrop-blur-sm border-b border-white/10">
       <div className="container mx-auto flex items-center justify-between px-4 lg:px-6 h-16">
         <div className="flex items-center justify-start flex-1">
           <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
-            <div className={cn("w-10 h-10 flex items-center justify-center flex-shrink-0 rounded-lg relative overflow-hidden")}>
+            <div className={cn("w-10 h-10 flex items-center justify-center flex-shrink-0 rounded-lg relative overflow-hidden bg-white/10")}>
               {settings?.logoUrl ? (
                   <div className="relative w-full h-full">
-                      <Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" quality={100} className="object-contain" />
+                      <Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" quality={100} className="object-contain p-1" />
                   </div>
               ) : (
                   <div className="w-full h-full rounded-md bg-muted" />
               )}
             </div>
-            <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-foreground">
+            <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-white">
               {settings?.platformName || 'NexusAlpri'}
             </span>
           </Link>
         </div>
         
         <nav className="hidden md:flex items-center justify-center flex-1">
-          <div className="flex items-center gap-1 bg-secondary/50 p-1 rounded-full shadow-sm">
+          <div className="flex items-center gap-1 bg-black/20 p-1 rounded-full shadow-sm border border-white/10">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <Button key={item.href} variant="ghost" asChild className={cn(
-                    "transition-colors rounded-full h-9",
+                    "transition-colors rounded-full h-9 text-white/80 hover:text-white",
                     isActive 
-                      ? "bg-card text-foreground font-semibold shadow" 
-                      : "text-muted-foreground hover:bg-card/50"
+                      ? "bg-white/10 text-white font-semibold shadow" 
+                      : "hover:bg-white/10"
                 )}>
                     <Link href={item.href}>
                         {item.label}
@@ -63,7 +63,7 @@ export function PublicTopBar() {
         </nav>
         
         <div className="flex items-center justify-end flex-1">
-            <Button asChild className="hidden md:flex">
+            <Button asChild className="hidden md:flex bg-blue-600 hover:bg-blue-500 text-white shadow-md">
             <Link href="/sign-in">
                 Acceder
             </Link>
