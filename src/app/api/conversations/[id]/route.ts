@@ -29,7 +29,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     });
 
     if (!conversation) {
-      return NextResponse.json({ message: 'Conversación no encontrada o no tienes acceso.' }, { status: 404 });
+      return NextResponse.json([], { status: 200 }); // Devuelve un array vacío si no se encuentra
     }
 
     const messages = await prisma.message.findMany({

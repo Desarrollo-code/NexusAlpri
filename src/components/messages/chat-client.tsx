@@ -157,11 +157,14 @@ export function ChatClient() {
 
     // Fetch messages for active conversation
     useEffect(() => {
-        if (activeConversation) {
+        if (activeConversation && !activeConversation.id.startsWith('temp-')) {
             fetch(`/api/conversations/${activeConversation.id}`)
                 .then(res => res.json())
-                .then(setMessages)
+                .then(data => setMessages(Array.isArray(data) ? data : []))
                 .catch(() => toast({ title: 'Error', description: 'No se pudieron cargar los mensajes.', variant: 'destructive'}));
+        } else if (activeConversation && activeConversation.id.startsWith('temp-')) {
+            // Es una nueva conversación, no hay mensajes que cargar.
+            setMessages([]);
         }
     }, [activeConversation, toast]);
     
@@ -198,9 +201,17 @@ export function ChatClient() {
             // Actualizar UI
             if (activeConversation && activeConversation.participants.some(p => p.id === recipientId)) {
                 setMessages(prev => [...prev, sentMessage]);
-            } else {
-                 await fetchConversations();
             }
+            
+            // Refrescar la lista de conversaciones para que la nueva o actualizada aparezca al principio
+            fetchConversations();
+            
+            // Si era una conversación temporal, la reemplazamos por la real
+            if (activeConversation?.id.startsWith('temp-')) {
+                const realConvo = await fetch(`/api/conversations`).then(res => res.json()).then(convos => convos.find((c: Conversation) => c.participants.some(p => p.id === recipientId)));
+                if (realConvo) setActiveConversation(realConvo);
+            }
+
 
         } catch (err) {
             toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
