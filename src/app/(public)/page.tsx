@@ -5,12 +5,11 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Layers3, UserCog, Feather, Shield } from 'lucide-react';
+import { Layers3, UserCog, Feather, Shield, ArrowRight } from 'lucide-react';
 import React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { GradientIcon } from '@/components/ui/gradient-icon';
 import { IconBookOpen, IconGraduationCap, IconUsersRound, IconBarChart3 } from '@/components/icons';
-import { ArrowRight } from 'lucide-react';
 
 
 const features = [
@@ -143,7 +142,7 @@ export default function LandingPage() {
                           }}
                         />
                        <div className="relative z-10 flex flex-col items-start justify-start h-full">
-                         <div className="mb-4 bg-black/30 p-3 rounded-lg border border-border/10">
+                         <div className="mb-4 bg-black p-3 rounded-lg border border-border/10 flex items-center justify-center">
                             <GradientIcon icon={feature.icon} size="xl" />
                          </div>
                          <h3 className="text-xl font-bold font-headline mb-2">{feature.title}</h3>
