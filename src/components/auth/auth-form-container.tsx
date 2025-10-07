@@ -1,3 +1,4 @@
+// src/components/auth/auth-form-container.tsx
 'use client';
 
 import React from 'react';
@@ -24,17 +25,6 @@ export default function AuthFormContainer({ children }: { children: React.ReactN
                     quality={100}
                     priority
                 />
-                {/* Contenido superpuesto si fuera necesario, como el logo */}
-                <div className="absolute top-8 left-8 z-10">
-                    {settings?.logoUrl && (
-                        // CAMBIO AQUÍ: Reemplaza bg-card/80 y elimina backdrop-blur-sm
-                        <Link href="/" className="inline-block p-3 bg-card rounded-xl">
-                            <div className="relative w-24 h-10">
-                                <Image src={settings.logoUrl} alt="Logo" fill className="object-contain"/>
-                            </div>
-                        </Link>
-                    )}
-                </div>
             </div>
             
             {/* Columna del Formulario */}
