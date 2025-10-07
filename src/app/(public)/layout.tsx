@@ -18,8 +18,12 @@ export default function PublicLayout({
   const { user, isLoading } = useAuth();
   
   return (
-    <div className="relative flex flex-col min-h-screen items-center antialiased bg-blue-300 text-slate-900">
+    <div className="relative flex flex-col min-h-screen items-center antialiased bg-[#e0f2fe] text-slate-900">
         
+        {/* Capa de fondo con la cuadrícula */}
+        <div className="grid-bg"></div>
+
+        {/* El fondo decorativo de aurora se mantiene, pero ahora está sobre la cuadrícula */}
         <DecorativeHeaderBackground />
         
         {user ? <AuthenticatedPublicHeader /> : <PublicTopBar />}
