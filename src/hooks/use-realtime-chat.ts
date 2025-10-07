@@ -26,14 +26,7 @@ export function useRealtimeChat(
       if (payload.eventType === 'INSERT') {
         const newMessageId = payload.new.id;
         
-        // El payload de realtime solo trae el ID, necesitamos obtener los detalles.
         try {
-            // Se usa una nueva llamada a la API para esto, ya que el hook está en el cliente.
-            // O podemos crear un endpoint específico para obtener un solo mensaje.
-            // Para simplicidad, por ahora asumimos que podríamos necesitar un fetch.
-            // Pero idealmente, si el payload tuviera todo, no sería necesario.
-            // Nota: Por seguridad y eficiencia, lo ideal es tener un API route para esto.
-            // Por ahora, simularemos la obtención de detalles.
             const res = await fetch(`/api/messages/${newMessageId}`);
             if(res.ok) {
                 const fullMessage: Message = await res.json();
