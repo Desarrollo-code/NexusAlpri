@@ -6,7 +6,6 @@ import { PublicTopBar } from '@/components/layout/public-top-bar';
 import { AuthenticatedPublicHeader } from '@/components/layout/authenticated-public-header';
 import { BottomNav } from '@/components/layout/bottom-nav';
 import { Footer } from '@/components/layout/footer';
-import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
 import { DecorativeHeaderBackground } from '@/components/layout/decorative-header-background';
@@ -21,11 +20,12 @@ export default function PublicLayout({
   return (
     <div className="relative flex flex-col min-h-screen items-center antialiased bg-background text-foreground">
         
+        <DecorativeHeaderBackground />
+        
         {/* Usamos el estado del usuario para decidir qué barra mostrar */}
         {user ? <AuthenticatedPublicHeader /> : <PublicTopBar />}
         
         <main className="flex-1 flex flex-col items-center justify-center w-full pt-24 md:pt-28 pb-16 md:pb-8">
-            <DecorativeHeaderBackground />
             {isLoading ? <ColorfulLoader /> : children}
         </main>
         

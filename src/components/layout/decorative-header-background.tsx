@@ -6,10 +6,28 @@ import { cn } from '@/lib/utils';
 
 export const DecorativeHeaderBackground = () => {
   return (
-    <div className="absolute inset-0 -z-10 h-full w-full bg-background overflow-hidden">
-        <div className="absolute bottom-0 left-[-20%] right-0 top-[-10%] h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle_farthest-side,rgba(var(--primary),0.15),rgba(255,255,255,0))] animate-aurora-1"></div>
-        <div className="absolute bottom-0 right-[-20%] top-[-10%] h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle_farthest-side,rgba(var(--accent),0.15),rgba(255,255,255,0))] animate-aurora-2"></div>
-        <div className="absolute bottom-0 left-[20%] top-[10%] h-[400px] w-[400px] rounded-full bg-[radial-gradient(circle_farthest-side,rgba(var(--primary),0.1),rgba(255,255,255,0))] animate-aurora-3"></div>
+    <div
+      className="absolute inset-0 -z-10 overflow-hidden bg-background"
+      aria-hidden="true"
+    >
+      <div className="absolute inset-0">
+        {/* Curva 1 - La más grande y de fondo */}
+        <div
+          className="absolute bottom-[-40%] left-[-20%] h-[100%] w-[140%] rounded-[50%] bg-primary/5 blur-3xl"
+        />
+        {/* Curva 2 */}
+        <div
+          className="absolute bottom-[-30%] right-[-30%] h-[80%] w-[120%] rounded-[50%] bg-primary/10 blur-3xl"
+        />
+        {/* Curva 3 - Superior */}
+        <div
+          className="absolute top-[-50%] left-[10%] h-[100%] w-[80%] rounded-[50%] bg-accent/5 blur-2xl"
+        />
+         {/* Curva 4 - Más sutil */}
+        <div
+          className="absolute bottom-[-20%] left-[20%] h-[60%] w-[60%] rounded-[50%] bg-primary/5 blur-3xl"
+        />
+      </div>
     </div>
   );
 };
