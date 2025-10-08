@@ -5,18 +5,17 @@ import * as React from "react";
 import { useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronsLeft, ChevronDown, LogOut } from "lucide-react";
+import { ChevronDown, LogOut } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/auth-context";
 import { getNavItemsForRole } from "@/lib/nav-items";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { GradientIcon } from "./gradient-icon";
 import type { NavItem } from '@/types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./accordion";
-import { UserAvatarDropdown } from "../layout/user-avatar-dropdown";
-import { ThemeProvider, useTheme } from "next-themes";
+import { SidebarHeader } from "../layout/sidebar-header";
+import { useTheme } from "next-themes";
 import { Switch } from "./switch";
 import { Label } from "./label";
 
@@ -91,7 +90,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       <aside
         className={cn(
           "fixed top-0 left-0 z-50 h-screen flex flex-col transition-all duration-300 ease-in-out shadow-xl",
-          "bg-sidebar-background border-r border-sidebar-border/50",
+          "bg-sidebar-background border-r border-sidebar-border",
           isMobile ? `w-72 ${mobileClasses}` : desktopClasses
         )}
       >
@@ -154,13 +153,14 @@ export const SidebarContent = () => {
 
 const SidebarSectionHeader = ({ item }: { item: NavItem }) => {
     const { isCollapsed } = useSidebar();
+    const Icon = item.icon;
     
     if (isCollapsed) {
         return (
             <Tooltip>
                 <TooltipTrigger asChild>
                     <div className="flex justify-center items-center h-12 w-12 rounded-lg">
-                        <GradientIcon icon={item.icon} isActive={false} />
+                        <Icon className="w-5 h-5 text-sidebar-muted-foreground" />
                     </div>
                 </TooltipTrigger>
                 <TooltipContent side="right" align="center" sideOffset={10}>
@@ -173,7 +173,7 @@ const SidebarSectionHeader = ({ item }: { item: NavItem }) => {
     return (
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center gap-3">
-          <GradientIcon icon={item.icon} isActive={false} />
+          <Icon className="w-5 h-5 text-sidebar-muted-foreground" />
           <span className="text-base font-semibold text-sidebar-muted-foreground whitespace-nowrap">{item.label}</span>
         </div>
         <ChevronDown className="h-4 w-4 shrink-0 text-sidebar-muted-foreground transition-transform duration-200" />
@@ -184,7 +184,8 @@ const SidebarSectionHeader = ({ item }: { item: NavItem }) => {
 
 const SidebarMenuItem = ({ item }: { item: NavItem }) => {
   const { activeItem, isCollapsed, isMobile } = useSidebar();
-
+  const Icon = item.icon;
+  
   const isActive = useMemo(() => {
     if (!activeItem || !item.path) return false;
     if (item.path === '/dashboard') return activeItem === item.path;
@@ -195,13 +196,13 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
   
   const content = (
       <div className={cn(
-        "flex items-center gap-3 py-3 rounded-lg transition-all duration-300 font-medium group/menu-item relative",
-        isCollapsed && !isMobile ? "justify-center px-0" : "px-4",
+        "flex items-center gap-3 rounded-md transition-all duration-300 font-medium group/menu-item relative",
+        isCollapsed && !isMobile ? "justify-center h-12 w-12" : "p-3",
         isActive
-          ? "bg-primary text-primary-foreground shadow"
+          ? "bg-sidebar-accent text-sidebar-accent-foreground shadow"
           : "text-sidebar-muted-foreground hover:bg-white/5 hover:text-sidebar-foreground"
       )}>
-        <GradientIcon icon={item.icon} isActive={isActive} />
+        <Icon className="w-5 h-5" />
         {showText && <span className="whitespace-nowrap">{item.label}</span>}
       </div>
   );
@@ -230,15 +231,26 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
 export const SidebarFooter = () => {
     const { logout } = useAuth();
     const { isCollapsed } = useSidebar();
+    const { theme, setTheme } = useTheme();
 
     return (
-        <div className="p-3 border-t border-sidebar-border/50">
+        <div className="p-3 border-t border-sidebar-border flex flex-col gap-2">
+            {!isCollapsed && (
+                <div className="flex items-center justify-between p-2 rounded-md">
+                    <Label htmlFor="dark-mode-toggle" className="text-sidebar-muted-foreground">Modo Oscuro</Label>
+                    <Switch 
+                        id="dark-mode-toggle"
+                        checked={theme === 'dark'}
+                        onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+                    />
+                </div>
+            )}
              <Button
                 onClick={logout}
                 variant="ghost"
                 className={cn(
                     "w-full text-sidebar-muted-foreground hover:bg-red-500/20 hover:text-red-400",
-                    isCollapsed ? 'justify-center px-0' : 'justify-start gap-3 px-4'
+                    isCollapsed ? 'justify-center p-0 h-10' : 'justify-start gap-3 p-3'
                 )}
             >
                 <LogOut className="h-5 w-5" />

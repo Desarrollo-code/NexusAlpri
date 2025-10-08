@@ -39,13 +39,13 @@
     --event-red: 0 80% 60%;
     --event-orange: 25 90% 60%;
 
-    /* Sidebar */
-    --sidebar-background: 220 40% 5%; 
-    --sidebar-foreground: 45 80% 70%;
-    --sidebar-muted-foreground: 45 50% 55%;
+    /* Sidebar - Light Theme */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 15% 25%;
+    --sidebar-muted-foreground: 220 10% 45%;
     --sidebar-accent: hsl(var(--primary));
     --sidebar-accent-foreground: hsl(var(--primary-foreground));
-    --sidebar-border: 220 40% 10%;
+    --sidebar-border: 220 10% 92%;
   }
  
   .dark {
@@ -76,6 +76,14 @@
     --chart-3: 336 75% 65%; /* fuchsia */
     --chart-4: 36 85% 60%;  /* amber */
     --chart-5: 262 80% 70%; /* violet */
+    
+    /* Sidebar - Dark Theme */
+    --sidebar-background: 220 15% 12%;
+    --sidebar-foreground: 220 10% 95%;
+    --sidebar-muted-foreground: 220 10% 70%;
+    --sidebar-accent: hsl(var(--primary));
+    --sidebar-accent-foreground: hsl(var(--primary-foreground));
+    --sidebar-border: 220 15% 18%;
   }
 }
  
