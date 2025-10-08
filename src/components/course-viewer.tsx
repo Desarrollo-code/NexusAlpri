@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 'use client';
 
@@ -323,7 +324,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
           setCourseProgress(finalProgressData);
           toast({ 
             title: "¡Curso Finalizado!", 
-            description: finalProgressData.message, // Usar el mensaje de la API
+            description: finalProgressData.message,
             duration: 5000,
           });
       } catch (error) {
@@ -485,8 +486,8 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         if (isPdfUrl(url)) {
              return (
                 <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md" style={{ height: '80vh', minHeight: '600px' }}>
-                    <Worker workerUrl="/pdf.worker.min.js">
-                        <Viewer fileUrl={`/api/resources/preview?url=${encodeURIComponent(url)}`} plugins={[defaultLayoutPluginInstance]} />
+                    <Worker workerUrl={'/pdf.worker.min.js'}>
+                        <Viewer fileUrl={url} plugins={[defaultLayoutPluginInstance]} />
                     </Worker>
                 </div>
             );

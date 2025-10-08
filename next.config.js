@@ -1,4 +1,5 @@
 
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: {
@@ -6,6 +7,13 @@ const nextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: true,
+  },
+  webpack: (config, { isServer }) => {
+    // This is to make pdf.js work with Next.js
+    if (!isServer) {
+      config.resolve.alias['pdfjs-dist'] = 'pdfjs-dist/build/pdf';
+    }
+    return config;
   },
   images: {
     remotePatterns: [
@@ -43,7 +51,8 @@ const nextConfig = {
         pathname: '/storage/v1/object/public/resource_library/**',
       },
       {
-        protocol: 'https',
+        protocol: 'https'
+        ,
         hostname: 'izefimwyuayfvektsstg.supabase.co',
         pathname: '/storage/v1/object/public/announcement_attachments/**',
       },
