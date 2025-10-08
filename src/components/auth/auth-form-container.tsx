@@ -13,7 +13,7 @@ export default function AuthFormContainer({ children }: { children: React.ReactN
     const authImageUrl = settings?.authImageUrl || "https://placehold.co/800x1200/1e232c/ffffff?text=NexusAlpri&font=sans";
 
     return (
-        <div className="rounded-2xl shadow-2xl overflow-hidden w-full max-w-4xl mx-auto md:grid md:grid-cols-2 bg-card">
+        <div className="rounded-2xl shadow-2xl overflow-hidden w-full max-w-4xl mx-auto md:grid md:grid-cols-2">
             {/* Columna de la Imagen */}
             <div className="hidden md:block relative min-h-[480px]">
                 <Image 
@@ -28,7 +28,7 @@ export default function AuthFormContainer({ children }: { children: React.ReactN
             </div>
             
             {/* Columna del Formulario */}
-            <div className="w-full p-6 sm:p-10 flex flex-col justify-center">
+            <div className="w-full p-6 sm:p-10 flex flex-col justify-center bg-card">
                 {children}
             </div>
         </div>
