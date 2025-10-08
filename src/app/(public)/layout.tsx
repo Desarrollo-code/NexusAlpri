@@ -9,6 +9,7 @@ import { Footer } from '@/components/layout/footer';
 import { useAuth } from '@/contexts/auth-context';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
 import { DecorativeHeaderBackground } from '@/components/layout/decorative-header-background';
+import { usePathname } from 'next/navigation';
 
 export default function PublicLayout({
   children,
@@ -16,14 +17,17 @@ export default function PublicLayout({
   children: React.ReactNode;
 }) {
   const { user, isLoading } = useAuth();
+  const pathname = usePathname();
+
+  // Ocultar la cuadrícula en las páginas de autenticación
+  const showGrid = !pathname.startsWith('/sign-in') && !pathname.startsWith('/sign-up');
   
   return (
     <div className="relative flex flex-col min-h-screen items-center antialiased bg-background text-slate-900">
         
-        {/* Capa de fondo con la cuadrícula */}
-        <div className="grid-bg"></div>
+        {/* La cuadrícula solo se renderiza si no estamos en las páginas de acceso */}
+        {showGrid && <div className="grid-bg"></div>}
 
-        {/* El fondo decorativo de aurora se mantiene, pero ahora está sobre la cuadrícula */}
         <DecorativeHeaderBackground />
         
         {user ? <AuthenticatedPublicHeader /> : <PublicTopBar />}
