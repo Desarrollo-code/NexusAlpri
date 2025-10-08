@@ -24,9 +24,9 @@ export const SidebarHeader = () => {
           isCollapsed && "justify-center"
       )}>
          <div className={cn(
-             "flex items-center justify-center flex-shrink-0 rounded-lg relative overflow-hidden",
+             "bg-gradient-to-br from-primary/80 to-accent/80 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg relative overflow-hidden",
              isCollapsed ? "h-10 w-10" : "h-12 w-12",
-             "bg-[hsl(170,80%,40%)]/20" // Fondo aguamarina sin degradado
+             !settings?.logoUrl && "p-2"
          )}>
             {settings?.logoUrl ? 
               <div className="relative w-full h-full">
