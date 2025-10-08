@@ -15,17 +15,18 @@ export const SidebarHeader = () => {
   
   return (
     <div className={cn(
-      "flex items-center h-20 border-b border-sidebar-border/50", 
-      isCollapsed ? 'justify-center' : 'justify-between px-4'
+      "flex items-center h-20 border-b", 
+      isCollapsed ? 'justify-center' : 'justify-between px-4',
+      "bg-[#1E232C] border-slate-700" // Fondo oscuro y borde consistentes
     )}>
       <Link href="/dashboard" className={cn(
           "inline-flex items-center gap-3",
           isCollapsed && "justify-center"
       )}>
          <div className={cn(
-             "bg-gradient-to-br from-primary/80 to-accent/80 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg relative overflow-hidden",
+             "flex items-center justify-center flex-shrink-0 rounded-lg relative overflow-hidden",
              isCollapsed ? "h-10 w-10" : "h-12 w-12",
-             !settings?.logoUrl && "p-2"
+             "bg-[hsl(170,80%,40%)]/20" // Fondo aguamarina sin degradado
          )}>
             {settings?.logoUrl ? 
               <div className="relative w-full h-full">
@@ -36,7 +37,7 @@ export const SidebarHeader = () => {
           </div>
         
         {!isCollapsed && (
-            <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-sidebar-foreground">
+            <span className="text-xl font-bold text-white whitespace-nowrap">
               {settings?.platformName || 'NexusAlpri'}
             </span>
         )}
@@ -47,7 +48,7 @@ export const SidebarHeader = () => {
           onClick={toggleSidebar}
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-sidebar-muted-foreground hover:bg-white/10 hover:text-sidebar-foreground"
+          className="h-8 w-8 text-slate-400 hover:bg-white/10 hover:text-white"
         >
           <ChevronsLeft className="h-4 w-4" />
           <span className="sr-only">Toggle Sidebar</span>
