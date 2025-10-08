@@ -14,7 +14,7 @@ export const SidebarHeader = () => {
   // En modo móvil, el header se muestra en la hoja (sheet) que se abre.
   if (isMobile) {
       return (
-         <div className="header-crackle-background flex items-center h-20 border-b border-sidebar-border px-4">
+         <div className="bg-gradient-to-b from-card to-sidebar-background flex items-center h-20 border-b border-sidebar-border px-4">
              <Link href="/dashboard" className="inline-flex items-center gap-3">
                  <div className="relative h-12 w-12 flex-shrink-0 rounded-lg overflow-hidden bg-primary/20">
                     {settings?.logoUrl ? <Image src={settings.logoUrl} alt="Logo" fill className="object-contain p-1" /> : <div className="w-full h-full rounded-md bg-muted" />}
@@ -28,7 +28,7 @@ export const SidebarHeader = () => {
   // Vista para escritorio
   return (
     <div className={cn(
-      "header-crackle-background flex items-center h-20 border-b border-sidebar-border", 
+      "bg-gradient-to-b dark:from-card dark:to-sidebar-background from-muted/50 to-sidebar-background flex items-center h-20 border-b border-sidebar-border", 
       isCollapsed ? 'justify-center' : 'justify-start px-4'
     )}>
       <Link href="/dashboard" className="inline-flex items-center gap-3">
@@ -45,7 +45,7 @@ export const SidebarHeader = () => {
           </div>
         
         {!isCollapsed && (
-            <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-sidebar-accent-foreground">
+            <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-sidebar-foreground">
               {settings?.platformName || 'NexusAlpri'}
             </span>
         )}
