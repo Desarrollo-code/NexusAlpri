@@ -38,10 +38,10 @@ export default function AboutPage() {
                   Nuestra Misión
                 </div>
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl font-headline text-slate-900">
-                  Democratizar la Formación Corporativa de Alto Nivel
+                  Potenciar el Talento Interno de Alprigrama
                 </h1>
                 <p className="max-w-[600px] text-slate-900/70 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  NexusAlpri nació para resolver una necesidad crítica: las empresas necesitaban una herramienta de e-learning que fuera tan potente como las soluciones empresariales, pero tan intuitiva como las aplicaciones de uso diario. Nuestra misión es simple: empoderar a cada organización para que construya una cultura de aprendizaje continuo, sin las barreras del costo o la complejidad técnica.
+                  NexusAlpri nació para dar respuesta a una necesidad clave en All print graphic sas: contar con una herramienta de e-learning potente e intuitiva, diseñada a la medida de nuestro equipo. Nuestra misión es empoderar a cada colaborador para que desarrolle nuevas habilidades y fortalezca nuestra cultura de aprendizaje continuo y excelencia.
                 </p>
               </div>
             </div>

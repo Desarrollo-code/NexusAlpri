@@ -66,24 +66,24 @@ export default function LandingPage() {
       <div className="container flex-1 z-10 w-full">
         <section className="w-full py-6 md:py-8 mt-6 md:mt-8">
             <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
-              <div className="flex flex-col justify-center space-y-4">
+              <div className="flex flex-col justify-center space-y-4 text-left">
                 <div className="space-y-4">
-                  <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline text-slate-900 text-left">
-                    La Plataforma E-learning que Impulsa tu Talento Corporativo
+                  <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline text-slate-900">
+                    Plataforma de Formación Corporativa de Alprigrama
                   </h1>
-                  <p className="max-w-[600px] text-slate-900/70 md:text-xl text-left">
-                    Centraliza, gestiona y escala la formación de tus equipos con una herramienta potente, intuitiva y personalizable.
+                  <p className="max-w-[600px] text-slate-900/70 md:text-xl">
+                    Bienvenido a NexusAlpri, el centro de aprendizaje para todo el equipo de All print graphic sas.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
                   <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg">
-                    <Link href="/sign-up">
-                      Empezar Ahora <ArrowRight className="ml-2 h-4 w-4"/>
+                    <Link href="/sign-in">
+                      Iniciar Sesión <ArrowRight className="ml-2 h-4 w-4"/>
                     </Link>
                   </Button>
                   <Button variant="outline" asChild size="lg" className="bg-transparent border-slate-900/30 hover:bg-black/10 hover:text-slate-900">
                     <Link href="/about">
-                      Saber más
+                      Conoce más
                     </Link>
                   </Button>
                 </div>
@@ -108,9 +108,9 @@ export default function LandingPage() {
                         <div className="inline-block rounded-lg bg-white/20 text-slate-900/80 px-3 py-1 text-sm font-semibold border border-white/30">
                             Capacidades
                         </div>
-                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900">Una Solución Integral de Formación</h2>
+                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900">Una Solución Integral para Alprigrama</h2>
                         <p className="max-w-[900px] text-slate-900/70 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                            Desde la creación de contenido interactivo hasta el análisis detallado del rendimiento, NexusAlpri te ofrece todo lo necesario para un ciclo de aprendizaje completo.
+                            Desde la creación de contenido interactivo hasta el análisis detallado del rendimiento, NexusAlpri ofrece todo lo necesario para el ciclo de aprendizaje de nuestro equipo.
                         </p>
                     </div>
                 </div>
@@ -144,11 +144,11 @@ export default function LandingPage() {
                             quality={100}
                         />
                      </div>
-                    <div className="space-y-8">
+                    <div className="space-y-8 text-left">
                        {benefits.map((benefit) => {
                           const Icon = benefit.icon;
                           return (
-                            <div key={benefit.title} className="flex items-start gap-4 text-left">
+                            <div key={benefit.title} className="flex items-start gap-4">
                               <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full bg-blue-100 text-blue-600">
                                 <Icon className="w-6 h-6" />
                               </div>
@@ -166,11 +166,11 @@ export default function LandingPage() {
          <section className="w-full text-left py-6 md:py-8 mt-6 md:mt-8">
                  <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900">¿Listo para Iniciar?</h2>
                  <p className="max-w-2xl mt-4 text-slate-900/70 md:text-xl">
-                    Únete a las empresas que ya están revolucionando su forma de capacitar. Comienza gratis hoy mismo.
+                    Inicia sesión con tu cuenta corporativa y comienza a potenciar tus habilidades hoy mismo.
                  </p>
                   <Button asChild size="lg" className="mt-8 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg">
-                    <Link href="/sign-up">
-                      Crear Mi Cuenta
+                    <Link href="/sign-in">
+                      Acceder a la Plataforma
                     </Link>
                   </Button>
         </section>
