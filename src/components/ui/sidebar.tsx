@@ -16,6 +16,7 @@ import type { NavItem } from '@/types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import { Identicon } from "./identicon";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./accordion";
 
 const SidebarContext = React.createContext<any>(null);
 
@@ -96,6 +97,20 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
 export const SidebarContent = () => {
   const { user } = useAuth();
   const navItems = getNavItemsForRole(user?.role || 'STUDENT');
+  const { isCollapsed } = useSidebar();
+
+  const [openAccordion, setOpenAccordion] = React.useState<string[]>([]);
+  const pathname = usePathname();
+
+  React.useEffect(() => {
+    // Expand the current section on load
+    const activeSection = navItems.find(item => 
+      item.children?.some(child => child.path && pathname.startsWith(child.path))
+    );
+    if (activeSection) {
+      setOpenAccordion([activeSection.id]);
+    }
+  }, [pathname, navItems]);
 
   return (
     <TooltipProvider delayDuration={100}>
@@ -103,12 +118,24 @@ export const SidebarContent = () => {
         {navItems.map((item) => {
           if (item.children && item.children.length > 0) {
             return (
-              <div key={item.id} className="pt-4">
-                <SidebarSectionHeader label={item.label} />
-                <div className="space-y-1 mt-2">
-                  {item.children.map(child => <SidebarMenuItem key={child.id} item={child} />)}
-                </div>
-              </div>
+              <Accordion 
+                key={item.id} 
+                type="multiple" 
+                value={openAccordion} 
+                onValueChange={setOpenAccordion}
+                className="w-full"
+              >
+                <AccordionItem value={item.id} className="border-b-0">
+                  <AccordionTrigger className={cn("hover:no-underline rounded-lg", isCollapsed ? "p-0 justify-center" : "p-3", 'hover:bg-white/5')}>
+                     <SidebarSectionHeader item={item} />
+                  </AccordionTrigger>
+                  <AccordionContent className={cn("pl-6", isCollapsed && "hidden")}>
+                    <div className="space-y-1 mt-1 border-l-2 border-sidebar-border/50">
+                        {item.children.map(child => <SidebarMenuItem key={child.id} item={child} />)}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             );
           }
           return <SidebarMenuItem key={item.id} item={item} />;
@@ -118,15 +145,29 @@ export const SidebarContent = () => {
   );
 };
 
-const SidebarSectionHeader = ({ label }: { label: string }) => {
+const SidebarSectionHeader = ({ item }: { item: NavItem }) => {
     const { isCollapsed } = useSidebar();
-    if (isCollapsed) return null;
+    
+    if (isCollapsed) {
+        return (
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <div className="flex justify-center items-center h-12 w-12 rounded-lg">
+                        <GradientIcon icon={item.icon} isActive={false} />
+                    </div>
+                </TooltipTrigger>
+                <TooltipContent side="right" align="center" sideOffset={10}>
+                    <p>{item.label}</p>
+                </TooltipContent>
+            </Tooltip>
+        )
+    }
+
     return (
-      <h2 className={cn(
-          "px-4 text-xs font-semibold uppercase text-sidebar-muted-foreground tracking-wider transition-all duration-300"
-      )}>
-          {label}
-      </h2>
+      <div className="flex items-center gap-3 w-full">
+        <GradientIcon icon={item.icon} isActive={false} />
+        <span className="text-base font-semibold text-sidebar-muted-foreground whitespace-nowrap">{item.label}</span>
+      </div>
     );
 };
 
@@ -176,13 +217,14 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
 };
 
 
-export const SidebarFooter = () => {
+export const SidebarFooter = ({ children }: { children?: React.ReactNode }) => {
   const { isCollapsed, toggleSidebar, isMobile } = useSidebar();
 
-  if (isMobile) return null; // No collapse button on mobile
+  if (isMobile) return null;
 
   return (
-    <div className={cn("p-3 flex items-center", isCollapsed ? "justify-center" : "justify-end")}>
+    <div className={cn("p-3 flex items-center border-t border-sidebar-border", isCollapsed ? "justify-center" : "justify-end")}>
+      {children}
         <Button
           onClick={toggleSidebar}
           variant="ghost"
