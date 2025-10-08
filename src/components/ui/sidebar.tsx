@@ -121,24 +121,32 @@ export const SidebarContent = () => {
     <TooltipProvider delayDuration={100}>
       <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-1 thin-scrollbar">
         {navItems.map((item) => {
+          const isActive = item.children?.some(child => child.path && activeItem.startsWith(child.path)) || (item.path && activeItem.startsWith(item.path) && (item.path !== '/' || activeItem === '/')) || false;
+          
           if (item.children && item.children.length > 0) {
             return (
-              <Accordion 
-                key={item.id} 
-                type="multiple" 
-                value={isCollapsed ? [] : openAccordion} 
-                onValueChange={setOpenAccordion}
-                className="w-full"
-              >
-                <AccordionItem value={item.id} className="border-b-0">
-                  <SidebarSectionHeader item={item} />
-                  <AccordionContent className={cn("pl-6 pt-0 pb-0", isCollapsed && "hidden")}>
-                    <div className="space-y-1 mt-1 border-l-2 border-sidebar-border/50">
-                        {item.children.map(child => <SidebarMenuItem key={child.id} item={child} />)}
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
+              <div key={item.id}>
+                <Accordion 
+                  type="multiple" 
+                  value={isCollapsed ? [] : openAccordion} 
+                  onValueChange={setOpenAccordion}
+                  className="w-full"
+                >
+                  <AccordionItem value={item.id} className="border-b-0">
+                    <SidebarSectionHeader item={item} />
+                    <AccordionContent className={cn("pl-6 pt-0 pb-0", isCollapsed && "hidden")}>
+                      <div className="space-y-1 mt-1 border-l-2 border-sidebar-border/50">
+                          {item.children.map(child => <SidebarMenuItem key={child.id} item={child} />)}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+                {isCollapsed && isActive && (
+                  <div className="mt-1 space-y-1">
+                     {item.children.map(child => <SidebarMenuItem key={child.id} item={child} />)}
+                  </div>
+                )}
+              </div>
             );
           }
           return <SidebarMenuItem key={item.id} item={item} />;
@@ -152,14 +160,26 @@ const SidebarSectionHeader = ({ item }: { item: NavItem }) => {
   const { isCollapsed, activeItem } = useSidebar();
   const isActive = useMemo(() => item.children?.some(child => child.path && activeItem.startsWith(child.path)) || false, [activeItem, item.children]);
 
+  const headerContent = (
+    <div className={cn(
+      "flex items-center justify-between w-full rounded-lg transition-colors group",
+      isCollapsed ? 'h-12 w-12 justify-center' : 'p-3',
+      isActive ? "bg-primary text-primary-foreground" : "hover:bg-sidebar-hover text-sidebar-muted-foreground hover:text-sidebar-foreground"
+    )}>
+      <div className="flex items-center gap-3">
+        <GradientIcon icon={item.icon} isActive={isActive} />
+        {!isCollapsed && <span className="text-base font-semibold whitespace-nowrap">{item.label}</span>}
+      </div>
+      {!isCollapsed && <ChevronDown className={cn("h-4 w-4 shrink-0 transition-transform duration-200", isActive ? "text-primary-foreground" : "text-inherit", "group-data-[state=open]:rotate-180")} />}
+    </div>
+  );
+
   if (isCollapsed) {
     return (
       <Tooltip>
         <TooltipTrigger className="w-full">
             <AccordionTrigger className="hover:no-underline p-0 w-full justify-center">
-                <div className="flex justify-center items-center h-12 w-12 rounded-lg">
-                    <GradientIcon icon={item.icon} isActive={isActive} />
-                </div>
+              {headerContent}
             </AccordionTrigger>
         </TooltipTrigger>
         <TooltipContent side="right" align="center" sideOffset={10}>
@@ -171,18 +191,7 @@ const SidebarSectionHeader = ({ item }: { item: NavItem }) => {
 
   return (
     <AccordionTrigger className="hover:no-underline p-0 w-full">
-      <div className={cn(
-        "flex items-center justify-between w-full rounded-lg transition-colors group p-3",
-        isActive 
-          ? "bg-primary text-primary-foreground" 
-          : "hover:bg-sidebar-hover text-sidebar-muted-foreground hover:text-sidebar-foreground"
-      )}>
-        <div className="flex items-center gap-3">
-          <GradientIcon icon={item.icon} isActive={isActive} />
-          <span className="text-base font-semibold whitespace-nowrap">{item.label}</span>
-        </div>
-        <ChevronDown className={cn("h-4 w-4 shrink-0 transition-transform duration-200", isActive ? "text-primary-foreground" : "text-inherit", "group-data-[state=open]:rotate-180")} />
-      </div>
+      {headerContent}
     </AccordionTrigger>
   );
 };
@@ -193,7 +202,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
   
   const isActive = useMemo(() => {
     if (!activeItem || !item.path) return false;
-    if (item.path === '/dashboard') return activeItem === '/dashboard';
+    if (item.path === '/dashboard') return activeItem === '/dashboard'; // Match exact for dashboard
     return activeItem.startsWith(item.path);
   }, [activeItem, item.path]);
 
