@@ -28,9 +28,6 @@ export default function PublicLayout({
       setTheme('light');
     }
   }, [theme, setTheme]);
-
-  // Ocultar la cuadrícula en las páginas de autenticación
-  const showGrid = !pathname.startsWith('/sign-in') && !pathname.startsWith('/sign-up');
   
   return (
     <div className="relative flex flex-col min-h-screen items-center antialiased bg-background text-slate-900">
@@ -42,7 +39,7 @@ export default function PublicLayout({
             src={settings.publicPagesBgUrl} 
             alt="Fondo decorativo de la plataforma" 
             fill 
-            className="object-cover opacity-5 blur-md"
+            className="object-cover opacity-50"
             quality={80}
             data-ai-hint="abstract background"
           />
@@ -50,9 +47,6 @@ export default function PublicLayout({
           <div className="absolute inset-0 bg-background/50" />
         </div>
       )}
-      
-      {/* CAPA 1: Cuadrícula de fondo (si aplica) */}
-      {showGrid && <div className="grid-bg z-[1]"></div>}
 
       {/* CAPA 10: Contenido principal */}
       <div className="relative z-10 flex flex-col min-h-screen w-full">
