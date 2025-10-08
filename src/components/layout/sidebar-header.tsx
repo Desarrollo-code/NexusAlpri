@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "../ui/button";
-import { ChevronsLeft } from "lucide-react";
+import { ChevronsLeft, ChevronsRight } from "lucide-react";
 
 export const SidebarHeader = () => {
   const { isCollapsed, toggleSidebar, isMobile } = useSidebar();
@@ -17,7 +17,7 @@ export const SidebarHeader = () => {
     <div className={cn(
       "flex items-center h-20 border-b", 
       isCollapsed ? 'justify-center' : 'justify-between px-4',
-      "bg-[#1E232C] border-slate-700" // Fondo oscuro y borde consistentes
+      "bg-[#1E232C] border-slate-700"
     )}>
       <Link href="/dashboard" className={cn(
           "inline-flex items-center gap-3",
@@ -43,14 +43,14 @@ export const SidebarHeader = () => {
         )}
       </Link>
 
-      {!isMobile && !isCollapsed && (
+      {!isMobile && (
          <Button
           onClick={toggleSidebar}
           variant="ghost"
           size="icon"
           className="h-8 w-8 text-slate-400 hover:bg-white/10 hover:text-white"
         >
-          <ChevronsLeft className="h-4 w-4" />
+          {isCollapsed ? <ChevronsRight className="h-4 w-4" /> : <ChevronsLeft className="h-4 w-4" />}
           <span className="sr-only">Toggle Sidebar</span>
         </Button>
       )}

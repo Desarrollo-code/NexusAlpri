@@ -237,15 +237,7 @@ export const SidebarFooter = () => {
 
     return (
         <div className="p-3 border-t border-sidebar-border flex flex-col gap-2">
-            {isCollapsed ? (
-                 <Button
-                    onClick={toggleSidebar}
-                    variant="ghost"
-                    className="w-full justify-center p-0 h-10 text-sidebar-muted-foreground hover:bg-white/5 hover:text-sidebar-foreground"
-                >
-                    <ChevronsRight className="h-5 w-5" />
-                </Button>
-            ) : (
+            {!isCollapsed && (
                 <div className="flex items-center justify-between p-2 rounded-md">
                     <Label htmlFor="dark-mode-toggle" className="text-sidebar-muted-foreground">Modo Oscuro</Label>
                     <Switch 
