@@ -39,17 +39,17 @@
     --event-red: 0 80% 60%;
     --event-orange: 25 90% 60%;
 
-    /* Sidebar - Colores fijos para ambos temas */
-    --sidebar-background: 220 10% 10%; /* Gris carbón */
-    --sidebar-foreground: 220 15% 75%; /* Texto inactivo */
-    --sidebar-muted-foreground: 220 15% 60%;
-    --sidebar-accent: 210 90% 55%; /* Azul primario para el item activo */
-    --sidebar-accent-foreground: #ffffff; /* Texto blanco para el item activo */
-    --sidebar-border: 220 10% 15%;
+    /* Sidebar - Light Theme */
+    --sidebar-background: 0 0% 100%; /* Blanco */
+    --sidebar-foreground: 220 10% 40%; /* Texto gris oscuro */
+    --sidebar-muted-foreground: 220 10% 55%; /* Texto gris más claro */
+    --sidebar-accent: hsl(var(--primary));
+    --sidebar-accent-foreground: hsl(var(--primary-foreground));
+    --sidebar-border: 220 10% 90%;
   }
  
   .dark {
-    /* Tema oscuro con colores complementarios */
+    /* Tema oscuro */
     --background: 220 15% 8%;
     --foreground: 220 10% 95%;
     --card: 220 15% 12%;
@@ -76,6 +76,12 @@
     --chart-3: 336 75% 65%; /* fuchsia */
     --chart-4: 36 85% 60%;  /* amber */
     --chart-5: 262 80% 70%; /* violet */
+    
+    /* Sidebar - Dark Theme */
+    --sidebar-background: 220 10% 10%; /* Gris Carbón */
+    --sidebar-foreground: 220 15% 75%;
+    --sidebar-muted-foreground: 220 15% 60%;
+    --sidebar-border: 220 10% 15%;
   }
 }
  
