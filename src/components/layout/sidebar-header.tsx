@@ -6,11 +6,9 @@ import { useAuth } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
-import { Button } from "../ui/button";
-import { ChevronsLeft, ChevronsRight, ChevronLeftCircle, ChevronRightCircle } from 'lucide-react';
 
 export const SidebarHeader = () => {
-  const { isCollapsed, toggleSidebar, isMobile } = useSidebar();
+  const { isCollapsed, isMobile } = useSidebar();
   const { settings } = useAuth();
   
   if (isMobile) {
@@ -28,25 +26,25 @@ export const SidebarHeader = () => {
 
   return (
     <div className={cn(
-      "flex items-center h-20 border-b border-sidebar-border", 
-      isCollapsed ? 'justify-center' : 'justify-start px-4', // <-- CORRECCIÓN CLAVE
-      "bg-sidebar-background"
+      "flex items-center h-20 border-b border-border/50", 
+      isCollapsed ? 'justify-center' : 'justify-start px-4',
+      "bg-card/50" // Fondo distintivo
     )}>
       <Link href="/dashboard" className="inline-flex items-center gap-3">
           <div className={cn(
               "bg-gradient-to-br from-primary/80 to-accent/80 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg relative overflow-hidden",
-              isCollapsed ? "h-12 w-12" : "h-12 w-12"
+              "h-12 w-12" // Tamaño unificado
           )}>
             {settings?.logoUrl ? 
               <div className="relative w-full h-full">
-                <Image src={settings.logoUrl} alt="Logo" fill className="object-contain p-1" />
+                <Image src={settings.logoUrl} alt="Logo" fill className={cn("object-contain p-1")} />
               </div> 
               : <div className="w-full h-full rounded-md bg-muted" />
             }
           </div>
         
         {!isCollapsed && (
-            <span className="text-xl font-bold text-sidebar-foreground whitespace-nowrap">
+            <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-primary dark:text-accent-foreground">
               {settings?.platformName || 'NexusAlpri'}
             </span>
         )}
