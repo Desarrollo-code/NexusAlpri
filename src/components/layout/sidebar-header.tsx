@@ -28,7 +28,8 @@ export const SidebarHeader = () => {
   // Vista para escritorio
   return (
     <div className={cn(
-      "bg-gradient-to-b dark:from-card dark:to-sidebar-background from-muted/50 to-sidebar-background flex items-center h-20 border-b border-sidebar-border", 
+      "flex items-center h-20 border-b border-sidebar-border",
+      "bg-gradient-to-b dark:from-card dark:to-sidebar-background from-muted/50 to-sidebar-background",
       isCollapsed ? 'justify-center' : 'justify-start px-4'
     )}>
       <Link href="/dashboard" className="inline-flex items-center gap-3">
