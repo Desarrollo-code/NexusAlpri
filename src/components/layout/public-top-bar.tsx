@@ -24,7 +24,7 @@ export function PublicTopBar() {
 
   return (
     <header className="pixelated-gradient-bg fixed top-0 left-0 right-0 z-40 border-b">
-      <div className="container mx-auto flex items-center justify-between px-4 lg:px-6 h-24">
+      <div className="container mx-auto flex items-center justify-between px-4 lg:px-6 h-20">
         <div className="flex items-center justify-start flex-1">
           <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
             <div className={cn("w-12 h-12 flex items-center justify-center flex-shrink-0 rounded-lg relative overflow-hidden bg-white/20")}>
