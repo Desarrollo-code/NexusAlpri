@@ -41,11 +41,11 @@
 
     /* Sidebar - Light Theme */
     --sidebar-background: 0 0% 100%; /* Blanco */
-    --sidebar-foreground: 220 10% 40%; /* Texto gris oscuro */
-    --sidebar-muted-foreground: 220 10% 55%; /* Texto gris más claro */
-    --sidebar-accent: 210 90% 55%; /* Azul vibrante (definido directamente) */
+    --sidebar-foreground: 220 10% 30%; /* Texto gris oscuro */
+    --sidebar-muted-foreground: 220 10% 50%; /* Texto gris más claro */
+    --sidebar-accent: 210 90% 55%; /* Azul vibrante */
     --sidebar-accent-foreground: 0 0% 100%; /* Blanco */
-    --sidebar-border: 220 10% 90%;
+    --sidebar-border: 220 20% 94%;
   }
  
   .dark {

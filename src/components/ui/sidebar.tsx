@@ -192,9 +192,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
   
   const isActive = useMemo(() => {
     if (!activeItem || !item.path) return false;
-    // Si la ruta es exactamente '/', solo debe estar activo en esa ruta.
     if (item.path === '/') return activeItem === '/';
-    // Para otras rutas, verifica si la ruta actual comienza con la ruta del item.
     return activeItem.startsWith(item.path);
   }, [activeItem, item.path]);
 
@@ -237,10 +235,20 @@ export const SidebarFooter = () => {
     const { isCollapsed, toggleSidebar, isMobile } = useSidebar();
     const { theme, setTheme } = useTheme();
 
-    if (isMobile) return null; // No mostrar el footer en móvil
+    if (isMobile) return null;
 
     return (
         <div className="p-3 border-t border-sidebar-border flex flex-col gap-2">
+             {!isCollapsed && (
+                <div className="flex items-center justify-between px-3 py-2">
+                     <Label htmlFor="theme-toggle" className="text-sidebar-muted-foreground text-sm">Modo Oscuro</Label>
+                     <Switch 
+                        id="theme-toggle"
+                        checked={theme === 'dark'}
+                        onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+                     />
+                </div>
+             )}
             <Button
                 onClick={logout}
                 variant="ghost"
