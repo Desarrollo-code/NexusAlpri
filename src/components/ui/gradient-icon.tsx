@@ -26,8 +26,8 @@ export const GradientIcon = ({
     'xl': 'w-7 h-7',
   };
   
-  // Renderiza el ícono directamente con el color de texto actual.
-  // El color cambiará basado en el estado `isActive` del padre.
+  // Renderiza el ícono directamente. 
+  // El color será heredado del elemento padre (text-sidebar-accent-foreground o text-sidebar-muted-foreground)
   return (
     <Icon 
       className={cn(sizeClasses[size], className)}
