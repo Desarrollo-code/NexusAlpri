@@ -43,7 +43,7 @@
     --sidebar-background: 220 40% 5%; 
     --sidebar-foreground: 45 80% 70%;
     --sidebar-muted-foreground: 45 50% 55%;
-    --sidebar-accent: hsl(var(--primary));
+    --sidebar-accent: 210 90% 55%;
     --sidebar-accent-foreground: hsl(var(--primary-foreground));
     --sidebar-border: 220 40% 10%;
   }
