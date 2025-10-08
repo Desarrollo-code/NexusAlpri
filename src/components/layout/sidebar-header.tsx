@@ -33,33 +33,27 @@ export const SidebarHeader = () => {
       isCollapsed ? 'justify-center' : 'justify-between px-4',
       "bg-[#1E232C]"
     )}>
-      <Link href="/dashboard" className={cn(
-          "inline-flex items-center gap-3",
-          isCollapsed && "justify-center"
-      )}>
-         <div className={cn(
-             "bg-gradient-to-br from-primary/80 to-accent/80 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg relative overflow-hidden",
-             isCollapsed ? "h-10 w-10" : "h-12 w-12"
-         )}>
-            {settings?.logoUrl ? 
-              <div className="relative w-full h-full">
-                <Image src={settings.logoUrl} alt="Logo" fill className="object-contain p-1" />
-              </div> 
-              : <div className="w-full h-full rounded-md bg-muted" />
-            }
-          </div>
-        
-        {!isCollapsed && (
+      {!isCollapsed && (
+          <Link href="/dashboard" className="inline-flex items-center gap-3">
+             <div className="bg-gradient-to-br from-primary/80 to-accent/80 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg relative overflow-hidden h-12 w-12">
+                {settings?.logoUrl ? 
+                  <div className="relative w-full h-full">
+                    <Image src={settings.logoUrl} alt="Logo" fill className="object-contain p-1" />
+                  </div> 
+                  : <div className="w-full h-full rounded-md bg-muted" />
+                }
+              </div>
+            
             <span className="text-xl font-bold text-white whitespace-nowrap">
               {settings?.platformName || 'NexusAlpri'}
             </span>
-        )}
-      </Link>
-       {!isCollapsed && (
-        <Button onClick={toggleSidebar} variant="ghost" size="icon" className="text-sidebar-muted-foreground hover:text-white">
-            <ChevronLeftCircle className="h-6 w-6"/>
-        </Button>
-       )}
+          </Link>
+      )}
+
+      <Button onClick={toggleSidebar} variant="ghost" size="icon" className="text-sidebar-muted-foreground hover:text-white">
+        {isCollapsed ? <ChevronRightCircle className="h-6 w-6"/> : <ChevronLeftCircle className="h-6 w-6"/>}
+        <span className="sr-only">{isCollapsed ? 'Expandir barra lateral' : 'Colapsar barra lateral'}</span>
+      </Button>
     </div>
   );
 };
