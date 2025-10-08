@@ -16,8 +16,8 @@ const features = [
             <Layers3 {...props} className="h-8 w-8 text-white"/>
         </div>
     ),
-    title: 'Contenido Centralizado',
-    description: 'Crea cursos con un editor visual, combinando videos, quizzes y documentos sin esfuerzo.',
+    title: 'Cultura tu Conocimiento',
+    description: 'Crea y comparte cursos dinámicos, combinando videos, quizzes interactivos y documentos esenciales en una única plataforma centralizada.',
   },
   {
     icon: (props: any) => (
@@ -25,8 +25,8 @@ const features = [
             <ArrowUp {...props} className="h-8 w-8 text-blue-800" strokeWidth={3}/>
         </div>
     ),
-    title: 'Seguimiento Detallado',
-    description: 'Observa el progreso individual, identifica áreas de mejora y genera reportes personalizados fácilmente.',
+    title: 'Impulsa el Crecimiento',
+    description: 'Visualiza el progreso del equipo en tiempo real, identifica oportunidades de mejora y toma decisiones basadas en datos para potenciar el talento.',
   },
   {
     icon: (props: any) => (
@@ -34,26 +34,26 @@ const features = [
             <Users {...props} className="h-8 w-8 text-green-900" />
         </div>
     ),
-    title: 'Comunidad Interactiva',
-    description: 'Fomenta la colaboración con foros, chats y actividades grupales dinámicas.',
+    title: 'Fomenta la Colaboración',
+    description: 'Construye una comunidad de aprendizaje activa a través de foros de discusión, mensajería directa y actividades grupales dinámicas.',
   },
 ];
 
 const benefits = [
   {
     icon: GraduationCap,
-    title: 'Para Estudiantes',
-    description: 'Aprende a tu ritmo, sigue tu progreso y obtén certificados.',
+    title: 'Para Colaboradores',
+    description: 'Desarrolla tus habilidades a tu propio ritmo, sigue tu progreso y obtén reconocimiento con certificados de finalización.',
   },
   {
     icon: UserCog,
-    title: 'Para Instructores',
-    description: 'Crea contenido interactivo y analiza el rendimiento de tus alumnos.',
+    title: 'Para Líderes y Formadores',
+    description: 'Diseña contenido interactivo, imparte conocimiento y analiza el impacto de la formación en tu equipo.',
   },
   {
     icon: Users,
     title: 'Para Administradores',
-    description: 'Control total sobre usuarios, contenido y la configuración de la plataforma.',
+    description: 'Control total sobre el ecosistema de aprendizaje: gestiona usuarios, contenido y la configuración global de la plataforma.',
   },
 ];
 
@@ -69,10 +69,10 @@ export default function LandingPage() {
               <div className="flex flex-col justify-center space-y-4 text-left">
                 <div className="space-y-4">
                   <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline text-slate-900">
-                    Plataforma de Formación Corporativa de Alprigrama
+                    El Ecosistema de Crecimiento de Alprigrama
                   </h1>
                   <p className="max-w-[600px] text-slate-900/70 md:text-xl">
-                    Bienvenido a NexusAlpri, el centro de aprendizaje para todo el equipo de All print graphic sas.
+                    Bienvenido a NexusAlpri, la plataforma donde el talento y el conocimiento de nuestro equipo convergen para impulsar el futuro.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
@@ -83,7 +83,7 @@ export default function LandingPage() {
                   </Button>
                   <Button variant="outline" asChild size="lg" className="bg-transparent border-slate-900/30 hover:bg-black/10 hover:text-slate-900">
                     <Link href="/about">
-                      Conoce más
+                      Nuestra Visión
                     </Link>
                   </Button>
                 </div>
@@ -110,7 +110,7 @@ export default function LandingPage() {
                         </div>
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900">Una Solución Integral para Alprigrama</h2>
                         <p className="max-w-[900px] text-slate-900/70 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                            Desde la creación de contenido interactivo hasta el análisis detallado del rendimiento, NexusAlpri te ofrece todo lo necesario para el ciclo de aprendizaje de nuestro equipo.
+                            NexusAlpri ha sido diseñado para unificar y potenciar nuestro ciclo de aprendizaje. Desde la creación de contenido interactivo hasta el análisis detallado del rendimiento, te ofrecemos las herramientas para crecer.
                         </p>
                     </div>
                 </div>
@@ -164,9 +164,9 @@ export default function LandingPage() {
         </section>
         
          <section className="w-full text-center py-6 md:py-8 mt-6 md:mt-8">
-                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900">¿Listo para Iniciar?</h2>
+                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900">Tu Viaje de Desarrollo Comienza Aquí</h2>
                  <p className="max-w-2xl mt-4 text-slate-900/70 md:text-xl mx-auto">
-                    Inicia sesión con tu cuenta corporativa y comienza a potenciar tus habilidades hoy mismo.
+                    Inicia sesión para acceder a tu ruta de aprendizaje personalizada y contribuir al crecimiento colectivo de Alprigrama.
                  </p>
                   <Button asChild size="lg" className="mt-8 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg">
                     <Link href="/sign-in">

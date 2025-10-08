@@ -12,11 +12,11 @@ export default function AboutPage() {
   const aboutImageUrl = settings?.aboutImageUrl || "https://placehold.co/600x400/38bdf8/ffffff?text=Nuestra+Misi%C3%B3n";
 
   const techStack = [
-    { name: 'Next.js', description: 'Para un rendimiento excepcional y una experiencia de usuario fluida gracias a su arquitectura híbrida.', icon: Code, color: "text-blue-500" },
-    { name: 'TypeScript', description: 'Para un código más seguro, mantenible y escalable, reduciendo errores en producción.', icon: Type, color: "text-blue-500" },
-    { name: 'Prisma', description: 'Como ORM de nueva generación, simplifica y asegura las interacciones con la base de datos.', icon: Database, color: "text-emerald-500" },
-    { name: 'Tailwind CSS', description: 'Nos permite construir interfaces complejas y personalizadas de forma rápida y consistente.', icon: Wind, color: "text-cyan-500" },
-    { name: 'ShadCN UI', description: 'Para componentes de UI accesibles, reutilizables y estéticamente agradables desde el primer día.', icon: Feather, color: "text-pink-500" },
+    { name: 'Next.js', description: 'Para un rendimiento excepcional y una experiencia de usuario fluida gracias a su arquitectura híbrida de renderizado en servidor y cliente.', icon: Code, color: "text-blue-500" },
+    { name: 'TypeScript', description: 'Garantiza un código más seguro, mantenible y escalable, minimizando errores en producción y agilizando el desarrollo.', icon: Type, color: "text-blue-500" },
+    { name: 'Prisma', description: 'Como ORM de nueva generación, simplifica y asegura las interacciones con la base de datos, proporcionando una capa de abstracción robusta.', icon: Database, color: "text-emerald-500" },
+    { name: 'Tailwind CSS', description: 'Nos permite construir interfaces complejas y personalizadas de forma rápida y consistente, siguiendo un sistema de diseño atómico.', icon: Wind, color: "text-cyan-500" },
+    { name: 'ShadCN UI', description: 'Para componentes de UI accesibles, reutilizables y estéticamente agradables, acelerando la construcción de una interfaz pulida.', icon: Feather, color: "text-pink-500" },
   ];
 
   return (
@@ -33,15 +33,15 @@ export default function AboutPage() {
                   data-ai-hint="team brainstorming"
                 />
               </div>
-              <div className="space-y-4 order-last lg:order-first text-left">
+              <div className="space-y-4 text-left order-last lg:order-first">
                 <div className="inline-block rounded-lg bg-background/20 text-slate-900/80 px-3 py-1 text-sm font-semibold border border-border/30">
-                  Nuestra Misión
+                  Nuestra Visión
                 </div>
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl font-headline text-slate-900">
-                  Potenciar el Talento Interno de Alprigrama
+                  Cultivar el Talento, Impulsar el Futuro de Alprigrama
                 </h1>
                 <p className="max-w-[600px] text-slate-900/70 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  NexusAlpri nació para dar respuesta a una necesidad clave en All print graphic sas: contar con una herramienta de e-learning potente e intuitiva, diseñada a la medida de nuestro equipo. Nuestra misión es empoderar a cada colaborador para que desarrolle nuevas habilidades y fortalezca nuestra cultura de aprendizaje continuo y excelencia.
+                  NexusAlpri es más que una plataforma; es nuestro compromiso con el crecimiento. Nació de la necesidad de tener una herramienta de e-learning a la altura de nuestro equipo: ágil, potente e intuitiva. Nuestra misión es empoderar a cada colaborador de Alprigrama con el conocimiento para innovar, la confianza para liderar y las habilidades para construir juntos el próximo capítulo de nuestro éxito.
                 </p>
               </div>
             </div>
@@ -55,7 +55,7 @@ export default function AboutPage() {
                 </div>
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900">Ingeniería para la Excelencia</h2>
                 <p className="max-w-[900px] text-slate-900/70 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Hemos seleccionado cuidadosamente un stack tecnológico moderno y robusto, enfocado en ofrecer una experiencia de usuario rápida, segura y preparada para el futuro.
+                  Hemos seleccionado un stack tecnológico de vanguardia, enfocado en ofrecer una experiencia de usuario que sea no solo funcional, sino también rápida, segura y un placer de usar. Cada tecnología fue elegida con un propósito claro: potenciar el aprendizaje.
                 </p>
               </div>
             </div>
@@ -71,8 +71,8 @@ export default function AboutPage() {
                      <div className="w-12 h-12 rounded-lg bg-black flex items-center justify-center">
                         <Icon className="w-8 h-8 text-white"/>
                      </div>
-                     <h3 className="text-xl font-bold font-headline mb-2 text-slate-900">{tech.name}</h3>
-                     <p className="text-sm text-slate-900/80">{tech.description}</p>
+                     <h3 className="text-xl font-bold font-headline mt-4 text-slate-900">{tech.name}</h3>
+                     <p className="text-sm text-slate-900/80 mt-2">{tech.description}</p>
                    </div>
                  </div>
               )})}
