@@ -131,7 +131,7 @@ export const SidebarContent = () => {
                 className="w-full"
               >
                 <AccordionItem value={item.id} className="border-b-0">
-                  <AccordionTrigger className={cn("hover:no-underline rounded-lg group", isCollapsed ? "p-0 justify-center" : "p-3", 'hover:bg-white/5')}>
+                  <AccordionTrigger className={cn("hover:no-underline rounded-lg group", isCollapsed ? "p-0 justify-center" : "p-3", 'hover:bg-sidebar-hover')}>
                      <SidebarSectionHeader item={item} />
                   </AccordionTrigger>
                   <AccordionContent className={cn("pl-6", isCollapsed && "hidden")}>
@@ -192,7 +192,8 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
   
   const isActive = useMemo(() => {
     if (!activeItem || !item.path) return false;
-    if (item.path === '/') return activeItem === '/';
+    // La condición para el dashboard debe ser exacta para no activarse en otras rutas.
+    if (item.path === '/dashboard') return activeItem === '/dashboard';
     return activeItem.startsWith(item.path);
   }, [activeItem, item.path]);
 
@@ -202,7 +203,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         isCollapsed ? "justify-center h-12 w-12" : "p-3",
         isActive
           ? "bg-sidebar-accent text-sidebar-accent-foreground shadow"
-          : "text-sidebar-muted-foreground hover:bg-white/5 hover:text-sidebar-foreground"
+          : "text-sidebar-muted-foreground hover:bg-sidebar-hover hover:text-sidebar-foreground"
       )}>
         <GradientIcon icon={item.icon} isActive={isActive} />
         {!isCollapsed && <span className="whitespace-nowrap">{item.label}</span>}
@@ -264,7 +265,7 @@ export const SidebarFooter = () => {
                 onClick={toggleSidebar}
                 variant="ghost"
                 size="icon"
-                className="w-full h-10 text-sidebar-muted-foreground hover:bg-white/10 hover:text-white"
+                className="w-full h-10 text-sidebar-muted-foreground hover:bg-sidebar-hover hover:text-white"
             >
                 {isCollapsed ? <ChevronRightCircle className="h-6 w-6"/> : <ChevronLeftCircle className="h-6 w-6"/>}
             </Button>

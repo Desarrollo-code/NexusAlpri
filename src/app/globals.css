@@ -40,12 +40,13 @@
     --event-orange: 25 90% 60%;
 
     /* Sidebar - Light Theme */
-    --sidebar-background: 0 0% 100%; /* Blanco */
-    --sidebar-foreground: 220 10% 30%; /* Texto gris oscuro */
-    --sidebar-muted-foreground: 220 10% 50%; /* Texto gris más claro */
-    --sidebar-accent: 210 90% 55%; /* Azul vibrante */
-    --sidebar-accent-foreground: 0 0% 100%; /* Blanco */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 10% 30%;
+    --sidebar-muted-foreground: 220 10% 50%;
     --sidebar-border: 220 20% 94%;
+    --sidebar-accent: 210 90% 55%; /* Azul primario */
+    --sidebar-accent-foreground: 0 0% 100%; /* Texto blanco para el acento */
+    --sidebar-hover: 0 0% 0% / 0.05; /* Negro con 5% de opacidad para el hover */
   }
  
   .dark {
@@ -84,6 +85,7 @@
     --sidebar-border: 220 40% 10%;
     --sidebar-accent: 210 90% 65%;
     --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-hover: 100 100% 100% / 0.05; /* Blanco con 5% de opacidad para el hover */
   }
 }
  
