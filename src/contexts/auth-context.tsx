@@ -1,4 +1,3 @@
-
 // src/contexts/auth-context.tsx
 'use client';
 
@@ -32,6 +31,7 @@ const DEFAULT_SETTINGS: PlatformSettings = {
     enableIdleTimeout: true,
     idleTimeoutMinutes: 20,
     require2faForAdmins: false,
+    publicPagesBgUrl: null,
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -142,5 +142,3 @@ export const useAuth = () => {
   }
   return context;
 };
-
-    

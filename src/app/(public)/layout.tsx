@@ -8,16 +8,17 @@ import { BottomNav } from '@/components/layout/bottom-nav';
 import { Footer } from '@/components/layout/footer';
 import { useAuth } from '@/contexts/auth-context';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
-import { DecorativeHeaderBackground } from '@/components/layout/decorative-header-background';
 import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
+import Image from 'next/image';
+import { cn } from '@/lib/utils';
 
 export default function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isLoading } = useAuth();
+  const { user, settings, isLoading } = useAuth();
   const pathname = usePathname();
   const { setTheme, theme } = useTheme();
 
@@ -34,11 +35,22 @@ export default function PublicLayout({
   return (
     <div className="relative flex flex-col min-h-screen items-center antialiased bg-background text-slate-900">
         
-        {/* La cuadrícula solo se renderiza si no estamos en las páginas de acceso */}
+        {settings?.publicPagesBgUrl && (
+             <div className="fixed inset-0 z-0">
+                <Image 
+                    src={settings.publicPagesBgUrl} 
+                    alt="Fondo" 
+                    fill 
+                    className="object-cover opacity-10 blur-sm"
+                    quality={80}
+                    data-ai-hint="abstract background"
+                />
+                <div className="absolute inset-0 bg-background/50" />
+            </div>
+        )}
+        
         {showGrid && <div className="grid-bg"></div>}
 
-        <DecorativeHeaderBackground />
-        
         {user ? <AuthenticatedPublicHeader /> : <PublicTopBar />}
         
         <main className="flex-1 flex flex-col items-center justify-center w-full pt-24 md:pt-28 pb-16 md:pb-8 px-4">

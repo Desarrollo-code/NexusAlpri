@@ -1,9 +1,8 @@
-
 // src/app/api/settings/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
-import type { PlatformSettings } from '@/types';
+import type { PlatformSettings as AppPlatformSettings } from '@/types';
 import type { NextRequest } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -37,11 +36,12 @@ const DEFAULT_DB_SETTINGS = {
   aboutImageUrl: null,
   benefitsImageUrl: null,
   announcementsImageUrl: null,
+  publicPagesBgUrl: null,
   fontHeadline: 'Space Grotesk',
   fontBody: 'Inter'
 };
 
-const getFallbackSettings = (): PlatformSettings => {
+const getFallbackSettings = (): AppPlatformSettings => {
     return {
         ...DEFAULT_DB_SETTINGS,
         resourceCategories: DEFAULT_DB_SETTINGS.resourceCategories.split(','),
@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
     }
     
     // Transforma los campos de string a array para el cliente
-    const settingsToReturn: PlatformSettings = {
+    const settingsToReturn: AppPlatformSettings = {
         ...DEFAULT_DB_SETTINGS, // Start with defaults to ensure all fields are present
         ...dbSettings,
         resourceCategories: dbSettings.resourceCategories ? dbSettings.resourceCategories.split(',').filter(Boolean) : [],
@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
     });
     
     // Devuelve la configuración actualizada en el formato correcto para el cliente
-    const settingsToReturn: PlatformSettings = {
+    const settingsToReturn: AppPlatformSettings = {
         ...DEFAULT_DB_SETTINGS,
         ...updatedDbSettings,
         resourceCategories: updatedDbSettings.resourceCategories ? updatedDbSettings.resourceCategories.split(',').filter(Boolean) : [],
