@@ -5,7 +5,7 @@ import * as React from "react";
 import { useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronsLeft, ChevronDown } from "lucide-react";
+import { ChevronsLeft, ChevronDown, LogOut } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/auth-context";
 import { getNavItemsForRole } from "@/lib/nav-items";
@@ -15,6 +15,10 @@ import { GradientIcon } from "./gradient-icon";
 import type { NavItem } from '@/types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./accordion";
+import { UserAvatarDropdown } from "../layout/user-avatar-dropdown";
+import { ThemeProvider, useTheme } from "next-themes";
+import { Switch } from "./switch";
+import { Label } from "./label";
 
 const SidebarContext = React.createContext<any>(null);
 
@@ -29,7 +33,7 @@ export const SidebarProvider = ({ children }: { children: React.ReactNode }) => 
   const pathname = usePathname();
   const [activeItem, setActiveItem] = React.useState(pathname);
   const [openMobile, setOpenMobile] = React.useState(false);
-  const [isCollapsed, setIsCollapsed] = React.useState(false);
+  const [isCollapsed, setIsCollapsed] = React.useState(isMobile);
 
   const toggleSidebar = () => {
     if (isMobile) {
@@ -44,6 +48,11 @@ export const SidebarProvider = ({ children }: { children: React.ReactNode }) => 
   React.useEffect(() => {
     if (pathname) setActiveItem(pathname);
   }, [pathname]);
+  
+  React.useEffect(() => {
+    setIsCollapsed(isMobile);
+  }, [isMobile]);
+
 
   React.useEffect(() => {
       if (isMobile) {
@@ -82,7 +91,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       <aside
         className={cn(
           "fixed top-0 left-0 z-50 h-screen flex flex-col transition-all duration-300 ease-in-out shadow-xl",
-          "bg-sidebar-background border-r border-sidebar-border",
+          "bg-sidebar-background border-r border-sidebar-border/50",
           isMobile ? `w-72 ${mobileClasses}` : desktopClasses
         )}
       >
@@ -218,26 +227,23 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
 };
 
 
-export const SidebarFooter = ({ children }: { children?: React.ReactNode }) => {
-  const { isCollapsed, toggleSidebar, isMobile } = useSidebar();
+export const SidebarFooter = () => {
+    const { logout } = useAuth();
+    const { isCollapsed } = useSidebar();
 
-  if (isMobile) return null;
-
-  return (
-    <div className={cn("p-3 flex items-center border-t border-sidebar-border", isCollapsed ? "justify-center" : "justify-end")}>
-      {children}
-        <Button
-          onClick={toggleSidebar}
-          variant="ghost"
-          size="icon"
-          className={cn(
-            "h-8 w-8 text-sidebar-muted-foreground hover:bg-white/10 hover:text-sidebar-foreground transition-transform duration-300",
-            isCollapsed && "rotate-180"
-          )}
-        >
-          <ChevronsLeft className="h-4 w-4" />
-          <span className="sr-only">Toggle Sidebar</span>
-        </Button>
-    </div>
-  );
-};
+    return (
+        <div className="p-3 border-t border-sidebar-border/50">
+             <Button
+                onClick={logout}
+                variant="ghost"
+                className={cn(
+                    "w-full text-sidebar-muted-foreground hover:bg-red-500/20 hover:text-red-400",
+                    isCollapsed ? 'justify-center px-0' : 'justify-start gap-3 px-4'
+                )}
+            >
+                <LogOut className="h-5 w-5" />
+                {!isCollapsed && <span className="font-semibold">Cerrar Sesión</span>}
+            </Button>
+        </div>
+    )
+}
