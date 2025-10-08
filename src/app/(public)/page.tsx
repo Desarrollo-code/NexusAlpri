@@ -103,14 +103,14 @@ export default function LandingPage() {
         </section>
         
         <section className="w-full bg-transparent py-6 md:py-8 mt-6 md:mt-8">
-                 <div className="flex flex-col items-start justify-center space-y-4 text-left">
-                    <div className="space-y-2">
+                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
+                    <div className="space-y-2 text-left">
                         <div className="inline-block rounded-lg bg-white/20 text-slate-900/80 px-3 py-1 text-sm font-semibold border border-white/30">
                             Capacidades
                         </div>
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900">Una Solución Integral para Alprigrama</h2>
                         <p className="max-w-[900px] text-slate-900/70 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                            Desde la creación de contenido interactivo hasta el análisis detallado del rendimiento, NexusAlpri ofrece todo lo necesario para el ciclo de aprendizaje de nuestro equipo.
+                            Desde la creación de contenido interactivo hasta el análisis detallado del rendimiento, NexusAlpri te ofrece todo lo necesario para el ciclo de aprendizaje de nuestro equipo.
                         </p>
                     </div>
                 </div>
@@ -163,9 +163,9 @@ export default function LandingPage() {
                 </div>
         </section>
         
-         <section className="w-full text-left py-6 md:py-8 mt-6 md:mt-8">
+         <section className="w-full text-center py-6 md:py-8 mt-6 md:mt-8">
                  <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900">¿Listo para Iniciar?</h2>
-                 <p className="max-w-2xl mt-4 text-slate-900/70 md:text-xl">
+                 <p className="max-w-2xl mt-4 text-slate-900/70 md:text-xl mx-auto">
                     Inicia sesión con tu cuenta corporativa y comienza a potenciar tus habilidades hoy mismo.
                  </p>
                   <Button asChild size="lg" className="mt-8 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg">

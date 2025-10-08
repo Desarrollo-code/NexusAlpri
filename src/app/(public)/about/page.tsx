@@ -48,8 +48,8 @@ export default function AboutPage() {
         </section>
 
         <section className="w-full bg-transparent py-6 md:py-8 mt-6 md:mt-8">
-            <div className="flex flex-col items-start justify-center space-y-4 text-left">
-              <div className="space-y-2">
+            <div className="flex flex-col items-center justify-center space-y-4 text-center">
+              <div className="space-y-2 text-left max-w-4xl w-full">
                 <div className="inline-block rounded-lg bg-background/20 text-slate-900/80 px-3 py-1 text-sm font-semibold border border-border/30">
                   Tecnología
                 </div>
