@@ -42,10 +42,11 @@
     --event-orange: 25 90% 60%;
 
     /* Sidebar - Light Theme */
-    --sidebar-background: 0 0% 100%;
+    --sidebar-background: 220 20% 98%;
     --sidebar-foreground: 220 10% 30%;
     --sidebar-muted-foreground: 220 10% 50%;
-    --sidebar-border: 220 20% 94%;
+    --sidebar-hover: 220 20% 94%;
+    --sidebar-border: 220 20% 90%;
     --sidebar-accent: hsl(var(--primary));
     --sidebar-accent-foreground: hsl(var(--primary-foreground));
   }
@@ -83,6 +84,7 @@
     --sidebar-background: 220 20% 10%;
     --sidebar-foreground: 220 10% 80%;
     --sidebar-muted-foreground: 220 10% 60%;
+    --sidebar-hover: 220 20% 15%;
     --sidebar-border: 220 20% 15%;
     --sidebar-accent: hsl(var(--primary));
     --sidebar-accent-foreground: hsl(var(--primary-foreground));
@@ -271,5 +273,4 @@
      @apply !p-1 !h-6 !w-6;
   }
 }
-
     
