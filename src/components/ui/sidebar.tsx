@@ -173,14 +173,12 @@ const SidebarSectionHeader = ({ item }: { item: NavItem }) => {
     }
 
     return (
-      <div className="flex items-center justify-between w-full">
-        <div className="flex items-center gap-3">
-          <GradientIcon icon={item.icon} isActive={isActive}/>
-          <span className={cn(
-              "text-base font-semibold whitespace-nowrap transition-colors",
-              isActive ? "text-sidebar-foreground" : "text-sidebar-muted-foreground group-hover:text-sidebar-foreground"
-          )}>{item.label}</span>
-        </div>
+      <div className="flex items-center gap-3">
+        <GradientIcon icon={item.icon} isActive={isActive}/>
+        <span className={cn(
+            "text-base font-semibold whitespace-nowrap transition-colors",
+            isActive ? "text-sidebar-foreground" : "text-sidebar-muted-foreground group-hover:text-sidebar-foreground"
+        )}>{item.label}</span>
       </div>
     );
 };
