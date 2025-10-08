@@ -34,23 +34,28 @@ export default function PublicLayout({
   
   return (
     <div className="relative flex flex-col min-h-screen items-center antialiased bg-background text-slate-900">
-        
-        {settings?.publicPagesBgUrl && (
-             <div className="fixed inset-0 z-0">
-                <Image 
-                    src={settings.publicPagesBgUrl} 
-                    alt="Fondo" 
-                    fill 
-                    className="object-cover opacity-10 blur-sm"
-                    quality={80}
-                    data-ai-hint="abstract background"
-                />
-                <div className="absolute inset-0 bg-background/50" />
-            </div>
-        )}
-        
-        {showGrid && <div className="grid-bg"></div>}
+      
+      {/* CAPA 0: Imagen de fondo */}
+      {settings?.publicPagesBgUrl && (
+        <div className="fixed inset-0 z-0">
+          <Image 
+            src={settings.publicPagesBgUrl} 
+            alt="Fondo decorativo de la plataforma" 
+            fill 
+            className="object-cover opacity-5 blur-md"
+            quality={80}
+            data-ai-hint="abstract background"
+          />
+          {/* Superposición opcional para oscurecer/aclarar */}
+          <div className="absolute inset-0 bg-background/50" />
+        </div>
+      )}
+      
+      {/* CAPA 1: Cuadrícula de fondo (si aplica) */}
+      {showGrid && <div className="grid-bg z-[1]"></div>}
 
+      {/* CAPA 10: Contenido principal */}
+      <div className="relative z-10 flex flex-col min-h-screen w-full">
         {user ? <AuthenticatedPublicHeader /> : <PublicTopBar />}
         
         <main className="flex-1 flex flex-col items-center justify-center w-full pt-24 md:pt-28 pb-16 md:pb-8 px-4">
@@ -59,6 +64,7 @@ export default function PublicLayout({
         
         <Footer />
         <BottomNav />
+      </div>
     </div>
   );
 }
