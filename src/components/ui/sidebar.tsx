@@ -101,107 +101,12 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export const SidebarContent = () => {
-  const { user } = useAuth();
-  const { isCollapsed, activeItem } = useSidebar();
-  const navItems = getNavItemsForRole(user?.role || 'STUDENT');
-  
-  const [openAccordion, setOpenAccordion] = React.useState<string[]>([]);
-  
-  React.useEffect(() => {
-    const activeSection = navItems.find(item => 
-      item.children?.some(child => child.path && activeItem.startsWith(child.path))
-    );
-    if (activeSection) {
-      setOpenAccordion(prev => [...new Set([...prev, activeSection.id])]);
-    }
-  }, [activeItem, navItems]);
-
-  return (
-    <TooltipProvider delayDuration={100}>
-      <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-1 thin-scrollbar">
-        {navItems.map((item) => {
-          const isActive = item.children?.some(child => child.path && activeItem.startsWith(child.path)) || false;
-          
-          if (item.children && item.children.length > 0) {
-            return (
-              <div key={item.id}>
-                <Accordion 
-                  type="multiple" 
-                  value={isCollapsed ? [] : openAccordion} 
-                  onValueChange={setOpenAccordion}
-                  className="w-full"
-                >
-                  <AccordionItem value={item.id} className="border-b-0">
-                    <SidebarSectionHeader item={item} />
-                    <AccordionContent className={cn("pl-6 pt-0 pb-0", isCollapsed && "hidden")}>
-                      <div className="space-y-1 mt-1 border-l-2 border-sidebar-border/50">
-                          {item.children.map(child => <SidebarMenuItem key={child.id} item={child} />)}
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-                {isCollapsed && isActive && (
-                  <div className="mt-1 space-y-1">
-                     {item.children.map(child => <SidebarMenuItem key={child.id} item={child} />)}
-                  </div>
-                )}
-              </div>
-            );
-          }
-          return <SidebarMenuItem key={item.id} item={item} />;
-        })}
-      </div>
-    </TooltipProvider>
-  );
-};
-
-const SidebarSectionHeader = ({ item }: { item: NavItem }) => {
-    const { isCollapsed, activeItem } = useSidebar();
-    const isActive = useMemo(() => item.children?.some(child => child.path && activeItem.startsWith(child.path)) || false, [activeItem, item.children]);
-
-    const headerContent = (
-        <div className={cn(
-            "flex items-center justify-between w-full rounded-lg transition-colors group",
-            isCollapsed ? 'h-12 w-12 justify-center' : 'p-3',
-            isActive ? "bg-primary text-primary-foreground" : "hover:bg-sidebar-hover text-sidebar-muted-foreground hover:text-sidebar-foreground"
-        )}>
-            <div className="flex items-center gap-3">
-                <GradientIcon icon={item.icon} isActive={isActive} />
-                {!isCollapsed && <span className="text-base font-semibold whitespace-nowrap">{item.label}</span>}
-            </div>
-            {!isCollapsed && <ChevronDown className={cn("h-4 w-4 shrink-0 transition-transform duration-200 text-inherit", "group-data-[state=open]:rotate-180")} />}
-        </div>
-    );
-    
-    if (isCollapsed) {
-        return (
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    {/* The div wrapper is the single child needed by TooltipTrigger */}
-                    <div>{headerContent}</div>
-                </TooltipTrigger>
-                <TooltipContent side="right" align="center" sideOffset={10}>
-                    <p>{item.label}</p>
-                </TooltipContent>
-            </Tooltip>
-        );
-    }
-    
-    return (
-        <AccordionTrigger className="hover:no-underline p-0 w-full">
-            {headerContent}
-        </AccordionTrigger>
-    );
-};
-
 
 const SidebarMenuItem = ({ item }: { item: NavItem }) => {
   const { activeItem, isCollapsed } = useSidebar();
   
   const isActive = useMemo(() => {
     if (!activeItem || !item.path) return false;
-    // Fix: Exact match for dashboard to prevent it from being active on other routes
     if (item.path === '/dashboard') return activeItem === '/dashboard';
     return activeItem.startsWith(item.path);
   }, [activeItem, item.path]);
@@ -237,6 +142,104 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
   }
   
   return linkWrapper;
+};
+
+const SidebarSectionHeader = ({ item, isActive }: { item: NavItem, isActive: boolean }) => {
+  const { isCollapsed } = useSidebar();
+
+  const headerContent = (
+      <div className={cn(
+          "flex items-center justify-between w-full rounded-lg transition-colors group",
+          isCollapsed ? 'h-12 w-12 justify-center' : 'p-3',
+          isActive ? "bg-primary text-primary-foreground" : "hover:bg-sidebar-hover text-sidebar-muted-foreground hover:text-sidebar-foreground"
+      )}>
+          <div className="flex items-center gap-3">
+              <GradientIcon icon={item.icon} isActive={isActive} />
+              {!isCollapsed && <span className="text-base font-semibold whitespace-nowrap">{item.label}</span>}
+          </div>
+          {!isCollapsed && <ChevronDown className={cn("h-4 w-4 shrink-0 transition-transform duration-200 text-inherit", "group-data-[state=open]:rotate-180")} />}
+      </div>
+  );
+
+  if (isCollapsed) {
+      return (
+          <Tooltip>
+              <TooltipTrigger asChild>
+                  {/* The div wrapper is the single child needed by TooltipTrigger */}
+                  <div>{headerContent}</div>
+              </TooltipTrigger>
+              <TooltipContent side="right" align="center" sideOffset={10}>
+                  <p>{item.label}</p>
+              </TooltipContent>
+          </Tooltip>
+      );
+  }
+
+  return (
+      <AccordionTrigger className="hover:no-underline p-0 w-full">
+          {headerContent}
+      </AccordionTrigger>
+  );
+};
+
+const SectionItem = ({ item }: { item: NavItem }) => {
+    const { isCollapsed, activeItem } = useSidebar();
+    const [openAccordion, setOpenAccordion] = React.useState<string[]>([]);
+
+    const isActive = useMemo(() => item.children?.some(child => child.path && activeItem.startsWith(child.path)) || false, [activeItem, item.children]);
+
+    React.useEffect(() => {
+        if (isActive) {
+          setOpenAccordion(prev => [...new Set([...prev, item.id])]);
+        }
+    }, [isActive, item.id]);
+
+    if (isCollapsed) {
+        return (
+            <div>
+                <SidebarSectionHeader item={item} isActive={isActive} />
+                {isActive && (
+                    <div className="mt-1 flex flex-col items-center">
+                        {item.children?.map(child => (
+                            <SidebarMenuItem key={child.id} item={child} />
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    return (
+        <Accordion type="multiple" value={openAccordion} onValueChange={setOpenAccordion} className="w-full">
+            <AccordionItem value={item.id} className="border-b-0">
+                <SidebarSectionHeader item={item} isActive={isActive} />
+                <AccordionContent className="pl-6 pt-0 pb-0">
+                    <div className="space-y-1 mt-1 border-l-2 border-sidebar-border/50">
+                        {item.children?.map(child => <SidebarMenuItem key={child.id} item={child} />)}
+                    </div>
+                </AccordionContent>
+            </AccordionItem>
+        </Accordion>
+    );
+};
+
+
+export const SidebarContent = () => {
+    const { user } = useAuth();
+    const navItems = getNavItemsForRole(user?.role || 'STUDENT');
+
+    return (
+        <TooltipProvider delayDuration={100}>
+            <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-1 thin-scrollbar">
+                {navItems.map((item) => {
+                    if (item.children && item.children.length > 0) {
+                        return <SectionItem key={item.id} item={item} />;
+                    }
+                    return <SidebarMenuItem key={item.id} item={item} />;
+                })}
+            </div>
+        </TooltipProvider>
+    );
 };
 
 
@@ -281,5 +284,3 @@ export const SidebarFooter = () => {
         </div>
     )
 }
-
-    
