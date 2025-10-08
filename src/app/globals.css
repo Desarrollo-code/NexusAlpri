@@ -40,7 +40,7 @@
     --event-orange: 25 90% 60%;
 
     /* Sidebar - Light Theme */
-    --sidebar-background: 0 0% 100%;
+    --sidebar-background: 220 15% 97%;
     --sidebar-foreground: 220 15% 25%;
     --sidebar-muted-foreground: 220 10% 45%;
     --sidebar-accent: hsl(var(--primary));
@@ -78,12 +78,12 @@
     --chart-5: 262 80% 70%; /* violet */
     
     /* Sidebar - Dark Theme */
-    --sidebar-background: 220 15% 12%;
-    --sidebar-foreground: 220 10% 95%;
-    --sidebar-muted-foreground: 220 10% 70%;
-    --sidebar-accent: hsl(var(--primary));
-    --sidebar-accent-foreground: hsl(var(--primary-foreground));
-    --sidebar-border: 220 15% 18%;
+    --sidebar-background: 220 10% 10%; /* Gris carbón / Negro suave */
+    --sidebar-foreground: 220 15% 75%; /* Texto inactivo: dorado-grisáceo */
+    --sidebar-muted-foreground: 220 15% 60%;
+    --sidebar-accent: hsl(var(--primary)); /* Azul primario para el item activo */
+    --sidebar-accent-foreground: #ffffff; /* Texto blanco para el item activo */
+    --sidebar-border: 220 10% 15%; /* Borde ligeramente visible */
   }
 }
  
