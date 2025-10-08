@@ -121,7 +121,7 @@ export const SidebarContent = () => {
     <TooltipProvider delayDuration={100}>
       <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-1 thin-scrollbar">
         {navItems.map((item) => {
-          const isActive = item.children?.some(child => child.path && activeItem.startsWith(child.path)) || (item.path && activeItem.startsWith(item.path) && (item.path !== '/' || activeItem === '/')) || false;
+          const isActive = item.children?.some(child => child.path && activeItem.startsWith(child.path)) || false;
           
           if (item.children && item.children.length > 0) {
             return (
@@ -157,43 +157,42 @@ export const SidebarContent = () => {
 };
 
 const SidebarSectionHeader = ({ item }: { item: NavItem }) => {
-  const { isCollapsed, activeItem } = useSidebar();
-  const isActive = useMemo(() => item.children?.some(child => child.path && activeItem.startsWith(child.path)) || false, [activeItem, item.children]);
+    const { isCollapsed, activeItem } = useSidebar();
+    const isActive = useMemo(() => item.children?.some(child => child.path && activeItem.startsWith(child.path)) || false, [activeItem, item.children]);
 
-  const headerContent = (
-    <div className={cn(
-      "flex items-center justify-between w-full rounded-lg transition-colors group",
-      isCollapsed ? 'h-12 w-12 justify-center' : 'p-3',
-      isActive ? "bg-primary text-primary-foreground" : "hover:bg-sidebar-hover text-sidebar-muted-foreground hover:text-sidebar-foreground"
-    )}>
-      <div className="flex items-center gap-3">
-        <GradientIcon icon={item.icon} isActive={isActive} />
-        {!isCollapsed && <span className="text-base font-semibold whitespace-nowrap">{item.label}</span>}
-      </div>
-      {!isCollapsed && <ChevronDown className={cn("h-4 w-4 shrink-0 transition-transform duration-200", isActive ? "text-primary-foreground" : "text-inherit", "group-data-[state=open]:rotate-180")} />}
-    </div>
-  );
-
-  if (isCollapsed) {
-    return (
-      <Tooltip>
-        <TooltipTrigger className="w-full">
-            <AccordionTrigger className="hover:no-underline p-0 w-full justify-center">
-              {headerContent}
-            </AccordionTrigger>
-        </TooltipTrigger>
-        <TooltipContent side="right" align="center" sideOffset={10}>
-          <p>{item.label}</p>
-        </TooltipContent>
-      </Tooltip>
+    const headerContent = (
+        <div className={cn(
+            "flex items-center justify-between w-full rounded-lg transition-colors group",
+            isCollapsed ? 'h-12 w-12 justify-center' : 'p-3',
+            isActive ? "bg-primary text-primary-foreground" : "hover:bg-sidebar-hover text-sidebar-muted-foreground hover:text-sidebar-foreground"
+        )}>
+            <div className="flex items-center gap-3">
+                <GradientIcon icon={item.icon} isActive={isActive} />
+                {!isCollapsed && <span className="text-base font-semibold whitespace-nowrap">{item.label}</span>}
+            </div>
+            {!isCollapsed && <ChevronDown className={cn("h-4 w-4 shrink-0 transition-transform duration-200 text-inherit", "group-data-[state=open]:rotate-180")} />}
+        </div>
     );
-  }
-
-  return (
-    <AccordionTrigger className="hover:no-underline p-0 w-full">
-      {headerContent}
-    </AccordionTrigger>
-  );
+    
+    if (isCollapsed) {
+        return (
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    {/* The div wrapper is the single child needed by TooltipTrigger */}
+                    <div>{headerContent}</div>
+                </TooltipTrigger>
+                <TooltipContent side="right" align="center" sideOffset={10}>
+                    <p>{item.label}</p>
+                </TooltipContent>
+            </Tooltip>
+        );
+    }
+    
+    return (
+        <AccordionTrigger className="hover:no-underline p-0 w-full">
+            {headerContent}
+        </AccordionTrigger>
+    );
 };
 
 
@@ -202,7 +201,8 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
   
   const isActive = useMemo(() => {
     if (!activeItem || !item.path) return false;
-    if (item.path === '/dashboard') return activeItem === '/dashboard'; // Match exact for dashboard
+    // Fix: Exact match for dashboard to prevent it from being active on other routes
+    if (item.path === '/dashboard') return activeItem === '/dashboard';
     return activeItem.startsWith(item.path);
   }, [activeItem, item.path]);
 
@@ -281,3 +281,5 @@ export const SidebarFooter = () => {
         </div>
     )
 }
+
+    
