@@ -1,4 +1,3 @@
-
 // src/app/api/resources/preview/route.ts
 import { NextResponse, NextRequest } from 'next/server';
 import mammoth from 'mammoth';
@@ -12,26 +11,28 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-        // Construct the full URL for the fetch request on the server-side
-        const absoluteUrl = new URL(fileUrl, req.nextUrl.origin).href;
-
+        const absoluteUrl = fileUrl.startsWith('http') ? fileUrl : new URL(fileUrl, req.nextUrl.origin).href;
+        
         const response = await fetch(absoluteUrl);
         if (!response.ok) {
-            throw new Error(`No se pudo obtener el archivo desde ${absoluteUrl}`);
-        }
-        const arrayBuffer = await response.arrayBuffer();
-
-        if (fileUrl.endsWith('.docx')) {
-            const { value } = await mammoth.convertToHtml({ arrayBuffer });
-            return NextResponse.json({ html: value });
+            console.error(`Fetch failed for ${absoluteUrl} with status ${response.status}`);
+            return new NextResponse(`Error al obtener el archivo: ${response.statusText}`, { status: response.status });
         }
         
-        // Aquí se podrían añadir más manejadores para .xlsx, etc.
-
-        return NextResponse.json({ message: 'Tipo de archivo no soportado para previsualización' }, { status: 415 });
+        const fileType = response.headers.get('content-type');
+        const blob = await response.blob();
+        
+        // Creamos una nueva respuesta para transmitir el archivo al cliente
+        // Esto maneja correctamente los PDFs y otros tipos de archivo que el navegador puede mostrar
+        return new NextResponse(blob, {
+            status: 200,
+            headers: {
+                'Content-Type': fileType || 'application/octet-stream',
+            },
+        });
 
     } catch (error) {
         console.error("Error en la previsualización del archivo:", error);
-        return NextResponse.json({ message: 'Error al procesar el archivo para previsualización' }, { status: 500 });
+        return NextResponse.json({ message: `Error al procesar el archivo: ${(error as Error).message}` }, { status: 500 });
     }
 }
