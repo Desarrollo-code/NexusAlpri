@@ -23,7 +23,7 @@ export function PublicTopBar() {
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-b from-card to-background/80 backdrop-blur-sm border-b">
+    <header className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-b from-card to-background border-b">
       <div className="container mx-auto flex items-center justify-between px-4 lg:px-6 h-24">
         <div className="flex items-center justify-start flex-1">
           <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
