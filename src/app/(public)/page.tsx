@@ -68,10 +68,10 @@ export default function LandingPage() {
             <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-4">
-                  <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline text-slate-900">
+                  <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline text-slate-900 text-left">
                     La Plataforma E-learning que Impulsa tu Talento Corporativo
                   </h1>
-                  <p className="max-w-[600px] text-slate-900/70 md:text-xl">
+                  <p className="max-w-[600px] text-slate-900/70 md:text-xl text-left">
                     Centraliza, gestiona y escala la formación de tus equipos con una herramienta potente, intuitiva y personalizable.
                   </p>
                 </div>
@@ -103,7 +103,7 @@ export default function LandingPage() {
         </section>
         
         <section className="w-full bg-transparent py-6 md:py-8 mt-6 md:mt-8">
-                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
+                 <div className="flex flex-col items-start justify-center space-y-4 text-left">
                     <div className="space-y-2">
                         <div className="inline-block rounded-lg bg-white/20 text-slate-900/80 px-3 py-1 text-sm font-semibold border border-white/30">
                             Capacidades
@@ -120,9 +120,9 @@ export default function LandingPage() {
                      return (
                      <div 
                         key={feature.title}
-                        className="group relative rounded-2xl p-6 text-center h-full transition-all duration-300 overflow-hidden bg-primary backdrop-blur-sm shadow-lg hover:shadow-primary/20 hover:-translate-y-2 border border-white/30 text-primary-foreground"
+                        className="group relative rounded-2xl p-6 text-left h-full transition-all duration-300 overflow-hidden bg-primary backdrop-blur-sm shadow-lg hover:shadow-primary/20 hover:-translate-y-2 border border-white/30 text-primary-foreground"
                       >
-                       <div className="relative z-10 flex flex-col items-center justify-start h-full gap-4">
+                       <div className="relative z-10 flex flex-col items-start justify-start h-full gap-4">
                          <Icon className="w-12 h-12"/>
                          <h3 className="text-xl font-bold font-headline mb-2">{feature.title}</h3>
                          <p className="text-sm text-primary-foreground/80">{feature.description}</p>
@@ -148,7 +148,7 @@ export default function LandingPage() {
                        {benefits.map((benefit) => {
                           const Icon = benefit.icon;
                           return (
-                            <div key={benefit.title} className="flex items-start gap-4">
+                            <div key={benefit.title} className="flex items-start gap-4 text-left">
                               <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full bg-blue-100 text-blue-600">
                                 <Icon className="w-6 h-6" />
                               </div>
@@ -163,9 +163,9 @@ export default function LandingPage() {
                 </div>
         </section>
         
-         <section className="w-full text-center py-6 md:py-8 mt-6 md:mt-8">
+         <section className="w-full text-left py-6 md:py-8 mt-6 md:mt-8">
                  <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900">¿Listo para Iniciar?</h2>
-                 <p className="max-w-2xl mx-auto mt-4 text-slate-900/70 md:text-xl">
+                 <p className="max-w-2xl mt-4 text-slate-900/70 md:text-xl">
                     Únete a las empresas que ya están revolucionando su forma de capacitar. Comienza gratis hoy mismo.
                  </p>
                   <Button asChild size="lg" className="mt-8 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg">
