@@ -1,7 +1,5 @@
 import type { NavItem, UserRole } from '@/types';
 import {
-  Bell,
-  GitCommitHorizontal,
   LayoutGrid,
   BookOpen,
   GraduationCap,
@@ -20,9 +18,12 @@ import {
   ShieldAlert,
   Settings, 
   MessageSquare,
+  Library,
+  Briefcase,
 } from 'lucide-react';
 
 const NAVIGATION_ITEMS: NavItem[] = [
+  // --- General Items ---
   {
     id: 'dashboard',
     label: 'Panel Principal',
@@ -31,67 +32,88 @@ const NAVIGATION_ITEMS: NavItem[] = [
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
   },
   {
-    id: 'courses',
-    label: 'Catálogo de Cursos',
-    icon: BookOpen,
-    path: '/courses',
-    roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
-  },
-  {
-    id: 'my-courses',
-    label: 'Mis Cursos',
-    icon: GraduationCap,
-    path: '/my-courses',
-    roles: ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR']
-  },
-   {
     id: 'messages',
     label: 'Mensajes',
     icon: MessageSquare,
     path: '/messages',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
   },
+  
+  // --- Learning Section ---
   {
-    id: 'my-notes',
-    label: 'Mis Apuntes',
-    icon: Notebook,
-    path: '/my-notes',
-    roles: ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'],
-  },
-  {
-    id: 'resources',
-    label: 'Biblioteca',
-    icon: Folder,
-    path: '/resources',
-    roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
-  },
-  {
-    id: 'communications',
-    label: 'Comunicaciones',
-    icon: Megaphone,
-    path: '/announcements',
-    roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
-  },
-  {
-    id: 'calendar',
-    label: 'Calendario',
-    icon: CalendarDays,
-    path: '/calendar',
-    roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
-  },
-   {
-    id: 'forms',
-    label: 'Formularios',
-    icon: FileText,
-    path: '/forms',
+    id: 'learning',
+    label: 'Formación',
+    icon: GraduationCap,
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
+    children: [
+      {
+        id: 'courses',
+        label: 'Catálogo de Cursos',
+        icon: BookOpen,
+        path: '/courses',
+        roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
+      },
+      {
+        id: 'my-courses',
+        label: 'Mis Cursos',
+        icon: Library,
+        path: '/my-courses',
+        roles: ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR']
+      },
+      {
+        id: 'my-notes',
+        label: 'Mis Apuntes',
+        icon: Notebook,
+        path: '/my-notes',
+        roles: ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'],
+      },
+    ],
   },
+  
+  // --- Organization Section ---
+  {
+    id: 'organization',
+    label: 'Organización',
+    icon: Briefcase,
+    roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
+    children: [
+       {
+        id: 'resources',
+        label: 'Biblioteca',
+        icon: Folder,
+        path: '/resources',
+        roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
+      },
+      {
+        id: 'communications',
+        label: 'Comunicaciones',
+        icon: Megaphone,
+        path: '/announcements',
+        roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
+      },
+      {
+        id: 'calendar',
+        label: 'Calendario',
+        icon: CalendarDays,
+        path: '/calendar',
+        roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
+      },
+       {
+        id: 'forms',
+        label: 'Formularios',
+        icon: FileText,
+        path: '/forms',
+        roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
+      },
+    ]
+  },
+  
+  // --- Admin Section ---
   {
     id: 'admin',
     label: 'Administración',
     icon: Shield,
     roles: ['ADMINISTRATOR', 'INSTRUCTOR'],
-    color: 'hsl(var(--destructive))',
     children: [
       {
         id: 'manage-courses',
