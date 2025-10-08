@@ -69,7 +69,7 @@ export default function LandingPage() {
               <div className="flex flex-col justify-center space-y-4 text-left">
                 <div className="space-y-4">
                   <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline text-slate-900">
-                    El Ecosistema de Crecimiento de Alprigrama
+                    El Ecosistema de Crecimiento de All Print Graphic & Marketing S.A.S.
                   </h1>
                   <p className="max-w-[600px] text-slate-900/70 md:text-xl">
                     Bienvenido a NexusAlpri, la plataforma donde el talento y el conocimiento de nuestro equipo convergen para impulsar el futuro.
@@ -103,16 +103,14 @@ export default function LandingPage() {
         </section>
         
         <section className="w-full bg-transparent py-6 md:py-8 mt-6 md:mt-8">
-                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
-                    <div className="space-y-2 text-left">
-                        <div className="inline-block rounded-lg bg-white/20 text-slate-900/80 px-3 py-1 text-sm font-semibold border border-white/30">
-                            Capacidades
-                        </div>
-                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900">Una Solución Integral para Alprigrama</h2>
-                        <p className="max-w-[900px] text-slate-900/70 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                            NexusAlpri ha sido diseñado para unificar y potenciar nuestro ciclo de aprendizaje. Desde la creación de contenido interactivo hasta el análisis detallado del rendimiento, te ofrecemos las herramientas para crecer.
-                        </p>
+                 <div className="mx-auto max-w-4xl text-left">
+                    <div className="inline-block rounded-lg bg-white/20 text-slate-900/80 px-3 py-1 text-sm font-semibold border border-white/30">
+                        Capacidades
                     </div>
+                    <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900 mt-2">Una Solución Integral para All Print Graphic & Marketing S.A.S.</h2>
+                    <p className="max-w-[900px] text-slate-900/70 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed mt-4">
+                        NexusAlpri ha sido diseñado para unificar y potenciar nuestro ciclo de aprendizaje. Desde la creación de contenido interactivo hasta el análisis detallado del rendimiento, te ofrecemos las herramientas para crecer.
+                    </p>
                 </div>
                 <div className="mx-auto grid max-w-5xl items-start gap-6 py-12 lg:grid-cols-3 lg:gap-8">
                    {features.map((feature) => {
@@ -166,7 +164,7 @@ export default function LandingPage() {
          <section className="w-full text-center py-6 md:py-8 mt-6 md:mt-8">
                  <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900">Tu Viaje de Desarrollo Comienza Aquí</h2>
                  <p className="max-w-2xl mt-4 text-slate-900/70 md:text-xl mx-auto">
-                    Inicia sesión para acceder a tu ruta de aprendizaje personalizada y contribuir al crecimiento colectivo de Alprigrama.
+                    Inicia sesión para acceder a tu ruta de aprendizaje personalizada y contribuir al crecimiento colectivo de All Print Graphic & Marketing S.A.S.
                  </p>
                   <Button asChild size="lg" className="mt-8 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg">
                     <Link href="/sign-in">

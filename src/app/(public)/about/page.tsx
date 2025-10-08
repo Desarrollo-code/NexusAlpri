@@ -38,26 +38,24 @@ export default function AboutPage() {
                   Nuestra Visión
                 </div>
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl font-headline text-slate-900">
-                  Cultivar el Talento, Impulsar el Futuro de Alprigrama
+                  Cultivar el Talento, Impulsar el Futuro de All Print Graphic & Marketing S.A.S.
                 </h1>
                 <p className="max-w-[600px] text-slate-900/70 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  NexusAlpri es más que una plataforma; es nuestro compromiso con el crecimiento. Nació de la necesidad de tener una herramienta de e-learning a la altura de nuestro equipo: ágil, potente e intuitiva. Nuestra misión es empoderar a cada colaborador de Alprigrama con el conocimiento para innovar, la confianza para liderar y las habilidades para construir juntos el próximo capítulo de nuestro éxito.
+                  NexusAlpri es más que una plataforma; es nuestro compromiso con el crecimiento. Nació de la necesidad de tener una herramienta de e-learning a la altura de nuestro equipo: ágil, potente e intuitiva. Nuestra misión es empoderar a cada colaborador de All Print Graphic & Marketing S.A.S. con el conocimiento para innovar, la confianza para liderar y las habilidades para construir juntos el próximo capítulo de nuestro éxito.
                 </p>
               </div>
             </div>
         </section>
 
         <section className="w-full bg-transparent py-6 md:py-8 mt-6 md:mt-8">
-            <div className="flex flex-col items-center justify-center space-y-4 text-center">
-              <div className="space-y-2 text-left max-w-4xl w-full">
-                <div className="inline-block rounded-lg bg-background/20 text-slate-900/80 px-3 py-1 text-sm font-semibold border border-border/30">
-                  Tecnología
-                </div>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900">Ingeniería para la Excelencia</h2>
-                <p className="max-w-[900px] text-slate-900/70 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Hemos seleccionado un stack tecnológico de vanguardia, enfocado en ofrecer una experiencia de usuario que sea no solo funcional, sino también rápida, segura y un placer de usar. Cada tecnología fue elegida con un propósito claro: potenciar el aprendizaje.
-                </p>
+            <div className="mx-auto max-w-4xl text-left">
+              <div className="inline-block rounded-lg bg-background/20 text-slate-900/80 px-3 py-1 text-sm font-semibold border border-border/30">
+                Tecnología
               </div>
+              <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900 mt-2">Ingeniería para la Excelencia</h2>
+              <p className="max-w-[900px] text-slate-900/70 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed mt-4">
+                Hemos seleccionado un stack tecnológico de vanguardia, enfocado en ofrecer una experiencia de usuario que sea no solo funcional, sino también rápida, segura y un placer de usar. Cada tecnología fue elegida con un propósito claro: potenciar el aprendizaje.
+              </p>
             </div>
             <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 md:gap-12 lg:grid-cols-3 lg:max-w-none mt-12">
               {techStack.map((tech) => {
