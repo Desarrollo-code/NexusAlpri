@@ -1,4 +1,3 @@
-
 // src/components/ui/sidebar.tsx
 'use client';
 
@@ -127,14 +126,12 @@ export const SidebarContent = () => {
               <Accordion 
                 key={item.id} 
                 type="multiple" 
-                value={openAccordion} 
+                value={isCollapsed ? [] : openAccordion} 
                 onValueChange={setOpenAccordion}
                 className="w-full"
               >
                 <AccordionItem value={item.id} className="border-b-0">
-                  <AccordionTrigger asChild>
-                    <SidebarSectionHeader item={item} />
-                  </AccordionTrigger>
+                  <SidebarSectionHeader item={item} />
                   <AccordionContent className={cn("pl-6", isCollapsed && "hidden")}>
                     <div className="space-y-1 mt-1 border-l-2 border-sidebar-border/50">
                         {item.children.map(child => <SidebarMenuItem key={child.id} item={child} />)}
@@ -152,46 +149,43 @@ export const SidebarContent = () => {
 };
 
 const SidebarSectionHeader = ({ item }: { item: NavItem }) => {
-    const { isCollapsed, activeItem } = useSidebar();
-    
-    const isActive = useMemo(() => {
-      return item.children?.some(child => child.path && activeItem.startsWith(child.path)) || false;
-    }, [activeItem, item.children]);
+  const { isCollapsed, activeItem } = useSidebar();
+  const isActive = useMemo(() => item.children?.some(child => child.path && activeItem.startsWith(child.path)) || false, [activeItem, item.children]);
 
-    const content = (
-      <div
-        className={cn(
-          "flex items-center justify-between w-full rounded-lg transition-colors group",
-          isCollapsed ? "justify-center" : "p-3",
-          isActive
-            ? "bg-sidebar-accent text-sidebar-accent-foreground"
-            : "hover:bg-sidebar-hover text-sidebar-muted-foreground hover:text-sidebar-foreground"
-        )}
-      >
-        <div className="flex items-center gap-3">
-          <GradientIcon icon={item.icon} isActive={isActive} />
-          {!isCollapsed && <span className="text-base font-semibold whitespace-nowrap">{item.label}</span>}
-        </div>
-        {!isCollapsed && <ChevronDown className="h-4 w-4 shrink-0 text-inherit transition-transform duration-200 group-data-[state=open]:rotate-180" />}
+  const HeaderContent = () => (
+    <div className={cn(
+      "flex items-center justify-between w-full rounded-lg transition-colors group",
+      isCollapsed ? "justify-center" : "p-3",
+       isActive && !isCollapsed
+        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+        : "hover:bg-sidebar-hover text-sidebar-muted-foreground hover:text-sidebar-foreground"
+    )}>
+      <div className="flex items-center gap-3">
+        <GradientIcon icon={item.icon} isActive={isActive} />
+        {!isCollapsed && <span className="text-base font-semibold whitespace-nowrap">{item.label}</span>}
       </div>
+      {!isCollapsed && <ChevronDown className="h-4 w-4 shrink-0 text-inherit transition-transform duration-200 group-data-[state=open]:rotate-180" />}
+    </div>
+  );
+
+  if (isCollapsed) {
+    return (
+      <Tooltip>
+        <TooltipTrigger className="flex justify-center items-center h-12 w-12 rounded-lg">
+          <GradientIcon icon={item.icon} isActive={isActive} />
+        </TooltipTrigger>
+        <TooltipContent side="right" align="center" sideOffset={10}>
+          <p>{item.label}</p>
+        </TooltipContent>
+      </Tooltip>
     );
-    
-    if (isCollapsed) {
-        return (
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <div className="flex justify-center items-center h-12 w-12 rounded-lg">
-                        <GradientIcon icon={item.icon} isActive={isActive} />
-                    </div>
-                </TooltipTrigger>
-                <TooltipContent side="right" align="center" sideOffset={10}>
-                    <p>{item.label}</p>
-                </TooltipContent>
-            </Tooltip>
-        );
-    }
-    
-    return content;
+  }
+
+  return (
+    <AccordionTrigger className="hover:no-underline p-0">
+      <HeaderContent />
+    </AccordionTrigger>
+  );
 };
 
 
