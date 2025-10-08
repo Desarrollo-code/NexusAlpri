@@ -27,7 +27,7 @@ export const SidebarHeader = () => {
   // Vista para escritorio
   return (
     <div className={cn(
-      "flex items-center h-20 border-b border-white/10", // Cambio aquí
+      "flex items-center h-20 border-b border-white/20", // Borde sutil
       "bg-gradient-to-b from-red-600 to-black",
       isCollapsed ? 'justify-center' : 'justify-start px-4'
     )}>

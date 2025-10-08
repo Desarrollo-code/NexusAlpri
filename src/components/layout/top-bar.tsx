@@ -120,7 +120,7 @@ export const TopBar = () => {
 
     return (
         <div className={cn(
-            "flex items-center justify-between h-20 px-4 shrink-0 border-b sticky top-0 z-30",
+            "flex items-center justify-between h-20 px-4 shrink-0 border-b border-white/20 sticky top-0 z-30",
             "bg-gradient-to-b from-sky-400 via-blue-500 to-indigo-600"
         )}>
             {/* Left side */}

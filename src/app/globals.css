@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -82,7 +83,7 @@
     --sidebar-background: 220 40% 5%;
     --sidebar-foreground: 45 80% 70%;
     --sidebar-muted-foreground: 45 50% 55%;
-    --sidebar-border: 220 40% 10%;
+    --sidebar-border: 220 40% 15%; /* Más claro para sutileza */
     --sidebar-accent: 210 90% 65%;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-hover: 100 100% 100% / 0.05; /* Blanco con 5% de opacidad para el hover */
