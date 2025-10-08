@@ -5,7 +5,7 @@ import * as React from "react";
 import { useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, LogOut, ChevronsRight } from "lucide-react";
+import { ChevronDown, LogOut, ChevronsRight, ChevronsLeft } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/auth-context";
 import { getNavItemsForRole } from "@/lib/nav-items";
@@ -232,7 +232,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
 
 export const SidebarFooter = () => {
     const { logout } = useAuth();
-    const { isCollapsed, toggleSidebar } = useSidebar();
+    const { isCollapsed, toggleSidebar, isMobile } = useSidebar();
     const { theme, setTheme } = useTheme();
 
     return (
@@ -258,6 +258,19 @@ export const SidebarFooter = () => {
                 <LogOut className="h-5 w-5" />
                 {!isCollapsed && <span className="font-semibold">Cerrar Sesión</span>}
             </Button>
+            {!isMobile && (
+              <Button
+                onClick={toggleSidebar}
+                variant="ghost"
+                className={cn(
+                  "w-full text-sidebar-muted-foreground hover:bg-white/10 hover:text-white",
+                  isCollapsed ? 'justify-center p-0 h-10' : 'justify-start gap-3 p-3'
+                )}
+              >
+                {isCollapsed ? <ChevronsRight className="h-5 w-5" /> : <ChevronsLeft className="h-5 w-5" />}
+                {!isCollapsed && <span className="font-semibold">Colapsar</span>}
+              </Button>
+            )}
         </div>
     )
 }

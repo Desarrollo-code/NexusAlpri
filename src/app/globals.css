@@ -39,11 +39,11 @@
     --event-red: 0 80% 60%;
     --event-orange: 25 90% 60%;
 
-    /* Sidebar */
-    --sidebar-background: 220 10% 10%;
-    --sidebar-foreground: 220 15% 75%;
+    /* Sidebar - Colores fijos para ambos temas */
+    --sidebar-background: 220 10% 10%; /* Gris carbón */
+    --sidebar-foreground: 220 15% 75%; /* Texto inactivo */
     --sidebar-muted-foreground: 220 15% 60%;
-    --sidebar-accent: hsl(var(--primary)); /* Azul primario para el item activo */
+    --sidebar-accent: 210 90% 55%; /* Azul primario para el item activo */
     --sidebar-accent-foreground: #ffffff; /* Texto blanco para el item activo */
     --sidebar-border: 220 10% 15%;
   }

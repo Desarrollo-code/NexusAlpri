@@ -6,11 +6,9 @@ import { useAuth } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
-import { Button } from "../ui/button";
-import { ChevronsLeft, ChevronsRight } from "lucide-react";
 
 export const SidebarHeader = () => {
-  const { isCollapsed, toggleSidebar, isMobile } = useSidebar();
+  const { isCollapsed } = useSidebar();
   const { settings } = useAuth();
   
   return (
@@ -42,18 +40,6 @@ export const SidebarHeader = () => {
             </span>
         )}
       </Link>
-
-      {!isMobile && (
-         <Button
-          onClick={toggleSidebar}
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-slate-400 hover:bg-white/10 hover:text-white"
-        >
-          {isCollapsed ? <ChevronsRight className="h-4 w-4" /> : <ChevronsLeft className="h-4 w-4" />}
-          <span className="sr-only">Toggle Sidebar</span>
-        </Button>
-      )}
     </div>
   );
 };
