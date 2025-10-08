@@ -198,7 +198,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
 
   const linkContent = (
       <div className={cn(
-        "flex items-center gap-3 rounded-md transition-all duration-300 font-medium group/menu-item relative",
+        "flex items-center gap-3 rounded-lg transition-all duration-300 font-medium group/menu-item relative",
         isCollapsed ? "justify-center h-12 w-12" : "p-3",
         isActive
           ? "bg-sidebar-accent text-sidebar-accent-foreground shadow"

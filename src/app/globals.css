@@ -40,12 +40,12 @@
     --event-orange: 25 90% 60%;
 
     /* Sidebar */
-    --sidebar-background: 220 10% 10%; /* Gris carbón / Negro suave */
-    --sidebar-foreground: 220 15% 75%; /* Texto inactivo: dorado-grisáceo */
+    --sidebar-background: 220 10% 10%;
+    --sidebar-foreground: 220 15% 75%;
     --sidebar-muted-foreground: 220 15% 60%;
     --sidebar-accent: hsl(var(--primary)); /* Azul primario para el item activo */
     --sidebar-accent-foreground: #ffffff; /* Texto blanco para el item activo */
-    --sidebar-border: 220 10% 15%; /* Borde ligeramente visible */
+    --sidebar-border: 220 10% 15%;
   }
  
   .dark {
