@@ -99,6 +99,11 @@
 }
 
 @layer components {
+  .header-crackle-background {
+    background-color: hsl(220, 25%, 10%);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80' width='80' height='80'%3e%3cpath fill='%23ffffff' fill-opacity='0.1' d='M14 16.52 29.48 32 14 47.48 14 16.52zM45.48 32 30 47.48 30 16.52 45.48 32zM32 63.48 47.48 48 32 32.52 32 63.48zM63.48 48 48 32.52 48 63.48 63.48 48z'%3e%3c/path%3e%3c/svg%3e");
+  }
+
   .announcement-pattern-bg {
     background-size: cover;
     background-position: center;

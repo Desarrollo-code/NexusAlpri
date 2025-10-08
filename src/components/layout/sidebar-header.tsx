@@ -14,12 +14,12 @@ export const SidebarHeader = () => {
   // En modo móvil, el header se muestra en la hoja (sheet) que se abre.
   if (isMobile) {
       return (
-         <div className="flex items-center h-20 border-b border-sidebar-border px-4 bg-sidebar-background">
+         <div className="header-crackle-background flex items-center h-20 border-b border-sidebar-border px-4">
              <Link href="/dashboard" className="inline-flex items-center gap-3">
                  <div className="relative h-12 w-12 flex-shrink-0 rounded-lg overflow-hidden bg-primary/20">
                     {settings?.logoUrl ? <Image src={settings.logoUrl} alt="Logo" fill className="object-contain p-1" /> : <div className="w-full h-full rounded-md bg-muted" />}
                  </div>
-                 <span className="text-xl font-bold text-sidebar-foreground whitespace-nowrap">{settings?.platformName || 'NexusAlpri'}</span>
+                 <span className="text-xl font-bold text-sidebar-accent-foreground whitespace-nowrap">{settings?.platformName || 'NexusAlpri'}</span>
              </Link>
          </div>
       );
@@ -28,13 +28,13 @@ export const SidebarHeader = () => {
   // Vista para escritorio
   return (
     <div className={cn(
-      "flex items-center h-20 border-b border-sidebar-border", 
+      "header-crackle-background flex items-center h-20 border-b border-sidebar-border", 
       isCollapsed ? 'justify-center' : 'justify-start px-4'
     )}>
       <Link href="/dashboard" className="inline-flex items-center gap-3">
           <div className={cn(
               "bg-gradient-to-br from-primary/80 to-accent/80 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg relative overflow-hidden",
-              "h-12 w-12" // Tamaño unificado
+              "h-12 w-12"
           )}>
             {settings?.logoUrl ? 
               <div className="relative w-full h-full">
@@ -45,7 +45,7 @@ export const SidebarHeader = () => {
           </div>
         
         {!isCollapsed && (
-            <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-sidebar-foreground dark:text-sidebar-accent-foreground">
+            <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-sidebar-accent-foreground">
               {settings?.platformName || 'NexusAlpri'}
             </span>
         )}
