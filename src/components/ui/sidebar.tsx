@@ -181,7 +181,6 @@ const SidebarSectionHeader = ({ item }: { item: NavItem }) => {
               isActive ? "text-sidebar-foreground" : "text-sidebar-muted-foreground group-hover:text-sidebar-foreground"
           )}>{item.label}</span>
         </div>
-        <ChevronDown className="h-4 w-4 shrink-0 text-sidebar-muted-foreground transition-transform duration-200" />
       </div>
     );
 };
