@@ -39,7 +39,7 @@ export default function PublicLayout({
             src={settings.publicPagesBgUrl} 
             alt="Fondo decorativo de la plataforma" 
             fill 
-            className="object-cover opacity-80"
+            className="object-cover opacity-100"
             quality={80}
             data-ai-hint="abstract background"
           />
