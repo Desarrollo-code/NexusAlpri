@@ -89,15 +89,6 @@
 }
 
 @layer components {
-  /* Estilo para la cuadrícula de fondo */
-  .grid-bg {
-    @apply absolute inset-0 -z-10 h-full w-full;
-    background-size: 40px 40px;
-    background-image:
-      linear-gradient(to right, theme('colors.sky.200 / 0.5') 1px, transparent 1px),
-      linear-gradient(to bottom, theme('colors.sky.200 / 0.5') 1px, transparent 1px);
-  }
-
   .announcement-pattern-bg {
     background-size: cover;
     background-position: center;
@@ -132,17 +123,6 @@
   .profile-card .card__subtitle {
     @apply text-center text-sm text-muted-foreground mt-2;
   }
-  
-  .pixelated-gradient-bg {
-    background:
-      linear-gradient(135deg, #6366f1 22px, #312e81 22px, #312e81 24px, transparent 24px, transparent 67px, #312e81 67px, #312e81 69px, transparent 69px),
-      linear-gradient(225deg, #6366f1 22px, #312e81 22px, #312e81 24px, transparent 24px, transparent 67px, #312e81 67px, #312e81 69px, transparent 69px) 0 64px,
-      linear-gradient(45deg, #ec4899 22px, #312e81 22px, #312e81 24px, transparent 24px, transparent 67px, #312e81 67px, #312e81 69px, transparent 69px),
-      linear-gradient(315deg, #ec4899 22px, #312e81 22px, #312e81 24px, transparent 24px, transparent 67px, #312e81 67px, #312e81 69px, transparent 69px) 0 64px,
-      #312e81;
-    background-size: 128px 128px;
-    animation: pixel-pan 15s linear infinite;
-  }
 }
 
 
@@ -161,11 +141,6 @@
     50% {
         opacity: 0.8;
     }
-}
-
-@keyframes pixel-pan {
-  0% { background-position: 0% 0%; }
-  100% { background-position: 100% 100%; }
 }
 
 .card-border-animated {
