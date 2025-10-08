@@ -29,7 +29,7 @@ export const SidebarHeader = () => {
   return (
     <div className={cn(
       "flex items-center h-20 border-b border-black/20",
-      "bg-gradient-to-b from-gray-900 to-black", // Degradado Grafito
+      "bg-gradient-to-b from-red-600 to-black", // Degradado de rojo a negro
       isCollapsed ? 'justify-center' : 'justify-start px-4'
     )}>
       <Link href="/dashboard" className="inline-flex items-center gap-3">
@@ -46,7 +46,7 @@ export const SidebarHeader = () => {
           </div>
         
         {!isCollapsed && (
-            <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-amber-400">
+            <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-white">
               {settings?.platformName || 'NexusAlpri'}
             </span>
         )}
