@@ -5,7 +5,7 @@ import * as React from "react";
 import { useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronsLeft, LogOut, User as UserIconLucide } from "lucide-react";
+import { ChevronsLeft, ChevronDown } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/auth-context";
 import { getNavItemsForRole } from "@/lib/nav-items";
@@ -14,8 +14,6 @@ import { Button } from "@/components/ui/button";
 import { GradientIcon } from "./gradient-icon";
 import type { NavItem } from '@/types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip";
-import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
-import { Identicon } from "./identicon";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./accordion";
 
 const SidebarContext = React.createContext<any>(null);
@@ -164,9 +162,12 @@ const SidebarSectionHeader = ({ item }: { item: NavItem }) => {
     }
 
     return (
-      <div className="flex items-center gap-3 w-full">
-        <GradientIcon icon={item.icon} isActive={false} />
-        <span className="text-base font-semibold text-sidebar-muted-foreground whitespace-nowrap">{item.label}</span>
+      <div className="flex items-center justify-between w-full">
+        <div className="flex items-center gap-3">
+          <GradientIcon icon={item.icon} isActive={false} />
+          <span className="text-base font-semibold text-sidebar-muted-foreground whitespace-nowrap">{item.label}</span>
+        </div>
+        <ChevronDown className="h-4 w-4 shrink-0 text-sidebar-muted-foreground transition-transform duration-200" />
       </div>
     );
 };
