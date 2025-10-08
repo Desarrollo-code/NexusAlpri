@@ -192,7 +192,9 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
   
   const isActive = useMemo(() => {
     if (!activeItem || !item.path) return false;
-    if (item.path === '/dashboard') return activeItem === item.path;
+    // Si la ruta es exactamente '/', solo debe estar activo en esa ruta.
+    if (item.path === '/') return activeItem === '/';
+    // Para otras rutas, verifica si la ruta actual comienza con la ruta del item.
     return activeItem.startsWith(item.path);
   }, [activeItem, item.path]);
 
@@ -232,22 +234,14 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
 
 export const SidebarFooter = () => {
     const { logout } = useAuth();
-    const { isCollapsed, toggleSidebar } = useSidebar();
+    const { isCollapsed, toggleSidebar, isMobile } = useSidebar();
     const { theme, setTheme } = useTheme();
+
+    if (isMobile) return null; // No mostrar el footer en móvil
 
     return (
         <div className="p-3 border-t border-sidebar-border flex flex-col gap-2">
-            {!isCollapsed && (
-                <div className="flex items-center justify-between p-2 rounded-md">
-                    <Label htmlFor="dark-mode-toggle" className="text-sidebar-muted-foreground">Modo Oscuro</Label>
-                    <Switch 
-                        id="dark-mode-toggle"
-                        checked={theme === 'dark'}
-                        onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
-                    />
-                </div>
-            )}
-             <Button
+            <Button
                 onClick={logout}
                 variant="ghost"
                 className={cn(
@@ -258,16 +252,14 @@ export const SidebarFooter = () => {
                 <LogOut className="h-5 w-5" />
                 {!isCollapsed && <span className="font-semibold">Cerrar Sesión</span>}
             </Button>
-            {isCollapsed && (
-                 <Button
-                    onClick={toggleSidebar}
-                    variant="ghost"
-                    size="icon"
-                    className="w-full h-10 text-sidebar-muted-foreground hover:bg-white/10 hover:text-white"
-                 >
-                     <ChevronRightCircle className="h-6 w-6"/>
-                 </Button>
-            )}
+            <Button
+                onClick={toggleSidebar}
+                variant="ghost"
+                size="icon"
+                className="w-full h-10 text-sidebar-muted-foreground hover:bg-white/10 hover:text-white"
+            >
+                {isCollapsed ? <ChevronRightCircle className="h-6 w-6"/> : <ChevronLeftCircle className="h-6 w-6"/>}
+            </Button>
         </div>
     )
 }
