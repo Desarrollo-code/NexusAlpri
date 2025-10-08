@@ -1,3 +1,4 @@
+
 // src/components/ui/sidebar.tsx
 'use client';
 
@@ -157,36 +158,37 @@ const SidebarSectionHeader = ({ item }: { item: NavItem }) => {
       return item.children?.some(child => child.path && activeItem.startsWith(child.path)) || false;
     }, [activeItem, item.children]);
 
-    if (isCollapsed) {
-        return (
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <div className="flex justify-center items-center h-12 w-12 rounded-lg">
-                        <GradientIcon icon={item.icon} isActive={isActive} />
-                    </div>
-                </TooltipTrigger>
-                <TooltipContent side="right" align="center" sideOffset={10}>
-                    <p>{item.label}</p>
-                </TooltipContent>
-            </Tooltip>
-        )
-    }
-
-    return (
-      <div className={cn(
-          "flex items-center justify-between w-full p-3 rounded-lg transition-colors",
-          isActive
-            ? "bg-sidebar-accent text-sidebar-accent-foreground"
-            : "hover:bg-sidebar-hover text-sidebar-muted-foreground"
-      )}>
+    const content = isCollapsed ? (
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <div className="flex justify-center items-center h-12 w-12 rounded-lg">
+                    <GradientIcon icon={item.icon} isActive={isActive} />
+                </div>
+            </TooltipTrigger>
+            <TooltipContent side="right" align="center" sideOffset={10}>
+                <p>{item.label}</p>
+            </TooltipContent>
+        </Tooltip>
+    ) : (
+      <>
         <div className="flex items-center gap-3">
           <GradientIcon icon={item.icon} isActive={isActive}/>
-          <span className={cn(
-              "text-base font-semibold whitespace-nowrap",
-              isActive ? "text-sidebar-accent-foreground" : "group-hover:text-sidebar-foreground"
-          )}>{item.label}</span>
+          <span className="text-base font-semibold whitespace-nowrap">{item.label}</span>
         </div>
-      </div>
+        {!isCollapsed && <ChevronDown className="h-4 w-4 shrink-0 text-inherit transition-transform duration-200 group-data-[state=open]:rotate-180" />}
+      </>
+    );
+
+    return (
+        <div className={cn(
+            "flex items-center justify-between w-full rounded-lg transition-colors group",
+            isCollapsed ? "justify-center" : "p-3",
+            isActive
+                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                : "hover:bg-sidebar-hover text-sidebar-muted-foreground hover:text-sidebar-foreground"
+        )}>
+            {content}
+        </div>
     );
 };
 
@@ -196,14 +198,13 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
   
   const isActive = useMemo(() => {
     if (!activeItem || !item.path) return false;
-    // La condición para el dashboard debe ser exacta para no activarse en otras rutas.
     if (item.path === '/dashboard') return activeItem === '/dashboard';
     return activeItem.startsWith(item.path);
   }, [activeItem, item.path]);
 
   const linkContent = (
       <div className={cn(
-        "flex items-center gap-3 rounded-lg transition-all duration-300 font-medium group/menu-item relative",
+        "flex items-center gap-3 rounded-lg transition-all duration-300 font-semibold group/menu-item relative",
         isCollapsed ? "justify-center h-12 w-12" : "p-3",
         isActive
           ? "bg-sidebar-accent text-sidebar-accent-foreground shadow"
