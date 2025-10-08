@@ -28,8 +28,8 @@ export const SidebarHeader = () => {
   // Vista para escritorio
   return (
     <div className={cn(
-      "flex items-center h-20 border-b border-sidebar-border",
-      "bg-gradient-to-b dark:from-card dark:to-sidebar-background from-muted/50 to-sidebar-background",
+      "flex items-center h-20 border-b border-black/20",
+      "bg-gradient-to-b from-gray-900 to-black", // Degradado Grafito
       isCollapsed ? 'justify-center' : 'justify-start px-4'
     )}>
       <Link href="/dashboard" className="inline-flex items-center gap-3">
@@ -46,7 +46,7 @@ export const SidebarHeader = () => {
           </div>
         
         {!isCollapsed && (
-            <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-sidebar-foreground">
+            <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-amber-400">
               {settings?.platformName || 'NexusAlpri'}
             </span>
         )}
