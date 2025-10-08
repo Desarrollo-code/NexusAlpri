@@ -155,8 +155,12 @@ const SidebarSectionHeader = ({ item }: { item: NavItem }) => {
   if (isCollapsed) {
     return (
       <Tooltip>
-        <TooltipTrigger className="flex justify-center items-center h-12 w-12 rounded-lg">
-          <GradientIcon icon={item.icon} isActive={isActive} />
+        <TooltipTrigger className="w-full">
+            <AccordionTrigger className="hover:no-underline p-0 w-full justify-center">
+                <div className="flex justify-center items-center h-12 w-12 rounded-lg">
+                    <GradientIcon icon={item.icon} isActive={isActive} />
+                </div>
+            </AccordionTrigger>
         </TooltipTrigger>
         <TooltipContent side="right" align="center" sideOffset={10}>
           <p>{item.label}</p>
@@ -170,14 +174,14 @@ const SidebarSectionHeader = ({ item }: { item: NavItem }) => {
       <div className={cn(
         "flex items-center justify-between w-full rounded-lg transition-colors group p-3",
         isActive 
-          ? "bg-sidebar-accent text-sidebar-accent-foreground" 
+          ? "bg-primary text-primary-foreground" 
           : "hover:bg-sidebar-hover text-sidebar-muted-foreground hover:text-sidebar-foreground"
       )}>
         <div className="flex items-center gap-3">
           <GradientIcon icon={item.icon} isActive={isActive} />
           <span className="text-base font-semibold whitespace-nowrap">{item.label}</span>
         </div>
-        <ChevronDown className="h-4 w-4 shrink-0 text-inherit transition-transform duration-200 group-data-[state=open]:rotate-180" />
+        <ChevronDown className={cn("h-4 w-4 shrink-0 transition-transform duration-200", isActive ? "text-primary-foreground" : "text-inherit", "group-data-[state=open]:rotate-180")} />
       </div>
     </AccordionTrigger>
   );
@@ -198,7 +202,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         "flex items-center gap-3 rounded-lg transition-all duration-300 font-semibold group/menu-item relative",
         isCollapsed ? "justify-center h-12 w-12" : "p-3",
         isActive
-          ? "bg-sidebar-accent text-sidebar-accent-foreground shadow"
+          ? "bg-primary text-primary-foreground shadow"
           : "text-sidebar-muted-foreground hover:bg-sidebar-hover hover:text-sidebar-foreground"
       )}>
         <GradientIcon icon={item.icon} isActive={isActive} />
