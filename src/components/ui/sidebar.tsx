@@ -131,7 +131,7 @@ export const SidebarContent = () => {
                 className="w-full"
               >
                 <AccordionItem value={item.id} className="border-b-0">
-                  <AccordionTrigger className={cn("hover:no-underline rounded-lg group", isCollapsed ? "p-0 justify-center" : "p-3", 'hover:bg-sidebar-hover')}>
+                  <AccordionTrigger asChild>
                      <SidebarSectionHeader item={item} />
                   </AccordionTrigger>
                   <AccordionContent className={cn("pl-6", isCollapsed && "hidden")}>
@@ -173,15 +173,19 @@ const SidebarSectionHeader = ({ item }: { item: NavItem }) => {
     }
 
     return (
-      <div className="flex items-center justify-between w-full">
+      <div className={cn(
+          "flex items-center justify-between w-full p-3 rounded-lg transition-colors",
+          isActive
+            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+            : "hover:bg-sidebar-hover text-sidebar-muted-foreground"
+      )}>
         <div className="flex items-center gap-3">
           <GradientIcon icon={item.icon} isActive={isActive}/>
           <span className={cn(
-              "text-base font-semibold whitespace-nowrap transition-colors",
-              isActive ? "text-sidebar-foreground" : "text-sidebar-muted-foreground group-hover:text-sidebar-foreground"
+              "text-base font-semibold whitespace-nowrap",
+              isActive ? "text-sidebar-accent-foreground" : "group-hover:text-sidebar-foreground"
           )}>{item.label}</span>
         </div>
-        {!isCollapsed && <ChevronDown className="h-4 w-4 shrink-0 text-sidebar-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />}
       </div>
     );
 };
