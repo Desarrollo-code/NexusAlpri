@@ -1,12 +1,10 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  /* Define variables para el tema claro bajo :root y un selector de atributo específico */
-  :root, [data-theme="light"] {
-    /* Paleta de colores base para el tema claro */
+  :root {
+    /* Paleta de colores base */
     --background: 220 20% 99%; /* Blanco ligeramente azulado */
     --foreground: 220 15% 15%; /* Casi negro */
     --card: 0 0% 100%;
@@ -28,12 +26,12 @@
     --ring: 210 90% 55%;
     --radius: 0.75rem;
 
-    /* Colores para gráficos */
-    --chart-1: 221 83% 53%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 340 82% 52%;
-    --chart-4: 35 91% 55%;
-    --chart-5: 262 74% 50%;
+    /* Nueva paleta de colores para gráficos */
+    --chart-1: 221 83% 53%; /* blue */
+    --chart-2: 160 60% 45%; /* emerald */
+    --chart-3: 340 82% 52%; /* fuchsia */
+    --chart-4: 35 91% 55%;  /* amber */
+    --chart-5: 262 74% 50%; /* violet */
     
     /* Colores para eventos del calendario */
     --event-blue: 210 90% 55%;
@@ -81,13 +79,12 @@
     --chart-5: 262 80% 70%;
 
     /* Sidebar - Dark Theme */
-    --sidebar-background: 220 20% 10%;
-    --sidebar-foreground: 220 10% 80%;
-    --sidebar-muted-foreground: 220 10% 60%;
-    --sidebar-hover: 220 20% 15%;
-    --sidebar-border: 220 20% 15%;
+    --sidebar-background: 220 40% 5%; 
+    --sidebar-foreground: 45 80% 70%;
+    --sidebar-muted-foreground: 45 50% 55%;
     --sidebar-accent: hsl(var(--primary));
     --sidebar-accent-foreground: hsl(var(--primary-foreground));
+    --sidebar-border: 220 40% 10%;
   }
 }
  
@@ -273,4 +270,3 @@
      @apply !p-1 !h-6 !w-6;
   }
 }
-    
