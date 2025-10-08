@@ -18,6 +18,7 @@ import { SidebarHeader } from "../layout/sidebar-header";
 import { useTheme } from "next-themes";
 import { Switch } from "./switch";
 import { Label } from "./label";
+import { GradientIcon } from "./gradient-icon";
 
 const SidebarContext = React.createContext<any>(null);
 
@@ -102,21 +103,19 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
 
 export const SidebarContent = () => {
   const { user } = useAuth();
+  const { isCollapsed, activeItem } = useSidebar();
   const navItems = getNavItemsForRole(user?.role || 'STUDENT');
-  const { isCollapsed } = useSidebar();
-
+  
   const [openAccordion, setOpenAccordion] = React.useState<string[]>([]);
-  const pathname = usePathname();
-
+  
   React.useEffect(() => {
-    // Expand the current section on load
     const activeSection = navItems.find(item => 
-      item.children?.some(child => child.path && pathname.startsWith(child.path))
+      item.children?.some(child => child.path && activeItem.startsWith(child.path))
     );
     if (activeSection) {
-      setOpenAccordion([activeSection.id]);
+      setOpenAccordion(prev => [...new Set([...prev, activeSection.id])]);
     }
-  }, [pathname, navItems]);
+  }, [activeItem, navItems]);
 
   return (
     <TooltipProvider delayDuration={100}>
@@ -132,7 +131,7 @@ export const SidebarContent = () => {
                 className="w-full"
               >
                 <AccordionItem value={item.id} className="border-b-0">
-                  <AccordionTrigger className={cn("hover:no-underline rounded-lg", isCollapsed ? "p-0 justify-center" : "p-3", 'hover:bg-white/5')}>
+                  <AccordionTrigger className={cn("hover:no-underline rounded-lg group", isCollapsed ? "p-0 justify-center" : "p-3", 'hover:bg-white/5')}>
                      <SidebarSectionHeader item={item} />
                   </AccordionTrigger>
                   <AccordionContent className={cn("pl-6", isCollapsed && "hidden")}>
@@ -152,15 +151,18 @@ export const SidebarContent = () => {
 };
 
 const SidebarSectionHeader = ({ item }: { item: NavItem }) => {
-    const { isCollapsed } = useSidebar();
-    const Icon = item.icon;
+    const { isCollapsed, activeItem } = useSidebar();
     
+    const isActive = useMemo(() => {
+      return item.children?.some(child => child.path && activeItem.startsWith(child.path)) || false;
+    }, [activeItem, item.children]);
+
     if (isCollapsed) {
         return (
             <Tooltip>
                 <TooltipTrigger asChild>
                     <div className="flex justify-center items-center h-12 w-12 rounded-lg">
-                        <Icon className="w-5 h-5 text-sidebar-muted-foreground" />
+                        <GradientIcon icon={item.icon} isActive={isActive} />
                     </div>
                 </TooltipTrigger>
                 <TooltipContent side="right" align="center" sideOffset={10}>
@@ -173,8 +175,11 @@ const SidebarSectionHeader = ({ item }: { item: NavItem }) => {
     return (
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center gap-3">
-          <Icon className="w-5 h-5 text-sidebar-muted-foreground" />
-          <span className="text-base font-semibold text-sidebar-muted-foreground whitespace-nowrap">{item.label}</span>
+          <GradientIcon icon={item.icon} isActive={isActive}/>
+          <span className={cn(
+              "text-base font-semibold whitespace-nowrap transition-colors",
+              isActive ? "text-sidebar-foreground" : "text-sidebar-muted-foreground group-hover:text-sidebar-foreground"
+          )}>{item.label}</span>
         </div>
         <ChevronDown className="h-4 w-4 shrink-0 text-sidebar-muted-foreground transition-transform duration-200" />
       </div>
@@ -183,8 +188,7 @@ const SidebarSectionHeader = ({ item }: { item: NavItem }) => {
 
 
 const SidebarMenuItem = ({ item }: { item: NavItem }) => {
-  const { activeItem, isCollapsed, isMobile } = useSidebar();
-  const Icon = item.icon;
+  const { activeItem, isCollapsed } = useSidebar();
   
   const isActive = useMemo(() => {
     if (!activeItem || !item.path) return false;
@@ -192,28 +196,26 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
     return activeItem.startsWith(item.path);
   }, [activeItem, item.path]);
 
-  const showText = !isCollapsed || isMobile;
-  
-  const content = (
+  const linkContent = (
       <div className={cn(
         "flex items-center gap-3 rounded-md transition-all duration-300 font-medium group/menu-item relative",
-        isCollapsed && !isMobile ? "justify-center h-12 w-12" : "p-3",
+        isCollapsed ? "justify-center h-12 w-12" : "p-3",
         isActive
           ? "bg-sidebar-accent text-sidebar-accent-foreground shadow"
           : "text-sidebar-muted-foreground hover:bg-white/5 hover:text-sidebar-foreground"
       )}>
-        <Icon className="w-5 h-5" />
-        {showText && <span className="whitespace-nowrap">{item.label}</span>}
+        <GradientIcon icon={item.icon} isActive={isActive} />
+        {!isCollapsed && <span className="whitespace-nowrap">{item.label}</span>}
       </div>
   );
 
   const linkWrapper = (
     <Link href={item.path || '#'}>
-      {content}
+      {linkContent}
     </Link>
   );
 
-  if (isCollapsed && !isMobile) {
+  if (isCollapsed) {
     return (
         <Tooltip>
             <TooltipTrigger asChild>{linkWrapper}</TooltipTrigger>
