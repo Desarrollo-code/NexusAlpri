@@ -103,11 +103,11 @@ export default function LandingPage() {
         </section>
         
         <section className="w-full bg-transparent py-6 md:py-8 mt-6 md:mt-8">
-                 <div className="mx-auto max-w-4xl text-left">
+                 <div className="mx-auto max-w-4xl text-center md:text-left">
                     <div className="inline-block rounded-lg bg-white/20 text-slate-900/80 px-3 py-1 text-sm font-semibold border border-white/30">
                         Capacidades
                     </div>
-                    <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900 mt-2">Una Solución Integral para All Print Graphic & Marketing S.A.S.</h2>
+                    <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900 mt-2">Una Solución de Formación Integral</h2>
                     <p className="max-w-[900px] text-slate-900/70 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed mt-4">
                         NexusAlpri ha sido diseñado para unificar y potenciar nuestro ciclo de aprendizaje. Desde la creación de contenido interactivo hasta el análisis detallado del rendimiento, te ofrecemos las herramientas para crecer.
                     </p>
@@ -164,7 +164,7 @@ export default function LandingPage() {
          <section className="w-full text-center py-6 md:py-8 mt-6 md:mt-8">
                  <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900">Tu Viaje de Desarrollo Comienza Aquí</h2>
                  <p className="max-w-2xl mt-4 text-slate-900/70 md:text-xl mx-auto">
-                    Inicia sesión para acceder a tu ruta de aprendizaje personalizada y contribuir al crecimiento colectivo de All Print Graphic & Marketing S.A.S.
+                    Inicia sesión para acceder a tu ruta de aprendizaje personalizada y contribuir al crecimiento colectivo de nuestra organización.
                  </p>
                   <Button asChild size="lg" className="mt-8 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg">
                     <Link href="/sign-in">

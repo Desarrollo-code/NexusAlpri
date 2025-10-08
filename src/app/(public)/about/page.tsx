@@ -7,17 +7,17 @@ import Image from 'next/image';
 import React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 
+const techStack = [
+  { name: 'Next.js', description: 'Para un rendimiento excepcional y una experiencia de usuario fluida gracias a su arquitectura híbrida de renderizado en servidor y cliente.', icon: Code, color: "text-blue-500" },
+  { name: 'TypeScript', description: 'Garantiza un código más seguro, mantenible y escalable, minimizando errores en producción y agilizando el desarrollo.', icon: Type, color: "text-blue-500" },
+  { name: 'Prisma', description: 'Como ORM de nueva generación, simplifica y asegura las interacciones con la base de datos, proporcionando una capa de abstracción robusta.', icon: Database, color: "text-emerald-500" },
+  { name: 'Tailwind CSS', description: 'Nos permite construir interfaces complejas y personalizadas de forma rápida y consistente, siguiendo un sistema de diseño atómico.', icon: Wind, color: "text-cyan-500" },
+  { name: 'ShadCN UI', description: 'Para componentes de UI accesibles, reutilizables y estéticamente agradables, acelerando la construcción de una interfaz pulida.', icon: Feather, color: "text-pink-500" },
+];
+
 export default function AboutPage() {
   const { settings } = useAuth();
   const aboutImageUrl = settings?.aboutImageUrl || "https://placehold.co/600x400/38bdf8/ffffff?text=Nuestra+Misi%C3%B3n";
-
-  const techStack = [
-    { name: 'Next.js', description: 'Para un rendimiento excepcional y una experiencia de usuario fluida gracias a su arquitectura híbrida de renderizado en servidor y cliente.', icon: Code, color: "text-blue-500" },
-    { name: 'TypeScript', description: 'Garantiza un código más seguro, mantenible y escalable, minimizando errores en producción y agilizando el desarrollo.', icon: Type, color: "text-blue-500" },
-    { name: 'Prisma', description: 'Como ORM de nueva generación, simplifica y asegura las interacciones con la base de datos, proporcionando una capa de abstracción robusta.', icon: Database, color: "text-emerald-500" },
-    { name: 'Tailwind CSS', description: 'Nos permite construir interfaces complejas y personalizadas de forma rápida y consistente, siguiendo un sistema de diseño atómico.', icon: Wind, color: "text-cyan-500" },
-    { name: 'ShadCN UI', description: 'Para componentes de UI accesibles, reutilizables y estéticamente agradables, acelerando la construcción de una interfaz pulida.', icon: Feather, color: "text-pink-500" },
-  ];
 
   return (
     <div className="container flex-1 z-10 w-full">
@@ -41,14 +41,14 @@ export default function AboutPage() {
                   Cultivar el Talento, Impulsar el Futuro de All Print Graphic & Marketing S.A.S.
                 </h1>
                 <p className="max-w-[600px] text-slate-900/70 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  NexusAlpri es más que una plataforma; es nuestro compromiso con el crecimiento. Nació de la necesidad de tener una herramienta de e-learning a la altura de nuestro equipo: ágil, potente e intuitiva. Nuestra misión es empoderar a cada colaborador de All Print Graphic & Marketing S.A.S. con el conocimiento para innovar, la confianza para liderar y las habilidades para construir juntos el próximo capítulo de nuestro éxito.
+                  NexusAlpri es más que una plataforma; es nuestro compromiso con el crecimiento. Nuestra misión es empoderar a cada colaborador con el conocimiento para innovar, la confianza para liderar y las habilidades para construir juntos el próximo capítulo de nuestro éxito.
                 </p>
               </div>
             </div>
         </section>
 
         <section className="w-full bg-transparent py-6 md:py-8 mt-6 md:mt-8">
-            <div className="mx-auto max-w-4xl text-left">
+            <div className="mx-auto max-w-4xl text-center md:text-left">
               <div className="inline-block rounded-lg bg-background/20 text-slate-900/80 px-3 py-1 text-sm font-semibold border border-border/30">
                 Tecnología
               </div>
