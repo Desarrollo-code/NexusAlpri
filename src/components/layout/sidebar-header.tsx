@@ -11,7 +11,6 @@ export const SidebarHeader = () => {
   const { isCollapsed, isMobile } = useSidebar();
   const { settings } = useAuth();
   
-  // En modo móvil, el header se muestra en la hoja (sheet) que se abre.
   if (isMobile) {
       return (
          <div className="bg-gradient-to-b from-card to-sidebar-background flex items-center h-20 border-b border-sidebar-border px-4">
@@ -28,8 +27,8 @@ export const SidebarHeader = () => {
   // Vista para escritorio
   return (
     <div className={cn(
-      "flex items-center h-20 border-b border-black/20",
-      "bg-gradient-to-b from-red-600 to-black", // Degradado de rojo a negro
+      "flex items-center h-20 border-b border-white/10", // Cambio aquí
+      "bg-gradient-to-b from-red-600 to-black",
       isCollapsed ? 'justify-center' : 'justify-start px-4'
     )}>
       <Link href="/dashboard" className="inline-flex items-center gap-3">
