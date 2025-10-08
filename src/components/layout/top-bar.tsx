@@ -121,18 +121,18 @@ export const TopBar = () => {
     return (
         <div className={cn(
             "flex items-center justify-between h-20 px-4 shrink-0 border-b sticky top-0 z-30",
-            "bg-slate-900/95 backdrop-blur-lg border-blue-900/50 text-white"
+            "bg-background/80 backdrop-blur-sm"
         )}>
             {/* Left side */}
             <div className="flex items-center gap-2 flex-1 min-w-0">
                  {isMobile && (
                     showBackButton ? (
-                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white/10" onClick={() => router.back()}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted" onClick={() => router.back()}>
                             <ArrowLeft className="h-4 w-4"/>
                             <span className="sr-only">Volver</span>
                         </Button>
                     ) : (
-                        <Button onClick={toggleSidebar} variant="ghost" size="icon" className="hover:bg-white/10">
+                        <Button onClick={toggleSidebar} variant="ghost" size="icon" className="hover:bg-muted">
                             <PanelLeft className="h-5 w-5"/>
                             <span className="sr-only">Toggle Menu</span>
                         </Button>
@@ -146,7 +146,7 @@ export const TopBar = () => {
                  {headerActions && <div className="hidden md:flex items-center gap-2">{headerActions}</div>}
                  <Popover>
                     <PopoverTrigger asChild>
-                        <Button variant="ghost" size="icon" className="relative hover:bg-white/10">
+                        <Button variant="ghost" size="icon" className="relative hover:bg-muted">
                             <Bell className="h-5 w-5"/>
                             {unreadCount > 0 && (
                                 <span className="absolute top-1 right-1 flex h-4 w-4">
@@ -188,7 +188,7 @@ export const TopBar = () => {
                          </div>
                     </PopoverContent>
                  </Popover>
-                <Separator orientation="vertical" className="h-8 bg-white/20" />
+                <Separator orientation="vertical" className="h-8" />
                 <UserAvatarDropdown />
             </div>
             {headerActions && isMobile && (
