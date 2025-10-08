@@ -15,15 +15,9 @@ export const IconBarChart3 = (props: SVGProps<SVGSVGElement>) => (
     strokeLinejoin="round"
     {...props}
   >
-    <defs>
-      <linearGradient id="bar-chart-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style={{ stopColor: '#60A5FA', stopOpacity: 1 }} />
-        <stop offset="100%" style={{ stopColor: '#3B82F6', stopOpacity: 1 }} />
-      </linearGradient>
-    </defs>
-    <path d="M3 3v18h18" stroke="hsl(var(--muted-foreground))" />
-    <path d="M18 17V9" stroke="url(#bar-chart-gradient)" fill="url(#bar-chart-gradient)" strokeWidth="4" />
-    <path d="M13 17V5" stroke="url(#bar-chart-gradient)" fill="url(#bar-chart-gradient)" strokeWidth="4" />
-    <path d="M8 17v-3" stroke="url(#bar-chart-gradient)" fill="url(#bar-chart-gradient)" strokeWidth="4" />
+    <path d="M3 3v18h18" />
+    <path d="M18 17V9" />
+    <path d="M13 17V5" />
+    <path d="M8 17v-3" />
   </svg>
 );

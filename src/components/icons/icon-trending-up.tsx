@@ -15,13 +15,7 @@ export const IconTrendingUp = (props: SVGProps<SVGSVGElement>) => (
     strokeLinejoin="round"
     {...props}
   >
-    <defs>
-      <linearGradient id="trending-up-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style={{ stopColor: '#22C55E', stopOpacity: 1 }} />
-        <stop offset="100%" style={{ stopColor: '#60A5FA', stopOpacity: 1 }} />
-      </linearGradient>
-    </defs>
-    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="url(#trending-up-gradient)" />
-    <polyline points="16 7 22 7 22 13" stroke="url(#trending-up-gradient)" />
+    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+    <polyline points="16 7 22 7 22 13" />
   </svg>
 );

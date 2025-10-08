@@ -21,44 +21,18 @@ export const GradientIcon = ({
 
   const sizeClasses = {
     'sm': 'w-4 h-4',
-    'default': 'w-5 h-5', // Tamaño unificado
+    'default': 'w-5 h-5',
     'lg': 'w-6 h-6',
     'xl': 'w-7 h-7',
   };
-
-  const gradientId = React.useId();
-
+  
+  // Renderiza el ícono directamente con el color de texto actual.
+  // El color cambiará basado en el estado `isActive` del padre.
   return (
-    <svg 
-        className={cn("flex items-center justify-center", sizeClasses[size], className)}
-        fill="none" 
-        strokeWidth="2"
-        viewBox="0 0 24 24"
-        xmlns="http://www.w3.org/2000/svg"
-    >
-      <defs>
-        <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-          {isActive ? (
-            <>
-              <stop offset="0%" style={{ stopColor: 'hsl(var(--primary-foreground))', stopOpacity: 1 }} />
-              <stop offset="100%" style={{ stopColor: 'hsl(var(--primary-foreground))', stopOpacity: 0.8 }} />
-            </>
-          ) : (
-             <>
-              <stop offset="0%" style={{ stopColor: '#f472b6', stopOpacity: 1 }} /> 
-              <stop offset="100%" style={{ stopColor: '#fb923c', stopOpacity: 1 }} />
-            </>
-          )}
-        </linearGradient>
-      </defs>
-      <Icon
-        stroke={`url(#${gradientId})`}
-        {...props}
-        className={cn(
-            "transition-colors duration-200 w-full h-full",
-            !isActive && "group-hover/menu-item:stroke-[hsl(var(--primary))]"
-        )}
-      />
-    </svg>
+    <Icon 
+      className={cn(sizeClasses[size], className)}
+      strokeWidth={isActive ? 2.5 : 2}
+      {...props}
+    />
   );
 };

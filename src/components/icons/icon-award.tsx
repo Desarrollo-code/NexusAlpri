@@ -15,13 +15,7 @@ export const IconAward = (props: SVGProps<SVGSVGElement>) => (
     strokeLinejoin="round"
     {...props}
   >
-    <defs>
-      <linearGradient id="award-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style={{ stopColor: '#FBBF24', stopOpacity: 1 }} />
-        <stop offset="100%" style={{ stopColor: '#F59E0B', stopOpacity: 1 }} />
-      </linearGradient>
-    </defs>
-    <circle cx="12" cy="8" r="6" stroke="url(#award-gradient)" fill="url(#award-gradient)" fillOpacity="0.2" />
-    <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" stroke="url(#award-gradient)" fill="url(#award-gradient)" fillOpacity="0.2"/>
+    <circle cx="12" cy="8" r="7" />
+    <polyline points="8.21 13.89 7 22 12 17 17 22 15.79 13.88" />
   </svg>
 );

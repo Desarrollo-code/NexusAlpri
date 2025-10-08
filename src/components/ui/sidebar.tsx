@@ -5,7 +5,7 @@ import * as React from "react";
 import { useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, LogOut, ChevronsRight, ChevronsLeft } from "lucide-react";
+import { LogOut, ChevronDown, ChevronLeftCircle, ChevronRightCircle } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/auth-context";
 import { getNavItemsForRole } from "@/lib/nav-items";
@@ -232,7 +232,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
 
 export const SidebarFooter = () => {
     const { logout } = useAuth();
-    const { isCollapsed, toggleSidebar, isMobile } = useSidebar();
+    const { isCollapsed, toggleSidebar } = useSidebar();
     const { theme, setTheme } = useTheme();
 
     return (
@@ -258,18 +258,15 @@ export const SidebarFooter = () => {
                 <LogOut className="h-5 w-5" />
                 {!isCollapsed && <span className="font-semibold">Cerrar Sesión</span>}
             </Button>
-            {!isMobile && (
-              <Button
-                onClick={toggleSidebar}
-                variant="ghost"
-                className={cn(
-                  "w-full text-sidebar-muted-foreground hover:bg-white/10 hover:text-white",
-                  isCollapsed ? 'justify-center p-0 h-10' : 'justify-start gap-3 p-3'
-                )}
-              >
-                {isCollapsed ? <ChevronsRight className="h-5 w-5" /> : <ChevronsLeft className="h-5 w-5" />}
-                {!isCollapsed && <span className="font-semibold">Colapsar</span>}
-              </Button>
+            {isCollapsed && (
+                 <Button
+                    onClick={toggleSidebar}
+                    variant="ghost"
+                    size="icon"
+                    className="w-full h-10 text-sidebar-muted-foreground hover:bg-white/10 hover:text-white"
+                 >
+                     <ChevronRightCircle className="h-6 w-6"/>
+                 </Button>
             )}
         </div>
     )

@@ -6,16 +6,32 @@ import { useAuth } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
+import { Button } from "../ui/button";
+import { ChevronsLeft, ChevronsRight, ChevronLeftCircle, ChevronRightCircle } from 'lucide-react';
 
 export const SidebarHeader = () => {
-  const { isCollapsed } = useSidebar();
+  const { isCollapsed, toggleSidebar, isMobile } = useSidebar();
   const { settings } = useAuth();
   
+  if (isMobile) {
+      return (
+         <div className="flex items-center h-20 border-b border-sidebar-border px-4 bg-[#1E232C]">
+             {/* En móvil, podrías querer mostrar solo el logo y el nombre, sin el botón */}
+             <Link href="/dashboard" className="inline-flex items-center gap-3">
+                 <div className="relative h-12 w-12 flex-shrink-0 rounded-lg overflow-hidden bg-primary/20">
+                    {settings?.logoUrl ? <Image src={settings.logoUrl} alt="Logo" fill className="object-contain p-1" /> : <div className="w-full h-full rounded-md bg-muted" />}
+                 </div>
+                 <span className="text-xl font-bold text-white whitespace-nowrap">{settings?.platformName || 'NexusAlpri'}</span>
+             </Link>
+         </div>
+      );
+  }
+
   return (
     <div className={cn(
-      "flex items-center h-20 border-b", 
+      "flex items-center h-20 border-b border-sidebar-border", 
       isCollapsed ? 'justify-center' : 'justify-between px-4',
-      "bg-[#1E232C] border-slate-700"
+      "bg-[#1E232C]"
     )}>
       <Link href="/dashboard" className={cn(
           "inline-flex items-center gap-3",
@@ -23,12 +39,11 @@ export const SidebarHeader = () => {
       )}>
          <div className={cn(
              "bg-gradient-to-br from-primary/80 to-accent/80 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg relative overflow-hidden",
-             isCollapsed ? "h-10 w-10" : "h-12 w-12",
-             !settings?.logoUrl && "p-2"
+             isCollapsed ? "h-10 w-10" : "h-12 w-12"
          )}>
             {settings?.logoUrl ? 
               <div className="relative w-full h-full">
-                <Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" className={cn("object-contain p-1")} />
+                <Image src={settings.logoUrl} alt="Logo" fill className="object-contain p-1" />
               </div> 
               : <div className="w-full h-full rounded-md bg-muted" />
             }
@@ -40,6 +55,11 @@ export const SidebarHeader = () => {
             </span>
         )}
       </Link>
+       {!isCollapsed && (
+        <Button onClick={toggleSidebar} variant="ghost" size="icon" className="text-sidebar-muted-foreground hover:text-white">
+            <ChevronLeftCircle className="h-6 w-6"/>
+        </Button>
+       )}
     </div>
   );
 };
