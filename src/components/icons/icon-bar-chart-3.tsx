@@ -17,7 +17,7 @@ export const IconBarChart3 = (props: SVGProps<SVGSVGElement>) => (
   >
     <defs>
       <linearGradient id="bar-chart-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style={{ stopColor: '#14B8A6', stopOpacity: 1 }} />
+        <stop offset="0%" style={{ stopColor: '#60A5FA', stopOpacity: 1 }} />
         <stop offset="100%" style={{ stopColor: '#3B82F6', stopOpacity: 1 }} />
       </linearGradient>
     </defs>
