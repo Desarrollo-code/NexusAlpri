@@ -29,8 +29,10 @@ import { isPdfUrl } from '@/lib/resource-utils';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-// Configure worker
+
+// Configure worker by pointing to the file that was copied to the public folder.
 pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`;
 
 
@@ -72,8 +74,8 @@ const PdfViewer = ({ url }: { url: string }) => {
         setNumPages(numPages);
     }
     
-    function onDocumentLoadError(error: any) {
-        setError("No se pudo cargar el documento PDF. Por favor, asegúrate de que la URL sea válida y accesible.");
+    function onDocumentLoadError(error: Error) {
+        setError(`Error al cargar el PDF: ${error.message}`);
         console.error("Error loading PDF:", error);
     }
     
@@ -93,8 +95,8 @@ const PdfViewer = ({ url }: { url: string }) => {
         return (
             <Alert variant="destructive" className="my-4">
                  <AlertTriangle className="h-4 w-4" />
-                 <CardTitle>Error de PDF</CardTitle>
-                 <CardDescription>{error}</CardDescription>
+                 <AlertTitle>Error de PDF</AlertTitle>
+                 <AlertDescription>{error}</AlertDescription>
             </Alert>
         );
     }
@@ -544,7 +546,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     
     if (block.type === 'FILE') {
         if (isPdfUrl(url)) {
-             return <PdfViewer url={`/api/resources/preview?url=${encodeURIComponent(url)}`} key={block.id} />;
+             return <PdfViewer url={url} key={block.id} />;
         }
         
         const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url.toLowerCase());

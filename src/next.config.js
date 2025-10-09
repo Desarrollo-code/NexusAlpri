@@ -8,13 +8,7 @@ const nextConfig = {
   },
   webpack: (config) => {
     // Correctly configure webpack for react-pdf
-    config.module.rules.push({
-      test: /pdf\.worker\.min\.js/,
-      type: 'asset/resource',
-      generator: {
-        filename: 'static/chunks/[hash][ext][query]',
-      },
-    });
+    config.resolve.alias['pdfjs-dist'] = 'pdfjs-dist/build/pdf';
     return config;
   },
   images: {

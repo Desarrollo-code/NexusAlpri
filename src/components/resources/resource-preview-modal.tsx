@@ -24,6 +24,7 @@ import { addXp, XP_CONFIG, checkFirstDownload } from '@/lib/gamification';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`;
 
@@ -38,12 +39,8 @@ const DocxPreviewer = ({ url }: { url: string }) => {
             setIsLoading(true);
             setError(null);
             try {
-                // Fetch the HTML content from our dedicated API endpoint
                 const response = await fetch(`/api/resources/preview?url=${encodeURIComponent(url)}`);
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'No se pudo cargar la previsualización del documento.');
-                }
+                if (!response.ok) throw new Error('No se pudo cargar la previsualización del documento.');
                 const data = await response.json();
                 setHtml(data.html);
             } catch (e) {
@@ -162,8 +159,8 @@ const PdfViewer = ({ url }: { url: string }) => {
         setNumPages(numPages);
     }
     
-    function onDocumentLoadError(error: any) {
-        setError("No se pudo cargar el documento PDF. Por favor, asegúrate de que la URL sea válida y accesible.");
+    function onDocumentLoadError(error: Error) {
+        setError(`Error al cargar el PDF: ${error.message}`);
         console.error("Error loading PDF:", error);
     }
     
@@ -181,10 +178,11 @@ const PdfViewer = ({ url }: { url: string }) => {
 
     if (error) {
         return (
-            <div className="my-4 p-4 text-center text-destructive-foreground bg-destructive/80">
-                 <AlertTriangle className="inline-block h-4 w-4 mr-1"/>
-                 {error}
-            </div>
+            <Alert variant="destructive" className="m-4">
+                 <AlertTriangle className="h-4 w-4" />
+                 <AlertTitle>Error de PDF</AlertTitle>
+                 <AlertDescription>{error}</AlertDescription>
+            </Alert>
         );
     }
     
@@ -280,7 +278,7 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
     
     if (displayUrl) {
         if (isPdfUrl(displayUrl)) {
-            return <PdfViewer url={`/api/resources/preview?url=${encodeURIComponent(displayUrl)}`} />;
+            return <PdfViewer url={displayUrl} />;
         }
         
         const youtubeId = getYoutubeVideoId(displayUrl);
