@@ -1,7 +1,6 @@
 // src/app/api/auth/callback/route.ts
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { type CookieOptions, createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { createSession } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import type { UserRole } from '@/types';
@@ -14,55 +13,44 @@ export async function GET(request: Request) {
   const next = searchParams.get('next') ?? '/dashboard';
 
   if (code) {
-    const cookieStore = cookies();
-    const supabase = createServerClient(
+    // Usamos un cliente de Supabase simple solo para este intercambio.
+    const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value;
-          },
-          set(name: string, value: string, options: CookieOptions) {
-            cookieStore.set({ name, value, ...options });
-          },
-          remove(name: string, options: CookieOptions) {
-            cookieStore.delete({ name, ...options });
-          },
-        },
-      }
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
     const { error, data: { session } } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && session) {
       const user = session.user;
       
-      // Upsert user in our local database
+      // Upsert (actualiza o crea) el usuario en nuestra propia base de datos.
+      // Esto asegura que cada usuario de Google tenga una entrada en nuestra tabla `User`.
       const dbUser = await prisma.user.upsert({
         where: { email: user.email! },
         update: {
           name: user.user_metadata.full_name || user.email,
           avatar: user.user_metadata.avatar_url,
-          // We don't update the role on subsequent logins to preserve admin/instructor roles
         },
         create: {
           id: user.id,
           email: user.email!,
           name: user.user_metadata.full_name || user.email!,
           avatar: user.user_metadata.avatar_url,
-          role: 'STUDENT' as UserRole, // Default role
+          role: 'STUDENT' as UserRole, // Por defecto, los nuevos usuarios son estudiantes.
           registeredDate: new Date(),
-          isActive: true
+          isActive: true,
+          // No se establece una contraseña, ya que es un inicio de sesión social.
         }
       });
       
-      // Create a session using our custom JWT system
+      // Creamos la sesión usando nuestro propio sistema JWT, que es el que usa el resto de la app.
       await createSession(dbUser.id);
       
+      // Redirigimos al usuario al panel principal.
       return NextResponse.redirect(`${origin}${next}`);
     }
   }
 
-  // return the user to an error page with instructions
+  // Si algo falla, redirigimos a una página de error genérica.
   return NextResponse.redirect(`${origin}/auth/auth-code-error`);
 }
