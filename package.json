@@ -5,13 +5,14 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "prisma db push && prisma generate && next build",
+    "postinstall": "prisma generate",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma db push",
-    "prisma:seed": "prisma db seed"
+    "prisma:seed": "ts-node prisma/seed.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
@@ -44,7 +45,6 @@
     "@radix-ui/react-tabs": "^1.1.0",
     "@radix-ui/react-toast": "^1.2.1",
     "@radix-ui/react-tooltip": "^1.1.2",
-    "react-pdf": "^9.1.0",
     "@supabase/ssr": "^0.4.0",
     "@supabase/supabase-js": "^2.44.4",
     "bcryptjs": "^2.4.3",
@@ -72,6 +72,7 @@
     "react-dom": "^18.3.1",
     "react-easy-crop": "^5.0.7",
     "react-hook-form": "^7.52.1",
+    "react-pdf": "^9.1.0",
     "react-quill-new": "^3.6.0",
     "react-youtube": "^10.1.0",
     "recharts": "^2.12.7",
