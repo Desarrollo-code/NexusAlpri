@@ -6,11 +6,9 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-   webpack: (config, { isServer }) => {
-    // This is to make pdf.js work with Next.js
-    if (!isServer) {
-      config.resolve.alias['pdfjs-dist'] = 'pdfjs-dist/build/pdf';
-    }
+   webpack: (config) => {
+    // Agregado para que `react-pdf` funcione correctamente con Next.js
+    config.resolve.alias.canvas = false;
     return config;
   },
   images: {

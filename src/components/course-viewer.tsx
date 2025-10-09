@@ -26,10 +26,12 @@ import { RichTextEditor } from './ui/rich-text-editor';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import YouTube from 'react-youtube';
 import { isPdfUrl } from '@/lib/resource-utils';
-import { Viewer, Worker } from '@react-pdf-viewer/core';
-import { defaultLayoutPlugin, type LocalizationMap } from '@react-pdf-viewer/default-layout';
-import '@react-pdf-viewer/core/lib/styles/index.css';
-import '@react-pdf-viewer/default-layout/lib/styles/index.css';
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
+
+// Configure worker
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 
 // --- Helper types and functions ---
@@ -57,6 +59,67 @@ const noteColors = [
   { value: 'pink', bg: 'bg-pink-100 dark:bg-pink-900/40', border: 'border-pink-200 dark:border-pink-800/50' },
   { value: 'purple', bg: 'bg-purple-100 dark:bg-purple-900/40', border: 'border-purple-200 dark:border-purple-800/50' },
 ];
+
+// --- PDF Viewer ---
+const PdfViewer = ({ url }: { url: string }) => {
+    const [numPages, setNumPages] = useState<number | null>(null);
+    const [pageNumber, setPageNumber] = useState(1);
+    const [error, setError] = useState<string | null>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [containerWidth, setContainerWidth] = useState<number>();
+
+    function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
+        setNumPages(numPages);
+    }
+    
+    function onDocumentLoadError(error: any) {
+        setError("No se pudo cargar el documento PDF. Por favor, asegúrate de que la URL sea válida y accesible.");
+        console.error("Error loading PDF:", error);
+    }
+    
+     const onResize = useCallback(() => {
+        if (containerRef.current) {
+            setContainerWidth(containerRef.current.clientWidth);
+        }
+    }, []);
+
+    useEffect(() => {
+        onResize();
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, [onResize]);
+
+    if (error) {
+        return (
+            <Alert variant="destructive" className="my-4">
+                 <AlertTriangle className="h-4 w-4" />
+                 <CardTitle>Error de PDF</CardTitle>
+                 <CardDescription>{error}</CardDescription>
+            </Alert>
+        );
+    }
+    
+    return (
+        <div ref={containerRef} className="my-4 border rounded-lg overflow-hidden bg-muted/30">
+            <Document
+                file={url}
+                onLoadSuccess={onDocumentLoadSuccess}
+                onLoadError={onDocumentLoadError}
+                loading={<div className="flex items-center justify-center h-64"><Loader2 className="animate-spin" /></div>}
+            >
+                <Page pageNumber={pageNumber} width={containerWidth} />
+            </Document>
+            {numPages && (
+                 <div className="flex items-center justify-center p-2 bg-card border-t">
+                    <Button variant="outline" size="sm" onClick={() => setPageNumber(p => Math.max(1, p - 1))} disabled={pageNumber <= 1}>Anterior</Button>
+                    <p className="text-sm mx-4">Página {pageNumber} de {numPages}</p>
+                    <Button variant="outline" size="sm" onClick={() => setPageNumber(p => Math.min(numPages, p + 1))} disabled={pageNumber >= numPages}>Siguiente</Button>
+                </div>
+            )}
+        </div>
+    );
+};
+
 
 const DocxPreviewer = ({ url }: { url: string }) => {
     const [html, setHtml] = useState<string | null>(null);
@@ -252,61 +315,6 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
   const [isNotesPanelOpen, setIsNotesPanelOpen] = useState(false);
   const [imageToView, setImageToView] = useState<string | null>(null);
-
-  const esLocalization: LocalizationMap = {
-    'es_ES': {
-        'attachment': {
-            'download': 'Descargar',
-            'open_file': 'Abrir archivo',
-        },
-        'core': {
-            'enter_password': 'Ingresar contraseña',
-            'entering_password': 'Ingresando contraseña',
-            'incorrect_password': 'Contraseña incorrecta',
-        },
-        'page_navigation': {
-            'current_page_of_total': 'Página {{currentPage}} de {{numberOfPages}}',
-            'first_page': 'Primera página',
-            'last_page': 'Última página',
-            'next_page': 'Siguiente página',
-            'previous_page': 'Página anterior',
-        },
-        'zoom': {
-            'actual_size': 'Tamaño real',
-            'fit_page': 'Ajustar a la página',
-            'fit_width': 'Ajustar al ancho',
-            'zoom_in': 'Acercar',
-            'zoom_out': 'Alejar',
-        },
-        'toolbar': {
-            'download': 'Descargar',
-            'enter_fullscreen': 'Pantalla completa',
-            'exit_fullscreen': 'Salir de pantalla completa',
-            'get_file_name': 'Obtener nombre de archivo',
-            'more_actions': 'Más acciones',
-            'next_page': 'Siguiente página',
-            'previous_page': 'Página anterior',
-            'presentation_mode': 'Modo presentación',
-            'print': 'Imprimir',
-            'rotate_clockwise': 'Girar en sentido horario',
-            'rotate_counterclockwise': 'Girar en sentido antihorario',
-            'text_selection_tool': 'Herramienta de selección de texto',
-            'hand_tool': 'Herramienta de mano',
-            'page_scrolling': 'Desplazamiento de página',
-            'vertical_scrolling': 'Desplazamiento vertical',
-            'horizontal_scrolling': 'Desplazamiento horizontal',
-            'wrapped_scrolling': 'Desplazamiento ajustado',
-            'single_page': 'Página única',
-            'dual_page': 'Doble página',
-            'dual_page_with_cover': 'Doble página con portada',
-            'show_properties': 'Mostrar propiedades',
-        },
-    },
-  };
-
-  const defaultLayoutPluginInstance = defaultLayoutPlugin({
-      localization: esLocalization
-  });
 
   const allLessons = useMemo(() => course?.modules.flatMap(m => m.lessons) || [], [course]);
   const totalLessonsCount = allLessons.length;
@@ -536,13 +544,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     
     if (block.type === 'FILE') {
         if (isPdfUrl(url)) {
-             return (
-                <div key={block.id} className="my-4 h-[80vh] min-h-[600px] rounded-lg overflow-hidden border">
-                    <Worker workerUrl={'/pdf.worker.min.js'}>
-                        <Viewer fileUrl={`/api/resources/preview?url=${encodeURIComponent(url)}`} plugins={[defaultLayoutPluginInstance]} />
-                    </Worker>
-                </div>
-            );
+             return <PdfViewer url={url} key={block.id} />;
         }
         
         const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url.toLowerCase());
