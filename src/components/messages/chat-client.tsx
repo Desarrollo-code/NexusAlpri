@@ -18,7 +18,7 @@ import { ScrollArea } from '../ui/scroll-area';
 import { User } from '@/types';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../ui/command';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
-import { useRealtimeChat } from '@/hooks/use-realtime-chat';
+import { useRealtime } from '@/hooks/use-realtime-chat';
 
 // Tipos
 type Participant = { id: string; name: string | null; avatar: string | null };
@@ -162,12 +162,13 @@ export function ChatClient() {
                 const restConvos = prev.filter(c => c.id !== newMessage.conversationId);
                 return [updatedConvo, ...restConvos];
             }
+            // Si la conversación no está en la lista, la recargamos
             fetchConversations();
             return prev;
         });
     }, [activeConversation, fetchConversations]);
 
-    useRealtimeChat(activeConversation?.id ?? null, handleNewMessage);
+    useRealtime(activeConversation?.id ?? null, handleNewMessage);
     
     useEffect(() => {
         if (!isAuthLoading && user) {
@@ -192,6 +193,7 @@ export function ChatClient() {
         if (existingConvo) {
             setActiveConversation(existingConvo);
         } else {
+            // Create a temporary conversation object for immediate UI feedback
             const tempConvo: Conversation = {
                 id: `temp-${recipient.id}`,
                 participants: [{...recipient}],
@@ -203,9 +205,11 @@ export function ChatClient() {
         }
     }, [conversations]);
 
+    // Handle 'new' query param to start a new chat
     useEffect(() => {
         const handleNewChatParam = async () => {
             if (newChatUserId && user) {
+                // Don't allow chatting with self
                 if(newChatUserId === user.id) {
                     router.replace('/messages', { scroll: false });
                     return;
@@ -214,6 +218,7 @@ export function ChatClient() {
                 if (existingConvo) {
                     setActiveConversation(existingConvo);
                 } else {
+                    // Fetch user list if needed to find the recipient
                     if (usersForNewChat.length === 0) {
                         try {
                            const res = await fetch('/api/users/list');
@@ -230,6 +235,7 @@ export function ChatClient() {
                         if (recipient) handleStartNewChat(recipient);
                     }
                 }
+                // Clean the URL
                 router.replace('/messages', { scroll: false });
             }
         };
@@ -267,20 +273,24 @@ export function ChatClient() {
             const sentMessage = await response.json();
             if (!response.ok) throw new Error(sentMessage.message || 'Error al enviar el mensaje');
             
+            // Replace temporary message with the real one from the server
             setMessages(prev => prev.map(m => m.id === tempMessageId ? { ...sentMessage, conversationId: activeConversation!.id } : m));
             
+            // If it was a new conversation, refetch all conversations to get the real ID
             if (activeConversation?.id.startsWith('temp-')) {
                 await fetchConversations();
             }
             
         } catch (err) {
             toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+            // Remove the failed temporary message
             setMessages(prev => prev.filter(m => m.id !== tempMessageId));
         } finally {
             setIsSending(false);
         }
     };
     
+    // Fetch users when opening the new chat modal
     useEffect(() => {
         if(isNewChatModalOpen) {
             fetch('/api/users/list')
@@ -298,6 +308,7 @@ export function ChatClient() {
 
     return (
         <div className="flex h-[calc(100vh-8rem)] bg-card border rounded-lg overflow-hidden">
+            {/* Conversations List */}
             <aside className={cn(
                 "w-full md:w-80 lg:w-96 flex-shrink-0 border-r flex flex-col transition-transform duration-300 md:translate-x-0",
                 activeConversation ? "-translate-x-full" : "translate-x-0"
@@ -318,6 +329,7 @@ export function ChatClient() {
                     </div>
                 )}
             </aside>
+            {/* Message Area */}
             <main className={cn(
                 "flex-1 flex flex-col transition-transform duration-300 w-full md:w-auto absolute md:static inset-0",
                 activeConversation ? "translate-x-0" : "translate-x-full md:translate-x-0"
@@ -364,6 +376,7 @@ export function ChatClient() {
                 )}
             </main>
             
+            {/* New Chat Modal */}
             <Dialog open={isNewChatModalOpen} onOpenChange={setIsNewChatModalOpen}>
                 <DialogContent>
                     <DialogHeader>

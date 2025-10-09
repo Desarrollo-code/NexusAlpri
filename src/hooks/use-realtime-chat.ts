@@ -2,12 +2,11 @@
 import { useEffect, useRef } from 'react';
 import { supabaseBrowserClient } from '@/lib/supabase-client';
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
-import type { Message } from '@/types';
 
 /**
- * Hook para suscribirse a eventos en tiempo real para una conversación o juego.
+ * Hook para suscribirse a eventos en tiempo real para un canal específico.
  * @param channelName - El nombre del canal al que suscribirse (ej. "chat:123" o "game:456").
- * @param onNewEvent - Callback que se ejecuta cuando se recibe un nuevo evento.
+ * @param onNewEvent - Callback que se ejecuta cuando se recibe un nuevo evento en la tabla RealtimeMessage.
  */
 export function useRealtime(
   channelName: string | null,
