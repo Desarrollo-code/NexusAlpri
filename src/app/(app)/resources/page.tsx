@@ -1,4 +1,3 @@
-
 // src/app/(app)/resources/page.tsx
 'use client';
 
@@ -340,10 +339,11 @@ export default function ResourcesPage() {
   const handleDeleteResource = async () => {
     if (!resourceToDelete) return;
     setIsDeletingResource(true);
+    const isFolder = resourceToDelete.type === 'FOLDER';
     try {
       const response = await fetch(`/api/resources/${resourceToDelete.id}`, { method: 'DELETE' });
       if (!response.ok) throw new Error((await response.json()).message || 'Failed to delete resource');
-      toast({ title: 'Recurso Eliminado', description: `El recurso "${resourceToDelete.title}" ha sido eliminado.` });
+      toast({ title: isFolder ? 'Carpeta Eliminada' : 'Recurso Eliminado', description: `El elemento "${resourceToDelete.title}" ha sido eliminado.` });
       if (selectedResource?.id === resourceToDelete.id) {
           setSelectedResource(null);
       }
@@ -576,7 +576,12 @@ export default function ResourcesPage() {
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle>
-                <AlertDialogDescription>El recurso "<strong>{resourceToDelete?.title}</strong>" será eliminado permanentemente. {resourceToDelete?.type === 'FOLDER' && 'Todos los archivos dentro también serán eliminados.'}</AlertDialogDescription>
+                <AlertDialogDescription>
+                   {resourceToDelete?.type === 'FOLDER' 
+                     ? `¿Estás seguro de eliminar la carpeta "<strong>${resourceToDelete?.title}</strong>"? Esta acción es irreversible.`
+                     : `¿Estás seguro de eliminar el recurso "<strong>${resourceToDelete?.title}</strong>"? Esta acción es irreversible.`
+                   }
+                </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel disabled={isDeletingResource}>Cancelar</AlertDialogCancel>
