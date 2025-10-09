@@ -24,14 +24,14 @@ export async function POST(req: Request) {
 
     const question = await prisma.formField.findUnique({
       where: { id: questionId },
-      include: { options: true },
     });
 
     if (!question) {
       return NextResponse.json({ message: 'Pregunta no encontrada' }, { status: 404 });
     }
 
-    const selectedOption = (question.options as unknown as FormFieldOption[]).find(opt => opt.id === optionId);
+    const options = question.options as unknown as FormFieldOption[];
+    const selectedOption = options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption?.isCorrect || false;
 
     // --- Lógica de Puntuación ---

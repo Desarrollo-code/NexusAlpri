@@ -72,7 +72,7 @@ const FieldResultCard = ({ field, isQuiz }: { field: FormResults['fields'][0], i
         case 'MULTIPLE_CHOICE':
         case 'SINGLE_CHOICE':
              const chartData = field.stats.map((stat: any) => ({ name: stat.option, value: stat.count }));
-             const correctOptionText = field.options.find(o => o.isCorrect)?.text;
+             const correctOptionText = field.options?.find(o => o.isCorrect)?.text;
              return (
                 <Card>
                     <CardHeader>

@@ -1,10 +1,9 @@
 // src/app/api/forms/[id]/route.ts
 import { NextResponse, NextRequest } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { FormField, FormFieldType, FormFieldOption } from '@/types';
 
-const prisma = new PrismaClient();
 export const dynamic = 'force-dynamic';
 
 async function checkPermissions(formId: string, session: any) {
@@ -35,6 +34,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
     }
 
     const permission = await checkPermissions(formId, session);
+    // Para GET, también podríamos permitir a los usuarios a quienes se les compartió el formulario.
+    // Esta lógica se simplifica aquí por ahora.
     if (!permission.authorized) return permission.error;
 
     const form = await prisma.form.findUnique({
@@ -66,7 +67,6 @@ export async function GET(request: Request, { params }: { params: { id: string }
                     parsedOptions = field.options; // It's already an array
                 }
             } catch (e) {
-                // Ignore parsing errors, leave options as empty array
                 console.error(`Could not parse options for field ${field.id}:`, e);
             }
             return {
@@ -123,7 +123,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       if (fields && Array.isArray(fields)) {
         const incomingFieldIds = new Set(fields.map((f: FormField) => f.id).filter(id => !id.startsWith('new-')));
         
-        // Delete fields that are not in the incoming list
         await tx.formField.deleteMany({
           where: {
             formId: formId,
@@ -133,7 +132,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
           },
         });
 
-        // Upsert all incoming fields
         for (const [index, fieldData] of (fields as FormField[]).entries()) {
           const isNew = fieldData.id.startsWith('new-');
           

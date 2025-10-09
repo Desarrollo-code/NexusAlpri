@@ -40,14 +40,12 @@ export async function GET(req: Request, { params }: { params: { sessionId: strin
       form: {
         title: gameSession.form.title,
         fields: gameSession.form.fields.map(field => {
-            // CORRECCIÓN: Prisma devuelve 'options' como un string JSON o un objeto si ya está parseado.
-            // Hay que parsearlo para que el frontend lo pueda usar.
             let parsedOptions: FormFieldOption[] = [];
             try {
                 if(field.options && typeof field.options === 'string') {
                     parsedOptions = JSON.parse(field.options);
                 } else if (Array.isArray(field.options)) {
-                    parsedOptions = field.options; // Ya está en el formato correcto
+                    parsedOptions = field.options; 
                 }
             } catch(e) {
                 console.error("Error parsing options for field:", field.id, e);
@@ -60,7 +58,6 @@ export async function GET(req: Request, { params }: { params: { sessionId: strin
               options: parsedOptions.map((opt: any) => ({
                 id: opt.id,
                 text: opt.text,
-                // No enviamos 'isCorrect' al cliente del jugador
               })),
             }
         }),

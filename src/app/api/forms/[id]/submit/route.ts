@@ -1,10 +1,9 @@
 // src/app/api/forms/[id]/submit/route.ts
 import { NextResponse, NextRequest } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { FormFieldOption } from '@/types';
 
-const prisma = new PrismaClient();
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
@@ -52,7 +51,6 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
                     .filter(opt => opt.isCorrect)
                     .reduce((sum, opt) => sum + (opt.points || 0), 0);
                 
-                // Asegurarse que haya un puntaje máximo posible, si no, la pregunta no cuenta.
                 if (questionMaxPoints === 0) continue;
 
                 maxPoints += questionMaxPoints;
