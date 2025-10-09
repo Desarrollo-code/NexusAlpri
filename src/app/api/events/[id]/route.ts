@@ -34,7 +34,7 @@ export async function PUT(
     }
     
     const body = await req.json();
-    const { title, description, location, start, end, allDay, audienceType, attendeeIds, color, videoConferenceLink, attachments, recurrence, recurrenceEndDate } = body;
+    const { title, description, location, start, end, allDay, audienceType, attendeeIds, color, videoConferenceLink, attachments, recurrence, recurrenceEndDate, isInteractive } = body;
 
     const dataToUpdate: any = {
       title,
@@ -49,6 +49,7 @@ export async function PUT(
       attachments,
       recurrence: recurrence as RecurrenceType || RecurrenceType.NONE,
       recurrenceEndDate: recurrenceEndDate ? new Date(recurrenceEndDate) : null,
+      isInteractive,
     };
 
     if (attendeeIds && Array.isArray(attendeeIds)) {
@@ -108,7 +109,13 @@ export async function DELETE(
             return NextResponse.json({ message: 'No tienes permiso para eliminar este evento.' }, { status: 403 });
         }
         
-        await prisma.calendarEvent.delete({ where: { id } });
+        await prisma.$transaction([
+            prisma.notification.deleteMany({
+                where: { interactiveEventId: id }
+            }),
+            prisma.calendarEvent.delete({ where: { id } })
+        ]);
+        
         return new NextResponse(null, { status: 204 });
     } catch (error) {
         console.error('[EVENT_DELETE_ERROR]', error);

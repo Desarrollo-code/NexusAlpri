@@ -18,6 +18,7 @@ export async function GET(
       where: { id: courseId },
       include: {
         instructor: { select: { id: true, name: true, avatar: true } },
+        prerequisite: { select: { id: true, title: true } },
         modules: {
           orderBy: { order: "asc" },
           include: {
@@ -93,6 +94,9 @@ export async function PUT(
           category: courseData.category,
           status: courseData.status,
           publicationDate: courseData.publicationDate ? new Date(courseData.publicationDate) : null,
+          certificateTemplateId: courseData.certificateTemplateId, // <-- AÑADIDO
+          isMandatory: courseData.isMandatory,
+          prerequisiteId: courseData.prerequisiteId,
         },
       });
       
@@ -175,6 +179,7 @@ export async function PUT(
         where: { id: courseId },
         include: {
             instructor: { select: { id: true, name: true, avatar: true } },
+            prerequisite: { select: { id: true, title: true } },
             modules: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" }, include: { contentBlocks: { orderBy: { order: "asc" }, include: { quiz: { include: { questions: { orderBy: { order: "asc" }, include: { options: { orderBy: { id: "asc" } } } } } } } } } } } }
         },
     });
