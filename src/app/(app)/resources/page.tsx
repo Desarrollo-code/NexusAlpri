@@ -1,3 +1,4 @@
+
 // src/app/(app)/resources/page.tsx
 'use client';
 
@@ -343,7 +344,14 @@ export default function ResourcesPage() {
     try {
       const response = await fetch(`/api/resources/${resourceToDelete.id}`, { method: 'DELETE' });
       if (!response.ok) throw new Error((await response.json()).message || 'Failed to delete resource');
-      toast({ title: isFolder ? 'Carpeta Eliminada' : 'Recurso Eliminado', description: `El elemento "${resourceToDelete.title}" ha sido eliminado.` });
+      
+      toast({
+        title: isFolder ? 'Carpeta Eliminada' : 'Recurso Eliminado',
+        description: isFolder 
+          ? `La carpeta "${resourceToDelete.title}" se eliminó correctamente.`
+          : `El recurso "${resourceToDelete.title}" se eliminó correctamente.`
+      });
+      
       if (selectedResource?.id === resourceToDelete.id) {
           setSelectedResource(null);
       }
