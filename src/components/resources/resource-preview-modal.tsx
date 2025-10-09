@@ -212,7 +212,9 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
     const displayUrl = pinVerifiedUrl || resource.url;
     
     if (displayUrl) {
-        if (displayUrl.toLowerCase().endsWith('.pdf')) {
+        const isPdf = displayUrl.toLowerCase().endsWith('.pdf');
+        
+        if (isPdf) {
             return <PdfViewer url={displayUrl} />;
         }
         
