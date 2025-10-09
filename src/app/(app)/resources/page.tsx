@@ -578,8 +578,8 @@ export default function ResourcesPage() {
                 <AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle>
                 <AlertDialogDescription>
                    {resourceToDelete?.type === 'FOLDER' 
-                     ? `¿Estás seguro de eliminar la carpeta "<strong>${resourceToDelete?.title}</strong>"? Esta acción es irreversible.`
-                     : `¿Estás seguro de eliminar el recurso "<strong>${resourceToDelete?.title}</strong>"? Esta acción es irreversible.`
+                     ? <>¿Estás seguro de eliminar la carpeta "<strong>{resourceToDelete?.title}</strong>"? Esta acción es irreversible.</>
+                     : <>¿Estás seguro de eliminar el recurso "<strong>{resourceToDelete?.title}</strong>"? Esta acción es irreversible.</>
                    }
                 </AlertDialogDescription>
               </AlertDialogHeader>

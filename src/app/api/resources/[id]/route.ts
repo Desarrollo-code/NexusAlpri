@@ -92,11 +92,10 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
         }
         
         if (resourceToDelete.type === 'FOLDER') {
-            // CORRECCIÓN: Solo contar los recursos ACTIVOS dentro de la carpeta.
             const childrenCount = await prisma.enterpriseResource.count({ 
                 where: { 
                     parentId: id,
-                    status: 'ACTIVE' // Asegura que solo contamos los archivos no archivados.
+                    status: 'ACTIVE'
                 } 
             });
             if (childrenCount > 0) {
