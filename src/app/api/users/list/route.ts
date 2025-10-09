@@ -6,7 +6,7 @@ import { UserRole } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
-// GET a simplified list of users for selectors, now specifically for students
+// GET a simplified list of users for selectors
 export async function GET(req: NextRequest) {
     const session = await getCurrentUser();
     // Allow both ADMINS and INSTRUCTORS to get this list
@@ -18,7 +18,6 @@ export async function GET(req: NextRequest) {
         const users = await prisma.user.findMany({
             where: {
                 isActive: true, // Only return active users for selection
-                role: UserRole.STUDENT, // --- FIX: Only fetch students ---
             },
             select: {
                 id: true,
