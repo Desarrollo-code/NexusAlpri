@@ -24,32 +24,50 @@ interface RankedUser {
 }
 
 const PodiumCard = ({ user, rank }: { user: RankedUser, rank: number }) => {
-    const medalColors = {
-        1: "bg-amber-400 text-amber-900 border-amber-500",
-        2: "bg-slate-300 text-slate-800 border-slate-400",
-        3: "bg-orange-400 text-orange-900 border-orange-500",
+    const rankStyles = {
+        1: {
+            card: "md:order-2 md:scale-110 z-10 shadow-2xl",
+            medal: "bg-amber-400 text-amber-900 border-amber-500",
+            icon: "text-amber-400 fill-amber-300",
+            height: "h-52"
+        },
+        2: {
+            card: "md:order-1",
+            medal: "bg-slate-300 text-slate-800 border-slate-400",
+            icon: "text-slate-400 fill-slate-300",
+            height: "h-44"
+        },
+        3: {
+            card: "md:order-3",
+            medal: "bg-orange-400 text-orange-900 border-orange-500",
+            icon: "text-orange-400 fill-orange-300",
+            height: "h-44"
+        },
     };
-    const cardHeight = {
-        1: "h-48",
-        2: "h-40",
-        3: "h-40",
-    }
-    const cardOrder = {
-        1: "md:order-2",
-        2: "md:order-1",
-        3: "md:order-3",
-    }
+
+    const styles = rankStyles[rank as keyof typeof rankStyles];
+    
     return (
-        <Card className={cn("text-center flex flex-col items-center justify-center p-4 relative overflow-hidden", cardOrder[rank], cardHeight[rank])}>
-            <div className={cn("absolute top-0 right-0 h-16 w-16 text-center leading-[4rem] text-2xl font-bold origin-center -translate-y-1/2 translate-x-1/2 rotate-45", medalColors[rank])}/>
-            <Trophy className={cn("absolute top-2 right-2 h-6 w-6 opacity-50", medalColors[rank])}/>
-             <Avatar className="h-16 w-16 mb-2 border-4" style={{borderColor: `var(--color-rank-${rank})`}}>
-                <AvatarImage src={user.avatar || undefined} />
-                <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
-            </Avatar>
-            <p className="font-bold truncate">{user.name}</p>
-            <p className="text-sm text-muted-foreground">Nivel {user.level}</p>
-            <p className="text-lg font-bold text-primary">{user.xp.toLocaleString()} XP</p>
+        <Card className={cn(
+            "text-center flex flex-col items-center justify-end p-4 relative overflow-hidden transition-all duration-300 ease-in-out",
+            styles.card,
+            styles.height
+        )}>
+             <div className="absolute inset-0 bg-gradient-to-t from-card via-card/80 to-transparent z-0"/>
+             <div className="relative z-10 flex flex-col items-center">
+                 <div className="relative mb-2">
+                     <Avatar className="h-20 w-20 border-4" style={{ borderColor: rank === 1 ? '#FFD700' : rank === 2 ? '#C0C0C0' : '#CD7F32'}}>
+                        <AvatarImage src={user.avatar || undefined} />
+                        <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
+                    </Avatar>
+                    <div className={cn("absolute -bottom-2 -right-2 h-8 w-8 rounded-full flex items-center justify-center font-bold text-sm border-2 border-background", styles.medal)}>
+                        {rank}
+                    </div>
+                </div>
+                <p className="font-bold truncate max-w-[150px]">{user.name}</p>
+                <p className="text-xs text-muted-foreground">Nivel {user.level}</p>
+                <p className="text-lg font-bold text-primary">{user.xp.toLocaleString()} XP</p>
+            </div>
         </Card>
     )
 }
@@ -97,9 +115,9 @@ export function LeaderboardView() {
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-          <Skeleton className="h-40 rounded-lg md:order-1" />
-          <Skeleton className="h-48 rounded-lg md:order-2" />
-          <Skeleton className="h-40 rounded-lg md:order-3" />
+          <Skeleton className="h-44 rounded-lg md:order-1" />
+          <Skeleton className="h-52 rounded-lg md:order-2" />
+          <Skeleton className="h-44 rounded-lg md:order-3" />
         </div>
         <Skeleton className="h-96 w-full" />
       </div>
@@ -120,21 +138,17 @@ export function LeaderboardView() {
   return (
     <div className="space-y-8">
       {/* Top 3 Podium */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-        {topThree.length > 1 && (
-          <PodiumCard user={topThree[1]} rank={2} />
-        )}
-        {topThree.length > 0 && (
-          <PodiumCard user={topThree[0]} rank={1} />
-        )}
-        {topThree.length > 2 && (
-          <PodiumCard user={topThree[2]} rank={3} />
-        )}
-      </div>
+      {topThree.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+            {topThree[1] && <PodiumCard user={topThree[1]} rank={2} />}
+            {topThree[0] && <PodiumCard user={topThree[0]} rank={1} />}
+            {topThree[2] && <PodiumCard user={topThree[2]} rank={3} />}
+          </div>
+      )}
 
       <Card>
         <CardHeader>
-          <CardTitle>Tabla de Clasificación</CardTitle>
+          <CardTitle>Clasificación General</CardTitle>
           <CardDescription>Top 100 usuarios con más puntos de experiencia (XP).</CardDescription>
         </CardHeader>
         <CardContent>
@@ -173,7 +187,7 @@ export function LeaderboardView() {
       </Card>
 
       {currentUserRank && (
-        <Card className="sticky bottom-4 shadow-2xl bg-gradient-to-r from-primary to-accent text-primary-foreground border-0">
+        <Card className="sticky bottom-4 shadow-2xl bg-gradient-to-r from-primary via-blue-500 to-indigo-600 text-primary-foreground border-0">
           <CardContent className="p-4 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <span className="text-2xl font-bold">#{currentUserRank.rank}</span>

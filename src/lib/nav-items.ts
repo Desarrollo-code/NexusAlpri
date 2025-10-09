@@ -20,7 +20,7 @@ import {
   MessageSquare,
   Library,
   Briefcase,
-  Trophy, // Importado el nuevo ícono
+  Trophy,
 } from 'lucide-react';
 
 const NAVIGATION_ITEMS: NavItem[] = [
