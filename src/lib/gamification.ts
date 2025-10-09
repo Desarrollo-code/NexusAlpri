@@ -1,4 +1,3 @@
-
 // src/lib/gamification.ts
 import prisma from '@/lib/prisma';
 import type { User } from '@/types';

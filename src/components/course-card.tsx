@@ -27,7 +27,7 @@ interface CourseCardProps {
   onEnrollmentChange?: (courseId: string, newStatus: boolean) => void;
   onStatusChange?: (courseId: string, newStatus: CourseStatus) => void;
   onDelete?: (course: AppCourseType) => void;
-  onAssign?: () => void;
+  onAssign?: (course: AppCourseType) => void;
   priority?: boolean;
   viewMode?: 'catalog' | 'management';
 }
@@ -270,7 +270,7 @@ export function CourseCard({
                          <span className="flex items-center gap-1.5"><Users className="h-3 w-3"/>{course.enrollmentsCount}</span>
                          <span className="flex items-center gap-1.5"><Check className="h-3 w-3"/>{Math.round(course.averageCompletion || 0)}%</span>
                       </div>
-                      <ManagementDropdown course={course} onStatusChange={onStatusChange} onDelete={onDelete} onAssign={onAssign} isProcessing={isProcessingStatus} />
+                      <ManagementDropdown course={course} onStatusChange={onStatusChange} onDelete={onDelete} onAssign={() => onAssign?.(course)} isProcessing={isProcessingStatus} />
                     </>
                   )}
               </CardFooter>
