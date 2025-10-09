@@ -8,11 +8,8 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  webpack: (config, { isServer }) => {
-    // This is to make pdf.js work with Next.js
-    if (!isServer) {
-      config.resolve.alias['pdfjs-dist'] = 'pdfjs-dist/build/pdf';
-    }
+  webpack: (config) => {
+    config.resolve.alias.canvas = false;
     return config;
   },
   images: {
@@ -44,11 +41,6 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'izefimwyuayfvektsstg.supabase.co',
         pathname: '/storage/v1/object/public/lesson_files/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'izefimwyuayfvektsstg.supabase.co',
-        pathname: '/storage/v1/object/public/resource_library/**',
       },
       {
         protocol: 'https'

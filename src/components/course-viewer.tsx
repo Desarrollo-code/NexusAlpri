@@ -26,30 +26,21 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { RichTextEditor } from './ui/rich-text-editor';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import YouTube from 'react-youtube';
+import mammoth from 'mammoth';
 import { isPdfUrl } from '@/lib/resource-utils';
 import { Document, Page, pdfjs } from 'react-pdf';
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import 'react-pdf/dist/esm/Page/TextLayer.css';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
+import { getYoutubeVideoId } from '@/lib/resource-utils';
+
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.js',
+  import.meta.url,
+).toString();
 
 // --- Helper types and functions ---
-function getYouTubeVideoId(url: string | null | undefined): string | null {
-  if (!url) return null;
-  let videoId = null;
-  try {
-    const urlObj = new URL(url);
-    if (urlObj.hostname === 'www.youtube.com' || urlObj.hostname === 'youtube.com') {
-      videoId = urlObj.searchParams.get('v');
-    } else if (urlObj.hostname === 'youtu.be') {
-      videoId = urlObj.pathname.substring(1);
-    }
-  } catch (e) {
-    const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-    return match ? match[1] : null;
-  }
-  return videoId;
-}
 
 const noteColors = [
   { value: 'yellow', bg: 'bg-yellow-100 dark:bg-yellow-900/40', border: 'border-yellow-200 dark:border-yellow-800/50' },
@@ -132,8 +123,7 @@ const DocxPreviewer = ({ url }: { url: string }) => {
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error('No se pudo cargar la previsualización del documento.');
-                const blob = await response.blob();
-                const arrayBuffer = await blob.arrayBuffer();
+                const arrayBuffer = await response.arrayBuffer();
                 const { value: htmlContent } = await mammoth.convertToHtml({ arrayBuffer });
                 setHtml(htmlContent);
             } catch (e) {
@@ -260,7 +250,7 @@ const LessonNotesPanel = ({ lessonId, isOpen, onClose }: { lessonId: string, isO
 
 
 const VideoPlayer = ({ videoUrl, lessonTitle, onVideoEnd }: { videoUrl: string, lessonTitle?: string, onVideoEnd: () => void }) => {
-    const videoId = getYouTubeVideoId(videoUrl);
+    const videoId = getYoutubeVideoId(videoUrl);
     
     if (!videoId) return null;
 
