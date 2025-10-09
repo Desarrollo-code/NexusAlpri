@@ -5,45 +5,72 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { supabaseBrowserClient } from '@/lib/supabase-client';
-import { Loader2, Users, Play, ChevronRight, BarChart3, Trophy } from 'lucide-react';
+import { Loader2, Users, Play, ChevronRight, BarChart3, Trophy, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useToast } from '@/hooks/use-toast';
 
 // --- Sub-components ---
 
-const LobbyScreen = ({ pin, players, formTitle }: { pin: string, players: any[], formTitle: string }) => (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-between h-full text-center text-white p-8">
-        <div>
-            <h1 className="text-4xl font-bold mb-4">{formTitle}</h1>
-            <p className="text-xl">Únete con el PIN del juego en tu dispositivo</p>
-        </div>
-        <div className="bg-white text-black p-6 rounded-lg shadow-2xl">
-            <p className="text-8xl font-bold tracking-widest">{pin}</p>
-        </div>
-        <div className="w-full flex items-center justify-between p-4 bg-black/20 rounded-lg">
-            <div className="flex items-center gap-4">
-                <Users className="h-8 w-8" />
-                <p className="text-4xl font-bold">{players.length}</p>
+const LobbyScreen = ({ pin, players, formTitle }: { pin: string, players: any[], formTitle: string }) => {
+    const { toast } = useToast();
+
+    const handleCopy = (text: string, message: string) => {
+        navigator.clipboard.writeText(text);
+        toast({
+            title: '¡Copiado!',
+            description: message,
+        });
+    };
+    
+    const joinUrl = typeof window !== 'undefined' ? `${window.location.origin}/quizz-it/play` : '';
+
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-between h-full text-center text-white p-4 md:p-8">
+            <div className="w-full max-w-4xl mx-auto bg-black/20 p-4 rounded-xl shadow-lg border border-white/10">
+                <p className="font-bold text-lg md:text-2xl">Únete en <span className="text-yellow-300 underline">{joinUrl}</span></p>
+                <div className="mt-4 flex justify-center gap-2">
+                    <Button onClick={() => handleCopy(joinUrl, 'El enlace para unirse ha sido copiado.')} variant="secondary">
+                        <Copy className="mr-2 h-4 w-4" /> Copiar Enlace
+                    </Button>
+                    <Button onClick={() => handleCopy(pin, 'El PIN del juego ha sido copiado.')} variant="secondary">
+                        <Copy className="mr-2 h-4 w-4" /> Copiar PIN
+                    </Button>
+                </div>
             </div>
-             <AnimatePresence>
-                <motion.div className="flex flex-wrap justify-center gap-2 max-w-lg">
-                    {players.map((player, i) => (
-                        <motion.div
-                            key={player.userId}
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ delay: i * 0.1 }}
-                            className="bg-white text-gray-800 font-semibold px-3 py-1 rounded-lg shadow-md"
-                        >
-                            {player.nickname}
-                        </motion.div>
-                    ))}
-                </motion.div>
-            </AnimatePresence>
-        </div>
-    </motion.div>
-);
+
+            <div className="text-center my-6">
+                <p className="text-base md:text-xl mb-2">PIN del juego:</p>
+                <div className="bg-white text-black py-4 px-8 rounded-lg shadow-2xl inline-block">
+                    <p className="text-5xl md:text-8xl font-bold tracking-widest">{pin}</p>
+                </div>
+            </div>
+
+            <div className="w-full max-w-4xl mx-auto flex items-center justify-between p-4 bg-black/20 rounded-lg min-h-[100px]">
+                <div className="flex items-center gap-4">
+                    <Users className="h-8 w-8" />
+                    <p className="text-4xl font-bold">{players.length}</p>
+                </div>
+                 <AnimatePresence>
+                    <motion.div className="flex flex-wrap justify-center gap-2 max-w-lg">
+                        {players.map((player, i) => (
+                            <motion.div
+                                key={player.userId}
+                                initial={{ scale: 0, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ delay: i * 0.1 }}
+                                className="bg-white text-gray-800 font-semibold px-3 py-1 rounded-lg shadow-md"
+                            >
+                                {player.nickname}
+                            </motion.div>
+                        ))}
+                    </motion.div>
+                </AnimatePresence>
+            </div>
+        </motion.div>
+    );
+};
 
 const QuestionScreen = ({ question, questionIndex, totalQuestions, answersCount }: { question: any, questionIndex: number, totalQuestions: number, answersCount: number }) => {
     const [timer, setTimer] = useState(20);
