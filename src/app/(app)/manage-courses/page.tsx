@@ -1,3 +1,4 @@
+
 // src/app/(app)/manage-courses/page.tsx
 'use client';
 
@@ -123,60 +124,48 @@ export default function ManageCoursesPage() {
     router.push(`${pathname}?${createQueryString({ page })}`);
   };
 
-  useEffect(() => {
+  const fetchCourses = useCallback(async () => {
     if (!user) {
       setIsLoading(false);
       return;
     }
 
-    const fetchCourses = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const params = new URLSearchParams({ 
-          manageView: 'true',
-          page: String(currentPage),
-          pageSize: String(PAGE_SIZE),
-          tab: activeTab
-        });
-        
-        if (user.role === 'ADMINISTRATOR' || user.role === 'INSTRUCTOR') {
-          params.append('userId', user.id);
-          params.append('userRole', user.role as string);
-        } else {
-          setIsLoading(false);
-          setError("Acceso no autorizado para gestionar cursos.");
-          setAllCourses([]);
-          return;
-        }
-        
-        const response = await fetch(`/api/courses?${params.toString()}`, { cache: 'no-store' });
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || `Failed to fetch courses: ${response.statusText}`);
-        }
-        const data: { courses: ApiCourseForManage[], totalCourses: number } = await response.json();
-        const appCourses = data.courses.map(mapApiCourseToAppCourse);
-        setAllCourses(appCourses);
-        setTotalCourses(data.totalCourses);
-        
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido al cargar cursos');
-        setAllCourses([]);
-        toast({ title: "Error al cargar cursos", description: err instanceof Error ? err.message : 'No se pudieron cargar los cursos.', variant: "destructive"});
-      } finally {
-        setIsLoading(false);
+    setIsLoading(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams({ 
+        manageView: 'true',
+        page: String(currentPage),
+        pageSize: String(PAGE_SIZE),
+        tab: activeTab
+      });
+      
+      params.append('userId', user.id);
+      params.append('userRole', user.role as string);
+      
+      const response = await fetch(`/api/courses?${params.toString()}`, { cache: 'no-store' });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Failed to fetch courses: ${response.statusText}`);
       }
-    };
-    
-    if (user.role === 'ADMINISTRATOR' || user.role === 'INSTRUCTOR') {
-      fetchCourses();
-    } else {
-      setIsLoading(false);
-      setError("Solo Administradores e Instructores pueden gestionar cursos desde esta sección.");
+      const data: { courses: ApiCourseForManage[], totalCourses: number } = await response.json();
+      const appCourses = data.courses.map(mapApiCourseToAppCourse);
+      setAllCourses(appCourses);
+      setTotalCourses(data.totalCourses);
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido al cargar cursos');
       setAllCourses([]);
+      toast({ title: "Error al cargar cursos", description: err instanceof Error ? err.message : 'No se pudieron cargar los cursos.', variant: "destructive"});
+    } finally {
+      setIsLoading(false);
     }
   }, [user, toast, currentPage, activeTab, courseUpdateSignal]);
+
+
+  useEffect(() => {
+    fetchCourses();
+  }, [fetchCourses]);
 
   const handleCreationSuccess = (newCourseId: string) => {
     setShowCreateModal(false);
@@ -223,7 +212,7 @@ export default function ManageCoursesPage() {
             title: 'Curso Eliminado',
             description: `El curso "${courseToDelete.title}" ha sido eliminado exitosamente.`,
         });
-        setCourseUpdateSignal(prev => prev + 1);
+        fetchCourses();
     } catch (err) {
         toast({ title: 'Error al Eliminar', description: (err as Error).message, variant: 'destructive' });
     } finally {
@@ -315,7 +304,7 @@ export default function ManageCoursesPage() {
                             <Badge variant={course.status === 'PUBLISHED' ? 'default' : 'secondary'}>{getStatusInSpanish(course.status)}</Badge>
                          </TableCell>
                          <TableCell className="text-right">
-                             <ManagementDropdown course={course} onStatusChange={handleChangeStatus} onDelete={setCourseToDelete} onAssign={() => setCourseToAssign(course)} isProcessing={false} />
+                             <ManagementDropdown course={course} onStatusChange={handleChangeStatus} onDelete={setCourseToDelete} onAssign={() => setCourseToAssign(course)} isProcessing={isDeleting} />
                          </TableCell>
                      </TableRow>
                  ))}
@@ -383,7 +372,7 @@ export default function ManageCoursesPage() {
             ) : error ? (
               <div className="flex flex-col items-center justify-center py-12 text-destructive text-center">
                 <AlertTriangle className="h-8 w-8 mb-2" /><p className="font-semibold">Error al Cargar Cursos</p><p className="text-sm">{error}</p>
-                <Button onClick={() => setCourseUpdateSignal(s => s + 1)} variant="outline" className="mt-4">Reintentar</Button>
+                <Button onClick={() => fetchCourses()} variant="outline" className="mt-4">Reintentar</Button>
               </div>
             ) : allCourses.length > 0 ? (
                  viewMode === 'grid' ? <GridView /> : <ListView />
@@ -463,3 +452,4 @@ const ManagementDropdown = ({ course, onStatusChange, onDelete, onAssign, isProc
         </DropdownMenu>
     );
 }
+
