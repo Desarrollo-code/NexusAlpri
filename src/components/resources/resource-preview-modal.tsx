@@ -400,23 +400,8 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
               </aside>
             )}
           </div>
-          <DialogFooter className="p-2 border-t flex-shrink-0 bg-background/70 justify-between">
-            <div className="flex items-center gap-2">
-                 <Sheet open={isMobile && showDetails} onOpenChange={setShowDetails}>
-                  <SheetTrigger asChild>
-                    <Button variant="outline" size="sm"><Info className="h-4 w-4" /></Button>
-                  </SheetTrigger>
-                  <SheetContent side="bottom" className="h-[60vh] flex flex-col p-0">
-                      <SheetHeader className="p-4 border-b flex flex-row items-center justify-between"><SheetTitle>Detalles del Recurso</SheetTitle><DialogClose asChild><Button variant="ghost" size="icon" className="h-7 w-7"><X className="h-4 w-4"/></Button></DialogClose></SheetHeader>
-                      <ScrollArea className="flex-grow p-4"><ResourceDetailsContent resource={resource} /></ScrollArea>
-                  </SheetContent>
-                </Sheet>
-                 {!isMobile && (
-                    <Button variant="outline" size="sm" onClick={() => setShowDetails(!showDetails)}>
-                        <Info className="h-4 w-4 mr-2" />{showDetails ? 'Ocultar' : 'Ver'} Detalles
-                    </Button>
-                 )}
-            </div>
+          <DialogFooter className="p-2 border-t flex-shrink-0 bg-background/70 justify-end">
+            
             <div className="flex items-center gap-2">
                  {canEdit && (
                     isEditing ? (
