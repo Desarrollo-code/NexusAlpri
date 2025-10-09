@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogFooter } from '@/components/ui/dialog';
 import type { EnterpriseResource as AppResourceType } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Download, Share2, ChevronLeft, ChevronRight, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users, ExternalLink, FileText, Archive, FileCode, List, X, ArrowUpRightSquare, ZoomIn, ZoomOut, Expand } from 'lucide-react';
+import { Download, Share2, ChevronLeft, ChevronRight, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users, ExternalLink, FileText, Archive, FileCode, List, X, Edit, Save } from 'lucide-react';
 import { getIconForType, getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
@@ -22,7 +22,10 @@ import { getInitials } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
 import { addXp, XP_CONFIG, checkFirstDownload } from '@/lib/gamification';
 import mammoth from 'mammoth';
-import { PdfViewer } from '@/components/pdf-viewer'; 
+import { PdfViewer } from '@/components/pdf-viewer';
+import { RichTextEditor } from '../ui/rich-text-editor';
+import { Textarea } from '../ui/textarea';
+import { Label } from '../ui/label';
 
 const DocxPreviewer = ({ url }: { url: string }) => {
     const [html, setHtml] = useState<string | null>(null);
@@ -144,12 +147,26 @@ const FallbackPreview = ({ resource }: { resource: AppResourceType }) => {
     );
 };
 
-const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource: AppResourceType; pinVerifiedUrl: string | null; onPinVerified: (url: string) => void; }) => {
+const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified, isEditing, editedContent, onContentChange, editedObservations, onObservationsChange }: { 
+    resource: AppResourceType; 
+    pinVerifiedUrl: string | null; 
+    onPinVerified: (url: string) => void;
+    isEditing: boolean;
+    editedContent: string;
+    onContentChange: (content: string) => void;
+    editedObservations: string;
+    onObservationsChange: (observations: string) => void;
+}) => {
     const { toast } = useToast();
     const [pin, setPin] = useState('');
     const [isVerifying, setIsVerifying] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { user } = useAuth();
+
+    useEffect(() => {
+        setPin('');
+        setError(null);
+    }, [resource]);
    
     const handlePinSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -178,27 +195,29 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
         }
     };
     
-    useEffect(() => {
-        setPin('');
-        setError(null);
-    }, [resource]);
+    if (isEditing) {
+        return (
+            <div className="w-full h-full flex flex-col gap-4 p-4">
+                <div className="flex-1 min-h-0">
+                    <Label htmlFor="content-editor">Contenido Principal del Documento</Label>
+                    <RichTextEditor value={editedContent} onChange={onContentChange} className="h-[calc(100%-2rem)]"/>
+                </div>
+                <div className="flex-none h-1/3 min-h-[100px]">
+                    <Label htmlFor="observations-editor">Observaciones (Visible solo para administradores/instructores)</Label>
+                    <Textarea id="observations-editor" value={editedObservations} onChange={(e) => onObservationsChange(e.target.value)} className="h-[calc(100%-2rem)] resize-none" />
+                </div>
+            </div>
+        )
+    }
     
     if (resource.hasPin && !pinVerifiedUrl) {
        return (
          <div className="flex flex-col items-center justify-center h-full p-4 bg-muted/30">
             <Lock className="h-16 w-16 text-amber-500 mb-4"/>
             <h4 className="font-semibold text-xl text-center">Recurso Protegido</h4>
-            <p className="text-sm text-muted-foreground text-center mb-6">Ingresa el PIN de 4-8 dígitos para acceder.</p>
+            <p className="text-sm text-muted-foreground text-center mb-6">Ingresa el PIN para acceder al contenido.</p>
             <form onSubmit={handlePinSubmit} className="flex flex-col items-center gap-2 w-full max-w-xs">
-                <Input 
-                    type="password" 
-                    value={pin}
-                    onChange={(e) => setPin(e.target.value)}
-                    placeholder="****"
-                    disabled={isVerifying}
-                    className="text-center text-lg h-12"
-                    maxLength={8}
-                />
+                <Input type="password" value={pin} onChange={(e) => setPin(e.target.value)} placeholder="****" disabled={isVerifying} className="text-center text-lg h-12" maxLength={8} />
                 <Button type="submit" disabled={isVerifying || !pin} className="w-full">
                     {isVerifying ? <Loader2 className="h-4 w-4 animate-spin"/> : 'Desbloquear'}
                 </Button>
@@ -208,14 +227,16 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
        );
     }
     
+    // Si el recurso tiene contenido editable, lo mostramos. Si no, mostramos el preview del archivo.
+    if (resource.content) {
+        return <div className="prose prose-sm dark:prose-invert max-w-none p-4 bg-background h-full overflow-auto" dangerouslySetInnerHTML={{ __html: resource.content || '' }} />;
+    }
+    
     const displayUrl = pinVerifiedUrl || resource.url;
     
     if (displayUrl) {
         const isPdf = displayUrl.toLowerCase().endsWith('.pdf');
-        
-        if (isPdf) {
-            return <PdfViewer url={displayUrl} />;
-        }
+        if (isPdf) return <PdfViewer url={displayUrl} />;
         
         const youtubeId = getYoutubeVideoId(displayUrl);
         const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(displayUrl);
@@ -286,34 +307,63 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
     const [pinVerifiedUrl, setPinVerifiedUrl] = useState<string | null>(null);
     const [showDetails, setShowDetails] = useState(false);
     const isMobile = useIsMobile();
-    const { user } = useAuth();
+    const { user, ...auth } = useAuth();
+    const { toast } = useToast();
+
+    // Estado para el modo de edición
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [editedContent, setEditedContent] = useState('');
+    const [editedObservations, setEditedObservations] = useState('');
+
+    const canEdit = useMemo(() => {
+        if (!user || !resource) return false;
+        if (user.role === 'ADMINISTRATOR') return true;
+        if (user.role === 'INSTRUCTOR' && resource.uploaderId === user.id) return true;
+        return false;
+    }, [user, resource]);
+
 
     useEffect(() => {
-        setPinVerifiedUrl(null);
-        setShowDetails(false); 
+        if (resource) {
+            setPinVerifiedUrl(null);
+            setShowDetails(false);
+            setIsEditing(false); // Salir del modo edición al cambiar de recurso
+            setEditedContent(resource.content || '');
+            setEditedObservations(resource.observations || '');
+        }
     }, [resource]);
     
     if (!resource) return null;
     
-    const onDownload = () => {
-        if(user) {
-            addXp(user.id, XP_CONFIG.DOWNLOAD_RESOURCE || 1);
-            checkFirstDownload(user.id);
+    const handleSaveChanges = async () => {
+        setIsSaving(true);
+        try {
+            const payload = {
+                content: editedContent,
+                observations: editedObservations,
+                // Incluir otros campos si también se pueden editar
+                title: resource.title,
+                description: resource.description,
+            }
+            const response = await fetch(`/api/resources/${resource.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            if (!response.ok) throw new Error((await response.json()).message || 'No se pudieron guardar los cambios.');
+            
+            toast({ title: "Recurso Actualizado" });
+            setIsEditing(false);
+            // Opcional: recargar los datos del recurso.
+            // onClose(); // Podrías cerrar el modal o recargar los datos del recurso.
+        } catch(err) {
+            toast({ title: 'Error al Guardar', description: (err as Error).message, variant: 'destructive' });
+        } finally {
+            setIsSaving(false);
         }
     }
 
-
-    const DetailsComponent = () => (
-        <div className="w-full sm:w-80 flex-shrink-0 border-l bg-background/50 flex flex-col">
-            <div className="p-4 border-b flex items-center justify-between">
-                <h3 className="font-semibold">Detalles del Recurso</h3>
-            </div>
-            <ScrollArea className="flex-grow p-4">
-                <ResourceDetailsContent resource={resource} />
-            </ScrollArea>
-        </div>
-    );
-    
     return (
       <Dialog open={!!resource} onOpenChange={(isOpen) => !isOpen && onClose()}>
         <DialogContent className="w-[95vw] h-[90vh] max-w-6xl p-0 flex flex-col bg-background/80 backdrop-blur-lg gap-0">
@@ -322,17 +372,22 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
               {React.createElement(getIconForType(resource.type), { className: "h-5 w-5 shrink-0" })}
               <DialogTitle className="font-semibold truncate text-foreground">{resource.title}</DialogTitle>
             </div>
-            <DialogClose asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <X className="h-4 w-4"/>
-                </Button>
-            </DialogClose>
+            <DialogClose asChild><Button variant="ghost" size="icon" className="h-8 w-8"><X className="h-4 w-4"/></Button></DialogClose>
           </DialogHeader>
           <div className="flex-grow flex relative overflow-hidden">
             <div className="flex-grow flex-1 relative">
               <Button variant="ghost" size="icon" onClick={() => onNavigate('prev')} className="absolute left-2 top-1/2 -translate-y-1/2 z-20 h-10 w-10 bg-background/50 hover:bg-background/80"><ChevronLeft/></Button>
               <div className="absolute inset-0 flex items-center justify-center bg-muted/20">
-                  <ContentPreview resource={resource} pinVerifiedUrl={pinVerifiedUrl} onPinVerified={setPinVerifiedUrl} />
+                  <ContentPreview 
+                    resource={resource} 
+                    pinVerifiedUrl={pinVerifiedUrl} 
+                    onPinVerified={setPinVerifiedUrl} 
+                    isEditing={isEditing}
+                    editedContent={editedContent}
+                    onContentChange={setEditedContent}
+                    editedObservations={editedObservations}
+                    onObservationsChange={setEditedObservations}
+                  />
               </div>
               <Button variant="ghost" size="icon" onClick={() => onNavigate('next')} className="absolute right-2 top-1/2 -translate-y-1/2 z-20 h-10 w-10 bg-background/50 hover:bg-background/80"><ChevronRight/></Button>
             </div>
@@ -340,32 +395,37 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
           </div>
           <DialogFooter className="p-2 border-t flex-shrink-0 bg-background/70 justify-between">
             <div className="flex items-center gap-2">
-              {isMobile ? (
-                <Sheet open={showDetails} onOpenChange={setShowDetails}>
+                 <Sheet open={isMobile && showDetails} onOpenChange={setShowDetails}>
                   <SheetTrigger asChild>
                     <Button variant="outline" size="sm"><Info className="h-4 w-4" /></Button>
                   </SheetTrigger>
                   <SheetContent side="bottom" className="h-[60vh] flex flex-col p-0">
-                      <SheetHeader className="p-4 border-b flex flex-row items-center justify-between">
-                          <SheetTitle>Detalles del Recurso</SheetTitle>
-                           <DialogClose asChild>
-                                <Button variant="ghost" size="icon" className="h-7 w-7"><X className="h-4 w-4"/></Button>
-                           </DialogClose>
-                      </SheetHeader>
-                      <ScrollArea className="flex-grow p-4">
-                        <ResourceDetailsContent resource={resource} />
-                      </ScrollArea>
+                      <SheetHeader className="p-4 border-b flex flex-row items-center justify-between"><SheetTitle>Detalles del Recurso</SheetTitle><DialogClose asChild><Button variant="ghost" size="icon" className="h-7 w-7"><X className="h-4 w-4"/></Button></DialogClose></SheetHeader>
+                      <ScrollArea className="flex-grow p-4"><ResourceDetailsContent resource={resource} /></ScrollArea>
                   </SheetContent>
                 </Sheet>
-              ) : (
-                <Button variant="outline" size="sm" onClick={() => setShowDetails(!showDetails)}>
-                  <Info className="h-4 w-4" />
-                  <span className="hidden sm:inline ml-2">{showDetails ? 'Ocultar Detalles' : 'Ver Detalles'}</span>
-                </Button>
-              )}
+                 {!isMobile && (
+                    <Button variant="outline" size="sm" onClick={() => setShowDetails(!showDetails)}>
+                        <Info className="h-4 w-4 mr-2" />{showDetails ? 'Ocultar' : 'Ver'} Detalles
+                    </Button>
+                 )}
             </div>
             <div className="flex items-center gap-2">
-                <DownloadButton url={resource.url} resourceId={resource.id} hasPin={resource.hasPin} onDownloadSuccess={onDownload} variant="default" size="sm" />
+                 {canEdit && (
+                    isEditing ? (
+                        <>
+                           <Button variant="outline" size="sm" onClick={() => setIsEditing(false)} disabled={isSaving}>Cancelar</Button>
+                           <Button size="sm" onClick={handleSaveChanges} disabled={isSaving}>
+                             {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin"/> : <Save className="h-4 w-4 mr-2"/>}Guardar
+                           </Button>
+                        </>
+                    ) : (
+                        <Button variant="secondary" size="sm" onClick={() => setIsEditing(true)}>
+                            <Edit className="h-4 w-4 mr-2"/> Editar Contenido
+                        </Button>
+                    )
+                 )}
+                 {!isEditing && <DownloadButton url={resource.url} resourceId={resource.id} hasPin={resource.hasPin} onDownloadSuccess={() => addXp(user!.id, XP_CONFIG.DOWNLOAD_RESOURCE)} variant="default" size="sm" />}
             </div>
           </DialogFooter>
         </DialogContent>
