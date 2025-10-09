@@ -1,4 +1,3 @@
-
 // src/app/(app)/enrollments/page.tsx
 'use client';
 
@@ -8,7 +7,7 @@ import type { Course as AppCourse, User, CourseProgress, LessonCompletionRecord 
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, AlertTriangle, UsersRound, Filter, MoreVertical, BookOpen, LineChart, Target, FileText, Search, CheckCircle, Percent, HelpCircle, UserX, BarChartHorizontal, ArrowRight, Download } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
@@ -19,7 +18,7 @@ import { Identicon } from '@/components/ui/identicon';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Separator } from '@/components/ui/separator';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { SmartPagination } from '@/components/ui/pagination';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Progress } from '@/components/ui/progress';
@@ -485,13 +484,11 @@ export default function EnrollmentsPage() {
                     </CardContent>
                     {totalPages > 1 && (
                         <CardFooter>
-                           <Pagination>
-                            <PaginationContent>
-                                <PaginationItem><PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }} className={currentPage === 1 ? "pointer-events-none opacity-50" : undefined} /></PaginationItem>
-                                {[...Array(totalPages)].map((_, i) => <PaginationItem key={i}><PaginationLink href="#" onClick={(e) => { e.preventDefault(); handlePageChange(i + 1); }} isActive={currentPage === i + 1}>{i + 1}</PaginationLink></PaginationItem>)}
-                                <PaginationItem><PaginationNext href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }} className={currentPage === totalPages ? "pointer-events-none opacity-50" : undefined} /></PaginationItem>
-                            </PaginationContent>
-                           </Pagination>
+                           <SmartPagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={handlePageChange}
+                           />
                         </CardFooter>
                     )}
                     </Card>
@@ -571,7 +568,7 @@ export default function EnrollmentsPage() {
             </AlertDialogHeader>
             <AlertDialogFooter>
                 <AlertDialogCancel>No, mantener</AlertDialogCancel>
-                <AlertDialogAction onClick={handleUnenrollStudent} disabled={isUnenrolling}>
+                <AlertDialogAction onClick={handleUnenrollStudent} disabled={isUnenrolling} className={cn(buttonVariants({ variant: 'destructive'}))}>
                     {isUnenrolling && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>} Sí, cancelar inscripción
                 </AlertDialogAction>
             </AlertDialogFooter>

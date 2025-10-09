@@ -52,7 +52,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { SmartPagination } from '@/components/ui/pagination';
 import { GradientIcon } from '@/components/ui/gradient-icon';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useTitle } from '@/contexts/title-context';
@@ -300,7 +300,7 @@ export default function UsersPage() {
         });
         fetchUsers();
     } catch (err) {
-        toast({ title: "Error", description: (err instanceof Error).message, variant: "destructive" });
+        toast({ title: "Error", description: (err instanceof Error ? err.message : "Error desconocido"), variant: "destructive" });
     } finally {
         setIsProcessing(false);
         setShowToggleStatusDialog(false);
@@ -334,7 +334,7 @@ export default function UsersPage() {
       setShowChangeRoleDialog(false);
       setUserToChangeRole(null);
     } catch (err) {
-      toast({ title: "Error al cambiar rol", description: (err instanceof Error).message, variant: "destructive" });
+      toast({ title: "Error al cambiar rol", description: (err instanceof Error ? err.message : "Error desconocido"), variant: "destructive" });
     } finally {
       setIsProcessing(false);
     }
@@ -589,33 +589,13 @@ export default function UsersPage() {
             </>
           )}
         </CardContent>
-        {totalPages > 1 && (
+        {totalPages > 1 && !isLoading && (
             <CardFooter>
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious
-                        href="#"
-                        onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }}
-                        className={currentPage === 1 ? "pointer-events-none opacity-50" : undefined}
-                      />
-                    </PaginationItem>
-                    {[...Array(totalPages)].map((_, i) => (
-                       <PaginationItem key={i}>
-                         <PaginationLink href="#" onClick={(e) => { e.preventDefault(); handlePageChange(i + 1); }} isActive={currentPage === i + 1}>
-                           {i + 1}
-                         </PaginationLink>
-                       </PaginationItem>
-                    ))}
-                    <PaginationItem>
-                      <PaginationNext
-                        href="#"
-                        onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }}
-                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : undefined}
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
+                <SmartPagination 
+                    currentPage={currentPage} 
+                    totalPages={totalPages} 
+                    onPageChange={handlePageChange}
+                />
             </CardFooter>
         )}
       </Card>

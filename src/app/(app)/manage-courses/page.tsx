@@ -34,7 +34,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CourseCreationForm } from '@/components/course-creation-form';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { SmartPagination } from '@/components/ui/pagination';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CourseCard } from '@/components/course-card';
 import { useTitle } from '@/contexts/title-context';
@@ -177,6 +177,7 @@ export default function ManageCoursesPage() {
   };
 
   const handleChangeStatus = async (courseId: string, newStatus: CourseStatus) => {
+    setIsProcessing(true);
     try {
       const response = await fetch(`/api/courses/${courseId}/status`, {
         method: 'PATCH',
@@ -194,6 +195,8 @@ export default function ManageCoursesPage() {
       setCourseUpdateSignal(prev => prev + 1);
     } catch (err) {
       toast({ title: 'Error al Cambiar Estado', description: (err as Error).message, variant: 'destructive' });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -385,13 +388,12 @@ export default function ManageCoursesPage() {
        </Tabs>
       
         {totalPages > 1 && !isLoading && (
-            <Pagination className="mt-8">
-                <PaginationContent>
-                    <PaginationItem><PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }} className={currentPage === 1 ? "pointer-events-none opacity-50" : undefined}/></PaginationItem>
-                    {[...Array(totalPages)].map((_, i) => (<PaginationItem key={i}><PaginationLink href="#" onClick={(e) => { e.preventDefault(); handlePageChange(i + 1); }} isActive={currentPage === i + 1}>{i + 1}</PaginationLink></PaginationItem>))}
-                    <PaginationItem><PaginationNext href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }} className={currentPage === totalPages ? "pointer-events-none opacity-50" : undefined}/></PaginationItem>
-                </PaginationContent>
-            </Pagination>
+            <SmartPagination 
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              className="mt-8"
+            />
         )}
 
       <AlertDialog open={!!courseToDelete} onOpenChange={(open) => !open && setCourseToDelete(null)}>
