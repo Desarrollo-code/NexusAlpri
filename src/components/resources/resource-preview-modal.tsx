@@ -1,6 +1,6 @@
 // src/components/resources/resource-preview-modal.tsx
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogFooter } from '@/components/ui/dialog';
 import type { EnterpriseResource as AppResourceType } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -21,10 +21,11 @@ import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescri
 import { getInitials } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
 import { addXp, XP_CONFIG, checkFirstDownload } from '@/lib/gamification';
-import { Viewer, Worker } from '@react-pdf-viewer/core';
-import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
-import '@react-pdf-viewer/core/lib/styles/index.css';
-import '@react-pdf-viewer/default-layout/lib/styles/index.css';
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
+
+pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`;
 
 
 const DocxPreviewer = ({ url }: { url: string }) => {
@@ -150,14 +151,74 @@ const FallbackPreview = ({ resource }: { resource: AppResourceType }) => {
     );
 };
 
+const PdfViewer = ({ url }: { url: string }) => {
+    const [numPages, setNumPages] = useState<number | null>(null);
+    const [pageNumber, setPageNumber] = useState(1);
+    const [error, setError] = useState<string | null>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [containerWidth, setContainerWidth] = useState<number>();
+
+    function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
+        setNumPages(numPages);
+    }
+    
+    function onDocumentLoadError(error: any) {
+        setError("No se pudo cargar el documento PDF. Por favor, asegúrate de que la URL sea válida y accesible.");
+        console.error("Error loading PDF:", error);
+    }
+    
+     const onResize = useCallback(() => {
+        if (containerRef.current) {
+            setContainerWidth(containerRef.current.clientWidth);
+        }
+    }, []);
+
+    useEffect(() => {
+        onResize();
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, [onResize]);
+
+    if (error) {
+        return (
+            <div className="my-4 p-4 text-center text-destructive-foreground bg-destructive/80">
+                 <AlertTriangle className="inline-block h-4 w-4 mr-1"/>
+                 {error}
+            </div>
+        );
+    }
+    
+    return (
+        <div className="w-full h-full flex flex-col bg-muted/30">
+            <div ref={containerRef} className="flex-grow overflow-auto thin-scrollbar">
+                <Document
+                    file={url}
+                    onLoadSuccess={onDocumentLoadSuccess}
+                    onLoadError={onDocumentLoadError}
+                    loading={<div className="flex items-center justify-center h-64"><Loader2 className="animate-spin" /></div>}
+                >
+                    <Page pageNumber={pageNumber} width={containerWidth} />
+                </Document>
+            </div>
+            {numPages && (
+                 <div className="flex-shrink-0 flex items-center justify-center p-2 bg-background/70 border-t">
+                    <Button variant="outline" size="sm" onClick={() => setPageNumber(p => Math.max(1, p - 1))} disabled={pageNumber <= 1}>Anterior</Button>
+                    <p className="text-sm mx-4">Página {pageNumber} de {numPages}</p>
+                    <Button variant="outline" size="sm" onClick={() => setPageNumber(p => Math.min(numPages, p + 1))} disabled={pageNumber >= numPages}>Siguiente</Button>
+                </div>
+            )}
+        </div>
+    );
+};
+
+
 const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource: AppResourceType; pinVerifiedUrl: string | null; onPinVerified: (url: string) => void; }) => {
     const { toast } = useToast();
     const [pin, setPin] = useState('');
     const [isVerifying, setIsVerifying] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { user } = useAuth();
-    const defaultLayoutPluginInstance = defaultLayoutPlugin();
-
+   
     const handlePinSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsVerifying(true);
@@ -219,17 +280,11 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
     
     if (displayUrl) {
         if (isPdfUrl(displayUrl)) {
-            return (
-                <div className="w-full h-full">
-                    <Worker workerUrl="/pdf.worker.min.js">
-                        <Viewer fileUrl={`/api/resources/preview?url=${encodeURIComponent(displayUrl)}`} plugins={[defaultLayoutPluginInstance]} />
-                    </Worker>
-                </div>
-            );
+            return <PdfViewer url={`/api/resources/preview?url=${encodeURIComponent(displayUrl)}`} />;
         }
         
         const youtubeId = getYoutubeVideoId(displayUrl);
-        const isImage = /\.(jpe?g|png|gif|webp)$/i.test(displayUrl);
+        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(displayUrl);
         const isVideoFile = /\.(mp4|webm|ogv)$/i.test(displayUrl);
         const isOfficeDoc = displayUrl.toLowerCase().endsWith('.docx');
         const isZipFile = displayUrl.toLowerCase().endsWith('.zip');
