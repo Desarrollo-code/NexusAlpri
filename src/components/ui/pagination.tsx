@@ -128,7 +128,7 @@ export const SmartPagination: React.FC<SmartPaginationProps> = ({ currentPage, t
     const maxPagesToShow = 5;
     const ellipsis = '...';
 
-    if (totalPages <= maxPagesToShow) {
+    if (totalPages <= maxPagesToShow + 2) {
       for (let i = 1; i <= totalPages; i++) {
         pageNumbers.push(i);
       }

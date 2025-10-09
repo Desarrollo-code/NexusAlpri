@@ -1,3 +1,4 @@
+
 // src/app/(app)/security-audit/page.tsx
 'use client';
 
@@ -18,7 +19,7 @@ import { useAnimatedCounter } from '@/hooks/use-animated-counter';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTitle } from '@/contexts/title-context';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { SmartPagination } from '@/components/ui/pagination';
 import { Identicon } from '@/components/ui/identicon';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
@@ -83,8 +84,8 @@ export default function SecurityAuditPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     
-    const currentPage = Number(searchParams.get('page')) || 1;
     const activeFilter = searchParams.get('event') || 'ALL';
+    const currentPage = Number(searchParams.get('page')) || 1;
     const totalPages = Math.ceil(totalLogs / PAGE_SIZE);
 
     useEffect(() => {
@@ -92,17 +93,11 @@ export default function SecurityAuditPage() {
         startTour('securityAudit', securityAuditTour);
     }, [setPageTitle, startTour]);
 
-    const fetchData = useCallback(async (filter: string, page: number) => {
+    const fetchData = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         try {
-            const logsParams = new URLSearchParams({
-                page: String(page),
-                pageSize: String(PAGE_SIZE),
-            });
-            if (filter !== 'ALL') {
-                logsParams.append('event', filter);
-            }
+            const logsParams = new URLSearchParams(searchParams.toString());
 
             const [logsResponse, statsResponse] = await Promise.all([
                 fetch(`/api/security/logs?${logsParams.toString()}`),
@@ -131,15 +126,15 @@ export default function SecurityAuditPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [toast]);
+    }, [toast, searchParams]);
 
     useEffect(() => {
         if (currentUser?.role !== 'ADMINISTRATOR') {
             router.push('/dashboard');
             return;
         }
-        fetchData(activeFilter, currentPage);
-    }, [currentUser, router, fetchData, activeFilter, currentPage]);
+        fetchData();
+    }, [currentUser, router, fetchData]);
     
     
     const createQueryString = useCallback((paramsToUpdate: Record<string, string | number | null>) => {
@@ -230,7 +225,7 @@ export default function SecurityAuditPage() {
                         <div className="flex flex-col items-center justify-center py-12 text-destructive">
                             <AlertTriangle className="h-8 w-8 mb-2" />
                             <p className="font-semibold">{error}</p>
-                            <Button onClick={() => fetchData(activeFilter, currentPage)} variant="outline" className="mt-4">
+                            <Button onClick={() => fetchData()} variant="outline" className="mt-4">
                                 Reintentar
                             </Button>
                         </div>
@@ -344,13 +339,11 @@ export default function SecurityAuditPage() {
                 </CardContent>
                  {totalPages > 1 && (
                     <CardFooter>
-                        <Pagination>
-                            <PaginationContent>
-                                <PaginationItem><PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }} className={currentPage === 1 ? "pointer-events-none opacity-50" : undefined} /></PaginationItem>
-                                {[...Array(totalPages)].map((_, i) => <PaginationItem key={i}><PaginationLink href="#" onClick={(e) => { e.preventDefault(); handlePageChange(i + 1); }} isActive={currentPage === i + 1}>{i + 1}</PaginationLink></PaginationItem>)}
-                                <PaginationItem><PaginationNext href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }} className={currentPage === totalPages ? "pointer-events-none opacity-50" : undefined} /></PaginationItem>
-                            </PaginationContent>
-                        </Pagination>
+                        <SmartPagination
+                           currentPage={currentPage}
+                           totalPages={totalPages}
+                           onPageChange={handlePageChange}
+                        />
                     </CardFooter>
                 )}
             </Card>

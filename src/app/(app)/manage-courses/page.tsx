@@ -50,7 +50,7 @@ import { Identicon } from '@/components/ui/identicon';
 import { CourseAssignmentModal } from '@/components/course-assignment-modal';
 
 
-interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | 'status'> {
+interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | 'status' | 'prerequisite' | 'isMandatory'> {
   instructor: { id: string; name: string, avatar: string | null } | null;
   status: CourseStatus;
   _count: {
@@ -58,6 +58,7 @@ interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | 'status'>
     enrollments: number;
   };
   averageCompletion?: number;
+  isMandatory: boolean;
 }
 
 const PAGE_SIZE = 8;
@@ -86,11 +87,9 @@ export default function ManageCoursesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  const [courseUpdateSignal, setCourseUpdateSignal] = useState(0);
-
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState<AppCourseType | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
@@ -116,14 +115,6 @@ export default function ManageCoursesPage() {
     [searchParams]
   );
   
-  const handleTabChange = (tab: string) => {
-    router.push(`${pathname}?${createQueryString({ tab, page: 1 })}`);
-  };
-
-  const handlePageChange = (page: number) => {
-    router.push(`${pathname}?${createQueryString({ page })}`);
-  };
-
   const fetchCourses = useCallback(async () => {
     if (!user) {
       setIsLoading(false);
@@ -133,16 +124,11 @@ export default function ManageCoursesPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams({ 
-        manageView: 'true',
-        page: String(currentPage),
-        pageSize: String(PAGE_SIZE),
-        tab: activeTab
-      });
-      
-      params.append('userId', user.id);
-      params.append('userRole', user.role as string);
-      
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('manageView', 'true');
+      params.set('userId', user.id);
+      params.set('userRole', user.role);
+
       const response = await fetch(`/api/courses?${params.toString()}`, { cache: 'no-store' });
       if (!response.ok) {
         const errorData = await response.json();
@@ -160,13 +146,21 @@ export default function ManageCoursesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [user, toast, currentPage, activeTab, courseUpdateSignal]);
+  }, [user, toast, searchParams]);
 
 
   useEffect(() => {
     fetchCourses();
   }, [fetchCourses]);
 
+  const handleTabChange = (tab: string) => {
+    router.push(`${pathname}?${createQueryString({ tab, page: 1 })}`);
+  };
+
+  const handlePageChange = (page: number) => {
+    router.push(`${pathname}?${createQueryString({ page })}`);
+  };
+  
   const handleCreationSuccess = (newCourseId: string) => {
     setShowCreateModal(false);
     toast({
@@ -192,7 +186,7 @@ export default function ManageCoursesPage() {
         title: 'Estado Actualizado',
         description: `El estado del curso ha sido actualizado.`,
       });
-      setCourseUpdateSignal(prev => prev + 1);
+      fetchCourses(); // Re-fetch
     } catch (err) {
       toast({ title: 'Error al Cambiar Estado', description: (err as Error).message, variant: 'destructive' });
     } finally {
@@ -202,7 +196,7 @@ export default function ManageCoursesPage() {
 
   const handleDeleteCourse = async () => {
     if (!courseToDelete) return;
-    setIsDeleting(true);
+    setIsProcessing(true);
     try {
         const response = await fetch(`/api/courses/${courseToDelete.id}`, {
             method: 'DELETE',
@@ -219,7 +213,7 @@ export default function ManageCoursesPage() {
     } catch (err) {
         toast({ title: 'Error al Eliminar', description: (err as Error).message, variant: 'destructive' });
     } finally {
-        setIsDeleting(false);
+        setIsProcessing(false);
         setCourseToDelete(null);
     }
   };
@@ -307,7 +301,7 @@ export default function ManageCoursesPage() {
                             <Badge variant={course.status === 'PUBLISHED' ? 'default' : 'secondary'}>{getStatusInSpanish(course.status)}</Badge>
                          </TableCell>
                          <TableCell className="text-right">
-                             <ManagementDropdown course={course} onStatusChange={handleChangeStatus} onDelete={setCourseToDelete} onAssign={() => setCourseToAssign(course)} isProcessing={isDeleting} />
+                             <ManagementDropdown course={course} onStatusChange={handleChangeStatus} onDelete={setCourseToDelete} onAssign={() => setCourseToAssign(course)} isProcessing={isProcessing} />
                          </TableCell>
                      </TableRow>
                  ))}
@@ -400,8 +394,8 @@ export default function ManageCoursesPage() {
         <AlertDialogContent className="w-[95vw] max-w-md">
             <AlertDialogHeader><AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle><AlertDialogDescription>Esta acción es irreversible. Se eliminará permanentemente el curso "<strong>{courseToDelete?.title}</strong>" y todos sus datos asociados, incluyendo módulos, lecciones, inscripciones y progreso de los estudiantes.</AlertDialogDescription></AlertDialogHeader>
             <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:space-x-0">
-                <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteCourse} disabled={isDeleting} className={buttonVariants({ variant: "destructive" })}>{isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}Sí, eliminar curso</AlertDialogAction>
+                <AlertDialogCancel disabled={isProcessing}>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteCourse} disabled={isProcessing} className={buttonVariants({ variant: "destructive" })}>{isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}Sí, eliminar curso</AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

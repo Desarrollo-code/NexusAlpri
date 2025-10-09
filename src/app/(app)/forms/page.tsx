@@ -33,7 +33,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { SmartPagination } from '@/components/ui/pagination';
 import { useTitle } from '@/contexts/title-context';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -252,7 +252,6 @@ export default function FormsPage() {
     const { setPageTitle } = useTitle();
     const { toast } = useToast();
 
-    const [activeTab, setActiveTab] = useState(user?.role === 'STUDENT' ? 'for-student' : (searchParams.get('tab') || 'my-forms'));
     const [forms, setForms] = useState<AppForm[]>([]);
     const [totalForms, setTotalForms] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
@@ -262,7 +261,8 @@ export default function FormsPage() {
     const [formToDelete, setFormToDelete] = useState<AppForm | null>(null);
     const [formToShare, setFormToShare] = useState<AppForm | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
-
+    
+    const activeTab = searchParams.get('tab') || (user?.role === 'STUDENT' ? 'for-student' : 'my-forms');
     const currentPage = Number(searchParams.get('page')) || 1;
     const totalPages = Math.ceil(totalForms / PAGE_SIZE);
 
@@ -275,7 +275,7 @@ export default function FormsPage() {
         setIsLoading(true);
         setError(null);
         try {
-            const params = new URLSearchParams({ tab: activeTab, page: String(currentPage), pageSize: String(PAGE_SIZE) });
+            const params = new URLSearchParams(searchParams.toString());
             const res = await fetch(`/api/forms?${params.toString()}`);
             if (!res.ok) throw new Error((await res.json()).message || 'No se pudieron cargar los formularios.');
             const data = await res.json();
@@ -286,25 +286,31 @@ export default function FormsPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [user, activeTab, currentPage]);
+    }, [user, searchParams]);
 
     useEffect(() => {
         fetchForms();
     }, [fetchForms]);
     
+    const createQueryString = useCallback((paramsToUpdate: Record<string, string | number>) => {
+      const params = new URLSearchParams(searchParams.toString());
+      Object.entries(paramsToUpdate).forEach(([name, value]) => {
+        params.set(name, String(value));
+      });
+      return params.toString();
+    }, [searchParams]);
+
     const handleTabChange = (tab: string) => {
-        setActiveTab(tab);
-        router.push(`${pathname}?tab=${tab}&page=1`);
+        router.push(`${pathname}?${createQueryString({ tab, page: 1 })}`);
     }
 
     const handlePageChange = (page: number) => {
-        router.push(`${pathname}?tab=${activeTab}&page=${page}`);
+        router.push(`${pathname}?${createQueryString({ page })}`);
     };
     
     const handleFormCreated = (newForm: AppForm) => {
         setShowCreateModal(false);
-        // Refresh the list to show the new form
-        fetchForms();
+        router.push(`/forms/${newForm.id}/edit`);
     };
 
     const handleFormAction = (action: 'edit' | 'delete' | 'share' | 'results', form: AppForm) => {
@@ -457,13 +463,11 @@ export default function FormsPage() {
             {user?.role === 'STUDENT' ? <StudentView /> : <ManagementView />}
             
             {totalPages > 1 && !isLoading && (
-                <Pagination>
-                    <PaginationContent>
-                        <PaginationItem><PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }} className={currentPage === 1 ? "pointer-events-none opacity-50" : undefined} /></PaginationItem>
-                        {[...Array(totalPages)].map((_, i) => <PaginationItem key={i}><PaginationLink href="#" onClick={(e) => { e.preventDefault(); handlePageChange(i + 1); }} isActive={currentPage === i + 1}>{i + 1}</PaginationLink></PaginationItem>)}
-                        <PaginationItem><PaginationNext href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }} className={currentPage === totalPages ? "pointer-events-none opacity-50" : undefined} /></PaginationItem>
-                    </PaginationContent>
-                </Pagination>
+                <SmartPagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                />
             )}
 
             <FormCreationModal open={showCreateModal} onOpenChange={setShowCreateModal} onFormCreated={handleFormCreated} />

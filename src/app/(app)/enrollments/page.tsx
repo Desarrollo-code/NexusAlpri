@@ -1,3 +1,4 @@
+
 // src/app/(app)/enrollments/page.tsx
 'use client';
 
@@ -263,8 +264,8 @@ export default function EnrollmentsPage() {
   const [isUnenrolling, setIsUnenrolling] = useState(false);
 
   const selectedCourseId = searchParams.get('courseId') || '';
-  const currentPage = Number(searchParams.get('page')) || 1;
   const searchTerm = searchParams.get('search') || '';
+  const currentPage = Number(searchParams.get('page')) || 1;
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   useEffect(() => {
@@ -306,10 +307,6 @@ export default function EnrollmentsPage() {
     }
   }, [currentUser, isAuthLoading, toast, router, pathname, createQueryString, selectedCourseId]);
 
-  useEffect(() => {
-    fetchCourseList();
-  }, [fetchCourseList]);
-
   const fetchCourseDetails = useCallback(async (courseId: string) => {
     if (!courseId) return;
     setIsLoadingDetails(true);
@@ -326,7 +323,11 @@ export default function EnrollmentsPage() {
         setIsLoadingDetails(false);
     }
   }, [toast]);
-
+  
+  useEffect(() => {
+    fetchCourseList();
+  }, [fetchCourseList]);
+  
   useEffect(() => {
       if (selectedCourseId) {
           fetchCourseDetails(selectedCourseId);

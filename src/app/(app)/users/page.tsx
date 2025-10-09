@@ -1,3 +1,4 @@
+
 // src/app/(app)/users/page.tsx
 'use client';
 
@@ -81,14 +82,11 @@ export default function UsersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // States for filters
-  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
-  const [roleFilter, setRoleFilter] = useState(searchParams.get('role') || 'all');
-  const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'all');
-
-  const debouncedSearchTerm = useDebounce(searchTerm, 300);
-  
+  const searchTerm = searchParams.get('search') || '';
+  const roleFilter = searchParams.get('role') || 'all';
+  const statusFilter = searchParams.get('status') || 'all';
   const currentPage = Number(searchParams.get('page')) || 1;
+
   const totalPages = Math.ceil(totalUsers / PAGE_SIZE);
 
   const [userToEdit, setUserToEdit] = useState<User | null>(null);
@@ -115,13 +113,11 @@ export default function UsersPage() {
     setPageTitle('Gestión de Usuarios');
   }, [setPageTitle]);
 
-  const fetchUsers = useCallback(() => {
+  const fetchUsers = useCallback(async () => {
     if (!currentUser) return;
     setIsLoading(true);
     setError(null);
     const params = new URLSearchParams(searchParams.toString());
-    params.set('page', String(currentPage));
-    params.set('pageSize', String(PAGE_SIZE));
     
     fetch(`/api/users?${params.toString()}`, { cache: 'no-store' })
       .then(res => {
@@ -143,8 +139,7 @@ export default function UsersPage() {
       .finally(() => {
         setIsLoading(false);
       });
-  }, [currentUser, currentPage, searchParams, toast]);
-
+  }, [currentUser, searchParams, toast]);
   
   const createQueryString = useCallback((paramsToUpdate: Record<string, string | number | null>) => {
       const params = new URLSearchParams(searchParams.toString());
@@ -166,22 +161,12 @@ export default function UsersPage() {
       return;
     }
     fetchUsers();
-  }, [currentUser, currentPage, searchParams, router, fetchUsers]);
+  }, [currentUser, router, fetchUsers, searchParams]);
 
-  // Effect for handling filter changes and updating URL
-  useEffect(() => {
-     const newQueryString = createQueryString({ 
-         page: 1, // Reset to page 1 on filter change
-         search: debouncedSearchTerm,
-         role: roleFilter,
-         status: statusFilter
-     });
-     // Push to history only if the query string has actually changed
-     if (newQueryString !== searchParams.toString()) {
-         router.push(`${pathname}?${newQueryString}`);
-     }
-  }, [debouncedSearchTerm, roleFilter, statusFilter, pathname, router, createQueryString, searchParams]);
-  
+  const handleFilterChange = (filterType: 'search' | 'role' | 'status', value: string) => {
+    const newQueryString = createQueryString({ [filterType]: value, page: 1 });
+    router.push(`${pathname}?${newQueryString}`);
+  }
 
   const resetFormFields = () => {
     setEditName('');
@@ -216,7 +201,6 @@ export default function UsersPage() {
     setSelectedNewRole(selectedUser.role);
     setShowChangeRoleDialog(true);
   };
-  
   
   const handlePageChange = (page: number) => {
       const newQueryString = createQueryString({ page });
@@ -338,10 +322,6 @@ export default function UsersPage() {
     } finally {
       setIsProcessing(false);
     }
-  };
-  
-  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
   };
   
   const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -534,7 +514,7 @@ export default function UsersPage() {
                 <CardDescription>Visualiza y gestiona todos los usuarios registrados.</CardDescription>
             </div>
             <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-2">
-              <Select value={roleFilter} onValueChange={setRoleFilter}>
+              <Select value={roleFilter} onValueChange={(v) => handleFilterChange('role', v)}>
                 <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="Filtrar por rol" />
                 </SelectTrigger>
@@ -545,7 +525,7 @@ export default function UsersPage() {
                   <SelectItem value="STUDENT">Estudiantes</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select value={statusFilter} onValueChange={(v) => handleFilterChange('status', v)}>
                 <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="Filtrar por estado" />
                 </SelectTrigger>
@@ -564,7 +544,7 @@ export default function UsersPage() {
                     placeholder="Buscar por nombre o email..." 
                     className="pl-8 w-full sm:w-[300px]" 
                     value={searchTerm}
-                    onChange={handleSearchInputChange}
+                    onChange={(e) => handleFilterChange('search', e.target.value)}
                 />
             </div>
             </div>
@@ -583,7 +563,7 @@ export default function UsersPage() {
               {isMobile ? <MobileUsersList /> : <DesktopUsersTable />}
               {!isLoading && usersList.length === 0 && (
                   <p className="text-center text-muted-foreground py-8">
-                      {searchTerm ? "No se encontraron usuarios que coincidan." : "No hay usuarios registrados."}
+                      {searchTerm || roleFilter !== 'all' || statusFilter !== 'all' ? "No se encontraron usuarios que coincidan con los filtros." : "No hay usuarios registrados."}
                   </p>
               )}
             </>
