@@ -28,6 +28,7 @@ type Message = {
   createdAt: string;
   authorId: string;
   author: Participant;
+  conversationId: string;
 };
 type Conversation = {
   id: string;
@@ -136,32 +137,8 @@ export function ChatClient() {
 
     const newChatUserId = searchParams.get('new');
     
-    // El callback que se pasa al hook
-    const handleNewMessage = useCallback((newMessage: Message) => {
-        // Solo actualiza si el mensaje pertenece a la conversación activa
-        if (activeConversation && newMessage.conversationId === activeConversation.id) {
-            setMessages(prevMessages => [...prevMessages, newMessage]);
-        }
-        // Actualiza el último mensaje en la lista de conversaciones
-        setConversations(prev => {
-            const convoIndex = prev.findIndex(c => c.id === newMessage.conversationId);
-            if (convoIndex > -1) {
-                const updatedConvo = { ...prev[convoIndex], messages: [newMessage], updatedAt: newMessage.createdAt };
-                const restConvos = prev.filter(c => c.id !== newMessage.conversationId);
-                // Mover la conversación actualizada al principio de la lista
-                return [updatedConvo, ...restConvos];
-            }
-            // Si la conversación es nueva para este usuario, la recargamos
-            fetchConversations();
-            return prev;
-        });
-    }, [activeConversation]);
-
-    // Usamos el hook para la conversación activa
-    useRealtimeChat(activeConversation?.id ?? null, handleNewMessage);
-    
-    // Fetch all conversations
     const fetchConversations = useCallback(async () => {
+        setIsLoading(true);
         try {
             const res = await fetch('/api/conversations');
             if (!res.ok) throw new Error("No se pudieron cargar las conversaciones");
@@ -173,37 +150,94 @@ export function ChatClient() {
             setIsLoading(false);
         }
     }, [toast]);
+    
+    const handleNewMessage = useCallback((newMessage: Message) => {
+        if (activeConversation && newMessage.conversationId === activeConversation.id) {
+            setMessages(prevMessages => [...prevMessages, newMessage]);
+        }
+        setConversations(prev => {
+            const convoIndex = prev.findIndex(c => c.id === newMessage.conversationId);
+            if (convoIndex > -1) {
+                const updatedConvo = { ...prev[convoIndex], messages: [newMessage], updatedAt: newMessage.createdAt };
+                const restConvos = prev.filter(c => c.id !== newMessage.conversationId);
+                return [updatedConvo, ...restConvos];
+            }
+            fetchConversations();
+            return prev;
+        });
+    }, [activeConversation, fetchConversations]);
 
+    useRealtimeChat(activeConversation?.id ?? null, handleNewMessage);
+    
     useEffect(() => {
         if (!isAuthLoading && user) {
             fetchConversations();
         }
     }, [user, isAuthLoading, fetchConversations]);
 
-    // Fetch messages for active conversation
     useEffect(() => {
         if (activeConversation && !activeConversation.id.startsWith('temp-')) {
             fetch(`/api/conversations/${activeConversation.id}`)
                 .then(res => res.json())
                 .then(data => setMessages(Array.isArray(data) ? data : []))
                 .catch(() => toast({ title: 'Error', description: 'No se pudieron cargar los mensajes.', variant: 'destructive'}));
-        } else if (activeConversation && activeConversation.id.startsWith('temp-')) {
+        } else if (activeConversation?.id.startsWith('temp-')) {
             setMessages([]);
         }
     }, [activeConversation, toast]);
     
-    // Handle opening a new chat from URL param
-    useEffect(() => {
-        if (newChatUserId && conversations.length > 0) {
-            const existingConvo = conversations.find(c => c.participants.some(p => p.id === newChatUserId));
-            if (existingConvo) {
-                setActiveConversation(existingConvo);
-                router.replace('/messages', { scroll: false }); 
-            } else {
-                setIsNewChatModalOpen(true);
-            }
+    const handleStartNewChat = useCallback(async (recipient: User) => {
+        setIsNewChatModalOpen(false);
+        const existingConvo = conversations.find(c => c.participants.some(p => p.id === recipient.id));
+        if (existingConvo) {
+            setActiveConversation(existingConvo);
+        } else {
+            const tempConvo: Conversation = {
+                id: `temp-${recipient.id}`,
+                participants: [{...recipient}],
+                messages: [],
+                updatedAt: new Date().toISOString()
+            };
+            setConversations(prev => [tempConvo, ...prev]);
+            setActiveConversation(tempConvo);
         }
-    }, [newChatUserId, conversations, router]);
+    }, [conversations]);
+
+    useEffect(() => {
+        const handleNewChatParam = async () => {
+            if (newChatUserId && user) {
+                if(newChatUserId === user.id) {
+                    router.replace('/messages', { scroll: false });
+                    return;
+                }
+                const existingConvo = conversations.find(c => c.participants.some(p => p.id === newChatUserId));
+                if (existingConvo) {
+                    setActiveConversation(existingConvo);
+                } else {
+                    if (usersForNewChat.length === 0) {
+                        try {
+                           const res = await fetch('/api/users/list');
+                           const data = await res.json();
+                           const allUsers = data.users || [];
+                           setUsersForNewChat(allUsers);
+                           const recipient = allUsers.find((u: User) => u.id === newChatUserId);
+                           if (recipient) handleStartNewChat(recipient);
+                        } catch (e) {
+                            console.error("Failed to pre-fetch users for new chat", e);
+                        }
+                    } else {
+                        const recipient = usersForNewChat.find(u => u.id === newChatUserId);
+                        if (recipient) handleStartNewChat(recipient);
+                    }
+                }
+                router.replace('/messages', { scroll: false });
+            }
+        };
+        // Ensure conversations are loaded before processing the 'new' param
+        if(!isLoading) {
+            handleNewChatParam();
+        }
+    }, [newChatUserId, user, conversations, usersForNewChat, router, isLoading, handleStartNewChat]);
     
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -218,9 +252,9 @@ export function ChatClient() {
             createdAt: new Date().toISOString(),
             authorId: user!.id,
             author: user!,
+            conversationId: activeConversation!.id,
         };
         
-        // Optimistic update
         setMessages(prev => [...prev, tempMessage]);
         setNewMessage('');
         
@@ -233,39 +267,17 @@ export function ChatClient() {
             const sentMessage = await response.json();
             if (!response.ok) throw new Error(sentMessage.message || 'Error al enviar el mensaje');
             
-            // Replace temporary message with the real one from the server
-            setMessages(prev => prev.map(m => m.id === tempMessageId ? sentMessage : m));
+            setMessages(prev => prev.map(m => m.id === tempMessageId ? { ...sentMessage, conversationId: activeConversation!.id } : m));
             
-            // If it was a temporary conversation, fetch all conversations to get the new one with its real ID.
             if (activeConversation?.id.startsWith('temp-')) {
                 await fetchConversations();
-                const realConvo = conversations.find(c => c.participants.some(p => p.id === recipientId));
-                if (realConvo) setActiveConversation(realConvo);
             }
             
         } catch (err) {
             toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
-            // Revert optimistic update
             setMessages(prev => prev.filter(m => m.id !== tempMessageId));
         } finally {
             setIsSending(false);
-        }
-    };
-    
-    const handleStartNewChat = async (recipient: User) => {
-        setIsNewChatModalOpen(false);
-        const existingConvo = conversations.find(c => c.participants.some(p => p.id === recipient.id));
-        if (existingConvo) {
-            setActiveConversation(existingConvo);
-        } else {
-            const tempConvo: Conversation = {
-                id: `temp-${recipient.id}`,
-                participants: [{...recipient}],
-                messages: [],
-                updatedAt: new Date().toISOString()
-            };
-            setConversations(prev => [tempConvo, ...prev]);
-            setActiveConversation(tempConvo);
         }
     };
     
