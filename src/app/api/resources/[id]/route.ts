@@ -92,9 +92,15 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
         }
         
         if (resourceToDelete.type === 'FOLDER') {
-            const children = await prisma.enterpriseResource.findMany({ where: { parentId: id } });
-            if (children.length > 0) {
-                return NextResponse.json({ message: 'No se puede eliminar una carpeta que contiene otros recursos.' }, { status: 409 });
+            // CORRECCIÓN: Solo contar los recursos ACTIVOS dentro de la carpeta.
+            const childrenCount = await prisma.enterpriseResource.count({ 
+                where: { 
+                    parentId: id,
+                    status: 'ACTIVE' // Asegura que solo contamos los archivos no archivados.
+                } 
+            });
+            if (childrenCount > 0) {
+                return NextResponse.json({ message: `No se puede eliminar. La carpeta contiene ${childrenCount} recurso(s) activo(s).` }, { status: 409 });
             }
         }
 
