@@ -1,6 +1,6 @@
 // src/components/resources/resource-preview-modal.tsx
 'use client';
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogFooter } from '@/components/ui/dialog';
 import type { EnterpriseResource as AppResourceType } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -432,3 +432,6 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
       </Dialog>
     );
 };
+function DetailsComponent() {
+  return null;
+}
