@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, XCircle, Replace, Pencil, Eye, MoreVertical, Archive, Crop, Copy, FilePlus2, ChevronDown, BookOpenText, Video, FileText, Lightbulb, File as FileGenericIcon, BarChart3, Star, Layers3, SaveIcon, Sparkles, Award } from 'lucide-react';
+import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, XCircle, Replace, Pencil, Eye, MoreVertical, Archive, Crop, Copy, FilePlus2, ChevronDown, BookOpenText, Video, FileText, Lightbulb, File as FileGenericIcon, BarChart3, Star, Layers3, SaveIcon, Sparkles, Award, Check } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState, ChangeEvent, useCallback, useMemo } from 'react';
@@ -922,84 +922,67 @@ const BlockTypeSelector = ({ onSelect }) => (
     </DropdownMenu>
 );
 
+const optionColors = ["bg-red-600", "bg-blue-600", "bg-yellow-500", "bg-green-600"];
+const optionShapes = [
+    <path d="M12 2L2 22h20L12 2z" key="triangle"/>, 
+    <path d="M12 2 L22 12 L12 22 L2 12 Z" key="diamond" />,
+    <circle cx="12" cy="12" r="11" key="circle"/>,
+    <rect x="2" y="2" width="20" height="20" rx="2" key="square"/>,
+];
+
 // === COMPONENTE PARA EL MODAL DE EDICIÓN DE QUIZ ===
 function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, onClose: () => void, quiz: AppQuiz, onSave: (updatedQuiz: AppQuiz) => void }) {
     const [localQuiz, setLocalQuiz] = useState(quiz);
+    const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
 
     useEffect(() => {
         setLocalQuiz(quiz);
+        setActiveQuestionIndex(0);
     }, [quiz, isOpen]);
 
     const handleQuizMetaChange = (field: 'title' | 'description' | 'maxAttempts', value: string | number | null) => {
         setLocalQuiz(prev => ({...prev, [field]: value}));
     };
 
-    const handleQuestionChange = (qIndex: number, text: string) => {
+    const handleQuestionChange = (text: string) => {
         const newQuestions = [...localQuiz.questions];
-        newQuestions[qIndex].text = text;
+        newQuestions[activeQuestionIndex].text = text;
         setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
     };
 
-    const handleOptionChange = (qIndex: number, oIndex: number, field: 'text' | 'feedback' | 'points', value: string | number) => {
+    const handleOptionChange = (oIndex: number, text: string) => {
         const newQuestions = [...localQuiz.questions];
-        if (field === 'points') {
-             newQuestions[qIndex].options[oIndex][field] = Number(value);
-        } else {
-            newQuestions[qIndex].options[oIndex][field] = value as string;
-        }
+        newQuestions[activeQuestionIndex].options[oIndex].text = text;
         setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
     };
-    
-    const handleSetCorrect = (qIndex: number, correctOptionId: string) => {
+
+    const handleSetCorrect = (optionId: string) => {
         const newQuestions = [...localQuiz.questions];
-        newQuestions[qIndex].options = newQuestions[qIndex].options.map(opt => ({
+        newQuestions[activeQuestionIndex].options = newQuestions[activeQuestionIndex].options.map(opt => ({
             ...opt,
-            isCorrect: opt.id === correctOptionId
+            isCorrect: opt.id === optionId
         }));
         setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
     };
-
+    
     const addQuestion = () => {
         const newQuestion: AppQuestion = {
             id: generateUniqueId('question'),
             text: 'Nueva Pregunta',
             order: localQuiz.questions.length,
             options: [
-                { id: generateUniqueId('option'), text: 'Opción 1', isCorrect: true, points: 10 },
-                { id: generateUniqueId('option'), text: 'Opción 2', isCorrect: false, points: 0 }
+                { id: generateUniqueId('option'), text: '', isCorrect: true, points: 10 },
+                { id: generateUniqueId('option'), text: '', isCorrect: false, points: 0 }
             ]
         };
         setLocalQuiz(prev => ({ ...prev, questions: [...prev.questions, newQuestion] }));
+        setActiveQuestionIndex(localQuiz.questions.length);
     };
     
-    const addOption = (qIndex: number) => {
-        const newOption: AppAnswerOption = {
-             id: generateUniqueId('option'),
-             text: `Opción ${localQuiz.questions[qIndex].options.length + 1}`,
-             isCorrect: false,
-             feedback: '',
-             points: 0,
-        };
-        const newQuestions = [...localQuiz.questions];
-        newQuestions[qIndex].options.push(newOption);
-        setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
-    };
-
-    const deleteQuestion = (qIndex: number) => {
-         setLocalQuiz(prev => ({ ...prev, questions: prev.questions.filter((_, i) => i !== qIndex) }));
-    };
-
-    const deleteOption = (qIndex: number, oIndex: number) => {
-        if (localQuiz.questions[qIndex].options.length <= 2) return; // Must have at least 2 options
-        const newQuestions = [...localQuiz.questions];
-        newQuestions[qIndex].options = newQuestions[qIndex].options.filter((_, i) => i !== oIndex);
-        
-        // If the deleted option was the correct one, set the first one as correct
-        if (!newQuestions[qIndex].options.some(opt => opt.isCorrect)) {
-            newQuestions[qIndex].options[0].isCorrect = true;
-        }
-
-        setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
+    const deleteQuestion = (indexToDelete: number) => {
+         if (localQuiz.questions.length <= 1) return;
+         setLocalQuiz(prev => ({ ...prev, questions: prev.questions.filter((_, i) => i !== indexToDelete) }));
+         setActiveQuestionIndex(prev => Math.max(0, prev - 1));
     };
 
     const handleSaveChanges = () => {
@@ -1007,75 +990,57 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
         onClose();
     };
 
-    if (!localQuiz) return null;
+    if (!localQuiz || !localQuiz.questions || localQuiz.questions.length === 0) return null;
+    const activeQuestion = localQuiz.questions[activeQuestionIndex];
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0">
-                <DialogHeader className="p-6 pb-4">
-                    <DialogTitle className="flex items-center gap-2"><Pencil className="h-5 w-5 text-primary"/>Editor de Quiz</DialogTitle>
-                    <DialogDescription>Añade, edita y gestiona las preguntas y respuestas de este quiz.</DialogDescription>
+            <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0 gap-0">
+                <DialogHeader className="p-4 border-b">
+                    <DialogTitle className="flex items-center gap-2"><Pencil className="h-5 w-5 text-primary"/>Editor de Quizz-IT</DialogTitle>
                 </DialogHeader>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-6 pb-4 border-b">
-                    <div className="space-y-1">
-                        <Label>Título del Quiz</Label>
-                        <Input value={localQuiz.title} onChange={(e) => handleQuizMetaChange('title', e.target.value)} />
+                <div className="flex-1 grid grid-cols-1 md:grid-cols-4 min-h-0">
+                    <div className="md:col-span-1 border-r flex flex-col">
+                         <div className="p-2 space-y-2">
+                             <Button onClick={addQuestion} className="w-full" variant="outline"><PlusCircle className="mr-2 h-4 w-4"/>Añadir Pregunta</Button>
+                         </div>
+                         <ScrollArea className="flex-1">
+                            <div className="p-2 space-y-1">
+                            {localQuiz.questions.map((q, index) => (
+                                <button key={q.id} onClick={() => setActiveQuestionIndex(index)} className={cn("w-full text-left p-2 rounded-md border flex gap-2", activeQuestionIndex === index ? "bg-primary/10 border-primary" : "hover:bg-muted")}>
+                                    <span className="font-bold text-primary">{index + 1}.</span>
+                                    <span className="truncate flex-grow">{q.text || "Pregunta sin título"}</span>
+                                    <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive/70 hover:text-destructive" onClick={(e) => {e.stopPropagation(); deleteQuestion(index)}}><Trash2 className="h-4 w-4"/></Button>
+                                </button>
+                            ))}
+                            </div>
+                         </ScrollArea>
                     </div>
-                     <div className="space-y-1">
-                        <Label>Nº Máximo de Intentos</Label>
-                        <Input 
-                            type="number" 
-                            value={localQuiz.maxAttempts === null ? '' : localQuiz.maxAttempts} 
-                            onChange={(e) => handleQuizMetaChange('maxAttempts', e.target.value === '' ? null : parseInt(e.target.value, 10))} 
-                            placeholder="Ilimitados"
-                            min="1"
-                        />
-                        <p className="text-xs text-muted-foreground">Deja en blanco para intentos ilimitados.</p>
+                     <div className="md:col-span-3 flex flex-col bg-muted/30">
+                        {activeQuestion && (
+                            <div className="flex-1 flex flex-col p-4 gap-4">
+                                <Textarea value={activeQuestion.text} onChange={(e) => handleQuestionChange(e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-xl text-center font-bold h-32 resize-none"/>
+                                <div className="flex-grow w-full max-w-lg mx-auto bg-gradient-to-br from-teal-400 to-blue-500 flex items-center justify-center rounded-lg shadow-lg">
+                                    <h2 className="text-4xl font-extrabold text-white opacity-90">{localQuiz.title}</h2>
+                                </div>
+                                 <div className="grid grid-cols-2 gap-2">
+                                    {activeQuestion.options.slice(0, 4).map((opt, index) => (
+                                        <div key={opt.id} className={cn("flex items-center p-2 rounded-md shadow-lg text-white", optionColors[index])}>
+                                            <div className="h-10 w-10 flex-shrink-0 flex items-center justify-center">
+                                                <svg viewBox="0 0 24 24" className="h-8 w-8 fill-current">{optionShapes[index]}</svg>
+                                            </div>
+                                            <Input value={opt.text} onChange={(e) => handleOptionChange(index, e.target.value)} placeholder={`Opción ${index + 1}`} className="bg-transparent border-0 border-b-2 rounded-none text-white placeholder:text-white/70 focus-visible:ring-0 focus-visible:border-white"/>
+                                            <Button variant="ghost" size="icon" onClick={() => handleSetCorrect(opt.id)} className="text-white hover:bg-white/20 hover:text-white">
+                                                <Check className={cn("h-6 w-6", opt.isCorrect ? "opacity-100" : "opacity-40")}/>
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
-                <ScrollArea className="flex-grow">
-                    <div className="space-y-6 p-6">
-                        {localQuiz.questions.map((q, qIndex) => (
-                            <Card key={q.id} className="bg-muted/30">
-                                <CardHeader className="flex flex-row items-center justify-between p-4">
-                                     <CardTitle className="text-base flex-grow">
-                                        <Input value={q.text} onChange={(e) => handleQuestionChange(qIndex, e.target.value)} placeholder="Texto de la pregunta" className="font-semibold bg-transparent border-0 border-b-2 rounded-none focus-visible:ring-0 focus-visible:border-primary"/>
-                                     </CardTitle>
-                                     <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteQuestion(qIndex)}><Trash2 className="h-4 w-4"/></Button>
-                                </CardHeader>
-                                <CardContent className="p-4 pt-0">
-                                    <RadioGroup value={q.options.find(opt => opt.isCorrect)?.id} onValueChange={(val) => handleSetCorrect(qIndex, val)}>
-                                        <div className="space-y-3">
-                                            {q.options.map((opt, oIndex) => (
-                                                <div key={opt.id} className={cn("p-3 bg-card border rounded-md space-y-2 transition-colors", opt.isCorrect && "border-green-500/50 bg-green-500/10")}>
-                                                    <div className="flex items-center gap-2">
-                                                        <RadioGroupItem value={opt.id} id={`q${qIndex}-o${oIndex}`} />
-                                                        <Label htmlFor={`q${qIndex}-o${oIndex}`} className="flex-grow font-normal">
-                                                            <Input value={opt.text} placeholder="Texto de la opción" onChange={(e) => handleOptionChange(qIndex, oIndex, 'text', e.target.value)} />
-                                                        </Label>
-                                                        <div className="flex items-center gap-1 shrink-0">
-                                                           <Input type="number" value={opt.points || 0} onChange={(e) => handleOptionChange(qIndex, oIndex, 'points', e.target.value)} className="w-16 h-8 text-center"/>
-                                                           <span className="text-xs text-muted-foreground">pts</span>
-                                                        </div>
-                                                         <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/70" onClick={() => deleteOption(qIndex, oIndex)}><XCircle className="h-4 w-4"/></Button>
-                                                    </div>
-                                                    <Input value={opt.feedback || ''} placeholder="Retroalimentación para esta opción (opcional)" onChange={(e) => handleOptionChange(qIndex, oIndex, 'feedback', e.target.value)} className="text-xs h-8"/>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </RadioGroup>
-                                    <Button size="sm" variant="outline" onClick={() => addOption(qIndex)} className="mt-3">
-                                        <PlusCircle className="mr-2 h-4 w-4"/>Añadir Opción
-                                    </Button>
-                                </CardContent>
-                            </Card>
-                        ))}
-                        <Button variant="secondary" onClick={addQuestion} className="w-full">
-                            <FilePlus2 className="mr-2 h-4 w-4"/> Añadir Pregunta
-                        </Button>
-                    </div>
-                </ScrollArea>
-                <DialogFooter className="p-6 border-t">
+                <DialogFooter className="p-4 border-t">
                     <Button variant="outline" onClick={onClose}>Cancelar</Button>
                     <Button onClick={handleSaveChanges}>Guardar Cambios del Quiz</Button>
                 </DialogFooter>
