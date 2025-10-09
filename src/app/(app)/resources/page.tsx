@@ -107,6 +107,8 @@ export default function ResourcesPage() {
   const mouseSensor = useSensor(MouseSensor, { activationConstraint: { distance: 10 } });
   const touchSensor = useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } });
   const sensors = useSensors(mouseSensor, touchSensor);
+  
+  const canModify = user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR';
 
 
   useEffect(() => {
@@ -494,9 +496,17 @@ export default function ResourcesPage() {
               </div>
               <p className="text-muted-foreground">Encuentra y gestiona todos los documentos, guías y políticas de la empresa.</p>
             </div>
-             <Button variant="outline" size="sm" onClick={() => forceStartTour('resources', resourcesTour)}>
-                <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
-            </Button>
+            <div className="flex flex-row items-center gap-2 justify-between">
+                <Button variant="outline" size="sm" onClick={() => forceStartTour('resources', resourcesTour)}>
+                    <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+                </Button>
+                 {canModify && (
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" onClick={handleOpenCreateFolderModal}><FolderPlus className="mr-2 h-4 w-4"/>Crear Carpeta</Button>
+                        <Button size="sm" onClick={handleOpenCreateFileModal}><UploadCloud className="mr-2 h-4 w-4"/>Subir Recurso</Button>
+                    </div>
+                )}
+            </div>
         </header>
 
           <Card className="p-4 shadow" id="resources-controls">
