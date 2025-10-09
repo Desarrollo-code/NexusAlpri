@@ -101,8 +101,16 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
                 return NextResponse.json({ message: `No se puede eliminar. La carpeta contiene ${childrenCount} recurso(s) activo(s).` }, { status: 409 });
             }
         }
-
-        await prisma.enterpriseResource.delete({ where: { id } });
+        
+        // Usar una transacción para eliminar el recurso y sus notificaciones asociadas
+        await prisma.$transaction([
+            prisma.notification.deleteMany({
+                where: {
+                    link: `/resources?id=${id}` // Asume que el link se construye así.
+                }
+            }),
+            prisma.enterpriseResource.delete({ where: { id } })
+        ]);
         
         return new NextResponse(null, { status: 204 });
     } catch (error) {
