@@ -1,9 +1,8 @@
-
 // @ts-nocheck
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft, LineChart, Notebook, ScreenShare, ChevronRight, Palette, X, GraduationCap, Expand, Edit } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
@@ -538,7 +537,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     if (block.type === 'FILE') {
         if (isPdfUrl(url)) {
              return (
-                <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md" style={{ height: '80vh', minHeight: '600px' }}>
+                <div key={block.id} className="my-4 h-[80vh] min-h-[600px] rounded-lg overflow-hidden border">
                     <Worker workerUrl={'/pdf.worker.min.js'}>
                         <Viewer fileUrl={`/api/resources/preview?url=${encodeURIComponent(url)}`} plugins={[defaultLayoutPluginInstance]} />
                     </Worker>
