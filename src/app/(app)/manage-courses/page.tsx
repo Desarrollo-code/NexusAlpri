@@ -448,4 +448,3 @@ const ManagementDropdown = ({ course, onStatusChange, onDelete, onAssign, isProc
         </DropdownMenu>
     );
 }
-
