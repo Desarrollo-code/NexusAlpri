@@ -1,4 +1,3 @@
-
 // src/app/(app)/profile/page.tsx
 'use client';
 
@@ -8,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Camera, User, KeyRound, Shield, Eye, EyeOff, Save, CheckCircle, Award, Star, HelpCircle } from 'lucide-react';
+import { Loader2, Camera, User, KeyRound, Shield, Eye, EyeOff, Save, CheckCircle, Award, Star, HelpCircle, Trophy } from 'lucide-react';
 import React, { useState, ChangeEvent, FormEvent, useEffect, useCallback, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { PasswordStrengthIndicator } from '@/components/password-strength-indicator';
@@ -27,6 +26,7 @@ import Image from 'next/image';
 import { VerifiedBadge } from '@/components/ui/verified-badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { AchievementsView } from '@/components/gamification/achievements-view';
+import Link from 'next/link';
 
 // Gamification Level Calculation
 const calculateLevel = (xp: number) => {
@@ -336,6 +336,9 @@ const ProfileCard = ({ user, onAvatarChange, isUploading, uploadProgress }: { us
                     {xpForNextLevel - currentXPInLevel} XP para el siguiente nivel
                 </p>
             </div>
+             <Button asChild variant="outline" className="w-full mt-4">
+                <Link href="/leaderboard"><Trophy className="mr-2 h-4 w-4"/> Ver Ranking</Link>
+             </Button>
         </CardContent>
         <CardFooter className="p-0">
             {isUploading && (

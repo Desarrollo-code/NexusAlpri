@@ -20,6 +20,7 @@ import {
   MessageSquare,
   Library,
   Briefcase,
+  Trophy, // Importado el nuevo ícono
 } from 'lucide-react';
 
 const NAVIGATION_ITEMS: NavItem[] = [
@@ -70,6 +71,15 @@ const NAVIGATION_ITEMS: NavItem[] = [
     ],
   },
   
+  // --- Competition Section ---
+  {
+    id: 'competition',
+    label: 'Competición',
+    icon: Trophy,
+    path: '/leaderboard',
+    roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
+  },
+
   // --- Organization Section ---
   {
     id: 'organization',

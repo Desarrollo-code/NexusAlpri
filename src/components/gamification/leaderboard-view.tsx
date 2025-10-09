@@ -96,10 +96,10 @@ export function LeaderboardView() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Skeleton className="h-40 rounded-lg" />
-          <Skeleton className="h-48 rounded-lg" />
-          <Skeleton className="h-40 rounded-lg" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+          <Skeleton className="h-40 rounded-lg md:order-1" />
+          <Skeleton className="h-48 rounded-lg md:order-2" />
+          <Skeleton className="h-40 rounded-lg md:order-3" />
         </div>
         <Skeleton className="h-96 w-full" />
       </div>
