@@ -8,6 +8,7 @@ import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { useRealtime } from '@/hooks/use-realtime-chat';
 
 const optionColors = ["bg-red-600", "bg-blue-600", "bg-yellow-500", "bg-green-600"];
 const optionShapes = [
@@ -50,38 +51,31 @@ export function PlayerScreen({ sessionId }: { sessionId: string }) {
     const [hasAnswered, setHasAnswered] = useState(false);
     const [startTime, setStartTime] = useState(0);
 
-    useEffect(() => {
-        if (!sessionId) return;
-        const channel = supabaseBrowserClient.channel(`game:${sessionId}`);
+     const handleIncomingEvent = useCallback((payload: any) => {
+        const event = payload.new.event;
+        const data = payload.new.payload;
+        
+        switch(event) {
+            case 'GET_READY':
+                setGameState('GET_READY');
+                break;
+            case 'NEXT_QUESTION':
+                setQuestion(data.question);
+                setHasAnswered(false);
+                setAnswerResult(null);
+                setGameState('QUESTION_ACTIVE');
+                setStartTime(Date.now());
+                break;
+            case 'SHOW_RESULTS':
+                setGameState('SHOWING_RESULTS');
+                break;
+            case 'GAME_OVER':
+                setGameState('GAME_FINISHED');
+                break;
+        }
+    }, []);
 
-        const handleNewState = (payload: any) => {
-            const event = payload.new.event;
-            const data = payload.new.payload;
-
-            switch(event) {
-                 case 'GET_READY':
-                    setGameState('GET_READY');
-                    break;
-                case 'NEXT_QUESTION':
-                    setQuestion(data.question);
-                    setHasAnswered(false);
-                    setAnswerResult(null);
-                    setGameState('QUESTION_ACTIVE');
-                    setStartTime(Date.now());
-                    break;
-                case 'SHOW_RESULTS':
-                    setGameState('SHOWING_RESULTS');
-                    break;
-                case 'GAME_OVER':
-                    setGameState('GAME_FINISHED');
-                    break;
-            }
-        };
-
-        channel.on('postgres_changes', { event: '*', schema: 'public', table: 'RealtimeMessage', filter: `channel=eq.game:${sessionId}`}, handleNewState).subscribe();
-
-        return () => { channel.unsubscribe(); };
-    }, [sessionId]);
+    useRealtime(`game:${sessionId}`, handleIncomingEvent);
     
     const handleAnswer = async (optionId: string) => {
         if (hasAnswered) return;
@@ -101,7 +95,7 @@ export function PlayerScreen({ sessionId }: { sessionId: string }) {
             setGameState('ANSWERED');
         } catch (error) {
             toast({ title: 'Error', description: (error as Error).message, variant: 'destructive'});
-            setHasAnswered(false);
+            setHasAnswered(false); // Permite reintentar si falla
         }
     };
 

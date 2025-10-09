@@ -5,80 +5,54 @@ import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import type { Message } from '@/types';
 
 /**
- * Hook para suscribirse a mensajes en tiempo real para una conversación específica.
- * @param conversationId - El ID de la conversación a la que suscribirse.
- * @param onNewMessage - Callback que se ejecuta cuando se recibe un nuevo mensaje.
+ * Hook para suscribirse a eventos en tiempo real para una conversación o juego.
+ * @param channelName - El nombre del canal al que suscribirse (ej. "chat:123" o "game:456").
+ * @param onNewEvent - Callback que se ejecuta cuando se recibe un nuevo evento.
  */
-export function useRealtimeChat(
-  conversationId: string | null,
-  onNewMessage: (newMessage: Message) => void
+export function useRealtime(
+  channelName: string | null,
+  onNewEvent: (payload: RealtimePostgresChangesPayload<{ [key: string]: any }>) => void
 ) {
-  const onNewMessageRef = useRef(onNewMessage);
-  onNewMessageRef.current = onNewMessage;
+  const onNewEventRef = useRef(onNewEvent);
+  onNewEventRef.current = onNewEvent;
 
   useEffect(() => {
-    if (!conversationId || conversationId.startsWith('temp-')) {
+    if (!channelName || !supabaseBrowserClient) {
         return;
     }
     
-    const handleNewMessagePayload = async (payload: RealtimePostgresChangesPayload<{ [key: string]: any }>) => {
-      // CORRECCIÓN: El payload 'new' ya contiene los datos del mensaje.
-      // No necesitamos hacer un fetch adicional.
-      if (payload.eventType === 'INSERT') {
-        const newMessageData = payload.new;
-        
-        // Ahora, necesitamos obtener los datos del autor. Hacemos una consulta rápida y eficiente.
-        try {
-            const { data: authorData, error } = await supabaseBrowserClient
-                .from('User')
-                .select('id, name, avatar')
-                .eq('id', newMessageData.authorId)
-                .single();
-
-            if (error) throw error;
-            
-            // Construimos el objeto `Message` completo que espera la UI.
-            const fullMessage: Message = {
-                id: newMessageData.id,
-                content: newMessageData.content,
-                createdAt: newMessageData.createdAt,
-                authorId: newMessageData.authorId,
-                author: {
-                    id: authorData.id,
-                    name: authorData.name,
-                    avatar: authorData.avatar,
-                }
-            };
-            onNewMessageRef.current(fullMessage);
-        } catch (e) {
-            console.error("Error fetching author for new message:", e);
-        }
-      }
+    const handleIncomingEvent = (payload: RealtimePostgresChangesPayload<{ [key: string]: any }>) => {
+      onNewEventRef.current(payload);
     };
 
-    const channel = supabaseBrowserClient.channel(`chat_room:${conversationId}`);
+    const channel = supabaseBrowserClient.channel(channelName);
 
     channel
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*', // Escuchar cualquier evento (INSERT, UPDATE, DELETE)
           schema: 'public',
-          table: 'Message',
-          filter: `conversationId=eq.${conversationId}`,
+          table: 'RealtimeMessage',
+          filter: `channel=eq.${channelName}`, // Filtrar mensajes para este canal específico
         },
-        handleNewMessagePayload
+        handleIncomingEvent
       )
-      .subscribe((status) => {
+      .subscribe((status, err) => {
         if (status === 'SUBSCRIBED') {
-          console.log(`Conectado al canal de chat: ${conversationId}`);
+          console.log(`Conectado al canal en tiempo real: ${channelName}`);
+        }
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          console.error(`Error en el canal ${channelName}:`, err);
         }
       });
       
-    // La función de limpieza se ejecuta cuando el componente se desmonta o el conversationId cambia.
+    // La función de limpieza se ejecuta cuando el componente se desmonta o el channelName cambia.
     return () => {
-      console.log(`Desconectando del canal de chat: ${conversationId}`);
-      supabaseBrowserClient.removeChannel(channel);
+      if (channel) {
+        console.log(`Desconectando del canal: ${channelName}`);
+        supabaseBrowserClient.removeChannel(channel);
+      }
     };
-  }, [conversationId]);
+  }, [channelName]);
 }

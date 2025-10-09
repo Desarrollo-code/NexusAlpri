@@ -11,6 +11,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
   }
 
+  if (!supabaseAdmin) {
+      return NextResponse.json({ message: "Servicio de tiempo real no configurado." }, { status: 500 });
+  }
+
   try {
     const { sessionId, questionId, optionId, responseTimeMs } = await req.json();
 
@@ -59,13 +63,24 @@ export async function POST(req: Request) {
       },
     });
 
-    if (supabaseAdmin) {
-        const channel = supabaseAdmin.channel(`game:${sessionId}`);
-        await channel.send({
-            type: 'broadcast',
-            event: 'PLAYER_ANSWERED',
-            payload: { userId: session.id, nickname: player.nickname },
-        });
+    // El servidor notifica a todos que este jugador ha respondido
+    const channelName = `game:${sessionId}`;
+    const payload = {
+        type: 'broadcast',
+        event: 'PLAYER_ANSWERED',
+        payload: { userId: session.id, nickname: player.nickname },
+    };
+
+    const { error } = await supabaseAdmin
+      .from('RealtimeMessage')
+      .insert({
+        channel: channelName,
+        event: payload.event,
+        payload: payload.payload,
+      });
+
+    if (error) {
+        console.error("Supabase broadcast error on answer:", error);
     }
 
     return NextResponse.json({

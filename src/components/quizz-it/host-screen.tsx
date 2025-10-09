@@ -4,12 +4,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
-import { supabaseBrowserClient } from '@/lib/supabase-client';
+import { supabaseAdmin, supabaseBrowserClient } from '@/lib/supabase-client';
 import { Loader2, Users, Play, ChevronRight, BarChart3, Trophy, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
+import { useRealtime } from '@/hooks/use-realtime-chat';
 
 // --- Sub-components ---
 
@@ -173,9 +174,10 @@ export function HostScreen({ sessionId }: { sessionId: string }) {
     const [gameState, setGameState] = useState('LOADING'); // LOADING, LOBBY, QUESTION, RESULTS, FINISHED
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
-    const handleIncomingMessage = useCallback((payload: any) => {
+    const handleIncomingEvent = useCallback((payload: any) => {
         const event = payload.new.event;
         const data = payload.new.payload;
+
         if (event === 'PLAYER_JOINED') {
             setPlayers(prev => {
                 if(prev.find(p => p.userId === data.userId)) return prev;
@@ -187,12 +189,7 @@ export function HostScreen({ sessionId }: { sessionId: string }) {
         }
     }, []);
 
-    useEffect(() => {
-        if (!sessionId) return;
-        const channel = supabaseBrowserClient.channel(`game:${sessionId}`);
-        channel.on('postgres_changes', { event: '*', schema: 'public', table: 'RealtimeMessage', filter: `channel=eq.game:${sessionId}`}, handleIncomingMessage).subscribe();
-        return () => { channel.unsubscribe(); };
-    }, [sessionId, handleIncomingMessage]);
+    useRealtime(`game:${sessionId}`, handleIncomingEvent);
 
     useEffect(() => {
         const fetchSession = async () => {
@@ -210,9 +207,12 @@ export function HostScreen({ sessionId }: { sessionId: string }) {
     }, [sessionId]);
 
     const broadcastState = async (event: string, payload: any = {}) => {
-        if (!supabaseBrowserClient) return;
-        const channel = supabaseBrowserClient.channel(`game:${sessionId}`);
-        await channel.send({ type: 'broadcast', event, payload });
+        // Esta función ahora enviará la petición a una API Route para que el servidor haga el broadcast.
+        await fetch(`/api/quizz-it/broadcast`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId, event, payload })
+        });
     };
     
     const handleStartGame = () => {
@@ -228,7 +228,7 @@ export function HostScreen({ sessionId }: { sessionId: string }) {
             setTimeout(() => {
                 setGameState('RESULTS');
                 broadcastState('SHOW_RESULTS');
-            }, 20000);
+            }, 20000); // Duración de la pregunta
         }, 5000); // 5 second "get ready" timer
     };
 
@@ -245,7 +245,7 @@ export function HostScreen({ sessionId }: { sessionId: string }) {
                 setTimeout(() => {
                     setGameState('RESULTS');
                     broadcastState('SHOW_RESULTS');
-                }, 20000);
+                }, 20000); // Duración de la pregunta
             }, 5000);
         } else {
             setGameState('FINISHED');
