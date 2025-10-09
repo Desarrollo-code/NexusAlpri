@@ -61,10 +61,10 @@ const QuestionScreen = ({ question, questionIndex, totalQuestions }: { question:
 
     const optionColors = ["bg-red-500", "bg-blue-500", "bg-yellow-500", "bg-green-500"];
     const optionShapes = [
-        <path d="M12 2L2 22h20L12 2z" />, // Triangle
-        <rect x="2" y="2" width="20" height="20" rx="4" />, // Square
-        <circle cx="12" cy="12" r="11" />, // Circle
-        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /> // Diamond
+        <path d="M12 2L2 22h20L12 2z" key="triangle"/>, // Triangle
+        <path d="M21.22 10.88-10.88 21.22a2 2 0 0 1-2.83-2.83L18.73 2.78a2 2 0 0 1 2.83 2.83zM12 2l-2.12 2.12" key="diamond"/>, // Diamond
+        <circle cx="12" cy="12" r="11" key="circle"/>, // Circle
+        <rect x="2" y="2" width="20" height="20" rx="4" key="square"/>, // Square
     ];
 
     return (
@@ -114,7 +114,7 @@ const ResultsScreen = ({ players, onNext }: { players: any[], onNext: () => void
                     </motion.div>
                 ))}
             </div>
-            <Button onClick={onNext} className="mt-12">
+            <Button onClick={onNext} className="mt-12 bg-green-500 hover:bg-green-600">
                 Siguiente <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
         </motion.div>
@@ -133,7 +133,10 @@ export function HostScreen({ sessionId }: { sessionId: string }) {
 
     const handleIncomingMessage = useCallback((payload: any) => {
         if (payload.new.event === 'PLAYER_JOINED') {
-            setPlayers(prev => [...prev, payload.new.payload]);
+            setPlayers(prev => {
+                if(prev.find(p => p.userId === payload.new.payload.userId)) return prev;
+                return [...prev, payload.new.payload];
+            });
         }
     }, []);
 
@@ -158,19 +161,45 @@ export function HostScreen({ sessionId }: { sessionId: string }) {
         };
         fetchSession();
     }, [sessionId]);
+
+    const broadcastState = async (event: string, payload: any = {}) => {
+        if (!supabaseBrowserClient) return;
+        const channel = supabaseBrowserClient.channel(`game:${sessionId}`);
+        await channel.send({
+            type: 'broadcast',
+            event,
+            payload
+        });
+    };
     
     const handleStartGame = () => {
-        // Send a message to Supabase to update game state
+        if (players.length === 0) return;
+        setCurrentQuestionIndex(0);
         setGameState('QUESTION');
+        broadcastState('NEXT_QUESTION', { question: sessionData.form.fields[0] });
+        
+        // After 20 seconds, show results
+        setTimeout(() => {
+            setGameState('RESULTS');
+            broadcastState('SHOW_RESULTS');
+        }, 20000);
     };
 
     const handleNext = () => {
         if (gameState === 'RESULTS') {
-            if (currentQuestionIndex + 1 < sessionData.form.fields.length) {
-                setCurrentQuestionIndex(prev => prev + 1);
+            const nextIndex = currentQuestionIndex + 1;
+            if (nextIndex < sessionData.form.fields.length) {
+                setCurrentQuestionIndex(nextIndex);
                 setGameState('QUESTION');
+                broadcastState('NEXT_QUESTION', { question: sessionData.form.fields[nextIndex] });
+                
+                 setTimeout(() => {
+                    setGameState('RESULTS');
+                    broadcastState('SHOW_RESULTS');
+                }, 20000);
             } else {
                 setGameState('FINISHED');
+                broadcastState('GAME_OVER');
             }
         }
     }
@@ -203,8 +232,8 @@ export function HostScreen({ sessionId }: { sessionId: string }) {
         <div className="bg-gradient-to-br from-indigo-800 to-purple-900 h-screen w-screen">
             <div className="absolute top-4 left-4 flex gap-4">
                 {gameState === 'LOBBY' && players.length > 0 && (
-                    <Button onClick={handleStartGame} className="bg-green-500 hover:bg-green-600">
-                        <Play className="mr-2 h-4 w-4" />
+                    <Button onClick={handleStartGame} className="bg-green-500 hover:bg-green-600 text-lg py-6 px-8">
+                        <Play className="mr-2 h-5 w-5" />
                         Empezar
                     </Button>
                 )}

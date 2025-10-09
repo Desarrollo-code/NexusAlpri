@@ -6,13 +6,14 @@ import { useAuth } from '@/contexts/auth-context';
 import { supabaseBrowserClient } from '@/lib/supabase-client';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useToast } from '@/hooks/use-toast';
 
 const optionColors = ["bg-red-500", "bg-blue-500", "bg-yellow-500", "bg-green-500"];
 const optionShapes = [
-    <path d="M12 2L2 22h20L12 2z" />, // Triangle
-    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>, // Diamond
-    <circle cx="12" cy="12" r="11" />, // Circle
-    <rect x="2" y="2" width="20" height="20" rx="4" />, // Square
+    <path d="M12 2L2 22h20L12 2z" key="triangle"/>, // Triangle
+    <path d="M21.22 10.88-10.88 21.22a2 2 0 0 1-2.83-2.83L18.73 2.78a2 2 0 0 1 2.83 2.83zM12 2l-2.12 2.12" key="diamond"/>, // Diamond
+    <circle cx="12" cy="12" r="11" key="circle"/>, // Circle
+    <rect x="2" y="2" width="20" height="20" rx="4" key="square"/>, // Square
 ];
 
 
@@ -45,13 +46,13 @@ const AnswerResultScreen = ({ isCorrect, scoreAwarded, rank, totalPlayers }: { i
 
 export function PlayerScreen({ sessionId }: { sessionId: string }) {
     const { user } = useAuth();
+    const { toast } = useToast();
     const [gameState, setGameState] = useState('WAITING_FOR_GAME');
     const [question, setQuestion] = useState<any>(null);
     const [answerResult, setAnswerResult] = useState<any>(null);
     const [hasAnswered, setHasAnswered] = useState(false);
-    
-    // Suponiendo que el hook `useRealtimeChat` es solo un ejemplo,
-    // usaremos la suscripción de Supabase directamente.
+    const [startTime, setStartTime] = useState(0);
+
     useEffect(() => {
         if (!sessionId) return;
         const channel = supabaseBrowserClient.channel(`game:${sessionId}`);
@@ -66,9 +67,9 @@ export function PlayerScreen({ sessionId }: { sessionId: string }) {
                     setHasAnswered(false);
                     setAnswerResult(null);
                     setGameState('QUESTION_ACTIVE');
+                    setStartTime(Date.now());
                     break;
                 case 'SHOW_RESULTS':
-                    // We get individual results via API, but this tells us when to show them
                     setGameState('SHOWING_RESULTS');
                     break;
                 case 'GAME_OVER':
@@ -86,14 +87,23 @@ export function PlayerScreen({ sessionId }: { sessionId: string }) {
         if (hasAnswered) return;
         setHasAnswered(true);
 
-        const response = await fetch('/api/quizz-it/submit', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sessionId, questionId: question.id, optionId, responseTimeMs: 5000 /* Dummy value */ }),
-        });
-        const result = await response.json();
-        setAnswerResult(result);
-        setGameState('ANSWERED');
+        const responseTimeMs = Date.now() - startTime;
+
+        try {
+            const response = await fetch('/api/quizz-it/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sessionId, questionId: question.id, optionId, responseTimeMs }),
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.message || 'Error al enviar la respuesta');
+            setAnswerResult(result);
+            setGameState('ANSWERED');
+        } catch (error) {
+            toast({ title: 'Error', description: (error as Error).message, variant: 'destructive'});
+            // Re-enable answering if submission failed
+            setHasAnswered(false);
+        }
     };
 
     const renderContent = () => {
@@ -101,7 +111,7 @@ export function PlayerScreen({ sessionId }: { sessionId: string }) {
             case 'QUESTION_ACTIVE':
                 if (!question) return <WaitingScreen message="Cargando pregunta..." />;
                 return (
-                    <div className="grid grid-cols-2 grid-rows-2 gap-3 p-3 h-full">
+                    <div className="grid grid-cols-2 grid-rows-2 gap-3 p-3 h-full w-full">
                         {question.options.map((opt: any, index: number) => (
                             <motion.button
                                 key={opt.id}
@@ -109,10 +119,10 @@ export function PlayerScreen({ sessionId }: { sessionId: string }) {
                                 animate={{ scale: 1 }}
                                 transition={{ delay: index * 0.1, type: 'spring', stiffness: 260, damping: 20 }}
                                 onClick={() => handleAnswer(opt.id)}
-                                className={`flex items-center justify-center p-4 rounded-lg shadow-lg ${optionColors[index]}`}
+                                className={`flex items-center justify-center p-4 rounded-lg shadow-lg ${optionColors[index]} disabled:opacity-50 disabled:cursor-not-allowed`}
                                 disabled={hasAnswered}
                             >
-                                 <svg viewBox="0 0 24 24" className="h-16 w-16 fill-current text-white">
+                                 <svg viewBox="0 0 24 24" className="h-24 w-24 fill-current text-white">
                                     {optionShapes[index]}
                                  </svg>
                             </motion.button>
@@ -120,14 +130,14 @@ export function PlayerScreen({ sessionId }: { sessionId: string }) {
                     </div>
                 );
             case 'ANSWERED':
-                return <WaitingScreen message="Esperando a los demás jugadores..." />;
+                return <WaitingScreen message="¡Respuesta enviada! Esperando a los demás jugadores..." />;
             case 'SHOWING_RESULTS':
                  return answerResult ? (
                     <AnswerResultScreen
                         isCorrect={answerResult.isCorrect}
                         scoreAwarded={answerResult.scoreAwarded}
-                        rank={answerResult.rank} // You'll need to fetch this
-                        totalPlayers={answerResult.totalPlayers} // And this
+                        rank={1} // Placeholder
+                        totalPlayers={1} // Placeholder
                     />
                 ) : <WaitingScreen message="Cargando resultados..." />;
             case 'GAME_FINISHED':
