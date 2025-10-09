@@ -51,17 +51,14 @@ export function PlayerScreen({ sessionId }: { sessionId: string }) {
     const [hasAnswered, setHasAnswered] = useState(false);
     const [startTime, setStartTime] = useState(0);
 
-     const handleIncomingEvent = useCallback((payload: any) => {
-        const event = payload.new.event;
-        const data = payload.new.payload;
-        
+     const handleIncomingEvent = useCallback(({ event, payload }: { event: string, payload: any }) => {
         switch(event) {
             case 'START_GAME':
             case 'GET_READY':
                 setGameState('GET_READY');
                 break;
             case 'NEXT_QUESTION':
-                setQuestion(data.question);
+                setQuestion(payload.question);
                 setHasAnswered(false);
                 setAnswerResult(null);
                 setGameState('QUESTION_ACTIVE');

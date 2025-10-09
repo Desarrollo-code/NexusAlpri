@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
-import { supabaseAdmin, supabaseBrowserClient } from '@/lib/supabase-client';
+import { supabaseBrowserClient } from '@/lib/supabase-client';
 import { Loader2, Users, Play, ChevronRight, BarChart3, Trophy, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -174,14 +174,11 @@ export function HostScreen({ sessionId }: { sessionId: string }) {
     const [gameState, setGameState] = useState('LOADING'); // LOADING, LOBBY, GET_READY, QUESTION, RESULTS, FINISHED
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
-    const handleIncomingEvent = useCallback((payload: any) => {
-        const event = payload.new.event;
-        const data = payload.new.payload;
-
+    const handleIncomingEvent = useCallback(({ event, payload }: { event: string, payload: any }) => {
         if (event === 'PLAYER_JOINED') {
             setPlayers(prev => {
-                if(prev.find(p => p.userId === data.userId)) return prev;
-                return [...prev, data];
+                if(prev.find(p => p.userId === payload.userId)) return prev;
+                return [...prev, payload];
             });
         }
         if (event === 'PLAYER_ANSWERED') {
@@ -207,10 +204,16 @@ export function HostScreen({ sessionId }: { sessionId: string }) {
     }, [sessionId]);
 
     const broadcastState = async (event: string, payload: any = {}) => {
-        await fetch(`/api/quizz-it/broadcast`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sessionId, event, payload })
+        if (!supabaseBrowserClient) return;
+        const channel = supabaseBrowserClient.channel(`game:${sessionId}`);
+        channel.subscribe(status => {
+            if (status === 'SUBSCRIBED') {
+                channel.send({
+                    type: 'broadcast',
+                    event: 'game_event',
+                    payload: { event, payload },
+                });
+            }
         });
     };
     

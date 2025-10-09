@@ -1,16 +1,16 @@
 // src/hooks/use-realtime-chat.ts
 import { useEffect, useRef } from 'react';
 import { supabaseBrowserClient } from '@/lib/supabase-client';
-import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import type { RealtimePostgresChangesPayload, RealtimeChannel } from '@supabase/supabase-js';
 
 /**
- * Hook para suscribirse a eventos en tiempo real para un canal específico.
+ * Hook para suscribirse a eventos de broadcast en tiempo real para un canal específico.
  * @param channelName - El nombre del canal al que suscribirse (ej. "chat:123" o "game:456").
- * @param onNewEvent - Callback que se ejecuta cuando se recibe un nuevo evento en la tabla RealtimeMessage.
+ * @param onNewEvent - Callback que se ejecuta cuando se recibe un nuevo evento de broadcast.
  */
 export function useRealtime(
   channelName: string | null,
-  onNewEvent: (payload: RealtimePostgresChangesPayload<{ [key: string]: any }>) => void
+  onNewEvent: (payload: { event: string, payload: any }) => void
 ) {
   const onNewEventRef = useRef(onNewEvent);
   onNewEventRef.current = onNewEvent;
@@ -20,23 +20,26 @@ export function useRealtime(
         return;
     }
     
-    const handleIncomingEvent = (payload: RealtimePostgresChangesPayload<{ [key: string]: any }>) => {
+    let channel: RealtimeChannel;
+
+    const handleIncomingEvent = (payload: { event: string, payload: any }) => {
       onNewEventRef.current(payload);
     };
 
-    const channel = supabaseBrowserClient.channel(channelName);
+    // Usamos el mismo canal para enviar y recibir, pero con un nombre de evento específico
+    // para los mensajes que este cliente debe procesar.
+    channel = supabaseBrowserClient.channel(channelName, {
+        config: {
+            broadcast: {
+                self: false, // No recibir los propios mensajes
+            },
+        },
+    });
 
     channel
-      .on(
-        'postgres_changes',
-        {
-          event: '*', // Escuchar cualquier evento (INSERT, UPDATE, DELETE)
-          schema: 'public',
-          table: 'RealtimeMessage',
-          filter: `channel=eq.${channelName}`, // Filtrar mensajes para este canal específico
-        },
-        handleIncomingEvent
-      )
+      .on('broadcast', { event: 'game_event' }, (payload) => {
+          handleIncomingEvent(payload.payload); // El payload anidado contiene nuestro evento y datos.
+      })
       .subscribe((status, err) => {
         if (status === 'SUBSCRIBED') {
           console.log(`Conectado al canal en tiempo real: ${channelName}`);
@@ -46,7 +49,6 @@ export function useRealtime(
         }
       });
       
-    // La función de limpieza se ejecuta cuando el componente se desmonta o el channelName cambia.
     return () => {
       if (channel) {
         console.log(`Desconectando del canal: ${channelName}`);
