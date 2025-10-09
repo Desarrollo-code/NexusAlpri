@@ -20,10 +20,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         if (!resource) {
             return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });
         }
-        const { pin, tags, ...safeResource } = resource;
+        const { pin, ...safeResource } = resource;
         return NextResponse.json({
             ...safeResource,
-            tags: tags ? tags.split(',').filter(Boolean) : [],
             hasPin: !!pin,
         });
     } catch (error) {
@@ -50,7 +49,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
              return NextResponse.json({ message: 'No tienes permiso para editar este recurso' }, { status: 403 });
         }
 
-        const { title, category, tags, description, isPublic, sharedWithUserIds, expiresAt, status, content } = await req.json();
+        const { title, category, description, isPublic, sharedWithUserIds, expiresAt, status, content, observations } = await req.json();
 
         // Lógica de versionado: se crea una versión si el contenido cambia.
         const createVersion = resourceToUpdate.content !== content;
@@ -59,7 +58,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             title,
             category,
             content, // Guardar el nuevo contenido del editor
-            tags: Array.isArray(tags) ? tags.join(',') : '',
+            observations, // Guardar las observaciones
             description,
             status,
             expiresAt: expiresAt ? new Date(expiresAt) : null,
@@ -139,7 +138,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
         await prisma.$transaction([
             prisma.notification.deleteMany({
                 where: {
-                    link: `/resources?id=${id}` // Asume que el link se construye así.
+                    link: `/resources?id=${id}` 
                 }
             }),
             prisma.enterpriseResource.delete({ where: { id } })
