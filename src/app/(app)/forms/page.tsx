@@ -1,11 +1,10 @@
-
 // src/app/(app)/forms/page.tsx
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusCircle, FileText, Share2, Users, FilePen, Trash2, Eye, BarChart, MoreVertical, Loader2, AlertTriangle, ShieldAlert, ArrowRight, User as UserIcon } from 'lucide-react';
+import { PlusCircle, FileText, Share2, Users, FilePen, Trash2, Eye, BarChart, MoreVertical, Loader2, AlertTriangle, ShieldAlert, ArrowRight, User as UserIcon, Zap } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
 import type { AppForm, FormStatus, User as AppUser } from '@/types';
@@ -16,7 +15,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -39,7 +37,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -56,7 +54,7 @@ const getStatusDetails = (status: FormStatus) => {
     }
 };
 
-const FormCard = ({ form, onAction }: { form: AppForm, onAction: (action: 'edit' | 'delete' | 'share' | 'results', form: AppForm) => void }) => {
+const FormCard = ({ form, onAction, onLaunchGame }: { form: AppForm, onAction: (action: 'edit' | 'delete' | 'share' | 'results', form: AppForm) => void, onLaunchGame: (formId: string) => void }) => {
     const statusDetails = getStatusDetails(form.status);
     
     return (
@@ -82,6 +80,8 @@ const FormCard = ({ form, onAction }: { form: AppForm, onAction: (action: 'edit'
                            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 -mr-2"><MoreVertical className="h-4 w-4"/></Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                            {form.isQuiz && <DropdownMenuItem onClick={() => onLaunchGame(form.id)}><Zap className="mr-2 h-4 w-4 text-primary"/>Iniciar Quizz-IT</DropdownMenuItem>}
+                            {form.isQuiz && <DropdownMenuSeparator />}
                             <DropdownMenuItem onClick={() => onAction('edit', form)}><FilePen className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => onAction('results', form)}><BarChart className="mr-2 h-4 w-4"/>Resultados</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => onAction('share', form)}><Share2 className="mr-2 h-4 w-4"/>Compartir</DropdownMenuItem>
@@ -261,6 +261,7 @@ export default function FormsPage() {
     const [formToDelete, setFormToDelete] = useState<AppForm | null>(null);
     const [formToShare, setFormToShare] = useState<AppForm | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isLaunching, setIsLaunching] = useState(false);
     
     const activeTab = searchParams.get('tab') || (user?.role === 'STUDENT' ? 'for-student' : 'my-forms');
     const currentPage = Number(searchParams.get('page')) || 1;
@@ -331,6 +332,24 @@ export default function FormsPage() {
            return;
        }
     };
+    
+    const handleLaunchGame = async (formId: string) => {
+        setIsLaunching(true);
+        try {
+            const res = await fetch('/api/quizz-it/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ formId }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'No se pudo iniciar el juego.');
+            router.push(`/quizz-it/host/${data.id}`);
+        } catch (err) {
+            toast({ title: 'Error', description: err instanceof Error ? err.message : 'Error desconocido', variant: 'destructive' });
+        } finally {
+            setIsLaunching(false);
+        }
+    };
 
     const handleDeleteForm = async () => {
         if (!formToDelete) return;
@@ -353,7 +372,7 @@ export default function FormsPage() {
         if (view === 'management') {
             return (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {formsList.map(form => <FormCard key={form.id} form={form} onAction={handleFormAction} />)}
+                    {formsList.map(form => <FormCard key={form.id} form={form} onAction={handleFormAction} onLaunchGame={handleLaunchGame} />)}
                 </div>
             );
         }
@@ -432,6 +451,7 @@ export default function FormsPage() {
                     {user?.role === 'ADMINISTRATOR' && <TabsTrigger value="all">Todos</TabsTrigger>}
                 </TabsList>
                 <div className="mt-6">
+                    {isLaunching && <div className="fixed inset-0 bg-background/80 flex items-center justify-center z-50"><Loader2 className="h-8 w-8 animate-spin"/></div>}
                     {isLoading ? <SkeletonGrid /> 
                      : error ? <div className="text-destructive text-center py-10">{error}</div>
                      : forms.length === 0 ? <EmptyState tab={activeTab} /> 
