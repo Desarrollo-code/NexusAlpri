@@ -400,8 +400,11 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
               </aside>
             )}
           </div>
-          <DialogFooter className="p-2 border-t flex-shrink-0 bg-background/70 justify-end">
-            
+          <DialogFooter className="p-2 border-t flex-shrink-0 bg-background/70 justify-between items-center">
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => setShowDetails(prev => !prev)}>
+                <Info className="h-5 w-5"/>
+                <span className="sr-only">Ver detalles</span>
+            </Button>
             <div className="flex items-center gap-2">
                  {canEdit && (
                     isEditing ? (
