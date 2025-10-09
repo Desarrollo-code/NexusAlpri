@@ -309,8 +309,8 @@ function StudentDashboard({ stats, announcements, myCourses, assignedCourses }: 
               </Button>
             </div>
             {myCourses.length > 0 ? (
-              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                {myCourses.slice(0, 3).map((course, index) => (
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+                {myCourses.map((course, index) => (
                   <CourseCard key={course.id} course={course} userRole="STUDENT" priority={index < 2}/>
                 ))}
               </div>
@@ -399,8 +399,8 @@ function InstructorDashboard({ stats, announcements, taughtCourses }: { stats: {
                     </Button>
                 </div>
               {taughtCourses.length > 0 ? (
-                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                    {taughtCourses.slice(0, 3).map(course => (
+                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+                    {taughtCourses.map(course => (
                       <CourseCard 
                         key={course.id}
                         course={course}
@@ -666,4 +666,3 @@ async function getInstructorDashboardData(session: PrismaUser) {
         recentAnnouncements: announcementsData,
     };
 }
-
