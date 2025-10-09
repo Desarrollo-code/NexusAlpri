@@ -1,7 +1,8 @@
+// src/app/api/resources/route.ts
 import { NextResponse, NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import prisma from '@/lib/prisma';
-import type { Prisma } from '@prisma/client';
+import type { Prisma, ResourceStatus } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,6 +17,7 @@ export async function GET(req: NextRequest) {
     try {
         const { searchParams } = new URL(req.url);
         let parentId = searchParams.get('parentId');
+        const status = (searchParams.get('status') as ResourceStatus) || 'ACTIVE'; // Nuevo filtro de estado
         
         if (parentId === '') {
             parentId = null;
@@ -23,13 +25,17 @@ export async function GET(req: NextRequest) {
         
         const baseWhere: Prisma.EnterpriseResourceWhereInput = {
             parentId: parentId,
-            status: 'ACTIVE',
-            OR: [
+            status: status, // Usar el filtro de estado
+        };
+        
+        // Si el estado es ACTIVE, aplicamos la lógica de expiración. Para ARCHIVED, los mostramos todos.
+        if (status === 'ACTIVE') {
+            baseWhere.OR = [
                 { expiresAt: null },
                 { expiresAt: { gte: new Date() } }
             ]
-        };
-        
+        }
+
         let whereClause: Prisma.EnterpriseResourceWhereInput;
 
         if (session.role === 'ADMINISTRATOR') {

@@ -1,4 +1,3 @@
-
 // src/app/(app)/resources/page.tsx
 'use client';
 
@@ -6,7 +5,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button, buttonVariants } from '@/components/ui/button';
 import type { EnterpriseResource as AppResourceType, User as AppUser, UserRole, ResourceStatus } from '@/types';
-import { Search, ArchiveX, Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronRight, Users, Globe, Filter, HelpCircle, CalendarIcon, Move } from 'lucide-react';
+import { Search, ArchiveX, Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronRight, Users, Globe, Filter, HelpCircle, CalendarIcon, Move, ArchiveRestore, Trash2 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import {
   Dialog,
@@ -29,7 +28,6 @@ import {
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { useTitle } from '@/contexts/title-context';
@@ -42,7 +40,6 @@ import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { ResourceListItem } from '@/components/resources/resource-list-item';
 import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Identicon } from '@/components/ui/identicon';
 import { Card } from '@/components/ui/card';
 import { useTour } from '@/contexts/tour-context';
@@ -53,6 +50,9 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { DndContext, useDraggable, useDroppable, type DragEndEvent, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { UploadArea } from '@/components/ui/upload-area';
+import { uploadWithProgress } from '@/lib/upload-with-progress';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 
 // --- Main Page Component ---
@@ -71,6 +71,7 @@ export default function ResourcesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [activeTab, setActiveTab] = useState<ResourceStatus>('ACTIVE');
   
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; title: string }[]>([{ id: null, title: 'Biblioteca' }]);
@@ -114,11 +115,11 @@ export default function ResourcesPage() {
   }, [setPageTitle, startTour]);
 
   const fetchResources = useCallback(async () => {
-    if (isAuthLoading) return; // Wait until auth state is resolved
+    if (isAuthLoading) return;
     setIsLoadingData(true);
     setError(null);
     
-    const params = new URLSearchParams();
+    const params = new URLSearchParams({ status: activeTab });
     if (currentFolderId) params.append('parentId', currentFolderId);
     
     try {
@@ -132,14 +133,14 @@ export default function ResourcesPage() {
     } finally {
       setIsLoadingData(false);
     }
-  }, [toast, currentFolderId, isAuthLoading]);
+  }, [toast, currentFolderId, isAuthLoading, activeTab]);
 
   const fetchAllUsers = useCallback(async () => {
     try {
-      const response = await fetch('/api/users/list'); // Use the new endpoint
+      const response = await fetch('/api/users/list');
       if (!response.ok) return;
       const data = await response.json();
-      setAllUsers(data.users.filter((u: AppUser) => u.id !== user?.id)); // Exclude self
+      setAllUsers(data.users.filter((u: AppUser) => u.id !== user?.id));
     } catch (error) {
       console.error("Failed to fetch users", error);
     }
@@ -276,7 +277,7 @@ export default function ResourcesPage() {
         setUploadProgress(0);
         setIsSubmittingResource(true);
         try {
-            const result: { url: string } = await uploadWithProgress('/api/upload/resource-file', newResourceFile, setUploadProgress);
+            const result = await uploadWithProgress('/api/upload/resource-file', newResourceFile, setUploadProgress);
             finalResourceUrl = result.url;
         } catch (err) {
             toast({ title: "Error de Subida", description: (err as Error).message, variant: "destructive" });
@@ -313,7 +314,6 @@ export default function ResourcesPage() {
       
       const savedResource = await response.json();
 
-      // Handle PIN management
       if (editingResource) {
           if (removePin) {
               await fetch(`/api/resources/${editingResource.id}/pin`, { method: 'DELETE' });
@@ -361,6 +361,24 @@ export default function ResourcesPage() {
     } finally {
       setIsDeletingResource(false);
       setResourceToDelete(null);
+    }
+  };
+  
+  const handleRestoreResource = async (resource: AppResourceType) => {
+    setIsSubmittingResource(true);
+    try {
+      const response = await fetch(`/api/resources/${resource.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...resource, status: 'ACTIVE' }),
+      });
+      if (!response.ok) throw new Error((await response.json()).message || 'No se pudo restaurar el recurso');
+      toast({ title: 'Recurso Restaurado', description: `"${resource.title}" ha vuelto a la biblioteca principal.` });
+      fetchResources();
+    } catch (err) {
+      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+    } finally {
+      setIsSubmittingResource(false);
     }
   };
 
@@ -429,10 +447,8 @@ export default function ResourcesPage() {
                 description: "El archivo se ha movido a la nueva carpeta.",
             });
             
-            // Optimistic update before re-fetching
             setAllApiResources(prev => prev.filter(r => r.id !== resourceId));
             
-            // Re-fetch to confirm state
             fetchResources();
 
         } catch (err) {
@@ -510,18 +526,16 @@ export default function ResourcesPage() {
                     <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')} aria-label="Vista de cuadrícula"><Grid size={18} /></Button>
                     <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')} aria-label="Vista de lista"><List size={18} /></Button>
                 </div>
-                 {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
-                <div className="flex gap-2 w-full sm:w-auto">
-                    <Button variant="outline" onClick={handleOpenCreateFolderModal} className="w-full sm:w-auto" id="resources-create-folder-btn">
-                        <FolderPlus className="mr-2 h-4 w-4"/> Crear Carpeta
-                    </Button>
-                    <Button onClick={handleOpenCreateFileModal} className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-md" id="resources-upload-btn">
-                      <UploadCloud className="mr-2 h-4 w-4"/> Subir Recurso
-                    </Button>
-                </div>
-                )}
             </div>
           </Card>
+          
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ResourceStatus)}>
+             <TabsList>
+                 <TabsTrigger value="ACTIVE">Activos</TabsTrigger>
+                 <TabsTrigger value="ARCHIVED">Archivados</TabsTrigger>
+             </TabsList>
+          </Tabs>
+
           
           <div className="flex-grow overflow-auto -mx-4 px-4 mt-4 thin-scrollbar">
               {isLoadingData ? (
@@ -541,7 +555,7 @@ export default function ResourcesPage() {
                               <h2 className="text-xl font-semibold mb-4 text-muted-foreground">Carpetas</h2>
                                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
                                   {folders.map(item => (
-                                      <ResourceGridItem key={item.id} resource={item} isFolder={true} onSelect={() => setSelectedResource(item)} onEdit={handleOpenEditModal} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} />
+                                      <ResourceGridItem key={item.id} resource={item} isFolder={true} onSelect={() => setSelectedResource(item)} onEdit={handleOpenEditModal} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} onRestore={handleRestoreResource} />
                                   ))}
                               </div>
                           </section>
@@ -552,7 +566,7 @@ export default function ResourcesPage() {
                             <h2 className="text-xl font-semibold mb-4 text-muted-foreground">Archivos</h2>
                             {viewMode === 'grid' ? (
                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-                                  {files.map(item => <ResourceGridItem key={item.id} resource={item} isFolder={false} onSelect={() => setSelectedResource(item)} onEdit={handleOpenEditModal} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} />)}
+                                  {files.map(item => <ResourceGridItem key={item.id} resource={item} isFolder={false} onSelect={() => setSelectedResource(item)} onEdit={handleOpenEditModal} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} onRestore={handleRestoreResource}/>)}
                               </div>
                             ) : (
                               <div className="border rounded-lg overflow-hidden">
@@ -564,7 +578,7 @@ export default function ResourcesPage() {
                                     <div className="col-span-1 text-right">Acciones</div>
                                 </div>
                                 <div className="divide-y">
-                                 {files.map(item => <ResourceListItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={handleOpenEditModal} onDelete={() => setResourceToDelete(item)} />)}
+                                 {files.map(item => <ResourceListItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={handleOpenEditModal} onDelete={() => setResourceToDelete(item)} onRestore={handleRestoreResource} />)}
                                 </div>
                               </div>
                             )}
@@ -586,8 +600,8 @@ export default function ResourcesPage() {
                 <AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle>
                 <AlertDialogDescription>
                    {resourceToDelete?.type === 'FOLDER' 
-                     ? <>¿Estás seguro de eliminar la carpeta "<strong>{resourceToDelete?.title}</strong>"? Esta acción es irreversible.</>
-                     : <>¿Estás seguro de eliminar el recurso "<strong>{resourceToDelete?.title}</strong>"? Esta acción es irreversible.</>
+                     ? <>La carpeta "<strong>{resourceToDelete?.title}</strong>" y todo su contenido serán eliminados permanentemente. Esta acción es irreversible.</>
+                     : <>El recurso "<strong>{resourceToDelete?.title}</strong>" será eliminado permanentemente. Esta acción es irreversible.</>
                    }
                 </AlertDialogDescription>
               </AlertDialogHeader>

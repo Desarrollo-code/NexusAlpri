@@ -94,7 +94,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
             const childrenCount = await prisma.enterpriseResource.count({
                 where: {
                     parentId: id,
-                    status: 'ACTIVE' // Solo contamos los recursos activos
+                    status: 'ACTIVE'
                 }
             });
             if (childrenCount > 0) {

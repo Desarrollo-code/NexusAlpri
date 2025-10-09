@@ -7,7 +7,7 @@ import { getIconForType } from '@/lib/resource-utils';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu';
-import { MoreVertical, Edit, Trash2, Lock, Download, Globe, Users, ExternalLink, User, GripVertical } from 'lucide-react';
+import { MoreVertical, Edit, Trash2, Lock, Download, Globe, Users, ExternalLink, User, GripVertical, ArchiveRestore } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { DownloadButton } from '../ui/download-button';
 import { Identicon } from '../ui/identicon';
@@ -20,10 +20,11 @@ interface ResourceListItemProps {
     onSelect: () => void;
     onEdit: (resource: AppResourceType) => void;
     onDelete: (resource: AppResourceType) => void;
+    onRestore: (resource: AppResourceType) => void;
 }
 
 
-export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDelete }: ResourceListItemProps) => {
+export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDelete, onRestore }: ResourceListItemProps) => {
     const { user } = useAuth();
     const canModify = user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && resource.uploaderId === user.id));
     const Icon = getIconForType(resource.type);
@@ -31,7 +32,7 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
         id: resource.id,
         data: { type: 'resource', resource: resource },
-        disabled: !canModify,
+        disabled: !canModify || resource.status === 'ARCHIVED',
     });
 
     return (
@@ -39,13 +40,14 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
             ref={setNodeRef}
             className={cn(
                 "grid grid-cols-12 gap-4 p-3 transition-colors hover:bg-muted/50 items-center touch-none",
-                isDragging && 'opacity-50 bg-muted z-10'
+                isDragging && 'opacity-50 bg-muted z-10',
+                resource.status === 'ARCHIVED' && 'opacity-60'
             )}
         >
             <div 
                 className="col-span-6 flex items-center gap-4"
             >
-                {canModify && <div {...listeners} {...attributes} className="p-1 cursor-grab touch-none"><GripVertical className="h-4 w-4 text-muted-foreground"/></div>}
+                {canModify && resource.status === 'ACTIVE' && <div {...listeners} {...attributes} className="p-1 cursor-grab touch-none"><GripVertical className="h-4 w-4 text-muted-foreground"/></div>}
                 <div 
                   className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-muted rounded-lg cursor-pointer"
                   onClick={onSelect}
@@ -102,38 +104,55 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                        {resource.url && (
-                            resource.type === 'EXTERNAL_LINK' ? (
-                                <DropdownMenuItem asChild>
-                                    <a href={resource.url} target="_blank" rel="noopener noreferrer">
-                                        <ExternalLink className="mr-2 h-4 w-4" /> Visitar Enlace
-                                    </a>
-                                </DropdownMenuItem>
-                            ) : (
-                                <DropdownMenuItem asChild>
-                                    <DownloadButton
-                                        url={resource.url}
-                                        resourceId={resource.id}
-                                        hasPin={resource.hasPin}
-                                        className="w-full justify-start font-normal h-auto py-1.5 px-2"
-                                        variant="ghost"
-                                    >
-                                        <Download className="mr-2 h-4 w-4" /> Descargar
-                                    </DownloadButton>
-                                </DropdownMenuItem>
-                            )
-                        )}
-                        {canModify && (
+                        {resource.status === 'ACTIVE' ? (
                             <>
-                             <DropdownMenuSeparator />
-                             <DropdownMenuItem onClick={() => onEdit(resource)}>
-                                <Edit className="mr-2 h-4 w-4" /> Editar / Compartir
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => onDelete(resource)} className="text-destructive focus:bg-destructive/10">
-                                <Trash2 className="mr-2 h-4 w-4" /> Eliminar
-                            </DropdownMenuItem>
+                                {resource.url && (
+                                    resource.type === 'EXTERNAL_LINK' ? (
+                                        <DropdownMenuItem asChild>
+                                            <a href={resource.url} target="_blank" rel="noopener noreferrer">
+                                                <ExternalLink className="mr-2 h-4 w-4" /> Visitar Enlace
+                                            </a>
+                                        </DropdownMenuItem>
+                                    ) : (
+                                        <DropdownMenuItem asChild>
+                                            <DownloadButton
+                                                url={resource.url}
+                                                resourceId={resource.id}
+                                                hasPin={resource.hasPin}
+                                                className="w-full justify-start font-normal h-auto py-1.5 px-2"
+                                                variant="ghost"
+                                            >
+                                                <Download className="mr-2 h-4 w-4" /> Descargar
+                                            </DownloadButton>
+                                        </DropdownMenuItem>
+                                    )
+                                )}
+                                {canModify && (
+                                    <>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem onClick={() => onEdit(resource)}>
+                                            <Edit className="mr-2 h-4 w-4" /> Editar / Compartir
+                                        </DropdownMenuItem>
+                                    </>
+                                )}
                             </>
+                        ) : (
+                           <>
+                             {canModify && (
+                                <DropdownMenuItem onClick={() => onRestore(resource)}>
+                                    <ArchiveRestore className="mr-2 h-4 w-4" /> Restaurar
+                                </DropdownMenuItem>
+                             )}
+                           </>
                         )}
+                         {canModify && (
+                            <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => onDelete(resource)} className="text-destructive focus:bg-destructive/10">
+                                    <Trash2 className="mr-2 h-4 w-4" /> Eliminar Permanentemente
+                                </DropdownMenuItem>
+                            </>
+                         )}
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
