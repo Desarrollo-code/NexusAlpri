@@ -40,6 +40,15 @@ const NAVIGATION_ITEMS: NavItem[] = [
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
   },
   
+  // --- Competition Section ---
+  {
+    id: 'competition',
+    label: 'Competición',
+    icon: Trophy,
+    path: '/leaderboard',
+    roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
+  },
+
   // --- Learning Section ---
   {
     id: 'learning',
@@ -71,15 +80,6 @@ const NAVIGATION_ITEMS: NavItem[] = [
     ],
   },
   
-  // --- Competition Section ---
-  {
-    id: 'competition',
-    label: 'Competición',
-    icon: Trophy,
-    path: '/leaderboard',
-    roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
-  },
-
   // --- Organization Section ---
   {
     id: 'organization',
