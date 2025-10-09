@@ -39,7 +39,7 @@ const getStatusInSpanish = (status: CourseStatus) => {
         case 'ARCHIVED': return 'Archivado';
         default: return status;
     }
-}
+};
 
 export function CourseCard({ 
   course, 
