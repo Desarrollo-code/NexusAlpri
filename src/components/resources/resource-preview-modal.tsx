@@ -23,7 +23,7 @@ import { getInitials } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
 import { addXp, XP_CONFIG, checkFirstDownload } from '@/lib/gamification';
 import mammoth from 'mammoth';
-import { PdfViewer } from '@/components/pdf-viewer'; // Importamos el nuevo componente
+import { PdfViewer } from '@/components/pdf-viewer'; 
 
 const DocxPreviewer = ({ url }: { url: string }) => {
     const [html, setHtml] = useState<string | null>(null);
