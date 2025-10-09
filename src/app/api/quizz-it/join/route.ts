@@ -40,8 +40,10 @@ export async function POST(req: Request) {
       },
     });
     
+    // CORRECCIÓN: El realtime se debe hacer desde el servidor con el cliente admin, no en el cliente.
     if (supabaseAdmin) {
         const channel = supabaseAdmin.channel(`game:${gameSession.id}`);
+        // Se envía un mensaje al canal, pero no se suscribe aquí.
         await channel.send({
             type: 'broadcast',
             event: 'PLAYER_JOINED',
