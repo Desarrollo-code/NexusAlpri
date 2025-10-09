@@ -5,44 +5,47 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { supabaseBrowserClient } from '@/lib/supabase-client';
-import { Loader2, Users, Music, Play, ChevronRight, BarChart3, Trophy } from 'lucide-react';
+import { Loader2, Users, Play, ChevronRight, BarChart3, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { AnimatePresence, motion } from 'framer-motion';
 
 // --- Sub-components ---
 
-const LobbyScreen = ({ pin, players }: { pin: string, players: any[] }) => (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center h-full text-center text-white p-8">
-        <p className="text-xl">Únete en tu dispositivo</p>
-        <h1 className="text-4xl font-bold my-4">nexus.alpri/quizz-it/play</h1>
-        <p className="text-xl mb-8">PIN del juego:</p>
-        <div className="bg-white text-black p-6 rounded-lg shadow-2xl mb-12">
+const LobbyScreen = ({ pin, players, formTitle }: { pin: string, players: any[], formTitle: string }) => (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-between h-full text-center text-white p-8">
+        <div>
+            <h1 className="text-4xl font-bold mb-4">{formTitle}</h1>
+            <p className="text-xl">Únete con el PIN del juego en tu dispositivo</p>
+        </div>
+        <div className="bg-white text-black p-6 rounded-lg shadow-2xl">
             <p className="text-8xl font-bold tracking-widest">{pin}</p>
         </div>
-        <div className="flex items-center gap-4">
-            <Users className="h-8 w-8" />
-            <p className="text-4xl font-bold">{players.length}</p>
+        <div className="w-full flex items-center justify-between p-4 bg-black/20 rounded-lg">
+            <div className="flex items-center gap-4">
+                <Users className="h-8 w-8" />
+                <p className="text-4xl font-bold">{players.length}</p>
+            </div>
+             <AnimatePresence>
+                <motion.div className="flex flex-wrap justify-center gap-2 max-w-lg">
+                    {players.map((player, i) => (
+                        <motion.div
+                            key={player.userId}
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ delay: i * 0.1 }}
+                            className="bg-white text-gray-800 font-semibold px-3 py-1 rounded-lg shadow-md"
+                        >
+                            {player.nickname}
+                        </motion.div>
+                    ))}
+                </motion.div>
+            </AnimatePresence>
         </div>
-        <AnimatePresence>
-            <motion.div className="flex flex-wrap justify-center gap-4 mt-8">
-                {players.map((player, i) => (
-                    <motion.div
-                        key={player.userId}
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ delay: i * 0.1 }}
-                        className="bg-white text-gray-800 font-semibold px-4 py-2 rounded-lg shadow-md"
-                    >
-                        {player.nickname}
-                    </motion.div>
-                ))}
-            </motion.div>
-        </AnimatePresence>
     </motion.div>
 );
 
-const QuestionScreen = ({ question, questionIndex, totalQuestions }: { question: any, questionIndex: number, totalQuestions: number }) => {
+const QuestionScreen = ({ question, questionIndex, totalQuestions, answersCount }: { question: any, questionIndex: number, totalQuestions: number, answersCount: number }) => {
     const [timer, setTimer] = useState(20);
 
     useEffect(() => {
@@ -59,36 +62,47 @@ const QuestionScreen = ({ question, questionIndex, totalQuestions }: { question:
         return () => clearInterval(interval);
     }, [question]);
 
-    const optionColors = ["bg-red-500", "bg-blue-500", "bg-yellow-500", "bg-green-500"];
+    const optionColors = ["bg-red-600", "bg-blue-600", "bg-yellow-500", "bg-green-600"];
     const optionShapes = [
         <path d="M12 2L2 22h20L12 2z" key="triangle"/>, // Triangle
-        <path d="M21.22 10.88-10.88 21.22a2 2 0 0 1-2.83-2.83L18.73 2.78a2 2 0 0 1 2.83 2.83zM12 2l-2.12 2.12" key="diamond"/>, // Diamond
+        <path d="M12 2 L22 12 L12 22 L2 12 Z" key="diamond" />, // Diamond
         <circle cx="12" cy="12" r="11" key="circle"/>, // Circle
-        <rect x="2" y="2" width="20" height="20" rx="4" key="square"/>, // Square
+        <rect x="2" y="2" width="20" height="20" rx="2" key="square"/>, // Square
     ];
 
     return (
-        <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex flex-col h-full text-white p-8">
-            <div className="text-center mb-8">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col h-full w-full bg-background text-foreground p-4">
+             {/* Header */}
+            <div className="text-center mb-4">
                 <p className="text-2xl font-bold">{question.label}</p>
             </div>
-            <div className="flex-grow flex items-center justify-center">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                    <p className="text-8xl font-bold opacity-80">{timer}</p>
+             {/* Main Content */}
+            <div className="flex-grow flex items-center justify-between gap-4">
+                 {/* Timer */}
+                <div className="flex flex-col items-center justify-center h-24 w-24 rounded-full bg-muted shadow-inner">
+                    <p className="text-4xl font-bold text-primary">{timer}</p>
                 </div>
-                {/* Placeholder for an image if available */}
+                 {/* Image/Logo Placeholder */}
+                <div className="w-96 h-56 bg-gradient-to-br from-teal-400 to-blue-500 flex items-center justify-center rounded-lg shadow-lg">
+                    <h1 className="text-5xl font-extrabold text-white opacity-90">Quizz-IT!</h1>
+                </div>
+                 {/* Answers Count */}
+                <div className="flex flex-col items-center justify-center w-24">
+                     <p className="text-3xl font-bold">{answersCount}</p>
+                    <p className="text-sm font-medium">Respuestas</p>
+                </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            {/* Options */}
+            <div className="grid grid-cols-2 gap-2 mt-4">
                 {question.options.map((opt: any, index: number) => (
-                    <div key={opt.id} className={`${optionColors[index]} flex items-center justify-start p-4 rounded-lg shadow-lg`}>
-                        <svg viewBox="0 0 24 24" className="h-8 w-8 mr-4 fill-current">
+                    <div key={opt.id} className={`${optionColors[index]} flex items-center justify-start p-3 rounded-md shadow-lg text-white`}>
+                        <svg viewBox="0 0 24 24" className="h-8 w-8 mr-3 fill-current">
                            {optionShapes[index]}
                         </svg>
                         <p className="font-semibold text-lg">{opt.text}</p>
                     </div>
                 ))}
             </div>
-            <div className="text-center mt-4 text-sm">{questionIndex + 1} / {totalQuestions}</div>
         </motion.div>
     );
 };
@@ -128,15 +142,21 @@ export function HostScreen({ sessionId }: { sessionId: string }) {
     
     const [sessionData, setSessionData] = useState<any>(null);
     const [players, setPlayers] = useState<any[]>([]);
+    const [answersCount, setAnswersCount] = useState(0);
     const [gameState, setGameState] = useState('LOADING'); // LOADING, LOBBY, QUESTION, RESULTS, FINISHED
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
     const handleIncomingMessage = useCallback((payload: any) => {
-        if (payload.new.event === 'PLAYER_JOINED') {
+        const event = payload.new.event;
+        const data = payload.new.payload;
+        if (event === 'PLAYER_JOINED') {
             setPlayers(prev => {
-                if(prev.find(p => p.userId === payload.new.payload.userId)) return prev;
-                return [...prev, payload.new.payload];
+                if(prev.find(p => p.userId === data.userId)) return prev;
+                return [...prev, data];
             });
+        }
+        if (event === 'PLAYER_ANSWERED') {
+            setAnswersCount(prev => prev + 1);
         }
     }, []);
 
@@ -165,42 +185,44 @@ export function HostScreen({ sessionId }: { sessionId: string }) {
     const broadcastState = async (event: string, payload: any = {}) => {
         if (!supabaseBrowserClient) return;
         const channel = supabaseBrowserClient.channel(`game:${sessionId}`);
-        await channel.send({
-            type: 'broadcast',
-            event,
-            payload
-        });
+        await channel.send({ type: 'broadcast', event, payload });
     };
     
     const handleStartGame = () => {
         if (players.length === 0) return;
         setCurrentQuestionIndex(0);
-        setGameState('QUESTION');
-        broadcastState('NEXT_QUESTION', { question: sessionData.form.fields[0] });
+        setGameState('GET_READY');
+        broadcastState('GET_READY');
         
-        // After 20 seconds, show results
         setTimeout(() => {
-            setGameState('RESULTS');
-            broadcastState('SHOW_RESULTS');
-        }, 20000);
+            setAnswersCount(0);
+            setGameState('QUESTION');
+            broadcastState('NEXT_QUESTION', { question: sessionData.form.fields[0] });
+            setTimeout(() => {
+                setGameState('RESULTS');
+                broadcastState('SHOW_RESULTS');
+            }, 20000);
+        }, 5000); // 5 second "get ready" timer
     };
 
     const handleNext = () => {
-        if (gameState === 'RESULTS') {
-            const nextIndex = currentQuestionIndex + 1;
-            if (nextIndex < sessionData.form.fields.length) {
-                setCurrentQuestionIndex(nextIndex);
+        const nextIndex = currentQuestionIndex + 1;
+        if (nextIndex < sessionData.form.fields.length) {
+            setCurrentQuestionIndex(nextIndex);
+            setGameState('GET_READY');
+            broadcastState('GET_READY');
+            setTimeout(() => {
+                setAnswersCount(0);
                 setGameState('QUESTION');
                 broadcastState('NEXT_QUESTION', { question: sessionData.form.fields[nextIndex] });
-                
-                 setTimeout(() => {
+                setTimeout(() => {
                     setGameState('RESULTS');
                     broadcastState('SHOW_RESULTS');
                 }, 20000);
-            } else {
-                setGameState('FINISHED');
-                broadcastState('GAME_OVER');
-            }
+            }, 5000);
+        } else {
+            setGameState('FINISHED');
+            broadcastState('GAME_OVER');
         }
     }
     
@@ -215,10 +237,12 @@ export function HostScreen({ sessionId }: { sessionId: string }) {
     const renderGameState = () => {
         switch(gameState) {
             case 'LOBBY':
-                return <LobbyScreen pin={sessionData.session.pin} players={players} />;
+                return <LobbyScreen pin={sessionData.session.pin} players={players} formTitle={sessionData.form.title}/>;
+            case 'GET_READY':
+                 return <div className="flex flex-col items-center justify-center h-full text-white"><h2 className="text-4xl font-bold animate-pulse">¡Prepárate!</h2></div>
             case 'QUESTION':
                 const question = sessionData.form.fields[currentQuestionIndex];
-                return <QuestionScreen question={question} questionIndex={currentQuestionIndex} totalQuestions={sessionData.form.fields.length} />;
+                return <QuestionScreen question={question} questionIndex={currentQuestionIndex} totalQuestions={sessionData.form.fields.length} answersCount={answersCount} />;
             case 'RESULTS':
                  return <ResultsScreen players={players} onNext={handleNext} />;
             case 'FINISHED':
@@ -232,7 +256,7 @@ export function HostScreen({ sessionId }: { sessionId: string }) {
         <div className="bg-gradient-to-br from-indigo-800 to-purple-900 h-screen w-screen">
             <div className="absolute top-4 left-4 flex gap-4">
                 {gameState === 'LOBBY' && players.length > 0 && (
-                    <Button onClick={handleStartGame} className="bg-green-500 hover:bg-green-600 text-lg py-6 px-8">
+                    <Button onClick={handleStartGame} className="bg-green-500 hover:bg-green-600 text-lg py-6 px-8 shadow-lg">
                         <Play className="mr-2 h-5 w-5" />
                         Empezar
                     </Button>

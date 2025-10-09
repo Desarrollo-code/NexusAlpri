@@ -7,13 +7,14 @@ import { supabaseBrowserClient } from '@/lib/supabase-client';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
-const optionColors = ["bg-red-500", "bg-blue-500", "bg-yellow-500", "bg-green-500"];
+const optionColors = ["bg-red-600", "bg-blue-600", "bg-yellow-500", "bg-green-600"];
 const optionShapes = [
-    <path d="M12 2L2 22h20L12 2z" key="triangle"/>, // Triangle
-    <path d="M21.22 10.88-10.88 21.22a2 2 0 0 1-2.83-2.83L18.73 2.78a2 2 0 0 1 2.83 2.83zM12 2l-2.12 2.12" key="diamond"/>, // Diamond
-    <circle cx="12" cy="12" r="11" key="circle"/>, // Circle
-    <rect x="2" y="2" width="20" height="20" rx="4" key="square"/>, // Square
+    <path d="M12 2L2 22h20L12 2z" key="triangle"/>,
+    <path d="M12 2 L22 12 L12 22 L2 12 Z" key="diamond" />,
+    <circle cx="12" cy="12" r="11" key="circle"/>,
+    <rect x="2" y="2" width="20" height="20" rx="2" key="square"/>,
 ];
 
 
@@ -24,7 +25,7 @@ const WaitingScreen = ({ message }: { message: string }) => (
     </div>
 );
 
-const AnswerResultScreen = ({ isCorrect, scoreAwarded, rank, totalPlayers }: { isCorrect: boolean, scoreAwarded: number, rank: number, totalPlayers: number }) => (
+const AnswerResultScreen = ({ isCorrect, scoreAwarded }: { isCorrect: boolean, scoreAwarded: number }) => (
     <motion.div
         initial={{ scale: 0.5, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -36,11 +37,7 @@ const AnswerResultScreen = ({ isCorrect, scoreAwarded, rank, totalPlayers }: { i
             <XCircle className="h-24 w-24 text-red-400 mb-4" />
         )}
         <h2 className="text-4xl font-bold">{isCorrect ? '¡Correcto!' : 'Incorrecto'}</h2>
-        <p className="text-xl mt-2">+{scoreAwarded.toLocaleString()} puntos</p>
-        <div className="mt-8 bg-black/20 p-4 rounded-lg">
-            <p className="text-lg">Tu posición</p>
-            <p className="text-3xl font-bold">{rank} / {totalPlayers}</p>
-        </div>
+        {isCorrect && <p className="text-xl mt-2">+{scoreAwarded.toLocaleString()} puntos</p>}
     </motion.div>
 );
 
@@ -62,6 +59,9 @@ export function PlayerScreen({ sessionId }: { sessionId: string }) {
             const data = payload.new.payload;
 
             switch(event) {
+                 case 'GET_READY':
+                    setGameState('GET_READY');
+                    break;
                 case 'NEXT_QUESTION':
                     setQuestion(data.question);
                     setHasAnswered(false);
@@ -101,7 +101,6 @@ export function PlayerScreen({ sessionId }: { sessionId: string }) {
             setGameState('ANSWERED');
         } catch (error) {
             toast({ title: 'Error', description: (error as Error).message, variant: 'destructive'});
-            // Re-enable answering if submission failed
             setHasAnswered(false);
         }
     };
@@ -119,7 +118,11 @@ export function PlayerScreen({ sessionId }: { sessionId: string }) {
                                 animate={{ scale: 1 }}
                                 transition={{ delay: index * 0.1, type: 'spring', stiffness: 260, damping: 20 }}
                                 onClick={() => handleAnswer(opt.id)}
-                                className={`flex items-center justify-center p-4 rounded-lg shadow-lg ${optionColors[index]} disabled:opacity-50 disabled:cursor-not-allowed`}
+                                className={cn(
+                                  "flex items-center justify-center p-4 rounded-lg shadow-lg transform active:scale-95 transition-transform",
+                                  optionColors[index],
+                                  hasAnswered ? "opacity-50 cursor-not-allowed" : "hover:brightness-110"
+                                )}
                                 disabled={hasAnswered}
                             >
                                  <svg viewBox="0 0 24 24" className="h-24 w-24 fill-current text-white">
@@ -136,12 +139,12 @@ export function PlayerScreen({ sessionId }: { sessionId: string }) {
                     <AnswerResultScreen
                         isCorrect={answerResult.isCorrect}
                         scoreAwarded={answerResult.scoreAwarded}
-                        rank={1} // Placeholder
-                        totalPlayers={1} // Placeholder
                     />
-                ) : <WaitingScreen message="Cargando resultados..." />;
+                ) : <WaitingScreen message="No respondiste a tiempo..." />;
+            case 'GET_READY':
+                return <div className="flex flex-col items-center justify-center h-full text-white"><h2 className="text-4xl font-bold animate-pulse">¡Prepárate!</h2></div>
             case 'GAME_FINISHED':
-                return <h2 className="text-white text-2xl font-bold">¡Juego Terminado! Revisa la pantalla principal para ver el podio.</h2>
+                return <div className="flex flex-col items-center justify-center h-full text-white"><h2 className="text-2xl font-bold">¡Juego Terminado!</h2><p>Revisa la pantalla principal para ver el podio.</p></div>;
             default:
                 return <WaitingScreen message="Esperando que el anfitrión inicie el juego..." />;
         }
