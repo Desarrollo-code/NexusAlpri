@@ -47,6 +47,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
+import { Switch } from '../ui/switch';
 
 
 // === TIPOS E INTERFACES ===
@@ -759,7 +760,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                      <Card>
                         <CardHeader><CardTitle>Publicación</CardTitle><CardDescription>Controla la visibilidad y dependencias del curso.</CardDescription></CardHeader>
                         <CardContent className="space-y-4">
-                             <div><Label htmlFor="status">Estado</Label>
+                            <div className="space-y-2">
+                                <Label htmlFor="status">Estado</Label>
                                 <Select value={course.status} onValueChange={v => updateCourseField('status', v as CourseStatus)} disabled={isSaving}>
                                     <SelectTrigger id="status"><SelectValue /></SelectTrigger>
                                     <SelectContent>
@@ -770,7 +772,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                 </Select>
                             </div>
                             <Separator/>
-                             <div><Label htmlFor="prerequisite">Prerrequisito del Curso</Label>
+                            <div className="space-y-2">
+                                <Label htmlFor="prerequisite">Prerrequisito del Curso</Label>
                                 <Select value={course.prerequisiteId || 'none'} onValueChange={v => updateCourseField('prerequisiteId', v === 'none' ? null : v)} disabled={isSaving}>
                                     <SelectTrigger id="prerequisite"><SelectValue placeholder="Ninguno"/></SelectTrigger>
                                     <SelectContent>
@@ -784,7 +787,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                  <p className="text-xs text-muted-foreground mt-1">Elige un curso que deba ser completado antes de poder inscribirse a este.</p>
                             </div>
                             <Separator />
-                             <div><Label htmlFor="certificateTemplate">Plantilla de Certificado</Label>
+                            <div className="space-y-2">
+                                <Label htmlFor="certificateTemplate">Plantilla de Certificado</Label>
                                 <Select value={course.certificateTemplateId || 'none'} onValueChange={v => updateCourseField('certificateTemplateId', v === 'none' ? null : v)} disabled={isSaving}>
                                     <SelectTrigger id="certificateTemplate"><SelectValue placeholder="Sin certificado"/></SelectTrigger>
                                     <SelectContent>
@@ -796,6 +800,21 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                     </SelectContent>
                                 </Select>
                                  <p className="text-xs text-muted-foreground mt-1">Elige el diseño del certificado que se generará al completar el curso.</p>
+                            </div>
+                            <Separator />
+                            <div className="flex items-center justify-between space-x-2">
+                                <Label htmlFor="isMandatory" className="flex flex-col space-y-1">
+                                    <span>Curso Obligatorio</span>
+                                    <span className="font-normal leading-snug text-muted-foreground text-xs">
+                                        Si se activa, este curso podrá ser asignado a usuarios específicos.
+                                    </span>
+                                </Label>
+                                <Switch
+                                    id="isMandatory"
+                                    checked={course.isMandatory}
+                                    onCheckedChange={(checked) => updateCourseField('isMandatory', checked)}
+                                    disabled={isSaving}
+                                />
                             </div>
                         </CardContent>
                     </Card>
