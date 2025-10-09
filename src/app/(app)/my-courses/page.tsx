@@ -5,7 +5,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { CourseCard } from '@/components/course-card';
-import type { EnrolledCourse, UserRole } from '@/types'; 
+import type { EnrolledCourse, UserRole, Course as AppCourseType } from '@/types'; 
 import { GraduationCap, Loader2, AlertTriangle, Info, Search, Filter } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,8 @@ import { useTitle } from '@/contexts/title-context';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { useDebounce } from '@/hooks/use-debounce';
+import { Separator } from '@/components/ui/separator';
+
 
 type FilterStatus = 'all' | 'in-progress' | 'completed';
 
@@ -53,19 +55,24 @@ export default function MyCoursesPage() {
       }
       const data: any[] = await response.json(); 
       const mappedCourses: EnrolledCourse[] = data.map(item => ({
-        id: item.id,
-        title: item.title,
-        description: item.description,
-        instructor: item.instructorName || 'N/A',
-        imageUrl: item.imageUrl,
-        modulesCount: item.modulesCount || 0,
-        duration: item.duration,
-        modules: [], 
+        id: item.course.id,
+        title: item.course.title,
+        description: item.course.description,
+        instructor: { 
+            id: item.course.instructor?.id || 'unknown',
+            name: item.course.instructor?.name || 'N/A', 
+            avatar: item.course.instructor?.avatar || null
+        },
+        imageUrl: item.course.imageUrl,
+        modulesCount: item.course._count?.modules || 0,
         enrolledAt: item.enrolledAt,
         isEnrolled: true, 
-        instructorId: item.instructorId,
-        status: item.status || 'PUBLISHED',
-        progressPercentage: item.progressPercentage || 0,
+        instructorId: item.course.instructorId,
+        status: item.course.status || 'PUBLISHED',
+        progressPercentage: item.progress?.progressPercentage || 0,
+        certificateTemplateId: item.course.certificateTemplateId,
+        enrollmentId: item.id, // <-- Add enrollmentId
+        modules: [], 
       }));
       setMyEnrolledCourses(mappedCourses);
     } catch (err) {
@@ -83,16 +90,20 @@ export default function MyCoursesPage() {
     }
   }, [isAuthLoading, user, fetchMyEnrollments]);
 
-  const filteredAndSearchedCourses = useMemo(() => {
-      return myEnrolledCourses
-        .filter(course => {
-            if (filterStatus === 'in-progress') return course.progressPercentage < 100;
-            if (filterStatus === 'completed') return course.progressPercentage === 100;
-            return true; // 'all'
-        })
-        .filter(course => {
-            return course.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
-        });
+  const { completedCourses, inProgressCourses } = useMemo(() => {
+      const completed = myEnrolledCourses
+        .filter(c => c.progressPercentage === 100)
+        .filter(c => c.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
+
+      const inProgress = myEnrolledCourses
+        .filter(c => c.progressPercentage < 100)
+        .filter(c => c.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
+      
+      if (filterStatus === 'completed') return { completedCourses: completed, inProgressCourses: [] };
+      if (filterStatus === 'in-progress') return { completedCourses: [], inProgressCourses: inProgress };
+
+      return { completedCourses: completed, inProgressCourses: inProgress };
+
   }, [myEnrolledCourses, filterStatus, debouncedSearchTerm]);
 
 
@@ -100,7 +111,6 @@ export default function MyCoursesPage() {
     if (!newStatus) {
         setMyEnrolledCourses(prev => prev.filter(c => c.id !== courseId));
     } else {
-        // If a user re-enrolls somehow, refetch to be safe
         fetchMyEnrollments();
     }
   };
@@ -191,30 +201,54 @@ export default function MyCoursesPage() {
       )}
 
       {!isFetchingPageData && !error && user && (
-        filteredAndSearchedCourses.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredAndSearchedCourses.map((course, index) => (
-              <CourseCard 
-                key={course.id} 
-                course={course} 
-                userRole={user.role} 
-                onEnrollmentChange={handleEnrollmentChangeOnPage}
-                priority={index < 4}
-              />
-            ))}
-          </div>
-        ) : (
-          <Alert>
-            <GraduationCap className="h-4 w-4" />
-            <AlertTitle>No hay cursos que mostrar</AlertTitle>
-            <AlertDescription>
-                {myEnrolledCourses.length === 0 
-                  ? <>Parece que no estás inscrito en ningún curso. Visita el <Link href="/courses" className="font-medium text-primary hover:underline">catálogo</Link> para empezar.</>
-                  : 'Ninguno de tus cursos coincide con los filtros seleccionados.'
-                }
-            </AlertDescription>
-          </Alert>
-        )
+        <div className="space-y-12">
+            {inProgressCourses.length > 0 && (
+                <section>
+                    <h2 className="text-2xl font-semibold font-headline mb-4">Continuar Aprendiendo</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {inProgressCourses.map((course, index) => (
+                        <CourseCard 
+                            key={course.id} 
+                            course={course} 
+                            userRole={user.role} 
+                            onEnrollmentChange={handleEnrollmentChangeOnPage}
+                            priority={index < 4}
+                        />
+                        ))}
+                    </div>
+                </section>
+            )}
+
+            {completedCourses.length > 0 && (
+                <section>
+                    <h2 className="text-2xl font-semibold font-headline mb-4">Cursos Completados</h2>
+                    <div className="space-y-4">
+                        {completedCourses.map((course, index) => (
+                            <CourseCard 
+                                key={course.id} 
+                                course={course} 
+                                userRole={user.role} 
+                                onEnrollmentChange={handleEnrollmentChangeOnPage}
+                                priority={index < 2}
+                            />
+                        ))}
+                    </div>
+                </section>
+            )}
+
+            {inProgressCourses.length === 0 && completedCourses.length === 0 && (
+                <Alert>
+                    <GraduationCap className="h-4 w-4" />
+                    <AlertTitle>No hay cursos que mostrar</AlertTitle>
+                    <AlertDescription>
+                        {myEnrolledCourses.length === 0 
+                        ? <>Parece que no estás inscrito en ningún curso. Visita el <Link href="/courses" className="font-medium text-primary hover:underline">catálogo</Link> para empezar.</>
+                        : 'Ninguno de tus cursos coincide con los filtros seleccionados.'
+                        }
+                    </AlertDescription>
+                </Alert>
+            )}
+        </div>
       )}
       
       {!user && !isAuthLoading && !isFetchingPageData && (

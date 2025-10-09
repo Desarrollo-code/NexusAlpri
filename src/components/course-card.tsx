@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import type { Course as AppCourseType, EnrolledCourse, UserRole, CourseStatus } from '@/types';
-import { Layers, ArrowRight, Check, Plus, Loader2, X, User, Edit, MoreVertical, Eye, BookOpenCheck, Trash2, Users, AlertTriangle, Lock } from 'lucide-react';
+import { Layers, ArrowRight, Check, Plus, Loader2, X, User, Edit, MoreVertical, Eye, BookOpenCheck, Trash2, Users, AlertTriangle, Lock, Download } from 'lucide-react';
 import { CircularProgress } from '@/components/ui/circular-progress';
 import { cn } from '@/lib/utils';
 import { Badge } from './ui/badge';
@@ -18,6 +18,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Identicon } from './ui/identicon';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from './ui/tooltip';
+import { IconGraduationCap } from './icons/icon-graduation-cap';
 
 
 interface CourseCardProps {
@@ -63,7 +64,9 @@ export function CourseCard({
   
   const prerequisiteMet = course.prerequisiteCompleted === undefined ? true : course.prerequisiteCompleted;
   const isLocked = viewMode === 'catalog' && !prerequisiteMet && !isEnrolled;
-
+  
+  const enrollmentId = 'enrollmentId' in course ? course.enrollmentId : null;
+  const isCompleted = progress === 100;
 
   const handleEnrollment = async (e: React.MouseEvent, enroll: boolean) => {
     e.preventDefault();
@@ -137,6 +140,40 @@ export function CourseCard({
     return <>{children}</>;
   };
 
+  if (isCompleted && viewMode === 'catalog') {
+      return (
+        <Card className="flex items-center p-4 bg-card border-l-4 border-green-500">
+            <div className="flex-shrink-0">
+                <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                    <IconGraduationCap className="w-7 h-7" />
+                </div>
+            </div>
+            <div className="flex-grow ml-4">
+                <p className="font-semibold text-foreground">{course.title}</p>
+                <p className="text-sm text-green-600 font-medium">¡Felicidades por aprobar el curso!</p>
+            </div>
+            <div className="flex-shrink-0 ml-4">
+                 {course.certificateTemplateId && enrollmentId ? (
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button asChild variant="outline" size="icon" className="rounded-full border-2 border-primary/50 text-primary hover:bg-primary/10">
+                                    <Link href={`/certificates/${enrollmentId}/view`} target="_blank">
+                                        <Download className="h-5 w-5"/>
+                                    </Link>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Descargar certificado</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                 ) : null}
+            </div>
+        </Card>
+      )
+  }
+
   return (
     <>
       <CardWrapper>
@@ -161,7 +198,7 @@ export function CourseCard({
                               <Lock className="h-10 w-10 text-white/80"/>
                           </div>
                       )}
-                      {typeof progress === 'number' && (
+                      {typeof progress === 'number' && !isCompleted && (
                           <div className="absolute top-2 right-2 bg-background/50 backdrop-blur-sm rounded-full">
                               <CircularProgress value={progress} size={40} strokeWidth={4} valueTextClass="text-xs font-semibold" />
                           </div>
@@ -256,7 +293,6 @@ export function CourseCard({
                   </AlertDialogAction>
               </AlertDialogFooter>
           </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }
@@ -332,4 +368,3 @@ const ManagementDropdown = ({ course, onStatusChange, onDelete, onAssign, isProc
         </DropdownMenu>
     );
 }
-
