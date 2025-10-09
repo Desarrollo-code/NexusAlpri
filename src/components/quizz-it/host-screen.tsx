@@ -171,7 +171,7 @@ export function HostScreen({ sessionId }: { sessionId: string }) {
     const [sessionData, setSessionData] = useState<any>(null);
     const [players, setPlayers] = useState<any[]>([]);
     const [answersCount, setAnswersCount] = useState(0);
-    const [gameState, setGameState] = useState('LOADING'); // LOADING, LOBBY, QUESTION, RESULTS, FINISHED
+    const [gameState, setGameState] = useState('LOADING'); // LOADING, LOBBY, GET_READY, QUESTION, RESULTS, FINISHED
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
     const handleIncomingEvent = useCallback((payload: any) => {
@@ -207,7 +207,6 @@ export function HostScreen({ sessionId }: { sessionId: string }) {
     }, [sessionId]);
 
     const broadcastState = async (event: string, payload: any = {}) => {
-        // Esta función ahora enviará la petición a una API Route para que el servidor haga el broadcast.
         await fetch(`/api/quizz-it/broadcast`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -217,6 +216,7 @@ export function HostScreen({ sessionId }: { sessionId: string }) {
     
     const handleStartGame = () => {
         if (players.length === 0) return;
+        broadcastState('START_GAME');
         setCurrentQuestionIndex(0);
         setGameState('GET_READY');
         broadcastState('GET_READY');

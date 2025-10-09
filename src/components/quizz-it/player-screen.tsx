@@ -56,6 +56,7 @@ export function PlayerScreen({ sessionId }: { sessionId: string }) {
         const data = payload.new.payload;
         
         switch(event) {
+            case 'START_GAME':
             case 'GET_READY':
                 setGameState('GET_READY');
                 break;
