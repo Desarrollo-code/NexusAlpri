@@ -65,23 +65,21 @@ export async function POST(req: Request) {
 
     // El servidor notifica a todos que este jugador ha respondido
     const channelName = `game:${sessionId}`;
-    const payload = {
-        type: 'broadcast',
-        event: 'PLAYER_ANSWERED',
-        payload: { userId: session.id, nickname: player.nickname },
+    const broadcastPayload = {
+      event: 'game_event',
+      payload: { event: 'PLAYER_ANSWERED', payload: { userId: session.id, nickname: player.nickname } },
     };
 
-    const { error } = await supabaseAdmin
-      .from('RealtimeMessage')
-      .insert({
+    const { error } = await supabaseAdmin.from('RealtimeMessage').insert({
         channel: channelName,
-        event: payload.event,
-        payload: payload.payload,
-      });
-
+        event: broadcastPayload.event,
+        payload: broadcastPayload.payload,
+    });
+    
     if (error) {
         console.error("Supabase broadcast error on answer:", error);
     }
+
 
     return NextResponse.json({
       isCorrect,

@@ -3,12 +3,11 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { supabaseBrowserClient } from '@/lib/supabase-client';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { useRealtime } from '@/hooks/use-realtime-chat';
+import { useRealtime } from '@/hooks/use-realtime';
 
 const optionColors = ["bg-red-600", "bg-blue-600", "bg-yellow-500", "bg-green-600"];
 const optionShapes = [

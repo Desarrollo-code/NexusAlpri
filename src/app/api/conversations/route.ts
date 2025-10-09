@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 import { Prisma } from '@prisma/client';
+import { supabaseAdmin } from '@/lib/supabase-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -79,13 +80,8 @@ export async function POST(req: NextRequest) {
         AND: [
           { participants: { some: { id: session.id } } },
           { participants: { some: { id: recipientId } } },
-        ],
-        // Ensure we don't pick up group chats if they are added later
-        participants: {
-            every: {
-                id: { in: [session.id, recipientId] }
-            }
-        }
+          { isGroup: false }
+        ]
       },
     });
 
@@ -120,7 +116,19 @@ export async function POST(req: NextRequest) {
       })
     ]);
 
-    // TODO: Implement real-time notifications (e.g., via WebSockets/Pusher)
+    // Send real-time notification to the recipient
+    if (supabaseAdmin) {
+        const channelName = `user:${recipientId}`;
+        const payload = {
+            event: 'chat_message',
+            payload: newMessage,
+        };
+        await supabaseAdmin.from('RealtimeMessage').insert({
+            channel: channelName,
+            event: payload.event,
+            payload: payload.payload,
+        });
+    }
 
     return NextResponse.json(newMessage, { status: 201 });
 

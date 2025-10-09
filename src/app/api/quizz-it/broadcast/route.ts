@@ -22,18 +22,21 @@ export async function POST(req: Request) {
 
     const channelName = `game:${sessionId}`;
     
-    // Usar el cliente Admin para insertar en la tabla de Realtime,
-    // lo que disparará el evento a los clientes suscritos.
-    const { error } = await supabaseAdmin
-      .from('RealtimeMessage')
-      .insert({
+    // El servidor ahora es responsable de hacer el broadcast.
+    const broadcastPayload = {
+      event: 'game_event',
+      payload: { event, payload },
+    };
+
+    const { error } = await supabaseAdmin.from('RealtimeMessage').insert({
         channel: channelName,
-        event: event,
-        payload: payload,
-      });
+        event: broadcastPayload.event,
+        payload: broadcastPayload.payload,
+    });
+
 
     if (error) {
-      throw new Error(`Error de Supabase al hacer broadcast: ${error.message}`);
+       throw new Error(`Error de Supabase al hacer broadcast: ${error.message}`);
     }
 
     return NextResponse.json({ success: true, message: 'Evento enviado.' });

@@ -46,24 +46,19 @@ export async function POST(req: Request) {
     
     // El servidor ahora es responsable de enviar el evento de "jugador unido"
     const channelName = `game:${gameSession.id}`;
-    const payload = {
-        type: 'broadcast',
-        event: 'PLAYER_JOINED',
-        payload: { id: player.id, nickname: player.nickname, userId: player.userId, score: 0 },
+    const broadcastPayload = {
+      event: 'game_event',
+      payload: { event: 'PLAYER_JOINED', payload: { id: player.id, nickname: player.nickname, userId: player.userId, score: 0 } },
     };
     
-    // Usamos el cliente admin de Supabase para insertar en la tabla que dispara el evento.
-     const { error } = await supabaseAdmin
-      .from('RealtimeMessage')
-      .insert({
+    const { error } = await supabaseAdmin.from('RealtimeMessage').insert({
         channel: channelName,
-        event: payload.event,
-        payload: payload.payload,
-      });
+        event: broadcastPayload.event,
+        payload: broadcastPayload.payload,
+    });
 
     if (error) {
-        console.error("Supabase broadcast error:", error);
-        // El jugador se creó, pero el broadcast falló. Se puede continuar, pero es bueno registrarlo.
+        console.error("Supabase broadcast error on join:", error);
     }
 
     return NextResponse.json(player);

@@ -18,7 +18,7 @@ import { ScrollArea } from '../ui/scroll-area';
 import { User } from '@/types';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../ui/command';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
-import { useRealtime } from '@/hooks/use-realtime-chat';
+import { useRealtime } from '@/hooks/use-realtime';
 
 // Tipos
 type Participant = { id: string; name: string | null; avatar: string | null };
@@ -151,15 +151,20 @@ export function ChatClient() {
         }
     }, [toast]);
     
-    const handleNewMessage = useCallback((newMessage: Message) => {
-        if (activeConversation && newMessage.conversationId === activeConversation.id) {
-            setMessages(prevMessages => [...prevMessages, newMessage]);
+    const handleNewMessage = useCallback((payload: { event: string, payload: Message }) => {
+        const { event, payload: receivedMessage } = payload;
+        
+        if (event !== 'chat_message') return;
+
+        if (activeConversation && receivedMessage.conversationId === activeConversation.id) {
+            setMessages(prevMessages => [...prevMessages, receivedMessage]);
         }
+        
         setConversations(prev => {
-            const convoIndex = prev.findIndex(c => c.id === newMessage.conversationId);
+            const convoIndex = prev.findIndex(c => c.id === receivedMessage.conversationId);
             if (convoIndex > -1) {
-                const updatedConvo = { ...prev[convoIndex], messages: [newMessage], updatedAt: newMessage.createdAt };
-                const restConvos = prev.filter(c => c.id !== newMessage.conversationId);
+                const updatedConvo = { ...prev[convoIndex], messages: [receivedMessage], updatedAt: receivedMessage.createdAt };
+                const restConvos = prev.filter(c => c.id !== receivedMessage.conversationId);
                 return [updatedConvo, ...restConvos];
             }
             // Si la conversación no está en la lista, la recargamos
@@ -168,7 +173,7 @@ export function ChatClient() {
         });
     }, [activeConversation, fetchConversations]);
 
-    useRealtime(activeConversation?.id ?? null, handleNewMessage);
+    useRealtime(user ? `user:${user.id}` : null, handleNewMessage);
     
     useEffect(() => {
         if (!isAuthLoading && user) {
@@ -262,29 +267,37 @@ export function ChatClient() {
         };
         
         setMessages(prev => [...prev, tempMessage]);
+        const messageToSend = newMessage;
         setNewMessage('');
         
         try {
             const response = await fetch('/api/conversations', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ recipientId, content: newMessage }),
+                body: JSON.stringify({ recipientId, content: messageToSend }),
             });
             const sentMessage = await response.json();
             if (!response.ok) throw new Error(sentMessage.message || 'Error al enviar el mensaje');
             
-            // Replace temporary message with the real one from the server
-            setMessages(prev => prev.map(m => m.id === tempMessageId ? { ...sentMessage, conversationId: activeConversation!.id } : m));
-            
-            // If it was a new conversation, refetch all conversations to get the real ID
+            // If it was a new conversation, refetch all conversations to get the real ID and update the active one
             if (activeConversation?.id.startsWith('temp-')) {
-                await fetchConversations();
+                const newConvosRes = await fetch('/api/conversations');
+                const newConvos = await newConvosRes.json();
+                setConversations(newConvos);
+                const newActiveConvo = newConvos.find((c: Conversation) => c.participants.some(p => p.id === recipientId));
+                if (newActiveConvo) {
+                    setActiveConversation(newActiveConvo);
+                }
+                 setMessages(prev => prev.map(m => m.id === tempMessageId ? sentMessage : m));
+            } else {
+                setMessages(prev => prev.map(m => m.id === tempMessageId ? sentMessage : m));
             }
             
         } catch (err) {
             toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
-            // Remove the failed temporary message
+            // Restore failed message to textarea
             setMessages(prev => prev.filter(m => m.id !== tempMessageId));
+            setNewMessage(messageToSend);
         } finally {
             setIsSending(false);
         }

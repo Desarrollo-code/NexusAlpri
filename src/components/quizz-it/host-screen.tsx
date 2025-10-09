@@ -4,13 +4,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
-import { supabaseBrowserClient } from '@/lib/supabase-client';
 import { Loader2, Users, Play, ChevronRight, BarChart3, Trophy, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
-import { useRealtime } from '@/hooks/use-realtime-chat';
+import { useRealtime } from '@/hooks/use-realtime';
 
 // --- Sub-components ---
 
@@ -204,23 +203,16 @@ export function HostScreen({ sessionId }: { sessionId: string }) {
     }, [sessionId]);
 
     const broadcastState = async (event: string, payload: any = {}) => {
-        if (!supabaseBrowserClient) return;
-        const channel = supabaseBrowserClient.channel(`game:${sessionId}`);
-        channel.subscribe(status => {
-            if (status === 'SUBSCRIBED') {
-                channel.send({
-                    type: 'broadcast',
-                    event: 'game_event',
-                    payload: { event, payload },
-                });
-            }
+        await fetch('/api/quizz-it/broadcast', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId, event, payload }),
         });
     };
     
     const handleStartGame = () => {
         if (players.length === 0) return;
-        broadcastState('START_GAME');
-        setCurrentQuestionIndex(0);
+        broadcastState('START_GAME'); // Notifica a los jugadores que el juego ha comenzado
         setGameState('GET_READY');
         broadcastState('GET_READY');
         
