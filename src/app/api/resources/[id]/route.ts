@@ -1,10 +1,9 @@
 // src/app/api/resources/[id]/route.ts
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 
-const prisma = new PrismaClient();
 export const dynamic = 'force-dynamic';
 
 // GET a specific resource
@@ -92,11 +91,11 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
         }
         
         if (resourceToDelete.type === 'FOLDER') {
-            const childrenCount = await prisma.enterpriseResource.count({ 
-                where: { 
+            const childrenCount = await prisma.enterpriseResource.count({
+                where: {
                     parentId: id,
-                    status: 'ACTIVE'
-                } 
+                    status: 'ACTIVE' // Solo contamos los recursos activos
+                }
             });
             if (childrenCount > 0) {
                 return NextResponse.json({ message: `No se puede eliminar. La carpeta contiene ${childrenCount} recurso(s) activo(s).` }, { status: 409 });
