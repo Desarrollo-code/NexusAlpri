@@ -9,6 +9,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   webpack: (config) => {
+    // This is to make `react-pdf` work with Next.js
     config.resolve.alias.canvas = false;
     return config;
   },
@@ -53,5 +54,3 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
-
-    

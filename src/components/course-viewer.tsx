@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 'use client';
 
@@ -28,17 +27,12 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import YouTube from 'react-youtube';
 import mammoth from 'mammoth';
 import { isPdfUrl } from '@/lib/resource-utils';
-import { Document, Page, pdfjs } from 'react-pdf';
+import { Document, Page } from 'react-pdf';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
-
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.js',
-  import.meta.url,
-).toString();
 
 // --- Helper types and functions ---
 
