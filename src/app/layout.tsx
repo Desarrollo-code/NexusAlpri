@@ -1,4 +1,3 @@
-
 // src/app/layout.tsx
 'use client';
 
@@ -11,12 +10,6 @@ import { cn } from '@/lib/utils';
 import { getFontVariables } from '@/lib/fonts';
 import { ThemeProvider } from '@/components/theme-provider';
 import AppWatermark from '@/components/layout/app-watermark';
-import { pdfjs } from 'react-pdf';
-
-// CONFIGURACIÓN GLOBAL DEL PDF WORKER
-// Se debe hacer una sola vez en el lado del cliente.
-// Esta ruta apunta al archivo que se copia en `public/` durante el `postinstall`.
-pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`;
 
 export default function RootLayout({
   children,

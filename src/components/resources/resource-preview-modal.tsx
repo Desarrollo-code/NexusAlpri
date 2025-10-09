@@ -23,8 +23,7 @@ import { getInitials } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
 import { addXp, XP_CONFIG, checkFirstDownload } from '@/lib/gamification';
 import mammoth from 'mammoth';
-import { Document, Page } from 'react-pdf';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { PdfViewer } from '@/components/pdf-viewer'; // Importamos el nuevo componente
 
 const DocxPreviewer = ({ url }: { url: string }) => {
     const [html, setHtml] = useState<string | null>(null);
@@ -145,68 +144,6 @@ const FallbackPreview = ({ resource }: { resource: AppResourceType }) => {
         </div>
     );
 };
-
-const PdfViewer = ({ url }: { url: string }) => {
-    const [numPages, setNumPages] = useState<number | null>(null);
-    const [pageNumber, setPageNumber] = useState(1);
-    const [error, setError] = useState<string | null>(null);
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [containerWidth, setContainerWidth] = useState<number>();
-
-    function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
-        setNumPages(numPages);
-    }
-    
-    function onDocumentLoadError(error: Error) {
-        setError(`Error al cargar el PDF: ${error.message}`);
-        console.error("Error loading PDF:", error);
-    }
-    
-     const onResize = useCallback(() => {
-        if (containerRef.current) {
-            setContainerWidth(containerRef.current.clientWidth);
-        }
-    }, []);
-
-    useEffect(() => {
-        onResize();
-        window.addEventListener('resize', onResize);
-        return () => window.removeEventListener('resize', onResize);
-    }, [onResize]);
-
-    if (error) {
-        return (
-            <Alert variant="destructive" className="m-4">
-                 <AlertTriangle className="h-4 w-4" />
-                 <AlertTitle>Error de PDF</AlertTitle>
-                 <AlertDescription>{error}</AlertDescription>
-            </Alert>
-        );
-    }
-    
-    return (
-        <div className="w-full h-full flex flex-col bg-muted/30">
-            <div ref={containerRef} className="flex-grow overflow-auto thin-scrollbar">
-                <Document
-                    file={url}
-                    onLoadSuccess={onDocumentLoadSuccess}
-                    onLoadError={onDocumentLoadError}
-                    loading={<div className="flex items-center justify-center h-64"><Loader2 className="animate-spin" /></div>}
-                >
-                    <Page pageNumber={pageNumber} width={containerWidth} />
-                </Document>
-            </div>
-            {numPages && (
-                 <div className="flex-shrink-0 flex items-center justify-center p-2 bg-background/70 border-t">
-                    <Button variant="outline" size="sm" onClick={() => setPageNumber(p => Math.max(1, p - 1))} disabled={pageNumber <= 1}>Anterior</Button>
-                    <p className="text-sm mx-4">Página {pageNumber} de {numPages}</p>
-                    <Button variant="outline" size="sm" onClick={() => setPageNumber(p => Math.min(numPages, p + 1))} disabled={pageNumber >= numPages}>Siguiente</Button>
-                </div>
-            )}
-        </div>
-    );
-};
-
 
 const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource: AppResourceType; pinVerifiedUrl: string | null; onPinVerified: (url: string) => void; }) => {
     const { toast } = useToast();
@@ -391,7 +328,7 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
             </DialogClose>
           </DialogHeader>
           <div className="flex-grow flex relative overflow-hidden">
-            <div className="flex-grow relative">
+            <div className="flex-grow flex-1 relative">
               <Button variant="ghost" size="icon" onClick={() => onNavigate('prev')} className="absolute left-2 top-1/2 -translate-y-1/2 z-20 h-10 w-10 bg-background/50 hover:bg-background/80"><ChevronLeft/></Button>
               <div className="absolute inset-0 flex items-center justify-center bg-muted/20">
                   <ContentPreview resource={resource} pinVerifiedUrl={pinVerifiedUrl} onPinVerified={setPinVerifiedUrl} />

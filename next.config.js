@@ -8,11 +8,6 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  webpack: (config) => {
-    // This is to make `react-pdf` work with Next.js
-    config.resolve.alias.canvas = false;
-    return config;
-  },
   images: {
     remotePatterns: [
       {

@@ -28,7 +28,7 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import YouTube from 'react-youtube';
 import mammoth from 'mammoth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Document, Page } from 'react-pdf';
+import { PdfViewer } from '@/components/pdf-viewer'; // Importamos el nuevo componente
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 
 const noteColors = [
@@ -38,67 +38,6 @@ const noteColors = [
   { value: 'pink', bg: 'bg-pink-100 dark:bg-pink-900/40', border: 'border-pink-200 dark:border-pink-800/50' },
   { value: 'purple', bg: 'bg-purple-100 dark:bg-purple-900/40', border: 'border-purple-200 dark:border-purple-800/50' },
 ];
-
-// --- PDF Viewer ---
-const PdfViewer = ({ url }: { url: string }) => {
-    const [numPages, setNumPages] = useState<number | null>(null);
-    const [pageNumber, setPageNumber] = useState(1);
-    const [error, setError] = useState<string | null>(null);
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [containerWidth, setContainerWidth] = useState<number>();
-
-    function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
-        setNumPages(numPages);
-    }
-    
-    function onDocumentLoadError(error: Error) {
-        setError(`Error al cargar el PDF: ${error.message}`);
-        console.error("Error loading PDF:", error);
-    }
-    
-     const onResize = useCallback(() => {
-        if (containerRef.current) {
-            setContainerWidth(containerRef.current.clientWidth);
-        }
-    }, []);
-
-    useEffect(() => {
-        onResize();
-        window.addEventListener('resize', onResize);
-        return () => window.removeEventListener('resize', onResize);
-    }, [onResize]);
-
-    if (error) {
-        return (
-            <Alert variant="destructive" className="my-4">
-                 <AlertTriangle className="h-4 w-4" />
-                 <AlertTitle>Error de PDF</AlertTitle>
-                 <AlertDescription>{error}</AlertDescription>
-            </Alert>
-        );
-    }
-    
-    return (
-        <div ref={containerRef} className="my-4 border rounded-lg overflow-hidden bg-muted/30">
-            <Document
-                file={url}
-                onLoadSuccess={onDocumentLoadSuccess}
-                onLoadError={onDocumentLoadError}
-                loading={<div className="flex items-center justify-center h-64"><Loader2 className="animate-spin" /></div>}
-            >
-                <Page pageNumber={pageNumber} width={containerWidth} />
-            </Document>
-            {numPages && (
-                 <div className="flex items-center justify-center p-2 bg-card border-t">
-                    <Button variant="outline" size="sm" onClick={() => setPageNumber(p => Math.max(1, p - 1))} disabled={pageNumber <= 1}>Anterior</Button>
-                    <p className="text-sm mx-4">Página {pageNumber} de {numPages}</p>
-                    <Button variant="outline" size="sm" onClick={() => setPageNumber(p => Math.min(numPages, p + 1))} disabled={pageNumber >= numPages}>Siguiente</Button>
-                </div>
-            )}
-        </div>
-    );
-};
-
 
 const DocxPreviewer = ({ url }: { url: string }) => {
     const [html, setHtml] = useState<string | null>(null);
@@ -524,8 +463,10 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     }
     
     if (block.type === 'FILE') {
-        if (url.toLowerCase().endsWith('.pdf')) {
-             return <PdfViewer url={url} key={block.id} />;
+        const isPdf = url.toLowerCase().endsWith('.pdf');
+        
+        if (isPdf) {
+            return <PdfViewer url={url} key={block.id} />;
         }
         
         const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url.toLowerCase());
