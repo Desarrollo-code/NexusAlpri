@@ -14,7 +14,6 @@ export async function GET(req: Request, { params }: { params: { sessionId: strin
           include: {
             fields: {
               where: { type: 'SINGLE_CHOICE' },
-              include: { options: true }, // Esto se mantiene, la corrección es en el mapeo
               orderBy: { order: 'asc' },
             },
           },
@@ -41,7 +40,7 @@ export async function GET(req: Request, { params }: { params: { sessionId: strin
       form: {
         title: gameSession.form.title,
         fields: gameSession.form.fields.map(field => {
-            // CORRECCIÓN: Prisma devuelve 'options' como un string JSON.
+            // CORRECCIÓN: Prisma devuelve 'options' como un string JSON o un objeto si ya está parseado.
             // Hay que parsearlo para que el frontend lo pueda usar.
             let parsedOptions: FormFieldOption[] = [];
             try {
