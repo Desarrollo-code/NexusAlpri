@@ -1,4 +1,5 @@
 
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: {
@@ -7,11 +8,9 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  webpack: (config, { isServer }) => {
-    // This is to make pdf.js work with Next.js
-    if (!isServer) {
-      config.resolve.alias['pdfjs-dist'] = 'pdfjs-dist/build/pdf';
-    }
+  webpack: (config) => {
+    // This is to make `react-pdf` work with Next.js
+    config.resolve.alias.canvas = false;
     return config;
   },
   images: {

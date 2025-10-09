@@ -322,6 +322,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         } else {
             console.error("Failed to fetch progress, setting to default.");
             setCourseProgress({
+                id: '',
                 userId,
                 courseId,
                 completedLessons: [],
