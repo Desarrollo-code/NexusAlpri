@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 'use client';
 
@@ -30,10 +31,6 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-
-
-// Configure worker by pointing to the file that was copied to the public folder.
-pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`;
 
 
 // --- Helper types and functions ---
@@ -133,10 +130,12 @@ const DocxPreviewer = ({ url }: { url: string }) => {
             setIsLoading(true);
             setError(null);
             try {
-                const response = await fetch(`/api/resources/preview?url=${encodeURIComponent(url)}`);
+                const response = await fetch(url);
                 if (!response.ok) throw new Error('No se pudo cargar la previsualización del documento.');
-                const data = await response.json();
-                setHtml(data.html);
+                const blob = await response.blob();
+                const arrayBuffer = await blob.arrayBuffer();
+                const { value: htmlContent } = await mammoth.convertToHtml({ arrayBuffer });
+                setHtml(htmlContent);
             } catch (e) {
                 setError(e instanceof Error ? e.message : "Error desconocido.");
             } finally {

@@ -1,3 +1,4 @@
+
 // src/components/resources/resource-preview-modal.tsx
 'use client';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -21,12 +22,10 @@ import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescri
 import { getInitials } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
 import { addXp, XP_CONFIG, checkFirstDownload } from '@/lib/gamification';
-import { Document, Page, pdfjs } from 'react-pdf';
+import { Document, Page } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-
-pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`;
 
 
 const DocxPreviewer = ({ url }: { url: string }) => {
@@ -39,10 +38,11 @@ const DocxPreviewer = ({ url }: { url: string }) => {
             setIsLoading(true);
             setError(null);
             try {
-                const response = await fetch(`/api/resources/preview?url=${encodeURIComponent(url)}`);
+                const response = await fetch(url);
                 if (!response.ok) throw new Error('No se pudo cargar la previsualización del documento.');
-                const data = await response.json();
-                setHtml(data.html);
+                const arrayBuffer = await response.arrayBuffer();
+                const { value: htmlContent } = await mammoth.convertToHtml({ arrayBuffer });
+                setHtml(htmlContent);
             } catch (e) {
                 console.error("Error procesando DOCX:", e);
                 setError(e instanceof Error ? e.message : "No se pudo previsualizar este archivo Word.");

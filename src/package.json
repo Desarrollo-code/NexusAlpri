@@ -12,8 +12,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma db push",
-    "prisma:seed": "prisma db seed",
-    "postinstall": "npx copyfiles -f node_modules/pdfjs-dist/build/pdf.worker.min.js public/"
+    "prisma:seed": "prisma db seed"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
