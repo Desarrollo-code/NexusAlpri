@@ -1,3 +1,4 @@
+
 // src/components/resources/resource-preview-modal.tsx
 'use client';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -5,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogFo
 import type { EnterpriseResource as AppResourceType } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Download, Share2, ChevronLeft, ChevronRight, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users, ExternalLink, FileText, Archive, FileCode, List, X, ArrowUpRightSquare, ZoomIn, ZoomOut, Expand } from 'lucide-react';
-import { getIconForType, getYoutubeVideoId, FallbackIcon, isPdfUrl } from '@/lib/resource-utils';
+import { getIconForType, getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '../ui/input';
@@ -24,10 +25,6 @@ import { addXp, XP_CONFIG, checkFirstDownload } from '@/lib/gamification';
 import mammoth from 'mammoth';
 import { Document, Page } from 'react-pdf';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import 'react-pdf/dist/esm/Page/TextLayer.css';
-
 
 const DocxPreviewer = ({ url }: { url: string }) => {
     const [html, setHtml] = useState<string | null>(null);
@@ -278,7 +275,7 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
     const displayUrl = pinVerifiedUrl || resource.url;
     
     if (displayUrl) {
-        if (isPdfUrl(displayUrl)) {
+        if (displayUrl.toLowerCase().endsWith('.pdf')) {
             return <PdfViewer url={displayUrl} />;
         }
         

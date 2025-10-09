@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 'use client';
 
@@ -26,15 +27,9 @@ import { RichTextEditor } from './ui/rich-text-editor';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import YouTube from 'react-youtube';
 import mammoth from 'mammoth';
-import { isPdfUrl } from '@/lib/resource-utils';
-import { Document, Page } from 'react-pdf';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import 'react-pdf/dist/esm/Page/TextLayer.css';
+import { Document, Page } from 'react-pdf';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
-
-// --- Helper types and functions ---
 
 const noteColors = [
   { value: 'yellow', bg: 'bg-yellow-100 dark:bg-yellow-900/40', border: 'border-yellow-200 dark:border-yellow-800/50' },
@@ -529,7 +524,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     }
     
     if (block.type === 'FILE') {
-        if (isPdfUrl(url)) {
+        if (url.toLowerCase().endsWith('.pdf')) {
              return <PdfViewer url={url} key={block.id} />;
         }
         
