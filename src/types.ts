@@ -175,7 +175,7 @@ export type CourseAssignment = PrismaCourseAssignment;
 
 
 // --- RESOURCES ---
-export type ResourceType = 'FOLDER' | 'DOCUMENT' | 'GUIDE' | 'MANUAL' | 'POLICY' | 'VIDEO' | 'EXTERNAL_LINK' | 'OTHER';
+export type ResourceType = 'FOLDER' | 'DOCUMENT' | 'GUIDE' | 'MANUAL' | 'POLICY' | 'VIDEO' | 'EXTERNAL_LINK' | 'OTHER' | 'DOCUMENTO_EDITABLE';
 export type ResourceStatus = 'ACTIVE' | 'ARCHIVED';
 
 export interface EnterpriseResource extends Omit<PrismaResource, 'tags' | 'status'> {

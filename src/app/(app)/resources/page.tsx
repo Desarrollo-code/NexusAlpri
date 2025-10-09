@@ -1,3 +1,4 @@
+
 // src/app/(app)/resources/page.tsx
 'use client';
 
@@ -5,7 +6,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button, buttonVariants } from '@/components/ui/button';
 import type { EnterpriseResource as AppResourceType, User as AppUser, UserRole, ResourceStatus } from '@/types';
-import { Search, ArchiveX, Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronRight, Users, Globe, Filter, HelpCircle, CalendarIcon, Move, ArchiveRestore, Trash2 } from 'lucide-react';
+import { Search, ArchiveX, Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronRight, Users, Globe, Filter, HelpCircle, CalendarIcon, Move, ArchiveRestore, Trash2, FilePen } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import {
   Dialog,
@@ -274,7 +275,14 @@ export default function ResourcesPage() {
 
     let finalResourceUrl = editingResource?.url || newResourceUrl;
 
-    if (newResourceType !== 'EXTERNAL_LINK' && newResourceType !== 'FOLDER' && newResourceFile) {
+    const fileUploadRequired = !editingResource && (newResourceType !== 'EXTERNAL_LINK' && newResourceType !== 'FOLDER' && newResourceType !== 'DOCUMENTO_EDITABLE');
+
+    if (fileUploadRequired && !newResourceFile) {
+      toast({ title: "Error", description: "Por favor, selecciona un archivo para subir.", variant: "destructive" });
+      return;
+    }
+    
+    if (newResourceFile) {
         setIsUploadingFile(true);
         setUploadProgress(0);
         setIsSubmittingResource(true);
@@ -310,6 +318,8 @@ export default function ResourcesPage() {
           sharedWithUserIds: isPublic ? [] : sharedWithUserIds,
           expiresAt: expiresAt?.toISOString(),
           status,
+          content: editingResource?.content, // Mantener el contenido actual si se edita
+          observations: editingResource?.observations,
       };
       const response = await fetch(endpoint, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       if (!response.ok) throw new Error((await response.json()).message || 'Failed to save resource');
@@ -636,23 +646,24 @@ export default function ResourcesPage() {
                         <div className="space-y-1"><Label htmlFor="title">Título <span className="text-destructive">*</span></Label><Input id="title" name="title" value={newResourceTitle} onChange={(e) => setNewResourceTitle(e.target.value)} required disabled={isSubmittingResource} /></div>
                         <div className="space-y-1"><Label htmlFor="description">Descripción</Label><Textarea id="description" name="description" value={newResourceDescription} onChange={(e) => setNewResourceDescription(e.target.value)} disabled={isSubmittingResource} rows={3} /></div>
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1"><Label htmlFor="type">Tipo <span className="text-destructive">*</span></Label><Select name="type" required value={newResourceType} onValueChange={(v) => setNewResourceType(v as any)} disabled={isSubmittingResource || !!editingResource}><SelectTrigger id="new-resource-type"><SelectValue placeholder="Seleccionar tipo" /></SelectTrigger><SelectContent><SelectItem value="DOCUMENT">Documento</SelectItem><SelectItem value="GUIDE">Guía</SelectItem><SelectItem value="VIDEO">Video</SelectItem><SelectItem value="EXTERNAL_LINK">Enlace Externo</SelectItem></SelectContent></Select></div>
+                            <div className="space-y-1"><Label htmlFor="type">Tipo <span className="text-destructive">*</span></Label><Select name="type" required value={newResourceType} onValueChange={(v) => setNewResourceType(v as any)} disabled={isSubmittingResource || !!editingResource}><SelectTrigger id="new-resource-type"><SelectValue placeholder="Seleccionar tipo" /></SelectTrigger><SelectContent><SelectItem value="DOCUMENTO_EDITABLE">Documento Editable</SelectItem><SelectItem value="DOCUMENT">Documento (PDF, Word)</SelectItem><SelectItem value="VIDEO">Video (MP4, etc)</SelectItem><SelectItem value="EXTERNAL_LINK">Enlace Externo</SelectItem></SelectContent></Select></div>
                             <div className="space-y-1"><Label htmlFor="category">Categoría <span className="text-destructive">*</span></Label><Select name="category" required value={newResourceCategory} onValueChange={setNewResourceCategory} disabled={isSubmittingResource}><SelectTrigger id="new-resource-category"><SelectValue placeholder="Seleccionar categoría" /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).sort().map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
                         </div>
                         
-                        {newResourceType !== 'EXTERNAL_LINK' && newResourceType !== 'FOLDER' && !editingResource ? (
+                        {(newResourceType !== 'EXTERNAL_LINK' && newResourceType !== 'DOCUMENTO_EDITABLE' && newResourceType !== 'FOLDER') && (
                           <div className="space-y-1">
                               <Label>Archivo</Label>
                               <UploadArea onFileSelect={setNewResourceFile} disabled={isSubmittingResource || isUploadingFile} />
                               {isUploadingFile && <Progress value={uploadProgress} className="mt-2" />}
                               {newResourceFile && !isUploadingFile && <p className="text-xs text-center text-muted-foreground mt-1">Archivo seleccionado: {newResourceFile.name}</p>}
                           </div>
-                        ) : newResourceType === 'EXTERNAL_LINK' ? (
+                        )}
+                        {newResourceType === 'EXTERNAL_LINK' && (
                           <div className="space-y-1">
                             <Label htmlFor="url">URL del Enlace Externo<span className="text-destructive">*</span></Label>
                             <Input id="url" name="url" type="url" placeholder="https://ejemplo.com" value={newResourceUrl} onChange={(e) => setNewResourceUrl(e.target.value)} required disabled={isSubmittingResource} />
                           </div>
-                        ) : null}
+                        )}
                          
                          <Separator />
                          <h3 className="text-base font-semibold">Configuración Adicional</h3>

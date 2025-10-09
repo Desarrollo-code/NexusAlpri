@@ -1,3 +1,4 @@
+
 // src/app/api/resources/route.ts
 import { NextResponse, NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
@@ -95,8 +96,9 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ message: 'Título y tipo son requeridos' }, { status: 400 });
         }
         
-        if (type !== 'FOLDER' && !url) {
-            return NextResponse.json({ message: 'URL es requerida para archivos' }, { status: 400 });
+        // Para tipos que no sean editables, de carpeta o enlaces, la URL es requerida.
+        if (type !== 'FOLDER' && type !== 'EXTERNAL_LINK' && type !== 'DOCUMENTO_EDITABLE' && !url) {
+            return NextResponse.json({ message: 'URL es requerida para este tipo de recurso' }, { status: 400 });
         }
 
         const data: any = {
@@ -104,6 +106,7 @@ export async function POST(req: NextRequest) {
             type,
             description,
             url: url || null,
+            content: type === 'DOCUMENTO_EDITABLE' ? ' ' : null, // Iniciar con contenido vacío
             category: category || 'General',
             tags: Array.isArray(tags) ? tags.join(',') : '',
             ispublic: isPublic === true,

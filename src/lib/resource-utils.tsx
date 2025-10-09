@@ -1,13 +1,15 @@
+
 // src/lib/resource-utils.tsx
 import React from 'react';
 import type { AppResourceType } from '@/types';
-import { FolderIcon, FileQuestion, Video as VideoIcon, FileText as FileTextIcon, Info, Notebook, Shield, Link as LinkIcon, Archive as ZipIcon } from 'lucide-react';
+import { FolderIcon, FileQuestion, Video as VideoIcon, FileText as FileTextIcon, Info, Notebook, Shield, Link as LinkIcon, Archive as ZipIcon, FilePen } from 'lucide-react';
 import { cn } from './utils';
 
 // Enhanced getIconForType with colors
 export const getIconForType = (type: AppResourceType['type']): React.ComponentType<React.SVGProps<SVGSVGElement> & { className?: string }> => {
-    const iconMap: Record<AppResourceType['type'], { icon: React.ElementType, color: string, gradient: string }> = {
+    const iconMap: Record<string, { icon: React.ElementType, color: string, gradient: string }> = {
         FOLDER: { icon: FolderIcon, color: 'text-amber-500', gradient: 'from-amber-500/10' },
+        DOCUMENTO_EDITABLE: { icon: FilePen, color: 'text-blue-500', gradient: 'from-blue-500/10' },
         DOCUMENT: { icon: FileTextIcon, color: 'text-blue-500', gradient: 'from-blue-500/10' },
         GUIDE: { icon: Info, color: 'text-cyan-500', gradient: 'from-cyan-500/10' },
         MANUAL: { icon: Notebook, color: 'text-indigo-500', gradient: 'from-indigo-500/10' },
@@ -53,8 +55,9 @@ export const getYoutubeVideoId = (url: string | undefined): string | null => {
 export const FallbackIcon = ({ resource, className }: { resource: AppResourceType, className?: string }) => {
     const Icon = getIconForType(resource.type);
     
-    const iconMap: Record<AppResourceType['type'], { gradient: string }> = {
+    const iconMap: Record<string, { gradient: string }> = {
         FOLDER: { gradient: 'from-amber-500/10' },
+        DOCUMENTO_EDITABLE: { gradient: 'from-blue-500/10' },
         DOCUMENT: { gradient: 'from-blue-500/10' },
         GUIDE: { gradient: 'from-cyan-500/10' },
         MANUAL: { gradient: 'from-indigo-500/10' },
