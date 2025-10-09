@@ -175,7 +175,6 @@ export function CourseCard({
   }
 
   return (
-    <>
       <CardWrapper>
           <Card className={cn(
               "group flex flex-col h-full overflow-hidden transition-all duration-300 ease-in-out",
@@ -275,25 +274,24 @@ export function CourseCard({
                   )}
               </CardFooter>
           </Card>
+          <AlertDialog open={showUnenrollConfirm} onOpenChange={setShowUnenrollConfirm}>
+              <AlertDialogContent>
+                  <AlertDialogHeader>
+                      <AlertDialogTitle className="flex items-center gap-2"><AlertTriangle className="text-destructive"/>¿Estás seguro de cancelar la inscripción?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                          Perderás todo tu progreso en el curso "<strong>{course.title}</strong>" y tendrás que volver a inscribirte para acceder a él. Esta acción no se puede deshacer.
+                      </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                      <AlertDialogCancel disabled={isProcessingEnrollment}>No, mantener inscripción</AlertDialogCancel>
+                      <AlertDialogAction onClick={(e) => handleEnrollment(e, false)} disabled={isProcessingEnrollment} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                          {isProcessingEnrollment && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                          Sí, cancelar mi inscripción
+                      </AlertDialogAction>
+                  </AlertDialogFooter>
+              </AlertDialogContent>
+        </AlertDialog>
       </CardWrapper>
-
-      <AlertDialog open={showUnenrollConfirm} onOpenChange={setShowUnenrollConfirm}>
-          <AlertDialogContent>
-              <AlertDialogHeader>
-                  <AlertDialogTitle className="flex items-center gap-2"><AlertTriangle className="text-destructive"/>¿Estás seguro de cancelar la inscripción?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                      Perderás todo tu progreso en el curso "<strong>{course.title}</strong>" y tendrás que volver a inscribirte para acceder a él. Esta acción no se puede deshacer.
-                  </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                  <AlertDialogCancel disabled={isProcessingEnrollment}>No, mantener inscripción</AlertDialogCancel>
-                  <AlertDialogAction onClick={(e) => handleEnrollment(e, false)} disabled={isProcessingEnrollment} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
-                      {isProcessingEnrollment && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                      Sí, cancelar mi inscripción
-                  </AlertDialogAction>
-              </AlertDialogFooter>
-          </AlertDialogContent>
-    </>
   );
 }
 
