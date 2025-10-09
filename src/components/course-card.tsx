@@ -293,6 +293,7 @@ export function CourseCard({
                   </AlertDialogAction>
               </AlertDialogFooter>
           </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
