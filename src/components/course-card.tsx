@@ -1,4 +1,4 @@
-
+// src/components/course-card.tsx
 'use client';
 
 import React from 'react';
@@ -293,7 +293,6 @@ export function CourseCard({
                   </AlertDialogAction>
               </AlertDialogFooter>
           </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }

@@ -1,4 +1,3 @@
-
 // src/app/(app)/manage-courses/page.tsx
 'use client';
 
