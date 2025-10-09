@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 'use client';
 
@@ -49,6 +48,7 @@ import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Switch } from '@/components/ui/switch';
+import { CourseAssignmentModal } from '@/components/course-assignment-modal';
 
 
 // === TIPOS E INTERFACES ===
@@ -323,6 +323,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const [activeModuleIndexForTemplate, setActiveModuleIndexForTemplate] = useState<number | null>(null);
 
     const [lessonToSaveAsTemplate, setLessonToSaveAsTemplate] = useState<AppLesson | null>(null);
+    
+    const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
+
 
     // --- Data Fetching ---
     useEffect(() => {
@@ -432,15 +435,32 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             if (courseId === 'new') {
                 router.replace(`/manage-courses/${savedCourse.id}/edit`, { scroll: false });
             }
+            
+            return savedCourse; // Devolver el curso guardado para encadenar acciones
 
         } catch (error: any) {
             console.error('Error al guardar el curso:', error);
             toast({ title: "Error al Guardar", description: error.message || "No se pudo guardar.", variant: "destructive" });
+            return null; // Devolver null en caso de error
         } finally {
             setIsSaving(false);
         }
     }, [course, courseId, router, toast]);
 
+    const handleMandatorySwitchChange = async (checked: boolean) => {
+        if (!course) return;
+        
+        updateCourseField('isMandatory', checked);
+        
+        if (checked) {
+            const savedCourse = await handleSaveCourse(); // Guardar primero
+            if (savedCourse) {
+                 // Abrir el modal de asignación después de guardar exitosamente
+                 setTimeout(() => setIsAssignmentModalOpen(true), 100);
+            }
+        }
+    };
+    
     useEffect(() => {
         const EditorActions = () => (
              <div className="flex items-center gap-2">
@@ -813,7 +833,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                 <Switch
                                     id="isMandatory"
                                     checked={course.isMandatory}
-                                    onCheckedChange={(checked) => updateCourseField('isMandatory', checked)}
+                                    onCheckedChange={handleMandatorySwitchChange}
                                     disabled={isSaving}
                                 />
                             </div>
@@ -874,6 +894,14 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                     isOpen={!!lessonToSaveAsTemplate}
                     onClose={() => setLessonToSaveAsTemplate(null)}
                     onSave={handleSaveTemplate}
+                />
+            )}
+             {isAssignmentModalOpen && (
+                <CourseAssignmentModal
+                    isOpen={isAssignmentModalOpen}
+                    onClose={() => setIsAssignmentModalOpen(false)}
+                    courseId={course.id}
+                    courseTitle={course.title}
                 />
             )}
         </div>

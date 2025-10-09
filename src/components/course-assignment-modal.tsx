@@ -43,8 +43,7 @@ export function CourseAssignmentModal({ isOpen, onClose, courseId, courseTitle }
       fetch('/api/users/list')
         .then(res => res.json())
         .then(data => {
-            // Filtramos para mostrar solo estudiantes, excluyendo al usuario actual
-            const studentUsers = (data.users || []).filter((u: AppUser) => u.role === 'STUDENT' && u.id !== user?.id);
+            const studentUsers = (data.users || []).filter((u: AppUser) => u.role === 'STUDENT');
             setAllUsers(studentUsers);
         })
         .catch(() => toast({ title: "Error", description: "No se pudo cargar la lista de usuarios.", variant: "destructive" }))
@@ -100,7 +99,7 @@ export function CourseAssignmentModal({ isOpen, onClose, courseId, courseTitle }
         <DialogHeader>
           <DialogTitle>Asignar Curso Obligatorio</DialogTitle>
           <DialogDescription>
-            Selecciona los usuarios a los que se les asignará el curso "<strong>{courseTitle}</strong>" como obligatorio.
+            Selecciona los estudiantes a los que se les asignará el curso "<strong>{courseTitle}</strong>" como obligatorio.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
@@ -131,7 +130,7 @@ export function CourseAssignmentModal({ isOpen, onClose, courseId, courseTitle }
               </div>
             )}
           </ScrollArea>
-           <div className="text-sm text-muted-foreground mt-2">{selectedUserIds.size} usuario(s) seleccionado(s).</div>
+           <div className="text-sm text-muted-foreground mt-2">{selectedUserIds.size} estudiante(s) seleccionado(s).</div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isAssigning}>Cancelar</Button>
