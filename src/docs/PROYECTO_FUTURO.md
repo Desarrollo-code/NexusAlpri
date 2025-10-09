@@ -49,10 +49,12 @@ A continuación, se desglosa cada una de las funcionalidades solicitadas.
 *   **Propuesta:** Poder crear y editar documentos directamente en la plataforma (no solo subirlos) y llevar un registro de quién y cuándo hizo cambios. Añadir analíticas sobre la vigencia de los documentos.
 *   **Complejidad:** **Alta.**
 *   **Tareas a Realizar:**
-    *   **Frontend:** Integrar un editor de texto enriquecido avanzado (como `Tiptap` o una versión más completa de `Quill`) en la sección de "Biblioteca de Recursos".
-    *   **Backend:** Modificar el modelo `EnterpriseResource` para guardar el contenido como texto/HTML. Crear una tabla `ResourceVersion` para guardar un historial de cambios.
-    *   **Analíticas de Vigencia:** Añadir un campo `expiresAt` al modelo `EnterpriseResource`. Crear un "Cron Job" (tarea programada) que verifique diariamente los documentos próximos a expirar y envíe notificaciones.
-*   **Prioridad Sugerida:** **5 (Media).** Es una funcionalidad muy potente para la gestión documental, pero el sistema de versionado es complejo.
+    *   **Base de Datos (Realizado):** Se ha modificado el `schema.prisma` para incluir un modelo `ResourceVersion` que guarda un historial de cambios. El modelo `EnterpriseResource` ahora tiene un campo `content` para texto editable y un contador `version`.
+    *   **Backend (Realizado):** Se ha actualizado la API (`/api/resources/[id]`) para que cada vez que se modifica el `content` de un recurso, se guarde la versión anterior en `ResourceVersion` y se incremente el contador de versión del recurso principal.
+    *   **Frontend (Pendiente):** Integrar un editor de texto enriquecido (como `Tiptap` o `Quill`) en la `resource-preview-modal` para permitir la edición directa del campo `content`.
+    *   **Frontend (Pendiente):** Crear una nueva vista (ej. una pestaña o un modal) para visualizar el historial de versiones de un documento.
+    *   **Analíticas de Vigencia (Pendiente):** Añadir un campo `expiresAt` al modelo `EnterpriseResource`. Crear un "Cron Job" (tarea programada) que verifique diariamente los documentos próximos a expirar y envíe notificaciones.
+*   **Prioridad Sugerida:** **5 (Media).** Es una funcionalidad muy potente para la gestión documental. La base ya está implementada.
 
 ### 6. Ranking de Competencia en Cursos
 *   **Propuesta:** Generar un ranking de usuarios dentro de un curso específico, basado en su rendimiento (puntuaciones de quizzes, velocidad de completado, etc.).

@@ -21,7 +21,7 @@ export async function GET(
             where: { category: categoryName }
         });
 
-        const resourceCount = await prisma.resource.count({
+        const resourceCount = await prisma.enterpriseResource.count({
             where: { category: categoryName }
         });
         

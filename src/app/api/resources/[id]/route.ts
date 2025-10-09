@@ -50,21 +50,54 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
              return NextResponse.json({ message: 'No tienes permiso para editar este recurso' }, { status: 403 });
         }
 
-        const { title, category, tags, description, isPublic, sharedWithUserIds, expiresAt, status } = await req.json();
+        const { title, category, tags, description, isPublic, sharedWithUserIds, expiresAt, status, content } = await req.json();
 
-        const updatedResource = await prisma.enterpriseResource.update({
-            where: { id },
-            data: { 
-                title, 
-                category, 
-                tags: Array.isArray(tags) ? tags.join(',') : '',
-                description,
-                status,
-                expiresAt: expiresAt ? new Date(expiresAt) : null,
-                ispublic: isPublic,
-                sharedWith: isPublic ? { set: [] } : { set: sharedWithUserIds.map((id: string) => ({ id })) }
-            },
-        });
+        // Lógica de versionado: se crea una versión si el contenido cambia.
+        const createVersion = resourceToUpdate.content !== content;
+
+        const updateData = {
+            title,
+            category,
+            content, // Guardar el nuevo contenido del editor
+            tags: Array.isArray(tags) ? tags.join(',') : '',
+            description,
+            status,
+            expiresAt: expiresAt ? new Date(expiresAt) : null,
+            ispublic: isPublic,
+            sharedWith: isPublic ? { set: [] } : { set: sharedWithUserIds.map((id: string) => ({ id })) }
+        };
+
+        if (createVersion) {
+            await prisma.$transaction([
+                // Crear la nueva versión con el contenido ANTERIOR
+                prisma.resourceVersion.create({
+                    data: {
+                        resourceId: resourceToUpdate.id,
+                        version: resourceToUpdate.version, // Guardamos la versión que se está reemplazando
+                        content: resourceToUpdate.content,
+                        authorId: session.id, // El usuario que realiza el cambio
+                    }
+                }),
+                // Actualizar el recurso principal con el nuevo contenido y una nueva versión
+                prisma.enterpriseResource.update({
+                    where: { id },
+                    data: {
+                        ...updateData,
+                        version: {
+                            increment: 1
+                        }
+                    },
+                })
+            ]);
+        } else {
+             // Si no hay cambio de contenido, solo actualizar metadata
+            await prisma.enterpriseResource.update({
+                where: { id },
+                data: updateData,
+            });
+        }
+        
+        const updatedResource = await prisma.enterpriseResource.findUnique({ where: {id} });
 
         return NextResponse.json(updatedResource);
     } catch (error) {
