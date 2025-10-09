@@ -2,10 +2,11 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import prisma from '@/lib/prisma';
+import { UserRole } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
-// GET a simplified list of users for selectors
+// GET a simplified list of users for selectors, now specifically for students
 export async function GET(req: NextRequest) {
     const session = await getCurrentUser();
     // Allow both ADMINS and INSTRUCTORS to get this list
@@ -17,12 +18,14 @@ export async function GET(req: NextRequest) {
         const users = await prisma.user.findMany({
             where: {
                 isActive: true, // Only return active users for selection
+                role: UserRole.STUDENT, // --- FIX: Only fetch students ---
             },
             select: {
                 id: true,
                 name: true,
                 email: true, // Email might be useful for identification in the selector
                 avatar: true,
+                role: true, // Include role for any client-side verification if needed
             },
             orderBy: {
                 name: 'asc'
