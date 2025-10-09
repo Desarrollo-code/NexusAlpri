@@ -228,7 +228,7 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified, isEditing, ed
     }
     
     // Si el recurso tiene contenido editable, lo mostramos. Si no, mostramos el preview del archivo.
-    if (resource.content) {
+    if (resource.type === 'DOCUMENTO_EDITABLE' && resource.content) {
         return <div className="prose prose-sm dark:prose-invert max-w-none p-4 bg-background h-full overflow-auto" dangerouslySetInnerHTML={{ __html: resource.content || '' }} />;
     }
     
@@ -318,6 +318,7 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
 
     const canEdit = useMemo(() => {
         if (!user || !resource) return false;
+        if (resource.type !== 'DOCUMENTO_EDITABLE') return false;
         if (user.role === 'ADMINISTRATOR') return true;
         if (user.role === 'INSTRUCTOR' && resource.uploaderId === user.id) return true;
         return false;
@@ -391,7 +392,13 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
               </div>
               <Button variant="ghost" size="icon" onClick={() => onNavigate('next')} className="absolute right-2 top-1/2 -translate-y-1/2 z-20 h-10 w-10 bg-background/50 hover:bg-background/80"><ChevronRight/></Button>
             </div>
-            {!isMobile && showDetails && <DetailsComponent />}
+            {!isMobile && showDetails && (
+              <aside className="w-80 h-full flex-shrink-0 border-l bg-background/70">
+                <ScrollArea className="h-full p-4">
+                  <ResourceDetailsContent resource={resource} />
+                </ScrollArea>
+              </aside>
+            )}
           </div>
           <DialogFooter className="p-2 border-t flex-shrink-0 bg-background/70 justify-between">
             <div className="flex items-center gap-2">
@@ -432,6 +439,3 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
       </Dialog>
     );
 };
-function DetailsComponent() {
-  return null;
-}
