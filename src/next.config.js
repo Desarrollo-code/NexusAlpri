@@ -6,9 +6,15 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-   webpack: (config) => {
-    // Agregado para que `react-pdf` funcione correctamente con Next.js
-    config.resolve.alias.canvas = false;
+  webpack: (config) => {
+    // Correctly configure webpack for react-pdf
+    config.module.rules.push({
+      test: /pdf\.worker\.min\.js/,
+      type: 'asset/resource',
+      generator: {
+        filename: 'static/chunks/[hash][ext][query]',
+      },
+    });
     return config;
   },
   images: {

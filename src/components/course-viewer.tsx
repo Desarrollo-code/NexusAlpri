@@ -1,7 +1,7 @@
 // @ts-nocheck
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft, LineChart, Notebook, ScreenShare, ChevronRight, Palette, X, GraduationCap, Expand, Edit } from 'lucide-react';
 import Link from 'next/link';
@@ -31,7 +31,7 @@ import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 
 // Configure worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`;
 
 
 // --- Helper types and functions ---
@@ -544,7 +544,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     
     if (block.type === 'FILE') {
         if (isPdfUrl(url)) {
-             return <PdfViewer url={url} key={block.id} />;
+             return <PdfViewer url={`/api/resources/preview?url=${encodeURIComponent(url)}`} key={block.id} />;
         }
         
         const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url.toLowerCase());
