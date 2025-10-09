@@ -1,6 +1,7 @@
 // src/app/api/quizz-it/session/[sessionId]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import type { FormFieldOption } from '@/types';
 
 export async function GET(req: Request, { params }: { params: { sessionId: string } }) {
   const { sessionId } = params;
@@ -13,7 +14,7 @@ export async function GET(req: Request, { params }: { params: { sessionId: strin
           include: {
             fields: {
               where: { type: 'SINGLE_CHOICE' },
-              include: { options: true },
+              include: { options: true }, // Esto se mantiene, la corrección es en el mapeo
               orderBy: { order: 'asc' },
             },
           },
@@ -39,16 +40,31 @@ export async function GET(req: Request, { params }: { params: { sessionId: strin
       },
       form: {
         title: gameSession.form.title,
-        fields: gameSession.form.fields.map(field => ({
-          id: field.id,
-          label: field.label,
-          order: field.order,
-          options: (field.options as any[]).map(opt => ({
-            id: opt.id,
-            text: opt.text,
-            // No enviar isCorrect al cliente del jugador
-          })),
-        })),
+        fields: gameSession.form.fields.map(field => {
+            // CORRECCIÓN: Prisma devuelve 'options' como un string JSON.
+            // Hay que parsearlo para que el frontend lo pueda usar.
+            let parsedOptions: FormFieldOption[] = [];
+            try {
+                if(field.options && typeof field.options === 'string') {
+                    parsedOptions = JSON.parse(field.options);
+                } else if (Array.isArray(field.options)) {
+                    parsedOptions = field.options; // Ya está en el formato correcto
+                }
+            } catch(e) {
+                console.error("Error parsing options for field:", field.id, e);
+            }
+
+            return {
+              id: field.id,
+              label: field.label,
+              order: field.order,
+              options: parsedOptions.map((opt: any) => ({
+                id: opt.id,
+                text: opt.text,
+                // No enviamos 'isCorrect' al cliente del jugador
+              })),
+            }
+        }),
       },
       players: gameSession.players.map(player => ({
         id: player.id,
