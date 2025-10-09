@@ -688,7 +688,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
           isNotesPanelOpen && !isMobile && "mr-[28rem]"
         )}>
             <main className="flex-1 overflow-y-auto thin-scrollbar">
-                <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 py-8">
+                <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8">
                    {renderLessonContent()}
                 </div>
             </main>
