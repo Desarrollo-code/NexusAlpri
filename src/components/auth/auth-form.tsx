@@ -16,7 +16,6 @@ import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import { PasswordStrengthIndicator } from '@/components/password-strength-indicator';
 import AuthFormContainer from './auth-form-container';
-import { IconGoogle } from '../icons/icon-google';
 
 const formVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -25,7 +24,7 @@ const formVariants = {
 };
 
 export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'signUp' }) {
-    const { login, settings, signInWithGoogle } = useAuth();
+    const { login, settings } = useAuth();
     const { toast } = useToast();
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -219,23 +218,6 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
             <AnimatePresence mode="wait">
                 {view === 'signIn' ? SignInForm : SignUpForm}
             </AnimatePresence>
-
-             <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-muted-foreground">
-                  O continúa con
-                </span>
-              </div>
-            </div>
-
-            <Button variant="outline" className="w-full h-11" onClick={signInWithGoogle} disabled={isLoading}>
-              <IconGoogle className="mr-2 h-5 w-5" />
-              Google
-            </Button>
-
 
             <div className="text-center text-sm mt-6">
                 {view === 'signIn' ? (

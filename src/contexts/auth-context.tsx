@@ -6,7 +6,6 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback,
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
-import { supabaseBrowserClient } from '@/lib/supabase-client';
 
 interface AuthContextType {
   user: User | null;
@@ -16,7 +15,6 @@ interface AuthContextType {
   isLoading: boolean;
   updateUser: (updatedData: Partial<User>) => void;
   updateSettings: (updatedData: Partial<PlatformSettings>) => void;
-  signInWithGoogle: () => Promise<void>;
 }
 
 const DEFAULT_SETTINGS: PlatformSettings = {
@@ -88,30 +86,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = useCallback(async () => {
     try {
-      await Promise.all([
-        fetch('/api/auth/logout', { method: 'POST' }),
-        supabaseBrowserClient.auth.signOut(),
-      ]);
+      await fetch('/api/auth/logout', { method: 'POST' });
     } catch (error) {
-      console.error("Fallo al llamar a la API de logout o Supabase", error);
+      console.error("Fallo al llamar a la API de logout", error);
     } finally {
       setUser(null);
       setTheme('dark'); 
       router.push('/sign-in');
     }
   }, [router, setTheme]);
-
-  const signInWithGoogle = async () => {
-    const { error } = await supabaseBrowserClient.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/api/auth/callback`,
-      },
-    });
-    if (error) {
-      console.error('Error signing in with Google:', error);
-    }
-  };
   
   const updateUser = useCallback((updatedData: Partial<User>) => {
     setUser(prevUser => {
@@ -135,7 +118,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isLoading,
     updateUser,
     updateSettings,
-    signInWithGoogle
   }), [user, settings, login, logout, isLoading, updateUser, updateSettings]);
 
   if (isLoading) {

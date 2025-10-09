@@ -9,12 +9,11 @@ if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error('Las variables de entorno de Supabase (URL y Anon Key) deben ser proporcionadas.');
 }
 
-// Nuevo: Cliente para el lado del cliente (navegador), necesario para Realtime
+// Cliente para el lado del cliente (navegador)
 export const supabaseBrowserClient = createClient(supabaseUrl, supabaseAnonKey);
 
 
 // Cliente de administrador para el lado del servidor (API Routes)
-// Este cliente puede saltarse las políticas de RLS. Úsalo con cuidado y solo en el backend.
 export const supabaseAdmin = supabaseServiceKey 
     ? createClient(supabaseUrl, supabaseServiceKey, {
         auth: {
