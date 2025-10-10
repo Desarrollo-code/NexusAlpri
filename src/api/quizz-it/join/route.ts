@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
-import { supabaseBrowserClient } from '@/lib/supabase-client';
+import { supabaseAdmin } from '@/lib/supabase-client';
 
 export async function POST(req: Request) {
   const session = await getCurrentUser();
@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: 'Debes iniciar sesión para unirte a un juego.' }, { status: 401 });
   }
   
-  if (!supabaseBrowserClient) {
+  if (!supabaseAdmin) {
       return NextResponse.json({ message: "Servicio de tiempo real no configurado." }, { status: 500 });
   }
 
@@ -44,22 +44,23 @@ export async function POST(req: Request) {
       },
     });
     
+    // El servidor ahora es responsable de enviar el evento de "jugador unido"
     const channelName = `game:${gameSession.id}`;
-    const channel = supabaseBrowserClient.channel(channelName);
-    const payload = {
-        event: 'PLAYER_JOINED',
-        payload: { id: player.id, nickname: player.nickname, userId: player.userId, score: 0 },
+    const broadcastPayload = {
+      event: 'game_event',
+      payload: { event: 'PLAYER_JOINED', payload: { id: player.id, nickname: player.nickname, userId: player.userId, score: 0 } },
     };
     
-    await channel.subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-            await channel.send({
-                type: 'broadcast',
-                event: 'game_event',
-                payload,
-            });
-        }
+    const channel = supabaseAdmin.channel(channelName);
+    const status = await channel.send({
+      type: 'broadcast',
+      event: broadcastPayload.event,
+      payload: broadcastPayload.payload
     });
+
+    if (status !== 'ok') {
+        console.error("Supabase broadcast error on join:", status);
+    }
 
     return NextResponse.json(player);
   } catch (error) {

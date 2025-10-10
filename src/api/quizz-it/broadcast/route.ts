@@ -1,7 +1,7 @@
 // src/app/api/quizz-it/broadcast/route.ts
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { supabaseBrowserClient } from '@/lib/supabase-client';
+import { supabaseAdmin } from '@/lib/supabase-client';
 
 export async function POST(req: Request) {
   const session = await getCurrentUser();
@@ -9,8 +9,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
-  if (!supabaseBrowserClient) {
-    return NextResponse.json({ message: 'El cliente de Supabase no está configurado.' }, { status: 500 });
+  if (!supabaseAdmin) {
+    return NextResponse.json({ message: 'El cliente de administrador de Supabase no está configurado.' }, { status: 500 });
   }
 
   try {
@@ -21,14 +21,18 @@ export async function POST(req: Request) {
     }
 
     const channelName = `game:${sessionId}`;
-    const channel = supabaseBrowserClient.channel(channelName);
     
-    // El evento principal que los clientes escuchan es 'game_event'.
-    // El payload contiene el tipo de evento específico del juego.
-    const status = await channel.send({
-      type: 'broadcast',
+    // El servidor ahora es responsable de hacer el broadcast.
+    const broadcastPayload = {
       event: 'game_event',
       payload: { event, payload },
+    };
+
+    const channel = supabaseAdmin.channel(channelName);
+    const status = await channel.send({
+      type: 'broadcast',
+      event: broadcastPayload.event,
+      payload: broadcastPayload.payload,
     });
 
     if (status !== 'ok') {

@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
-import { supabaseBrowserClient } from '@/lib/supabase-client';
+import { supabaseAdmin } from '@/lib/supabase-client';
 import type { FormFieldOption } from '@/types';
 
 export async function POST(req: Request) {
@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
   }
 
-  if (!supabaseBrowserClient) {
+  if (!supabaseAdmin) {
       return NextResponse.json({ message: "Servicio de tiempo real no configurado." }, { status: 500 });
   }
 
@@ -63,22 +63,24 @@ export async function POST(req: Request) {
       },
     });
 
+    // El servidor notifica a todos que este jugador ha respondido
     const channelName = `game:${sessionId}`;
-    const channel = supabaseBrowserClient.channel(channelName);
-    const payload = {
-        event: 'PLAYER_ANSWERED',
-        payload: { userId: session.id, nickname: player.nickname },
+    const broadcastPayload = {
+      event: 'game_event',
+      payload: { event: 'PLAYER_ANSWERED', payload: { userId: session.id, nickname: player.nickname } },
     };
 
-    await channel.subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-            await channel.send({
-                type: 'broadcast',
-                event: 'game_event',
-                payload,
-            });
-        }
+    const channel = supabaseAdmin.channel(channelName);
+    const status = await channel.send({
+      type: 'broadcast',
+      event: broadcastPayload.event,
+      payload: broadcastPayload.payload
     });
+    
+    if (status !== 'ok') {
+        console.error("Supabase broadcast error on answer:", status);
+    }
+
 
     return NextResponse.json({
       isCorrect,

@@ -10,7 +10,7 @@ import type { RealtimeChannel } from '@supabase/supabase-js';
  */
 export function useRealtime(
   channelName: string | null,
-  onNewEvent: (payload: { event: string, payload: any }) => void
+  onNewEvent: (payload: any) => void // Aceptamos un payload genérico
 ) {
   const onNewEventRef = useRef(onNewEvent);
   onNewEventRef.current = onNewEvent;
@@ -22,7 +22,7 @@ export function useRealtime(
     
     let channel: RealtimeChannel;
 
-    const handleIncomingEvent = (payload: { event: string, payload: any }) => {
+    const handleIncomingEvent = (payload: any) => {
       onNewEventRef.current(payload);
     };
 
@@ -36,7 +36,7 @@ export function useRealtime(
 
     channel
       .on('broadcast', { event: 'game_event' }, (payload) => {
-          handleIncomingEvent(payload);
+          handleIncomingEvent(payload.payload); // El payload anidado contiene nuestro evento y datos.
       })
       .on('broadcast', { event: 'chat_message' }, (payload) => {
           handleIncomingEvent(payload);
