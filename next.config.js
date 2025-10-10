@@ -57,6 +57,11 @@ const nextConfig = {
         hostname: 'izefimwyuayfvektsstg.supabase.co',
         pathname: '/storage/v1/object/public/announcement_attachments/**',
       },
+       {
+        protocol: 'https',
+        hostname: 'izefimwyuayfvektsstg.supabase.co',
+        pathname: '/storage/v1/object/public/chat_attachments/**',
+      },
     ],
   },
 };

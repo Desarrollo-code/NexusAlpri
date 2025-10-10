@@ -1,5 +1,5 @@
 // src/types.ts
-import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug, AnnouncementAttachment, EnterpriseResource as PrismaResource, RecurrenceType, MotivationalMessageTriggerType, MotivationalMessage as PrismaMotivationalMessage, Course as PrismaCourse, CourseAssignment as PrismaCourseAssignment, CertificateTemplate } from "@prisma/client";
+import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug, AnnouncementAttachment, EnterpriseResource as PrismaResource, RecurrenceType, MotivationalMessageTriggerType, MotivationalMessage as PrismaMotivationalMessage, Course as PrismaCourse, CourseAssignment as PrismaCourseAssignment, CertificateTemplate, ChatAttachment } from "@prisma/client";
 
 // --- USER & AUTH ---
 export type UserRole = 'ADMINISTRATOR' | 'INSTRUCTOR' | 'STUDENT';
@@ -359,5 +359,8 @@ export type AppForm = PrismaForm & {
     } | null;
     sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
 };
+
+// --- CHAT ---
+export { type ChatAttachment };
 
 export { type FormStatus, type FormFieldType, type AnnouncementAttachment, type RecurrenceType };

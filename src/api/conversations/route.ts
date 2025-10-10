@@ -41,6 +41,9 @@ export async function GET(req: NextRequest) {
           orderBy: {
             createdAt: 'desc',
           },
+          include: {
+            attachments: true, // Incluir adjuntos del último mensaje
+          },
           take: 1, // Get only the last message for the preview
         },
       },
@@ -64,10 +67,10 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { recipientId, content } = await req.json();
+    const { recipientId, content, attachments } = await req.json();
 
-    if (!recipientId || !content) {
-      return NextResponse.json({ message: 'Recipient ID y contenido son requeridos.' }, { status: 400 });
+    if (!recipientId || (!content && (!attachments || attachments.length === 0))) {
+      return NextResponse.json({ message: 'Se requiere destinatario y contenido o adjuntos.' }, { status: 400 });
     }
 
     if (recipientId === session.id) {
@@ -100,14 +103,23 @@ export async function POST(req: NextRequest) {
     const [newMessage] = await prisma.$transaction([
       prisma.message.create({
         data: {
-          content,
+          content: content || null,
           authorId: session.id,
           conversationId: conversation.id,
+          attachments: attachments && attachments.length > 0 ? {
+            create: attachments.map((att: any) => ({
+              name: att.name,
+              url: att.url,
+              type: att.type,
+              size: att.size,
+            }))
+          } : undefined
         },
         include: {
             author: {
                 select: { id: true, name: true, avatar: true }
-            }
+            },
+            attachments: true,
         }
       }),
       prisma.conversation.update({
@@ -123,12 +135,10 @@ export async function POST(req: NextRequest) {
             event: 'chat_message',
             payload: newMessage,
         };
-        // No usar `from('RealtimeMessage')` sino `channel().send()` para broadcast
-        const channel = supabaseAdmin.channel(channelName);
-        await channel.send({
-          type: 'broadcast',
-          event: payload.event,
-          payload: payload.payload
+        await supabaseAdmin.from('RealtimeMessage').insert({
+            channel: channelName,
+            event: payload.event,
+            payload: payload.payload,
         });
     }
 

@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Send, ArrowLeft, Search, UserPlus, Info, MessageSquare } from 'lucide-react';
+import { Loader2, Send, ArrowLeft, Search, UserPlus, Info, MessageSquare, Paperclip, XCircle, File as FileIcon, Image as ImageIcon, Video as VideoIcon, FileQuestion } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -15,20 +15,26 @@ import { cn } from '@/lib/utils';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useDebounce } from '@/hooks/use-debounce';
 import { ScrollArea } from '../ui/scroll-area';
-import { User } from '@/types';
+import { User, Attachment } from '@/types';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../ui/command';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 import { useRealtime } from '@/hooks/use-realtime';
+import { UploadArea } from '../ui/upload-area';
+import { uploadWithProgress } from '@/lib/upload-with-progress';
+import { Progress } from '../ui/progress';
+import { getIconForFileType } from '@/lib/resource-utils';
+import Image from 'next/image';
 
 // Tipos
 type Participant = { id: string; name: string | null; avatar: string | null };
 type Message = {
   id: string;
-  content: string;
+  content: string | null;
   createdAt: string;
   authorId: string;
   author: Participant;
   conversationId: string;
+  attachments: Attachment[];
 };
 type Conversation = {
   id: string;
@@ -36,6 +42,14 @@ type Conversation = {
   messages: Message[];
   updatedAt: string;
 };
+interface LocalAttachmentPreview {
+    id: string;
+    file: File;
+    previewUrl: string; // URL.createObjectURL
+    finalUrl?: string; // URL from Supabase
+    uploadProgress: number;
+    error?: string;
+}
 
 // Componente para la lista de conversaciones
 const ConversationList = ({ conversations, onSelect, activeConversationId }: {
@@ -50,6 +64,8 @@ const ConversationList = ({ conversations, onSelect, activeConversationId }: {
                 if (!otherParticipant) return null;
                 
                 const lastMessage = c.messages[0];
+                const lastMessageText = lastMessage?.content || (lastMessage?.attachments?.length > 0 ? `Adjunto: ${lastMessage.attachments[0].name}` : 'Conversación iniciada');
+
                 return (
                     <button
                         key={c.id}
@@ -66,9 +82,9 @@ const ConversationList = ({ conversations, onSelect, activeConversationId }: {
                         <div className="flex-grow overflow-hidden">
                             <div className="flex justify-between items-center">
                                 <p className="font-semibold truncate">{otherParticipant.name}</p>
-                                {lastMessage && <p className="text-xs text-muted-foreground">{format(parseISO(lastMessage.createdAt), 'p', { locale: es })}</p>}
+                                {lastMessage && <p className="text-xs text-muted-foreground shrink-0 ml-2">{format(parseISO(lastMessage.createdAt), 'p', { locale: es })}</p>}
                             </div>
-                            {lastMessage && <p className="text-sm text-muted-foreground truncate">{lastMessage.content}</p>}
+                            {lastMessage && <p className="text-sm text-muted-foreground truncate">{lastMessageText}</p>}
                         </div>
                     </button>
                 )
@@ -76,6 +92,24 @@ const ConversationList = ({ conversations, onSelect, activeConversationId }: {
         </div>
     </ScrollArea>
 );
+
+const AttachmentPreview = ({ attachment }: { attachment: Attachment }) => {
+    const FileIconComponent = getIconForFileType(attachment.type);
+
+    if (attachment.type.startsWith('image/')) {
+        return <Image src={attachment.url} alt={attachment.name} width={300} height={200} className="rounded-lg object-cover" />;
+    }
+    if (attachment.type.startsWith('video/')) {
+        return <video src={attachment.url} controls className="w-full max-w-xs rounded-lg" />;
+    }
+
+    return (
+        <a href={attachment.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-3 rounded-lg bg-muted hover:bg-muted/80">
+            <FileIconComponent className="h-6 w-6 text-primary" />
+            <span className="truncate text-sm font-medium">{attachment.name}</span>
+        </a>
+    );
+}
 
 // Componente para mostrar los mensajes de una conversación
 const MessageArea = ({ messages, currentUser, otherParticipant }: {
@@ -97,17 +131,22 @@ const MessageArea = ({ messages, currentUser, otherParticipant }: {
                 return (
                     <div key={msg.id} className={cn("flex gap-3", isCurrentUser ? "justify-end" : "justify-start")}>
                         {!isCurrentUser && (
-                             <Avatar className="h-8 w-8">
+                             <Avatar className="h-8 w-8 self-end">
                                 <AvatarImage src={otherParticipant?.avatar || undefined} />
                                 <AvatarFallback><Identicon userId={otherParticipant?.id || ''} /></AvatarFallback>
                             </Avatar>
                         )}
                         <div className={cn(
-                            "max-w-xs md:max-w-md lg:max-w-lg p-3 rounded-2xl",
+                            "max-w-xs md:max-w-md lg:max-w-lg p-3 rounded-2xl flex flex-col gap-2",
                             isCurrentUser ? "bg-primary text-primary-foreground rounded-br-none" : "bg-muted rounded-bl-none"
                         )}>
-                            <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                            <p className={cn("text-xs mt-1", isCurrentUser ? "text-primary-foreground/70" : "text-muted-foreground")}>
+                            {msg.content && <p className="text-sm whitespace-pre-wrap">{msg.content}</p>}
+                            {msg.attachments && msg.attachments.length > 0 && (
+                                <div className="space-y-2">
+                                    {msg.attachments.map(att => <AttachmentPreview key={att.id} attachment={att} />)}
+                                </div>
+                            )}
+                            <p className={cn("text-xs mt-1 self-end", isCurrentUser ? "text-primary-foreground/70" : "text-muted-foreground")}>
                                 {format(parseISO(msg.createdAt), 'p', { locale: es })}
                             </p>
                         </div>
@@ -134,6 +173,8 @@ export function ChatClient() {
     
     const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false);
     const [usersForNewChat, setUsersForNewChat] = useState<User[]>([]);
+    
+    const [localPreviews, setLocalPreviews] = useState<LocalAttachmentPreview[]>([]);
 
     const newChatUserId = searchParams.get('new');
     
@@ -167,7 +208,6 @@ export function ChatClient() {
                 const restConvos = prev.filter(c => c.id !== receivedMessage.conversationId);
                 return [updatedConvo, ...restConvos];
             }
-            // Si la conversación no está en la lista, la recargamos
             fetchConversations();
             return prev;
         });
@@ -198,7 +238,6 @@ export function ChatClient() {
         if (existingConvo) {
             setActiveConversation(existingConvo);
         } else {
-            // Create a temporary conversation object for immediate UI feedback
             const tempConvo: Conversation = {
                 id: `temp-${recipient.id}`,
                 participants: [{...recipient}],
@@ -210,11 +249,9 @@ export function ChatClient() {
         }
     }, [conversations]);
 
-    // Handle 'new' query param to start a new chat
     useEffect(() => {
         const handleNewChatParam = async () => {
             if (newChatUserId && user) {
-                // Don't allow chatting with self
                 if(newChatUserId === user.id) {
                     router.replace('/messages', { scroll: false });
                     return;
@@ -223,7 +260,6 @@ export function ChatClient() {
                 if (existingConvo) {
                     setActiveConversation(existingConvo);
                 } else {
-                    // Fetch user list if needed to find the recipient
                     if (usersForNewChat.length === 0) {
                         try {
                            const res = await fetch('/api/users/list');
@@ -240,70 +276,83 @@ export function ChatClient() {
                         if (recipient) handleStartNewChat(recipient);
                     }
                 }
-                // Clean the URL
                 router.replace('/messages', { scroll: false });
             }
         };
-        // Ensure conversations are loaded before processing the 'new' param
         if(!isLoading) {
             handleNewChatParam();
         }
     }, [newChatUserId, user, conversations, usersForNewChat, router, isLoading, handleStartNewChat]);
     
+    const handleFileSelect = (file: File | null) => {
+        if (!file) return;
+        const newPreview: LocalAttachmentPreview = {
+            id: `${file.name}-${Date.now()}`, file,
+            previewUrl: URL.createObjectURL(file), uploadProgress: 0
+        };
+        setLocalPreviews(prev => [...prev, newPreview]);
+        uploadFile(newPreview);
+    };
+
+    const uploadFile = async (preview: LocalAttachmentPreview) => {
+        try {
+            const result = await uploadWithProgress('/api/upload/chat-attachment', preview.file, (progress) => {
+                setLocalPreviews(prev => prev.map(p => p.id === preview.id ? { ...p, uploadProgress: progress } : p));
+            });
+            setLocalPreviews(prev => prev.map(p => p.id === preview.id ? { ...p, finalUrl: result.url, uploadProgress: 100 } : p));
+        } catch (err) {
+            setLocalPreviews(prev => prev.map(p => p.id === preview.id ? { ...p, error: (err as Error).message } : p));
+        }
+    };
+    
+     const removePreview = (id: string) => {
+        const previewToRemove = localPreviews.find(p => p.id === id);
+        if (previewToRemove) URL.revokeObjectURL(previewToRemove.previewUrl);
+        setLocalPreviews(prev => prev.filter(p => p.id !== id));
+    };
+
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
         const recipientId = activeConversation?.participants[0]?.id;
-        if (!newMessage.trim() || !recipientId) return;
-
-        setIsSending(true);
-        const tempMessageId = `temp-${Date.now()}`;
-        const tempMessage: Message = {
-            id: tempMessageId,
-            content: newMessage,
-            createdAt: new Date().toISOString(),
-            authorId: user!.id,
-            author: user!,
-            conversationId: activeConversation!.id,
-        };
+        if (!recipientId || (!newMessage.trim() && localPreviews.length === 0)) return;
         
-        setMessages(prev => [...prev, tempMessage]);
+        const isStillUploading = localPreviews.some(p => p.uploadProgress > 0 && p.uploadProgress < 100);
+        if (isStillUploading) {
+            toast({ title: "Subida en progreso", description: "Espera a que todos los archivos terminen de subirse." });
+            return;
+        }
+        
+        setIsSending(true);
+        const attachmentsToSend = localPreviews.filter(p => p.finalUrl).map(p => ({
+            name: p.file.name, url: p.finalUrl!, type: p.file.type, size: p.file.size
+        }));
+        
         const messageToSend = newMessage;
         setNewMessage('');
+        setLocalPreviews([]);
         
         try {
             const response = await fetch('/api/conversations', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ recipientId, content: messageToSend }),
+                body: JSON.stringify({ recipientId, content: messageToSend, attachments: attachmentsToSend }),
             });
             const sentMessage = await response.json();
             if (!response.ok) throw new Error(sentMessage.message || 'Error al enviar el mensaje');
             
-            // If it was a new conversation, refetch all conversations to get the real ID and update the active one
+            setMessages(prev => [...prev, sentMessage]);
             if (activeConversation?.id.startsWith('temp-')) {
-                const newConvosRes = await fetch('/api/conversations');
-                const newConvos = await newConvosRes.json();
-                setConversations(newConvos);
-                const newActiveConvo = newConvos.find((c: Conversation) => c.participants.some(p => p.id === recipientId));
-                if (newActiveConvo) {
-                    setActiveConversation(newActiveConvo);
-                }
-                 setMessages(prev => prev.map(m => m.id === tempMessageId ? sentMessage : m));
-            } else {
-                setMessages(prev => prev.map(m => m.id === tempMessageId ? sentMessage : m));
+                fetchConversations(); // Recarga las conversaciones para obtener el ID real
             }
-            
         } catch (err) {
             toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
-            // Restore failed message to textarea
-            setMessages(prev => prev.filter(m => m.id !== tempMessageId));
-            setNewMessage(messageToSend);
+            setNewMessage(messageToSend); // Restore failed message
+            // Restore previews too? For now, we clear them.
         } finally {
             setIsSending(false);
         }
     };
     
-    // Fetch users when opening the new chat modal
     useEffect(() => {
         if(isNewChatModalOpen) {
             fetch('/api/users/list')
@@ -321,75 +370,62 @@ export function ChatClient() {
 
     return (
         <div className="flex h-[calc(100vh-8rem)] bg-card border rounded-lg overflow-hidden">
-            {/* Conversations List */}
-            <aside className={cn(
-                "w-full md:w-80 lg:w-96 flex-shrink-0 border-r flex flex-col transition-transform duration-300 md:translate-x-0",
-                activeConversation ? "-translate-x-full" : "translate-x-0"
-            )}>
+            <aside className={cn("w-full md:w-80 lg:w-96 flex-shrink-0 border-r flex flex-col transition-transform duration-300 md:translate-x-0", activeConversation ? "-translate-x-full" : "translate-x-0")}>
                 <div className="p-4 border-b flex items-center justify-between">
                     <h2 className="text-xl font-semibold">Conversaciones</h2>
-                    <Button size="icon" variant="ghost" onClick={() => setIsNewChatModalOpen(true)}>
-                        <UserPlus className="h-5 w-5" />
-                    </Button>
+                    <Button size="icon" variant="ghost" onClick={() => setIsNewChatModalOpen(true)}><UserPlus className="h-5 w-5" /></Button>
                 </div>
                 {conversations.length > 0 ? (
                     <ConversationList conversations={conversations} onSelect={setActiveConversation} activeConversationId={activeConversation?.id || null} />
                 ) : (
                      <div className="p-4 text-center text-sm text-muted-foreground h-full flex flex-col items-center justify-center">
-                        <Info className="h-8 w-8 mb-2"/>
-                        <p>No tienes conversaciones.</p>
+                        <Info className="h-8 w-8 mb-2"/><p>No tienes conversaciones.</p>
                         <Button variant="link" onClick={() => setIsNewChatModalOpen(true)}>Inicia una nueva.</Button>
                     </div>
                 )}
             </aside>
-            {/* Message Area */}
-            <main className={cn(
-                "flex-1 flex flex-col transition-transform duration-300 w-full md:w-auto absolute md:static inset-0",
-                activeConversation ? "translate-x-0" : "translate-x-full md:translate-x-0"
-            )}>
+            <main className={cn("flex-1 flex flex-col transition-transform duration-300 w-full md:w-auto absolute md:static inset-0", activeConversation ? "translate-x-0" : "translate-x-full md:translate-x-0")}>
                 {activeConversation && otherParticipant ? (
                     <>
                         <div className="p-3 border-b flex items-center gap-3 h-16">
                             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setActiveConversation(null)}><ArrowLeft/></Button>
-                            <Avatar className="h-9 w-9">
-                                <AvatarImage src={otherParticipant.avatar || undefined} />
-                                <AvatarFallback><Identicon userId={otherParticipant.id} /></AvatarFallback>
-                            </Avatar>
+                            <Avatar className="h-9 w-9"><AvatarImage src={otherParticipant.avatar || undefined} /><AvatarFallback><Identicon userId={otherParticipant.id} /></AvatarFallback></Avatar>
                             <h3 className="font-semibold">{otherParticipant.name}</h3>
                         </div>
                         <MessageArea messages={messages} currentUser={user} otherParticipant={otherParticipant}/>
-                        <div className="p-4 border-t">
+                        <div className="p-4 border-t bg-background">
+                            {localPreviews.length > 0 && (
+                                <div className="mb-2 p-2 border rounded-lg">
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                        {localPreviews.map(p => (
+                                            <div key={p.id} className="relative aspect-square border rounded-md overflow-hidden bg-muted/50">
+                                                {p.file.type.startsWith('image/') && <Image src={p.previewUrl} alt={p.file.name} fill className="object-contain p-1" />}
+                                                {!p.file.type.startsWith('image/') && <div className="flex flex-col items-center justify-center h-full text-center p-1"><FileIcon className="h-6 w-6 text-muted-foreground"/><p className="text-xs text-muted-foreground truncate w-full">{p.file.name}</p></div>}
+                                                <div className={cn("absolute inset-0 bg-black/40 flex items-center justify-center p-1 transition-opacity", p.uploadProgress === 100 ? "opacity-0 hover:opacity-100" : "")}>
+                                                    {p.uploadProgress > 0 && p.uploadProgress < 100 && !p.error && <Progress value={p.uploadProgress} className="h-1 w-10/12"/>}
+                                                    {p.error && <AlertTriangle className="h-6 w-6 text-destructive"/>}
+                                                </div>
+                                                <Button variant="destructive" size="icon" className="absolute top-1 right-1 h-5 w-5" onClick={() => removePreview(p.id)}><XCircle className="h-3 w-3"/></Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                             <form onSubmit={handleSendMessage} className="flex items-start gap-2">
-                                <Textarea 
-                                    value={newMessage}
-                                    onChange={(e) => setNewMessage(e.target.value)}
-                                    placeholder="Escribe un mensaje..."
-                                    className="flex-1 resize-none"
-                                    rows={1}
-                                    disabled={isSending}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' && !e.shiftKey) {
-                                            e.preventDefault();
-                                            handleSendMessage(e);
-                                        }
-                                    }}
-                                />
-                                <Button type="submit" disabled={isSending || !newMessage.trim()} size="icon">
-                                    {isSending ? <Loader2 className="h-4 w-4 animate-spin"/> : <Send className="h-4 w-4"/>}
-                                </Button>
+                                <Textarea value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="Escribe un mensaje..." className="flex-1 resize-none" rows={1} disabled={isSending} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(e); } }}/>
+                                <Button type="button" variant="ghost" size="icon" onClick={() => document.getElementById('chat-file-upload')?.click()} disabled={isSending}><Paperclip className="h-4 w-4" /></Button>
+                                <input id="chat-file-upload" type="file" onChange={(e) => handleFileSelect(e.target.files ? e.target.files[0] : null)} className="hidden" />
+                                <Button type="submit" disabled={isSending || (!newMessage.trim() && localPreviews.length === 0)} size="icon"><Send className="h-4 w-4"/></Button>
                             </form>
                         </div>
                     </>
                 ) : (
                     <div className="hidden md:flex flex-col h-full items-center justify-center text-muted-foreground p-8 text-center">
-                        <MessageSquare className="h-16 w-16 mb-4"/>
-                        <h3 className="text-lg font-semibold">Selecciona una conversación</h3>
-                        <p className="text-sm">O inicia una nueva para empezar a chatear.</p>
+                        <MessageSquare className="h-16 w-16 mb-4"/><h3 className="text-lg font-semibold">Selecciona una conversación</h3><p className="text-sm">O inicia una nueva para empezar a chatear.</p>
                     </div>
                 )}
             </main>
             
-            {/* New Chat Modal */}
             <Dialog open={isNewChatModalOpen} onOpenChange={setIsNewChatModalOpen}>
                 <DialogContent>
                     <DialogHeader>
@@ -403,10 +439,7 @@ export function ChatClient() {
                         <CommandGroup>
                            {usersForNewChat.map((u) => (
                             <CommandItem key={u.id} onSelect={() => handleStartNewChat(u)} className="flex items-center gap-3">
-                                 <Avatar className="h-8 w-8">
-                                    <AvatarImage src={u.avatar || undefined} />
-                                    <AvatarFallback><Identicon userId={u.id}/></AvatarFallback>
-                                </Avatar>
+                                 <Avatar className="h-8 w-8"><AvatarImage src={u.avatar || undefined} /><AvatarFallback><Identicon userId={u.id}/></AvatarFallback></Avatar>
                                 <span>{u.name}</span>
                             </CommandItem>
                           ))}
