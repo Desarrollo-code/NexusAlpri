@@ -58,6 +58,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (userRes.ok) {
           const userData = await userRes.json();
           setUser(userData.user);
+          if (userData.user?.theme) {
+            setTheme(userData.user.theme);
+          }
           console.log('[AuthContext] Sesión de usuario encontrada:', userData.user.email);
         } else {
           setUser(null);
@@ -71,7 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsLoading(false);
         console.log('[AuthContext] finalizó fetchSessionData.');
     }
-  }, []);
+  }, [setTheme]);
 
   useEffect(() => {
     fetchSessionData();
@@ -79,10 +82,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = useCallback((userData: User) => {
     setUser(userData);
+    if (userData.theme) {
+      setTheme(userData.theme);
+    }
     const params = new URLSearchParams(window.location.search);
     const redirectedFrom = params.get('redirectedFrom');
     router.replace(redirectedFrom || '/dashboard');
-  }, [router]);
+  }, [router, setTheme]);
 
   const logout = useCallback(async () => {
     try {

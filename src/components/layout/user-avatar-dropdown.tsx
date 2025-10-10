@@ -18,11 +18,9 @@ import {
  DropdownMenuRadioItem
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-// Se eliminó 'Eye' ya que no se usa.
-import { LogOut, User, Settings, Palette, Check } from 'lucide-react'; 
+import { LogOut, User, Settings, Palette } from 'lucide-react'; 
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
-import { UserRole } from '@/types';
 import { AVAILABLE_THEMES } from '../theme-provider';
 import { Identicon } from '../ui/identicon';
 import { getRoleInSpanish } from '@/lib/security-log-utils';
@@ -31,6 +29,30 @@ import { VerifiedBadge } from '../ui/verified-badge';
 
 function ThemeToggle() {
   const { theme, setTheme } = useTheme();
+  const { user, updateUser } = useAuth();
+
+  const handleThemeChange = async (newTheme: string) => {
+    if (!user) return;
+    
+    // Optimistically update UI
+    setTheme(newTheme);
+    
+    // Save to backend
+    try {
+      const response = await fetch(`/api/users/${user.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ theme: newTheme }),
+      });
+      if (!response.ok) throw new Error('Failed to save theme preference');
+      const updatedUser = await response.json();
+      updateUser(updatedUser); // Update context with the full user object from the server
+    } catch (error) {
+      console.error('Error saving theme:', error);
+      // Revert optimistic update if save fails
+      setTheme(theme);
+    }
+  };
 
   return (
     <DropdownMenuSub>
@@ -40,7 +62,7 @@ function ThemeToggle() {
       </DropdownMenuSubTrigger>
       <DropdownMenuPortal>
         <DropdownMenuSubContent>
-          <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
+          <DropdownMenuRadioGroup value={theme} onValueChange={handleThemeChange}>
             {AVAILABLE_THEMES.map((t) => (
              <DropdownMenuRadioItem key={t.value} value={t.value}>
               {t.label}
@@ -55,7 +77,7 @@ function ThemeToggle() {
 
 
 export function UserAvatarDropdown() {
- const { user, logout, settings } = useAuth();
+ const { user, logout } = useAuth();
 
  if (!user) return null;
  
