@@ -99,18 +99,12 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // --- CORRECCIÓN: Preparar el payload del mensaje ANTES de la transacción ---
     const messagePayloadForRT = {
-        content: content || null,
-        authorId: session.id,
-        conversationId: conversation.id,
-        createdAt: new Date().toISOString(),
         author: {
             id: session.id,
             name: session.name,
             avatar: session.avatar,
         },
-        attachments: attachments || [],
     };
 
 
@@ -151,7 +145,7 @@ export async function POST(req: NextRequest) {
             event: 'chat_message',
             payload: {
                 ...newMessage,
-                author: messagePayloadForRT.author, // Ensure author data is included
+                author: messagePayloadForRT.author,
             },
         };
 
