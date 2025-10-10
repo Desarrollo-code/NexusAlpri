@@ -18,6 +18,7 @@ export async function GET(
       where: { id: courseId },
       include: {
         instructor: { select: { id: true, name: true, avatar: true } },
+        prerequisite: { select: { id: true, title: true } },
         modules: {
           orderBy: { order: "asc" },
           include: {
@@ -93,15 +94,16 @@ export async function PUT(
           category: courseData.category,
           status: courseData.status,
           publicationDate: courseData.publicationDate ? new Date(courseData.publicationDate) : null,
-          certificateTemplateId: courseData.certificateTemplateId, // <-- AÑADIDO
+          certificateTemplateId: courseData.certificateTemplateId,
+          isMandatory: courseData.isMandatory,
+          prerequisiteId: courseData.prerequisiteId,
         },
       });
       
       // 2. Clean slate: Delete all existing modules for this course
-      // Prisma's cascading delete will handle lessons, contentblocks, etc.
       await tx.module.deleteMany({ where: { courseId } });
 
-      // 3. Re-create all modules, lessons, and content blocks from scratch based on the editor's state
+      // 3. Re-create all modules, lessons, and content blocks from scratch
       for (const [moduleIndex, moduleData] of modules.entries()) {
         const newModule = await tx.module.create({
           data: {
@@ -130,7 +132,6 @@ export async function PUT(
               },
             });
 
-            // If the block is a QUIZ, create the quiz and its questions/options.
             if (blockData.type === 'QUIZ' && blockData.quiz) {
               const newQuiz = await tx.quiz.create({
                 data: {
@@ -146,7 +147,7 @@ export async function PUT(
                   data: {
                     text: questionData.text,
                     order: qIndex,
-                    type: 'SINGLE_CHOICE', // Assuming single choice for now
+                    type: 'SINGLE_CHOICE',
                     quizId: newQuiz.id,
                   },
                 });
@@ -168,14 +169,16 @@ export async function PUT(
         }
       }
     }, {
-      maxWait: 20000, // 20 seconds
-      timeout: 40000, // 40 seconds
+      maxWait: 20000,
+      timeout: 40000,
     });
 
+    // Devolver el estado completo y actualizado del curso
     const finalCourseState = await prisma.course.findUnique({
         where: { id: courseId },
         include: {
             instructor: { select: { id: true, name: true, avatar: true } },
+            prerequisite: { select: { id: true, title: true } },
             modules: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" }, include: { contentBlocks: { orderBy: { order: "asc" }, include: { quiz: { include: { questions: { orderBy: { order: "asc" }, include: { options: { orderBy: { id: "asc" } } } } } } } } } } } }
         },
     });
@@ -204,7 +207,6 @@ export async function DELETE(
   }
 
   try {
-    // Use a transaction to delete the course and all related notifications
     await prisma.$transaction([
         prisma.notification.deleteMany({
             where: {

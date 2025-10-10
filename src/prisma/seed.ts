@@ -54,9 +54,9 @@ const usersToSeed = [
 ];
 
 async function main() {
-  console.log('Iniciando el proceso de seeding...');
+  console.log('Iniciando el proceso de seeding no destructivo...');
   
-  // --- 1. CONFIGURACIÓN Y LOGROS ---
+  // --- 1. CONFIGURACIÓN Y LOGROS (siempre `upsert`) ---
   console.log('Verificando configuración y logros...');
   await prisma.platformSettings.upsert({
       where: { id: 'cl-nexus-settings-default' },
@@ -72,7 +72,8 @@ async function main() {
             enableIdleTimeout: true, idleTimeoutMinutes: 20, require2faForAdmins: false,
             primaryColor: '#6366f1', secondaryColor: '#a5b4fc', accentColor: '#ec4899', backgroundColorLight: '#f8fafc',
             primaryColorDark: '#a5b4fc', backgroundColorDark: '#020617',
-            fontHeadline: 'Space Grotesk', fontBody: 'Inter'
+            fontHeadline: 'Space Grotesk', fontBody: 'Inter',
+            announcementsImageUrl: 'https://izefimwyuayfvektsstg.supabase.co/storage/v1/object/public/settings_images/announcement-bg.jpg',
       }
   });
 
@@ -81,7 +82,7 @@ async function main() {
   }
   console.log('Configuración y logros listos.');
 
-  // --- 2. USUARIOS ---
+  // --- 2. USUARIOS (siempre `upsert`) ---
   console.log('Creando y/o actualizando usuarios de la lista...');
   const userUpsertPromises = usersToSeed.map(async user => {
     const hashedPassword = await bcrypt.hash(user.password, 10);
@@ -117,147 +118,48 @@ async function main() {
       console.error("No se encontraron los IDs de los usuarios clave. Abortando el resto del seed.");
       return;
   }
-  const adminUser = { id: adminUserId };
-  const instructorUser = { id: instructorUserId };
-  const studentUser1 = { id: student1Id };
-  const studentUser2 = { id: student2Id };
 
+  // --- ANUNCIOS, EVENTOS, RECURSOS, CURSOS (usando `upsert`) ---
+  console.log('Sincronizando datos de prueba (anuncios, eventos, etc.)...');
+  
+  const announcementsData = [
+    { id: 'clseedannouncement01', title: '¡Bienvenid@ a la nueva plataforma de aprendizaje!', content: '<p>Estamos muy emocionados de lanzar esta nueva herramienta para potenciar tu desarrollo profesional.</p>', authorId: adminUserId, audience: 'ALL' as const, priority: 'Normal' as const, isPinned: false },
+    { id: 'clseedannouncement02', title: 'Alerta de Mantenimiento Programado', content: '<p>La plataforma estará en mantenimiento este viernes por la noche de 10 PM a 11 PM.</p>', authorId: adminUserId, audience: 'ALL' as const, priority: 'Urgente' as const, isPinned: true },
+    { id: 'clseedannouncement03', title: '¡Nuevo curso de Liderazgo disponible!', content: '<p>Inscríbete ahora en el nuevo curso "Liderazgo Efectivo para Equipos Remotos".</p>', authorId: instructorUserId, audience: 'ALL' as const, priority: 'Normal' as const, isPinned: false },
+  ];
+  for (const data of announcementsData) {
+    await prisma.announcement.upsert({ where: { id: data.id }, update: data, create: data });
+  }
 
-  // --- 3. ANUNCIOS (5 en total) ---
-  console.log('Creando anuncios...');
-  await prisma.announcement.deleteMany({});
-  await prisma.announcement.createMany({
-    data: [
-        { id: 'clseedannouncement01', title: '¡Bienvenid@ a la nueva plataforma de aprendizaje!', content: '<p>Estamos muy emocionados de lanzar esta nueva herramienta para potenciar tu desarrollo profesional.</p>', authorId: adminUser.id, audience: 'ALL', priority: 'Normal' },
-        { id: 'clseedannouncement02', title: 'Alerta de Mantenimiento Programado', content: '<p>La plataforma estará en mantenimiento este viernes por la noche de 10 PM a 11 PM. Agradecemos su comprensión.</p>', authorId: adminUser.id, audience: 'ALL', priority: 'Urgente', isPinned: true },
-        { id: 'clseedannouncement03', title: '¡Nuevo curso de Liderazgo disponible!', content: '<p>Inscríbete ahora en el nuevo curso "Liderazgo Efectivo para Equipos Remotos" impartido por un instructor.</p>', authorId: instructorUser.id, audience: 'ALL', priority: 'Normal' },
-        { id: 'clseedannouncement04', title: 'Recordatorio: Actualización de Políticas de Seguridad', content: '<p>Todos los instructores deben revisar la nueva guía de seguridad de la información en la Biblioteca de Recursos antes de fin de mes.</p>', authorId: adminUser.id, audience: 'INSTRUCTOR', priority: 'Normal' },
-        { id: 'clseedannouncement05', title: 'Evento Social: After Office Virtual', content: '<p>¡Únete a nuestro After Office virtual este jueves! Revisa el calendario para más detalles y confirmar tu asistencia.</p>', authorId: instructorUser.id, audience: 'STUDENT', priority: 'Normal' }
-    ],
-    skipDuplicates: true
-  });
-  console.log('Anuncios creados.');
-
-  // --- 4. EVENTOS DEL CALENDARIO ---
-  console.log('Creando eventos del calendario...');
-  await prisma.calendarEvent.deleteMany({});
   const now = new Date();
-  
-  await prisma.calendarEvent.create({ data: { id: 'clseedevent01', title: 'Reunión Trimestral de Resultados', start: new Date(now.getFullYear(), now.getMonth(), 15, 10, 0), end: new Date(now.getFullYear(), now.getMonth(), 15, 11, 30), audienceType: 'ALL', creatorId: adminUser.id, color: 'blue' }});
-  await prisma.calendarEvent.create({ data: { id: 'clseedevent02', title: 'Pausa Activa Diaria', start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 30), end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 45), audienceType: 'ALL', creatorId: adminUser.id, color: 'green', recurrence: RecurrenceType.DAILY, recurrenceEndDate: addDays(now, 30) }});
-  await prisma.calendarEvent.create({ data: { id: 'clseedevent03', title: 'Fecha Límite: Reporte de Ventas Q2', start: new Date(now.getFullYear(), now.getMonth(), 10), end: new Date(now.getFullYear(), now.getMonth(), 10), allDay: true, audienceType: 'INSTRUCTOR', creatorId: adminUser.id, color: 'red' }});
-  await prisma.calendarEvent.create({ data: { id: 'clseedevent04', title: 'Reunión de Planificación (Instructores)', start: subDays(now, 5), end: subDays(now, 5), audienceType: 'INSTRUCTOR', creatorId: adminUser.id, color: 'orange', videoConferenceLink: 'https://meet.google.com/xyz-abc' }});
-  await prisma.calendarEvent.create({ data: { id: 'clseedevent05', title: 'Reunión Semanal de Sincronización', start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0), end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 30), audienceType: 'ALL', creatorId: instructorUser.id, color: 'blue', recurrence: RecurrenceType.WEEKLY }});
-  
-  console.log('Eventos del calendario creados.');
+  const eventsData = [
+      { id: 'clseedevent01', title: 'Reunión Trimestral de Resultados', start: new Date(now.getFullYear(), now.getMonth(), 15, 10, 0), end: new Date(now.getFullYear(), now.getMonth(), 15, 11, 30), audienceType: 'ALL' as const, creatorId: adminUserId, color: 'blue' },
+      { id: 'clseedevent02', title: 'Pausa Activa Diaria', start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 30), end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 45), audienceType: 'ALL' as const, creatorId: adminUserId, color: 'green', recurrence: RecurrenceType.DAILY, recurrenceEndDate: addDays(now, 30) },
+  ];
+  for (const data of eventsData) {
+    await prisma.calendarEvent.upsert({ where: { id: data.id }, update: data, create: data });
+  }
 
-  // --- 5. BIBLIOTECA DE RECURSOS ---
-  console.log('Creando recursos de la biblioteca...');
-  await prisma.enterpriseResource.deleteMany({});
   const pinHash = await bcrypt.hash('1234', 10);
-  const folderRRHH = await prisma.enterpriseResource.create({ data: { id: 'clseedfolder01', title: 'Documentos de RRHH', type: 'FOLDER', uploaderId: adminUser.id, ispublic: true, status: 'ACTIVE' }});
-  await prisma.enterpriseResource.createMany({
-      data: [
-        { id: 'clseedresource01', title: 'Guía de Beneficios 2024', type: 'DOCUMENT', uploaderId: adminUser.id, parentId: folderRRHH.id, url: '/uploads/placeholder.pdf', pin: pinHash, ispublic: true, category: 'Recursos Humanos', status: 'ACTIVE', expiresAt: addDays(new Date(), 45) },
-        { id: 'clseedresource02', title: 'Política de Teletrabajo', type: 'DOCUMENT', uploaderId: adminUser.id, parentId: folderRRHH.id, url: '/uploads/placeholder.pdf', ispublic: true, category: 'Recursos Humanos', status: 'ACTIVE' },
-      ],
-      skipDuplicates: true
-  });
-  const folderMarketing = await prisma.enterpriseResource.create({ data: { id: 'clseedfolder02', title: 'Marketing y Ventas', type: 'FOLDER', uploaderId: instructorUser.id, ispublic: true, status: 'ACTIVE' }});
-  await prisma.enterpriseResource.createMany({
-      data: [
-        { id: 'clseedresource03', title: 'Video Institucional 2024', type: 'VIDEO', uploaderId: instructorUser.id, parentId: folderMarketing.id, url: 'https://www.youtube.com/watch?v=6c5y4_DBw_g', ispublic: true, category: 'Marketing', status: 'ACTIVE' },
-        { id: 'clseedresource04', title: 'Manual de Marca (Archivado)', type: 'DOCUMENT', uploaderId: instructorUser.id, parentId: folderMarketing.id, url: '/uploads/placeholder.pdf', ispublic: false, category: 'Marketing', status: 'ARCHIVED' },
-      ],
-      skipDuplicates: true
-  });
-  await prisma.enterpriseResource.update({ where: { id: 'clseedresource04' }, data: { sharedWith: { connect: [{ id: studentUser1.id }] } } });
-  console.log('Recursos creados.');
+  const folderRRHH = await prisma.enterpriseResource.upsert({ where: { id: 'clseedfolder01' }, update: { title: 'Documentos de RRHH'}, create: { id: 'clseedfolder01', title: 'Documentos de RRHH', type: 'FOLDER', uploaderId: adminUserId, ispublic: true, status: 'ACTIVE' }});
+  await prisma.enterpriseResource.upsert({ where: { id: 'clseedresource01' }, update: {}, create: { id: 'clseedresource01', title: 'Guía de Beneficios 2024', type: 'DOCUMENT', uploaderId: adminUserId, parentId: folderRRHH.id, url: '/uploads/placeholder.pdf', pin: pinHash, ispublic: true, category: 'Recursos Humanos', status: 'ACTIVE', expiresAt: addDays(new Date(), 45) }});
 
-  // --- 6. CURSOS Y CONTENIDO ---
-  console.log('Limpiando y creando cursos...');
-  await prisma.course.deleteMany({});
-  const courseAdmin = await prisma.course.create({ data: { id: 'clseedcourse01', title: 'Curso de Bienvenida a NexusAlpri', description: 'Un curso rápido para conocer la plataforma.', category: 'Formación Interna', instructorId: adminUser.id, status: 'PUBLISHED' }});
-  const courseInstructor = await prisma.course.create({ data: { id: 'clseedcourse02', title: 'Marketing Digital para Principiantes', description: 'Aprende los fundamentos del marketing digital desde cero.', category: 'Marketing', instructorId: instructorUser.id, status: 'PUBLISHED', imageUrl: null }});
-  await prisma.course.create({ data: { id: 'clseedcourse03', title: 'Gestión de Proyectos con Metodologías Ágiles', description: 'Domina Scrum y Kanban para llevar tus proyectos al siguiente nivel.', category: 'Operaciones', instructorId: adminUser.id, status: 'DRAFT' }});
+  const courseAdmin = await prisma.course.upsert({ where: { id: 'clseedcourse01' }, update: {}, create: { id: 'clseedcourse01', title: 'Curso de Bienvenida a NexusAlpri', description: 'Un curso rápido para conocer la plataforma.', category: 'Formación Interna', instructorId: adminUserId, status: 'PUBLISHED' }});
+  const courseInstructor = await prisma.course.upsert({ where: { id: 'clseedcourse02' }, update: {}, create: { id: 'clseedcourse02', title: 'Marketing Digital para Principiantes', description: 'Aprende los fundamentos del marketing digital desde cero.', category: 'Marketing', instructorId: instructorUserId, status: 'PUBLISHED', imageUrl: null }});
 
-  // Contenido curso Marketing
-  const module1 = await prisma.module.create({ data: { id: 'clseedmodule01', title: 'Módulo 1: Introducción al Marketing', courseId: courseInstructor.id, order: 0 }});
-  const lesson1_1 = await prisma.lesson.create({ data: { id: 'clseedlesson11', title: '¿Qué es el Marketing Digital?', moduleId: module1.id, order: 0 }});
-  await prisma.contentBlock.create({ data: { id: 'clseedblock111', type: 'TEXT', content: '<p>El marketing digital es la aplicación de las estrategias de comercialización llevadas a cabo en los medios digitales.</p>', lessonId: lesson1_1.id, order: 0 }});
-  const lesson1_2 = await prisma.lesson.create({ data: { id: 'clseedlesson12', title: 'Video: ¿Qué es el SEO?', moduleId: module1.id, order: 1 }});
-  await prisma.contentBlock.create({ data: { id: 'clseedblock121', type: 'VIDEO', content: 'https://www.youtube.com/watch?v=6c5y4_DBw_g', lessonId: lesson1_2.id, order: 0 }});
-  const module2 = await prisma.module.create({ data: { id: 'clseedmodule02', title: 'Módulo 2: Herramientas Clave', courseId: courseInstructor.id, order: 1 }});
-  const lesson2_1 = await prisma.lesson.create({ data: { id: 'clseedlesson21', title: 'Evaluación de Conocimientos', moduleId: module2.id, order: 0 }});
-  const blockQuiz = await prisma.contentBlock.create({ data: { id: 'clseedblock211', type: 'QUIZ', lessonId: lesson2_1.id, order: 0 }});
-  const quiz1 = await prisma.quiz.create({ data: { id: 'clseedquiz01', title: 'Quiz de Marketing', contentBlockId: blockQuiz.id, maxAttempts: 3 }});
-  const question1 = await prisma.question.create({ data: { id: 'clseedquestion01', text: '¿Qué significa SEO?', quizId: quiz1.id, order: 0, type: 'SINGLE_CHOICE' }});
-  await prisma.answerOption.createMany({ data: [ { text: 'Search Engine Optimization', isCorrect: true, questionId: question1.id, points: 10 }, { text: 'Social Engagement Office', isCorrect: false, questionId: question1.id, points: 0 }, { text: 'Sales Efficiency Object', isCorrect: false, questionId: question1.id, points: 0 } ] });
-  const lesson2_2 = await prisma.lesson.create({ data: { id: 'clseedlesson22', title: 'Glosario de Términos (PDF)', moduleId: module2.id, order: 1 }});
-  await prisma.contentBlock.create({ data: { id: 'clseedblock221', type: 'FILE', content: '/uploads/placeholder.pdf', lessonId: lesson2_2.id, order: 0 }});
-  console.log('Cursos creados.');
-
-  // --- 7. INSCRIPCIONES Y PROGRESO ---
-  console.log('Simulando inscripciones y progreso...');
-  const enrollment1 = await prisma.enrollment.create({ data: { userId: studentUser1.id, courseId: courseInstructor.id }});
-  const progress1 = await prisma.courseProgress.create({ data: { userId: studentUser1.id, courseId: courseInstructor.id, enrollmentId: enrollment1.id }});
-  await prisma.lessonCompletionRecord.create({ data: { progressId: progress1.id, lessonId: lesson1_1.id, type: 'view' }});
-  const totalLessonsCourse2 = await prisma.lesson.count({where: {module: {courseId: courseInstructor.id}}});
-  const completedLessonsCourse2 = await prisma.lessonCompletionRecord.count({where: {progressId: progress1.id}});
-  const progressPercentageLaura = totalLessonsCourse2 > 0 ? (completedLessonsCourse2 / totalLessonsCourse2) * 100 : 0;
-  await prisma.courseProgress.update({ where: { id: progress1.id }, data: { progressPercentage: progressPercentageLaura }});
-
-  const enrollment2 = await prisma.enrollment.create({ data: { userId: studentUser2.id, courseId: courseInstructor.id }});
-  await prisma.courseProgress.create({ data: { userId: studentUser2.id, courseId: courseInstructor.id, enrollmentId: enrollment2.id }});
-  console.log('Inscripciones y progreso listos.');
+  const module1 = await prisma.module.upsert({ where: { id: 'clseedmodule01' }, update: { title: 'Módulo 1: Introducción al Marketing'}, create: { id: 'clseedmodule01', title: 'Módulo 1: Introducción al Marketing', courseId: courseInstructor.id, order: 0 }});
+  const lesson1_1 = await prisma.lesson.upsert({ where: { id: 'clseedlesson11' }, update: {}, create: { id: 'clseedlesson11', title: '¿Qué es el Marketing Digital?', moduleId: module1.id, order: 0 }});
+  await prisma.contentBlock.upsert({ where: { id: 'clseedblock111' }, update: {}, create: { id: 'clseedblock111', type: 'TEXT', content: '<p>El marketing digital es la aplicación de las estrategias de comercialización llevadas a cabo en los medios digitales.</p>', lessonId: lesson1_1.id, order: 0 }});
+  const lesson1_2 = await prisma.lesson.upsert({ where: { id: 'clseedlesson12' }, update: {}, create: { id: 'clseedlesson12', title: 'Video: ¿Qué es el SEO?', moduleId: module1.id, order: 1 }});
+  // Video de YouTube que permite inserción
+  await prisma.contentBlock.upsert({ where: { id: 'clseedblock121' }, update: { content: 'https://www.youtube.com/watch?v=mP03-G7Y_Gk' }, create: { id: 'clseedblock121', type: 'VIDEO', content: 'https://www.youtube.com/watch?v=mP03-G7Y_Gk', lessonId: lesson1_2.id, order: 0 }});
   
-  // --- 8. FORMULARIOS ---
-  console.log('Creando formularios de prueba...');
-  await prisma.form.deleteMany({});
-  await prisma.form.create({
-    data: {
-      title: 'Encuesta de Clima Laboral Q3',
-      description: 'Tu opinión es muy importante para nosotros. Por favor, responde con sinceridad.',
-      creatorId: adminUser.id,
-      status: FormStatus.PUBLISHED,
-      isQuiz: false,
-      fields: {
-        create: [
-          { 
-              label: 'En una escala del 1 al 5, ¿qué tan satisfecho estás con tu carga de trabajo actual?', 
-              type: FormFieldType.SINGLE_CHOICE, 
-              order: 0, 
-              required: true, 
-              options: JSON.stringify([ 
-                  {id: 's1', text: '1 - Muy insatisfecho', isCorrect: false, points: 0}, 
-                  {id: 's2', text: '2', isCorrect: false, points: 0}, 
-                  {id: 's3', text: '3', isCorrect: false, points: 0}, 
-                  {id: 's4', text: '4', isCorrect: false, points: 0}, 
-                  {id: 's5', text: '5 - Muy satisfecho', isCorrect: false, points: 0}, 
-              ]) 
-          },
-          { 
-              label: '¿Qué aspectos mejorarías de la comunicación interna? (Selecciona todos los que apliquen)', 
-              type: FormFieldType.MULTIPLE_CHOICE, 
-              order: 1, 
-              required: false, 
-              options: JSON.stringify([ 
-                  {id: 'c1', text: 'Más reuniones generales', isCorrect: false, points: 0}, 
-                  {id: 'c2', text: 'Comunicación más clara de los objetivos', isCorrect: false, points: 0}, 
-                  {id: 'c3', text: 'Más feedback de mi manager', isCorrect: false, points: 0}, 
-                  {id: 'c4', text: 'Mejor uso del email/chat', isCorrect: false, points: 0} 
-              ]) 
-          },
-          { label: 'Si pudieras cambiar una cosa de la oficina, ¿qué sería?', type: FormFieldType.LONG_TEXT, order: 2, required: false, placeholder: 'Ej: más plantas, mejor café, etc.' }
+  // Para inscripciones, es mejor verificar y crear si no existen, para no sobreescribir progreso.
+  await prisma.enrollment.upsert({ where: { userId_courseId: { userId: student1Id, courseId: courseInstructor.id } }, update: {}, create: { userId: student1Id, courseId: courseInstructor.id, progress: { create: { userId: student1Id, courseId: courseInstructor.id }}}});
+  await prisma.enrollment.upsert({ where: { userId_courseId: { userId: student2Id, courseId: courseInstructor.id } }, update: {}, create: { userId: student2Id, courseId: courseInstructor.id, progress: { create: { userId: student2Id, courseId: courseInstructor.id }}}});
 
-        ]
-      }
-    }
-  });
-  console.log('Formularios creados.');
-
-
-  console.log('Seeding finalizado exitosamente.');
+  console.log('Sincronización de datos de prueba finalizada.');
+  console.log('Seeding no destructivo completado exitosamente.');
 }
 
 main()
