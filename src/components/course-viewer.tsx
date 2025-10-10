@@ -749,7 +749,13 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
 
         {/* Image Viewer Modal */}
         <Dialog open={!!imageToView} onOpenChange={(isOpen) => !isOpen && setImageToView(null)}>
-            <DialogContent className="w-screen h-screen max-w-full max-h-full p-2 bg-black/80 backdrop-blur-sm border-0">
+            <DialogContent className="w-screen h-screen max-w-full max-h-full p-2 bg-black/80 backdrop-blur-sm border-0 rounded-none">
+                 <div className="absolute top-4 right-4 z-50">
+                    <Button variant="ghost" size="icon" className="text-white hover:text-white hover:bg-white/20" onClick={() => setImageToView(null)}>
+                        <X className="h-6 w-6"/>
+                        <span className="sr-only">Cerrar</span>
+                    </Button>
+                </div>
                 <div className="relative w-full h-full">
                     <Image
                         src={imageToView || ''}
