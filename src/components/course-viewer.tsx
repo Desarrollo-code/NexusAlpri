@@ -1,10 +1,9 @@
-
 // @ts-nocheck
 'use client';
 
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft, LineChart, Notebook, ScreenShare, ChevronRight, Palette, X, GraduationCap, Expand, Edit } from 'lucide-react';
+import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft, LineChart, Notebook, ScreenShare, ChevronRight, Palette, X, GraduationCap, Expand, Edit, Smartphone } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
@@ -30,6 +29,7 @@ import mammoth from 'mammoth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { PdfViewer } from '@/components/pdf-viewer'; // Importamos el nuevo componente
 import { getYoutubeVideoId } from '@/lib/resource-utils';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const noteColors = [
   { value: 'yellow', bg: 'bg-yellow-100 dark:bg-yellow-900/40', border: 'border-yellow-200 dark:border-yellow-800/50' },
@@ -180,6 +180,15 @@ const LessonNotesPanel = ({ lessonId, isOpen, onClose }: { lessonId: string, isO
 const VideoPlayer = ({ videoUrl, lessonTitle, onVideoEnd }: { videoUrl: string, lessonTitle?: string, onVideoEnd: () => void }) => {
     const videoId = getYoutubeVideoId(videoUrl);
     const [error, setError] = useState(false);
+    const [showSuggestion, setShowSuggestion] = useState(true);
+    const isMobile = useIsMobile();
+
+    useEffect(() => {
+        if (isMobile) {
+            const timer = setTimeout(() => setShowSuggestion(false), 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [isMobile]);
     
     if (!videoId) return null;
 
@@ -201,11 +210,30 @@ const VideoPlayer = ({ videoUrl, lessonTitle, onVideoEnd }: { videoUrl: string, 
 
     return (
         <div className="aspect-video w-full max-w-4xl mx-auto my-4 rounded-lg overflow-hidden shadow-md relative group bg-black">
+             <AnimatePresence>
+                {isMobile && showSuggestion && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 text-white z-10 pointer-events-none"
+                    >
+                        <motion.div
+                            initial={{ rotate: 0 }}
+                            animate={{ rotate: [0, -90, -90, 0, 0], y: [0, 10, 10, 0, 0] }}
+                            transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+                        >
+                            <Smartphone className="h-16 w-16" />
+                        </motion.div>
+                        <p className="mt-4 font-semibold">Gira tu teléfono para una mejor experiencia</p>
+                    </motion.div>
+                )}
+            </AnimatePresence>
             {error ? (
                 <div className="w-full h-full flex flex-col items-center justify-center bg-destructive text-destructive-foreground p-4">
                     <AlertTriangle className="h-8 w-8 mb-2" />
-                    <p className="font-semibold">Error al cargar el video</p>
-                    <p className="text-sm">Este video no se puede reproducir aquí.</p>
+                    <p className="font-semibold">Video no disponible</p>
+                    <p className="text-sm">El propietario ha deshabilitado la reproducción en otros sitios web.</p>
                 </div>
             ) : (
                 <YouTube
