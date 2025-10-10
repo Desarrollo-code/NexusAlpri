@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 'use client';
 
@@ -73,8 +72,8 @@ const generateUniqueId = (prefix: string): string => {
 };
 
 
-const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdate: (field: keyof AppModule, value: any) => void; onAddLesson: (type: 'blank' | 'template') => void; onLessonUpdate: (lessonIndex: number, field: keyof AppLesson, value: any) => void; onLessonDelete: (lessonIndex: number) => void; onSaveLessonAsTemplate: (lessonIndex: number) => void; onAddBlock: (lessonIndex: number, type: LessonType) => void; onBlockUpdate: (lessonIndex: number, blockIndex: number, field: string, value: any) => void; onBlockDelete: (lessonIndex: number, blockIndex: number) => void; onQuizUpdate: (lessonIndex: number, blockIndex: number, updatedQuiz: AppQuiz) => void; isSaving: boolean; onDelete: () => void; provided: DraggableProvided }>(
-    ({ module, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onSaveLessonAsTemplate, onAddBlock, onBlockUpdate, onBlockDelete, onQuizUpdate, isSaving, onDelete, provided }, ref) => {
+const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdate: (field: keyof AppModule, value: any) => void; onAddLesson: (type: 'blank' | 'template') => void; onLessonUpdate: (lessonIndex: number, field: keyof AppLesson, value: any) => void; onLessonDelete: (lessonIndex: number) => void; onSaveLessonAsTemplate: (lessonIndex: number) => void; onAddBlock: (lessonIndex: number, type: LessonType) => void; onBlockUpdate: (lessonIndex: number, blockIndex: number, field: string, value: any) => void; onBlockDelete: (lessonIndex: number, blockIndex: number) => void; onQuizUpdate: (lessonIndex: number, blockIndex: number, updatedQuiz: AppQuiz) => void; onEditQuiz: (lessonIndex: number, blockIndex: number) => void; isSaving: boolean; onDelete: () => void; provided: DraggableProvided }>(
+    ({ module, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onSaveLessonAsTemplate, onAddBlock, onBlockUpdate, onBlockDelete, onQuizUpdate, onEditQuiz, isSaving, onDelete, provided }, ref) => {
         return (
             <div ref={ref} {...provided.draggableProps}>
                 <Accordion type="single" collapsible className="w-full bg-muted/30 rounded-lg border" defaultValue={`item-${module.id}`}>
@@ -89,47 +88,48 @@ const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdat
                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive ml-2 shrink-0" onClick={(e) => { e.stopPropagation(); onDelete(); }} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
                         </div>
                         <AccordionContent className="p-4 pt-0 border-t">
-    <Droppable droppableId={module.id} type="LESSONS">
-        {(provided) => (
-            <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
-                {module.lessons.map((lesson, lessonIndex) => (
-                    <Draggable key={lesson.id} draggableId={lesson.id} index={lessonIndex}>
-                        {(provided) => (
-                            <LessonItem
-                                lesson={lesson}
-                                onDelete={() => onLessonDelete(lessonIndex)}
-                                onUpdate={(field, value) => onLessonUpdate(lessonIndex, field, value)}
-                                onSaveAsTemplate={() => onSaveLessonAsTemplate(lessonIndex)}
-                                onAddBlock={(type) => onAddBlock(lessonIndex, type)}
-                                onBlockUpdate={(blockIndex, field, value) => onBlockUpdate(lessonIndex, blockIndex, field, value)}
-                                onBlockDelete={(blockIndex) => onBlockDelete(lessonIndex, blockIndex)}
-                                onQuizUpdate={(blockIndex, updatedQuiz) => onQuizUpdate(lessonIndex, blockIndex, updatedQuiz)}
-                                isSaving={isSaving}
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                            />
-                        )}
-                    </Draggable>
-                ))}
-                {provided.placeholder}
-            </div>
-        )}
-    </Droppable>
-    <div className="mt-4 flex gap-2">
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button size="sm" variant="secondary" disabled={isSaving}>
-                    <PlusCircle className="mr-2 h-4 w-4" />Añadir Lección<ChevronDown className="ml-2 h-4 w-4"/>
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-                <DropdownMenuItem onSelect={() => onAddLesson('blank')}><FilePlus2 className="mr-2 h-4 w-4"/>Lección en Blanco</DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => onAddLesson('template')}><Sparkles className="mr-2 h-4 w-4"/>Usar Plantilla</DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
-    </div>
-</AccordionContent>
+                            <Droppable droppableId={module.id} type="LESSONS">
+                                {(provided) => (
+                                    <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
+                                        {module.lessons.map((lesson, lessonIndex) => (
+                                            <Draggable key={lesson.id} draggableId={lesson.id} index={lessonIndex}>
+                                                {(provided) => (
+                                                    <LessonItem
+                                                        lesson={lesson}
+                                                        onDelete={() => onLessonDelete(lessonIndex)}
+                                                        onUpdate={(field, value) => onLessonUpdate(lessonIndex, field, value)}
+                                                        onSaveAsTemplate={() => onSaveLessonAsTemplate(lessonIndex)}
+                                                        onAddBlock={(type) => onAddBlock(lessonIndex, type)}
+                                                        onBlockUpdate={(blockIndex, field, value) => onBlockUpdate(lessonIndex, blockIndex, field, value)}
+                                                        onBlockDelete={(blockIndex) => onBlockDelete(lessonIndex, blockIndex)}
+                                                        onQuizUpdate={(blockIndex, updatedQuiz) => onQuizUpdate(lessonIndex, blockIndex, updatedQuiz)}
+                                                        onEditQuiz={(blockIndex) => onEditQuiz(lessonIndex, blockIndex)}
+                                                        isSaving={isSaving}
+                                                        ref={provided.innerRef}
+                                                        {...provided.draggableProps}
+                                                        {...provided.dragHandleProps}
+                                                    />
+                                                )}
+                                            </Draggable>
+                                        ))}
+                                        {provided.placeholder}
+                                    </div>
+                                )}
+                            </Droppable>
+                            <div className="mt-4 flex gap-2">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button size="sm" variant="secondary" disabled={isSaving}>
+                                            <PlusCircle className="mr-2 h-4 w-4" />Añadir Lección<ChevronDown className="ml-2 h-4 w-4"/>
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        <DropdownMenuItem onSelect={() => onAddLesson('blank')}><FilePlus2 className="mr-2 h-4 w-4"/>Lección en Blanco</DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => onAddLesson('template')}><Sparkles className="mr-2 h-4 w-4"/>Usar Plantilla</DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                        </AccordionContent>
                     </AccordionItem>
                 </Accordion>
             </div>
@@ -139,12 +139,12 @@ const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdat
 ModuleItem.displayName = 'ModuleItem';
 
 
-const LessonItem = React.forwardRef<HTMLDivElement, { lesson: AppLesson; onUpdate: (field: keyof AppLesson, value: any) => void; onSaveAsTemplate: () => void; onAddBlock: (type: LessonType) => void; onBlockUpdate: (blockIndex: number, field: string, value: any) => void; onBlockDelete: (blockIndex: number) => void; onQuizUpdate: (blockIndex: number, updatedQuiz: AppQuiz) => void; isSaving: boolean; onDelete: () => void; }>(
-    ({ lesson, onUpdate, onSaveAsTemplate, onAddBlock, onBlockUpdate, onBlockDelete, onQuizUpdate, isSaving, onDelete, ...rest }, ref) => {
+const LessonItem = React.forwardRef<HTMLDivElement, { lesson: AppLesson; onUpdate: (field: keyof AppLesson, value: any) => void; onSaveAsTemplate: () => void; onAddBlock: (type: LessonType) => void; onBlockUpdate: (blockIndex: number, field: string, value: any) => void; onBlockDelete: (blockIndex: number) => void; onQuizUpdate: (blockIndex: number, updatedQuiz: AppQuiz) => void; onEditQuiz: (blockIndex: number) => void; isSaving: boolean; onDelete: () => void; }>(
+    ({ lesson, onUpdate, onSaveAsTemplate, onAddBlock, onBlockUpdate, onBlockDelete, onQuizUpdate, onEditQuiz, isSaving, onDelete, ...rest }, ref) => {
         return (
             <div ref={ref} {...rest} className="bg-card p-3 rounded-md border">
                 <div className="flex items-center gap-2 mb-3">
-                    <GripVertical className="h-5 w-5 text-muted-foreground" />
+                    <div className="p-1 cursor-grab touch-none"><GripVertical className="h-5 w-5 text-muted-foreground" /></div>
                     <Input value={lesson.title} onChange={e => onUpdate('title', e.target.value)} placeholder="Título de la lección" disabled={isSaving} />
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -163,16 +163,17 @@ const LessonItem = React.forwardRef<HTMLDivElement, { lesson: AppLesson; onUpdat
                             {lesson.contentBlocks.map((block, blockIndex) => (
                                 <Draggable key={block.id} draggableId={block.id} index={blockIndex}>
                                      {(provided) => (
-                                        <div ref={provided.innerRef} {...provided.draggableProps}>
-                                            <ContentBlockItem
-                                                block={block} 
-                                                onUpdate={(field, value) => onBlockUpdate(blockIndex, field, value)} 
-                                                onDelete={() => onBlockDelete(blockIndex)} 
-                                                onQuizUpdate={(updatedQuiz) => onQuizUpdate(blockIndex, updatedQuiz)}
-                                                isSaving={isSaving}
-                                                dragHandleProps={provided.dragHandleProps}
-                                            />
-                                        </div>
+                                        <ContentBlockItem
+                                            block={block} 
+                                            onUpdate={(field, value) => onBlockUpdate(blockIndex, field, value)} 
+                                            onDelete={() => onBlockDelete(blockIndex)} 
+                                            onQuizUpdate={(updatedQuiz) => onQuizUpdate(blockIndex, updatedQuiz)}
+                                            onEditQuiz={() => onEditQuiz(blockIndex)}
+                                            isSaving={isSaving}
+                                            dragHandleProps={provided.dragHandleProps}
+                                            ref={provided.innerRef}
+                                            {...provided.draggableProps}
+                                        />
                                      )}
                                 </Draggable>
                             ))}
@@ -190,114 +191,86 @@ const LessonItem = React.forwardRef<HTMLDivElement, { lesson: AppLesson; onUpdat
 LessonItem.displayName = 'LessonItem';
 
 
-const ContentBlockItem = ({ block, onUpdate, onQuizUpdate, isSaving, onDelete, dragHandleProps }) => {
-    const [showQuizEditor, setShowQuizEditor] = useState(false);
-    const [isFileUploading, setIsFileUploading] = useState(false);
-    const [fileUploadProgress, setFileUploadProgress] = useState(0);
-    const [localPreview, setLocalPreview] = useState<string | null>(null);
-    const { toast } = useToast();
+const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock; onUpdate: (field: string, value: any) => void; onQuizUpdate: (updatedQuiz: AppQuiz) => void; onEditQuiz: () => void; isSaving: boolean; onDelete: () => void; dragHandleProps: any; }>(
+    ({ block, onUpdate, onQuizUpdate, onEditQuiz, isSaving, onDelete, dragHandleProps, ...rest }, ref) => {
+        const [isFileUploading, setIsFileUploading] = useState(false);
+        const [fileUploadProgress, setFileUploadProgress] = useState(0);
+        const [localPreview, setLocalPreview] = useState<string | null>(null);
+        const { toast } = useToast();
 
-    useEffect(() => {
-        return () => {
-            if (localPreview) {
-                URL.revokeObjectURL(localPreview);
+        useEffect(() => {
+            return () => { if (localPreview) URL.revokeObjectURL(localPreview); };
+        }, [localPreview]);
+
+
+        const handleFileSelect = async (file: File | null) => {
+            if (!file) return;
+
+            if (file.type.startsWith('image/')) setLocalPreview(URL.createObjectURL(file));
+            
+            setIsFileUploading(true);
+            setFileUploadProgress(0);
+            
+            try {
+                const result = await uploadWithProgress('/api/upload/lesson-file', file, setFileUploadProgress);
+                onUpdate('content', result.url);
+                toast({ title: 'Archivo Subido', description: `El archivo ${file.name} se ha subido correctamente.`});
+            } catch (err) {
+                toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
+                if (localPreview) URL.revokeObjectURL(localPreview);
+                setLocalPreview(null);
+            } finally {
+                setIsFileUploading(false);
             }
         };
-    }, [localPreview]);
 
+        const renderBlockContent = () => {
+            if (block.type === 'TEXT') return <RichTextEditor value={block.content || ''} onChange={value => onUpdate('content', value)} placeholder="Escribe aquí el contenido o pega un enlace externo..." disabled={isSaving} />;
+            if (block.type === 'VIDEO') return <Input value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="URL del video de YouTube" disabled={isSaving} />;
+            if (block.type === 'FILE') {
+                const displayUrl = localPreview || block.content;
+                const isImage = displayUrl?.match(/\.(jpeg|jpg|gif|png|webp)$/) != null || localPreview?.startsWith('blob:');
 
-    const handleFileSelect = async (file: File | null) => {
-        if (!file) return;
-
-        if (file.type.startsWith('image/')) {
-            const previewUrl = URL.createObjectURL(file);
-            setLocalPreview(previewUrl);
-        }
-
-        setIsFileUploading(true);
-        setFileUploadProgress(0);
-        
-        try {
-            const result = await uploadWithProgress('/api/upload/lesson-file', file, setFileUploadProgress);
-            onUpdate('content', result.url);
-            toast({ title: 'Archivo Subido', description: `El archivo ${file.name} se ha subido correctamente.`});
-        } catch (err) {
-             toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
-             setLocalPreview(null);
-        } finally {
-            setIsFileUploading(false);
-        }
-    };
-
-    const renderBlockContent = () => {
-        if (block.type === 'TEXT') return <RichTextEditor value={block.content || ''} onChange={value => onUpdate('content', value)} placeholder="Escribe aquí el contenido o pega un enlace externo..." disabled={isSaving} />;
-        if (block.type === 'VIDEO') return <Input value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="URL del video de YouTube" disabled={isSaving} />;
-        if (block.type === 'FILE') {
-            const displayUrl = localPreview || block.content;
-            const isImage = displayUrl?.match(/\.(jpeg|jpg|gif|png|webp)$/) != null || localPreview?.startsWith('blob:');
-
-            if (displayUrl && !isFileUploading) {
-                const fileName = block.content?.split('/').pop()?.split('-').slice(2).join('-') || 'Archivo';
+                if (displayUrl && !isFileUploading) {
+                    const fileName = block.content?.split('/').pop()?.split('-').slice(2).join('-') || 'Archivo';
+                    return (
+                        <div className="flex items-center gap-2 p-2 rounded-md border bg-background min-w-0">
+                            {isImage ? (<div className="w-10 h-10 relative rounded flex-shrink-0"><Image src={displayUrl} alt="Preview" fill className="object-cover" /></div>) : (<FileGenericIcon className="h-5 w-5 text-primary shrink-0" />)}
+                            <span className="text-sm font-medium text-foreground truncate flex-grow min-w-0" title={fileName}>{fileName}</span>
+                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive rounded-full" onClick={() => { onUpdate('content', ''); setLocalPreview(null); }}><XCircle className="h-4 w-4"/></Button>
+                        </div>
+                    );
+                }
                 return (
-                    <div className="flex items-center gap-2 p-2 rounded-md border bg-background min-w-0">
-                        {isImage ? (
-                            <div className="w-10 h-10 relative rounded flex-shrink-0">
-                              <Image src={displayUrl} alt="Preview" fill className="object-cover" />
-                            </div>
-                        ) : (
-                           <FileGenericIcon className="h-5 w-5 text-primary shrink-0" />
-                        )}
-                        <span className="text-sm font-medium text-foreground truncate flex-grow min-w-0" title={fileName}>
-                            {fileName}
-                        </span>
-                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive rounded-full" onClick={() => { onUpdate('content', ''); setLocalPreview(null); }}>
-                            <XCircle className="h-4 w-4"/>
-                        </Button>
+                    <div className="space-y-2">
+                        <UploadArea onFileSelect={handleFileSelect} disabled={isSaving || isFileUploading} />
+                        {isFileUploading && <div className="flex items-center gap-2 text-xs text-muted-foreground"><Progress value={fileUploadProgress} className="w-full h-1.5" /><span>{fileUploadProgress}%</span></div>}
                     </div>
                 );
             }
-            return (
-                <div className="space-y-2">
-                    <UploadArea onFileSelect={handleFileSelect} disabled={isSaving || isFileUploading} />
-                     {isFileUploading && (
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Progress value={fileUploadProgress} className="w-full h-1.5" />
-                            <span>{fileUploadProgress}%</span>
-                        </div>
-                    )}
-                </div>
-            );
-        }
-        if (block.type === 'QUIZ') return (
-            <>
+            if (block.type === 'QUIZ') return (
                 <div className="flex items-center gap-2 w-full">
                     <Input value={block.quiz?.title || ''} onChange={e => onUpdate('quiz', { ...block.quiz, title: e.target.value })} placeholder="Título del Quiz" disabled={isSaving} />
-                    <Button variant="outline" size="sm" className="shrink-0" onClick={(e) => { e.stopPropagation(); setShowQuizEditor(true); }}>
+                    <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={onEditQuiz}>
                         <Pencil className="mr-2 h-4 w-4" /> Editar Quiz
                     </Button>
                 </div>
-                <QuizEditorModal 
-                    isOpen={showQuizEditor} 
-                    onClose={() => setShowQuizEditor(false)} 
-                    quiz={block.quiz}
-                    onSave={onQuizUpdate}
-                />
-            </>
-        );
-        return null;
-    };
+            );
+            return null;
+        };
 
-    return (
-        <div className="flex items-start gap-2 bg-muted/50 p-2 rounded">
-            <div {...dragHandleProps} className="p-1 cursor-grab touch-none mt-2">
-                <GripVertical className="h-5 w-5 text-muted-foreground" />
+        return (
+            <div ref={ref} {...rest} className="flex items-start gap-2 bg-muted/50 p-2 rounded">
+                <div {...dragHandleProps} className="p-1 cursor-grab touch-none mt-2">
+                    <GripVertical className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <div className="flex-grow min-w-0">{renderBlockContent()}</div>
+                <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive shrink-0" onClick={onDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
             </div>
-            <div className="flex-grow min-w-0">{renderBlockContent()}</div>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive shrink-0" onClick={onDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
-        </div>
-    );
-};
-
+        );
+    }
+);
+ContentBlockItem.displayName = 'ContentBlockItem';
 
 // === COMPONENTE PRINCIPAL DE LA PÁGINA (CourseEditor) ===
 export function CourseEditor({ courseId }: { courseId: string }) {
@@ -326,6 +299,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const [lessonToSaveAsTemplate, setLessonToSaveAsTemplate] = useState<AppLesson | null>(null);
     
     const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
+    
+    const [quizToEdit, setQuizToEdit] = useState<{ moduleIndex: number; lessonIndex: number; blockIndex: number; quiz: AppQuiz } | null>(null);
 
 
     // --- Data Fetching ---
@@ -714,6 +689,20 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             toast({ title: "Error", description: (err as Error).message, variant: "destructive"});
         }
     };
+    
+    const handleEditQuiz = (moduleIndex: number, lessonIndex: number, blockIndex: number) => {
+        const quiz = course?.modules[moduleIndex].lessons[lessonIndex].contentBlocks[blockIndex].quiz;
+        if (quiz) {
+            setQuizToEdit({ moduleIndex, lessonIndex, blockIndex, quiz });
+        }
+    };
+    
+    const handleSaveQuiz = (updatedQuiz: AppQuiz) => {
+        if (quizToEdit) {
+            updateQuizForBlock(quizToEdit.moduleIndex, quizToEdit.lessonIndex, quizToEdit.blockIndex, updatedQuiz);
+            setQuizToEdit(null);
+        }
+    };
 
 
     if (isLoading || isAuthLoading || !course) {
@@ -761,6 +750,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                                             onBlockUpdate={(lessonIndex, blockIndex, field, value) => updateBlockField(moduleIndex, lessonIndex, blockIndex, field, value)}
                                                             onBlockDelete={(lessonIndex, blockIndex) => handleRemoveBlock(moduleIndex, lessonIndex, blockIndex)}
                                                             onQuizUpdate={(lessonIndex, blockIndex, updatedQuiz) => updateQuizForBlock(moduleIndex, lessonIndex, blockIndex, updatedQuiz)}
+                                                            onEditQuiz={(lessonIndex, blockIndex) => handleEditQuiz(moduleIndex, lessonIndex, blockIndex)}
                                                             isSaving={isSaving}
                                                             provided={provided}
                                                             ref={provided.innerRef}
@@ -903,6 +893,14 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                     onClose={() => setIsAssignmentModalOpen(false)}
                     courseId={course.id}
                     courseTitle={course.title}
+                />
+            )}
+            {quizToEdit && (
+                <QuizEditorModal 
+                    isOpen={!!quizToEdit} 
+                    onClose={() => setQuizToEdit(null)} 
+                    quiz={quizToEdit.quiz}
+                    onSave={handleSaveQuiz}
                 />
             )}
         </div>
