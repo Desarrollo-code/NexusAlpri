@@ -32,27 +32,28 @@ function ThemeToggle() {
   const { user, updateUser } = useAuth();
 
   const handleThemeChange = async (newTheme: string) => {
-    if (!user) return;
+    if (!user) {
+      setTheme(newTheme);
+      return;
+    }
     
-    // Optimistically update UI
+    // 1. Optimistic UI update (handled by next-themes `setTheme`)
     setTheme(newTheme);
     
-    // Save to backend
+    // 2. Silently update user context without causing a re-render of layouts
+    updateUser({ theme: newTheme });
+
+    // 3. Save to backend in the background without blocking
     try {
-      const response = await fetch(`/api/users/${user.id}`, {
+      await fetch(`/api/users/${user.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ theme: newTheme }),
       });
-      if (!response.ok) throw new Error('Failed to save theme preference');
-      
-      // Update user context with latest data from server
-      const updatedUser = await response.json();
-      updateUser(updatedUser); 
+      // No need to process response if we are doing optimistic updates
     } catch (error) {
-      console.error('Error saving theme:', error);
-      // Revert optimistic update if save fails
-      setTheme(theme);
+      console.error('Error saving theme preference:', error);
+      // Optional: Add a small toast to inform user of sync error
     }
   };
 

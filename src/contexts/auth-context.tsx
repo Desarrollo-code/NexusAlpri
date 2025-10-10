@@ -57,18 +57,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const userData = await userRes.json();
           const fetchedUser = userData.user;
           setUser(fetchedUser);
+          // Set theme based on user preference, but fall back to a default (e.g., 'dark')
           if (fetchedUser?.theme) {
             setTheme(fetchedUser.theme);
+          } else {
+            setTheme('dark');
           }
         } else {
           setUser(null);
-          setTheme('dark'); // Reset to default if no user
+          // For unauthenticated users, default to light theme for public pages
+          setTheme('light');
         }
     } catch (error) {
         console.error("[AuthContext] Fallo al obtener los datos de la sesión:", error);
         setUser(null);
         setSettings(DEFAULT_SETTINGS);
-        setTheme('dark'); // Reset to default on error
+        setTheme('dark'); // Fallback to dark on error
     } finally {
         setIsLoading(false);
     }
@@ -95,7 +99,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Fallo al llamar a la API de logout", error);
     } finally {
       setUser(null);
-      setTheme('light'); // Reset theme to light for public pages on logout
+      setTheme('light'); // Forzar tema claro en páginas públicas tras cerrar sesión
       router.push('/sign-in');
     }
   }, [router, setTheme]);
@@ -103,13 +107,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const updateUser = useCallback((updatedData: Partial<User>) => {
     setUser(prevUser => {
       if (!prevUser) return null;
-      // If theme is being updated, also apply it
-      if (updatedData.theme) {
-        setTheme(updatedData.theme);
-      }
       return { ...prevUser, ...updatedData };
     });
-  }, [setTheme]);
+    // No need to call setTheme here as the ThemeToggle component handles it optimistically
+  }, []);
 
   const updateSettings = useCallback((updatedData: Partial<PlatformSettings>) => {
     setSettings(prevSettings => {

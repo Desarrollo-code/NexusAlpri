@@ -1,14 +1,17 @@
+// src/app/api/users/[id]/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
-import prisma from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { getCurrentUser } from '@/lib/auth';
+
+const prisma = new PrismaClient();
 
 export const dynamic = 'force-dynamic';
 
 // GET a specific user
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
-    const { id } = await params;
+    const { id } = params;
     // Allow admins to get any user, and any user to get their own profile
     if (!session || (session.role !== 'ADMINISTRATOR' && session.id !== id)) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
@@ -29,13 +32,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 // PUT (update) a user
-export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
     if (!session) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
 
-    const { id } = await params;
+    const { id } = params;
     // Admin can edit anyone. A user can edit their own profile.
     if (session.role !== 'ADMINISTRATOR' && session.id !== id) {
          return NextResponse.json({ message: 'No tienes permiso para actualizar este usuario.' }, { status: 403 });
@@ -48,9 +51,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
         let dataToUpdate: any = {};
         
-        // General profile updates (name, avatar) that a user can do for themselves
+        // General profile updates (name, avatar, theme) that a user can do for themselves
         if ('name' in body) dataToUpdate.name = body.name;
         if ('avatar' in body) dataToUpdate.avatar = body.avatar;
+        if ('theme' in body) dataToUpdate.theme = body.theme;
 
         // Admin-only updates
         if (session.role === 'ADMINISTRATOR') {
@@ -103,13 +107,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
 
 // DELETE a user -> Now INACTIVATE
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
     if (!session || session.role !== 'ADMINISTRATOR') {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
     
-    const { id } = await params;
+    const { id } = params;
     if (session.id === id) {
         return NextResponse.json({ message: 'No puedes inactivar tu propia cuenta' }, { status: 400 });
     }
