@@ -469,88 +469,82 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
       router.push(`/courses/${courseId}?lesson=${lesson.id}`, { scroll: false });
   };
   
-  const renderContentBlock = (block: ContentBlock) => {
-    const url = block.content || '';
-    
-    if (block.type === 'VIDEO') {
-        return <VideoPlayer key={block.id} videoUrl={url} lessonTitle={selectedLesson?.title} onVideoEnd={handleVideoEnd} />
-    }
-    
-    if (block.type === 'QUIZ') {
-        return (
-            <QuizViewer 
-                key={block.id}
-                quiz={block.quiz}
-                lessonId={selectedLessonId!}
-                courseId={courseId}
-                isEnrolled={isEnrolled}
-                isCreatorPreview={isCreatorViewingCourse}
-                onQuizCompleted={handleQuizSubmitted}
-            />
-        );
-    }
-      
-    if (block.type === 'TEXT') {
-        const isExternalUrl = /^(https?:\/\/)/.test(url.trim());
+    const renderContentBlock = (block: ContentBlock, index: number, allBlocks: ContentBlock[]) => {
+        const url = block.content || '';
+        const isTextFollowedByImage = block.type === 'TEXT' && allBlocks[index + 1]?.type === 'FILE' && /\.(jpg|jpeg|png|gif|webp)$/i.test(allBlocks[index + 1].content || '');
 
-        if (isExternalUrl) {
+        if (isTextFollowedByImage) {
+            const textBlock = block;
+            const imageBlock = allBlocks[index + 1];
             return (
-                <div key={block.id} className="my-4 p-4 border rounded-md bg-card hover:bg-muted/50 transition-colors">
-                    <a href={url.trim()} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-primary font-semibold group">
-                        <ExternalLink className="h-5 w-5 text-primary/70 group-hover:text-primary transition-colors"/>
-                        <span className="group-hover:underline underline-offset-4">{url.trim()}</span>
-                    </a>
-                </div>
-            );
-        }
-        return <div key={block.id} className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card" style={{ maxHeight: '500px', overflowY: 'auto' }} dangerouslySetInnerHTML={{ __html: url }} />;
-    }
-    
-    if (block.type === 'FILE') {
-        const isPdf = url.toLowerCase().endsWith('.pdf');
-        
-        if (isPdf) {
-            return <PdfViewer url={url} key={block.id} />;
-        }
-        
-        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url.toLowerCase());
-        const isOfficeDoc = url.toLowerCase().endsWith('.docx');
-        
-        if (isOfficeDoc) {
-             return (
-                <div key={block.id} className="my-4">
-                    <DocxPreviewer url={url}/>
-                </div>
-            );
-        }
-        
-        if (isImage) {
-            return (
-                 <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md flex justify-center group relative cursor-pointer" onClick={() => setImageToView(url)}>
-                    <div className="relative aspect-video w-full max-w-4xl p-2">
-                        <Image src={url} alt={`Preview: ${selectedLesson?.title}`} fill className="object-contain p-2" priority quality={100} data-ai-hint="lesson file" />
-                    </div>
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Expand className="h-12 w-12 text-white"/>
+                <div key={textBlock.id + '-' + imageBlock.id} className="flex flex-col md:flex-row gap-8 items-start my-4">
+                    <div className="flex-1 w-full prose dark:prose-invert prose-sm max-w-none p-3 border rounded-md bg-card" dangerouslySetInnerHTML={{ __html: textBlock.content || '' }} />
+                    <div className="flex-1 w-full relative aspect-square max-w-md p-2 bg-muted/30 rounded-md cursor-pointer" onClick={() => setImageToView(imageBlock.content)}>
+                        <Image src={imageBlock.content!} alt="Visual support for lesson content" fill className="object-contain p-2" priority quality={100} data-ai-hint="lesson visual aid" />
                     </div>
                 </div>
             );
         }
 
-        return (
-            <div key={block.id} className="my-4 p-4 bg-muted/50 rounded-md text-center">
-                <p className="text-sm text-muted-foreground mb-2">Este recurso es un archivo descargable:</p>
-                <Button asChild size="sm">
-                    <Link href={url} target="_blank" rel="noopener noreferrer" download>
-                        <Download className="mr-2 h-4 w-4" /> Descargar Archivo
-                    </Link>
-                </Button>
-            </div>
-        );
-    }
+        const isImagePrecededByText = block.type === 'FILE' && allBlocks[index - 1]?.type === 'TEXT' && /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+        if (isImagePrecededByText) {
+            return null; // Don't render this image block separately, it's handled with the text block.
+        }
 
-    return null;
-  };
+        if (block.type === 'VIDEO') return <VideoPlayer key={block.id} videoUrl={url} lessonTitle={selectedLesson?.title} onVideoEnd={handleVideoEnd} />;
+        if (block.type === 'QUIZ') return <QuizViewer key={block.id} quiz={block.quiz} lessonId={selectedLessonId!} courseId={courseId} isEnrolled={isEnrolled} isCreatorPreview={isCreatorViewingCourse} onQuizCompleted={handleQuizSubmitted} />;
+
+        if (block.type === 'TEXT') {
+            const isExternalUrl = /^(https?:\/\/)/.test(url.trim());
+            if (isExternalUrl) {
+                return (
+                    <div key={block.id} className="my-4 p-4 border rounded-md bg-card hover:bg-muted/50 transition-colors">
+                        <a href={url.trim()} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-primary font-semibold group">
+                            <ExternalLink className="h-5 w-5 text-primary/70 group-hover:text-primary transition-colors"/>
+                            <span className="group-hover:underline underline-offset-4">{url.trim()}</span>
+                        </a>
+                    </div>
+                );
+            }
+            return <div key={block.id} className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card" dangerouslySetInnerHTML={{ __html: url }} />;
+        }
+        
+        if (block.type === 'FILE') {
+            const isPdf = url.toLowerCase().endsWith('.pdf');
+            if (isPdf) return <PdfViewer url={url} key={block.id} />;
+            
+            const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url.toLowerCase());
+            const isOfficeDoc = url.toLowerCase().endsWith('.docx');
+            
+            if (isOfficeDoc) return <div key={block.id} className="my-4"><DocxPreviewer url={url}/></div>;
+            
+            if (isImage) {
+                return (
+                     <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md flex justify-center group relative cursor-pointer" onClick={() => setImageToView(url)}>
+                        <div className="relative aspect-video w-full max-w-4xl p-2">
+                            <Image src={url} alt={`Preview: ${selectedLesson?.title}`} fill className="object-contain p-2" priority quality={100} data-ai-hint="lesson file" />
+                        </div>
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <Expand className="h-12 w-12 text-white"/>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div key={block.id} className="my-4 p-4 bg-muted/50 rounded-md text-center">
+                    <p className="text-sm text-muted-foreground mb-2">Este recurso es un archivo descargable:</p>
+                    <Button asChild size="sm">
+                        <Link href={url} target="_blank" rel="noopener noreferrer" download>
+                            <Download className="mr-2 h-4 w-4" /> Descargar Archivo
+                        </Link>
+                    </Button>
+                </div>
+            );
+        }
+
+        return null;
+    };
 
   const renderLessonContent = () => {
     if (!selectedLesson) {
@@ -572,7 +566,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                     <GraduationCap className="h-5 w-5 text-primary" />
                     <h2>{selectedLesson.title}</h2>
                 </div>
-                {(selectedLesson.contentBlocks || []).map(block => renderContentBlock(block))}
+                {selectedLesson.contentBlocks.map((block, index, allBlocks) => renderContentBlock(block, index, allBlocks))}
             </div>
         )
     }
@@ -794,7 +788,9 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         {/* Image Viewer Modal */}
         <Dialog open={!!imageToView} onOpenChange={(isOpen) => !isOpen && setImageToView(null)}>
             <DialogContent className="w-screen h-screen max-w-full max-h-full p-2 bg-black/80 backdrop-blur-sm border-0 rounded-none">
-                <DialogTitle className="sr-only">Visor de Imagen</DialogTitle>
+                <DialogHeader>
+                    <DialogTitle className="sr-only">Visor de Imagen</DialogTitle>
+                </DialogHeader>
                  <div className="absolute top-4 right-4 z-50">
                     <Button variant="ghost" size="icon" className="text-white hover:text-white hover:bg-white/20" onClick={() => setImageToView(null)}>
                         <X className="h-6 w-6"/>
