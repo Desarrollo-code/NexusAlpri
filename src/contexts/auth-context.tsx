@@ -44,7 +44,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { setTheme } = useTheme();
 
   const fetchSessionData = useCallback(async () => {
-    console.log('[AuthContext] Iniciando fetchSessionData...');
     try {
         const [settingsRes, userRes] = await Promise.all([
             fetch('/api/settings', { cache: 'no-store' }),
@@ -53,26 +52,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         const settingsData = settingsRes.ok ? await settingsRes.json() : DEFAULT_SETTINGS;
         setSettings(settingsData);
-        console.log('[AuthContext] Configuración cargada:', settingsData.platformName);
         
         if (userRes.ok) {
           const userData = await userRes.json();
-          setUser(userData.user);
-          if (userData.user?.theme) {
-            setTheme(userData.user.theme);
+          const fetchedUser = userData.user;
+          setUser(fetchedUser);
+          if (fetchedUser?.theme) {
+            setTheme(fetchedUser.theme);
           }
-          console.log('[AuthContext] Sesión de usuario encontrada:', userData.user.email);
         } else {
           setUser(null);
-          console.log('[AuthContext] No se encontró sesión de usuario (status: ' + userRes.status + ').');
+          setTheme('dark'); // Reset to default if no user
         }
     } catch (error) {
         console.error("[AuthContext] Fallo al obtener los datos de la sesión:", error);
         setUser(null);
         setSettings(DEFAULT_SETTINGS);
+        setTheme('dark'); // Reset to default on error
     } finally {
         setIsLoading(false);
-        console.log('[AuthContext] finalizó fetchSessionData.');
     }
   }, [setTheme]);
 
@@ -97,7 +95,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Fallo al llamar a la API de logout", error);
     } finally {
       setUser(null);
-      setTheme('dark'); 
+      setTheme('light'); // Reset theme to light for public pages on logout
       router.push('/sign-in');
     }
   }, [router, setTheme]);
@@ -105,9 +103,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const updateUser = useCallback((updatedData: Partial<User>) => {
     setUser(prevUser => {
       if (!prevUser) return null;
+      // If theme is being updated, also apply it
+      if (updatedData.theme) {
+        setTheme(updatedData.theme);
+      }
       return { ...prevUser, ...updatedData };
     });
-  }, []);
+  }, [setTheme]);
 
   const updateSettings = useCallback((updatedData: Partial<PlatformSettings>) => {
     setSettings(prevSettings => {

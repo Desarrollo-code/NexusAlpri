@@ -24,10 +24,10 @@ export default function PublicLayout({
 
   // Forzar el tema claro en las páginas públicas
   useEffect(() => {
-    if (theme !== 'light') {
+    if (theme !== 'light' && !user) {
       setTheme('light');
     }
-  }, [theme, setTheme]);
+  }, [theme, setTheme, user]);
   
   return (
     <div className="relative flex flex-col min-h-screen items-center antialiased bg-background text-slate-900">

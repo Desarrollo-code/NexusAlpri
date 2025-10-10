@@ -45,8 +45,10 @@ function ThemeToggle() {
         body: JSON.stringify({ theme: newTheme }),
       });
       if (!response.ok) throw new Error('Failed to save theme preference');
+      
+      // Update user context with latest data from server
       const updatedUser = await response.json();
-      updateUser(updatedUser); // Update context with the full user object from the server
+      updateUser(updatedUser); 
     } catch (error) {
       console.error('Error saving theme:', error);
       // Revert optimistic update if save fails
