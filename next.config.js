@@ -53,6 +53,10 @@ const nextConfig = {
         hostname: 'izefimwyuayfvektsstg.supabase.co',
         pathname: '/storage/v1/object/public/announcement_attachments/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'img.youtube.com',
+      },
     ],
   },
 };
