@@ -272,7 +272,7 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
             if (block.type === 'QUIZ') return (
                  <div className="flex items-center gap-2 w-full">
                     <Input value={block.quiz?.title || ''} onChange={e => onUpdate('quiz', { ...block.quiz, title: e.target.value })} placeholder="Título del Quiz" disabled={isSaving} />
-                    <Button variant="outline" size="sm" className="shrink-0" onClick={() => setShowQuizEditor(true)}>
+                    <Button variant="outline" size="sm" className="shrink-0" onClick={(e) => { e.stopPropagation(); setShowQuizEditor(true); }}>
                         <Pencil className="mr-2 h-4 w-4" /> Editar Quiz
                     </Button>
                     <QuizEditorModal 
