@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 'use client';
 
@@ -162,16 +163,15 @@ const LessonItem = React.forwardRef<HTMLDivElement, { lesson: AppLesson; onUpdat
                             {lesson.contentBlocks.map((block, blockIndex) => (
                                 <Draggable key={block.id} draggableId={block.id} index={blockIndex}>
                                      {(provided) => (
-                                        <ContentBlockItem
-                                            block={block} 
-                                            onUpdate={(field, value) => onBlockUpdate(blockIndex, field, value)} 
-                                            onDelete={() => onBlockDelete(blockIndex)} 
-                                            onQuizUpdate={(updatedQuiz) => onQuizUpdate(blockIndex, updatedQuiz)}
-                                            isSaving={isSaving}
-                                            ref={provided.innerRef}
-                                            {...provided.draggableProps}
-                                            {...provided.dragHandleProps}
-                                        />
+                                        <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                                            <ContentBlockItem
+                                                block={block} 
+                                                onUpdate={(field, value) => onBlockUpdate(blockIndex, field, value)} 
+                                                onDelete={() => onBlockDelete(blockIndex)} 
+                                                onQuizUpdate={(updatedQuiz) => onQuizUpdate(blockIndex, updatedQuiz)}
+                                                isSaving={isSaving}
+                                            />
+                                        </div>
                                      )}
                                 </Draggable>
                             ))}
@@ -189,113 +189,111 @@ const LessonItem = React.forwardRef<HTMLDivElement, { lesson: AppLesson; onUpdat
 LessonItem.displayName = 'LessonItem';
 
 
-const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock; onUpdate: (field: string, value: any) => void; onQuizUpdate: (updatedQuiz: AppQuiz) => void; isSaving: boolean; onDelete: () => void; }>(
-    ({ block, onUpdate, onQuizUpdate, isSaving, onDelete, ...rest }, ref) => {
-        const [showQuizEditor, setShowQuizEditor] = useState(false);
-        const [isFileUploading, setIsFileUploading] = useState(false);
-        const [fileUploadProgress, setFileUploadProgress] = useState(0);
-        const [localPreview, setLocalPreview] = useState<string | null>(null);
-        const { toast } = useToast();
+const ContentBlockItem = ({ block, onUpdate, onQuizUpdate, isSaving, onDelete }) => {
+    const [showQuizEditor, setShowQuizEditor] = useState(false);
+    const [isFileUploading, setIsFileUploading] = useState(false);
+    const [fileUploadProgress, setFileUploadProgress] = useState(0);
+    const [localPreview, setLocalPreview] = useState<string | null>(null);
+    const { toast } = useToast();
 
-        useEffect(() => {
-            // Cleanup object URL
-            return () => {
-                if (localPreview) {
-                    URL.revokeObjectURL(localPreview);
-                }
-            };
-        }, [localPreview]);
-
-
-        const handleFileSelect = async (file: File | null) => {
-            if (!file) return;
-
-            if (file.type.startsWith('image/')) {
-                const previewUrl = URL.createObjectURL(file);
-                setLocalPreview(previewUrl);
-            }
-
-            setIsFileUploading(true);
-            setFileUploadProgress(0);
-            
-            try {
-                const result = await uploadWithProgress('/api/upload/lesson-file', file, setFileUploadProgress);
-                onUpdate('content', result.url);
-                toast({ title: 'Archivo Subido', description: `El archivo ${file.name} se ha subido correctamente.`});
-            } catch (err) {
-                 toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
-                 setLocalPreview(null); // Clear preview on error
-            } finally {
-                setIsFileUploading(false);
+    useEffect(() => {
+        return () => {
+            if (localPreview) {
+                URL.revokeObjectURL(localPreview);
             }
         };
+    }, [localPreview]);
 
-        const renderBlockContent = () => {
-            if (block.type === 'TEXT') return <RichTextEditor value={block.content || ''} onChange={value => onUpdate('content', value)} placeholder="Escribe aquí el contenido o pega un enlace externo..." disabled={isSaving} />;
-            if (block.type === 'VIDEO') return <Input value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="URL del video de YouTube" disabled={isSaving} />;
-            if (block.type === 'FILE') {
-                const displayUrl = localPreview || block.content;
-                const isImage = displayUrl?.match(/\.(jpeg|jpg|gif|png|webp)$/) != null || localPreview?.startsWith('blob:');
 
-                if (displayUrl && !isFileUploading) {
-                    const fileName = block.content?.split('/').pop()?.split('-').slice(2).join('-') || 'Archivo';
-                    return (
-                        <div className="flex items-center gap-2 p-2 rounded-md border bg-background min-w-0">
-                            {isImage ? (
-                                <div className="w-10 h-10 relative rounded flex-shrink-0">
-                                  <Image src={displayUrl} alt="Preview" fill className="object-cover" />
-                                </div>
-                            ) : (
-                               <FileGenericIcon className="h-5 w-5 text-primary shrink-0" />
-                            )}
-                            <span className="text-sm font-medium text-foreground truncate flex-grow min-w-0" title={fileName}>
-                                {fileName}
-                            </span>
-                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive rounded-full" onClick={() => { onUpdate('content', ''); setLocalPreview(null); }}>
-                                <XCircle className="h-4 w-4"/>
-                            </Button>
-                        </div>
-                    );
-                }
+    const handleFileSelect = async (file: File | null) => {
+        if (!file) return;
+
+        if (file.type.startsWith('image/')) {
+            const previewUrl = URL.createObjectURL(file);
+            setLocalPreview(previewUrl);
+        }
+
+        setIsFileUploading(true);
+        setFileUploadProgress(0);
+        
+        try {
+            const result = await uploadWithProgress('/api/upload/lesson-file', file, setFileUploadProgress);
+            onUpdate('content', result.url);
+            toast({ title: 'Archivo Subido', description: `El archivo ${file.name} se ha subido correctamente.`});
+        } catch (err) {
+             toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
+             setLocalPreview(null);
+        } finally {
+            setIsFileUploading(false);
+        }
+    };
+
+    const renderBlockContent = () => {
+        if (block.type === 'TEXT') return <RichTextEditor value={block.content || ''} onChange={value => onUpdate('content', value)} placeholder="Escribe aquí el contenido o pega un enlace externo..." disabled={isSaving} />;
+        if (block.type === 'VIDEO') return <Input value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="URL del video de YouTube" disabled={isSaving} />;
+        if (block.type === 'FILE') {
+            const displayUrl = localPreview || block.content;
+            const isImage = displayUrl?.match(/\.(jpeg|jpg|gif|png|webp)$/) != null || localPreview?.startsWith('blob:');
+
+            if (displayUrl && !isFileUploading) {
+                const fileName = block.content?.split('/').pop()?.split('-').slice(2).join('-') || 'Archivo';
                 return (
-                    <div className="space-y-2">
-                        <UploadArea onFileSelect={handleFileSelect} disabled={isSaving || isFileUploading} />
-                         {isFileUploading && (
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                <Progress value={fileUploadProgress} className="w-full h-1.5" />
-                                <span>{fileUploadProgress}%</span>
+                    <div className="flex items-center gap-2 p-2 rounded-md border bg-background min-w-0">
+                        {isImage ? (
+                            <div className="w-10 h-10 relative rounded flex-shrink-0">
+                              <Image src={displayUrl} alt="Preview" fill className="object-cover" />
                             </div>
+                        ) : (
+                           <FileGenericIcon className="h-5 w-5 text-primary shrink-0" />
                         )}
+                        <span className="text-sm font-medium text-foreground truncate flex-grow min-w-0" title={fileName}>
+                            {fileName}
+                        </span>
+                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive rounded-full" onClick={() => { onUpdate('content', ''); setLocalPreview(null); }}>
+                            <XCircle className="h-4 w-4"/>
+                        </Button>
                     </div>
                 );
             }
-            if (block.type === 'QUIZ') return (
-                 <div className="flex items-center gap-2 w-full">
-                    <Input value={block.quiz?.title || ''} onChange={e => onUpdate('quiz', { ...block.quiz, title: e.target.value })} placeholder="Título del Quiz" disabled={isSaving} />
-                    <Button variant="outline" size="sm" className="shrink-0" onClick={(e) => { e.stopPropagation(); setShowQuizEditor(true); }}>
-                        <Pencil className="mr-2 h-4 w-4" /> Editar Quiz
-                    </Button>
-                    <QuizEditorModal 
-                        isOpen={showQuizEditor} 
-                        onClose={() => setShowQuizEditor(false)} 
-                        quiz={block.quiz}
-                        onSave={onQuizUpdate}
-                    />
+            return (
+                <div className="space-y-2">
+                    <UploadArea onFileSelect={handleFileSelect} disabled={isSaving || isFileUploading} />
+                     {isFileUploading && (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Progress value={fileUploadProgress} className="w-full h-1.5" />
+                            <span>{fileUploadProgress}%</span>
+                        </div>
+                    )}
                 </div>
             );
-            return null;
-        };
-
-        return (
-            <div ref={ref} {...rest} className="flex items-start gap-2 bg-muted/50 p-2 rounded">
-                 <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab mt-2" />
-                 <div className="flex-grow min-w-0">{renderBlockContent()}</div>
-                 <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive shrink-0" onClick={onDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
-            </div>
+        }
+        if (block.type === 'QUIZ') return (
+            <>
+                <div className="flex items-center gap-2 w-full">
+                    <Input value={block.quiz?.title || ''} onChange={e => onUpdate('quiz', { ...block.quiz, title: e.target.value })} placeholder="Título del Quiz" disabled={isSaving} />
+                    <Button variant="outline" size="sm" className="shrink-0" onClick={() => setShowQuizEditor(true)}>
+                        <Pencil className="mr-2 h-4 w-4" /> Editar Quiz
+                    </Button>
+                </div>
+                <QuizEditorModal 
+                    isOpen={showQuizEditor} 
+                    onClose={() => setShowQuizEditor(false)} 
+                    quiz={block.quiz}
+                    onSave={onQuizUpdate}
+                />
+            </>
         );
-    }
-);
-ContentBlockItem.displayName = 'ContentBlockItem';
+        return null;
+    };
+
+    return (
+        <div className="flex items-start gap-2 bg-muted/50 p-2 rounded">
+            <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab mt-2" />
+            <div className="flex-grow min-w-0">{renderBlockContent()}</div>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive shrink-0" onClick={onDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
+        </div>
+    );
+};
 
 
 // === COMPONENTE PRINCIPAL DE LA PÁGINA (CourseEditor) ===
@@ -1119,3 +1117,4 @@ const SaveTemplateModal = ({ isOpen, onClose, onSave }) => {
         </Dialog>
     )
 };
+
