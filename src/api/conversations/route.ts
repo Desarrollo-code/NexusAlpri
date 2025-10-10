@@ -69,8 +69,8 @@ export async function POST(req: NextRequest) {
   try {
     const { recipientId, content, attachments } = await req.json();
 
-    if (!recipientId || (!content && (!attachments || attachments.length === 0))) {
-      return NextResponse.json({ message: 'Se requiere destinatario y contenido o adjuntos.' }, { status: 400 });
+    if (!recipientId || (!content?.trim() && (!attachments || attachments.length === 0))) {
+      return NextResponse.json({ message: 'Se requiere destinatario y contenido o al menos un adjunto.' }, { status: 400 });
     }
 
     if (recipientId === session.id) {
