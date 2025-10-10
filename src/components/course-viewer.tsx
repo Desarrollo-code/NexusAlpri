@@ -479,7 +479,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             return (
                 <div key={textBlock.id + '-' + imageBlock.id} className="flex flex-col md:flex-row gap-4 my-4">
                     <div className="flex-1 w-full prose dark:prose-invert prose-sm max-w-none p-3 border rounded-md bg-card" dangerouslySetInnerHTML={{ __html: textBlock.content || '' }} />
-                    <div className="flex-1 w-full relative p-2 bg-muted/30 rounded-md cursor-pointer" onClick={() => setImageToView(imageBlock.content)}>
+                    <div className="flex-1 w-full relative h-64 md:h-auto p-2 bg-muted/30 rounded-md cursor-pointer" onClick={() => setImageToView(imageBlock.content)}>
                         <Image src={imageBlock.content!} alt="Visual support for lesson content" fill className="object-contain p-2" priority quality={100} data-ai-hint="lesson visual aid" />
                     </div>
                 </div>
