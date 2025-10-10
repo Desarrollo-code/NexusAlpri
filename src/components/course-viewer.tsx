@@ -179,8 +179,14 @@ const LessonNotesPanel = ({ lessonId, isOpen, onClose }: { lessonId: string, isO
 
 const VideoPlayer = ({ videoUrl, lessonTitle, onVideoEnd }: { videoUrl: string, lessonTitle?: string, onVideoEnd: () => void }) => {
     const videoId = getYoutubeVideoId(videoUrl);
+    const [error, setError] = useState(false);
     
     if (!videoId) return null;
+
+    const onPlayerError = (event: any) => {
+        console.error("Error en el reproductor de YouTube:", event.data);
+        setError(true);
+    };
 
     const opts = {
       height: '100%',
@@ -189,17 +195,27 @@ const VideoPlayer = ({ videoUrl, lessonTitle, onVideoEnd }: { videoUrl: string, 
         autoplay: 0,
         rel: 0,
         modestbranding: 1,
+        origin: typeof window !== 'undefined' ? window.location.origin : '',
       },
     };
 
     return (
         <div className="aspect-video w-full max-w-4xl mx-auto my-4 rounded-lg overflow-hidden shadow-md relative group bg-black">
-            <YouTube
-                videoId={videoId}
-                className="w-full h-full"
-                onEnd={onVideoEnd}
-                opts={opts}
-            />
+            {error ? (
+                <div className="w-full h-full flex flex-col items-center justify-center bg-destructive text-destructive-foreground p-4">
+                    <AlertTriangle className="h-8 w-8 mb-2" />
+                    <p className="font-semibold">Error al cargar el video</p>
+                    <p className="text-sm">Este video no se puede reproducir aquí.</p>
+                </div>
+            ) : (
+                <YouTube
+                    videoId={videoId}
+                    className="w-full h-full"
+                    onEnd={onVideoEnd}
+                    onError={onPlayerError}
+                    opts={opts}
+                />
+            )}
         </div>
     );
 }
@@ -762,6 +778,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                         alt="Vista ampliada de la imagen de la lección"
                         fill
                         className="object-contain"
+                        quality={100}
                     />
                 </div>
             </DialogContent>
