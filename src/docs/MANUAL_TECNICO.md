@@ -1,4 +1,3 @@
-
 # Manual Técnico de NexusAlpri
 
 ## 1. Introducción
@@ -126,7 +125,7 @@ Para ejecutar `prisma migrate dev`, Prisma necesita una conexión directa a la b
 
 ### 5.2. Almacenamiento de Archivos (Supabase Storage)
 
-Para que la subida de archivos funcione, **debes crear manualmente los "buckets" públicos** en Supabase: `avatars`, `course_images`, `settings_images`, `lesson_files`, `resource_library`, `announcement_attachments`.
+Para que la subida de archivos funcione, **debes crear manualmente los "buckets" públicos** en Supabase: `avatars`, `course_images`, `settings_images`, `lesson_files`, `resource_library`, `announcement_attachments`, `chat_attachments`.
 
 ### 5.3. Comandos de Prisma
 
