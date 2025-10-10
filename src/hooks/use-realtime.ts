@@ -39,7 +39,7 @@ export function useRealtime(
           handleIncomingEvent(payload.payload); // El payload anidado contiene nuestro evento y datos.
       })
       .on('broadcast', { event: 'chat_message' }, (payload) => {
-          handleIncomingEvent(payload);
+          handleIncomingEvent(payload.payload); // Para el chat, el payload directo es el mensaje
       })
       .subscribe((status, err) => {
         if (status === 'SUBSCRIBED') {

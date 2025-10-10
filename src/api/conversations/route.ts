@@ -146,25 +146,24 @@ export async function POST(req: NextRequest) {
     // Send real-time notification to the recipient
     if (supabaseAdmin) {
         const channelName = `user:${recipientId}`;
-        
-        // --- CORRECCIÓN: Usar el payload pre-construido ---
+        const channel = supabaseAdmin.channel(channelName);
         const broadcastPayload = {
             event: 'chat_message',
             payload: {
                 ...newMessage,
-                author: messagePayloadForRT.author, // Asegurar que el autor está aquí
+                author: messagePayloadForRT.author,
             },
         };
 
-        const { error } = await supabaseAdmin.from('RealtimeMessage').insert({
-            channel: channelName,
+        // Usa el cliente de admin para enviar el broadcast
+        const status = await channel.send({
+            type: 'broadcast',
             event: broadcastPayload.event,
             payload: broadcastPayload.payload,
         });
 
-        if (error) {
-            console.error("Supabase broadcast error:", error);
-            // No lanzar un error aquí para que el cliente reciba la respuesta HTTP 201
+        if (status !== 'ok') {
+            console.error("Supabase broadcast error:", status);
         }
     }
 
