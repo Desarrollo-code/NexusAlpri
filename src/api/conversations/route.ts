@@ -99,6 +99,21 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // --- CORRECCIÓN: Preparar el payload del mensaje ANTES de la transacción ---
+    const messagePayloadForRT = {
+        content: content || null,
+        authorId: session.id,
+        conversationId: conversation.id,
+        createdAt: new Date().toISOString(),
+        author: {
+            id: session.id,
+            name: session.name,
+            avatar: session.avatar,
+        },
+        attachments: attachments || [],
+    };
+
+
     // Create the new message and update the conversation's updatedAt timestamp
     const [newMessage] = await prisma.$transaction([
       prisma.message.create({
@@ -131,15 +146,26 @@ export async function POST(req: NextRequest) {
     // Send real-time notification to the recipient
     if (supabaseAdmin) {
         const channelName = `user:${recipientId}`;
-        const payload = {
+        
+        // --- CORRECCIÓN: Usar el payload pre-construido ---
+        const broadcastPayload = {
             event: 'chat_message',
-            payload: newMessage,
+            payload: {
+                ...newMessage,
+                author: messagePayloadForRT.author, // Asegurar que el autor está aquí
+            },
         };
-        await supabaseAdmin.from('RealtimeMessage').insert({
+
+        const { error } = await supabaseAdmin.from('RealtimeMessage').insert({
             channel: channelName,
-            event: payload.event,
-            payload: payload.payload,
+            event: broadcastPayload.event,
+            payload: broadcastPayload.payload,
         });
+
+        if (error) {
+            console.error("Supabase broadcast error:", error);
+            // No lanzar un error aquí para que el cliente reciba la respuesta HTTP 201
+        }
     }
 
     return NextResponse.json(newMessage, { status: 201 });
