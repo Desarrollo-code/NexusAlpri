@@ -151,8 +151,8 @@ async function main() {
   const lesson1_1 = await prisma.lesson.upsert({ where: { id: 'clseedlesson11' }, update: {}, create: { id: 'clseedlesson11', title: '¿Qué es el Marketing Digital?', moduleId: module1.id, order: 0 }});
   await prisma.contentBlock.upsert({ where: { id: 'clseedblock111' }, update: {}, create: { id: 'clseedblock111', type: 'TEXT', content: '<p>El marketing digital es la aplicación de las estrategias de comercialización llevadas a cabo en los medios digitales.</p>', lessonId: lesson1_1.id, order: 0 }});
   const lesson1_2 = await prisma.lesson.upsert({ where: { id: 'clseedlesson12' }, update: {}, create: { id: 'clseedlesson12', title: 'Video: ¿Qué es el SEO?', moduleId: module1.id, order: 1 }});
-  // Video de YouTube que permite inserción
-  await prisma.contentBlock.upsert({ where: { id: 'clseedblock121' }, update: { content: 'https://www.youtube.com/watch?v=mP03-G7Y_Gk' }, create: { id: 'clseedblock121', type: 'VIDEO', content: 'https://www.youtube.com/watch?v=mP03-G7Y_Gk', lessonId: lesson1_2.id, order: 0 }});
+  // Video de YouTube que permite inserción (video de prueba de YouTube)
+  await prisma.contentBlock.upsert({ where: { id: 'clseedblock121' }, update: { content: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }, create: { id: 'clseedblock121', type: 'VIDEO', content: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', lessonId: lesson1_2.id, order: 0 }});
   
   // Para inscripciones, es mejor verificar y crear si no existen, para no sobreescribir progreso.
   await prisma.enrollment.upsert({ where: { userId_courseId: { userId: student1Id, courseId: courseInstructor.id } }, update: {}, create: { userId: student1Id, courseId: courseInstructor.id, progress: { create: { userId: student1Id, courseId: courseInstructor.id }}}});
