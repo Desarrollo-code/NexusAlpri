@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
         AND: [
           { participants: { some: { id: session.id } } },
           { participants: { some: { id: recipientId } } },
-          { isGroup: false }
+          { participants: { count: 2 } } // Ensure it's a 1-on-1 chat
         ]
       },
     });
@@ -146,16 +146,16 @@ export async function POST(req: NextRequest) {
     // Send real-time notification to the recipient
     if (supabaseAdmin) {
         const channelName = `user:${recipientId}`;
-        const channel = supabaseAdmin.channel(channelName);
+        
         const broadcastPayload = {
             event: 'chat_message',
             payload: {
                 ...newMessage,
-                author: messagePayloadForRT.author,
+                author: messagePayloadForRT.author, // Ensure author data is included
             },
         };
 
-        // Usa el cliente de admin para enviar el broadcast
+        const channel = supabaseAdmin.channel(channelName);
         const status = await channel.send({
             type: 'broadcast',
             event: broadcastPayload.event,
