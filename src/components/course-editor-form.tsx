@@ -163,13 +163,14 @@ const LessonItem = React.forwardRef<HTMLDivElement, { lesson: AppLesson; onUpdat
                             {lesson.contentBlocks.map((block, blockIndex) => (
                                 <Draggable key={block.id} draggableId={block.id} index={blockIndex}>
                                      {(provided) => (
-                                        <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                                        <div ref={provided.innerRef} {...provided.draggableProps}>
                                             <ContentBlockItem
                                                 block={block} 
                                                 onUpdate={(field, value) => onBlockUpdate(blockIndex, field, value)} 
                                                 onDelete={() => onBlockDelete(blockIndex)} 
                                                 onQuizUpdate={(updatedQuiz) => onQuizUpdate(blockIndex, updatedQuiz)}
                                                 isSaving={isSaving}
+                                                dragHandleProps={provided.dragHandleProps}
                                             />
                                         </div>
                                      )}
@@ -189,7 +190,7 @@ const LessonItem = React.forwardRef<HTMLDivElement, { lesson: AppLesson; onUpdat
 LessonItem.displayName = 'LessonItem';
 
 
-const ContentBlockItem = ({ block, onUpdate, onQuizUpdate, isSaving, onDelete }) => {
+const ContentBlockItem = ({ block, onUpdate, onQuizUpdate, isSaving, onDelete, dragHandleProps }) => {
     const [showQuizEditor, setShowQuizEditor] = useState(false);
     const [isFileUploading, setIsFileUploading] = useState(false);
     const [fileUploadProgress, setFileUploadProgress] = useState(0);
@@ -271,7 +272,7 @@ const ContentBlockItem = ({ block, onUpdate, onQuizUpdate, isSaving, onDelete })
             <>
                 <div className="flex items-center gap-2 w-full">
                     <Input value={block.quiz?.title || ''} onChange={e => onUpdate('quiz', { ...block.quiz, title: e.target.value })} placeholder="Título del Quiz" disabled={isSaving} />
-                    <Button variant="outline" size="sm" className="shrink-0" onClick={() => setShowQuizEditor(true)}>
+                    <Button variant="outline" size="sm" className="shrink-0" onClick={(e) => { e.stopPropagation(); setShowQuizEditor(true); }}>
                         <Pencil className="mr-2 h-4 w-4" /> Editar Quiz
                     </Button>
                 </div>
@@ -288,7 +289,9 @@ const ContentBlockItem = ({ block, onUpdate, onQuizUpdate, isSaving, onDelete })
 
     return (
         <div className="flex items-start gap-2 bg-muted/50 p-2 rounded">
-            <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab mt-2" />
+            <div {...dragHandleProps} className="p-1 cursor-grab touch-none mt-2">
+                <GripVertical className="h-5 w-5 text-muted-foreground" />
+            </div>
             <div className="flex-grow min-w-0">{renderBlockContent()}</div>
             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive shrink-0" onClick={onDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
         </div>
@@ -1118,3 +1121,6 @@ const SaveTemplateModal = ({ isOpen, onClose, onSave }) => {
     )
 };
 
+
+
+    
