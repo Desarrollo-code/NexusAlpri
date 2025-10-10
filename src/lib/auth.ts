@@ -42,8 +42,7 @@ export async function createSession(userId: string) {
   const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
   const session = await encrypt({ userId, expires });
   
-  const cookieStore = await cookies();
-  cookieStore.set('session', session, {
+  cookies().set('session', session, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     maxAge: 60 * 60 * 24 * 7, // 7 days in seconds
@@ -53,14 +52,12 @@ export async function createSession(userId: string) {
 }
 
 export async function deleteSession() {
-  const cookieStore = await cookies();
-  cookieStore.set('session', '', { expires: new Date(0), path: '/' });
+  cookies().set('session', '', { expires: new Date(0), path: '/' });
 }
 
 export const getUserFromSession = cache(async (): Promise<PrismaUser | null> => {
   try {
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get('session')?.value;
+    const sessionCookie = cookies().get('session')?.value;
     
     if (!sessionCookie) {
       return null;
@@ -89,11 +86,11 @@ export const getUserFromSession = cache(async (): Promise<PrismaUser | null> => 
 });
 
 
-export async function getCurrentUser() {
+export const getCurrentUser = cache(async () => {
     try {
         return await getUserFromSession();
     } catch(error) {
         console.error("Error in getCurrentUser, likely DB connection issue:", error);
         return null;
     }
-}
+});
