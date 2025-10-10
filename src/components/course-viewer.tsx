@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 'use client';
 
@@ -477,9 +478,9 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             const textBlock = block;
             const imageBlock = allBlocks[index + 1];
             return (
-                <div key={textBlock.id + '-' + imageBlock.id} className="flex flex-col md:flex-row gap-4 my-4">
-                    <div className="flex-1 w-full prose dark:prose-invert prose-sm max-w-none p-3 border rounded-md bg-card" dangerouslySetInnerHTML={{ __html: textBlock.content || '' }} />
-                    <div className="flex-1 w-full relative h-64 md:h-auto p-2 bg-muted/30 rounded-md cursor-pointer" onClick={() => setImageToView(imageBlock.content)}>
+                <div key={textBlock.id + '-' + imageBlock.id} className="flex flex-col md:flex-row gap-4 my-4 items-stretch">
+                    <div className="md:flex-1 w-full prose dark:prose-invert prose-sm max-w-none p-3 border rounded-md bg-card" dangerouslySetInnerHTML={{ __html: textBlock.content || '' }} />
+                    <div className="md:flex-1 w-full h-64 md:h-auto relative p-2 bg-muted/30 rounded-md cursor-pointer" onClick={() => setImageToView(imageBlock.content)}>
                         <Image src={imageBlock.content!} alt="Visual support for lesson content" fill className="object-contain p-2" priority quality={100} data-ai-hint="lesson visual aid" />
                     </div>
                 </div>
@@ -787,7 +788,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
 
         {/* Image Viewer Modal */}
         <Dialog open={!!imageToView} onOpenChange={(isOpen) => !isOpen && setImageToView(null)}>
-            <DialogContent className="w-screen h-screen max-w-full max-h-full p-2 bg-black/80 backdrop-blur-sm border-0 rounded-none">
+            <DialogContent className="w-screen h-screen max-w-full max-h-full p-2 flex items-center justify-center bg-black/80 backdrop-blur-sm border-0 rounded-none">
                 <DialogHeader>
                     <DialogTitle className="sr-only">Visor de Imagen</DialogTitle>
                 </DialogHeader>
@@ -797,7 +798,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                         <span className="sr-only">Cerrar</span>
                     </Button>
                 </div>
-                <div className="relative w-full h-full">
+                <div className="relative w-full h-full max-w-6xl max-h-[90vh]">
                     <Image
                         src={imageToView || ''}
                         alt="Vista ampliada de la imagen de la lección"
