@@ -280,7 +280,7 @@ function StudentDashboard({ stats, announcements, myCourses, assignedCourses }: 
           <MetricCard title="Cursos Completados" value={stats.completed} icon={CheckCircle} gradient="bg-gradient-green" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <main className="lg:col-span-2 space-y-6">
           <section id="continue-learning-section">
             <div className="flex items-center justify-between mb-4">
@@ -308,7 +308,7 @@ function StudentDashboard({ stats, announcements, myCourses, assignedCourses }: 
           </section>
         </main>
         
-        <aside className="lg:col-span-1 space-y-6">
+        <aside className="lg:col-span-1 space-y-8">
           <Card className="card-border-animated sticky top-24" id="quick-access-student">
             <CardHeader><CardTitle>Accesos Rápidos</CardTitle></CardHeader>
             <CardContent>
@@ -319,23 +319,27 @@ function StudentDashboard({ stats, announcements, myCourses, assignedCourses }: 
               </ul>
             </CardContent>
           </Card>
-          <section id="recent-announcements-student">
-            <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-semibold">Anuncios</h2>
-                 <Button asChild variant="link">
-                    <Link href="/announcements">Ver todos <ArrowRight className="ml-2 h-4 w-4"/></Link>
-                </Button>
-            </div>
-            {announcements.length > 0 ? (
-              <div className="grid grid-cols-1 gap-4">
-                {announcements.slice(0,1).map(announcement => (
-                  <AnnouncementCard key={announcement.id} announcement={announcement} />
-                ))}
+          <Card id="recent-announcements-student">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold">Anuncios</h2>
+                  <Button asChild variant="link" className="-mr-4">
+                      <Link href="/announcements">Ver todos <ArrowRight className="ml-2 h-4 w-4"/></Link>
+                  </Button>
               </div>
-            ) : (
-              <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No hay anuncios recientes.</p></CardContent></Card>
-            )}
-          </section>
+            </CardHeader>
+            <CardContent>
+              {announcements.length > 0 ? (
+                <div className="grid grid-cols-1 gap-4">
+                  {announcements.slice(0,1).map(announcement => (
+                    <AnnouncementCard key={announcement.id} announcement={announcement} />
+                  ))}
+                </div>
+              ) : (
+                <p className="pt-6 text-center text-muted-foreground text-sm">No hay anuncios recientes.</p>
+              )}
+            </CardContent>
+          </Card>
         </aside>
       </div>
     </div>
@@ -350,7 +354,7 @@ function InstructorDashboard({ stats, announcements, taughtCourses }: { stats: {
           <MetricCard title="Cursos Impartidos" value={stats.taught} icon={BookMarked} gradient="bg-gradient-blue" />
           <MetricCard title="Total Estudiantes" value={stats.students} icon={Users} gradient="bg-gradient-green" description="En todos tus cursos"/>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <main className="lg:col-span-2 space-y-6">
             <section id="my-taught-courses">
                  <div className="flex items-center justify-between mb-4">
@@ -383,7 +387,7 @@ function InstructorDashboard({ stats, announcements, taughtCourses }: { stats: {
             </section>
         </main>
         
-        <aside className="lg:col-span-1 space-y-6">
+        <aside className="lg:col-span-1 space-y-8">
           <Card className="card-border-animated sticky top-24" id="quick-access-instructor">
             <CardHeader><CardTitle>Accesos Rápidos</CardTitle></CardHeader>
             <CardContent>
@@ -393,23 +397,27 @@ function InstructorDashboard({ stats, announcements, taughtCourses }: { stats: {
               </ul>
             </CardContent>
           </Card>
-           <section id="recent-announcements-instructor">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-semibold">Anuncios</h2>
-                 <Button asChild variant="link">
-                    <Link href="/announcements">Ver todos <ArrowRight className="ml-2 h-4 w-4"/></Link>
-                </Button>
-              </div>
-              {announcements.length > 0 ? (
-                <div className="grid grid-cols-1 gap-4">
-                  {announcements.slice(0,1).map(announcement => (
-                    <AnnouncementCard key={announcement.id} announcement={announcement} />
-                  ))}
+           <Card id="recent-announcements-instructor">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold">Anuncios</h2>
+                   <Button asChild variant="link" className="-mr-4">
+                      <Link href="/announcements">Ver todos <ArrowRight className="ml-2 h-4 w-4"/></Link>
+                  </Button>
                 </div>
-              ) : (
-                <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No hay anuncios recientes.</p></CardContent></Card>
-              )}
-            </section>
+              </CardHeader>
+              <CardContent>
+                {announcements.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-4">
+                    {announcements.slice(0,1).map(announcement => (
+                      <AnnouncementCard key={announcement.id} announcement={announcement} />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-center text-muted-foreground">No hay anuncios recientes.</p>
+                )}
+              </CardContent>
+            </Card>
         </aside>
       </div>
     </div>
