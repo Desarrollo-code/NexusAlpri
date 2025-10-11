@@ -1,3 +1,4 @@
+
 # Manual de Arquitectura y Diseño - NexusAlpri
 
 ## 1. Visión General de la Arquitectura
@@ -19,7 +20,27 @@ La elección de esta arquitectura se basa en tres pilares:
 
 ---
 
-## 2. Patrones de Diseño Utilizados
+## 2. Lógica de Páginas Unificadas
+
+Para mantener la interfaz limpia y la navegación intuitiva, varias funcionalidades se han consolidado en "páginas unificadas" que utilizan pestañas (Tabs) para separar contextos.
+
+### Ejemplo: Módulo de Comunicaciones (`/announcements`)
+
+*   **Antes:** Existían enlaces separados en el menú para "Anuncios" y "Notificaciones".
+*   **Ahora:** Se unificaron en una sola página, `/announcements`, con dos pestañas:
+    1.  **Pestaña "Anuncios":** Muestra el feed público de comunicados de la empresa. Es el tablón de anuncios general.
+    2.  **Pestaña "Notificaciones":** Funciona como una bandeja de entrada personal, mostrando alertas y avisos dirigidos específicamente al usuario (ej. asignación de un curso, recordatorios).
+
+**Ventajas de este enfoque:**
+*   **Reducción de Ruido:** El menú de navegación principal es más conciso y se centra en las áreas funcionales clave.
+*   **Coherencia Lógica:** Agrupa todas las formas de comunicación (pública y privada) bajo un mismo techo conceptual.
+*   **Escalabilidad:** Permite añadir futuras funcionalidades de comunicación (como un chat o menciones) simplemente como una nueva pestaña, sin alterar la estructura de navegación principal.
+
+Este mismo principio se aplica a otras secciones, como la página de **Formularios (`/forms`)**, que sirve tanto como un panel de gestión para creadores como un catálogo de formularios disponibles para los estudiantes.
+
+---
+
+## 3. Patrones de Diseño Utilizados
 
 *   **Provider Pattern (Patrón Proveedor):**
     *   **Uso:** Se utiliza para gestionar el estado global de la sesión del usuario (`AuthContext`) y el título de la página (`TitleContext`).
@@ -35,9 +56,9 @@ La elección de esta arquitectura se basa en tres pilares:
 
 ---
 
-## 3. Diagramas de Diseño (UML)
+## 4. Diagramas de Diseño (UML)
 
-### 3.1. Diagrama de Componentes de Alto Nivel
+### 4.1. Diagrama de Componentes de Alto Nivel
 
 ```
 +---------------------+      +------------------------------+      +-------------------------+
@@ -57,7 +78,7 @@ La elección de esta arquitectura se basa en tres pilares:
                              +------------------------------+      +-------------------------+
 ```
 
-### 3.2. Diagrama de Secuencia: Inicio de Sesión de Usuario
+### 4.2. Diagrama de Secuencia: Inicio de Sesión de Usuario
 
 ```
 [Usuario]       [Cliente]          [API Route: /api/auth/login]       [Prisma]            [Base de Datos]
@@ -81,7 +102,7 @@ La elección de esta arquitectura se basa en tres pilares:
    |                |                       |                           |                       |
 ```
 
-### 3.3. Diagrama de Despliegue
+### 4.3. Diagrama de Despliegue
 
 ```
 +------------------------------------------------+
@@ -110,7 +131,7 @@ La elección de esta arquitectura se basa en tres pilares:
 
 ---
 
-## 4. Diseño de la Base de Datos
+## 5. Diseño de la Base de Datos
 
 El sistema utiliza una base de datos **PostgreSQL**, gestionada a través del ORM **Prisma**. El esquema completo y la fuente de verdad se encuentra en `prisma/schema.prisma`.
 
@@ -131,7 +152,7 @@ Las relaciones clave son de uno a muchos (un instructor tiene muchos cursos, un 
 
 ---
 
-## 5. Consideraciones de Seguridad
+## 6. Consideraciones de Seguridad
 
 *   **Autenticación:** Se utiliza un sistema de **JSON Web Tokens (JWT)**. Tras un inicio de sesión exitoso, se genera un token firmado que se almacena en una **cookie `http-only`**. Esto previene que el token sea accedido por scripts del lado del cliente, mitigando ataques XSS.
 *   **Autorización:** La autorización se gestiona a dos niveles:
