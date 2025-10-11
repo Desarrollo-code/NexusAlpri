@@ -23,7 +23,7 @@ import { fontMap } from '@/lib/fonts';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Separator } from '../ui/separator';
 import { Switch } from '../ui/switch';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 
 interface CertificateEditorModalProps {
     isOpen: boolean;
@@ -247,58 +247,55 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
                     <DialogHeader className="p-4 border-b">
                         <DialogTitle className="flex items-center gap-2 text-xl font-bold"><Award className="h-5 w-5 text-primary"/>{template ? 'Editar Plantilla' : 'Nueva Plantilla'}</DialogTitle>
                     </DialogHeader>
-                    {/* The form now wraps the scrollable area */}
-                    <form id="template-form" onSubmit={handleFormSubmit} className="flex-1 flex flex-col min-h-0">
-                        <div className="flex-1 overflow-y-auto thin-scrollbar p-4 space-y-4">
-                            <Card>
-                                <CardHeader><CardTitle className="text-base flex items-center gap-2"><ImageIcon className="h-4 w-4"/> Identidad Visual</CardTitle></CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="space-y-1">
-                                        <Label htmlFor="template-name">Nombre</Label>
-                                        <Input id="template-name" value={name} onChange={e => setName(e.target.value)} required disabled={isSubmitting}/>
-                                    </div>
-                                    <UploadWidget
-                                       id="cert-image-upload"
-                                       label="Imagen de Fondo"
-                                       currentImageUrl={finalImageUrl}
-                                       onFileSelect={(file) => file && handleImageUpload(file)}
-                                       onRemove={handleRemoveImage}
-                                       disabled={isSubmitting}
-                                       isUploading={isUploading}
-                                       uploadProgress={uploadProgress}
-                                    />
-                                </CardContent>
-                            </Card>
-                            
-                            <Card>
-                                <CardHeader><CardTitle className="text-base flex items-center gap-2"><PaletteIcon className="h-4 w-4"/> Estilos de Texto</CardTitle></CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="space-y-1"><Label htmlFor="textColor" className="flex items-center gap-2">Color del Texto</Label><Input id="textColor" type="color" value={textColor} onChange={e => setTextColor(e.target.value)} className="w-full p-1 h-10" /></div>
-                                    <div className="space-y-1"><Label htmlFor="fontHeadline" className="flex items-center gap-2">Fuente de Títulos</Label><Select value={fontFamilyHeadline} onValueChange={setFontFamilyHeadline}><SelectTrigger id="fontHeadline"><SelectValue/></SelectTrigger><SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{fontFamily: (fontMap[f.value] as any)?.style.fontFamily}}>{f.label}</SelectItem>)}</SelectContent></Select></div>
-                                    <div className="space-y-1"><Label htmlFor="fontBody" className="flex items-center gap-2">Fuente del Cuerpo</Label><Select value={fontFamilyBody} onValueChange={setFontFamilyBody}><SelectTrigger id="fontBody"><SelectValue/></SelectTrigger><SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{fontFamily: (fontMap[f.value] as any)?.style.fontFamily}}>{f.label}</SelectItem>)}</SelectContent></Select></div>
-                                 </CardContent>
-                            </Card>
+                    <form id="template-form" onSubmit={handleFormSubmit} className="flex-1 overflow-y-auto thin-scrollbar p-4 space-y-4">
+                        <Card>
+                            <CardHeader><CardTitle className="text-base flex items-center gap-2"><ImageIcon className="h-4 w-4"/> Identidad Visual</CardTitle></CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="space-y-1">
+                                    <Label htmlFor="template-name">Nombre</Label>
+                                    <Input id="template-name" value={name} onChange={e => setName(e.target.value)} required disabled={isSubmitting}/>
+                                </div>
+                                <UploadWidget
+                                   id="cert-image-upload"
+                                   label="Imagen de Fondo"
+                                   currentImageUrl={finalImageUrl}
+                                   onFileSelect={(file) => file && handleImageUpload(file)}
+                                   onRemove={handleRemoveImage}
+                                   disabled={isSubmitting}
+                                   isUploading={isUploading}
+                                   uploadProgress={uploadProgress}
+                                />
+                            </CardContent>
+                        </Card>
+                        
+                        <Card>
+                            <CardHeader><CardTitle className="text-base flex items-center gap-2"><PaletteIcon className="h-4 w-4"/> Estilos de Texto</CardTitle></CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="space-y-1"><Label htmlFor="textColor" className="flex items-center gap-2">Color del Texto</Label><Input id="textColor" type="color" value={textColor} onChange={e => setTextColor(e.target.value)} className="w-full p-1 h-10" /></div>
+                                <div className="space-y-1"><Label htmlFor="fontHeadline" className="flex items-center gap-2">Fuente de Títulos</Label><Select value={fontFamilyHeadline} onValueChange={setFontFamilyHeadline}><SelectTrigger id="fontHeadline"><SelectValue/></SelectTrigger><SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{fontFamily: (fontMap[f.value] as any)?.style.fontFamily}}>{f.label}</SelectItem>)}</SelectContent></Select></div>
+                                <div className="space-y-1"><Label htmlFor="fontBody" className="flex items-center gap-2">Fuente del Cuerpo</Label><Select value={fontFamilyBody} onValueChange={setFontFamilyBody}><SelectTrigger id="fontBody"><SelectValue/></SelectTrigger><SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{fontFamily: (fontMap[f.value] as any)?.style.fontFamily}}>{f.label}</SelectItem>)}</SelectContent></Select></div>
+                             </CardContent>
+                        </Card>
 
-                             <Card>
-                                 <CardHeader>
-                                     <CardTitle className="text-base flex items-center gap-2">
-                                         <CheckSquare className="h-4 w-4" />
-                                         Opciones Adicionales
-                                     </CardTitle>
-                                 </CardHeader>
-                                 <CardContent>
-                                     <div className="flex items-center justify-between">
-                                         <Label htmlFor="showScore" className="font-medium">
-                                             Mostrar Calificación
-                                         </Label>
-                                         <Switch id="showScore" checked={showScore} onCheckedChange={setShowScore} />
-                                     </div>
-                                 </CardContent>
-                             </Card>
-                        </div>
-                        <div className="p-4 border-t sticky bottom-0 bg-muted/50 backdrop-blur-sm mt-auto flex justify-end gap-2 w-full">
+                         <Card>
+                             <CardHeader>
+                                 <CardTitle className="text-base flex items-center gap-2">
+                                     <CheckSquare className="h-4 w-4" />
+                                     Opciones Adicionales
+                                 </CardTitle>
+                             </CardHeader>
+                             <CardContent>
+                                 <div className="flex items-center justify-between p-3 border rounded-lg">
+                                     <Label htmlFor="showScore" className="font-medium">
+                                         Mostrar Calificación
+                                     </Label>
+                                     <Switch id="showScore" checked={showScore} onCheckedChange={setShowScore} />
+                                 </div>
+                             </CardContent>
+                         </Card>
+                         <div className="flex justify-end gap-2 mt-4">
                             <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
-                            <Button type="submit" form="template-form" disabled={isSubmitting || !name || !finalImageUrl}>
+                            <Button type="submit" disabled={isSubmitting || !name || !finalImageUrl}>
                                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                                 <Save className="mr-2 h-4 w-4"/>
                                 Guardar Plantilla
