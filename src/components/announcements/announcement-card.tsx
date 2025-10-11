@@ -8,17 +8,17 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { Announcement, Reaction, UserRole, Attachment } from '@/types';
 import { Clock, Edit, Trash2, Paperclip, CheckCheck, SmilePlus, Eye, MoreVertical, Pin, PinOff, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
-import { Identicon } from './ui/identicon';
+import { Identicon } from '@/components/ui/identicon';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { getIconForFileType } from '@/lib/resource-utils';
 import { useInView } from 'framer-motion';
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-import { ScrollArea } from './ui/scroll-area';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from './ui/dropdown-menu';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import useEmblaCarousel from 'embla-carousel-react';
-import { VerifiedBadge } from './ui/verified-badge';
+import { VerifiedBadge } from '@/components/ui/verified-badge';
 
 const EMOJI_REACTIONS = ['👍', '❤️', '🎉', '💡', '🤔'];
 
