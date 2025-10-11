@@ -7,14 +7,12 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Save, Image as ImageIcon, Replace, XCircle, Award, Eye, Move, Text, Palette as PaletteIcon, Type, MousePointerClick, CheckSquare } from 'lucide-react';
+import { Loader2, Save, Image as ImageIcon, Replace, XCircle, Award, MousePointerClick, Palette as PaletteIcon, Type, CheckSquare } from 'lucide-react';
 import type { CertificateTemplate } from '@prisma/client';
 import { UploadArea } from '../ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
@@ -25,7 +23,7 @@ import { fontMap } from '@/lib/fonts';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Separator } from '../ui/separator';
 import { Switch } from '../ui/switch';
-import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../ui/card';
 
 interface CertificateEditorModalProps {
     isOpen: boolean;
@@ -171,8 +169,10 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
 
     const handleImageUpload = async (file: File | null) => {
         if (!file) return;
+        
         const previewUrl = URL.createObjectURL(file);
         setLocalImagePreview(previewUrl);
+
         setIsUploading(true);
         setUploadProgress(0);
         try {
@@ -242,7 +242,7 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-7xl h-[90vh] flex flex-col md:flex-row p-0">
+            <DialogContent className="max-w-7xl h-[90vh] flex flex-col md:flex-row p-0 gap-0">
                 <div className="w-full md:w-1/3 min-w-[320px] flex flex-col bg-muted/50 border-r">
                     <DialogHeader className="p-4 border-b">
                         <DialogTitle className="flex items-center gap-2 text-xl font-bold"><Award className="h-5 w-5 text-primary"/>{template ? 'Editar Plantilla' : 'Nueva Plantilla'}</DialogTitle>
@@ -286,17 +286,14 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
                                 </CardContent>
                              </Card>
                         </div>
-                        {/* Footer is now outside the scrollable area */}
-                        <DialogFooter className="p-4 border-t sticky bottom-0 bg-muted/50 backdrop-blur-sm mt-auto">
-                            <div className="flex justify-end gap-2 w-full">
-                                <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
-                                <Button type="submit" form="template-form" disabled={isSubmitting || !name || !finalImageUrl}>
-                                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                                    <Save className="mr-2 h-4 w-4"/>
-                                    Guardar Plantilla
-                                </Button>
-                            </div>
-                        </DialogFooter>
+                         <CardFooter className="p-4 border-t sticky bottom-0 bg-muted/50 backdrop-blur-sm mt-auto flex justify-end gap-2 w-full">
+                            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
+                            <Button type="submit" form="template-form" disabled={isSubmitting || !name || !finalImageUrl}>
+                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                                <Save className="mr-2 h-4 w-4"/>
+                                Guardar Plantilla
+                            </Button>
+                        </CardFooter>
                     </form>
                 </div>
                 <div className="flex-1 flex flex-col p-4">
