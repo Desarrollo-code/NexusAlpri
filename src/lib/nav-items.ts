@@ -22,7 +22,7 @@ import {
   Library,
   Briefcase,
   Trophy,
-  Network, // Importar el nuevo ícono
+  Network,
 } from 'lucide-react';
 
 const NAVIGATION_ITEMS: NavItem[] = [
@@ -156,7 +156,7 @@ const NAVIGATION_ITEMS: NavItem[] = [
         roles: ['ADMINISTRATOR'],
       },
        {
-        id: 'processes', // Añadir el nuevo item de Procesos
+        id: 'processes',
         label: 'Procesos',
         icon: Network,
         path: '/processes',
