@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Send, ArrowLeft, Search, UserPlus, Info, MessageSquare, Paperclip, XCircle, File as FileIcon, Image as ImageIcon, Video as VideoIcon, FileQuestion } from 'lucide-react';
+import { Loader2, Send, ArrowLeft, Search, UserPlus, Info, MessageSquare, Paperclip, XCircle } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -126,7 +126,7 @@ const MessageArea = ({ messages, currentUser, otherParticipant }: {
 
     return (
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((msg, index) => {
+            {messages.map((msg) => {
                 const isCurrentUser = msg.authorId === currentUser.id;
                 return (
                     <div key={msg.id} className={cn("flex gap-3", isCurrentUser ? "justify-end" : "justify-start")}>
@@ -192,23 +192,20 @@ export function ChatClient() {
         }
     }, [toast]);
     
-    const handleNewMessage = useCallback((payload: { event: string, payload: Message }) => {
-        const { event, payload: receivedMessage } = payload;
-        
-        if (event !== 'chat_message') return;
-
-        if (activeConversation && receivedMessage.conversationId === activeConversation.id) {
-            setMessages(prevMessages => [...prevMessages, receivedMessage]);
+    const handleNewMessage = useCallback((payload: Message) => {
+        if (activeConversation && payload.conversationId === activeConversation.id) {
+            setMessages(prevMessages => [...prevMessages, payload]);
         }
         
         setConversations(prev => {
-            const convoIndex = prev.findIndex(c => c.id === receivedMessage.conversationId);
+            const convoIndex = prev.findIndex(c => c.id === payload.conversationId);
             if (convoIndex > -1) {
-                const updatedConvo = { ...prev[convoIndex], messages: [receivedMessage], updatedAt: receivedMessage.createdAt };
-                const restConvos = prev.filter(c => c.id !== receivedMessage.conversationId);
+                const updatedConvo = { ...prev[convoIndex], messages: [payload], updatedAt: payload.createdAt };
+                const restConvos = prev.filter(c => c.id !== payload.conversationId);
                 return [updatedConvo, ...restConvos];
+            } else {
+                fetchConversations();
             }
-            fetchConversations();
             return prev;
         });
     }, [activeConversation, fetchConversations]);
@@ -313,8 +310,16 @@ export function ChatClient() {
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
-        const recipientId = activeConversation?.participants[0]?.id;
-        if (!recipientId || (!newMessage.trim() && localPreviews.length === 0)) return;
+        
+        const recipient = activeConversation?.participants[0];
+        if (!recipient) {
+            toast({ title: 'Error', description: 'No se ha seleccionado un destinatario.', variant: 'destructive'});
+            return;
+        }
+
+        const recipientId = recipient.id;
+
+        if (!newMessage.trim() && localPreviews.length === 0) return;
         
         const isStillUploading = localPreviews.some(p => p.uploadProgress > 0 && p.uploadProgress < 100);
         if (isStillUploading) {
@@ -341,13 +346,32 @@ export function ChatClient() {
             if (!response.ok) throw new Error(sentMessage.message || 'Error al enviar el mensaje');
             
             setMessages(prev => [...prev, sentMessage]);
+
             if (activeConversation?.id.startsWith('temp-')) {
-                fetchConversations(); // Recarga las conversaciones para obtener el ID real
+                // If it was a temporary conversation, fetch all again to get the real one
+                await fetchConversations();
+                setActiveConversation(prev => {
+                    if (prev?.id.startsWith('temp-')) {
+                        // We need to find the new conversation from the updated list
+                        // This logic might need refinement based on how `fetchConversations` updates state
+                        return null; // Or find and set the new one
+                    }
+                    return prev;
+                });
+            } else {
+                 setConversations(prev => {
+                    const convoIndex = prev.findIndex(c => c.id === sentMessage.conversationId);
+                    if (convoIndex > -1) {
+                        const updatedConvo = { ...prev[convoIndex], messages: [sentMessage], updatedAt: sentMessage.createdAt };
+                        const restConvos = prev.filter(c => c.id !== sentMessage.conversationId);
+                        return [updatedConvo, ...restConvos];
+                    }
+                    return prev;
+                 });
             }
         } catch (err) {
             toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
             setNewMessage(messageToSend); // Restore failed message
-            // Restore previews too? For now, we clear them.
         } finally {
             setIsSending(false);
         }

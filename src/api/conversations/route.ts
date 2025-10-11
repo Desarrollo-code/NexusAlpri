@@ -99,14 +99,12 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const messagePayloadForRT = {
-        author: {
-            id: session.id,
-            name: session.name,
-            avatar: session.avatar,
-        },
+    // Prepare a safe author object for the real-time payload
+    const authorPayload = {
+      id: session.id,
+      name: session.name,
+      avatar: session.avatar,
     };
-
 
     // Create the new message and update the conversation's updatedAt timestamp
     const [newMessage] = await prisma.$transaction([
@@ -136,28 +134,30 @@ export async function POST(req: NextRequest) {
           data: { updatedAt: new Date() }
       })
     ]);
+    
+    const finalMessageForBroadcast = {
+      ...newMessage,
+      author: authorPayload // Use the safe payload
+    };
+
 
     // Send real-time notification to the recipient
     if (supabaseAdmin) {
         const channelName = `user:${recipientId}`;
-        
         const broadcastPayload = {
             event: 'chat_message',
-            payload: {
-                ...newMessage,
-                author: messagePayloadForRT.author,
-            },
+            payload: finalMessageForBroadcast,
         };
 
-        const channel = supabaseAdmin.channel(channelName);
-        const status = await channel.send({
-            type: 'broadcast',
+        const { error } = await supabaseAdmin.from('RealtimeMessage').insert({
+            channel: channelName,
             event: broadcastPayload.event,
             payload: broadcastPayload.payload,
         });
 
-        if (status !== 'ok') {
-            console.error("Supabase broadcast error:", status);
+        if (error) {
+            console.error("Supabase broadcast error:", error);
+            // Non-blocking error, we don't want to fail the request if broadcast fails
         }
     }
 
