@@ -43,6 +43,67 @@ const availableFonts = [
     { value: 'Montserrat', label: 'Montserrat (Sans-serif)' },
 ];
 
+const UploadWidget = ({
+  label,
+  id,
+  currentImageUrl,
+  onFileSelect,
+  onRemove,
+  disabled,
+  isUploading,
+  uploadProgress
+}: {
+  label: string;
+  id: string;
+  currentImageUrl?: string | null;
+  onFileSelect: (file: File | null) => void;
+  onRemove: () => void;
+  disabled: boolean;
+  isUploading: boolean;
+  uploadProgress: number;
+}) => {
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      {currentImageUrl && !isUploading ? (
+             <div className="relative w-full aspect-video rounded-lg border overflow-hidden bg-muted/20 p-2">
+                <Image src={currentImageUrl} alt={`Previsualización de ${label}`} fill className="object-contain p-2" />
+                 <div className="absolute top-1 right-1 flex flex-col gap-1 z-10">
+                    <Button type="button" variant="secondary" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={() => document.getElementById(id)?.click()} disabled={disabled}>
+                        <Replace className="h-4 w-4" />
+                        <span className="sr-only">Reemplazar imagen</span>
+                    </Button>
+                    <Button type="button" variant="destructive" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={onRemove} disabled={disabled}>
+                        <XCircle className="h-4 w-4" />
+                        <span className="sr-only">Eliminar imagen</span>
+                    </Button>
+                 </div>
+            </div>
+      ) : isUploading ? (
+         <div className="w-full h-32 flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg bg-muted/50 p-2 relative">
+            {currentImageUrl && <Image src={currentImageUrl} alt="Subiendo" fill className="object-contain opacity-30 p-2"/>}
+            <div className="z-10 text-center space-y-2">
+                <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+                <p className="text-sm text-muted-foreground">Subiendo...</p>
+                <Progress value={uploadProgress} className="w-32 h-1.5" />
+            </div>
+         </div>
+      ) : (
+        <UploadArea onFileSelect={onFileSelect} disabled={disabled} inputId={id}/>
+      )}
+      <input
+        type="file"
+        id={id}
+        onChange={(e) => onFileSelect(e.target.files ? e.target.files[0] : null)}
+        disabled={disabled || isUploading}
+        accept="image/png, image/jpeg, image/svg+xml, image/webp"
+        className="hidden"
+      />
+    </div>
+  );
+};
+
+
 export function CertificateEditorModal({ isOpen, onClose, template, onSave }: CertificateEditorModalProps) {
     const { toast } = useToast();
 
@@ -186,53 +247,57 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
                     <DialogHeader className="p-4 border-b">
                         <DialogTitle className="flex items-center gap-2 text-xl font-bold"><Award className="h-5 w-5 text-primary"/>{template ? 'Editar Plantilla' : 'Nueva Plantilla'}</DialogTitle>
                     </DialogHeader>
-                    <form id="template-form" onSubmit={handleFormSubmit} className="flex-1 overflow-y-auto thin-scrollbar p-4 space-y-4">
-                        <Card>
-                            <CardHeader><CardTitle className="text-base flex items-center gap-2"><ImageIcon className="h-4 w-4"/> Identidad Visual</CardTitle></CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="space-y-1">
-                                    <Label htmlFor="template-name">Nombre</Label>
-                                    <Input id="template-name" value={name} onChange={e => setName(e.target.value)} required disabled={isSubmitting}/>
-                                </div>
-                                <UploadWidget
-                                   id="cert-image-upload"
-                                   label="Imagen de Fondo"
-                                   currentImageUrl={finalImageUrl}
-                                   onFileSelect={(file) => file && handleImageUpload(file)}
-                                   onRemove={handleRemoveImage}
-                                   disabled={isSubmitting}
-                                   isUploading={isUploading}
-                                   uploadProgress={uploadProgress}
-                                />
-                            </CardContent>
-                        </Card>
-                        
-                        <Card>
-                            <CardHeader><CardTitle className="text-base flex items-center gap-2"><PaletteIcon className="h-4 w-4"/> Estilos de Texto</CardTitle></CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="space-y-1"><Label htmlFor="textColor" className="flex items-center gap-2">Color del Texto</Label><Input id="textColor" type="color" value={textColor} onChange={e => setTextColor(e.target.value)} className="w-full p-1 h-10" /></div>
-                                <div className="space-y-1"><Label htmlFor="fontHeadline" className="flex items-center gap-2">Fuente de Títulos</Label><Select value={fontFamilyHeadline} onValueChange={setFontFamilyHeadline}><SelectTrigger id="fontHeadline"><SelectValue/></SelectTrigger><SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{fontFamily: (fontMap[f.value] as any)?.style.fontFamily}}>{f.label}</SelectItem>)}</SelectContent></Select></div>
-                                <div className="space-y-1"><Label htmlFor="fontBody" className="flex items-center gap-2">Fuente del Cuerpo</Label><Select value={fontFamilyBody} onValueChange={setFontFamilyBody}><SelectTrigger id="fontBody"><SelectValue/></SelectTrigger><SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{fontFamily: (fontMap[f.value] as any)?.style.fontFamily}}>{f.label}</SelectItem>)}</SelectContent></Select></div>
-                             </CardContent>
-                        </Card>
+                    {/* The form now wraps the scrollable area */}
+                    <form id="template-form" onSubmit={handleFormSubmit} className="flex-1 flex flex-col min-h-0">
+                        <div className="flex-1 overflow-y-auto thin-scrollbar p-4 space-y-4">
+                            <Card>
+                                <CardHeader><CardTitle className="text-base flex items-center gap-2"><ImageIcon className="h-4 w-4"/> Identidad Visual</CardTitle></CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="space-y-1">
+                                        <Label htmlFor="template-name">Nombre</Label>
+                                        <Input id="template-name" value={name} onChange={e => setName(e.target.value)} required disabled={isSubmitting}/>
+                                    </div>
+                                    <UploadWidget
+                                       id="cert-image-upload"
+                                       label="Imagen de Fondo"
+                                       currentImageUrl={finalImageUrl}
+                                       onFileSelect={(file) => file && handleImageUpload(file)}
+                                       onRemove={handleRemoveImage}
+                                       disabled={isSubmitting}
+                                       isUploading={isUploading}
+                                       uploadProgress={uploadProgress}
+                                    />
+                                </CardContent>
+                            </Card>
+                            
+                            <Card>
+                                <CardHeader><CardTitle className="text-base flex items-center gap-2"><PaletteIcon className="h-4 w-4"/> Estilos de Texto</CardTitle></CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="space-y-1"><Label htmlFor="textColor" className="flex items-center gap-2">Color del Texto</Label><Input id="textColor" type="color" value={textColor} onChange={e => setTextColor(e.target.value)} className="w-full p-1 h-10" /></div>
+                                    <div className="space-y-1"><Label htmlFor="fontHeadline" className="flex items-center gap-2">Fuente de Títulos</Label><Select value={fontFamilyHeadline} onValueChange={setFontFamilyHeadline}><SelectTrigger id="fontHeadline"><SelectValue/></SelectTrigger><SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{fontFamily: (fontMap[f.value] as any)?.style.fontFamily}}>{f.label}</SelectItem>)}</SelectContent></Select></div>
+                                    <div className="space-y-1"><Label htmlFor="fontBody" className="flex items-center gap-2">Fuente del Cuerpo</Label><Select value={fontFamilyBody} onValueChange={setFontFamilyBody}><SelectTrigger id="fontBody"><SelectValue/></SelectTrigger><SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{fontFamily: (fontMap[f.value] as any)?.style.fontFamily}}>{f.label}</SelectItem>)}</SelectContent></Select></div>
+                                 </CardContent>
+                            </Card>
 
-                         <Card>
-                             <CardHeader><CardTitle className="text-base flex items-center gap-2"><CheckSquare className="h-4 w-4"/> Opciones Adicionales</CardTitle></CardHeader>
-                             <CardContent>
-                                <div className="flex items-center justify-between"><Label htmlFor="showScore" className="flex items-center gap-2 font-medium">Mostrar Calificación</Label><Switch id="showScore" checked={showScore} onCheckedChange={setShowScore} /></div>
-                            </CardContent>
-                         </Card>
-                    </form>
-                    <DialogFooter className="p-4 border-t sticky bottom-0 bg-muted/50 backdrop-blur-sm">
-                        <div className="flex justify-end gap-2 w-full">
-                            <Button variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
-                            <Button type="submit" form="template-form" disabled={isSubmitting || !name || !finalImageUrl}>
-                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                                <Save className="mr-2 h-4 w-4"/>
-                                Guardar Plantilla
-                            </Button>
+                             <Card>
+                                 <CardHeader><CardTitle className="text-base flex items-center gap-2"><CheckSquare className="h-4 w-4"/> Opciones Adicionales</CardTitle></CardHeader>
+                                 <CardContent>
+                                    <div className="flex items-center justify-between"><Label htmlFor="showScore" className="flex items-center gap-2 font-medium">Mostrar Calificación</Label><Switch id="showScore" checked={showScore} onCheckedChange={setShowScore} /></div>
+                                </CardContent>
+                             </Card>
                         </div>
-                    </DialogFooter>
+                        {/* Footer is now outside the scrollable area */}
+                        <DialogFooter className="p-4 border-t sticky bottom-0 bg-muted/50 backdrop-blur-sm mt-auto">
+                            <div className="flex justify-end gap-2 w-full">
+                                <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
+                                <Button type="submit" form="template-form" disabled={isSubmitting || !name || !finalImageUrl}>
+                                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                                    <Save className="mr-2 h-4 w-4"/>
+                                    Guardar Plantilla
+                                </Button>
+                            </div>
+                        </DialogFooter>
+                    </form>
                 </div>
                 <div className="flex-1 flex flex-col p-4">
                     <div className="text-center mb-2">
@@ -252,39 +317,3 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
         </Dialog>
     )
 }
-
-const UploadWidget = ({ id, label, currentImageUrl, onFileSelect, onRemove, disabled, isUploading, uploadProgress }: any) => {
-  return (
-    <div className="space-y-2">
-        <Label>{label}</Label>
-        {currentImageUrl && !isUploading ? (
-             <div className="relative w-full aspect-video rounded-lg border overflow-hidden bg-muted/20 p-2">
-                <Image src={currentImageUrl} alt="Previsualización" fill className="object-contain p-2" />
-                <div className="absolute top-1 right-1 flex flex-col gap-1 z-10">
-                    <Button type="button" variant="secondary" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={() => document.getElementById(id)?.click()} disabled={disabled}><Replace className="h-4 w-4"/></Button>
-                    <Button type="button" variant="destructive" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={onRemove} disabled={disabled}><XCircle className="h-4 w-4"/></Button>
-                </div>
-            </div>
-        ) : isUploading ? (
-             <div className="w-full aspect-video flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg bg-muted/50 p-2 relative">
-                {currentImageUrl && <Image src={currentImageUrl} alt="Subiendo" fill className="object-contain opacity-30 p-2"/>}
-                <div className="z-10 text-center space-y-2">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-                    <p className="text-sm text-muted-foreground">Subiendo...</p>
-                    <Progress value={uploadProgress} className="w-32 h-1.5" />
-                </div>
-            </div>
-        ) : (
-            <UploadArea onFileSelect={onFileSelect} disabled={disabled} inputId={id}/>
-        )}
-      <input
-        type="file"
-        id={id}
-        onChange={(e) => onFileSelect(e.target.files ? e.target.files[0] : null)}
-        disabled={disabled || isUploading}
-        accept="image/png, image/jpeg, image/svg+xml, image/webp"
-        className="hidden"
-      />
-    </div>
-  );
-};
