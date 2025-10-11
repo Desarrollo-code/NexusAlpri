@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 'use client';
 
@@ -72,8 +73,8 @@ const generateUniqueId = (prefix: string): string => {
 };
 
 
-const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdate: (field: keyof AppModule, value: any) => void; onAddLesson: (type: 'blank' | 'template') => void; onLessonUpdate: (lessonIndex: number, field: keyof AppLesson, value: any) => void; onLessonDelete: (lessonIndex: number) => void; onSaveLessonAsTemplate: (lessonIndex: number) => void; onAddBlock: (lessonIndex: number, type: LessonType) => void; onBlockUpdate: (lessonIndex: number, blockIndex: number, field: string, value: any) => void; onBlockDelete: (lessonIndex: number, blockIndex: number) => void; onQuizUpdate: (lessonIndex: number, blockIndex: number, updatedQuiz: AppQuiz) => void; onEditQuiz: (lessonIndex: number, blockIndex: number) => void; isSaving: boolean; onDelete: () => void; provided: DraggableProvided }>(
-    ({ module, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onSaveLessonAsTemplate, onAddBlock, onBlockUpdate, onBlockDelete, onQuizUpdate, onEditQuiz, isSaving, onDelete, provided }, ref) => {
+const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdate: (field: keyof AppModule, value: any) => void; onAddLesson: (type: 'blank' | 'template') => void; onLessonUpdate: (lessonIndex: number, field: keyof AppLesson, value: any) => void; onLessonDelete: (lessonIndex: number) => void; onSaveLessonAsTemplate: (lessonIndex: number) => void; onAddBlock: (lessonIndex: number, type: LessonType) => void; onBlockUpdate: (lessonIndex: number, blockIndex: number, field: string, value: any) => void; onBlockDelete: (lessonIndex: number, blockIndex: number) => void; onQuizUpdate: (lessonIndex: number, blockIndex: number, updatedQuiz: AppQuiz) => void; onEditQuiz: (moduleIndex: number, lessonIndex: number, blockIndex: number) => void; isSaving: boolean; onDelete: () => void; moduleIndex: number, provided: DraggableProvided }>(
+    ({ module, moduleIndex, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onSaveLessonAsTemplate, onAddBlock, onBlockUpdate, onBlockDelete, onQuizUpdate, onEditQuiz, isSaving, onDelete, provided }, ref) => {
         return (
             <div ref={ref} {...provided.draggableProps}>
                 <Accordion type="single" collapsible className="w-full bg-muted/30 rounded-lg border" defaultValue={`item-${module.id}`}>
@@ -103,7 +104,7 @@ const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdat
                                                         onBlockUpdate={(blockIndex, field, value) => onBlockUpdate(lessonIndex, blockIndex, field, value)}
                                                         onBlockDelete={(blockIndex) => onBlockDelete(lessonIndex, blockIndex)}
                                                         onQuizUpdate={(blockIndex, updatedQuiz) => onQuizUpdate(lessonIndex, blockIndex, updatedQuiz)}
-                                                        onEditQuiz={(blockIndex) => onEditQuiz(lessonIndex, blockIndex)}
+                                                        onEditQuiz={(blockIndex) => onEditQuiz(moduleIndex, lessonIndex, blockIndex)}
                                                         isSaving={isSaving}
                                                         ref={provided.innerRef}
                                                         {...provided.draggableProps}
@@ -740,6 +741,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                                     {(provided) => (
                                                         <ModuleItem
                                                             module={moduleItem}
+                                                            moduleIndex={moduleIndex}
                                                             onDelete={() => handleRemoveModule(moduleIndex)}
                                                             onUpdate={(field, value) => updateModuleField(moduleIndex, field, value)}
                                                             onAddLesson={(type) => handleAddLessonAction(moduleIndex, type)}
@@ -750,7 +752,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                                             onBlockUpdate={(lessonIndex, blockIndex, field, value) => updateBlockField(moduleIndex, lessonIndex, blockIndex, field, value)}
                                                             onBlockDelete={(lessonIndex, blockIndex) => handleRemoveBlock(moduleIndex, lessonIndex, blockIndex)}
                                                             onQuizUpdate={(lessonIndex, blockIndex, updatedQuiz) => updateQuizForBlock(moduleIndex, lessonIndex, blockIndex, updatedQuiz)}
-                                                            onEditQuiz={(lessonIndex, blockIndex) => handleEditQuiz(moduleIndex, lessonIndex, blockIndex)}
+                                                            onEditQuiz={(moduleIndex, lessonIndex, blockIndex) => handleEditQuiz(moduleIndex, lessonIndex, blockIndex)}
                                                             isSaving={isSaving}
                                                             provided={provided}
                                                             ref={provided.innerRef}
@@ -929,13 +931,12 @@ const optionShapes = [
     <rect x="2" y="2" width="20" height="20" rx="2" key="square"/>,
 ];
 
-// === COMPONENTE PARA EL MODAL DE EDICIÓN DE QUIZ ===
 function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, onClose: () => void, quiz: AppQuiz, onSave: (updatedQuiz: AppQuiz) => void }) {
-    const [localQuiz, setLocalQuiz] = useState(quiz);
+    const [localQuiz, setLocalQuiz] = useState<AppQuiz>(quiz);
     const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
 
     useEffect(() => {
-        setLocalQuiz(quiz);
+        setLocalQuiz(JSON.parse(JSON.stringify(quiz))); // Deep copy
         setActiveQuestionIndex(0);
     }, [quiz, isOpen]);
 
@@ -986,10 +987,9 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
 
     const handleSaveChanges = () => {
         onSave(localQuiz);
-        onClose();
     };
 
-    if (!localQuiz || !localQuiz.questions || localQuiz.questions.length === 0) return null;
+    if (!localQuiz || !localQuiz.questions) return null;
     const activeQuestion = localQuiz.questions[activeQuestionIndex];
 
     return (
@@ -1118,7 +1118,3 @@ const SaveTemplateModal = ({ isOpen, onClose, onSave }) => {
         </Dialog>
     )
 };
-
-
-
-    
