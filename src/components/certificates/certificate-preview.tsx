@@ -11,7 +11,7 @@ interface CertificatePreviewProps {
     studentName?: string;
     courseName?: string;
     completionDate?: Date;
-    score?: number;
+    score?: number | null;
 }
 
 const parsePosition = (jsonPos: any, defaults: any): CSSProperties => {
@@ -40,8 +40,11 @@ export function CertificatePreview({
     const nameStyle = parsePosition(template.studentNamePosition, { x: 50, y: 45, fontSize: 48, fontWeight: 'bold', textAlign: 'center' });
     const courseStyle = parsePosition(template.courseNamePosition, { x: 50, y: 60, fontSize: 24, fontWeight: 'normal', textAlign: 'center' });
     const dateStyle = parsePosition(template.datePosition, { x: 50, y: 75, fontSize: 18, fontWeight: 'normal', textAlign: 'center' });
-    const scoreStyle = template.scorePosition ? parsePosition(template.scorePosition, { x: 80, y: 85, fontSize: 20, fontWeight: 'bold', textAlign: 'center' }) : null;
+    const scoreStyle = template.scorePosition && score !== undefined && score !== null ? parsePosition(template.scorePosition, { x: 80, y: 85, fontSize: 20, fontWeight: 'bold', textAlign: 'center' }) : null;
 
+    const headlineFont = (fontMap[template.fontFamilyHeadline || 'Space Grotesk'] as any)?.style.fontFamily || 'serif';
+    const bodyFont = (fontMap[template.fontFamilyBody || 'Inter'] as any)?.style.fontFamily || 'sans-serif';
+    
     return (
         <div className="relative w-full aspect-[1.414] bg-muted/30">
             <Image
@@ -55,7 +58,7 @@ export function CertificatePreview({
                 className="absolute text-center w-full"
                 style={{
                     color: template.textColor || '#000000',
-                    fontFamily: (fontMap['Space Grotesk'] as any)?.style.fontFamily || 'serif',
+                    fontFamily: headlineFont,
                     ...nameStyle
                 }}
             >
@@ -65,17 +68,19 @@ export function CertificatePreview({
                 className="absolute text-center w-full"
                 style={{
                     color: template.textColor || '#000000',
-                    fontFamily: (fontMap['Inter'] as any)?.style.fontFamily || 'sans-serif',
+                    fontFamily: bodyFont,
                     ...courseStyle
                 }}
             >
-                {courseName}
+                 Por completar exitosamente el curso
+                 <br/>
+                 <span style={{fontFamily: headlineFont}}>"{courseName}"</span>
             </div>
             <div 
                 className="absolute text-center w-full"
                 style={{
                     color: template.textColor || '#000000',
-                    fontFamily: (fontMap['Inter'] as any)?.style.fontFamily || 'sans-serif',
+                    fontFamily: bodyFont,
                     ...dateStyle
                 }}
             >
@@ -86,7 +91,7 @@ export function CertificatePreview({
                     className="absolute text-center"
                     style={{
                         color: template.textColor || '#000000',
-                        fontFamily: (fontMap['Inter'] as any)?.style.fontFamily || 'sans-serif',
+                        fontFamily: bodyFont,
                         ...scoreStyle
                     }}
                  >
