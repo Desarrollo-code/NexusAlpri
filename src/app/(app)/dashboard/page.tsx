@@ -306,10 +306,22 @@ function StudentDashboard({ stats, announcements, myCourses, assignedCourses }: 
               </Card>
             )}
           </section>
-
+        </main>
+        
+        <aside className="lg:col-span-1 space-y-6">
+          <Card className="card-border-animated sticky top-24" id="quick-access-student">
+            <CardHeader><CardTitle>Accesos Rápidos</CardTitle></CardHeader>
+            <CardContent>
+              <ul className="space-y-3">
+                <li><Link href="/courses" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50"><span className="flex items-center gap-3"><BookOpen className="h-5 w-5 text-primary"/>Catálogo de Cursos</span><ArrowRight className="h-4 w-4 text-muted-foreground" /></Link></li>
+                <li><Link href="/my-courses" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50"><span className="flex items-center gap-3"><GraduationCap className="h-5 w-5 text-primary"/>Mis Cursos</span><ArrowRight className="h-4 w-4 text-muted-foreground" /></Link></li>
+                <li><Link href="/my-notes" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50"><span className="flex items-center gap-3"><BookMarked className="h-5 w-5 text-primary"/>Mis Apuntes</span><ArrowRight className="h-4 w-4 text-muted-foreground" /></Link></li>
+              </ul>
+            </CardContent>
+          </Card>
           <section id="recent-announcements-student">
             <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-semibold">Anuncios Recientes</h2>
+                <h2 className="text-2xl font-semibold">Anuncios</h2>
                  <Button asChild variant="link">
                     <Link href="/announcements">Ver todos <ArrowRight className="ml-2 h-4 w-4"/></Link>
                 </Button>
@@ -324,19 +336,6 @@ function StudentDashboard({ stats, announcements, myCourses, assignedCourses }: 
               <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No hay anuncios recientes.</p></CardContent></Card>
             )}
           </section>
-        </main>
-        
-        <aside className="lg:col-span-1">
-          <Card className="card-border-animated sticky top-24" id="quick-access-student">
-            <CardHeader><CardTitle>Accesos Rápidos</CardTitle></CardHeader>
-            <CardContent>
-              <ul className="space-y-3">
-                <li><Link href="/courses" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50"><span className="flex items-center gap-3"><BookOpen className="h-5 w-5 text-primary"/>Catálogo de Cursos</span><ArrowRight className="h-4 w-4 text-muted-foreground" /></Link></li>
-                <li><Link href="/my-courses" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50"><span className="flex items-center gap-3"><GraduationCap className="h-5 w-5 text-primary"/>Mis Cursos</span><ArrowRight className="h-4 w-4 text-muted-foreground" /></Link></li>
-                <li><Link href="/my-notes" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50"><span className="flex items-center gap-3"><BookMarked className="h-5 w-5 text-primary"/>Mis Apuntes</span><ArrowRight className="h-4 w-4 text-muted-foreground" /></Link></li>
-              </ul>
-            </CardContent>
-          </Card>
         </aside>
       </div>
     </div>
@@ -382,10 +381,21 @@ function InstructorDashboard({ stats, announcements, taughtCourses }: { stats: {
                  </Card>
               )}
             </section>
-            
-             <section id="recent-announcements-instructor">
+        </main>
+        
+        <aside className="lg:col-span-1 space-y-6">
+          <Card className="card-border-animated sticky top-24" id="quick-access-instructor">
+            <CardHeader><CardTitle>Accesos Rápidos</CardTitle></CardHeader>
+            <CardContent>
+              <ul className="space-y-3">
+                <li><Link href="/manage-courses" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50"><span className="flex items-center gap-3"><BookMarked className="h-5 w-5 text-primary"/>Gestionar Cursos</span><ArrowRight className="h-4 w-4 text-muted-foreground" /></Link></li>
+                <li><Link href="/enrollments" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50"><span className="flex items-center gap-3"><Users className="h-5 w-5 text-primary"/>Ver Inscripciones</span><ArrowRight className="h-4 w-4 text-muted-foreground" /></Link></li>
+              </ul>
+            </CardContent>
+          </Card>
+           <section id="recent-announcements-instructor">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-semibold">Anuncios Recientes</h2>
+                <h2 className="text-2xl font-semibold">Anuncios</h2>
                  <Button asChild variant="link">
                     <Link href="/announcements">Ver todos <ArrowRight className="ml-2 h-4 w-4"/></Link>
                 </Button>
@@ -400,18 +410,6 @@ function InstructorDashboard({ stats, announcements, taughtCourses }: { stats: {
                 <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No hay anuncios recientes.</p></CardContent></Card>
               )}
             </section>
-        </main>
-        
-        <aside className="lg:col-span-1">
-          <Card className="card-border-animated sticky top-24" id="quick-access-instructor">
-            <CardHeader><CardTitle>Accesos Rápidos</CardTitle></CardHeader>
-            <CardContent>
-              <ul className="space-y-3">
-                <li><Link href="/manage-courses" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50"><span className="flex items-center gap-3"><BookMarked className="h-5 w-5 text-primary"/>Gestionar Cursos</span><ArrowRight className="h-4 w-4 text-muted-foreground" /></Link></li>
-                <li><Link href="/enrollments" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50"><span className="flex items-center gap-3"><Users className="h-5 w-5 text-primary"/>Ver Inscripciones</span><ArrowRight className="h-4 w-4 text-muted-foreground" /></Link></li>
-              </ul>
-            </CardContent>
-          </Card>
         </aside>
       </div>
     </div>
