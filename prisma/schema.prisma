@@ -107,6 +107,7 @@ enum MotivationalMessageTriggerType {
   COURSE_MID_PROGRESS
   COURSE_NEAR_COMPLETION
   LEVEL_UP
+  COURSE_ENROLLMENT
 }
 
 // --- MODELS ---
@@ -153,7 +154,8 @@ model User {
   resourceVersions ResourceVersion[] @relation("ResourceVersionAuthor")
   hostedGameSessions GameSession[] @relation("HostedSessions") // 1. Nueva relación para GameSession (Host)
   gamePlayers        Player[]      @relation("GamePlayers")      // 3. Nueva relación para Player (User)
-
+  processes   Process[] @relation("UserProcesses") 
+  
   @@map("users")
 }
 
@@ -803,4 +805,13 @@ model ChatAttachment {
   createdAt DateTime @default(now())
 
   @@index([messageId])
+}
+
+model Process {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  parentId  String?
+  parent    Process?  @relation("ProcessHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children  Process[] @relation("ProcessHierarchy")
+  users     User[]    @relation("UserProcesses")
 }
