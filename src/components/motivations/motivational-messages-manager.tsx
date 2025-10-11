@@ -4,11 +4,22 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import type { MotivationalMessage, Course } from '@/types';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, AlertTriangle, PlusCircle, Sparkles, Edit, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { MotivationEditorModal } from './motivation-editor-modal';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { cn } from '@/lib/utils';
 
 const MotivationCard = ({ message, onEdit, onDelete }: { message: MotivationalMessage & { triggerCourse?: { title: string } | null }, onEdit: (m: MotivationalMessage) => void, onDelete: (m: MotivationalMessage) => void }) => {
     return (
@@ -48,6 +59,9 @@ export function MotivationalMessagesManager() {
 
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [editingMessage, setEditingMessage] = useState<MotivationalMessage | null>(null);
+    const [deletingMessage, setDeletingMessage] = useState<MotivationalMessage | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+
 
     const fetchMessages = useCallback(async () => {
         setIsLoading(true);
@@ -89,10 +103,25 @@ export function MotivationalMessagesManager() {
         setIsEditorOpen(false);
     }
     
-    // Lógica de eliminación (se completará con el modal de confirmación)
-    const handleDeleteMessage = (message: MotivationalMessage) => {
-        console.log("Eliminar mensaje (lógica pendiente):", message.id);
-        toast({ title: "Función en desarrollo", description: "La eliminación se implementará pronto."});
+    const handleDeleteConfirm = async () => {
+        if (!deletingMessage) return;
+        setIsDeleting(true);
+        try {
+            const response = await fetch(`/api/motivations/${deletingMessage.id}`, {
+                method: 'DELETE',
+            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'No se pudo eliminar el mensaje.');
+            }
+            toast({ title: "Mensaje Eliminado", description: `El mensaje "${deletingMessage.title}" ha sido eliminado.` });
+            fetchMessages();
+        } catch (err) {
+             toast({ title: 'Error al Eliminar', description: (err as Error).message, variant: 'destructive' });
+        } finally {
+            setIsDeleting(false);
+            setDeletingMessage(null);
+        }
     };
 
     if (isLoading) {
@@ -119,7 +148,7 @@ export function MotivationalMessagesManager() {
             {Array.isArray(messages) && messages.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {messages.map(msg => (
-                        <MotivationCard key={msg.id} message={msg} onEdit={handleOpenEditor} onDelete={handleDeleteMessage}/>
+                        <MotivationCard key={msg.id} message={msg} onEdit={handleOpenEditor} onDelete={setDeletingMessage}/>
                     ))}
                 </div>
             ) : (
@@ -146,6 +175,24 @@ export function MotivationalMessagesManager() {
                     onSave={handleSaveChanges}
                 />
             )}
+
+             <AlertDialog open={!!deletingMessage} onOpenChange={(open) => !open && setDeletingMessage(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Esta acción eliminará permanentemente el mensaje "<strong>{deletingMessage?.title}</strong>". No se puede deshacer.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteConfirm} disabled={isDeleting} className={cn(buttonVariants({ variant: "destructive" }))}>
+                            {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Trash2 className="mr-2 h-4 w-4"/>}
+                            Sí, eliminar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
