@@ -76,7 +76,7 @@ async function getAdminDashboardData(startDate?: Date, endDate?: Date, userId?: 
     const userRegistrationTrend = Array.from(activityMap.entries()).map(([date, counts]) => ({ date, ...counts }));
     
     const [recentAnnouncements, securityLogs] = await Promise.all([
-        safeQuery(prisma.announcement.findMany({ take: 2, orderBy: { date: 'desc' }, include: { author: { select: { id: true, name: true, avatar: true, role: true } }, attachments: true, reactions: { select: { userId: true, reaction: true, user: { select: { id: true, name: true, avatar: true } } } }, _count: { select: { reads: true, reactions: true } } } }), [], 'recentAnnouncements'),
+        safeQuery(prisma.announcement.findMany({ take: 1, orderBy: { date: 'desc' }, include: { author: { select: { id: true, name: true, avatar: true, role: true } }, attachments: true, reactions: { select: { userId: true, reaction: true, user: { select: { id: true, name: true, avatar: true } } } }, _count: { select: { reads: true, reactions: true } } } }), [], 'recentAnnouncements'),
         safeQuery(prisma.securityLog.findMany({ take: 5, orderBy: { createdAt: 'desc' }, include: { user: { select: { id: true, name: true, avatar: true } } } }), [], 'securityLogs'),
     ]);
     
@@ -132,10 +132,10 @@ async function getInstructorDashboardData(session: PrismaUser) {
             where: { instructorId: session.id },
             include: { _count: { select: { modules: true } } },
             orderBy: { createdAt: 'desc' },
-            take: 3,
+            take: 2,
         }), [], 'taughtCourses'),
         safeQuery(prisma.announcement.findMany({
-            take: 2, orderBy: { date: 'desc' },
+            take: 1, orderBy: { date: 'desc' },
             include: { 
                 author: { select: { id: true, name: true, avatar: true, role: true } },
                 attachments: true, 
@@ -146,7 +146,7 @@ async function getInstructorDashboardData(session: PrismaUser) {
         safeQuery(prisma.course.aggregate({
             where: { instructorId: session.id },
             _count: { id: true },
-            _sum: { _count: { select: { enrollments: true } } } // Esto es una aproximación, necesitaríamos un campo directo
+            _sum: { _count: { select: { enrollments: true } } } // This is an approximation
         }), { _count: { id: 0 }, _sum: { _count: { enrollments: 0 }}}, 'instructorStats'),
         prisma.enrollment.count({ where: { course: { instructorId: session.id } } })
     ]);
@@ -169,10 +169,10 @@ async function getStudentDashboardData(session: PrismaUser) {
             where: { userId: session.id },
             include: { course: { include: { instructor: { select: { name: true, id: true, avatar: true } }, _count: { select: { modules: true } }, prerequisite: { select: {id: true, title: true} } } }, progress: true },
             orderBy: { enrolledAt: 'desc' },
-            take: 3,
+            take: 2,
         }), [], 'enrolledData'),
         safeQuery(prisma.announcement.findMany({
-            take: 2, orderBy: { date: 'desc' },
+            take: 1, orderBy: { date: 'desc' },
             include: { 
                 author: { select: { id: true, name: true, avatar: true, role: true } },
                 attachments: true, 

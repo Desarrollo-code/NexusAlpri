@@ -1,6 +1,6 @@
 // src/components/analytics/metric-card.tsx
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { useAnimatedCounter } from "@/hooks/use-animated-counter"
+import { useAnimatedCounter } from "@/hooks/useAnimatedCounter"
 import { cn } from "@/lib/utils";
 import React from "react";
 

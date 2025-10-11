@@ -36,7 +36,7 @@ import Image from 'next/image';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import type { AdminDashboardStats, SecurityLog as AppSecurityLog, Course as AppCourseType, EnrolledCourse, CalendarEvent } from '@/types';
 import type { Announcement as AnnouncementType, UserRole } from '@/types';
-import { AnnouncementCard } from '@/components/announcement-card';
+import { AnnouncementCard } from '@/components/announcements/announcement-card';
 import type { Announcement as PrismaAnnouncement, Course as PrismaCourse, SecurityLog, User as PrismaUser } from '@prisma/client';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -275,42 +275,25 @@ function StudentDashboard({ stats, announcements, myCourses, assignedCourses }: 
         </section>
       )}
 
-      <section>
-        <h2 className="text-2xl font-semibold mb-4">Tu Progreso</h2>
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2" id="student-stats-cards">
-          <Card className="card-border-animated">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Cursos Inscritos</CardTitle>
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.enrolled}</div>
-            </CardContent>
-          </Card>
-          <Card className="card-border-animated">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Cursos Completados</CardTitle>
-              <CheckCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.completed}</div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="student-stats-cards">
+          <MetricCard title="Cursos Inscritos" value={stats.enrolled} icon={BookOpen} gradient="bg-gradient-blue" />
+          <MetricCard title="Cursos Completados" value={stats.completed} icon={CheckCircle} gradient="bg-gradient-green" />
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <main className="lg:col-span-2 space-y-6">
           <section id="continue-learning-section">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-semibold">Continuar Aprendiendo</h2>
-              <Button asChild variant="link">
-                <Link href="/my-courses">Ver todos <ArrowRight className="ml-2 h-4 w-4"/></Link>
-              </Button>
+              {myCourses.length > 0 && (
+                  <Button asChild variant="link">
+                    <Link href="/my-courses">Ver todos <ArrowRight className="ml-2 h-4 w-4"/></Link>
+                  </Button>
+              )}
             </div>
             {myCourses.length > 0 ? (
               <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-                {myCourses.map((course, index) => (
+                {myCourses.slice(0, 2).map((course, index) => (
                   <CourseCard key={course.id} course={course} userRole="STUDENT" priority={index < 2}/>
                 ))}
               </div>
@@ -332,8 +315,8 @@ function StudentDashboard({ stats, announcements, myCourses, assignedCourses }: 
                 </Button>
             </div>
             {announcements.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {announcements.map(announcement => (
+              <div className="grid grid-cols-1 gap-4">
+                {announcements.slice(0,1).map(announcement => (
                   <AnnouncementCard key={announcement.id} announcement={announcement} />
                 ))}
               </div>
@@ -364,42 +347,24 @@ function StudentDashboard({ stats, announcements, myCourses, assignedCourses }: 
 function InstructorDashboard({ stats, announcements, taughtCourses }: { stats: { taught: number, students: number }, announcements: AnnouncementType[], taughtCourses: AppCourseType[] }) {
   return (
     <div className="space-y-8">
-      <section>
-        <h2 className="text-2xl font-semibold mb-4">Resumen de Instructor</h2>
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2" id="instructor-stats-cards">
-          <Card className="card-border-animated">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Cursos Impartidos</CardTitle>
-              <BookMarked className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.taught}</div>
-            </CardContent>
-          </Card>
-          <Card className="card-border-animated">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Estudiantes Inscritos</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.students}</div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="instructor-stats-cards">
+          <MetricCard title="Cursos Impartidos" value={stats.taught} icon={BookMarked} gradient="bg-gradient-blue" />
+          <MetricCard title="Total Estudiantes" value={stats.students} icon={Users} gradient="bg-gradient-green" description="En todos tus cursos"/>
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <main className="lg:col-span-2 space-y-6">
             <section id="my-taught-courses">
                  <div className="flex items-center justify-between mb-4">
                     <h2 className="text-2xl font-semibold">Mis Cursos Impartidos</h2>
-                    <Button asChild variant="link">
-                        <Link href="/manage-courses">Gestionar todos <ArrowRight className="ml-2 h-4 w-4"/></Link>
-                    </Button>
+                    {taughtCourses.length > 0 && (
+                        <Button asChild variant="link">
+                            <Link href="/manage-courses">Gestionar todos <ArrowRight className="ml-2 h-4 w-4"/></Link>
+                        </Button>
+                    )}
                 </div>
               {taughtCourses.length > 0 ? (
                 <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-                    {taughtCourses.map(course => (
+                    {taughtCourses.slice(0,2).map(course => (
                       <CourseCard 
                         key={course.id}
                         course={course}
@@ -426,8 +391,8 @@ function InstructorDashboard({ stats, announcements, taughtCourses }: { stats: {
                 </Button>
               </div>
               {announcements.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {announcements.map(announcement => (
+                <div className="grid grid-cols-1 gap-4">
+                  {announcements.slice(0,1).map(announcement => (
                     <AnnouncementCard key={announcement.id} announcement={announcement} />
                   ))}
                 </div>
