@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
             },
         });
 
-        // 2. Extraer los IDs de los cursos de los mensajes que son de tipo COURSE_COMPLETION.
+        // 2. Extraer los IDs de los cursos de los mensajes que son de tipo COURSE_COMPLETION y tienen un triggerId válido.
         const courseIds = baseMessages
             .filter(msg => msg.triggerType === 'COURSE_COMPLETION' && msg.triggerId)
             .map(msg => msg.triggerId!);
@@ -53,8 +53,9 @@ export async function GET(req: NextRequest) {
         // 4. Combinar los datos de forma segura.
         const enrichedMessages: EnrichedMotivationalMessage[] = baseMessages.map(message => {
             let triggerCourse = null;
+            // Solo buscar en el mapa si el trigger es del tipo correcto y el ID existe.
             if (message.triggerType === 'COURSE_COMPLETION' && message.triggerId && coursesMap.has(message.triggerId)) {
-                triggerCourse = coursesMap.get(message.triggerId);
+                triggerCourse = coursesMap.get(message.triggerId) || null;
             }
             return {
                 ...message,
