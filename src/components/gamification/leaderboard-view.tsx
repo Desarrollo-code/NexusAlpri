@@ -12,6 +12,7 @@ import { Identicon } from '@/components/ui/identicon';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 
 interface RankedUser {
   rank: number;
@@ -26,22 +27,25 @@ interface RankedUser {
 const PodiumCard = ({ user, rank }: { user: RankedUser, rank: number }) => {
     const rankStyles = {
         1: {
-            card: "md:order-2 md:scale-110 z-10 shadow-2xl",
+            card: "md:order-2 md:scale-110 z-10 shadow-2xl bg-amber-300/10 border-amber-400",
             medal: "bg-amber-400 text-amber-900 border-amber-500",
             icon: "text-amber-400 fill-amber-300",
-            height: "h-52"
+            height: "h-56",
+            avatarBorder: "border-amber-400",
         },
         2: {
-            card: "md:order-1",
+            card: "md:order-1 bg-slate-300/10 border-slate-400",
             medal: "bg-slate-300 text-slate-800 border-slate-400",
             icon: "text-slate-400 fill-slate-300",
-            height: "h-44"
+            height: "h-48",
+            avatarBorder: "border-slate-400",
         },
         3: {
-            card: "md:order-3",
+            card: "md:order-3 bg-orange-400/10 border-orange-500",
             medal: "bg-orange-400 text-orange-900 border-orange-500",
             icon: "text-orange-400 fill-orange-300",
-            height: "h-44"
+            height: "h-48",
+            avatarBorder: "border-orange-500",
         },
     };
 
@@ -49,14 +53,14 @@ const PodiumCard = ({ user, rank }: { user: RankedUser, rank: number }) => {
     
     return (
         <Card className={cn(
-            "text-center flex flex-col items-center justify-end p-4 relative overflow-hidden transition-all duration-300 ease-in-out",
+            "text-center flex flex-col items-center justify-end p-4 relative overflow-hidden transition-all duration-300 ease-in-out card-border-animated",
             styles.card,
             styles.height
         )}>
-             <div className="absolute inset-0 bg-gradient-to-t from-card via-card/80 to-transparent z-0"/>
+             <div className="absolute inset-0 bg-gradient-to-t from-card/50 via-card/20 to-transparent z-0"/>
              <div className="relative z-10 flex flex-col items-center">
                  <div className="relative mb-2">
-                     <Avatar className="h-20 w-20 border-4" style={{ borderColor: rank === 1 ? '#FFD700' : rank === 2 ? '#C0C0C0' : '#CD7F32'}}>
+                     <Avatar className={cn("h-20 w-20 border-4", styles.avatarBorder)}>
                         <AvatarImage src={user.avatar || undefined} />
                         <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
                     </Avatar>
@@ -115,9 +119,9 @@ export function LeaderboardView() {
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-          <Skeleton className="h-44 rounded-lg md:order-1" />
-          <Skeleton className="h-52 rounded-lg md:order-2" />
-          <Skeleton className="h-44 rounded-lg md:order-3" />
+          <Skeleton className="h-48 rounded-lg md:order-1" />
+          <Skeleton className="h-56 rounded-lg md:order-2" />
+          <Skeleton className="h-48 rounded-lg md:order-3" />
         </div>
         <Skeleton className="h-96 w-full" />
       </div>
@@ -139,10 +143,10 @@ export function LeaderboardView() {
     <div className="space-y-8">
       {/* Top 3 Podium */}
       {topThree.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-            {topThree[1] && <PodiumCard user={topThree[1]} rank={2} />}
-            {topThree[0] && <PodiumCard user={topThree[0]} rank={1} />}
-            {topThree[2] && <PodiumCard user={topThree[2]} rank={3} />}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            {topThree[1] ? <PodiumCard user={topThree[1]} rank={2} /> : <div className="hidden md:block"></div>}
+            {topThree[0] ? <PodiumCard user={topThree[0]} rank={1} /> : <div className="hidden md:block"></div>}
+            {topThree[2] ? <PodiumCard user={topThree[2]} rank={3} /> : <div className="hidden md:block"></div>}
           </div>
       )}
 
