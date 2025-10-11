@@ -13,7 +13,9 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  DragOverlay
+  DragOverlay,
+  type DragStartEvent,
+  type DragEndEvent
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -38,7 +40,7 @@ const ProcessItem = ({ process }: { process: ProcessWithChildren }) => {
 
   return (
     <div ref={setNodeRef} style={style}>
-      <Card className="mb-2">
+      <Card className="mb-2 bg-card">
         <CardHeader className="flex flex-row items-center justify-between p-3">
           <div className="flex items-center gap-2">
             <button {...attributes} {...listeners} className="cursor-grab p-1">
@@ -61,12 +63,14 @@ const ProcessItem = ({ process }: { process: ProcessWithChildren }) => {
   );
 };
 
+
 export default function ProcessesPage() {
   const { setPageTitle } = useTitle();
   const { toast } = useToast();
   const [processes, setProcesses] = useState<ProcessWithChildren[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
   useEffect(() => {
     setPageTitle('Gestión de Procesos');
@@ -102,30 +106,26 @@ export default function ProcessesPage() {
     })
   );
 
-  function handleDragEnd(event: any) {
+  function handleDragStart(event: DragStartEvent) {
+    setActiveId(event.active.id as string);
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    setActiveId(null);
     // Lógica para manejar el fin del arrastre (se implementará en el futuro)
     console.log('Drag end:', event);
   }
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+  
+  function findProcessById(id: string, list: ProcessWithChildren[]): ProcessWithChildren | null {
+      for (const process of list) {
+          if (process.id === id) return process;
+          const foundInChildren = findProcessById(id, process.children);
+          if (foundInChildren) return foundInChildren;
+      }
+      return null;
   }
 
-  if (error) {
-    return (
-      <Card className="text-center py-16 text-destructive bg-destructive/10 border-destructive">
-        <CardHeader>
-          <AlertTriangle className="mx-auto h-12 w-12" />
-          <CardTitle>Error al Cargar</CardTitle>
-          <CardDescription className="text-destructive">{error}</CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
+  const activeProcess = activeId ? findProcessById(activeId, processes) : null;
 
   return (
     <div className="space-y-6">
@@ -140,13 +140,28 @@ export default function ProcessesPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={processes.map(p => p.id)} strategy={verticalListSortingStrategy}>
-              {processes.map(process => (
-                <ProcessItem key={process.id} process={process} />
-              ))}
-            </SortableContext>
-          </DndContext>
+          {isLoading ? (
+             <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center h-64 text-destructive bg-destructive/10 rounded-lg">
+                <AlertTriangle className="h-8 w-8 mb-2" />
+                <p className="font-semibold">Error al Cargar</p>
+                <p className="text-sm">{error}</p>
+            </div>
+          ) : (
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+              <SortableContext items={processes.map(p => p.id)} strategy={verticalListSortingStrategy}>
+                {processes.map(process => (
+                  <ProcessItem key={process.id} process={process} />
+                ))}
+              </SortableContext>
+              <DragOverlay>
+                {activeProcess ? <ProcessItem process={activeProcess} /> : null}
+              </DragOverlay>
+            </DndContext>
+          )}
         </CardContent>
       </Card>
     </div>
