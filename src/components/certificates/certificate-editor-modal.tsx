@@ -266,7 +266,7 @@ const UploadWidget = ({ id, label, currentImageUrl, onFileSelect, onRemove, disa
                 </div>
             </div>
         ) : isUploading ? (
-             <div className="w-full h-32 flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg bg-muted/50 p-2 relative">
+             <div className="w-full aspect-video flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg bg-muted/50 p-2 relative">
                 {currentImageUrl && <Image src={currentImageUrl} alt="Subiendo" fill className="object-contain opacity-30 p-2"/>}
                 <div className="z-10 text-center space-y-2">
                     <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
