@@ -280,20 +280,30 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
                             </Card>
 
                              <Card>
-                                 <CardHeader><CardTitle className="text-base flex items-center gap-2"><CheckSquare className="h-4 w-4"/> Opciones Adicionales</CardTitle></CardHeader>
+                                 <CardHeader>
+                                     <CardTitle className="text-base flex items-center gap-2">
+                                         <CheckSquare className="h-4 w-4" />
+                                         Opciones Adicionales
+                                     </CardTitle>
+                                 </CardHeader>
                                  <CardContent>
-                                    <div className="flex items-center justify-between"><Label htmlFor="showScore" className="flex items-center gap-2 font-medium">Mostrar Calificación</Label><Switch id="showScore" checked={showScore} onCheckedChange={setShowScore} /></div>
-                                </CardContent>
+                                     <div className="flex items-center justify-between">
+                                         <Label htmlFor="showScore" className="font-medium">
+                                             Mostrar Calificación
+                                         </Label>
+                                         <Switch id="showScore" checked={showScore} onCheckedChange={setShowScore} />
+                                     </div>
+                                 </CardContent>
                              </Card>
                         </div>
-                         <CardFooter className="p-4 border-t sticky bottom-0 bg-muted/50 backdrop-blur-sm mt-auto flex justify-end gap-2 w-full">
+                        <div className="p-4 border-t sticky bottom-0 bg-muted/50 backdrop-blur-sm mt-auto flex justify-end gap-2 w-full">
                             <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
                             <Button type="submit" form="template-form" disabled={isSubmitting || !name || !finalImageUrl}>
                                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                                 <Save className="mr-2 h-4 w-4"/>
                                 Guardar Plantilla
                             </Button>
-                        </CardFooter>
+                        </div>
                     </form>
                 </div>
                 <div className="flex-1 flex flex-col p-4">
