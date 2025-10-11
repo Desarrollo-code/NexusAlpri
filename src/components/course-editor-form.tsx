@@ -752,7 +752,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                                             onBlockUpdate={(lessonIndex, blockIndex, field, value) => updateBlockField(moduleIndex, lessonIndex, blockIndex, field, value)}
                                                             onBlockDelete={(lessonIndex, blockIndex) => handleRemoveBlock(moduleIndex, lessonIndex, blockIndex)}
                                                             onQuizUpdate={(lessonIndex, blockIndex, updatedQuiz) => updateQuizForBlock(moduleIndex, lessonIndex, blockIndex, updatedQuiz)}
-                                                            onEditQuiz={(moduleIndex, lessonIndex, blockIndex) => handleEditQuiz(moduleIndex, lessonIndex, blockIndex)}
+                                                            onEditQuiz={(blockIndex) => handleEditQuiz(moduleIndex, course.modules[moduleIndex].lessons.findIndex(l => l.contentBlocks[blockIndex]), blockIndex)}
                                                             isSaving={isSaving}
                                                             provided={provided}
                                                             ref={provided.innerRef}
@@ -923,14 +923,6 @@ const BlockTypeSelector = ({ onSelect }) => (
     </DropdownMenu>
 );
 
-const optionColors = ["bg-red-600", "bg-blue-600", "bg-yellow-500", "bg-green-600"];
-const optionShapes = [
-    <path d="M12 2L2 22h20L12 2z" key="triangle"/>, 
-    <path d="M12 2 L22 12 L12 22 L2 12 Z" key="diamond" />,
-    <circle cx="12" cy="12" r="11" key="circle"/>,
-    <rect x="2" y="2" width="20" height="20" rx="2" key="square"/>,
-];
-
 function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, onClose: () => void, quiz: AppQuiz, onSave: (updatedQuiz: AppQuiz) => void }) {
     const [localQuiz, setLocalQuiz] = useState<AppQuiz>(quiz);
     const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
@@ -979,6 +971,28 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
         setActiveQuestionIndex(localQuiz.questions.length);
     };
     
+    const addOption = () => {
+        const newQuestions = [...localQuiz.questions];
+        const currentOptions = newQuestions[activeQuestionIndex].options;
+        if (currentOptions.length < 4) {
+            currentOptions.push({ id: generateUniqueId('option'), text: '', isCorrect: false, points: 0 });
+            setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
+        }
+    };
+    
+    const deleteOption = (optionIndex: number) => {
+        const newQuestions = [...localQuiz.questions];
+        const currentOptions = newQuestions[activeQuestionIndex].options;
+        if (currentOptions.length > 1) { // No permitir eliminar la última opción
+            currentOptions.splice(optionIndex, 1);
+            // Si se eliminó la opción correcta, hacer la primera la correcta
+            if (!currentOptions.some(opt => opt.isCorrect) && currentOptions.length > 0) {
+                currentOptions[0].isCorrect = true;
+            }
+            setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
+        }
+    };
+
     const deleteQuestion = (indexToDelete: number) => {
          if (localQuiz.questions.length <= 1) return;
          setLocalQuiz(prev => ({ ...prev, questions: prev.questions.filter((_, i) => i !== indexToDelete) }));
@@ -1017,13 +1031,13 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
                     </div>
                      <div className="md:col-span-3 flex flex-col bg-muted/30">
                         {activeQuestion && (
-                            <div className="flex-1 flex flex-col p-4 gap-4">
+                            <div className="flex-1 flex flex-col p-4 gap-4 overflow-y-auto">
                                 <Textarea value={activeQuestion.text} onChange={(e) => handleQuestionChange(e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-xl text-center font-bold h-32 resize-none"/>
                                 <div className="flex-grow w-full max-w-lg mx-auto bg-gradient-to-br from-teal-400 to-blue-500 flex items-center justify-center rounded-lg shadow-lg">
                                     <h2 className="text-4xl font-extrabold text-white opacity-90">{localQuiz.title}</h2>
                                 </div>
                                  <div className="grid grid-cols-2 gap-2">
-                                    {activeQuestion.options.slice(0, 4).map((opt, index) => (
+                                    {activeQuestion.options.map((opt, index) => (
                                         <div key={opt.id} className={cn("flex items-center p-2 rounded-md shadow-lg text-white", optionColors[index])}>
                                             <div className="h-10 w-10 flex-shrink-0 flex items-center justify-center">
                                                 <svg viewBox="0 0 24 24" className="h-8 w-8 fill-current">{optionShapes[index]}</svg>
@@ -1032,9 +1046,19 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
                                             <Button variant="ghost" size="icon" onClick={() => handleSetCorrect(opt.id)} className="text-white hover:bg-white/20 hover:text-white">
                                                 <Check className={cn("h-6 w-6", opt.isCorrect ? "opacity-100" : "opacity-40")}/>
                                             </Button>
+                                             {localQuiz.questions[activeQuestionIndex].options.length > 1 &&
+                                               <Button variant="ghost" size="icon" onClick={() => deleteOption(index)} className="text-white hover:bg-white/20 hover:text-white">
+                                                  <X className="h-4 w-4"/>
+                                               </Button>
+                                             }
                                         </div>
                                     ))}
                                 </div>
+                                 {localQuiz.questions[activeQuestionIndex].options.length < 4 && (
+                                     <Button variant="outline" size="sm" onClick={addOption} className="mt-2 self-start">
+                                         + Añadir opción
+                                     </Button>
+                                 )}
                             </div>
                         )}
                     </div>
