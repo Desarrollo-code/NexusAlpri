@@ -49,7 +49,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { cn, getProcessColors } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SmartPagination } from '@/components/ui/pagination';
 import { useTitle } from '@/contexts/title-context';
@@ -65,6 +65,8 @@ import { DndContext, useDraggable, useDroppable, DragOverlay, KeyboardSensor, Po
 import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Identicon } from '@/components/ui/identicon';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Draggable } from '@hello-pangea/dnd';
 
 // --- TYPES ---
 interface ProcessWithLevel {
@@ -87,56 +89,51 @@ const PAGE_SIZE = 10;
 
 // --- PROCESS MANAGEMENT COMPONENTS ---
 
-const ProcessItem = ({ process, onEdit, onDelete }: { process: ProcessWithChildren, onEdit: (p: ProcessWithChildren) => void, onDelete: (p: ProcessWithChildren) => void }) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: process.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
+const ProcessItem = ({ process, onEdit, onDelete, provided }: { process: ProcessWithChildren, onEdit: (p: ProcessWithChildren) => void, onDelete: (p: ProcessWithChildren) => void, provided: any }) => {
+  const { isDragging } = useDraggable({ id: process.id });
   
-  const colors = getProcessColors(process.id);
-
   return (
-    <div ref={setNodeRef} style={style}>
-      <Card className={cn("mb-2 bg-card border-l-4", isDragging && 'opacity-50')} style={{ borderColor: colors.raw.medium }}>
-        <CardHeader className="flex flex-row items-center justify-between p-3">
-          <div className="flex items-center gap-2 flex-grow min-w-0">
-            <button {...attributes} {...listeners} className="cursor-grab p-1 touch-none">
-              <GripVertical className="h-5 w-5 text-muted-foreground" />
-            </button>
-            <CardTitle className="text-sm font-medium truncate">{process.name}</CardTitle>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex -space-x-2 overflow-hidden">
-                {process.users.slice(0, 3).map(user => (
-                    <Avatar key={user.id} className="h-7 w-7 border-2 border-background">
-                        <AvatarImage src={user.avatar || undefined} />
-                        <AvatarFallback><Identicon userId={user.id} /></AvatarFallback>
-                    </Avatar>
-                ))}
-                {process.users.length > 3 && (
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-muted text-xs font-semibold">
-                        +{process.users.length - 3}
+    <div ref={provided.innerRef} {...provided.draggableProps} className={cn(isDragging && 'opacity-50')}>
+        <Card className="mb-2 bg-card border-l-4 border-primary/30">
+            <CardHeader className="flex flex-row items-center justify-between p-3">
+                <div className="flex items-center gap-2 flex-grow min-w-0">
+                    <div {...provided.dragHandleProps} className="cursor-grab p-1 touch-none">
+                        <GripVertical className="h-5 w-5 text-muted-foreground" />
                     </div>
-                )}
-            </div>
-            <div className="flex-shrink-0">
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(process)}><Edit3 className="h-4 w-4"/></Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => onDelete(process)}><Trash2 className="h-4 w-4"/></Button>
-            </div>
-          </div>
-        </CardHeader>
-        {process.children.length > 0 && (
-          <CardContent className="pl-10 pb-2 space-y-2">
-            <SortableContext items={process.children.map(p => p.id)} strategy={verticalListSortingStrategy}>
-              {process.children.map(child => (
-                <ProcessItem key={child.id} process={child} onEdit={onEdit} onDelete={onDelete} />
-              ))}
-            </SortableContext>
-          </CardContent>
-        )}
-      </Card>
+                    <CardTitle className="text-sm font-medium truncate">{process.name}</CardTitle>
+                </div>
+                <div className="flex items-center gap-2">
+                    <div className="flex -space-x-2 overflow-hidden">
+                        {process.users.slice(0, 3).map(user => (
+                            <Avatar key={user.id} className="h-7 w-7 border-2 border-background">
+                                <AvatarImage src={user.avatar || undefined} />
+                                <AvatarFallback><Identicon userId={user.id} /></AvatarFallback>
+                            </Avatar>
+                        ))}
+                        {process.users.length > 3 && (
+                            <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-muted text-xs font-semibold">
+                                +{process.users.length - 3}
+                            </div>
+                        )}
+                    </div>
+                    <div className="flex-shrink-0">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(process)}><Edit3 className="h-4 w-4"/></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => onDelete(process)}><Trash2 className="h-4 w-4"/></Button>
+                    </div>
+                </div>
+            </CardHeader>
+            {process.children.length > 0 && (
+                <CardContent className="pl-10 pb-2 space-y-2">
+                    {process.children.map((child, index) => (
+                         <Draggable key={child.id} draggableId={child.id} index={index}>
+                           {(childProvided) => (
+                             <ProcessItem process={child} onEdit={onEdit} onDelete={onDelete} provided={childProvided} />
+                           )}
+                         </Draggable>
+                    ))}
+                </CardContent>
+            )}
+        </Card>
     </div>
   );
 };
@@ -235,7 +232,6 @@ export default function UsersAndProcessesPage() {
   // State for Processes
   const [processes, setProcesses] = useState<ProcessWithChildren[]>([]);
   const [flatProcesses, setFlatProcesses] = useState<ProcessWithLevel[]>([]);
-  const [activeProcessId, setActiveProcessId] = useState<string | null>(null);
   const [showProcessModal, setShowProcessModal] = useState(false);
   const [editingProcess, setEditingProcess] = useState<ProcessWithChildren | null>(null);
   const [processToDelete, setProcessToDelete] = useState<ProcessWithChildren | null>(null);
@@ -501,155 +497,194 @@ export default function UsersAndProcessesPage() {
         setIsProcessing(false);
     }
   }
-
-  // --- DND HANDLERS ---
-  const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
-  const handleDragStart = (event: DragStartEvent) => { setActiveProcessId(event.active.id as string); };
-  const handleDragEnd = (event: DragEndEvent) => { setActiveProcessId(null); };
   
-  const activeProcess = activeProcessId ? processes.flatMap(p => [p, ...p.children]).find(p => p.id === activeProcessId) : null;
+  const UserListContent = () => (
+    <Card>
+      <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className='flex-grow'>
+              <CardTitle>Lista de Usuarios</CardTitle>
+              <CardDescription>Visualiza y gestiona todos los usuarios registrados.</CardDescription>
+          </div>
+           <Button onClick={handleOpenAddModal}>
+              <PlusCircle className="mr-2 h-4 w-4"/> Añadir Usuario
+          </Button>
+      </CardHeader>
+      <CardContent>
+         <div className="w-full flex flex-col sm:flex-row gap-2 mb-4">
+            <Select value={roleFilter} onValueChange={(v) => handleFilterChange('role', v)}>
+              <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="Filtrar por rol..." /></SelectTrigger>
+              <SelectContent><SelectItem value="all">Todos los Roles</SelectItem><SelectItem value="ADMINISTRATOR">Administradores</SelectItem><SelectItem value="INSTRUCTOR">Instructores</SelectItem><SelectItem value="STUDENT">Estudiantes</SelectItem></SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={(v) => handleFilterChange('status', v)}>
+              <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="Filtrar por estado..." /></SelectTrigger>
+              <SelectContent><SelectItem value="all">Todos los Estados</SelectItem><SelectItem value="active">Activos</SelectItem><SelectItem value="inactive">Inactivos</SelectItem></SelectContent>
+            </Select>
+             <div className="relative w-full sm:w-auto flex-grow">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input type="search" placeholder="Buscar por nombre o email..." className="pl-8 w-full" value={searchTerm} onChange={(e) => handleFilterChange('search', e.target.value)} />
+          </div>
+          </div>
+          {/* Mobile View */}
+          <div className="space-y-2 lg:hidden">
+              {isLoading ? [...Array(3)].map((_,i) => <Skeleton key={i} className="h-32 w-full" />) :
+               usersList.map(u => (
+                 <MobileUserCard key={u.id} user={u} onEdit={handleOpenEditModal} onChangeRole={() => { setUserToChangeRole(u); setSelectedNewRole(u.role); setShowChangeRoleDialog(true); }} onToggleStatus={() => { setUserToToggleStatus(u); setShowToggleStatusDialog(true);}} />
+               ))}
+          </div>
+          {/* Desktop View */}
+          <div className="overflow-x-auto hidden lg:block">
+               <Table>
+                  <TableHeader><TableRow><TableHead>Nombre</TableHead><TableHead>Email</TableHead><TableHead>Rol</TableHead><TableHead>Estado</TableHead><TableHead><span className="sr-only">Acciones</span></TableHead></TableRow></TableHeader>
+                  <TableBody>
+                      {isLoading ? [...Array(5)].map((_,i) => (<TableRow key={i}><TableCell colSpan={5}><Skeleton className="h-10 w-full" /></TableCell></TableRow>)) :
+                       usersList.map(u => (
+                           <TableRow key={u.id} className={cn(!u.isActive && "opacity-60")}>
+                                <TableCell>
+                                  <Popover><PopoverTrigger asChild><div className="flex items-center gap-3 cursor-pointer group"><Avatar className="h-9 w-9"><AvatarImage src={u.avatar || undefined} alt={u.name} /><AvatarFallback>{getInitials(u.name)}</AvatarFallback></Avatar><div className="font-medium flex items-center gap-1.5 group-hover:underline">{u.name}<VerifiedBadge role={u.role}/></div></div></PopoverTrigger><PopoverContent className="w-80 p-0"><UserProfileCard user={u} /></PopoverContent></Popover>
+                                </TableCell>
+                                <TableCell>{u.email}</TableCell>
+                                <TableCell><Badge variant={getRoleBadgeVariant(u.role)} className="capitalize">{getRoleInSpanish(u.role)}</Badge></TableCell>
+                                <TableCell><Badge variant={u.isActive ? 'default' : 'destructive'} className={cn(u.isActive && "bg-green-600 hover:bg-green-700")}>{u.isActive ? 'Activo' : 'Inactivo'}</Badge></TableCell>
+                                <TableCell>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild><Button aria-haspopup="true" size="icon" variant="ghost"><MoreHorizontal className="h-4 w-4" /><span className="sr-only">Acciones</span></Button></DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                          <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                                          <DropdownMenuItem onSelect={() => handleOpenEditModal(u)}>Editar</DropdownMenuItem>
+                                          <DropdownMenuItem onSelect={() => { setUserToChangeRole(u); setSelectedNewRole(u.role); setShowChangeRoleDialog(true); }}>Cambiar Rol</DropdownMenuItem>
+                                          <DropdownMenuSeparator />
+                                          <DropdownMenuItem onSelect={() => { setUserToToggleStatus(u); setShowToggleStatusDialog(true);}} className={cn(u.isActive ? "text-destructive focus:text-destructive-foreground focus:bg-destructive" : "text-green-600 focus:bg-green-500 focus:text-white")}>{u.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </TableCell>
+                           </TableRow>
+                       ))}
+                  </TableBody>
+               </Table>
+           </div>
+      </CardContent>
+      {totalPages > 1 && !isLoading && (
+          <CardFooter>
+              <SmartPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+          </CardFooter>
+      )}
+   </Card>
+  );
 
-  if (currentUser?.role !== 'ADMINISTRATOR') {
-    return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
-  }
-  
+  const MobileUserCard = ({ user, onEdit, onChangeRole, onToggleStatus }: { user: UserWithProcesses, onEdit: (u: UserWithProcesses) => void, onChangeRole: () => void, onToggleStatus: () => void }) => (
+    <Card className={cn("p-3 flex gap-3 items-start", !user.isActive && "opacity-60")}>
+        <Avatar className="h-10 w-10">
+            <AvatarImage src={user.avatar || undefined} alt={user.name} />
+            <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+        </Avatar>
+        <div className="flex-grow">
+            <div className="flex justify-between items-start">
+                <div>
+                    <p className="font-semibold flex items-center gap-1.5">{user.name} <VerifiedBadge role={user.role} /></p>
+                    <p className="text-xs text-muted-foreground">{user.email}</p>
+                </div>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild><Button aria-haspopup="true" size="icon" variant="ghost" className="h-8 w-8 -mt-1"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onSelect={() => onEdit(user)}>Editar</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={onChangeRole}>Cambiar Rol</DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onSelect={onToggleStatus} className={cn(user.isActive ? "text-destructive focus:bg-destructive/10" : "text-green-600 focus:bg-green-500 focus:text-white")}>{user.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+            <div className="mt-2 flex items-center gap-2">
+                <Badge variant={getRoleBadgeVariant(user.role)} className="capitalize">{getRoleInSpanish(user.role)}</Badge>
+                <Badge variant={user.isActive ? 'default' : 'destructive'} className={cn(user.isActive && "bg-green-600 hover:bg-green-700")}>{user.isActive ? 'Activo' : 'Inactivo'}</Badge>
+            </div>
+             {user.processes && user.processes.length > 0 && (
+                <div className="mt-2 border-t pt-2">
+                    <div className="flex flex-wrap gap-1">
+                        {user.processes.map(p => <Badge key={p.id} variant="outline" className="text-xs">{p.name}</Badge>)}
+                    </div>
+                </div>
+            )}
+        </div>
+    </Card>
+  );
+
+  const ProcessManagement = () => (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div className="space-y-1">
+          <CardTitle className="flex items-center gap-2"><Network /> Estructura Organizacional</CardTitle>
+          <CardDescription>Crea y organiza los procesos.</CardDescription>
+        </div>
+        <Button size="sm" variant="outline" onClick={() => handleOpenProcessModal(null)}><PlusCircle className="mr-2 h-4 w-4" />Crear</Button>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (<Skeleton className="h-64 w-full" />) : error ? (<p className="text-destructive text-center">{error}</p>) : (
+          <DragDropContext onDragEnd={() => {}}>
+            <Droppable droppableId="processes-droppable">
+              {(provided) => (
+                <div {...provided.droppableProps} ref={provided.innerRef}>
+                  {processes.map((process, index) => (
+                    <Draggable key={process.id} draggableId={process.id} index={index}>
+                      {(provided) => (
+                        <ProcessItem process={process} onEdit={handleOpenProcessModal} onDelete={setProcessToDelete} provided={provided} />
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  if (currentUser?.role !== 'ADMINISTRATOR') return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+
   return (
     <>
-    <div className="space-y-8">
-        <div className="flex items-center justify-between">
-            <p className="text-muted-foreground">Gestiona los usuarios y la estructura de procesos de la organización.</p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            <div className="lg:col-span-2">
-                 <Card>
-                    <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <div className='flex-grow'>
-                            <CardTitle>Lista de Usuarios</CardTitle>
-                            <CardDescription>Visualiza y gestiona todos los usuarios registrados.</CardDescription>
-                        </div>
-                         <Button onClick={handleOpenAddModal}>
-                            <PlusCircle className="mr-2 h-4 w-4"/> Añadir Usuario
-                        </Button>
-                    </CardHeader>
-                    <CardContent>
-                       <div className="w-full flex flex-col sm:flex-row gap-2 mb-4">
-                          <Select value={roleFilter} onValueChange={(v) => handleFilterChange('role', v)}>
-                            <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="Filtrar por rol..." /></SelectTrigger>
-                            <SelectContent><SelectItem value="all">Todos los Roles</SelectItem><SelectItem value="ADMINISTRATOR">Administradores</SelectItem><SelectItem value="INSTRUCTOR">Instructores</SelectItem><SelectItem value="STUDENT">Estudiantes</SelectItem></SelectContent>
-                          </Select>
-                          <Select value={statusFilter} onValueChange={(v) => handleFilterChange('status', v)}>
-                            <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="Filtrar por estado..." /></SelectTrigger>
-                            <SelectContent><SelectItem value="all">Todos los Estados</SelectItem><SelectItem value="active">Activos</SelectItem><SelectItem value="inactive">Inactivos</SelectItem></SelectContent>
-                          </Select>
-                           <div className="relative w-full sm:w-auto flex-grow">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input type="search" placeholder="Buscar por nombre o email..." className="pl-8 w-full" value={searchTerm} onChange={(e) => handleFilterChange('search', e.target.value)} />
-                        </div>
-                        </div>
-                        
-                         {isMobile ? <div className="space-y-2">
-                            {isLoading ? [...Array(3)].map((_,i) => <Skeleton key={i} className="h-24 w-full" />) :
-                             usersList.map(u => (
-                               <Card key={u.id} className={cn("p-3", !u.isActive && "opacity-60")}>
-                                   {/* ... (Mobile card content) ... */}
-                               </Card>
-                             ))}
-                        </div> : 
-                        <div className="overflow-x-auto">
-                             <Table>
-                                <TableHeader><TableRow><TableHead>Nombre</TableHead><TableHead>Email</TableHead><TableHead>Rol</TableHead><TableHead>Estado</TableHead><TableHead><span className="sr-only">Acciones</span></TableHead></TableRow></TableHeader>
-                                <TableBody>
-                                    {isLoading ? [...Array(5)].map((_,i) => (<TableRow key={i}><TableCell colSpan={5}><Skeleton className="h-10 w-full" /></TableCell></TableRow>)) :
-                                     usersList.map(u => (
-                                         <TableRow key={u.id} className={cn(!u.isActive && "opacity-60")}>
-                                              <TableCell>
-                                                <Popover>
-                                                    <PopoverTrigger asChild><div className="flex items-center gap-3 cursor-pointer group"><Avatar className="h-9 w-9"><AvatarImage src={u.avatar || undefined} alt={u.name} /><AvatarFallback>{getInitials(u.name)}</AvatarFallback></Avatar><div className="font-medium flex items-center gap-1.5 group-hover:underline">{u.name}<VerifiedBadge role={u.role}/></div></div></PopoverTrigger>
-                                                    <PopoverContent className="w-80"><UserProfileCard user={u} /></PopoverContent>
-                                                </Popover>
-                                              </TableCell>
-                                              <TableCell>{u.email}</TableCell>
-                                              <TableCell><Badge variant={getRoleBadgeVariant(u.role)} className="capitalize">{getRoleInSpanish(u.role)}</Badge></TableCell>
-                                              <TableCell><Badge variant={u.isActive ? 'default' : 'destructive'} className={cn(u.isActive && "bg-green-600 hover:bg-green-700")}>{u.isActive ? 'Activo' : 'Inactivo'}</Badge></TableCell>
-                                              <TableCell>
-                                                  <DropdownMenu>
-                                                      <DropdownMenuTrigger asChild><Button aria-haspopup="true" size="icon" variant="ghost"><MoreHorizontal className="h-4 w-4" /><span className="sr-only">Acciones</span></Button></DropdownMenuTrigger>
-                                                      <DropdownMenuContent align="end">
-                                                        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                                                        <DropdownMenuItem onSelect={() => handleOpenEditModal(u)}>Editar</DropdownMenuItem>
-                                                        <DropdownMenuItem onSelect={() => { setUserToChangeRole(u); setSelectedNewRole(u.role); setShowChangeRoleDialog(true); }}>Cambiar Rol</DropdownMenuItem>
-                                                        <DropdownMenuSeparator />
-                                                        <DropdownMenuItem onSelect={() => { setUserToToggleStatus(u); setShowToggleStatusDialog(true);}} className={cn(u.isActive ? "text-destructive focus:text-destructive-foreground focus:bg-destructive" : "text-green-600 focus:bg-green-500 focus:text-white")}>{u.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
-                                                      </DropdownMenuContent>
-                                                  </DropdownMenu>
-                                              </TableCell>
-                                         </TableRow>
-                                     ))}
-                                </TableBody>
-                             </Table>
-                         </div>
-                        }
-                    </CardContent>
-                    {totalPages > 1 && !isLoading && (
-                        <CardFooter>
-                            <SmartPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
-                        </CardFooter>
-                    )}
-                 </Card>
-            </div>
-            
-            <div className="lg:col-span-1">
-                 <Card>
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <div className="space-y-1">
-                            <CardTitle className="flex items-center gap-2"><Network /> Estructura Organizacional</CardTitle>
-                            <CardDescription>Crea y organiza los procesos.</CardDescription>
-                        </div>
-                         <Button size="sm" variant="outline" onClick={() => handleOpenProcessModal(null)}><PlusCircle className="mr-2 h-4 w-4" />Crear</Button>
-                    </CardHeader>
-                    <CardContent>
-                         {isLoading ? (<Skeleton className="h-64 w-full" />) : error ? ( <p className="text-destructive text-center">{error}</p>) : (
-                             <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-                                <SortableContext items={processes.map(p => p.id)} strategy={verticalListSortingStrategy}>
-                                  {processes.map(process => (
-                                    <ProcessItem key={process.id} process={process} onEdit={handleOpenProcessModal} onDelete={setProcessToDelete} />
-                                  ))}
-                                </SortableContext>
-                                <DragOverlay>
-                                    {activeProcess ? <ProcessItem process={activeProcess} onEdit={()=>{}} onDelete={()=>{}} /> : null}
-                                </DragOverlay>
-                              </DndContext>
-                         )}
-                    </CardContent>
-                 </Card>
-            </div>
-        </div>
-    </div>
-    
-    <Dialog open={showAddEditModal} onOpenChange={setShowAddEditModal}>
-        <DialogContent className="sm:max-w-[425px]">
-            <form onSubmit={handleUserFormSubmit}>
-                <DialogHeader>
-                    <DialogTitle>{userToEdit ? 'Editar Usuario' : 'Añadir Nuevo Usuario'}</DialogTitle>
-                    <DialogDescription>Completa la información del usuario.</DialogDescription>
-                </DialogHeader>
-                <div className="py-4 space-y-4">
-                    <div className="space-y-2"><Label htmlFor="name">Nombre</Label><Input id="name" value={editName} onChange={(e) => setEditName(e.target.value)} required disabled={isProcessing} /></div>
-                    <div className="space-y-2"><Label htmlFor="email">Email</Label><Input id="email" type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} required disabled={isProcessing}/></div>
-                    <div className="space-y-2"><Label htmlFor="password">{userToEdit ? 'Nueva Contraseña (Opcional)' : 'Contraseña'}</Label><div className="relative"><Input id="password" type={showPassword ? "text" : "password"} value={editPassword} onChange={(e) => setEditPassword(e.target.value)} required={!userToEdit} disabled={isProcessing}/><Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground" onClick={() => setShowPassword(!showPassword)}>{showPassword ? <EyeOff/> : <Eye/>}</Button></div></div>
-                    <div className="space-y-2"><Label htmlFor="role">Rol</Label><Select value={editRole} onValueChange={(value: UserRole) => setEditRole(value)} disabled={isProcessing}><SelectTrigger id="role"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="STUDENT">Estudiante</SelectItem><SelectItem value="INSTRUCTOR">Instructor</SelectItem><SelectItem value="ADMINISTRATOR">Administrador</SelectItem></SelectContent></Select></div>
-                    <div className="space-y-2"><Label htmlFor="processes">Procesos</Label><ProcessSelector allProcesses={flatProcesses} selectedProcessIds={editProcessIds} onSelectionChange={(id, selected) => setEditProcessIds(prev => { const newSet = new Set(prev); if (selected) newSet.add(id); else newSet.delete(id); return newSet; })} disabled={isProcessing}/></div>
-                </div>
-                <DialogFooter>
-                    <Button type="button" variant="ghost" onClick={() => setShowAddEditModal(false)}>Cancelar</Button>
-                    <Button type="submit" disabled={isProcessing}>{isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}{userToEdit ? 'Guardar Cambios' : 'Crear Usuario'}</Button>
-                </DialogFooter>
-            </form>
-        </DialogContent>
-    </Dialog>
-
-    <Dialog open={showProcessModal} onOpenChange={setShowProcessModal}>
+      <div className="space-y-8">
+          <div className="flex items-center justify-between">
+              <p className="text-muted-foreground">Gestiona los usuarios y la estructura de procesos de la organización.</p>
+          </div>
+          {isMobile ? (
+             <Tabs defaultValue="users" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="users">Usuarios</TabsTrigger>
+                    <TabsTrigger value="processes">Procesos</TabsTrigger>
+                </TabsList>
+                <TabsContent value="users" className="mt-4"><UserListContent/></TabsContent>
+                <TabsContent value="processes" className="mt-4"><ProcessManagement/></TabsContent>
+             </Tabs>
+          ) : (
+             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                  <div className="lg:col-span-2"><UserListContent/></div>
+                  <div className="lg:col-span-1"><ProcessManagement/></div>
+             </div>
+          )}
+      </div>
+      
+      <Dialog open={showAddEditModal} onOpenChange={setShowAddEditModal}>
+          <DialogContent className="sm:max-w-md">
+              <form onSubmit={handleUserFormSubmit}>
+                  <DialogHeader><DialogTitle>{userToEdit ? 'Editar Usuario' : 'Añadir Nuevo Usuario'}</DialogTitle><DialogDescription>Completa la información del usuario.</DialogDescription></DialogHeader>
+                  <div className="py-4 space-y-4">
+                      <div className="space-y-2"><Label htmlFor="name">Nombre</Label><Input id="name" value={editName} onChange={(e) => setEditName(e.target.value)} required disabled={isProcessing} /></div>
+                      <div className="space-y-2"><Label htmlFor="email">Email</Label><Input id="email" type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} required disabled={isProcessing}/></div>
+                      <div className="space-y-2"><Label htmlFor="password">{userToEdit ? 'Nueva Contraseña (Opcional)' : 'Contraseña'}</Label><div className="relative"><Input id="password" type={showPassword ? "text" : "password"} value={editPassword} onChange={(e) => setEditPassword(e.target.value)} required={!userToEdit} disabled={isProcessing}/><Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground" onClick={() => setShowPassword(!showPassword)}>{showPassword ? <EyeOff/> : <Eye/>}</Button></div></div>
+                      <div className="space-y-2"><Label htmlFor="role">Rol</Label><Select value={editRole} onValueChange={(value: UserRole) => setEditRole(value)} disabled={isProcessing}><SelectTrigger id="role"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="STUDENT">Estudiante</SelectItem><SelectItem value="INSTRUCTOR">Instructor</SelectItem><SelectItem value="ADMINISTRATOR">Administrador</SelectItem></SelectContent></Select></div>
+                      <div className="space-y-2"><Label htmlFor="processes">Procesos</Label><ProcessSelector allProcesses={flatProcesses} selectedProcessIds={editProcessIds} onSelectionChange={(id, selected) => setEditProcessIds(prev => { const newSet = new Set(prev); if (selected) newSet.add(id); else newSet.delete(id); return newSet; })} disabled={isProcessing}/></div>
+                  </div>
+                  <DialogFooter>
+                      <Button type="button" variant="ghost" onClick={() => setShowAddEditModal(false)}>Cancelar</Button>
+                      <Button type="submit" disabled={isProcessing}>{isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}{userToEdit ? 'Guardar Cambios' : 'Crear Usuario'}</Button>
+                  </DialogFooter>
+              </form>
+          </DialogContent>
+      </Dialog>
+      
+       <Dialog open={showProcessModal} onOpenChange={setShowProcessModal}>
         <DialogContent>
             <DialogHeader>
                 <DialogTitle>{editingProcess ? 'Editar Proceso' : 'Crear Nuevo Proceso'}</DialogTitle>
