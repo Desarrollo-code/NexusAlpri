@@ -54,3 +54,43 @@ export const getMotivationalTriggerLabel = (
 
   return baseLabel.replace(':', '');
 };
+
+
+// --- Process Color Utils ---
+const PALETTES = [
+    ["#fde047", "#facc15", "#eab308"], // Yellow
+    ["#f87171", "#ef4444", "#dc2626"], // Red
+    ["#a7f3d0", "#4ade80", "#22c55e"], // Green
+    ["#93c5fd", "#60a5fa", "#3b82f6"], // Blue
+    ["#a5b4fc", "#818cf8", "#6366f1"], // Indigo
+    ["#d8b4fe", "#c084fc", "#a855f7"], // Purple
+    ["#f9a8d4", "#f472b6", "#ec4899"], // Pink
+    ["#6ee7b7", "#34d399", "#10b981"], // Emerald
+    ["#5eead4", "#2dd4bf", "#14b8a6"], // Teal
+];
+
+const stringToHash = (str: string): number => {
+    if (!str) return 0;
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = (hash << 5) - hash + char;
+        hash = hash & hash;
+    }
+    return Math.abs(hash);
+};
+
+export const getProcessColors = (id: string) => {
+    const hash = stringToHash(id);
+    const palette = PALETTES[hash % PALETTES.length];
+    return {
+        bgColor: `bg-[${palette[0]}]`,
+        textColor: `text-[${palette[2]}]`,
+        borderColor: `border-[${palette[1]}]`,
+        raw: {
+            light: palette[0],
+            medium: palette[1],
+            dark: palette[2],
+        }
+    };
+};

@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
-import { getInitials } from '@/lib/utils';
+import { getInitials, getProcessColors } from '@/lib/utils';
 import { getRoleInSpanish } from '@/lib/security-log-utils';
 import type { User } from '@/types';
 import { VerifiedBadge } from '../ui/verified-badge';
@@ -55,9 +55,14 @@ export const UserProfileCard = ({ user }: UserProfileCardProps) => {
                     <div className="mt-3">
                          <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-2 flex items-center justify-center gap-2"><Briefcase className="h-4 w-4"/> Procesos</h4>
                          <div className="flex flex-wrap justify-center gap-1.5">
-                            {user.processes.map(process => (
-                                <Badge key={process.id} variant="secondary">{process.name}</Badge>
-                            ))}
+                            {user.processes.map(process => {
+                                const colors = getProcessColors(process.id);
+                                return (
+                                    <Badge key={process.id} variant="secondary" style={{ backgroundColor: colors.raw.light, color: colors.raw.dark, borderColor: colors.raw.medium }} className="border">
+                                        {process.name}
+                                    </Badge>
+                                )
+                            })}
                          </div>
                     </div>
                 )}

@@ -32,6 +32,8 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
+import { getProcessColors } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 interface ProcessWithChildren extends PrismaProcess {
   children: ProcessWithChildren[];
@@ -45,10 +47,12 @@ const ProcessItem = ({ process, onEdit, onDelete }: { process: ProcessWithChildr
     transform: CSS.Transform.toString(transform),
     transition,
   };
+  
+  const colors = getProcessColors(process.id);
 
   return (
     <div ref={setNodeRef} style={style}>
-      <Card className="mb-2 bg-card">
+      <Card className={cn("mb-2 bg-card border-l-4", isDragging && 'opacity-50')} style={{ borderColor: colors.raw.medium }}>
         <CardHeader className="flex flex-row items-center justify-between p-3">
           <div className="flex items-center gap-2 flex-grow min-w-0">
             <button {...attributes} {...listeners} className="cursor-grab p-1 touch-none">
