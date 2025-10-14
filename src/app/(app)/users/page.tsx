@@ -1,3 +1,4 @@
+
 // src/app/(app)/users/page.tsx
 'use client';
 
@@ -743,6 +744,7 @@ export default function UsersAndProcessesPage() {
                 </Button>
             </DialogFooter>
         </DialogContent>
+    </Dialog>
     </>
   );
 }
