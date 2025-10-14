@@ -30,6 +30,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Identicon } from '@/components/ui/identicon';
 
 interface ProcessWithChildren extends PrismaProcess {
   children: ProcessWithChildren[];
@@ -54,9 +56,24 @@ const ProcessItem = ({ process, onEdit, onDelete }: { process: ProcessWithChildr
             </button>
             <CardTitle className="text-base truncate">{process.name}</CardTitle>
           </div>
-          <div className="flex-shrink-0">
-             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(process)}><Edit className="h-4 w-4"/></Button>
-             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => onDelete(process)}><Trash2 className="h-4 w-4"/></Button>
+          <div className="flex items-center gap-2">
+            <div className="flex -space-x-2 overflow-hidden">
+                {process.users.slice(0, 3).map(user => (
+                    <Avatar key={user.id} className="h-7 w-7 border-2 border-background">
+                        <AvatarImage src={user.avatar || undefined} />
+                        <AvatarFallback><Identicon userId={user.id} /></AvatarFallback>
+                    </Avatar>
+                ))}
+                {process.users.length > 3 && (
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-muted text-xs font-semibold">
+                        +{process.users.length - 3}
+                    </div>
+                )}
+            </div>
+            <div className="flex-shrink-0">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(process)}><Edit className="h-4 w-4"/></Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => onDelete(process)}><Trash2 className="h-4 w-4"/></Button>
+            </div>
           </div>
         </CardHeader>
         {process.children.length > 0 && (
