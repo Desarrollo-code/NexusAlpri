@@ -229,6 +229,8 @@ export default function UsersAndProcessesPage() {
   const [userToToggleStatus, setUserToToggleStatus] = useState<User | null>(null);
   const [userToChangeRole, setUserToChangeRole] = useState<User | null>(null);
   const [showAddEditModal, setShowAddEditModal] = useState(false);
+  const [showChangeRoleDialog, setShowChangeRoleDialog] = useState(false);
+  const [showToggleStatusDialog, setShowToggleStatusDialog] = useState(false);
   
   // State for Processes
   const [processes, setProcesses] = useState<ProcessWithChildren[]>([]);
@@ -578,7 +580,7 @@ export default function UsersAndProcessesPage() {
                                                         <DropdownMenuItem onSelect={() => handleOpenEditModal(u)}>Editar</DropdownMenuItem>
                                                         <DropdownMenuItem onSelect={() => { setUserToChangeRole(u); setSelectedNewRole(u.role); setShowChangeRoleDialog(true); }}>Cambiar Rol</DropdownMenuItem>
                                                         <DropdownMenuSeparator />
-                                                        <DropdownMenuItem onSelect={() => setUserToToggleStatus(u)} className={cn(u.isActive ? "text-destructive focus:text-destructive-foreground focus:bg-destructive" : "text-green-600 focus:bg-green-500 focus:text-white")}>{u.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
+                                                        <DropdownMenuItem onSelect={() => { setUserToToggleStatus(u); setShowToggleStatusDialog(true);}} className={cn(u.isActive ? "text-destructive focus:text-destructive-foreground focus:bg-destructive" : "text-green-600 focus:bg-green-500 focus:text-white")}>{u.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
                                                       </DropdownMenuContent>
                                                   </DropdownMenu>
                                               </TableCell>
@@ -742,7 +744,6 @@ export default function UsersAndProcessesPage() {
                 </Button>
             </DialogFooter>
         </DialogContent>
-    </Dialog>
     </>
   );
 }
