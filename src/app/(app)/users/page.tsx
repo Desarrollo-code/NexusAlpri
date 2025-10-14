@@ -676,5 +676,3 @@ export default function UsersAndProcessesPage() {
     </div>
   );
 }
-
-```
