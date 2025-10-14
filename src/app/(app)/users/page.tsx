@@ -1,3 +1,4 @@
+
 // src/app/(app)/users/page.tsx
 'use client';
 
@@ -279,20 +280,20 @@ export default function UsersAndProcessesPage() {
     const userParams = new URLSearchParams(searchParams.toString());
     
     try {
-      const [usersRes, processesRes] = await Promise.all([
+      const [usersRes, processesRes, flatProcessesRes] = await Promise.all([
         fetch(`/api/users?${userParams.toString()}`, { cache: 'no-store' }),
-        fetch('/api/processes?format=flat', { cache: 'no-store' }),
         fetch('/api/processes', { cache: 'no-store' }),
+        fetch('/api/processes?format=flat', { cache: 'no-store' }),
       ]);
       
       const usersData = await usersRes.json();
-      const flatProcessesData = await processesRes.json();
       const hierarchicalProcessesData = await processesRes.json();
+      const flatProcessesData = await flatProcessesRes.json();
 
       setUsersList(usersData.users || []);
       setTotalUsers(usersData.totalUsers || 0);
-      setFlatProcesses(flatProcessesData || []);
       setProcesses(hierarchicalProcessesData || []);
+      setFlatProcesses(flatProcessesData || []);
 
     } catch (err: any) {
       setError(err.message);
@@ -398,6 +399,8 @@ export default function UsersAndProcessesPage() {
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
   const handleDragStart = (event: DragStartEvent) => { setActiveProcessId(event.active.id as string); };
   const handleDragEnd = (event: DragEndEvent) => { setActiveProcessId(null); };
+  
+   const activeProcess = activeProcessId ? processes.flatMap(p => [p, ...p.children]).find(p => p.id === activeProcessId) : null;
 
   return (
     <div className="space-y-8">
@@ -498,7 +501,7 @@ export default function UsersAndProcessesPage() {
                                   ))}
                                 </SortableContext>
                                 <DragOverlay>
-                                    {activeProcessId ? <ProcessItem process={processes.find(p => p.id === activeProcessId)!} onEdit={()=>{}} onDelete={()=>{}} /> : null}
+                                    {activeProcess ? <ProcessItem process={activeProcess} onEdit={()=>{}} onDelete={()=>{}} /> : null}
                                 </DragOverlay>
                               </DndContext>
                          )}
