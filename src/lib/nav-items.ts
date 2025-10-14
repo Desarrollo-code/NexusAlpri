@@ -155,25 +155,18 @@ const NAVIGATION_ITEMS: NavItem[] = [
         path: '/admin/certificates',
         roles: ['ADMINISTRATOR'],
       },
-       {
-        id: 'processes',
-        label: 'Procesos',
-        icon: Network,
-        path: '/processes',
-        roles: ['ADMINISTRATOR'],
+      {
+        id: 'users',
+        label: 'Usuarios',
+        icon: UsersRound,
+        path: '/users',
+        roles: ['ADMINISTRATOR']
       },
       {
         id: 'analytics',
         label: 'Analíticas',
         icon: BarChart3,
         path: '/analytics',
-        roles: ['ADMINISTRATOR']
-      },
-      {
-        id: 'users',
-        label: 'Usuarios',
-        icon: UsersRound,
-        path: '/users',
         roles: ['ADMINISTRATOR']
       },
       {
