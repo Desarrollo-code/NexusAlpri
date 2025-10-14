@@ -1,4 +1,3 @@
-
 // src/app/(app)/users/page.tsx
 'use client';
 
@@ -54,17 +53,17 @@ import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SmartPagination } from '@/components/ui/pagination';
 import { useTitle } from '@/contexts/title-context';
-import { getInitials } from '@/lib/utils';
+import { getInitials, getProcessColors } from '@/lib/utils';
 import { getRoleBadgeVariant, getRoleInSpanish } from '@/lib/security-log-utils';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
 import { VerifiedBadge } from '@/components/ui/verified-badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { UserProfileCard } from '@/components/profile/user-profile-card';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { Identicon } from '@/components/ui/identicon';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { UserProfileCard } from '@/components/profile/user-profile-card';
 
 // --- TYPES ---
 interface ProcessWithLevel {
@@ -87,10 +86,12 @@ const PAGE_SIZE = 10;
 
 // --- PROCESS MANAGEMENT COMPONENTS ---
 
-const ProcessItem = ({ process, onEdit, onDelete, provided }: { process: ProcessWithChildren, onEdit: (p: ProcessWithChildren) => void, onDelete: (p: ProcessWithChildren) => void, provided: any }) => {
+const ProcessItem = ({ process, onEdit, onDelete, provided, isDragging }: { process: ProcessWithChildren, onEdit: (p: ProcessWithChildren) => void, onDelete: (p: ProcessWithChildren) => void, provided: any, isDragging: boolean }) => {
+  const colors = getProcessColors(process.id);
+
   return (
     <div ref={provided.innerRef} {...provided.draggableProps}>
-        <Card className="mb-2 bg-card border-l-4 border-primary/30">
+        <Card className={cn("mb-2 bg-card border-l-4", isDragging && 'opacity-50')} style={{ borderColor: colors.raw.medium }}>
             <CardHeader className="flex flex-row items-center justify-between p-3">
                 <div className="flex items-center gap-2 flex-grow min-w-0">
                     <div {...provided.dragHandleProps} className="cursor-grab p-1 touch-none">
@@ -118,15 +119,22 @@ const ProcessItem = ({ process, onEdit, onDelete, provided }: { process: Process
                     </div>
                 </div>
             </CardHeader>
-            {process.children.length > 0 && (
+             {process.children.length > 0 && (
                 <CardContent className="pl-10 pb-2 space-y-2">
-                    {process.children.map((child, index) => (
-                         <Draggable key={child.id} draggableId={child.id} index={index}>
-                           {(childProvided) => (
-                             <ProcessItem process={child} onEdit={onEdit} onDelete={onDelete} provided={childProvided} />
-                           )}
-                         </Draggable>
-                    ))}
+                    <Droppable droppableId={process.id} type="PROCESS">
+                       {(droppableProvided) => (
+                           <div ref={droppableProvided.innerRef} {...droppableProvided.droppableProps}>
+                               {process.children.map((child, index) => (
+                                    <Draggable key={child.id} draggableId={child.id} index={index}>
+                                      {(draggableProvided) => (
+                                        <ProcessItem process={child} onEdit={onEdit} onDelete={onDelete} provided={draggableProvided} isDragging={false} />
+                                      )}
+                                    </Draggable>
+                               ))}
+                               {droppableProvided.placeholder}
+                           </div>
+                       )}
+                    </Droppable>
                 </CardContent>
             )}
         </Card>
@@ -236,7 +244,8 @@ export default function UsersAndProcessesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+  const [activeDraggableId, setActiveDraggableId] = useState<string | null>(null);
+
   // Search & Filter State
   const searchTerm = searchParams.get('search') || '';
   const roleFilter = searchParams.get('role') || 'all';
@@ -493,7 +502,12 @@ export default function UsersAndProcessesPage() {
         setIsProcessing(false);
     }
   }
-  
+
+  const handleOnDragEnd = (result: DropResult) => {
+    setActiveDraggableId(null);
+    console.log(result);
+  };
+
   const UserListContent = () => (
     <Card>
       <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -520,8 +534,7 @@ export default function UsersAndProcessesPage() {
               <Input type="search" placeholder="Buscar por nombre o email..." className="pl-8 w-full" value={searchTerm} onChange={(e) => handleFilterChange('search', e.target.value)} />
           </div>
           </div>
-          {/* Desktop View */}
-          <div className="overflow-x-auto hidden lg:block">
+          <div className="overflow-x-auto">
                <Table>
                   <TableHeader><TableRow><TableHead>Nombre</TableHead><TableHead>Email</TableHead><TableHead>Rol</TableHead><TableHead>Estado</TableHead><TableHead><span className="sr-only">Acciones</span></TableHead></TableRow></TableHeader>
                   <TableBody>
@@ -588,8 +601,15 @@ export default function UsersAndProcessesPage() {
             </div>
              {user.processes && user.processes.length > 0 && (
                 <div className="mt-2 border-t pt-2">
-                    <div className="flex flex-wrap gap-1">
-                        {user.processes.map(p => <Badge key={p.id} variant="outline" className="text-xs">{p.name}</Badge>)}
+                    <div className="flex flex-wrap gap-1.5">
+                        {user.processes.map(p => {
+                           const colors = getProcessColors(p.id);
+                           return (
+                               <Badge key={p.id} variant="secondary" style={{ backgroundColor: colors.raw.light, color: colors.raw.dark, borderColor: colors.raw.medium }} className="border">
+                                   {p.name}
+                               </Badge>
+                           )
+                        })}
                     </div>
                 </div>
             )}
@@ -608,14 +628,14 @@ export default function UsersAndProcessesPage() {
       </CardHeader>
       <CardContent>
         {isLoading ? (<Skeleton className="h-64 w-full" />) : error ? (<p className="text-destructive text-center">{error}</p>) : (
-          <DragDropContext onDragEnd={() => {}}>
-            <Droppable droppableId="processes-droppable">
+          <DragDropContext onDragEnd={handleOnDragEnd}>
+            <Droppable droppableId="processes-droppable" type="PROCESS">
               {(provided) => (
                 <div {...provided.droppableProps} ref={provided.innerRef}>
                   {processes.map((process, index) => (
                     <Draggable key={process.id} draggableId={process.id} index={index}>
                       {(provided) => (
-                        <ProcessItem process={process} onEdit={handleOpenProcessModal} onDelete={setProcessToDelete} provided={provided} />
+                        <ProcessItem process={process} onEdit={handleOpenProcessModal} onDelete={setProcessToDelete} provided={provided} isDragging={activeDraggableId === process.id}/>
                       )}
                     </Draggable>
                   ))}
@@ -637,13 +657,15 @@ export default function UsersAndProcessesPage() {
           <div className="flex items-center justify-between">
               <p className="text-muted-foreground">Gestiona los usuarios y la estructura de procesos de la organización.</p>
           </div>
-          {isMobile ? (
+          
+          {/* Mobile View */}
+          <div className="lg:hidden">
              <Tabs defaultValue="users" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="users">Usuarios</TabsTrigger>
                     <TabsTrigger value="processes">Procesos</TabsTrigger>
                 </TabsList>
-                <TabsContent value="users" className="mt-4">
+                <TabsContent value="users" className="mt-4 space-y-2">
                   {isLoading ? [...Array(3)].map((_,i) => <Skeleton key={i} className="h-32 w-full mb-2" />) :
                    usersList.map(u => (
                      <MobileUserCard key={u.id} user={u} onEdit={handleOpenEditModal} onChangeRole={() => { setUserToChangeRole(u); setSelectedNewRole(u.role); setShowChangeRoleDialog(true); }} onToggleStatus={() => { setUserToToggleStatus(u); setShowToggleStatusDialog(true);}} />
@@ -651,12 +673,13 @@ export default function UsersAndProcessesPage() {
                 </TabsContent>
                 <TabsContent value="processes" className="mt-4"><ProcessManagement/></TabsContent>
              </Tabs>
-          ) : (
-             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                  <div className="lg:col-span-2"><UserListContent/></div>
-                  <div className="lg:col-span-1"><ProcessManagement/></div>
-             </div>
-          )}
+          </div>
+
+          {/* Desktop View */}
+          <div className="hidden lg:grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+               <div className="lg:col-span-2"><UserListContent/></div>
+               <div className="lg:col-span-1"><ProcessManagement/></div>
+          </div>
       </div>
       
       <Dialog open={showAddEditModal} onOpenChange={setShowAddEditModal}>
