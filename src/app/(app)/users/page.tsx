@@ -333,6 +333,52 @@ export default function UsersAndProcessesPage() {
     setEditProcessIds(new Set(user.processes.map(p => p.id)));
     setShowAddEditModal(true);
   };
+
+  const handleToggleStatusSubmit = async () => {
+      if (!userToToggleStatus) return;
+      setIsProcessing(true);
+      try {
+          const response = await fetch(`/api/users/${userToToggleStatus.id}/status`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ isActive: !userToToggleStatus.isActive }),
+          });
+          if (!response.ok) throw new Error((await response.json()).message || 'No se pudo actualizar el estado.');
+          
+          toast({ title: "Estado Actualizado" });
+          await fetchAllData();
+          
+      } catch (err: any) {
+          toast({ title: 'Error', description: err.message, variant: 'destructive'});
+      } finally {
+          setIsProcessing(false);
+          setShowToggleStatusDialog(false);
+          setUserToToggleStatus(null);
+      }
+  };
+
+  const handleChangeRoleSubmit = async () => {
+    if (!userToChangeRole) return;
+    setIsProcessing(true);
+    try {
+        const response = await fetch(`/api/users/${userToChangeRole.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ role: selectedNewRole }),
+        });
+        if (!response.ok) throw new Error((await response.json()).message || 'No se pudo cambiar el rol.');
+        
+        toast({ title: "Rol Cambiado", description: `El rol de ${userToChangeRole.name} ha sido actualizado.` });
+        await fetchAllData();
+
+    } catch (err: any) {
+        toast({ title: 'Error', description: err.message, variant: 'destructive'});
+    } finally {
+        setIsProcessing(false);
+        setShowChangeRoleDialog(false);
+        setUserToChangeRole(null);
+    }
+  };
   
   const createQueryString = useCallback((paramsToUpdate: Record<string, string | number | null>) => {
       const params = new URLSearchParams(searchParams.toString());
@@ -388,7 +434,7 @@ export default function UsersAndProcessesPage() {
         
         toast({ title: 'Éxito', description: `Proceso ${editingProcess ? 'actualizado' : 'creado'} correctamente.`});
         setShowProcessModal(false);
-        fetchAllData(); // Recargar todo
+        await fetchAllData();
     } catch(err) {
         toast({ title: 'Error', description: (err as Error).message, variant: 'destructive'});
     } finally {
@@ -404,7 +450,7 @@ export default function UsersAndProcessesPage() {
         if (!response.ok) throw new Error((await response.json()).message || 'Error al eliminar el proceso.');
         toast({ title: 'Proceso Eliminado' });
         setProcessToDelete(null);
-        fetchAllData();
+        await fetchAllData();
     } catch(err) {
         toast({ title: 'Error', description: (err as Error).message, variant: 'destructive'});
     } finally {
@@ -426,7 +472,6 @@ export default function UsersAndProcessesPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            {/* Columna de Usuarios */}
             <div className="lg:col-span-2">
                  <Card>
                     <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -454,15 +499,15 @@ export default function UsersAndProcessesPage() {
                         </div>
                         </div>
                         
-                         {isMobile ? <div className="space-y-2"> {/* Mobile List */}
+                         {isMobile ? <div className="space-y-2">
                             {isLoading ? [...Array(3)].map((_,i) => <Skeleton key={i} className="h-24 w-full" />) :
                              usersList.map(u => (
                                <Card key={u.id} className={cn("p-3", !u.isActive && "opacity-60")}>
-                                   {/* ... (Mobile card content, similar to original) ... */}
+                                   {/* ... (Mobile card content) ... */}
                                </Card>
                              ))}
                         </div> : 
-                        <div className="overflow-x-auto"> {/* Desktop Table */}
+                        <div className="overflow-x-auto">
                              <Table>
                                 <TableHeader><TableRow><TableHead>Nombre</TableHead><TableHead>Email</TableHead><TableHead>Rol</TableHead><TableHead>Estado</TableHead><TableHead><span className="sr-only">Acciones</span></TableHead></TableRow></TableHeader>
                                 <TableBody>
@@ -505,7 +550,6 @@ export default function UsersAndProcessesPage() {
                  </Card>
             </div>
             
-            {/* Columna de Procesos */}
             <div className="lg:col-span-1">
                  <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
@@ -533,7 +577,6 @@ export default function UsersAndProcessesPage() {
             </div>
         </div>
 
-        {/* Modal para Crear/Editar Proceso */}
          <Dialog open={showProcessModal} onOpenChange={setShowProcessModal}>
             <DialogContent>
                 <DialogHeader>
@@ -569,7 +612,6 @@ export default function UsersAndProcessesPage() {
             </DialogContent>
         </Dialog>
         
-        {/* Modal para Eliminar Proceso */}
         <AlertDialog open={!!processToDelete} onOpenChange={(open) => !open && setProcessToDelete(null)}>
             <AlertDialogContent>
                 <AlertDialogHeader>
@@ -588,7 +630,51 @@ export default function UsersAndProcessesPage() {
             </AlertDialogContent>
         </AlertDialog>
         
+        <AlertDialog open={showToggleStatusDialog} onOpenChange={setShowToggleStatusDialog}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>¿Confirmar acción?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Vas a {userToToggleStatus?.isActive ? 'inactivar' : 'activar'} la cuenta de <strong>{userToToggleStatus?.name}</strong>. Un usuario inactivo no podrá iniciar sesión.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel disabled={isProcessing}>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleToggleStatusSubmit} disabled={isProcessing} className={cn(userToToggleStatus?.isActive && buttonVariants({ variant: "destructive" }))}>
+                        {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                        Sí, {userToToggleStatus?.isActive ? 'Inactivar' : 'Activar'}
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+
+        <Dialog open={showChangeRoleDialog} onOpenChange={setShowChangeRoleDialog}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Cambiar Rol</DialogTitle>
+                    <DialogDescription>Selecciona el nuevo rol para <strong>{userToChangeRole?.name}</strong>.</DialogDescription>
+                </DialogHeader>
+                <div className="py-4">
+                    <Select value={selectedNewRole} onValueChange={(value: UserRole) => setSelectedNewRole(value)}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="STUDENT">Estudiante</SelectItem>
+                            <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
+                            <SelectItem value="ADMINISTRATOR">Administrador</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <DialogFooter>
+                    <Button variant="ghost" onClick={() => setShowChangeRoleDialog(false)}>Cancelar</Button>
+                    <Button onClick={handleChangeRoleSubmit} disabled={isProcessing || selectedNewRole === userToChangeRole?.role}>
+                        {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                        Guardar Rol
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </div>
   );
 }
 
+```
