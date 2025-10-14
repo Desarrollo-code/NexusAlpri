@@ -1,3 +1,4 @@
+
 // src/app/(app)/users/page.tsx
 'use client';
 
@@ -61,12 +62,9 @@ import { VerifiedBadge } from '@/components/ui/verified-badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { UserProfileCard } from '@/components/profile/user-profile-card';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { DndContext, useDraggable, useDroppable, DragOverlay, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from '@dnd-kit/core';
-import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { Identicon } from '@/components/ui/identicon';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Draggable } from '@hello-pangea/dnd';
 
 // --- TYPES ---
 interface ProcessWithLevel {
@@ -90,10 +88,8 @@ const PAGE_SIZE = 10;
 // --- PROCESS MANAGEMENT COMPONENTS ---
 
 const ProcessItem = ({ process, onEdit, onDelete, provided }: { process: ProcessWithChildren, onEdit: (p: ProcessWithChildren) => void, onDelete: (p: ProcessWithChildren) => void, provided: any }) => {
-  const { isDragging } = useDraggable({ id: process.id });
-  
   return (
-    <div ref={provided.innerRef} {...provided.draggableProps} className={cn(isDragging && 'opacity-50')}>
+    <div ref={provided.innerRef} {...provided.draggableProps}>
         <Card className="mb-2 bg-card border-l-4 border-primary/30">
             <CardHeader className="flex flex-row items-center justify-between p-3">
                 <div className="flex items-center gap-2 flex-grow min-w-0">
@@ -524,13 +520,6 @@ export default function UsersAndProcessesPage() {
               <Input type="search" placeholder="Buscar por nombre o email..." className="pl-8 w-full" value={searchTerm} onChange={(e) => handleFilterChange('search', e.target.value)} />
           </div>
           </div>
-          {/* Mobile View */}
-          <div className="space-y-2 lg:hidden">
-              {isLoading ? [...Array(3)].map((_,i) => <Skeleton key={i} className="h-32 w-full" />) :
-               usersList.map(u => (
-                 <MobileUserCard key={u.id} user={u} onEdit={handleOpenEditModal} onChangeRole={() => { setUserToChangeRole(u); setSelectedNewRole(u.role); setShowChangeRoleDialog(true); }} onToggleStatus={() => { setUserToToggleStatus(u); setShowToggleStatusDialog(true);}} />
-               ))}
-          </div>
           {/* Desktop View */}
           <div className="overflow-x-auto hidden lg:block">
                <Table>
@@ -654,7 +643,12 @@ export default function UsersAndProcessesPage() {
                     <TabsTrigger value="users">Usuarios</TabsTrigger>
                     <TabsTrigger value="processes">Procesos</TabsTrigger>
                 </TabsList>
-                <TabsContent value="users" className="mt-4"><UserListContent/></TabsContent>
+                <TabsContent value="users" className="mt-4">
+                  {isLoading ? [...Array(3)].map((_,i) => <Skeleton key={i} className="h-32 w-full mb-2" />) :
+                   usersList.map(u => (
+                     <MobileUserCard key={u.id} user={u} onEdit={handleOpenEditModal} onChangeRole={() => { setUserToChangeRole(u); setSelectedNewRole(u.role); setShowChangeRoleDialog(true); }} onToggleStatus={() => { setUserToToggleStatus(u); setShowToggleStatusDialog(true);}} />
+                   ))}
+                </TabsContent>
                 <TabsContent value="processes" className="mt-4"><ProcessManagement/></TabsContent>
              </Tabs>
           ) : (
