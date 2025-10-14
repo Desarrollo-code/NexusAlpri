@@ -486,7 +486,7 @@ export default function UsersAndProcessesPage() {
                                                         <DropdownMenuItem onSelect={() => handleOpenEditModal(u)}>Editar</DropdownMenuItem>
                                                         <DropdownMenuItem onSelect={() => { setUserToChangeRole(u); setSelectedNewRole(u.role); setShowChangeRoleDialog(true); }}>Cambiar Rol</DropdownMenuItem>
                                                         <DropdownMenuSeparator />
-                                                        <DropdownMenuItem onSelect={() => setUserToToggleStatus(u)} className={cn(u.isActive ? "text-destructive focus:text-destructive-foreground focus:bg-destructive" : "text-green-600 focus:bg-green-500 focus:text-white")}>{u.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
+                                                        <DropdownMenuItem onSelect={() => { setUserToToggleStatus(u); setShowToggleStatusDialog(true); }} className={cn(u.isActive ? "text-destructive focus:text-destructive-foreground focus:bg-destructive" : "text-green-600 focus:bg-green-500 focus:text-white")}>{u.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
                                                       </DropdownMenuContent>
                                                   </DropdownMenu>
                                               </TableCell>
@@ -591,3 +591,4 @@ export default function UsersAndProcessesPage() {
     </div>
   );
 }
+
