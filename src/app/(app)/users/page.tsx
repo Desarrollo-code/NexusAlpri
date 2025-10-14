@@ -229,8 +229,6 @@ export default function UsersAndProcessesPage() {
   const [userToToggleStatus, setUserToToggleStatus] = useState<User | null>(null);
   const [userToChangeRole, setUserToChangeRole] = useState<User | null>(null);
   const [showAddEditModal, setShowAddEditModal] = useState(false);
-  const [showToggleStatusDialog, setShowToggleStatusDialog] = useState(false);
-  const [showChangeRoleDialog, setShowChangeRoleDialog] = useState(false);
   
   // State for Processes
   const [processes, setProcesses] = useState<ProcessWithChildren[]>([]);
@@ -333,6 +331,50 @@ export default function UsersAndProcessesPage() {
     setEditProcessIds(new Set(user.processes.map(p => p.id)));
     setShowAddEditModal(true);
   };
+  
+   const handleUserFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsProcessing(true);
+
+    const endpoint = userToEdit ? `/api/users/${userToEdit.id}` : '/api/users';
+    const method = userToEdit ? 'PUT' : 'POST';
+
+    const payload: any = {
+      name: editName,
+      email: editEmail,
+      role: editRole,
+      processIds: Array.from(editProcessIds),
+    };
+    if (editPassword) {
+      payload.password = editPassword;
+    }
+    if (editAvatarUrl) {
+      payload.avatar = editAvatarUrl;
+    }
+
+    try {
+        const response = await fetch(endpoint, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'No se pudo guardar el usuario.');
+        }
+
+        toast({ title: "¡Éxito!", description: `Usuario ${userToEdit ? 'actualizado' : 'creado'} correctamente.` });
+        setShowAddEditModal(false);
+        await fetchAllData();
+
+    } catch (err: any) {
+        toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } finally {
+        setIsProcessing(false);
+    }
+  };
+
 
   const handleToggleStatusSubmit = async () => {
       if (!userToToggleStatus) return;
@@ -463,9 +505,14 @@ export default function UsersAndProcessesPage() {
   const handleDragStart = (event: DragStartEvent) => { setActiveProcessId(event.active.id as string); };
   const handleDragEnd = (event: DragEndEvent) => { setActiveProcessId(null); };
   
-   const activeProcess = activeProcessId ? processes.flatMap(p => [p, ...p.children]).find(p => p.id === activeProcessId) : null;
+  const activeProcess = activeProcessId ? processes.flatMap(p => [p, ...p.children]).find(p => p.id === activeProcessId) : null;
 
+  if (currentUser?.role !== 'ADMINISTRATOR') {
+    return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+  }
+  
   return (
+    <>
     <div className="space-y-8">
         <div className="flex items-center justify-between">
             <p className="text-muted-foreground">Gestiona los usuarios y la estructura de procesos de la organización.</p>
@@ -531,7 +578,7 @@ export default function UsersAndProcessesPage() {
                                                         <DropdownMenuItem onSelect={() => handleOpenEditModal(u)}>Editar</DropdownMenuItem>
                                                         <DropdownMenuItem onSelect={() => { setUserToChangeRole(u); setSelectedNewRole(u.role); setShowChangeRoleDialog(true); }}>Cambiar Rol</DropdownMenuItem>
                                                         <DropdownMenuSeparator />
-                                                        <DropdownMenuItem onSelect={() => { setUserToToggleStatus(u); setShowToggleStatusDialog(true); }} className={cn(u.isActive ? "text-destructive focus:text-destructive-foreground focus:bg-destructive" : "text-green-600 focus:bg-green-500 focus:text-white")}>{u.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
+                                                        <DropdownMenuItem onSelect={() => setUserToToggleStatus(u)} className={cn(u.isActive ? "text-destructive focus:text-destructive-foreground focus:bg-destructive" : "text-green-600 focus:bg-green-500 focus:text-white")}>{u.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
                                                       </DropdownMenuContent>
                                                   </DropdownMenu>
                                               </TableCell>
@@ -576,103 +623,126 @@ export default function UsersAndProcessesPage() {
                  </Card>
             </div>
         </div>
-
-         <Dialog open={showProcessModal} onOpenChange={setShowProcessModal}>
-            <DialogContent>
+    </div>
+    
+    <Dialog open={showAddEditModal} onOpenChange={setShowAddEditModal}>
+        <DialogContent className="sm:max-w-[425px]">
+            <form onSubmit={handleUserFormSubmit}>
                 <DialogHeader>
-                    <DialogTitle>{editingProcess ? 'Editar Proceso' : 'Crear Nuevo Proceso'}</DialogTitle>
+                    <DialogTitle>{userToEdit ? 'Editar Usuario' : 'Añadir Nuevo Usuario'}</DialogTitle>
+                    <DialogDescription>Completa la información del usuario.</DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleProcessFormSubmit} className="space-y-4">
-                    <div>
-                        <Label htmlFor="process-name">Nombre del Proceso</Label>
-                        <Input id="process-name" value={processName} onChange={(e) => setProcessName(e.target.value)} required disabled={isProcessing}/>
-                    </div>
-                     <div>
-                        <Label htmlFor="parent-process">Proceso Padre (Opcional)</Label>
-                        <Select value={processParentId || 'null'} onValueChange={(value) => setProcessParentId(value)} disabled={isProcessing}>
-                           <SelectTrigger id="parent-process"><SelectValue placeholder="Seleccionar proceso padre..." /></SelectTrigger>
-                           <SelectContent>
-                              <SelectItem value="null">Ninguno (Nivel Superior)</SelectItem>
-                              {flatProcesses.filter(p => p.id !== editingProcess?.id).map(p => (
-                                <SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem`}}>
-                                    {p.name}
-                                </SelectItem>
-                              ))}
-                           </SelectContent>
-                        </Select>
-                    </div>
-                    <DialogFooter>
-                        <Button type="button" variant="ghost" onClick={() => setShowProcessModal(false)}>Cancelar</Button>
-                        <Button type="submit" disabled={isProcessing || !processName.trim()}>
-                            {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                            {editingProcess ? 'Guardar Cambios' : 'Crear Proceso'}
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
-        
-        <AlertDialog open={!!processToDelete} onOpenChange={(open) => !open && setProcessToDelete(null)}>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        Se eliminará el proceso "<strong>{processToDelete?.name}</strong>". Si tiene subprocesos, estos quedarán en el nivel superior.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeleteProcess} disabled={isProcessing} className={cn(buttonVariants({ variant: 'destructive' }))}>
-                        {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                        Eliminar
-                    </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
-        
-        <AlertDialog open={showToggleStatusDialog} onOpenChange={setShowToggleStatusDialog}>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>¿Confirmar acción?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        Vas a {userToToggleStatus?.isActive ? 'inactivar' : 'activar'} la cuenta de <strong>{userToToggleStatus?.name}</strong>. Un usuario inactivo no podrá iniciar sesión.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel disabled={isProcessing}>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleToggleStatusSubmit} disabled={isProcessing} className={cn(userToToggleStatus?.isActive && buttonVariants({ variant: "destructive" }))}>
-                        {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                        Sí, {userToToggleStatus?.isActive ? 'Inactivar' : 'Activar'}
-                    </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
+                <div className="py-4 space-y-4">
+                    <div className="space-y-2"><Label htmlFor="name">Nombre</Label><Input id="name" value={editName} onChange={(e) => setEditName(e.target.value)} required disabled={isProcessing} /></div>
+                    <div className="space-y-2"><Label htmlFor="email">Email</Label><Input id="email" type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} required disabled={isProcessing}/></div>
+                    <div className="space-y-2"><Label htmlFor="password">{userToEdit ? 'Nueva Contraseña (Opcional)' : 'Contraseña'}</Label><div className="relative"><Input id="password" type={showPassword ? "text" : "password"} value={editPassword} onChange={(e) => setEditPassword(e.target.value)} required={!userToEdit} disabled={isProcessing}/><Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground" onClick={() => setShowPassword(!showPassword)}>{showPassword ? <EyeOff/> : <Eye/>}</Button></div></div>
+                    <div className="space-y-2"><Label htmlFor="role">Rol</Label><Select value={editRole} onValueChange={(value: UserRole) => setEditRole(value)} disabled={isProcessing}><SelectTrigger id="role"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="STUDENT">Estudiante</SelectItem><SelectItem value="INSTRUCTOR">Instructor</SelectItem><SelectItem value="ADMINISTRATOR">Administrador</SelectItem></SelectContent></Select></div>
+                    <div className="space-y-2"><Label htmlFor="processes">Procesos</Label><ProcessSelector allProcesses={flatProcesses} selectedProcessIds={editProcessIds} onSelectionChange={(id, selected) => setEditProcessIds(prev => { const newSet = new Set(prev); if (selected) newSet.add(id); else newSet.delete(id); return newSet; })} disabled={isProcessing}/></div>
+                </div>
+                <DialogFooter>
+                    <Button type="button" variant="ghost" onClick={() => setShowAddEditModal(false)}>Cancelar</Button>
+                    <Button type="submit" disabled={isProcessing}>{isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}{userToEdit ? 'Guardar Cambios' : 'Crear Usuario'}</Button>
+                </DialogFooter>
+            </form>
+        </DialogContent>
+    </Dialog>
 
-        <Dialog open={showChangeRoleDialog} onOpenChange={setShowChangeRoleDialog}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Cambiar Rol</DialogTitle>
-                    <DialogDescription>Selecciona el nuevo rol para <strong>{userToChangeRole?.name}</strong>.</DialogDescription>
-                </DialogHeader>
-                <div className="py-4">
-                    <Select value={selectedNewRole} onValueChange={(value: UserRole) => setSelectedNewRole(value)}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="STUDENT">Estudiante</SelectItem>
-                            <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
-                            <SelectItem value="ADMINISTRATOR">Administrador</SelectItem>
-                        </SelectContent>
+    <Dialog open={showProcessModal} onOpenChange={setShowProcessModal}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>{editingProcess ? 'Editar Proceso' : 'Crear Nuevo Proceso'}</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleProcessFormSubmit} className="space-y-4">
+                <div>
+                    <Label htmlFor="process-name">Nombre del Proceso</Label>
+                    <Input id="process-name" value={processName} onChange={(e) => setProcessName(e.target.value)} required disabled={isProcessing}/>
+                </div>
+                 <div>
+                    <Label htmlFor="parent-process">Proceso Padre (Opcional)</Label>
+                    <Select value={processParentId || 'null'} onValueChange={(value) => setProcessParentId(value)} disabled={isProcessing}>
+                       <SelectTrigger id="parent-process"><SelectValue placeholder="Seleccionar proceso padre..." /></SelectTrigger>
+                       <SelectContent>
+                          <SelectItem value="null">Ninguno (Nivel Superior)</SelectItem>
+                          {flatProcesses.filter(p => p.id !== editingProcess?.id).map(p => (
+                            <SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem`}}>
+                                {p.name}
+                            </SelectItem>
+                          ))}
+                       </SelectContent>
                     </Select>
                 </div>
                 <DialogFooter>
-                    <Button variant="ghost" onClick={() => setShowChangeRoleDialog(false)}>Cancelar</Button>
-                    <Button onClick={handleChangeRoleSubmit} disabled={isProcessing || selectedNewRole === userToChangeRole?.role}>
+                    <Button type="button" variant="ghost" onClick={() => setShowProcessModal(false)}>Cancelar</Button>
+                    <Button type="submit" disabled={isProcessing || !processName.trim()}>
                         {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                        Guardar Rol
+                        {editingProcess ? 'Guardar Cambios' : 'Crear Proceso'}
                     </Button>
                 </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    </div>
+            </form>
+        </DialogContent>
+    </Dialog>
+    
+    <AlertDialog open={!!processToDelete} onOpenChange={(open) => !open && setProcessToDelete(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Se eliminará el proceso "<strong>{processToDelete?.name}</strong>". Si tiene subprocesos, estos quedarán en el nivel superior.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteProcess} disabled={isProcessing} className={cn(buttonVariants({ variant: 'destructive' }))}>
+                    {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                    Eliminar
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+    
+    <AlertDialog open={showToggleStatusDialog} onOpenChange={setShowToggleStatusDialog}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>¿Confirmar acción?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Vas a {userToToggleStatus?.isActive ? 'inactivar' : 'activar'} la cuenta de <strong>{userToToggleStatus?.name}</strong>. Un usuario inactivo no podrá iniciar sesión.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel disabled={isProcessing}>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleToggleStatusSubmit} disabled={isProcessing} className={cn(userToToggleStatus?.isActive && buttonVariants({ variant: "destructive" }))}>
+                    {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                    Sí, {userToToggleStatus?.isActive ? 'Inactivar' : 'Activar'}
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+
+    <Dialog open={showChangeRoleDialog} onOpenChange={setShowChangeRoleDialog}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Cambiar Rol</DialogTitle>
+                <DialogDescription>Selecciona el nuevo rol para <strong>{userToChangeRole?.name}</strong>.</DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+                <Select value={selectedNewRole} onValueChange={(value: UserRole) => setSelectedNewRole(value)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="STUDENT">Estudiante</SelectItem>
+                        <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
+                        <SelectItem value="ADMINISTRATOR">Administrador</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+            <DialogFooter>
+                <Button variant="ghost" onClick={() => setShowChangeRoleDialog(false)}>Cancelar</Button>
+                <Button onClick={handleChangeRoleSubmit} disabled={isProcessing || selectedNewRole === userToChangeRole?.role}>
+                    {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                    Guardar Rol
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+    </>
   );
 }
