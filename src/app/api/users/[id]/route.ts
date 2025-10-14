@@ -19,6 +19,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     try {
         const user = await prisma.user.findUnique({
             where: { id },
+            include: {
+                processes: true, // Incluir procesos
+            }
         });
         if (!user) {
             return NextResponse.json({ message: 'Usuario no encontrado' }, { status: 404 });
@@ -39,24 +42,31 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
 
     const { id } = params;
-    // Admin can edit anyone. A user can edit their own profile.
     if (session.role !== 'ADMINISTRATOR' && session.id !== id) {
          return NextResponse.json({ message: 'No tienes permiso para actualizar este usuario.' }, { status: 403 });
     }
 
     try {
         const body = await req.json();
-        
         const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
-
         let dataToUpdate: any = {};
         
-        // General profile updates (name, avatar, theme) that a user can do for themselves
         if ('name' in body) dataToUpdate.name = body.name;
         if ('avatar' in body) dataToUpdate.avatar = body.avatar;
         if ('theme' in body) dataToUpdate.theme = body.theme;
 
-        // Admin-only updates
+        // Admin-only or self-edit password
+        if ('password' in body && body.password) {
+            dataToUpdate.password = await bcrypt.hash(body.password, 10);
+        }
+        
+        // Process assignments - Only Admins can do this
+        if ('processIds' in body && Array.isArray(body.processIds) && session.role === 'ADMINISTRATOR') {
+            dataToUpdate.processes = {
+                set: body.processIds.map((pid: string) => ({ id: pid }))
+            }
+        }
+
         if (session.role === 'ADMINISTRATOR') {
             const userToUpdate = await prisma.user.findUnique({ where: { id } });
             if (!userToUpdate) {

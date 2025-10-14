@@ -1,4 +1,3 @@
-
 // src/app/(app)/users/page.tsx
 'use client';
 
@@ -6,7 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, Edit3, Trash2, UserCog, Loader2, AlertTriangle, MoreHorizontal, Eye, EyeOff, UserCheck, UserX, Camera, Filter } from 'lucide-react';
+import { PlusCircle, Search, Edit3, Trash2, UserCog, Loader2, AlertTriangle, MoreHorizontal, Eye, EyeOff, UserCheck, UserX, Camera, Filter, X, Command as CommandIcon, Check } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
@@ -19,7 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import type { User, UserRole } from '@/types';
+import type { User, UserRole, Process as AppProcess } from '@/types';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,7 +34,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import {
   AlertDialog,
@@ -54,8 +52,6 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SmartPagination } from '@/components/ui/pagination';
-import { GradientIcon } from '@/components/ui/gradient-icon';
-import { useDebounce } from '@/hooks/use-debounce';
 import { useTitle } from '@/contexts/title-context';
 import { getInitials } from '@/lib/utils';
 import { getRoleBadgeVariant, getRoleInSpanish } from '@/lib/security-log-utils';
@@ -64,9 +60,74 @@ import { Progress } from '@/components/ui/progress';
 import { VerifiedBadge } from '@/components/ui/verified-badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { UserProfileCard } from '@/components/profile/user-profile-card';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 
+
+interface UserWithProcesses extends User {
+    processes: AppProcess[];
+}
 
 const PAGE_SIZE = 10;
+
+const ProcessSelector = ({
+  allProcesses,
+  selectedProcessIds,
+  onSelectionChange,
+  disabled
+}: {
+  allProcesses: AppProcess[],
+  selectedProcessIds: Set<string>,
+  onSelectionChange: (id: string, selected: boolean) => void,
+  disabled: boolean
+}) => {
+  const [open, setOpen] = useState(false);
+
+  const selectedCount = selectedProcessIds.size;
+  const triggerText = selectedCount > 0
+    ? `${selectedCount} proceso(s) seleccionado(s)`
+    : "Asignar procesos...";
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between"
+          disabled={disabled}
+        >
+          <span className="truncate">{triggerText}</span>
+          <CommandIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+        <Command>
+          <CommandInput placeholder="Buscar proceso..." />
+          <CommandList>
+            <CommandEmpty>No se encontraron procesos.</CommandEmpty>
+            <CommandGroup>
+              {allProcesses.map((process) => {
+                const isSelected = selectedProcessIds.has(process.id);
+                return (
+                  <CommandItem
+                    key={process.id}
+                    onSelect={() => onSelectionChange(process.id, !isSelected)}
+                  >
+                    <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", isSelected ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible")}>
+                        <Check className="h-4 w-4" />
+                    </div>
+                    <span>{process.name}</span>
+                  </CommandItem>
+                );
+              })}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+};
 
 export default function UsersPage() {
   const { user: currentUser, settings } = useAuth();
@@ -77,8 +138,9 @@ export default function UsersPage() {
   const isMobile = useIsMobile();
   const { setPageTitle } = useTitle();
 
-  const [usersList, setUsersList] = useState<User[]>([]);
+  const [usersList, setUsersList] = useState<UserWithProcesses[]>([]);
   const [totalUsers, setTotalUsers] = useState(0);
+  const [allProcesses, setAllProcesses] = useState<AppProcess[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -89,7 +151,7 @@ export default function UsersPage() {
 
   const totalPages = Math.ceil(totalUsers / PAGE_SIZE);
 
-  const [userToEdit, setUserToEdit] = useState<User | null>(null);
+  const [userToEdit, setUserToEdit] = useState<UserWithProcesses | null>(null);
   const [userToToggleStatus, setUserToToggleStatus] = useState<User | null>(null);
   const [userToChangeRole, setUserToChangeRole] = useState<User | null>(null);
   
@@ -106,6 +168,7 @@ export default function UsersPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [selectedNewRole, setSelectedNewRole] = useState<UserRole>('STUDENT');
   const [editAvatarUrl, setEditAvatarUrl] = useState<string | null | undefined>(null);
+  const [editProcessIds, setEditProcessIds] = useState<Set<string>>(new Set());
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
@@ -113,32 +176,39 @@ export default function UsersPage() {
     setPageTitle('Gestión de Usuarios');
   }, [setPageTitle]);
 
-  const fetchUsers = useCallback(async () => {
+  const fetchUsersAndProcesses = useCallback(async () => {
     if (!currentUser) return;
     setIsLoading(true);
     setError(null);
     const params = new URLSearchParams(searchParams.toString());
     
-    fetch(`/api/users?${params.toString()}`, { cache: 'no-store' })
-      .then(res => {
-        if (!res.ok) {
-          return res.json().then(errorData => {
-            throw new Error(errorData.message || `Falló la carga de usuarios: ${res.statusText}`);
-          });
+    try {
+        const [usersRes, processesRes] = await Promise.all([
+            fetch(`/api/users?${params.toString()}`, { cache: 'no-store' }),
+            fetch('/api/processes', { cache: 'no-store' }) // Asumiendo que devuelve una lista plana
+        ]);
+
+        if (!usersRes.ok) {
+            const errorData = await usersRes.json();
+            throw new Error(errorData.message || 'Falló la carga de usuarios');
         }
-        return res.json();
-      })
-      .then((responseData: { users: User[]; totalUsers: number; }) => {
-        setUsersList(responseData.users || []);
-        setTotalUsers(responseData.totalUsers || 0);
-      })
-      .catch(err => {
+        if (!processesRes.ok) {
+             throw new Error('Falló la carga de procesos');
+        }
+        
+        const usersData = await usersRes.json();
+        const processesData = await processesRes.json();
+        
+        setUsersList(usersData.users || []);
+        setTotalUsers(usersData.totalUsers || 0);
+        setAllProcesses(processesData || []);
+
+    } catch (err) {
         setError(err.message);
-        toast({ title: "Error al cargar usuarios", description: err.message, variant: "destructive"});
-      })
-      .finally(() => {
+        toast({ title: "Error al cargar datos", description: err.message, variant: "destructive"});
+    } finally {
         setIsLoading(false);
-      });
+    }
   }, [currentUser, searchParams, toast]);
   
   const createQueryString = useCallback((paramsToUpdate: Record<string, string | number | null>) => {
@@ -160,8 +230,8 @@ export default function UsersPage() {
       router.push('/dashboard');
       return;
     }
-    fetchUsers();
-  }, [currentUser, router, fetchUsers, searchParams]);
+    fetchUsersAndProcesses();
+  }, [currentUser, router, fetchUsersAndProcesses, searchParams]);
 
   const handleFilterChange = (filterType: 'search' | 'role' | 'status', value: string) => {
     const newQueryString = createQueryString({ [filterType]: value, page: 1 });
@@ -175,6 +245,7 @@ export default function UsersPage() {
     setEditPassword('');
     setShowPassword(false);
     setEditAvatarUrl(null);
+    setEditProcessIds(new Set());
     setIsUploading(false);
     setUploadProgress(0);
   }
@@ -185,12 +256,13 @@ export default function UsersPage() {
     setShowAddEditModal(true);
   };
 
-  const handleOpenEditModal = (selectedUser: User) => {
+  const handleOpenEditModal = (selectedUser: UserWithProcesses) => {
     setUserToEdit(selectedUser);
     setEditName(selectedUser.name);
     setEditEmail(selectedUser.email);
     setEditRole(selectedUser.role);
     setEditAvatarUrl(selectedUser.avatar);
+    setEditProcessIds(new Set(selectedUser.processes.map(p => p.id)));
     setEditPassword('');
     setShowPassword(false);
     setShowAddEditModal(true);
@@ -229,8 +301,9 @@ export default function UsersPage() {
       email: editEmail, 
       role: editRole,
       avatar: editAvatarUrl,
+      processIds: Array.from(editProcessIds) // Enviar los IDs de los procesos
     };
-    if (!userToEdit && editPassword) {
+    if (editPassword) { // Ahora la contraseña es opcional al editar
         userData.password = editPassword;
     }
 
@@ -255,7 +328,7 @@ export default function UsersPage() {
         title: userToEdit ? "Usuario Actualizado" : "Usuario Creado", 
         description: `El usuario ${savedUser.name} ha sido ${userToEdit ? 'actualizado' : 'creado'}.` 
       });
-      fetchUsers();
+      fetchUsersAndProcesses();
       setShowAddEditModal(false);
       setUserToEdit(null); 
       resetFormFields();
@@ -282,7 +355,7 @@ export default function UsersPage() {
             title: `Usuario ${newStatus ? 'Activado' : 'Inactivado'}`,
             description: `El estado de ${userToToggleStatus.name} ha sido actualizado.`
         });
-        fetchUsers();
+        fetchUsersAndProcesses();
     } catch (err) {
         toast({ title: "Error", description: (err instanceof Error ? err.message : "Error desconocido"), variant: "destructive" });
     } finally {
@@ -314,7 +387,7 @@ export default function UsersPage() {
         throw new Error(errorData.message || 'Falló al cambiar el rol del usuario');
       }
       toast({ title: "Rol Actualizado", description: `El rol de ${userToChangeRole.name} ha sido cambiado a ${getRoleInSpanish(selectedNewRole)}.` });
-      fetchUsers(); 
+      fetchUsersAndProcesses(); 
       setShowChangeRoleDialog(false);
       setUserToChangeRole(null);
     } catch (err) {
@@ -502,7 +575,7 @@ export default function UsersPage() {
         </div>
         <div className="flex flex-row flex-wrap items-center gap-2">
             <Button onClick={handleOpenAddModal}>
-                <GradientIcon icon={PlusCircle} className="mr-2" size="sm"/> Añadir Nuevo Usuario
+                <PlusCircle className="mr-2 h-4 w-4"/> Añadir Nuevo Usuario
             </Button>
         </div>
       </div>
@@ -555,7 +628,7 @@ export default function UsersPage() {
               <AlertTriangle className="h-8 w-8 mb-2" />
               <p className="font-semibold">Error al cargar usuarios</p>
               <p className="text-sm">{error}</p>
-              <Button onClick={() => fetchUsers()} variant="outline" className="mt-4">Reintentar</Button>
+              <Button onClick={() => fetchUsersAndProcesses()} variant="outline" className="mt-4">Reintentar</Button>
             </div>
           )}
           {!error && (
@@ -626,26 +699,40 @@ export default function UsersPage() {
                               </SelectContent>
                           </Select>
                       </div>
-                      {!userToEdit && (
-                        <div className="space-y-2">
-                            <Label htmlFor="password">Contraseña</Label>
-                            <div className="relative">
-                              <Input 
-                                id="password" 
-                                name="password"
-                                type={showPassword ? "text" : "password"}
-                                value={editPassword} 
-                                onChange={(e) => setEditPassword(e.target.value)} 
-                                placeholder="Mínimo 8 caracteres" 
-                                required 
-                                disabled={isProcessing}
-                              />
-                              <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowPassword(!showPassword)}>
-                                  {showPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
-                              </Button>
-                            </div>
+                       <div className="space-y-2">
+                          <Label>Procesos</Label>
+                          <ProcessSelector
+                              allProcesses={allProcesses}
+                              selectedProcessIds={editProcessIds}
+                              onSelectionChange={(processId, isSelected) => {
+                                  setEditProcessIds(prev => {
+                                      const newSet = new Set(prev);
+                                      if (isSelected) newSet.add(processId);
+                                      else newSet.delete(processId);
+                                      return newSet;
+                                  });
+                              }}
+                              disabled={isProcessing}
+                          />
+                      </div>
+                      <div className="space-y-2">
+                          <Label htmlFor="password">Contraseña</Label>
+                          <div className="relative">
+                            <Input 
+                              id="password" 
+                              name="password"
+                              type={showPassword ? "text" : "password"}
+                              value={editPassword} 
+                              onChange={(e) => setEditPassword(e.target.value)} 
+                              placeholder={userToEdit ? "Dejar en blanco para no cambiar" : "Mínimo 8 caracteres"}
+                              required={!userToEdit}
+                              disabled={isProcessing}
+                            />
+                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowPassword(!showPassword)}>
+                                {showPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
+                            </Button>
                           </div>
-                      )}
+                        </div>
                   </div>
                 </div>
                 <DialogFooter className="p-6 pt-4 flex-col-reverse sm:flex-row sm:justify-end gap-2">

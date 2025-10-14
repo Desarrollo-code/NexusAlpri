@@ -59,7 +59,8 @@ export async function GET(req: NextRequest) {
                     avatar: true,
                     isTwoFactorEnabled: true,
                     registeredDate: true,
-                    isActive: true, // <-- Incluir estado
+                    isActive: true,
+                    processes: true, // Incluir procesos
                 },
                 orderBy: {
                     registeredDate: 'desc'
@@ -85,7 +86,7 @@ export async function POST(req: NextRequest) {
     }
     
     try {
-        const { name, email, password, role } = await req.json();
+        const { name, email, password, role, processIds } = await req.json();
 
         if (!name || !email || !password || !role) {
             return NextResponse.json({ message: 'Nombre, email, contraseña y rol son requeridos' }, { status: 400 });
@@ -93,7 +94,6 @@ export async function POST(req: NextRequest) {
         
         const settings = await prisma.platformSettings.findFirst();
         
-        // --- Validación de Dominio ---
         if (settings && settings.emailWhitelist && settings.emailWhitelist.trim() !== '') {
             const allowedDomains = settings.emailWhitelist.split(',').map(d => d.trim().toLowerCase());
             const emailDomain = email.substring(email.lastIndexOf('@') + 1).toLowerCase();
@@ -113,18 +113,10 @@ export async function POST(req: NextRequest) {
             if (password.length < settings.passwordMinLength) {
                 return NextResponse.json({ message: `La contraseña debe tener al menos ${settings.passwordMinLength} caracteres.` }, { status: 400 });
             }
-            if (settings.passwordRequireUppercase && !/[A-Z]/.test(password)) {
-                return NextResponse.json({ message: "La contraseña debe contener al menos una mayúscula." }, { status: 400 });
-            }
-            if (settings.passwordRequireLowercase && !/[a-z]/.test(password)) {
-                return NextResponse.json({ message: "La contraseña debe contener al menos una minúscula." }, { status: 400 });
-            }
-            if (settings.passwordRequireNumber && !/\d/.test(password)) {
-                return NextResponse.json({ message: "La contraseña debe contener al menos un número." }, { status: 400 });
-            }
-            if (settings.passwordRequireSpecialChar && !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-                return NextResponse.json({ message: "La contraseña debe contener al menos un carácter especial." }, { status: 400 });
-            }
+            if (settings.passwordRequireUppercase && !/[A-Z]/.test(password)) return NextResponse.json({ message: "La contraseña debe contener al menos una mayúscula." }, { status: 400 });
+            if (settings.passwordRequireLowercase && !/[a-z]/.test(password)) return NextResponse.json({ message: "La contraseña debe contener al menos una minúscula." }, { status: 400 });
+            if (settings.passwordRequireNumber && !/\d/.test(password)) return NextResponse.json({ message: "La contraseña debe contener al menos un número." }, { status: 400 });
+            if (settings.passwordRequireSpecialChar && !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) return NextResponse.json({ message: "La contraseña debe contener al menos un carácter especial." }, { status: 400 });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -136,7 +128,10 @@ export async function POST(req: NextRequest) {
                 password: hashedPassword,
                 role,
                 registeredDate: new Date(),
-                isActive: true, // <-- Asegurar que el nuevo usuario esté activo
+                isActive: true,
+                processes: { // Asignar procesos en la creación
+                    connect: (processIds || []).map((id: string) => ({ id }))
+                }
             },
             select: {
                 id: true,
@@ -147,6 +142,7 @@ export async function POST(req: NextRequest) {
                 isTwoFactorEnabled: true,
                 registeredDate: true,
                 isActive: true,
+                processes: true,
             }
         });
 
