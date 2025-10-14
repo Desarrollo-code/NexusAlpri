@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import type { User, UserRole, Process as AppProcess } from '@/types';
+import type { User, UserRole } from '@/types';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -63,8 +63,13 @@ import { UserProfileCard } from '@/components/profile/user-profile-card';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 
 
+interface ProcessWithLevel {
+    id: string;
+    name: string;
+    level: number;
+}
 interface UserWithProcesses extends User {
-    processes: AppProcess[];
+    processes: { id: string; name: string }[];
 }
 
 const PAGE_SIZE = 10;
@@ -75,17 +80,22 @@ const ProcessSelector = ({
   onSelectionChange,
   disabled
 }: {
-  allProcesses: AppProcess[],
+  allProcesses: ProcessWithLevel[],
   selectedProcessIds: Set<string>,
   onSelectionChange: (id: string, selected: boolean) => void,
   disabled: boolean
 }) => {
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
 
   const selectedCount = selectedProcessIds.size;
   const triggerText = selectedCount > 0
     ? `${selectedCount} proceso(s) seleccionado(s)`
     : "Asignar procesos...";
+
+  const filteredProcesses = useMemo(() => {
+    return allProcesses.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
+  }, [allProcesses, search]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -103,16 +113,17 @@ const ProcessSelector = ({
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
         <Command>
-          <CommandInput placeholder="Buscar proceso..." />
+          <CommandInput placeholder="Buscar proceso..." value={search} onValueChange={setSearch}/>
           <CommandList>
             <CommandEmpty>No se encontraron procesos.</CommandEmpty>
             <CommandGroup>
-              {allProcesses.map((process) => {
+              {filteredProcesses.map((process) => {
                 const isSelected = selectedProcessIds.has(process.id);
                 return (
                   <CommandItem
                     key={process.id}
                     onSelect={() => onSelectionChange(process.id, !isSelected)}
+                    style={{ paddingLeft: `${process.level * 1.5 + 1}rem` }}
                   >
                     <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", isSelected ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible")}>
                         <Check className="h-4 w-4" />
@@ -140,7 +151,7 @@ export default function UsersPage() {
 
   const [usersList, setUsersList] = useState<UserWithProcesses[]>([]);
   const [totalUsers, setTotalUsers] = useState(0);
-  const [allProcesses, setAllProcesses] = useState<AppProcess[]>([]);
+  const [allProcesses, setAllProcesses] = useState<ProcessWithLevel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -185,7 +196,7 @@ export default function UsersPage() {
     try {
         const [usersRes, processesRes] = await Promise.all([
             fetch(`/api/users?${params.toString()}`, { cache: 'no-store' }),
-            fetch('/api/processes', { cache: 'no-store' }) // Asumiendo que devuelve una lista plana
+            fetch('/api/processes?format=flat', { cache: 'no-store' })
         ]);
 
         if (!usersRes.ok) {
@@ -203,7 +214,7 @@ export default function UsersPage() {
         setTotalUsers(usersData.totalUsers || 0);
         setAllProcesses(processesData || []);
 
-    } catch (err) {
+    } catch (err: any) {
         setError(err.message);
         toast({ title: "Error al cargar datos", description: err.message, variant: "destructive"});
     } finally {
@@ -262,7 +273,7 @@ export default function UsersPage() {
     setEditEmail(selectedUser.email);
     setEditRole(selectedUser.role);
     setEditAvatarUrl(selectedUser.avatar);
-    setEditProcessIds(new Set(selectedUser.processes.map(p => p.id)));
+    setEditProcessIds(new Set((selectedUser.processes || []).map(p => p.id)));
     setEditPassword('');
     setShowPassword(false);
     setShowAddEditModal(true);
@@ -301,9 +312,9 @@ export default function UsersPage() {
       email: editEmail, 
       role: editRole,
       avatar: editAvatarUrl,
-      processIds: Array.from(editProcessIds) // Enviar los IDs de los procesos
+      processIds: Array.from(editProcessIds)
     };
-    if (editPassword) { // Ahora la contraseña es opcional al editar
+    if (editPassword) {
         userData.password = editPassword;
     }
 
@@ -400,6 +411,7 @@ export default function UsersPage() {
   const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      
       setIsUploading(true);
       setUploadProgress(0);
 

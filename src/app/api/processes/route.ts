@@ -2,8 +2,32 @@
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import type { Process } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
+
+interface ProcessWithChildren extends Process {
+  children: ProcessWithChildren[];
+}
+
+interface FlatProcess {
+    id: string;
+    name: string;
+    level: number;
+}
+
+
+// Función para aplanar la jerarquía
+function flattenHierarchy(processes: ProcessWithChildren[], level = 0): FlatProcess[] {
+  const flatList: FlatProcess[] = [];
+  for (const process of processes) {
+    flatList.push({ id: process.id, name: process.name, level });
+    if (process.children.length > 0) {
+      flatList.push(...flattenHierarchy(process.children, level + 1));
+    }
+  }
+  return flatList;
+}
 
 function buildHierarchy(processes: any[], parentId: string | null = null): any[] {
   return processes
@@ -16,9 +40,12 @@ function buildHierarchy(processes: any[], parentId: string | null = null): any[]
 
 export async function GET(req: NextRequest) {
   const session = await getCurrentUser();
-  if (!session || session.role !== 'ADMINISTRATOR') {
+  if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
+
+  const { searchParams } = new URL(req.url);
+  const format = searchParams.get('format');
 
   try {
     const allProcesses = await prisma.process.findMany({
@@ -29,9 +56,16 @@ export async function GET(req: NextRequest) {
       },
       orderBy: { name: 'asc' },
     });
-
+    
     const hierarchicalProcesses = buildHierarchy(allProcesses);
 
+    // Si se solicita el formato plano, lo devolvemos
+    if (format === 'flat') {
+        const flatList = flattenHierarchy(hierarchicalProcesses);
+        return NextResponse.json(flatList);
+    }
+
+    // Por defecto, devolvemos la estructura jerárquica
     return NextResponse.json(hierarchicalProcesses);
   } catch (error) {
     console.error('[PROCESSES_GET_ERROR]', error);
