@@ -311,7 +311,28 @@ export default function UsersAndProcessesPage() {
     fetchAllData();
   }, [currentUser, router, fetchAllData, searchParams]);
   
-  // --- USER HANDLERS ---
+  // --- HANDLERS ---
+  const handleOpenAddModal = () => {
+    setUserToEdit(null);
+    setEditName('');
+    setEditEmail('');
+    setEditRole('STUDENT');
+    setEditPassword('');
+    setEditAvatarUrl(null);
+    setEditProcessIds(new Set());
+    setShowAddEditModal(true);
+  };
+  
+  const handleOpenEditModal = (user: UserWithProcesses) => {
+    setUserToEdit(user);
+    setEditName(user.name);
+    setEditEmail(user.email);
+    setEditRole(user.role);
+    setEditPassword('');
+    setEditAvatarUrl(user.avatar);
+    setEditProcessIds(new Set(user.processes.map(p => p.id)));
+    setShowAddEditModal(true);
+  };
   
   const createQueryString = useCallback((paramsToUpdate: Record<string, string | number | null>) => {
       const params = new URLSearchParams(searchParams.toString());
@@ -336,10 +357,6 @@ export default function UsersAndProcessesPage() {
       const newQueryString = createQueryString({ page });
       router.push(`${pathname}?${newQueryString}`);
   };
-
-  // ... (AddEdit, ToggleStatus, ChangeRole handlers are complex, assume they are here and correct)
-
-  // --- PROCESS HANDLERS ---
 
   const handleOpenProcessModal = (process: ProcessWithChildren | null) => {
       if (process) {
@@ -417,7 +434,7 @@ export default function UsersAndProcessesPage() {
                             <CardTitle>Lista de Usuarios</CardTitle>
                             <CardDescription>Visualiza y gestiona todos los usuarios registrados.</CardDescription>
                         </div>
-                         <Button onClick={() => setShowAddEditModal(true)}>
+                         <Button onClick={handleOpenAddModal}>
                             <PlusCircle className="mr-2 h-4 w-4"/> Añadir Usuario
                         </Button>
                     </CardHeader>
@@ -464,7 +481,13 @@ export default function UsersAndProcessesPage() {
                                               <TableCell>
                                                   <DropdownMenu>
                                                       <DropdownMenuTrigger asChild><Button aria-haspopup="true" size="icon" variant="ghost"><MoreHorizontal className="h-4 w-4" /><span className="sr-only">Acciones</span></Button></DropdownMenuTrigger>
-                                                      <DropdownMenuContent align="end"><DropdownMenuLabel>Acciones</DropdownMenuLabel><DropdownMenuItem onClick={() => {}}>Editar</DropdownMenuItem><DropdownMenuItem onClick={() => {}}>Cambiar Rol</DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem className={cn(u.isActive ? "text-destructive focus:text-destructive-foreground focus:bg-destructive" : "text-green-600 focus:bg-green-500 focus:text-white")} onClick={() => {}}>{u.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem></DropdownMenuContent>
+                                                      <DropdownMenuContent align="end">
+                                                        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                                                        <DropdownMenuItem onSelect={() => handleOpenEditModal(u)}>Editar</DropdownMenuItem>
+                                                        <DropdownMenuItem onSelect={() => { setUserToChangeRole(u); setSelectedNewRole(u.role); setShowChangeRoleDialog(true); }}>Cambiar Rol</DropdownMenuItem>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem onSelect={() => setUserToToggleStatus(u)} className={cn(u.isActive ? "text-destructive focus:text-destructive-foreground focus:bg-destructive" : "text-green-600 focus:bg-green-500 focus:text-white")}>{u.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
+                                                      </DropdownMenuContent>
                                                   </DropdownMenu>
                                               </TableCell>
                                          </TableRow>
