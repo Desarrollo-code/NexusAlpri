@@ -286,9 +286,9 @@ export default function UsersAndProcessesPage() {
     
     try {
       const [usersRes, processesRes, flatProcessesRes] = await Promise.all([
-        fetch(`/api/users?${userParams.toString()}`, { cache: 'no-store' }),
-        fetch('/api/processes', { cache: 'no-store' }),
-        fetch('/api/processes?format=flat', { cache: 'no-store' }),
+        fetch(`/api/users?${userParams.toString()}`),
+        fetch('/api/processes'),
+        fetch('/api/processes?format=flat'),
       ]);
       
       const usersData = await usersRes.json();
@@ -555,7 +555,7 @@ export default function UsersAndProcessesPage() {
                                 </TableCell>
                                 <TableCell>{u.email}</TableCell>
                                 <TableCell><Badge variant={getRoleBadgeVariant(u.role)} className="capitalize">{getRoleInSpanish(u.role)}</Badge></TableCell>
-                                <TableCell><Badge variant={u.isActive ? 'default' : 'secondary'} className={cn(u.isActive && "bg-green-600 hover:bg-green-700")}>{u.isActive ? 'Activo' : 'Inactivo'}</Badge></TableCell>
+                                <TableCell><Badge variant={u.isActive ? 'default' : 'destructive'} className={cn(u.isActive && "bg-green-600 hover:bg-green-700")}>{u.isActive ? 'Activo' : 'Inactivo'}</Badge></TableCell>
                                 <TableCell>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild><Button aria-haspopup="true" size="icon" variant="ghost"><MoreHorizontal className="h-4 w-4" /><span className="sr-only">Acciones</span></Button></DropdownMenuTrigger>
