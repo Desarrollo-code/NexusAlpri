@@ -303,12 +303,9 @@ function AdminAnalyticsPage() {
                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-8 gap-4">
                     {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-28" />)}
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <Skeleton className="h-96 lg:col-span-2" />
-                    <div className="space-y-6">
-                        <Skeleton className="h-48" />
-                        <Skeleton className="h-48" />
-                    </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <Skeleton className="h-96" />
+                    <Skeleton className="h-96" />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <Skeleton className="h-[450px]" />
@@ -367,8 +364,8 @@ function AdminAnalyticsPage() {
         
         <Separator />
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card className="lg:col-span-2">
+        <div className="space-y-8">
+            <Card>
                  <CardHeader>
                     <CardTitle>Tendencia de Actividad</CardTitle>
                      <CardDescription>Actividad en el rango de fechas seleccionado.</CardDescription>
@@ -389,7 +386,8 @@ function AdminAnalyticsPage() {
                     </ChartContainer>
                 </CardContent>
             </Card>
-             <div className="lg:col-span-1 space-y-6">
+
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8" id="analytics-distribution-charts">
                  <DonutChartCard title="Distribución de Roles" data={userRolesChartData} config={userRolesChartConfig} />
                  <DonutChartCard title="Distribución de Cursos" data={courseStatusChartData} config={courseStatusChartConfig} />
              </div>
