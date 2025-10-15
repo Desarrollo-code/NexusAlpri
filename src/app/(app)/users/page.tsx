@@ -65,6 +65,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserProfileCard } from '@/components/profile/user-profile-card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+
 
 // --- TYPES ---
 interface ProcessWithLevel {
@@ -84,41 +86,51 @@ const PAGE_SIZE = 10;
 
 // --- PROCESS MANAGEMENT COMPONENTS ---
 
-const ProcessItem = ({ process, onEdit, onDelete, provided, isDragging }: { process: ProcessWithChildren, onEdit: (p: ProcessWithChildren) => void, onDelete: (p: ProcessWithChildren) => void, provided: any, isDragging: boolean }) => {
+const ProcessItem = ({ process, onEdit, onDelete, onAssignUsers, isSubmitting }: { 
+    process: ProcessWithChildren, 
+    onEdit: (p: ProcessWithChildren) => void, 
+    onDelete: (p: ProcessWithChildren) => void,
+    onAssignUsers: (p: ProcessWithChildren) => void,
+    isSubmitting: boolean
+}) => {
   const colors = getProcessColors(process.id);
 
+  if (process.children && process.children.length > 0) {
+    return (
+      <div className="p-3 border-2 rounded-lg" style={{ borderColor: colors.raw.medium }}>
+        <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2 flex-grow min-w-0">
+                <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
+                <span className="font-semibold truncate">{process.name}</span>
+            </div>
+            <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(process)}><Edit3 className="h-4 w-4"/></Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => onDelete(process)}><Trash2 className="h-4 w-4"/></Button>
+            </div>
+        </div>
+        <div className="pl-4 space-y-2">
+          {process.children.map(child => (
+            <ProcessItem key={child.id} process={child} onEdit={onEdit} onDelete={onDelete} onAssignUsers={onAssignUsers} isSubmitting={isSubmitting} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Render a simple card for leaf nodes
   return (
-    <div ref={provided.innerRef} {...provided.draggableProps}>
-        <Card className={cn("mb-2 bg-card border-l-4", isDragging && 'opacity-50')} style={{ borderColor: colors.raw.medium }}>
-            <CardHeader className="flex flex-row items-center justify-between p-3">
-                <div className="flex items-center gap-2 flex-grow min-w-0">
-                    <div {...provided.dragHandleProps} className="cursor-grab p-1 touch-none">
-                        <GripVertical className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <CardTitle className="text-sm font-medium truncate">{process.name}</CardTitle>
-                </div>
-                <div className="flex items-center gap-2">
-                    <div className="flex -space-x-2 overflow-hidden">
-                        {process.users.slice(0, 3).map(user => (
-                            <Avatar key={user.id} className="h-7 w-7 border-2 border-background">
-                                <AvatarImage src={user.avatar || undefined} />
-                                <AvatarFallback><Identicon userId={user.id} /></AvatarFallback>
-                            </Avatar>
-                        ))}
-                        {process.users.length > 3 && (
-                            <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-muted text-xs font-semibold">
-                                +{process.users.length - 3}
-                            </div>
-                        )}
-                    </div>
-                    <div className="flex-shrink-0">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(process)}><Edit3 className="h-4 w-4"/></Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => onDelete(process)}><Trash2 className="h-4 w-4"/></Button>
-                    </div>
-                </div>
-            </CardHeader>
-        </Card>
-    </div>
+    <Card className="border-l-4" style={{ borderColor: colors.raw.medium }}>
+        <CardHeader className="flex flex-row items-center justify-between p-3">
+            <div className="flex items-center gap-2 flex-grow min-w-0">
+                <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
+                <CardTitle className="text-sm font-medium truncate">{process.name}</CardTitle>
+            </div>
+            <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(process)}><Edit3 className="h-4 w-4"/></Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => onDelete(process)}><Trash2 className="h-4 w-4"/></Button>
+            </div>
+        </CardHeader>
+    </Card>
   );
 };
 
@@ -231,12 +243,11 @@ export default function UsersAndProcessesPage() {
   const [selectedNewRole, setSelectedNewRole] = useState<UserRole>('STUDENT');
   const [editAvatarUrl, setEditAvatarUrl] = useState<string | null | undefined>(null);
   const [editProcessId, setEditProcessId] = useState<string | null>(null); 
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
   
   // Process Form State
   const [processName, setProcessName] = useState('');
   const [processParentId, setProcessParentId] = useState<string | null>(null);
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [userSearchTerm, setUserSearchTerm] = useState('');
 
   useEffect(() => {
@@ -424,10 +435,12 @@ export default function UsersAndProcessesPage() {
           setEditingProcess(process);
           setProcessName(process.name);
           setProcessParentId(process.parentId);
+          setSelectedUserIds(process.users.map(u => u.id));
       } else {
           setEditingProcess(null);
           setProcessName('');
           setProcessParentId(null);
+          setSelectedUserIds([]);
       }
       setShowProcessModal(true);
   };
@@ -438,9 +451,12 @@ export default function UsersAndProcessesPage() {
 
     try {
         const processPayload = { name: processName, parentId: processParentId === 'null' ? null : processParentId };
+        
+        // Determinar el endpoint y el método
         const endpoint = editingProcess ? `/api/processes/${editingProcess.id}` : '/api/processes';
         const method = editingProcess ? 'PUT' : 'POST';
         
+        // Primero, crear o actualizar el proceso
         const processRes = await fetch(endpoint, {
             method,
             headers: { 'Content-Type': 'application/json' },
@@ -449,7 +465,15 @@ export default function UsersAndProcessesPage() {
         if (!processRes.ok) throw new Error((await processRes.json()).message || 'Error al guardar el proceso.');
         const savedProcess = await processRes.json();
         
-        toast({ title: '¡Éxito!', description: `Proceso ${editingProcess ? 'actualizado' : 'creado'}.`});
+        // Segundo, asignar los usuarios al proceso recién guardado/actualizado
+        const assignRes = await fetch('/api/processes/assign', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ processId: savedProcess.id, userIds: selectedUserIds }),
+        });
+        if (!assignRes.ok) throw new Error((await assignRes.json()).message || 'Error al asignar usuarios.');
+
+        toast({ title: '¡Éxito!', description: `Proceso y asignaciones guardados correctamente.`});
         setShowProcessModal(false);
         await fetchAllData();
 
@@ -547,37 +571,6 @@ export default function UsersAndProcessesPage() {
    </Card>
   );
 
-  const MobileUserCard = ({ user, onEdit, onChangeRole, onToggleStatus }: { user: UserWithProcess, onEdit: (u: UserWithProcess) => void, onChangeRole: () => void, onToggleStatus: () => void }) => (
-    <Card className={cn("p-3 flex gap-3 items-start", !user.isActive && "opacity-60")}>
-        <Avatar className="h-10 w-10">
-            <AvatarImage src={user.avatar || undefined} alt={user.name} />
-            <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-        </Avatar>
-        <div className="flex-grow">
-            <div className="flex justify-between items-start">
-                <div>
-                    <p className="font-semibold flex items-center gap-1.5">{user.name} <VerifiedBadge role={user.role} /></p>
-                    <p className="text-xs text-muted-foreground">{user.email}</p>
-                </div>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild><Button aria-haspopup="true" size="icon" variant="ghost" className="h-8 w-8 -mt-1"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuItem onSelect={() => onEdit(user)}>Editar</DropdownMenuItem>
-                        <DropdownMenuItem onSelect={onChangeRole}>Cambiar Rol</DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onSelect={onToggleStatus} className={cn(user.isActive ? "text-destructive focus:bg-destructive/10" : "text-green-600 focus:bg-green-500 focus:text-white")}>{user.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-            <div className="mt-2 flex items-center gap-2">
-                <Badge variant={getRoleBadgeVariant(user.role)} className="capitalize">{getRoleInSpanish(user.role)}</Badge>
-                <Badge variant={user.isActive ? 'default' : 'destructive'} className={cn(user.isActive && "bg-green-600 hover:bg-green-700")}>{user.isActive ? 'Activo' : 'Inactivo'}</Badge>
-                 {user.process && <Badge variant="outline">{user.process.name}</Badge>}
-            </div>
-        </div>
-    </Card>
-  );
-
   const ProcessManagement = () => (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -590,9 +583,18 @@ export default function UsersAndProcessesPage() {
       <CardContent>
         {isLoading ? (<Skeleton className="h-64 w-full" />) : error ? (<p className="text-destructive text-center">{error}</p>) : (
           <ScrollArea className="h-96 pr-3">
-              {processes.map((process) => (
-                  <ProcessItem key={process.id} process={process} onEdit={handleOpenProcessModal} onDelete={setProcessToDelete} provided={{}} isDragging={false} />
-              ))}
+              <div className="space-y-3">
+                {processes.map((process) => (
+                    <ProcessItem 
+                        key={process.id} 
+                        process={process} 
+                        onEdit={handleOpenProcessModal} 
+                        onDelete={setProcessToDelete} 
+                        onAssignUsers={handleOpenProcessModal}
+                        isSubmitting={isProcessing}
+                    />
+                ))}
+              </div>
           </ScrollArea>
         )}
       </CardContent>
@@ -614,61 +616,43 @@ export default function UsersAndProcessesPage() {
           </div>
       </div>
       
-      <Dialog open={showAddEditModal} onOpenChange={setShowAddEditModal}>
-          <DialogContent className="sm:max-w-md">
-              <form onSubmit={handleUserFormSubmit}>
-                  <DialogHeader><DialogTitle>{userToEdit ? 'Editar Usuario' : 'Añadir Nuevo Usuario'}</DialogTitle><DialogDescription>Completa la información del usuario.</DialogDescription></DialogHeader>
-                  <div className="py-4 space-y-4">
-                      <div className="space-y-2"><Label htmlFor="name">Nombre</Label><Input id="name" value={editName} onChange={(e) => setEditName(e.target.value)} required disabled={isProcessing} /></div>
-                      <div className="space-y-2"><Label htmlFor="email">Email</Label><Input id="email" type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} required disabled={isProcessing}/></div>
-                      <div className="space-y-2"><Label htmlFor="password">{userToEdit ? 'Nueva Contraseña (Opcional)' : 'Contraseña'}</Label><div className="relative"><Input id="password" type={showPassword ? "text" : "password"} value={editPassword} onChange={(e) => setEditPassword(e.target.value)} required={!userToEdit} disabled={isProcessing}/><Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground" onClick={() => setShowPassword(!showPassword)}>{showPassword ? <EyeOff/> : <Eye/>}</Button></div></div>
-                      <div className="space-y-2"><Label htmlFor="role">Rol</Label><Select value={editRole} onValueChange={(value: UserRole) => setEditRole(value)} disabled={isProcessing}><SelectTrigger id="role"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="STUDENT">Estudiante</SelectItem><SelectItem value="INSTRUCTOR">Instructor</SelectItem><SelectItem value="ADMINISTRATOR">Administrador</SelectItem></SelectContent></Select></div>
-                      <div className="space-y-2"><Label htmlFor="processes">Proceso</Label><ProcessSelector allProcesses={flatProcesses} selectedProcessId={editProcessId} onSelectionChange={setEditProcessId} disabled={isProcessing}/></div>
-                  </div>
-                  <DialogFooter>
-                      <Button type="button" variant="ghost" onClick={() => setShowAddEditModal(false)}>Cancelar</Button>
-                      <Button type="submit" disabled={isProcessing}>{isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}{userToEdit ? 'Guardar Cambios' : 'Crear Usuario'}</Button>
-                  </DialogFooter>
-              </form>
-          </DialogContent>
-      </Dialog>
-      
-       <Dialog open={showProcessModal} onOpenChange={setShowProcessModal}>
-            <DialogContent className="max-w-lg">
-                <form onSubmit={handleProcessFormSubmit}>
-                    <DialogHeader>
-                        <DialogTitle>{editingProcess ? 'Editar Proceso' : 'Crear Nuevo Proceso'}</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4">
-                        <div>
-                            <Label htmlFor="process-name">Nombre del Proceso</Label>
-                            <Input id="process-name" value={processName} onChange={(e) => setProcessName(e.target.value)} required disabled={isProcessing}/>
-                        </div>
-                         <div>
-                            <Label htmlFor="parent-process">Proceso Padre (Opcional)</Label>
-                            <Select value={processParentId || 'null'} onValueChange={(value) => setProcessParentId(value)} disabled={isProcessing}>
-                            <SelectTrigger id="parent-process"><SelectValue placeholder="Seleccionar proceso padre..." /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="null">Ninguno (Nivel Superior)</SelectItem>
-                                {flatProcesses.filter(p => p.id !== editingProcess?.id).map(p => (
-                                    <SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem`}}>
-                                        {p.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                            </Select>
-                        </div>
+      <Dialog open={showProcessModal} onOpenChange={setShowProcessModal}>
+        <DialogContent className="max-w-lg">
+            <form onSubmit={handleProcessFormSubmit}>
+                <DialogHeader>
+                    <DialogTitle>{editingProcess ? 'Editar Proceso' : 'Crear Nuevo Proceso'}</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                    <div>
+                        <Label htmlFor="process-name">Nombre del Proceso</Label>
+                        <Input id="process-name" value={processName} onChange={(e) => setProcessName(e.target.value)} required disabled={isProcessing}/>
                     </div>
-                    <DialogFooter>
-                        <Button type="button" variant="ghost" onClick={() => setShowProcessModal(false)}>Cancelar</Button>
-                        <Button type="submit" disabled={isProcessing || !processName.trim()}>
-                            {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                            {editingProcess ? 'Guardar Cambios' : 'Crear Proceso'}
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
+                    <div>
+                        <Label htmlFor="parent-process">Proceso Padre (Opcional)</Label>
+                        <Select value={processParentId || 'null'} onValueChange={(value) => setProcessParentId(value)} disabled={isProcessing}>
+                        <SelectTrigger id="parent-process"><SelectValue placeholder="Seleccionar proceso padre..." /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="null">Ninguno (Nivel Superior)</SelectItem>
+                            {flatProcesses.filter(p => p.id !== editingProcess?.id).map(p => (
+                                <SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem`}}>
+                                    {p.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button type="button" variant="ghost" onClick={() => setShowProcessModal(false)}>Cancelar</Button>
+                    <Button type="submit" disabled={isProcessing || !processName.trim()}>
+                        {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                        {editingProcess ? 'Guardar Cambios' : 'Crear Proceso'}
+                    </Button>
+                </DialogFooter>
+            </form>
+        </DialogContent>
+      </Dialog>
+
     
     <AlertDialog open={!!processToDelete} onOpenChange={(open) => !open && setProcessToDelete(null)}>
         <AlertDialogContent>

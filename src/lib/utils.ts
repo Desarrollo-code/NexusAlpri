@@ -59,9 +59,9 @@ export const getMotivationalTriggerLabel = (
 // --- Process Color Utils ---
 const PALETTES = [
     ["#fde047", "#facc15", "#eab308"], // Yellow
-    ["#f87171", "#ef4444", "#dc2626"], // Red
     ["#a7f3d0", "#4ade80", "#22c55e"], // Green
     ["#93c5fd", "#60a5fa", "#3b82f6"], // Blue
+    ["#f87171", "#ef4444", "#dc2626"], // Red
     ["#a5b4fc", "#818cf8", "#6366f1"], // Indigo
     ["#d8b4fe", "#c084fc", "#a855f7"], // Purple
     ["#f9a8d4", "#f472b6", "#ec4899"], // Pink
