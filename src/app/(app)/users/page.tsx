@@ -65,7 +65,7 @@ import { Identicon } from '@/components/ui/identicon';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserProfileCard } from '@/components/profile/user-profile-card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ScrollArea } from '../ui/scroll-area';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 // --- TYPES ---
 interface ProcessWithLevel {
@@ -487,7 +487,7 @@ export default function UsersAndProcessesPage() {
         });
         if (!response.ok) throw new Error((await response.json()).message || 'Error al guardar el proceso.');
         
-        toast({ title: 'Éxito', description: `Proceso ${editingProcess ? 'actualizado' : 'creado'} correctamente.`});
+        toast({ title: 'Éxito!', description: `Proceso ${editingProcess ? 'actualizado' : 'creado'} correctamente.`});
         setShowProcessModal(false);
         await fetchAllData();
     } catch(err) {
@@ -555,7 +555,7 @@ export default function UsersAndProcessesPage() {
                                 </TableCell>
                                 <TableCell>{u.email}</TableCell>
                                 <TableCell><Badge variant={getRoleBadgeVariant(u.role)} className="capitalize">{getRoleInSpanish(u.role)}</Badge></TableCell>
-                                <TableCell><Badge variant={u.isActive ? 'default' : 'destructive'} className={cn(u.isActive && "bg-green-600 hover:bg-green-700")}>{u.isActive ? 'Activo' : 'Inactivo'}</Badge></TableCell>
+                                <TableCell><Badge variant={u.isActive ? 'default' : 'secondary'} className={cn(u.isActive && "bg-green-600 hover:bg-green-700")}>{u.isActive ? 'Activo' : 'Inactivo'}</Badge></TableCell>
                                 <TableCell>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild><Button aria-haspopup="true" size="icon" variant="ghost"><MoreHorizontal className="h-4 w-4" /><span className="sr-only">Acciones</span></Button></DropdownMenuTrigger>
