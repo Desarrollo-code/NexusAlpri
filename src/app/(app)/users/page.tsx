@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import type { User, UserRole } from '@/types';
+import type { User, UserRole, Process } from '@/types';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -73,15 +73,12 @@ interface ProcessWithLevel {
     name: string;
     level: number;
 }
-interface ProcessWithChildren {
-  id: string;
-  name: string;
-  parentId: string | null;
+interface ProcessWithChildren extends Process {
   users: (Pick<User, 'id' | 'name' | 'avatar'>)[];
   children: ProcessWithChildren[];
 }
-interface UserWithProcesses extends User {
-    processes: { id: string; name: string }[];
+interface UserWithProcess extends User {
+    process: { id: string; name: string } | null;
 }
 
 const PAGE_SIZE = 10;
@@ -149,26 +146,17 @@ const ProcessItem = ({ process, onEdit, onDelete, provided, isDragging }: { proc
 
 const ProcessSelector = ({
   allProcesses,
-  selectedProcessIds,
+  selectedProcessId,
   onSelectionChange,
   disabled
 }: {
   allProcesses: ProcessWithLevel[],
-  selectedProcessIds: Set<string>,
-  onSelectionChange: (id: string, selected: boolean) => void,
+  selectedProcessId: string | null,
+  onSelectionChange: (id: string | null) => void,
   disabled: boolean
 }) => {
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState('');
-
-  const selectedCount = selectedProcessIds.size;
-  const triggerText = selectedCount > 0
-    ? `${selectedCount} proceso(s) seleccionado(s)`
-    : "Asignar procesos...";
-
-  const filteredProcesses = useMemo(() => {
-    return allProcesses.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
-  }, [allProcesses, search]);
+  const selectedProcess = allProcesses.find(p => p.id === selectedProcessId);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -180,31 +168,30 @@ const ProcessSelector = ({
           className="w-full justify-between"
           disabled={disabled}
         >
-          <span className="truncate">{triggerText}</span>
+          <span className="truncate">{selectedProcess ? selectedProcess.name : "Asignar proceso..."}</span>
           <CommandIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
         <Command>
-          <CommandInput placeholder="Buscar proceso..." value={search} onValueChange={setSearch}/>
+          <CommandInput placeholder="Buscar proceso..." />
           <CommandList>
             <CommandEmpty>No se encontraron procesos.</CommandEmpty>
             <CommandGroup>
-              {filteredProcesses.map((process) => {
-                const isSelected = selectedProcessIds.has(process.id);
-                return (
-                  <CommandItem
-                    key={process.id}
-                    onSelect={() => onSelectionChange(process.id, !isSelected)}
-                    style={{ paddingLeft: `${process.level * 1.5 + 1}rem` }}
-                  >
-                    <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", isSelected ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible")}>
-                        <Check className="h-4 w-4" />
-                    </div>
-                    <span>{process.name}</span>
-                  </CommandItem>
-                );
-              })}
+                <CommandItem onSelect={() => { onSelectionChange(null); setOpen(false); }}>
+                    <Check className={cn("mr-2 h-4 w-4", !selectedProcessId ? "opacity-100" : "opacity-0")} />
+                    Sin Asignar
+                </CommandItem>
+              {allProcesses.map((process) => (
+                <CommandItem
+                  key={process.id}
+                  onSelect={() => { onSelectionChange(process.id); setOpen(false); }}
+                  style={{ paddingLeft: `${process.level * 1.5 + 1}rem` }}
+                >
+                  <Check className={cn("mr-2 h-4 w-4", selectedProcessId === process.id ? "opacity-100" : "opacity-0")}/>
+                  <span>{process.name}</span>
+                </CommandItem>
+              ))}
             </CommandGroup>
           </CommandList>
         </Command>
@@ -226,9 +213,9 @@ export default function UsersAndProcessesPage() {
   const { setPageTitle } = useTitle();
 
   // State for Users
-  const [usersList, setUsersList] = useState<UserWithProcesses[]>([]);
+  const [usersList, setUsersList] = useState<UserWithProcess[]>([]);
   const [totalUsers, setTotalUsers] = useState(0);
-  const [userToEdit, setUserToEdit] = useState<UserWithProcesses | null>(null);
+  const [userToEdit, setUserToEdit] = useState<UserWithProcess | null>(null);
   const [userToToggleStatus, setUserToToggleStatus] = useState<User | null>(null);
   const [userToChangeRole, setUserToChangeRole] = useState<User | null>(null);
   const [showAddEditModal, setShowAddEditModal] = useState(false);
@@ -263,7 +250,7 @@ export default function UsersAndProcessesPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [selectedNewRole, setSelectedNewRole] = useState<UserRole>('STUDENT');
   const [editAvatarUrl, setEditAvatarUrl] = useState<string | null | undefined>(null);
-  const [editProcessIds, setEditProcessIds] = useState<Set<string>>(new Set());
+  const [editProcessId, setEditProcessId] = useState<string | null>(null); // Single process ID
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   
@@ -324,18 +311,18 @@ export default function UsersAndProcessesPage() {
     setEditRole('STUDENT');
     setEditPassword('');
     setEditAvatarUrl(null);
-    setEditProcessIds(new Set());
+    setEditProcessId(null);
     setShowAddEditModal(true);
   };
   
-  const handleOpenEditModal = (user: UserWithProcesses) => {
+  const handleOpenEditModal = (user: UserWithProcess) => {
     setUserToEdit(user);
     setEditName(user.name);
     setEditEmail(user.email);
     setEditRole(user.role);
     setEditPassword('');
     setEditAvatarUrl(user.avatar);
-    setEditProcessIds(new Set(user.processes.map(p => p.id)));
+    setEditProcessId(user.process?.id || null);
     setShowAddEditModal(true);
   };
   
@@ -350,7 +337,7 @@ export default function UsersAndProcessesPage() {
       name: editName,
       email: editEmail,
       role: editRole,
-      processIds: Array.from(editProcessIds),
+      processId: editProcessId
     };
     if (editPassword) {
       payload.password = editPassword;
@@ -473,42 +460,30 @@ export default function UsersAndProcessesPage() {
     setIsProcessing(true);
 
     try {
-        let processId;
-
-        // Si estamos editando, solo actualizamos el proceso
-        if (editingProcess) {
-            processId = editingProcess.id;
-            const processPayload = { name: processName, parentId: processParentId === 'null' ? null : processParentId };
-            const processRes = await fetch(`/api/processes/${processId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(processPayload),
-            });
-            if (!processRes.ok) throw new Error((await processRes.json()).message || 'Error al actualizar el proceso.');
-        } else {
-            // Si estamos creando, enviamos todo en una sola petición
-            const processPayload = {
-                name: processName,
-                parentId: processParentId === 'null' ? null : processParentId,
-            };
-            const processRes = await fetch('/api/processes', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(processPayload),
-            });
-            if (!processRes.ok) throw new Error((await processRes.json()).message || 'Error al crear el proceso.');
-            const newProcess = await processRes.json();
-            processId = newProcess.id;
-        }
-
-        // Ya sea creando o editando, ahora asignamos los usuarios
-        if (processId && usersToAssign.size > 0) {
-             const assignRes = await fetch('/api/processes/assign', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ processId, userIds: Array.from(usersToAssign) }),
-            });
-            if (!assignRes.ok) throw new Error((await assignRes.json()).message || 'Error al asignar usuarios.');
+        const processPayload = {
+            name: processName,
+            parentId: processParentId === 'null' ? null : processParentId,
+        };
+        const endpoint = editingProcess ? `/api/processes/${editingProcess.id}` : '/api/processes';
+        const method = editingProcess ? 'PUT' : 'POST';
+        
+        const processRes = await fetch(endpoint, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(processPayload),
+        });
+        if (!processRes.ok) throw new Error((await processRes.json()).message || 'Error al guardar el proceso.');
+        const savedProcess = await processRes.json();
+        
+        if(usersToAssign.size > 0) {
+            const assignPromises = Array.from(usersToAssign).map(userId => 
+                fetch(`/api/users/${userId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ processId: savedProcess.id }),
+                })
+            );
+            await Promise.all(assignPromises);
         }
 
         toast({ title: '¡Éxito!', description: `Proceso ${editingProcess ? 'actualizado' : 'creado'} y usuarios asignados.`});
@@ -571,9 +546,9 @@ export default function UsersAndProcessesPage() {
           </div>
           <div className="overflow-x-auto">
                <Table>
-                  <TableHeader><TableRow><TableHead>Nombre</TableHead><TableHead>Email</TableHead><TableHead>Rol</TableHead><TableHead>Estado</TableHead><TableHead><span className="sr-only">Acciones</span></TableHead></TableRow></TableHeader>
+                  <TableHeader><TableRow><TableHead>Nombre</TableHead><TableHead>Email</TableHead><TableHead>Rol</TableHead><TableHead>Proceso</TableHead><TableHead>Estado</TableHead><TableHead><span className="sr-only">Acciones</span></TableHead></TableRow></TableHeader>
                   <TableBody>
-                      {isLoading ? [...Array(5)].map((_,i) => (<TableRow key={i}><TableCell colSpan={5}><Skeleton className="h-10 w-full" /></TableCell></TableRow>)) :
+                      {isLoading ? [...Array(5)].map((_,i) => (<TableRow key={i}><TableCell colSpan={6}><Skeleton className="h-10 w-full" /></TableCell></TableRow>)) :
                        usersList.map(u => (
                            <TableRow key={u.id} className={cn(!u.isActive && "opacity-60")}>
                                 <TableCell>
@@ -581,6 +556,11 @@ export default function UsersAndProcessesPage() {
                                 </TableCell>
                                 <TableCell>{u.email}</TableCell>
                                 <TableCell><Badge variant={getRoleBadgeVariant(u.role)} className="capitalize">{getRoleInSpanish(u.role)}</Badge></TableCell>
+                                <TableCell>
+                                    {u.process ? (
+                                         <Badge variant="outline">{u.process.name}</Badge>
+                                    ) : <span className="text-xs text-muted-foreground">Sin asignar</span>}
+                                </TableCell>
                                 <TableCell><Badge variant={u.isActive ? 'default' : 'destructive'} className={cn(u.isActive && "bg-green-600 hover:bg-green-700")}>{u.isActive ? 'Activo' : 'Inactivo'}</Badge></TableCell>
                                 <TableCell>
                                     <DropdownMenu>
@@ -608,7 +588,7 @@ export default function UsersAndProcessesPage() {
    </Card>
   );
 
-  const MobileUserCard = ({ user, onEdit, onChangeRole, onToggleStatus }: { user: UserWithProcesses, onEdit: (u: UserWithProcesses) => void, onChangeRole: () => void, onToggleStatus: () => void }) => (
+  const MobileUserCard = ({ user, onEdit, onChangeRole, onToggleStatus }: { user: UserWithProcess, onEdit: (u: UserWithProcess) => void, onChangeRole: () => void, onToggleStatus: () => void }) => (
     <Card className={cn("p-3 flex gap-3 items-start", !user.isActive && "opacity-60")}>
         <Avatar className="h-10 w-10">
             <AvatarImage src={user.avatar || undefined} alt={user.name} />
@@ -633,21 +613,8 @@ export default function UsersAndProcessesPage() {
             <div className="mt-2 flex items-center gap-2">
                 <Badge variant={getRoleBadgeVariant(user.role)} className="capitalize">{getRoleInSpanish(user.role)}</Badge>
                 <Badge variant={user.isActive ? 'default' : 'destructive'} className={cn(user.isActive && "bg-green-600 hover:bg-green-700")}>{user.isActive ? 'Activo' : 'Inactivo'}</Badge>
+                 {user.process && <Badge variant="outline">{user.process.name}</Badge>}
             </div>
-             {user.processes && user.processes.length > 0 && (
-                <div className="mt-2 border-t pt-2">
-                    <div className="flex flex-wrap gap-1.5">
-                        {user.processes.map(p => {
-                           const colors = getProcessColors(p.id);
-                           return (
-                               <Badge key={p.id} variant="secondary" style={{ backgroundColor: colors.raw.light, color: colors.raw.dark, borderColor: colors.raw.medium }} className="border">
-                                   {p.name}
-                               </Badge>
-                           )
-                        })}
-                    </div>
-                </div>
-            )}
         </div>
     </Card>
   );
@@ -726,7 +693,7 @@ export default function UsersAndProcessesPage() {
                       <div className="space-y-2"><Label htmlFor="email">Email</Label><Input id="email" type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} required disabled={isProcessing}/></div>
                       <div className="space-y-2"><Label htmlFor="password">{userToEdit ? 'Nueva Contraseña (Opcional)' : 'Contraseña'}</Label><div className="relative"><Input id="password" type={showPassword ? "text" : "password"} value={editPassword} onChange={(e) => setEditPassword(e.target.value)} required={!userToEdit} disabled={isProcessing}/><Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground" onClick={() => setShowPassword(!showPassword)}>{showPassword ? <EyeOff/> : <Eye/>}</Button></div></div>
                       <div className="space-y-2"><Label htmlFor="role">Rol</Label><Select value={editRole} onValueChange={(value: UserRole) => setEditRole(value)} disabled={isProcessing}><SelectTrigger id="role"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="STUDENT">Estudiante</SelectItem><SelectItem value="INSTRUCTOR">Instructor</SelectItem><SelectItem value="ADMINISTRATOR">Administrador</SelectItem></SelectContent></Select></div>
-                      <div className="space-y-2"><Label htmlFor="processes">Procesos</Label><ProcessSelector allProcesses={flatProcesses} selectedProcessIds={editProcessIds} onSelectionChange={(id, selected) => setEditProcessIds(prev => { const newSet = new Set(prev); if (selected) newSet.add(id); else newSet.delete(id); return newSet; })} disabled={isProcessing}/></div>
+                      <div className="space-y-2"><Label htmlFor="processes">Proceso</Label><ProcessSelector allProcesses={flatProcesses} selectedProcessId={editProcessId} onSelectionChange={setEditProcessId} disabled={isProcessing}/></div>
                   </div>
                   <DialogFooter>
                       <Button type="button" variant="ghost" onClick={() => setShowAddEditModal(false)}>Cancelar</Button>
@@ -742,12 +709,12 @@ export default function UsersAndProcessesPage() {
                     <DialogHeader>
                         <DialogTitle>{editingProcess ? 'Editar Proceso' : 'Crear Nuevo Proceso'}</DialogTitle>
                     </DialogHeader>
-                    <div className="py-4 space-y-4">
-                        <div className="space-y-1">
+                    <div className="space-y-4 py-4">
+                        <div>
                             <Label htmlFor="process-name">Nombre del Proceso</Label>
                             <Input id="process-name" value={processName} onChange={(e) => setProcessName(e.target.value)} required disabled={isProcessing}/>
                         </div>
-                        <div className="space-y-1">
+                         <div>
                             <Label htmlFor="parent-process">Proceso Padre (Opcional)</Label>
                             <Select value={processParentId || 'null'} onValueChange={(value) => setProcessParentId(value)} disabled={isProcessing}>
                             <SelectTrigger id="parent-process"><SelectValue placeholder="Seleccionar proceso padre..." /></SelectTrigger>

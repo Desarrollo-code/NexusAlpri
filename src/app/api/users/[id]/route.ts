@@ -3,8 +3,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { getCurrentUser } from '@/lib/auth';
+import prisma from '@/lib/prisma';
 
-const prisma = new PrismaClient();
 
 export const dynamic = 'force-dynamic';
 
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         const user = await prisma.user.findUnique({
             where: { id },
             include: {
-                processes: true, // Incluir procesos
+                process: true, 
             }
         });
         if (!user) {
@@ -55,15 +55,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         if ('avatar' in body) dataToUpdate.avatar = body.avatar;
         if ('theme' in body) dataToUpdate.theme = body.theme;
 
-        if ('password' in body && body.password) {
-            dataToUpdate.password = await bcrypt.hash(body.password, 10);
-        }
-        
-        // Process assignments - Only Admins can do this
-        if ('processIds' in body && Array.isArray(body.processIds) && session.role === 'ADMINISTRATOR') {
-            dataToUpdate.processes = {
-                set: body.processIds.map((pid: string) => ({ id: pid }))
-            }
+        // Correctly handle processId assignment
+        if ('processId' in body) {
+            dataToUpdate.processId = body.processId;
         }
 
         if (session.role === 'ADMINISTRATOR') {
