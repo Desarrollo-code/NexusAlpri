@@ -31,7 +31,7 @@ import {
 } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, AreaChart, Pie, PieChart, ResponsiveContainer, Cell, Label, XAxis, YAxis, Sector, CartesianGrid, BarChart, Bar, Legend } from "recharts";
+import { Area, AreaChart, Pie, PieChart, ResponsiveContainer, Cell, Label, XAxis, YAxis, Sector, CartesianGrid, BarChart, Bar, Legend, ComposedChart, Line } from "recharts";
 import type { AdminDashboardStats, Course } from '@/types';
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -140,7 +140,7 @@ function DonutChartCard({ title, data, config, id }: { title: string, data: any[
 
   if (!data || data.length === 0) {
     return (
-        <Card className="card-border-animated h-full" id={id}>
+        <Card className="h-full" id={id}>
              <CardHeader><CardTitle>{title}</CardTitle></CardHeader>
              <CardContent className="h-80 flex items-center justify-center">
                  <p className="text-sm text-muted-foreground">Datos no disponibles.</p>
@@ -150,7 +150,7 @@ function DonutChartCard({ title, data, config, id }: { title: string, data: any[
   }
   
   return (
-    <Card className="card-border-animated h-full" id={id}>
+    <Card className="h-full" id={id}>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
@@ -203,101 +203,29 @@ function DonutChartCard({ title, data, config, id }: { title: string, data: any[
   )
 }
 
-function CourseRankingCard({ title, courses, metric, icon: Icon, unit = '', id }: { title: string, courses: any[], metric: string, icon: React.ElementType, unit?: string, id?: string }) {
-    if (!courses || courses.length === 0) {
-        return (
-            <Card className="card-border-animated" id={id}>
-                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Icon className="text-primary"/>{title}</CardTitle>
-                </CardHeader>
-                 <CardContent>
-                    <p className="text-sm text-muted-foreground text-center py-8">Datos no disponibles.</p>
-                </CardContent>
-            </Card>
-        )
+function RankingList({ title, items, metric, icon: Icon, unit = '' }: { title: string, items: any[], metric: string, icon: React.ElementType, unit?: string }) {
+    if (!items || items.length === 0) {
+        return <p className="text-sm text-muted-foreground text-center py-4">Datos no disponibles.</p>;
     }
 
     return (
-        <Card className="card-border-animated" id={id}>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Icon className="text-primary"/>{title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Curso</TableHead>
-                            <TableHead className="text-right">{metric}</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {courses.map(course => (
-                            <TableRow key={course.id}>
-                                <TableCell>
-                                    <div className="flex items-center gap-2">
-                                        <Avatar className="h-8 w-8 hidden sm:flex">
-                                            <AvatarImage src={course.imageUrl || undefined} />
-                                            <AvatarFallback>{course.title?.charAt(0) ?? 'C'}</AvatarFallback>
-                                        </Avatar>
-                                        <Link href={`/courses/${course.id}`} className="font-medium hover:underline truncate" title={course.title}>{course.title}</Link>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="text-right font-semibold">{course.value}{unit}</TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </CardContent>
-        </Card>
-    );
-}
-
-function UserRankingCard({ title, users, metric, icon: Icon, unit = '', id }: { title: string; users: any[]; metric: string; icon: React.ElementType; unit?: string, id?: string }) {
-    if (!users || users.length === 0) {
-        return (
-            <Card className="card-border-animated" id={id}>
-                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Icon className="text-primary"/>{title}</CardTitle>
-                </CardHeader>
-                 <CardContent>
-                    <p className="text-sm text-muted-foreground text-center py-8">Datos no disponibles.</p>
-                </CardContent>
-            </Card>
-        )
-    }
-    
-    return (
-        <Card className="card-border-animated" id={id}>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Icon className="text-primary"/>{title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Usuario</TableHead>
-                            <TableHead className="text-right">{metric}</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {users.map(user => (
-                            <TableRow key={user.id}>
-                                <TableCell>
-                                    <div className="flex items-center gap-2">
-                                        <Avatar className="h-8 w-8 hidden sm:flex">
-                                            <AvatarImage src={user.avatar || undefined} />
-                                            <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
-                                        </Avatar>
-                                        <Link href={`/users?search=${user.name}`} className="font-medium hover:underline truncate" title={user.name}>{user.name}</Link>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="text-right font-semibold">{user.value}{unit}</TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </CardContent>
-        </Card>
+        <div className="space-y-3">
+            <h3 className="font-semibold text-foreground flex items-center gap-2"><Icon className="text-primary h-4 w-4"/>{title}</h3>
+            <div className="space-y-2">
+                {items.map(item => (
+                    <div key={item.id} className="flex items-center gap-3 text-sm">
+                        <Avatar className="h-8 w-8">
+                            <AvatarImage src={item.imageUrl || item.avatar || undefined} />
+                            <AvatarFallback><Identicon userId={item.id}/></AvatarFallback>
+                        </Avatar>
+                        <div className="flex-grow min-w-0">
+                           <p className="truncate font-medium">{item.title || item.name}</p>
+                        </div>
+                        <div className="font-bold text-primary shrink-0">{item.value?.toLocaleString() ?? 0}{unit}</div>
+                    </div>
+                ))}
+            </div>
+        </div>
     );
 }
 
@@ -369,24 +297,23 @@ function AdminAnalyticsPage() {
         })).filter(item => item.count > 0);
     }, [stats?.coursesByStatus]);
 
-    const registrationTrendChartConfig = {
-      registrations: {
-        label: "Nuevos Usuarios",
-        color: "hsl(var(--chart-2))",
-      },
-    } satisfies ChartConfig;
-
     if (isLoading) {
         return (
             <div className="space-y-8">
                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-8 gap-4">
-                    {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-32" />)}
+                    {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-28" />)}
                 </div>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <Skeleton className="h-96" /><Skeleton className="h-96" /><Skeleton className="h-96" />
+                    <Skeleton className="h-96 lg:col-span-2" />
+                    <div className="space-y-6">
+                        <Skeleton className="h-48" />
+                        <Skeleton className="h-48" />
+                    </div>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <Skeleton className="h-[450px]" /><Skeleton className="h-[450px]" />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <Skeleton className="h-[450px]" />
+                    <Skeleton className="h-[450px]" />
+                    <Skeleton className="h-[450px]" />
                 </div>
             </div>
         )
@@ -404,7 +331,7 @@ function AdminAnalyticsPage() {
     }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="space-y-1">
                 <h2 className="text-2xl font-semibold">Resumen de la Plataforma</h2>
@@ -413,39 +340,13 @@ function AdminAnalyticsPage() {
              <div className="flex items-center gap-2">
                  <Popover>
                     <PopoverTrigger asChild>
-                      <Button
-                        id="date"
-                        variant={"outline"}
-                        className={cn(
-                          "w-full justify-start text-left font-normal md:w-[300px]",
-                          !date && "text-muted-foreground"
-                        )}
-                      >
+                      <Button id="date" variant="outline" className={cn("w-full justify-start text-left font-normal md:w-[300px]", !date && "text-muted-foreground")}>
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {date?.from ? (
-                          date.to ? (
-                            <>
-                              {format(date.from, "LLL dd, y", { locale: es })} -{" "}
-                              {format(date.to, "LLL dd, y", { locale: es })}
-                            </>
-                          ) : (
-                            format(date.from, "LLL dd, y", { locale: es })
-                          )
-                        ) : (
-                          <span>Elige una fecha</span>
-                        )}
+                        {date?.from ? (date.to ? (<>{format(date.from, "LLL dd, y", { locale: es })} - {format(date.to, "LLL dd, y", { locale: es })}</>) : (format(date.from, "LLL dd, y", { locale: es }))) : (<span>Elige una fecha</span>)}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="end">
-                      <Calendar
-                        initialFocus
-                        mode="range"
-                        defaultMonth={date?.from}
-                        selected={date}
-                        onSelect={setDate}
-                        numberOfMonths={2}
-                        locale={es}
-                      />
+                      <Calendar initialFocus mode="range" defaultMonth={date?.from} selected={date} onSelect={setDate} numberOfMonths={2} locale={es}/>
                     </PopoverContent>
                   </Popover>
                  <Button variant="outline" size="sm" onClick={() => forceStartTour('analytics', analyticsTour)}>
@@ -454,62 +355,84 @@ function AdminAnalyticsPage() {
              </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-8 gap-4 mt-4" id="analytics-metric-cards">
-            <MetricCard title="Total Usuarios" value={stats?.totalUsers || 0} icon={UsersRound} gradient="bg-gradient-blue" />
-            <MetricCard title="Total Cursos" value={stats?.totalCourses || 0} icon={Library} gradient="bg-gradient-orange" />
-            <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={GraduationCap} gradient="bg-gradient-purple" />
-            <MetricCard title="Cursos Publicados" value={stats?.totalPublishedCourses || 0} icon={BookOpenCheck} gradient="bg-gradient-green" />
-            <MetricCard title="Recursos" value={stats?.totalResources || 0} icon={Folder} gradient="bg-gradient-to-r from-sky-500 to-cyan-400" />
-            <MetricCard title="Anuncios" value={stats?.totalAnnouncements || 0} icon={Megaphone} gradient="bg-gradient-to-r from-rose-500 to-pink-500" />
-            <MetricCard title="Formularios" value={stats?.totalForms || 0} icon={FileText} gradient="bg-gradient-to-r from-amber-500 to-yellow-400" />
-            <MetricCard title="Finalización" value={stats?.averageCompletionRate || 0} icon={BadgePercent} suffix="%" description="Promedio" gradient="bg-gradient-pink" />
+            <MetricCard title="Total Usuarios" value={stats?.totalUsers || 0} icon={UsersRound} />
+            <MetricCard title="Total Cursos" value={stats?.totalCourses || 0} icon={Library} />
+            <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={GraduationCap} />
+            <MetricCard title="Cursos Publicados" value={stats?.totalPublishedCourses || 0} icon={BookOpenCheck} />
+            <MetricCard title="Recursos" value={stats?.totalResources || 0} icon={Folder} />
+            <MetricCard title="Anuncios" value={stats?.totalAnnouncements || 0} icon={Megaphone} />
+            <MetricCard title="Formularios" value={stats?.totalForms || 0} icon={FileText} />
+            <MetricCard title="Finalización" value={stats?.averageCompletionRate || 0} icon={BadgePercent} suffix="%" description="Promedio" />
         </div>
         
         <Separator />
-        <h2 className="text-2xl font-semibold">Análisis de Cursos</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" id="analytics-course-rankings">
-            <CourseRankingCard title="Cursos Más Populares" courses={stats?.topCoursesByEnrollment || []} metric="Inscritos" icon={TrendingUp} />
-            <CourseRankingCard title="Cursos con Mejor Rendimiento" courses={stats?.topCoursesByCompletion || []} metric="Finalización" icon={Award} unit="%" />
-            <CourseRankingCard title="Cursos con Oportunidad de Mejora" courses={stats?.lowestCoursesByCompletion || []} metric="Finalización" icon={TrendingDown} unit="%" />
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="lg:col-span-2">
+                 <CardHeader>
+                    <CardTitle>Tendencia de Actividad</CardTitle>
+                     <CardDescription>Actividad en el rango de fechas seleccionado.</CardDescription>
+                </CardHeader>
+                <CardContent className="h-80 p-0 pr-4">
+                     <ChartContainer config={{ newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-2))" }, newEnrollments: { label: "Inscripciones", color: "hsl(var(--chart-3))" }}} className="w-full h-full -ml-4 pl-4">
+                        <ResponsiveContainer>
+                           <ComposedChart data={stats?.userRegistrationTrend || []} margin={{ top: 10, right: 10, left: 0, bottom: 40 }}>
+                             <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                             <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} interval={isMobile ? 6 : 'preserveStartEnd'} angle={-45} textAnchor="end" tickFormatter={formatDateTick}/>
+                             <YAxis yAxisId="left" tickLine={false} axisLine={false} tickMargin={10} allowDecimals={false} />
+                             <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" hideIndicator labelFormatter={formatDateTooltip} />} />
+                             <Legend />
+                             <Bar dataKey="newCourses" name="Nuevos Cursos" fill="var(--color-newCourses)" yAxisId="left" radius={[4, 4, 0, 0]} />
+                             <Line type="monotone" dataKey="newEnrollments" name="Inscripciones" stroke="var(--color-newEnrollments)" strokeWidth={2} dot={false} yAxisId="left" />
+                           </ComposedChart>
+                        </ResponsiveContainer>
+                    </ChartContainer>
+                </CardContent>
+            </Card>
+             <div className="lg:col-span-1 space-y-6">
+                 <DonutChartCard title="Distribución de Roles" data={userRolesChartData} config={userRolesChartConfig} />
+                 <DonutChartCard title="Distribución de Cursos" data={courseStatusChartData} config={courseStatusChartConfig} />
+             </div>
         </div>
 
         <Separator />
-        <h2 className="text-2xl font-semibold">Análisis de Usuarios</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" id="analytics-user-rankings">
-             <UserRankingCard title="Estudiantes Más Activos" users={stats?.topStudentsByEnrollment || []} metric="Inscripciones" icon={UserRound} />
-             <UserRankingCard title="Mejores Estudiantes" users={stats?.topStudentsByCompletion || []} metric="Cursos Completados" icon={UserCheck} />
-             <UserRankingCard title="Instructores Destacados" users={stats?.topInstructorsByCourses || []} metric="Cursos Creados" icon={CourseIcon} />
+        <h2 className="text-2xl font-semibold">Rankings de Rendimiento</h2>
+
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="analytics-course-rankings">
+            <Card>
+                <CardContent className="pt-6">
+                    <RankingList title="Cursos Más Populares" items={stats?.topCoursesByEnrollment || []} metric="Inscritos" icon={TrendingUp} />
+                </CardContent>
+            </Card>
+             <Card>
+                <CardContent className="pt-6">
+                     <RankingList title="Cursos con Mejor Finalización" items={stats?.topCoursesByCompletion || []} metric="Completado" icon={Award} unit="%"/>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardContent className="pt-6">
+                     <RankingList title="Cursos de Oportunidad" items={stats?.lowestCoursesByCompletion || []} metric="Completado" icon={TrendingDown} unit="%"/>
+                </CardContent>
+            </Card>
         </div>
 
-        <Separator />
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" id="analytics-distribution-charts">
-            <DonutChartCard title="Distribución de Roles" data={userRolesChartData} config={userRolesChartConfig} />
-            <DonutChartCard title="Distribución de Cursos por Estado" data={courseStatusChartData} config={courseStatusChartConfig} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="analytics-user-rankings">
+             <Card>
+                <CardContent className="pt-6">
+                     <RankingList title="Estudiantes Más Activos" items={stats?.topStudentsByEnrollment || []} metric="Inscripciones" icon={UserRound} />
+                </CardContent>
+            </Card>
+             <Card>
+                <CardContent className="pt-6">
+                    <RankingList title="Mejores Estudiantes" items={stats?.topStudentsByCompletion || []} metric="Completados" icon={UserCheck} />
+                </CardContent>
+            </Card>
+             <Card>
+                <CardContent className="pt-6">
+                    <RankingList title="Instructores Destacados" items={stats?.topInstructorsByCourses || []} metric="Cursos Creados" icon={CourseIcon} />
+                </CardContent>
+            </Card>
         </div>
-
-        <Card className="card-border-animated" id="analytics-registration-trend">
-            <CardHeader>
-                <CardTitle>Tendencia de Registros (Rango Seleccionado)</CardTitle>
-            </CardHeader>
-            <CardContent className="h-80 p-0 pr-4">
-                 <ChartContainer config={registrationTrendChartConfig} className="w-full h-full -ml-4 pl-4">
-                    <ResponsiveContainer>
-                       <AreaChart accessibilityLayer data={stats?.userRegistrationTrend || []} margin={{ top: 10, right: 10, left: 0, bottom: 40 }}>
-                         <defs>
-                            <linearGradient id="colorRegistrations" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.4}/>
-                                <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0.05}/>
-                            </linearGradient>
-                         </defs>
-                         <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                         <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} interval={isMobile ? 6 : 'preserveStartEnd'} angle={-45} textAnchor="end" tickFormatter={formatDateTick}/>
-                         <YAxis tickLine={false} axisLine={false} tickMargin={10} allowDecimals={false} />
-                         <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" hideIndicator labelFormatter={formatDateTooltip} />} />
-                         <Area type="monotone" dataKey="count" name="Registros" stroke="hsl(var(--chart-2))" strokeWidth={2} fillOpacity={1} fill="url(#colorRegistrations)" />
-                       </AreaChart>
-                    </ResponsiveContainer>
-                </ChartContainer>
-            </CardContent>
-        </Card>
     </div>
   );
 }
