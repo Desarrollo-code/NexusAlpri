@@ -85,12 +85,10 @@ const PAGE_SIZE = 10;
 
 // --- PROCESS MANAGEMENT COMPONENTS ---
 
-const ProcessItem = ({ process, onEdit, onDelete, onAssignUsers, isSubmitting }: { 
+const ProcessItem = ({ process, onEdit, onDelete }: { 
     process: ProcessWithChildren, 
     onEdit: (p: ProcessWithChildren) => void, 
     onDelete: (p: ProcessWithChildren) => void,
-    onAssignUsers: (p: ProcessWithChildren) => void,
-    isSubmitting: boolean
 }) => {
   const colors = getProcessColors(process.id);
 
@@ -109,7 +107,7 @@ const ProcessItem = ({ process, onEdit, onDelete, onAssignUsers, isSubmitting }:
         </div>
         <div className="pl-4 space-y-2">
           {process.children.map(child => (
-            <ProcessItem key={child.id} process={child} onEdit={onEdit} onDelete={onDelete} onAssignUsers={onAssignUsers} isSubmitting={isSubmitting} />
+            <ProcessItem key={child.id} process={child} onEdit={onEdit} onDelete={onDelete} />
           ))}
         </div>
       </div>
@@ -246,8 +244,6 @@ export default function UsersAndProcessesPage() {
   // Process Form State
   const [processName, setProcessName] = useState('');
   const [processParentId, setProcessParentId] = useState<string | null>(null);
-  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
-  const [userSearchTerm, setUserSearchTerm] = useState('');
 
   useEffect(() => {
     setPageTitle('Usuarios y Procesos');
@@ -311,7 +307,7 @@ export default function UsersAndProcessesPage() {
     setEditRole(user.role);
     setEditPassword('');
     setEditAvatarUrl(user.avatar);
-    setEditProcessId(user.process?.id || null);
+    setEditProcessId(user.process?.id ?? null);
     setShowAddEditModal(true);
   };
   
@@ -591,8 +587,6 @@ export default function UsersAndProcessesPage() {
                         process={process} 
                         onEdit={handleOpenProcessModal} 
                         onDelete={setProcessToDelete} 
-                        onAssignUsers={handleOpenProcessModal}
-                        isSubmitting={isProcessing}
                     />
                 ))}
             </div>
@@ -621,12 +615,11 @@ export default function UsersAndProcessesPage() {
       </div>
       
       <Dialog open={showProcessModal} onOpenChange={setShowProcessModal}>
-        <DialogContent>
-            <form onSubmit={handleProcessFormSubmit}>
+          <div className="p-6">
                 <DialogHeader>
                     <DialogTitle>{editingProcess ? 'Editar Proceso' : 'Crear Nuevo Proceso'}</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-4 py-4">
+                <form onSubmit={handleProcessFormSubmit} className="space-y-4 pt-4">
                     <div>
                         <Label htmlFor="process-name">Nombre del Proceso</Label>
                         <Input id="process-name" value={processName} onChange={(e) => setProcessName(e.target.value)} required disabled={isProcessing}/>
@@ -645,16 +638,15 @@ export default function UsersAndProcessesPage() {
                         </SelectContent>
                         </Select>
                     </div>
-                </div>
-                <DialogFooter>
-                    <Button type="button" variant="ghost" onClick={() => setShowProcessModal(false)}>Cancelar</Button>
-                    <Button type="submit" disabled={isProcessing || !processName.trim()}>
-                        {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                        {editingProcess ? 'Guardar Cambios' : 'Crear Proceso'}
-                    </Button>
-                </DialogFooter>
-            </form>
-        </DialogContent>
+                    <DialogFooter>
+                        <Button type="button" variant="ghost" onClick={() => setShowProcessModal(false)}>Cancelar</Button>
+                        <Button type="submit" disabled={isProcessing || !processName.trim()}>
+                            {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                            {editingProcess ? 'Guardar Cambios' : 'Crear Proceso'}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </div>
       </Dialog>
 
     
