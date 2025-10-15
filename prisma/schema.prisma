@@ -154,8 +154,8 @@ model User {
   resourceVersions ResourceVersion[] @relation("ResourceVersionAuthor")
   hostedGameSessions GameSession[] @relation("HostedSessions") // 1. Nueva relación para GameSession (Host)
   gamePlayers        Player[]      @relation("GamePlayers")      // 3. Nueva relación para Player (User)
-  processes   Process[] @relation("UserProcesses") 
-  
+  processId String?
+  process   Process?  @relation(fields: [processId], references: [id])
   @@map("users")
 }
 
@@ -813,5 +813,5 @@ model Process {
   parentId  String?
   parent    Process?  @relation("ProcessHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   children  Process[] @relation("ProcessHierarchy")
-  users     User[]    @relation("UserProcesses")
+  users User[]
 }
