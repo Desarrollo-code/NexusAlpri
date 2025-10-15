@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, Edit3, Trash2, UserCog, Loader2, AlertTriangle, MoreHorizontal, Eye, EyeOff, UserCheck, UserX, Camera, Filter, X, Command as CommandIcon, Check, Network, GripVertical } from 'lucide-react';
+import { PlusCircle, Search, Edit3, Trash2, UserCog, Loader2, AlertTriangle, MoreHorizontal, Eye, EyeOff, UserCheck, UserX, Camera, Filter, X, Command as CommandIcon, Check, Network, GripVertical, Users as UsersIcon } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
@@ -64,6 +64,8 @@ import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-p
 import { Identicon } from '@/components/ui/identicon';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserProfileCard } from '@/components/profile/user-profile-card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '../ui/scroll-area';
 
 // --- TYPES ---
 interface ProcessWithLevel {
@@ -268,6 +270,8 @@ export default function UsersAndProcessesPage() {
   // Process Form State
   const [processName, setProcessName] = useState('');
   const [processParentId, setProcessParentId] = useState<string | null>(null);
+  const [usersToAssign, setUsersToAssign] = useState<Set<string>>(new Set());
+  const [userSearchTerm, setUserSearchTerm] = useState('');
 
   useEffect(() => {
     setPageTitle('Usuarios y Procesos');
@@ -454,10 +458,12 @@ export default function UsersAndProcessesPage() {
           setEditingProcess(process);
           setProcessName(process.name);
           setProcessParentId(process.parentId);
+          setUsersToAssign(new Set(process.users.map(u => u.id)))
       } else {
           setEditingProcess(null);
           setProcessName('');
           setProcessParentId(null);
+          setUsersToAssign(new Set())
       }
       setShowProcessModal(true);
   };
@@ -473,7 +479,11 @@ export default function UsersAndProcessesPage() {
         const response = await fetch(endpoint, {
             method,
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: processName, parentId: processParentId === 'null' ? null : processParentId }),
+            body: JSON.stringify({ 
+              name: processName, 
+              parentId: processParentId === 'null' ? null : processParentId,
+              userIds: Array.from(usersToAssign)
+            }),
         });
         if (!response.ok) throw new Error((await response.json()).message || 'Error al guardar el proceso.');
         
@@ -505,7 +515,6 @@ export default function UsersAndProcessesPage() {
 
   const handleOnDragEnd = (result: DropResult) => {
     setActiveDraggableId(null);
-    console.log(result);
   };
 
   const UserListContent = () => (
@@ -634,8 +643,8 @@ export default function UsersAndProcessesPage() {
                 <div {...provided.droppableProps} ref={provided.innerRef}>
                   {processes.map((process, index) => (
                     <Draggable key={process.id} draggableId={process.id} index={index}>
-                      {(provided) => (
-                        <ProcessItem process={process} onEdit={handleOpenProcessModal} onDelete={setProcessToDelete} provided={provided} isDragging={activeDraggableId === process.id}/>
+                      {(provided, snapshot) => (
+                        <ProcessItem process={process} onEdit={handleOpenProcessModal} onDelete={setProcessToDelete} provided={provided} isDragging={snapshot.isDragging}/>
                       )}
                     </Draggable>
                   ))}
@@ -701,40 +710,61 @@ export default function UsersAndProcessesPage() {
           </DialogContent>
       </Dialog>
       
-       <Dialog open={showProcessModal} onOpenChange={setShowProcessModal}>
-        <DialogContent>
-            <DialogHeader>
-                <DialogTitle>{editingProcess ? 'Editar Proceso' : 'Crear Nuevo Proceso'}</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleProcessFormSubmit} className="space-y-4">
-                <div>
-                    <Label htmlFor="process-name">Nombre del Proceso</Label>
-                    <Input id="process-name" value={processName} onChange={(e) => setProcessName(e.target.value)} required disabled={isProcessing}/>
-                </div>
-                 <div>
-                    <Label htmlFor="parent-process">Proceso Padre (Opcional)</Label>
-                    <Select value={processParentId || 'null'} onValueChange={(value) => setProcessParentId(value)} disabled={isProcessing}>
-                       <SelectTrigger id="parent-process"><SelectValue placeholder="Seleccionar proceso padre..." /></SelectTrigger>
-                       <SelectContent>
-                          <SelectItem value="null">Ninguno (Nivel Superior)</SelectItem>
-                          {flatProcesses.filter(p => p.id !== editingProcess?.id).map(p => (
-                            <SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem`}}>
-                                {p.name}
-                            </SelectItem>
-                          ))}
-                       </SelectContent>
-                    </Select>
-                </div>
-                <DialogFooter>
-                    <Button type="button" variant="ghost" onClick={() => setShowProcessModal(false)}>Cancelar</Button>
-                    <Button type="submit" disabled={isProcessing || !processName.trim()}>
-                        {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                        {editingProcess ? 'Guardar Cambios' : 'Crear Proceso'}
-                    </Button>
-                </DialogFooter>
-            </form>
-        </DialogContent>
-    </Dialog>
+        <Dialog open={showProcessModal} onOpenChange={setShowProcessModal}>
+            <DialogContent className="max-w-lg">
+                <DialogHeader>
+                    <DialogTitle>{editingProcess ? 'Editar Proceso' : 'Crear Nuevo Proceso'}</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleProcessFormSubmit} className="space-y-4">
+                    <div>
+                        <Label htmlFor="process-name">Nombre del Proceso</Label>
+                        <Input id="process-name" value={processName} onChange={(e) => setProcessName(e.target.value)} required disabled={isProcessing}/>
+                    </div>
+                    <div>
+                        <Label htmlFor="parent-process">Proceso Padre (Opcional)</Label>
+                        <Select value={processParentId || 'null'} onValueChange={(value) => setProcessParentId(value)} disabled={isProcessing}>
+                        <SelectTrigger id="parent-process"><SelectValue placeholder="Seleccionar proceso padre..." /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="null">Ninguno (Nivel Superior)</SelectItem>
+                            {flatProcesses.filter(p => p.id !== editingProcess?.id).map(p => (
+                                <SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem`}}>
+                                    {p.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                        </Select>
+                    </div>
+                     <div className="space-y-2">
+                        <Label>Asignar Usuarios</Label>
+                        <Input placeholder="Buscar usuarios..." value={userSearchTerm} onChange={e => setUserSearchTerm(e.target.value)} />
+                        <ScrollArea className="h-48 border rounded-md p-2">
+                            <div className="space-y-1">
+                            {(userSearchTerm ? usersList.filter(u => u.name.toLowerCase().includes(userSearchTerm.toLowerCase())) : usersList).map(u => (
+                                <div key={u.id} className="flex items-center space-x-2">
+                                    <Checkbox id={`assign-user-${u.id}`} checked={usersToAssign.has(u.id)} onCheckedChange={checked => {
+                                        setUsersToAssign(prev => {
+                                            const newSet = new Set(prev);
+                                            if(checked) newSet.add(u.id); else newSet.delete(u.id);
+                                            return newSet;
+                                        })
+                                    }}/>
+                                    <Label htmlFor={`assign-user-${u.id}`} className="font-normal">{u.name}</Label>
+                                </div>
+                            ))}
+                            </div>
+                        </ScrollArea>
+                        <p className="text-xs text-muted-foreground">{usersToAssign.size} usuario(s) seleccionado(s).</p>
+                    </div>
+                    <DialogFooter>
+                        <Button type="button" variant="ghost" onClick={() => setShowProcessModal(false)}>Cancelar</Button>
+                        <Button type="submit" disabled={isProcessing || !processName.trim()}>
+                            {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                            {editingProcess ? 'Guardar Cambios' : 'Crear Proceso'}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
     
     <AlertDialog open={!!processToDelete} onOpenChange={(open) => !open && setProcessToDelete(null)}>
         <AlertDialogContent>

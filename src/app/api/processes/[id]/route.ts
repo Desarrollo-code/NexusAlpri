@@ -14,27 +14,55 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
   const { id } = params;
   try {
-    const { name, parentId, userIdsToAssign } = await req.json();
+    const { name, parentId, userIds } = await req.json(); // Se añade userIds
     if (!name) {
       return NextResponse.json({ message: 'El nombre es requerido' }, { status: 400 });
     }
 
-    const updatedProcess = await prisma.process.update({
-      where: { id },
-      data: {
-        name,
-        parentId: parentId || null,
-      },
+    await prisma.$transaction(async (tx) => {
+        // 1. Actualizar el proceso
+        const updatedProcess = await tx.process.update({
+            where: { id },
+            data: {
+                name,
+                parentId: parentId || null,
+            },
+        });
+
+        // 2. Si se envían userIds, asignarlos a este proceso.
+        // Primero, desasignamos a los usuarios que estaban en este proceso pero ya no lo están en la nueva lista.
+        // (Opcional, pero buena práctica si se quiere que la asignación sea exclusiva)
+        // Por simplicidad, aquí solo asignaremos los nuevos.
+        if (userIds && Array.isArray(userIds)) {
+            await tx.user.updateMany({
+                where: { id: { in: userIds } },
+                data: {
+                    processId: id,
+                },
+            });
+             // Opcional: Desasignar a los que ya no están
+            const currentUsersInProcess = await tx.user.findMany({
+                where: { processId: id, NOT: { id: { in: userIds }}},
+                select: { id: true }
+            });
+            const usersToRemove = currentUsersInProcess.map(u => u.id);
+            if (usersToRemove.length > 0) {
+                 await tx.user.updateMany({
+                    where: { id: { in: usersToRemove } },
+                    data: { processId: null }
+                });
+            }
+        }
+        return updatedProcess;
     });
 
-    if (userIdsToAssign && userIdsToAssign.length > 0) {
-      await prisma.user.updateMany({
-        where: { id: { in: userIdsToAssign } },
-        data: { processId: id },
-      });
-    }
 
-    return NextResponse.json(updatedProcess);
+    const finalProcess = await prisma.process.findUnique({
+        where: { id },
+        include: { users: true }
+    });
+
+    return NextResponse.json(finalProcess);
   } catch (error) {
     console.error(`[PROCESS_PUT_ERROR: ${id}]`, error);
     return NextResponse.json({ message: 'Error al actualizar el proceso' }, { status: 500 });
