@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
         const search = searchParams.get('search');
         const role = searchParams.get('role') as UserRole | null;
         const status = searchParams.get('status'); // 'active' or 'inactive'
-        const processId = searchParams.get('processId'); // Nuevo filtro
+        const processId = searchParams.get('processId'); 
 
         const skip = (page - 1) * pageSize;
 
@@ -46,12 +46,12 @@ export async function GET(req: NextRequest) {
         }
         
         if (processId) {
-            filters.push({ processes: { some: { id: processId === 'unassigned' ? undefined : processId } } });
-            if(processId === 'unassigned') {
-                 filters.push({ processes: { none: {} } });
+            if (processId === 'unassigned') {
+                filters.push({ processId: null });
+            } else {
+                filters.push({ processId: processId });
             }
         }
-
 
         if (filters.length > 0) {
             whereClause.AND = filters;
@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
                     isTwoFactorEnabled: true,
                     registeredDate: true,
                     isActive: true,
-                    processes: true, // Incluir procesos
+                    process: true,
                 },
                 orderBy: {
                     registeredDate: 'desc'
@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
     }
     
     try {
-        const { name, email, password, role, processIds } = await req.json();
+        const { name, email, password, role, processId } = await req.json();
 
         if (!name || !email || !password || !role) {
             return NextResponse.json({ message: 'Nombre, email, contraseña y rol son requeridos' }, { status: 400 });
@@ -138,9 +138,7 @@ export async function POST(req: NextRequest) {
                 role,
                 registeredDate: new Date(),
                 isActive: true,
-                processes: { // Asignar procesos en la creación
-                    connect: (processIds || []).map((id: string) => ({ id }))
-                }
+                processId: processId || null
             },
             select: {
                 id: true,
@@ -151,7 +149,7 @@ export async function POST(req: NextRequest) {
                 isTwoFactorEnabled: true,
                 registeredDate: true,
                 isActive: true,
-                processes: true,
+                process: true,
             }
         });
 

@@ -60,12 +60,11 @@ import { Progress } from '@/components/ui/progress';
 import { VerifiedBadge } from '@/components/ui/verified-badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { Identicon } from '@/components/ui/identicon';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserProfileCard } from '@/components/profile/user-profile-card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Checkbox } from '@/components/ui/checkbox';
 
 // --- TYPES ---
 interface ProcessWithLevel {
@@ -118,24 +117,6 @@ const ProcessItem = ({ process, onEdit, onDelete, provided, isDragging }: { proc
                     </div>
                 </div>
             </CardHeader>
-             {process.children.length > 0 && (
-                <CardContent className="pl-10 pb-2 space-y-2">
-                    <Droppable droppableId={process.id} type="PROCESS">
-                       {(droppableProvided) => (
-                           <div ref={droppableProvided.innerRef} {...droppableProvided.droppableProps}>
-                               {process.children.map((child, index) => (
-                                    <Draggable key={child.id} draggableId={child.id} index={index}>
-                                      {(draggableProvided) => (
-                                        <ProcessItem process={child} onEdit={onEdit} onDelete={onDelete} provided={draggableProvided} isDragging={false} />
-                                      )}
-                                    </Draggable>
-                               ))}
-                               {droppableProvided.placeholder}
-                           </div>
-                       )}
-                    </Droppable>
-                </CardContent>
-            )}
         </Card>
     </div>
   );
@@ -233,8 +214,7 @@ export default function UsersAndProcessesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeDraggableId, setActiveDraggableId] = useState<string | null>(null);
-
+  
   // Search & Filter State
   const searchTerm = searchParams.get('search') || '';
   const roleFilter = searchParams.get('role') || 'all';
@@ -250,14 +230,13 @@ export default function UsersAndProcessesPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [selectedNewRole, setSelectedNewRole] = useState<UserRole>('STUDENT');
   const [editAvatarUrl, setEditAvatarUrl] = useState<string | null | undefined>(null);
-  const [editProcessId, setEditProcessId] = useState<string | null>(null); // Single process ID
+  const [editProcessId, setEditProcessId] = useState<string | null>(null); 
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   
   // Process Form State
   const [processName, setProcessName] = useState('');
   const [processParentId, setProcessParentId] = useState<string | null>(null);
-  const [usersToAssign, setUsersToAssign] = useState<Set<string>>(new Set());
   const [userSearchTerm, setUserSearchTerm] = useState('');
 
   useEffect(() => {
@@ -337,7 +316,7 @@ export default function UsersAndProcessesPage() {
       name: editName,
       email: editEmail,
       role: editRole,
-      processId: editProcessId
+      processId: editProcessId,
     };
     if (editPassword) {
       payload.password = editPassword;
@@ -445,12 +424,10 @@ export default function UsersAndProcessesPage() {
           setEditingProcess(process);
           setProcessName(process.name);
           setProcessParentId(process.parentId);
-          setUsersToAssign(new Set(process.users.map(u => u.id)))
       } else {
           setEditingProcess(null);
           setProcessName('');
           setProcessParentId(null);
-          setUsersToAssign(new Set())
       }
       setShowProcessModal(true);
   };
@@ -460,10 +437,7 @@ export default function UsersAndProcessesPage() {
     setIsProcessing(true);
 
     try {
-        const processPayload = {
-            name: processName,
-            parentId: processParentId === 'null' ? null : processParentId,
-        };
+        const processPayload = { name: processName, parentId: processParentId === 'null' ? null : processParentId };
         const endpoint = editingProcess ? `/api/processes/${editingProcess.id}` : '/api/processes';
         const method = editingProcess ? 'PUT' : 'POST';
         
@@ -475,18 +449,7 @@ export default function UsersAndProcessesPage() {
         if (!processRes.ok) throw new Error((await processRes.json()).message || 'Error al guardar el proceso.');
         const savedProcess = await processRes.json();
         
-        if(usersToAssign.size > 0) {
-            const assignPromises = Array.from(usersToAssign).map(userId => 
-                fetch(`/api/users/${userId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ processId: savedProcess.id }),
-                })
-            );
-            await Promise.all(assignPromises);
-        }
-
-        toast({ title: '¡Éxito!', description: `Proceso ${editingProcess ? 'actualizado' : 'creado'} y usuarios asignados.`});
+        toast({ title: '¡Éxito!', description: `Proceso ${editingProcess ? 'actualizado' : 'creado'}.`});
         setShowProcessModal(false);
         await fetchAllData();
 
@@ -513,10 +476,6 @@ export default function UsersAndProcessesPage() {
         setIsProcessing(false);
     }
   }
-
-  const handleOnDragEnd = (result: DropResult) => {
-    setActiveDraggableId(null);
-  };
 
   const UserListContent = () => (
     <Card>
@@ -630,22 +589,11 @@ export default function UsersAndProcessesPage() {
       </CardHeader>
       <CardContent>
         {isLoading ? (<Skeleton className="h-64 w-full" />) : error ? (<p className="text-destructive text-center">{error}</p>) : (
-          <DragDropContext onDragEnd={handleOnDragEnd}>
-            <Droppable droppableId="processes-droppable" type="PROCESS">
-              {(provided) => (
-                <div {...provided.droppableProps} ref={provided.innerRef}>
-                  {processes.map((process, index) => (
-                    <Draggable key={process.id} draggableId={process.id} index={index}>
-                      {(provided, snapshot) => (
-                        <ProcessItem process={process} onEdit={handleOpenProcessModal} onDelete={setProcessToDelete} provided={provided} isDragging={snapshot.isDragging}/>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          </DragDropContext>
+          <ScrollArea className="h-96 pr-3">
+              {processes.map((process) => (
+                  <ProcessItem key={process.id} process={process} onEdit={handleOpenProcessModal} onDelete={setProcessToDelete} provided={{}} isDragging={false} />
+              ))}
+          </ScrollArea>
         )}
       </CardContent>
     </Card>
@@ -660,24 +608,6 @@ export default function UsersAndProcessesPage() {
               <p className="text-muted-foreground">Gestiona los usuarios y la estructura de procesos de la organización.</p>
           </div>
           
-          {/* Mobile View */}
-          <div className="lg:hidden">
-             <Tabs defaultValue="users" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="users">Usuarios</TabsTrigger>
-                    <TabsTrigger value="processes">Procesos</TabsTrigger>
-                </TabsList>
-                <TabsContent value="users" className="mt-4 space-y-2">
-                  {isLoading ? [...Array(3)].map((_,i) => <Skeleton key={i} className="h-32 w-full mb-2" />) :
-                   usersList.map(u => (
-                     <MobileUserCard key={u.id} user={u} onEdit={handleOpenEditModal} onChangeRole={() => { setUserToChangeRole(u); setSelectedNewRole(u.role); setShowChangeRoleDialog(true); }} onToggleStatus={() => { setUserToToggleStatus(u); setShowToggleStatusDialog(true);}} />
-                   ))}
-                </TabsContent>
-                <TabsContent value="processes" className="mt-4"><ProcessManagement/></TabsContent>
-             </Tabs>
-          </div>
-
-          {/* Desktop View */}
           <div className="hidden lg:grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                <div className="lg:col-span-2"><UserListContent/></div>
                <div className="lg:col-span-1"><ProcessManagement/></div>
@@ -727,27 +657,6 @@ export default function UsersAndProcessesPage() {
                                 ))}
                             </SelectContent>
                             </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Asignar Usuarios</Label>
-                            <Input placeholder="Buscar usuarios..." value={userSearchTerm} onChange={e => setUserSearchTerm(e.target.value)} />
-                            <ScrollArea className="h-48 border rounded-md p-2">
-                                <div className="space-y-1">
-                                {usersList.filter(u => u.name.toLowerCase().includes(userSearchTerm.toLowerCase())).map(u => (
-                                    <div key={u.id} className="flex items-center space-x-2">
-                                        <Checkbox id={`assign-user-${u.id}`} checked={usersToAssign.has(u.id)} onCheckedChange={checked => {
-                                            setUsersToAssign(prev => {
-                                                const newSet = new Set(prev);
-                                                if(checked) newSet.add(u.id); else newSet.delete(u.id);
-                                                return newSet;
-                                            })
-                                        }}/>
-                                        <Label htmlFor={`assign-user-${u.id}`} className="font-normal">{u.name}</Label>
-                                    </div>
-                                ))}
-                                </div>
-                            </ScrollArea>
-                            <p className="text-xs text-muted-foreground">{usersToAssign.size} usuario(s) seleccionado(s) para asignar.</p>
                         </div>
                     </div>
                     <DialogFooter>
