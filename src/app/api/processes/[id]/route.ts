@@ -14,7 +14,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
   const { id } = params;
   try {
-    const { name, parentId } = await req.json();
+    const { name, parentId, userIdsToAssign } = await req.json();
     if (!name) {
       return NextResponse.json({ message: 'El nombre es requerido' }, { status: 400 });
     }
@@ -26,6 +26,13 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         parentId: parentId || null,
       },
     });
+
+    if (userIdsToAssign && userIdsToAssign.length > 0) {
+      await prisma.user.updateMany({
+        where: { id: { in: userIdsToAssign } },
+        data: { processId: id },
+      });
+    }
 
     return NextResponse.json(updatedProcess);
   } catch (error) {

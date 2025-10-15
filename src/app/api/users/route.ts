@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
         const search = searchParams.get('search');
         const role = searchParams.get('role') as UserRole | null;
         const status = searchParams.get('status'); // 'active' or 'inactive'
+        const processId = searchParams.get('processId'); // Nuevo filtro
 
         const skip = (page - 1) * pageSize;
 
@@ -43,6 +44,11 @@ export async function GET(req: NextRequest) {
         if (status) {
             filters.push({ isActive: status === 'active' });
         }
+        
+        if (processId) {
+            filters.push({ processId: processId === 'unassigned' ? null : processId });
+        }
+
 
         if (filters.length > 0) {
             whereClause.AND = filters;

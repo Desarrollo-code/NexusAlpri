@@ -14,11 +14,20 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
+    const { searchParams } = new URL(req.url);
+    const unassignedOnly = searchParams.get('unassignedOnly') === 'true';
+
     try {
+        let whereClause: any = {
+            isActive: true,
+        };
+
+        if (unassignedOnly) {
+            whereClause.processId = null;
+        }
+
         const users = await prisma.user.findMany({
-            where: {
-                isActive: true, // Only return active users for selection
-            },
+            where: whereClause,
             select: {
                 id: true,
                 name: true,
