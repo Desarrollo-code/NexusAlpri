@@ -73,39 +73,45 @@ export async function GET(req: NextRequest) {
 
 // POST (create) a new process
 export async function POST(req: NextRequest) {
-  const session = await getCurrentUser();
-  if (!session || session.role !== 'ADMINISTRATOR') {
-    return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
-  }
-
-  try {
-    const { name, parentId, userIds } = await req.json();
-    if (!name) {
-      return NextResponse.json({ message: 'El nombre es requerido' }, { status: 400 });
+    const session = await getCurrentUser();
+    if (!session || session.role !== 'ADMINISTRATOR') {
+        return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
-    const dataToCreate: any = {
-      name,
-      parentId: parentId || null,
-    };
-    
-    // Si se proporcionan userIds, se conectan directamente en la creación
-    if (userIds && Array.isArray(userIds) && userIds.length > 0) {
-        dataToCreate.users = {
-            connect: userIds.map((id: string) => ({ id }))
-        };
-    }
+    try {
+        const { name, parentId, userIds } = await req.json();
+        if (!name) {
+            return NextResponse.json({ message: 'El nombre es requerido' }, { status: 400 });
+        }
 
-    const newProcess = await prisma.process.create({
-      data: dataToCreate,
-    });
-    
-    return NextResponse.json(newProcess, { status: 201 });
-  } catch (error) {
-    console.error('[PROCESS_POST_ERROR]', error);
-    if ((error as any).code === 'P2002') {
-        return NextResponse.json({ message: 'Ya existe un proceso con este nombre.'}, { status: 409 });
+        const newProcess = await prisma.process.create({
+            data: {
+                name,
+                parentId: parentId || null,
+            },
+        });
+        
+        // Si se proporcionan userIds, se asignan al nuevo proceso.
+        if (userIds && Array.isArray(userIds) && userIds.length > 0) {
+            // Desvinculamos a estos usuarios de cualquier otro proceso al que pertenezcan.
+            await prisma.user.updateMany({
+                where: { id: { in: userIds }, processId: { not: null } },
+                data: { processId: null }
+            });
+
+            await prisma.user.updateMany({
+                where: { id: { in: userIds } },
+                data: { processId: newProcess.id },
+            });
+        }
+        
+        return NextResponse.json(newProcess, { status: 201 });
+
+    } catch (error) {
+        console.error('[PROCESS_POST_ERROR]', error);
+        if ((error as any).code === 'P2002') {
+            return NextResponse.json({ message: 'Ya existe un proceso con este nombre.'}, { status: 409 });
+        }
+        return NextResponse.json({ message: 'Error al crear el proceso' }, { status: 500 });
     }
-    return NextResponse.json({ message: 'Error al crear el proceso' }, { status: 500 });
-  }
 }

@@ -92,20 +92,24 @@ const ProcessItem = ({ process, onEdit, onDelete }: {
 }) => {
   const colors = getProcessColors(process.id);
 
+  const cardContent = (
+      <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 flex-grow min-w-0">
+              <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab flex-shrink-0" />
+              <span className="font-semibold truncate">{process.name}</span>
+          </div>
+          <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); onEdit(process); }}><Edit3 className="h-4 w-4"/></Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={(e) => { e.stopPropagation(); onDelete(process); }}><Trash2 className="h-4 w-4"/></Button>
+          </div>
+      </div>
+  );
+
   if (process.children && process.children.length > 0) {
     return (
       <div className="p-3 border-2 rounded-lg" style={{ borderColor: colors.raw.medium }}>
-        <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2 flex-grow min-w-0">
-                <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
-                <span className="font-semibold truncate">{process.name}</span>
-            </div>
-            <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(process)}><Edit3 className="h-4 w-4"/></Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => onDelete(process)}><Trash2 className="h-4 w-4"/></Button>
-            </div>
-        </div>
-        <div className="pl-4 space-y-2">
+        {cardContent}
+        <div className="pl-4 mt-3 space-y-2">
           {process.children.map(child => (
             <ProcessItem key={child.id} process={child} onEdit={onEdit} onDelete={onDelete} />
           ))}
@@ -114,18 +118,10 @@ const ProcessItem = ({ process, onEdit, onDelete }: {
     );
   }
 
-  // Render a simple card for leaf nodes
   return (
     <Card className="border-l-4" style={{ borderColor: colors.raw.medium }}>
-        <CardHeader className="flex flex-row items-center justify-between p-3">
-            <div className="flex items-center gap-2 flex-grow min-w-0">
-                <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
-                <CardTitle className="text-sm font-medium truncate">{process.name}</CardTitle>
-            </div>
-            <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(process)}><Edit3 className="h-4 w-4"/></Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => onDelete(process)}><Trash2 className="h-4 w-4"/></Button>
-            </div>
+        <CardHeader className="p-3">
+            {cardContent}
         </CardHeader>
     </Card>
   );
@@ -244,6 +240,8 @@ export default function UsersAndProcessesPage() {
   // Process Form State
   const [processName, setProcessName] = useState('');
   const [processParentId, setProcessParentId] = useState<string | null>(null);
+  const [assignedUserIds, setAssignedUserIds] = useState<string[]>([]);
+  const [processUserSearch, setProcessUserSearch] = useState('');
 
   useEffect(() => {
     setPageTitle('Usuarios y Procesos');
@@ -307,7 +305,7 @@ export default function UsersAndProcessesPage() {
     setEditRole(user.role);
     setEditPassword('');
     setEditAvatarUrl(user.avatar);
-    setEditProcessId(user.process?.id ?? null);
+    setEditProcessId(user.processId);
     setShowAddEditModal(true);
   };
   
@@ -430,10 +428,12 @@ export default function UsersAndProcessesPage() {
           setEditingProcess(process);
           setProcessName(process.name);
           setProcessParentId(process.parentId);
+          setAssignedUserIds(process.users.map(u => u.id));
       } else {
           setEditingProcess(null);
           setProcessName('');
           setProcessParentId(null);
+          setAssignedUserIds([]);
       }
       setShowProcessModal(true);
   };
@@ -445,7 +445,8 @@ export default function UsersAndProcessesPage() {
     try {
         const processPayload = { 
             name: processName, 
-            parentId: processParentId === 'null' ? null : processParentId 
+            parentId: processParentId === 'null' ? null : processParentId,
+            userIds: assignedUserIds, // <-- Enviar la lista de usuarios
         };
         
         const endpoint = editingProcess ? `/api/processes/${editingProcess.id}` : '/api/processes';
@@ -568,6 +569,10 @@ export default function UsersAndProcessesPage() {
       )}
    </Card>
   );
+  
+  const filteredProcessUsers = useMemo(() => {
+    return usersList.filter(u => u.name.toLowerCase().includes(processUserSearch.toLowerCase()));
+  }, [usersList, processUserSearch]);
 
   const ProcessManagement = () => (
     <Card>
@@ -589,6 +594,7 @@ export default function UsersAndProcessesPage() {
                         onDelete={setProcessToDelete} 
                     />
                 ))}
+                 {processes.length === 0 && <p className="text-center text-sm text-muted-foreground py-4">No hay procesos creados.</p>}
             </div>
         )}
       </CardContent>
@@ -614,8 +620,8 @@ export default function UsersAndProcessesPage() {
           </div>
       </div>
       
-      <Dialog open={showProcessModal} onOpenChange={setShowProcessModal}>
-          <div className="p-6">
+       <Dialog open={showProcessModal} onOpenChange={setShowProcessModal}>
+            <DialogContent className="max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>{editingProcess ? 'Editar Proceso' : 'Crear Nuevo Proceso'}</DialogTitle>
                 </DialogHeader>
@@ -638,6 +644,31 @@ export default function UsersAndProcessesPage() {
                         </SelectContent>
                         </Select>
                     </div>
+                    <div>
+                        <Label>Asignar Usuarios</Label>
+                        <div className="p-3 border rounded-lg">
+                           <Input placeholder="Buscar usuarios..." value={processUserSearch} onChange={e => setProcessUserSearch(e.target.value)} className="mb-2"/>
+                            <ScrollArea className="h-48">
+                                <div className="space-y-2">
+                                {filteredProcessUsers.map(u => (
+                                    <div key={u.id} className="flex items-center space-x-3 p-1.5 rounded-md hover:bg-muted">
+                                        <Checkbox 
+                                            id={`assign-user-${u.id}`} 
+                                            checked={assignedUserIds.includes(u.id)} 
+                                            onCheckedChange={checked => {
+                                                setAssignedUserIds(prev => checked ? [...prev, u.id] : prev.filter(id => id !== u.id));
+                                            }}
+                                        />
+                                        <Label htmlFor={`assign-user-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer">
+                                            <Avatar className="h-7 w-7"><AvatarImage src={u.avatar || undefined} /><AvatarFallback><Identicon userId={u.id}/></AvatarFallback></Avatar>
+                                            {u.name}
+                                        </Label>
+                                    </div>
+                                ))}
+                                </div>
+                            </ScrollArea>
+                        </div>
+                    </div>
                     <DialogFooter>
                         <Button type="button" variant="ghost" onClick={() => setShowProcessModal(false)}>Cancelar</Button>
                         <Button type="submit" disabled={isProcessing || !processName.trim()}>
@@ -646,9 +677,8 @@ export default function UsersAndProcessesPage() {
                         </Button>
                     </DialogFooter>
                 </form>
-            </div>
-      </Dialog>
-
+            </DialogContent>
+        </Dialog>
     
     <AlertDialog open={!!processToDelete} onOpenChange={(open) => !open && setProcessToDelete(null)}>
         <AlertDialogContent>

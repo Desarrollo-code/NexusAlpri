@@ -14,17 +14,44 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
   const { id } = params;
   try {
-    const { name, parentId } = await req.json(); 
+    const { name, parentId, userIds } = await req.json(); 
     if (!name) {
       return NextResponse.json({ message: 'El nombre es requerido' }, { status: 400 });
     }
-    
-    const updatedProcess = await prisma.process.update({
-        where: { id },
-        data: {
-            name,
-            parentId: parentId || null,
-        },
+
+    // Usamos una transacción para actualizar el proceso y las asignaciones de usuarios.
+    const [updatedProcess] = await prisma.$transaction(async (tx) => {
+      // 1. Actualizar el proceso
+      const processUpdate = tx.process.update({
+          where: { id },
+          data: {
+              name,
+              parentId: parentId || null,
+          },
+      });
+
+      // 2. Si se proporcionan `userIds`, gestionamos las asignaciones.
+      if (userIds && Array.isArray(userIds)) {
+          // Desasignar a todos los usuarios que actualmente están en este proceso pero no en la nueva lista.
+          await tx.user.updateMany({
+              where: {
+                  processId: id,
+                  id: { notIn: userIds },
+              },
+              data: {
+                  processId: null,
+              },
+          });
+
+          // Asignar los usuarios de la nueva lista a este proceso.
+          // `updateMany` es seguro, si el usuario ya está asignado no hace nada.
+          await tx.user.updateMany({
+              where: { id: { in: userIds } },
+              data: { processId: id },
+          });
+      }
+
+      return Promise.all([processUpdate]);
     });
 
     return NextResponse.json(updatedProcess);
@@ -49,7 +76,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
             data: { parentId: null }
         }),
         prisma.user.updateMany({
-            where: { processes: { some: { id } } },
+            where: { processId: id },
             data: { processId: null }
         }),
         prisma.process.delete({
