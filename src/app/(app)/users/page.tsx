@@ -468,34 +468,52 @@ export default function UsersAndProcessesPage() {
       setShowProcessModal(true);
   };
   
-  const handleProcessFormSubmit = async (e: React.FormEvent) => {
+ const handleProcessFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
+
+    const processPayload = {
+      name: processName,
+      parentId: processParentId === 'null' ? null : processParentId,
+    };
     
     const endpoint = editingProcess ? `/api/processes/${editingProcess.id}` : '/api/processes';
     const method = editingProcess ? 'PUT' : 'POST';
-    
+
     try {
-        const response = await fetch(endpoint, {
+        // --- 1. Actualizar/Crear el proceso ---
+        const processRes = await fetch(endpoint, {
             method,
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              name: processName, 
-              parentId: processParentId === 'null' ? null : processParentId,
-              userIds: Array.from(usersToAssign)
-            }),
+            body: JSON.stringify(processPayload),
         });
-        if (!response.ok) throw new Error((await response.json()).message || 'Error al guardar el proceso.');
+        if (!processRes.ok) throw new Error((await processRes.json()).message || 'Error al guardar el proceso.');
+        const savedProcess = await processRes.json();
         
-        toast({ title: 'Éxito!', description: `Proceso ${editingProcess ? 'actualizado' : 'creado'} correctamente.`});
+        // --- 2. Asignar usuarios al proceso guardado ---
+        if (usersToAssign.size > 0) {
+            const assignRes = await fetch('/api/processes/assign-batch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    processId: savedProcess.id,
+                    userIds: Array.from(usersToAssign)
+                }),
+            });
+            if (!assignRes.ok) throw new Error((await assignRes.json()).message || 'Error al asignar usuarios.');
+        }
+
+        toast({ title: '¡Éxito!', description: `Proceso ${editingProcess ? 'actualizado' : 'creado'} y usuarios asignados.`});
         setShowProcessModal(false);
         await fetchAllData();
+
     } catch(err) {
         toast({ title: 'Error', description: (err as Error).message, variant: 'destructive'});
     } finally {
         setIsProcessing(false);
     }
-  }
+}
+
 
   const handleDeleteProcess = async () => {
     if (!processToDelete) return;
@@ -739,7 +757,7 @@ export default function UsersAndProcessesPage() {
                         <Input placeholder="Buscar usuarios..." value={userSearchTerm} onChange={e => setUserSearchTerm(e.target.value)} />
                         <ScrollArea className="h-48 border rounded-md p-2">
                             <div className="space-y-1">
-                            {(userSearchTerm ? usersList.filter(u => u.name.toLowerCase().includes(userSearchTerm.toLowerCase())) : usersList).map(u => (
+                            {(userSearchTerm ? usersList.filter(u => u.processes.length === 0 && u.name.toLowerCase().includes(userSearchTerm.toLowerCase())) : usersList.filter(u => u.processes.length === 0)).map(u => (
                                 <div key={u.id} className="flex items-center space-x-2">
                                     <Checkbox id={`assign-user-${u.id}`} checked={usersToAssign.has(u.id)} onCheckedChange={checked => {
                                         setUsersToAssign(prev => {
@@ -753,7 +771,7 @@ export default function UsersAndProcessesPage() {
                             ))}
                             </div>
                         </ScrollArea>
-                        <p className="text-xs text-muted-foreground">{usersToAssign.size} usuario(s) seleccionado(s).</p>
+                        <p className="text-xs text-muted-foreground">{usersToAssign.size} usuario(s) nuevo(s) seleccionado(s) para asignar.</p>
                     </div>
                     <DialogFooter>
                         <Button type="button" variant="ghost" onClick={() => setShowProcessModal(false)}>Cancelar</Button>
@@ -771,7 +789,7 @@ export default function UsersAndProcessesPage() {
             <AlertDialogHeader>
                 <AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    Se eliminará el proceso "<strong>{processToDelete?.name}</strong>". Si tiene subprocesos, estos quedarán en el nivel superior.
+                    Se eliminará el proceso "<strong>{processToDelete?.name}</strong>". Si tiene subprocesos, estos quedarán en el nivel superior. Los usuarios asignados quedarán sin proceso.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
