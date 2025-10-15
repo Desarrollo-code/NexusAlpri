@@ -373,15 +373,23 @@ function AdminAnalyticsPage() {
                 <CardContent className="h-80 p-0 pr-4">
                      <ChartContainer config={{ newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-2))" }, newEnrollments: { label: "Inscripciones", color: "hsl(var(--chart-3))" }}} className="w-full h-full -ml-4 pl-4">
                         <ResponsiveContainer>
-                           <ComposedChart data={stats?.userRegistrationTrend || []} margin={{ top: 10, right: 10, left: 0, bottom: 40 }}>
-                             <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                             <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} interval={isMobile ? 6 : 'preserveStartEnd'} angle={-45} textAnchor="end" tickFormatter={formatDateTick}/>
-                             <YAxis yAxisId="left" tickLine={false} axisLine={false} tickMargin={10} allowDecimals={false} />
+                           <AreaChart data={stats?.userRegistrationTrend || []} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                             <defs>
+                                <linearGradient id="colorInscripciones" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="var(--color-newEnrollments)" stopOpacity={0.8}/>
+                                  <stop offset="95%" stopColor="var(--color-newEnrollments)" stopOpacity={0.1}/>
+                                </linearGradient>
+                                <linearGradient id="colorCursos" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="var(--color-newCourses)" stopOpacity={0.8}/>
+                                    <stop offset="95%" stopColor="var(--color-newCourses)" stopOpacity={0.1}/>
+                                </linearGradient>
+                             </defs>
                              <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" hideIndicator labelFormatter={formatDateTooltip} />} />
+                             <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} tickFormatter={formatDateTick} hide/>
                              <Legend />
-                             <Bar dataKey="newCourses" name="Nuevos Cursos" fill="var(--color-newCourses)" yAxisId="left" radius={[4, 4, 0, 0]} />
-                             <Line type="monotone" dataKey="newEnrollments" name="Inscripciones" stroke="var(--color-newEnrollments)" strokeWidth={2} dot={false} yAxisId="left" />
-                           </ComposedChart>
+                              <Area type="monotone" dataKey="newCourses" strokeWidth={2} name="Nuevos Cursos" stackId="1" fill="url(#colorCursos)" stroke="var(--color-newCourses)" />
+                              <Area type="monotone" dataKey="newEnrollments" strokeWidth={2} name="Inscripciones" stackId="1" fill="url(#colorInscripciones)" stroke="var(--color-newEnrollments)" />
+                           </AreaChart>
                         </ResponsiveContainer>
                     </ChartContainer>
                 </CardContent>
