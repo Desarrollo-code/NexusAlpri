@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, Edit3, Trash2, UserCog, Loader2, AlertTriangle, MoreHorizontal, Eye, EyeOff, UserCheck, UserX, Camera, Filter, X, Command as CommandIcon, Check, Network, GripVertical, Users as UsersIcon } from 'lucide-react';
+import { PlusCircle, Search, Edit3, Trash2, UserCog, Loader2, AlertTriangle, MoreHorizontal, Eye, EyeOff, UserCheck, UserX, Camera, Filter, X, Command as CommandIcon, Check, Network, GripVertical, Users as UsersIcon, Briefcase } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
@@ -521,33 +521,46 @@ export default function UsersAndProcessesPage() {
                   <TableHeader><TableRow><TableHead>Nombre</TableHead><TableHead>Email</TableHead><TableHead>Rol</TableHead><TableHead>Proceso</TableHead><TableHead>Estado</TableHead><TableHead><span className="sr-only">Acciones</span></TableHead></TableRow></TableHeader>
                   <TableBody>
                       {isLoading ? [...Array(5)].map((_,i) => (<TableRow key={i}><TableCell colSpan={6}><Skeleton className="h-10 w-full" /></TableCell></TableRow>)) :
-                       usersList.map(u => (
-                           <TableRow key={u.id} className={cn(!u.isActive && "opacity-60")}>
-                                <TableCell>
-                                  <Popover><PopoverTrigger asChild><div className="flex items-center gap-3 cursor-pointer group"><Avatar className="h-9 w-9"><AvatarImage src={u.avatar || undefined} alt={u.name} /><AvatarFallback>{getInitials(u.name)}</AvatarFallback></Avatar><div className="font-medium flex items-center gap-1.5 group-hover:underline">{u.name}<VerifiedBadge role={u.role}/></div></div></PopoverTrigger><PopoverContent className="w-80 p-0"><UserProfileCard user={u} /></PopoverContent></Popover>
-                                </TableCell>
-                                <TableCell>{u.email}</TableCell>
-                                <TableCell><Badge variant={getRoleBadgeVariant(u.role)} className="capitalize">{getRoleInSpanish(u.role)}</Badge></TableCell>
-                                <TableCell>
-                                    {u.process ? (
-                                         <Badge variant="outline">{u.process.name}</Badge>
-                                    ) : <span className="text-xs text-muted-foreground">Sin asignar</span>}
-                                </TableCell>
-                                <TableCell><Badge variant={u.isActive ? 'default' : 'destructive'} className={cn(u.isActive && "bg-green-600 hover:bg-green-700")}>{u.isActive ? 'Activo' : 'Inactivo'}</Badge></TableCell>
-                                <TableCell>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild><Button aria-haspopup="true" size="icon" variant="ghost"><MoreHorizontal className="h-4 w-4" /><span className="sr-only">Acciones</span></Button></DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                          <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                                          <DropdownMenuItem onSelect={() => handleOpenEditModal(u)}>Editar</DropdownMenuItem>
-                                          <DropdownMenuItem onSelect={() => { setUserToChangeRole(u); setSelectedNewRole(u.role); setShowChangeRoleDialog(true); }}>Cambiar Rol</DropdownMenuItem>
-                                          <DropdownMenuSeparator />
-                                          <DropdownMenuItem onSelect={() => { setUserToToggleStatus(u); setShowToggleStatusDialog(true);}} className={cn(u.isActive ? "text-destructive focus:text-destructive-foreground focus:bg-destructive" : "text-green-600 focus:bg-green-500 focus:text-white")}>{u.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </TableCell>
-                           </TableRow>
-                       ))}
+                       usersList.map(u => {
+                           const colors = u.process ? getProcessColors(u.process.id) : null;
+                           return (
+                               <TableRow key={u.id} className={cn(!u.isActive && "opacity-60")}>
+                                    <TableCell>
+                                      <Popover><PopoverTrigger asChild><div className="flex items-center gap-3 cursor-pointer group"><Avatar className="h-9 w-9"><AvatarImage src={u.avatar || undefined} alt={u.name} /><AvatarFallback>{getInitials(u.name)}</AvatarFallback></Avatar><div className="font-medium flex items-center gap-1.5 group-hover:underline">{u.name}<VerifiedBadge role={u.role}/></div></div></PopoverTrigger><PopoverContent className="w-80 p-0"><UserProfileCard user={u} /></PopoverContent></Popover>
+                                    </TableCell>
+                                    <TableCell>{u.email}</TableCell>
+                                    <TableCell><Badge variant={getRoleBadgeVariant(u.role)} className="capitalize">{getRoleInSpanish(u.role)}</Badge></TableCell>
+                                    <TableCell>
+                                        {u.process ? (
+                                            <Badge
+                                                variant="outline"
+                                                style={{
+                                                    backgroundColor: colors?.raw.light,
+                                                    color: colors?.raw.dark,
+                                                    borderColor: colors?.raw.medium
+                                                }}
+                                                className="border"
+                                            >
+                                                {u.process.name}
+                                            </Badge>
+                                        ) : <span className="text-xs text-muted-foreground">Sin asignar</span>}
+                                    </TableCell>
+                                    <TableCell><Badge variant={u.isActive ? 'default' : 'destructive'} className={cn(u.isActive && "bg-green-600 hover:bg-green-700")}>{u.isActive ? 'Activo' : 'Inactivo'}</Badge></TableCell>
+                                    <TableCell>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild><Button aria-haspopup="true" size="icon" variant="ghost"><MoreHorizontal className="h-4 w-4" /><span className="sr-only">Acciones</span></Button></DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                              <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                                              <DropdownMenuItem onSelect={() => handleOpenEditModal(u)}>Editar</DropdownMenuItem>
+                                              <DropdownMenuItem onSelect={() => { setUserToChangeRole(u); setSelectedNewRole(u.role); setShowChangeRoleDialog(true); }}>Cambiar Rol</DropdownMenuItem>
+                                              <DropdownMenuSeparator />
+                                              <DropdownMenuItem onSelect={() => { setUserToToggleStatus(u); setShowToggleStatusDialog(true);}} className={cn(u.isActive ? "text-destructive focus:text-destructive-foreground focus:bg-destructive" : "text-green-600 focus:bg-green-500 focus:text-white")}>{u.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                               </TableRow>
+                           )
+                       })}
                   </TableBody>
                </Table>
            </div>
@@ -599,7 +612,11 @@ export default function UsersAndProcessesPage() {
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                <div className="lg:col-span-2"><UserListContent/></div>
-               <div className="lg:col-span-1"><ProcessManagement/></div>
+               <div className="lg:col-span-1">
+                   <div className="space-y-6 lg:sticky lg:top-24">
+                       <ProcessManagement/>
+                   </div>
+               </div>
           </div>
       </div>
       
