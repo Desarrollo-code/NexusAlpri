@@ -59,13 +59,11 @@ export async function GET(req: NextRequest) {
     
     const hierarchicalProcesses = buildHierarchy(allProcesses);
 
-    // Si se solicita el formato plano, lo devolvemos
     if (format === 'flat') {
         const flatList = flattenHierarchy(hierarchicalProcesses);
         return NextResponse.json(flatList);
     }
 
-    // Por defecto, devolvemos la estructura jerárquica
     return NextResponse.json(hierarchicalProcesses);
   } catch (error) {
     console.error('[PROCESSES_GET_ERROR]', error);
@@ -86,27 +84,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'El nombre es requerido' }, { status: 400 });
     }
 
-    const newProcess = await prisma.process.create({
-      data: {
-        name,
-        parentId: parentId || null,
-      },
-    });
-
-    // Si se proporcionan userIds, asignarlos al nuevo proceso.
+    const dataToCreate: any = {
+      name,
+      parentId: parentId || null,
+    };
+    
+    // Si se proporcionan userIds, se conectan directamente en la creación
     if (userIds && Array.isArray(userIds) && userIds.length > 0) {
-      // Primero, desasignar estos usuarios de cualquier otro proceso.
-      await prisma.user.updateMany({
-          where: { id: { in: userIds } },
-          data: { processId: null }
-      });
-      // Luego, asignarlos al nuevo proceso.
-      await prisma.user.updateMany({
-          where: { id: { in: userIds } },
-          data: { processId: newProcess.id }
-      });
+        dataToCreate.users = {
+            connect: userIds.map((id: string) => ({ id }))
+        };
     }
 
+    const newProcess = await prisma.process.create({
+      data: dataToCreate,
+    });
+    
     return NextResponse.json(newProcess, { status: 201 });
   } catch (error) {
     console.error('[PROCESS_POST_ERROR]', error);

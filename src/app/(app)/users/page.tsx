@@ -314,7 +314,7 @@ export default function UsersAndProcessesPage() {
       return;
     }
     fetchAllData();
-  }, [currentUser, router, fetchAllData, searchParams]);
+  }, [currentUser, router, fetchAllData]);
   
   // --- HANDLERS ---
   const handleOpenAddModal = () => {
@@ -472,50 +472,51 @@ export default function UsersAndProcessesPage() {
     e.preventDefault();
     setIsProcessing(true);
 
-    const processPayload = {
-        name: processName,
-        parentId: processParentId === 'null' ? null : processParentId,
-    };
-    
-    let endpoint = '/api/processes';
-    let method = 'POST';
-
-    if (editingProcess) {
-        endpoint = `/api/processes/${editingProcess.id}`;
-        method = 'PUT';
-    }
-
     try {
-        const processRes = await fetch(endpoint, {
-            method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(processPayload),
-        });
+        let processId;
 
-        if (!processRes.ok) {
-            throw new Error((await processRes.json()).message || 'Error al guardar el proceso.');
+        // Si estamos editando, solo actualizamos el proceso
+        if (editingProcess) {
+            processId = editingProcess.id;
+            const processPayload = { name: processName, parentId: processParentId === 'null' ? null : processParentId };
+            const processRes = await fetch(`/api/processes/${processId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(processPayload),
+            });
+            if (!processRes.ok) throw new Error((await processRes.json()).message || 'Error al actualizar el proceso.');
+        } else {
+            // Si estamos creando, enviamos todo en una sola petición
+            const processPayload = {
+                name: processName,
+                parentId: processParentId === 'null' ? null : processParentId,
+            };
+            const processRes = await fetch('/api/processes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(processPayload),
+            });
+            if (!processRes.ok) throw new Error((await processRes.json()).message || 'Error al crear el proceso.');
+            const newProcess = await processRes.json();
+            processId = newProcess.id;
         }
-        
-        const savedProcess = await processRes.json();
-        const processId = savedProcess.id;
 
-        if (usersToAssign.size > 0) {
-            const assignRes = await fetch('/api/processes/assign', {
+        // Ya sea creando o editando, ahora asignamos los usuarios
+        if (processId && usersToAssign.size > 0) {
+             const assignRes = await fetch('/api/processes/assign', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ processId, userIds: Array.from(usersToAssign) }),
             });
-            if (!assignRes.ok) {
-                throw new Error((await assignRes.json()).message || 'Error al asignar usuarios al proceso');
-            }
+            if (!assignRes.ok) throw new Error((await assignRes.json()).message || 'Error al asignar usuarios.');
         }
 
         toast({ title: '¡Éxito!', description: `Proceso ${editingProcess ? 'actualizado' : 'creado'} y usuarios asignados.`});
         setShowProcessModal(false);
         await fetchAllData();
 
-    } catch (err) {
-        toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+    } catch (err: any) {
+        toast({ title: 'Error', description: err.message, variant: 'destructive' });
     } finally {
         setIsProcessing(false);
     }
@@ -742,11 +743,11 @@ export default function UsersAndProcessesPage() {
                         <DialogTitle>{editingProcess ? 'Editar Proceso' : 'Crear Nuevo Proceso'}</DialogTitle>
                     </DialogHeader>
                     <div className="py-4 space-y-4">
-                        <div>
+                        <div className="space-y-1">
                             <Label htmlFor="process-name">Nombre del Proceso</Label>
                             <Input id="process-name" value={processName} onChange={(e) => setProcessName(e.target.value)} required disabled={isProcessing}/>
                         </div>
-                        <div>
+                        <div className="space-y-1">
                             <Label htmlFor="parent-process">Proceso Padre (Opcional)</Label>
                             <Select value={processParentId || 'null'} onValueChange={(value) => setProcessParentId(value)} disabled={isProcessing}>
                             <SelectTrigger id="parent-process"><SelectValue placeholder="Seleccionar proceso padre..." /></SelectTrigger>

@@ -14,14 +14,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
   const { id } = params;
   try {
-    // Se elimina `userIds` del body, ya que la asignación ahora es un endpoint separado.
     const { name, parentId } = await req.json(); 
     if (!name) {
       return NextResponse.json({ message: 'El nombre es requerido' }, { status: 400 });
     }
-
-    // La lógica de asignación de usuarios se ha movido a /api/processes/assign-batch
-    // por lo que esta transacción ya no es necesaria aquí y se simplifica.
+    
     const updatedProcess = await prisma.process.update({
         where: { id },
         data: {
@@ -46,14 +43,13 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
   const { id } = params;
   try {
-    // Before deleting, update children to have null parentId
     await prisma.$transaction([
         prisma.process.updateMany({
             where: { parentId: id },
             data: { parentId: null }
         }),
         prisma.user.updateMany({
-            where: { processId: id },
+            where: { processes: { some: { id } } },
             data: { processId: null }
         }),
         prisma.process.delete({

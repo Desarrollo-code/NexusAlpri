@@ -55,7 +55,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         if ('avatar' in body) dataToUpdate.avatar = body.avatar;
         if ('theme' in body) dataToUpdate.theme = body.theme;
 
-        // Admin-only or self-edit password
         if ('password' in body && body.password) {
             dataToUpdate.password = await bcrypt.hash(body.password, 10);
         }

@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     try {
         const { searchParams } = new URL(req.url);
         const page = parseInt(searchParams.get('page') || '1', 10);
-        const pageSize = parseInt(searchParams.get('pageSize') || '20', 10);
+        const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
         const search = searchParams.get('search');
         const role = searchParams.get('role') as UserRole | null;
         const status = searchParams.get('status'); // 'active' or 'inactive'
@@ -46,7 +46,10 @@ export async function GET(req: NextRequest) {
         }
         
         if (processId) {
-            filters.push({ processId: processId === 'unassigned' ? null : processId });
+            filters.push({ processes: { some: { id: processId === 'unassigned' ? undefined : processId } } });
+            if(processId === 'unassigned') {
+                 filters.push({ processes: { none: {} } });
+            }
         }
 
 
