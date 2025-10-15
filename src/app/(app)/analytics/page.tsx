@@ -352,14 +352,14 @@ function AdminAnalyticsPage() {
              </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-8 gap-4 mt-4" id="analytics-metric-cards">
-            <MetricCard title="Total Usuarios" value={stats?.totalUsers || 0} icon={UsersRound} />
-            <MetricCard title="Total Cursos" value={stats?.totalCourses || 0} icon={Library} />
-            <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={GraduationCap} />
-            <MetricCard title="Cursos Publicados" value={stats?.totalPublishedCourses || 0} icon={BookOpenCheck} />
-            <MetricCard title="Recursos" value={stats?.totalResources || 0} icon={Folder} />
-            <MetricCard title="Anuncios" value={stats?.totalAnnouncements || 0} icon={Megaphone} />
-            <MetricCard title="Formularios" value={stats?.totalForms || 0} icon={FileText} />
-            <MetricCard title="Finalización" value={stats?.averageCompletionRate || 0} icon={BadgePercent} suffix="%" description="Promedio" />
+            <MetricCard title="Total Usuarios" value={stats?.totalUsers || 0} icon={UsersRound} gradient="bg-gradient-blue" />
+            <MetricCard title="Total Cursos" value={stats?.totalCourses || 0} icon={Library} gradient="bg-gradient-green"/>
+            <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={GraduationCap} gradient="bg-gradient-purple" />
+            <MetricCard title="Cursos Publicados" value={stats?.totalPublishedCourses || 0} icon={BookOpenCheck} gradient="bg-gradient-orange" />
+            <MetricCard title="Recursos" value={stats?.totalResources || 0} icon={Folder} gradient="bg-gradient-pink" />
+            <MetricCard title="Anuncios" value={stats?.totalAnnouncements || 0} icon={Megaphone} gradient="bg-gradient-blue" />
+            <MetricCard title="Formularios" value={stats?.totalForms || 0} icon={FileText} gradient="bg-gradient-green" />
+            <MetricCard title="Finalización" value={stats?.averageCompletionRate || 0} icon={BadgePercent} suffix="%" description="Promedio" gradient="bg-gradient-purple" />
         </div>
         
         <Separator />
