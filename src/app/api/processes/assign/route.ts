@@ -21,7 +21,6 @@ export async function POST(req: NextRequest) {
     // Usamos una transacción para asegurar la atomicidad de la operación
     const result = await prisma.$transaction(async (tx) => {
       // Primero, desasignamos a estos usuarios de cualquier otro proceso al que pertenezcan.
-      // Un usuario solo puede pertenecer a un proceso.
       await tx.user.updateMany({
         where: {
           id: { in: userIds },

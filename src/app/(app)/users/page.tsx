@@ -468,51 +468,58 @@ export default function UsersAndProcessesPage() {
       setShowProcessModal(true);
   };
   
- const handleProcessFormSubmit = async (e: React.FormEvent) => {
+  const handleProcessFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
 
     const processPayload = {
-      name: processName,
-      parentId: processParentId === 'null' ? null : processParentId,
+        name: processName,
+        parentId: processParentId === 'null' ? null : processParentId,
     };
     
-    const endpoint = editingProcess ? `/api/processes/${editingProcess.id}` : '/api/processes';
-    const method = editingProcess ? 'PUT' : 'POST';
+    let endpoint = '/api/processes';
+    let method = 'POST';
+
+    if (editingProcess) {
+        endpoint = `/api/processes/${editingProcess.id}`;
+        method = 'PUT';
+    }
 
     try {
-        // --- 1. Actualizar/Crear el proceso ---
         const processRes = await fetch(endpoint, {
             method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(processPayload),
         });
-        if (!processRes.ok) throw new Error((await processRes.json()).message || 'Error al guardar el proceso.');
-        const savedProcess = await processRes.json();
+
+        if (!processRes.ok) {
+            throw new Error((await processRes.json()).message || 'Error al guardar el proceso.');
+        }
         
-        // --- 2. Asignar usuarios al proceso guardado ---
+        const savedProcess = await processRes.json();
+        const processId = savedProcess.id;
+
         if (usersToAssign.size > 0) {
-            const assignRes = await fetch('/api/processes/assign-batch', {
+            const assignRes = await fetch('/api/processes/assign', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    processId: savedProcess.id,
-                    userIds: Array.from(usersToAssign)
-                }),
+                body: JSON.stringify({ processId, userIds: Array.from(usersToAssign) }),
             });
-            if (!assignRes.ok) throw new Error((await assignRes.json()).message || 'Error al asignar usuarios.');
+            if (!assignRes.ok) {
+                throw new Error((await assignRes.json()).message || 'Error al asignar usuarios al proceso');
+            }
         }
 
         toast({ title: '¡Éxito!', description: `Proceso ${editingProcess ? 'actualizado' : 'creado'} y usuarios asignados.`});
         setShowProcessModal(false);
         await fetchAllData();
 
-    } catch(err) {
-        toast({ title: 'Error', description: (err as Error).message, variant: 'destructive'});
+    } catch (err) {
+        toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
     } finally {
         setIsProcessing(false);
     }
-}
+  };
 
 
   const handleDeleteProcess = async () => {
@@ -728,50 +735,52 @@ export default function UsersAndProcessesPage() {
           </DialogContent>
       </Dialog>
       
-        <Dialog open={showProcessModal} onOpenChange={setShowProcessModal}>
+       <Dialog open={showProcessModal} onOpenChange={setShowProcessModal}>
             <DialogContent className="max-w-lg">
-                <DialogHeader>
-                    <DialogTitle>{editingProcess ? 'Editar Proceso' : 'Crear Nuevo Proceso'}</DialogTitle>
-                </DialogHeader>
-                <form onSubmit={handleProcessFormSubmit} className="space-y-4">
-                    <div>
-                        <Label htmlFor="process-name">Nombre del Proceso</Label>
-                        <Input id="process-name" value={processName} onChange={(e) => setProcessName(e.target.value)} required disabled={isProcessing}/>
-                    </div>
-                    <div>
-                        <Label htmlFor="parent-process">Proceso Padre (Opcional)</Label>
-                        <Select value={processParentId || 'null'} onValueChange={(value) => setProcessParentId(value)} disabled={isProcessing}>
-                        <SelectTrigger id="parent-process"><SelectValue placeholder="Seleccionar proceso padre..." /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="null">Ninguno (Nivel Superior)</SelectItem>
-                            {flatProcesses.filter(p => p.id !== editingProcess?.id).map(p => (
-                                <SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem`}}>
-                                    {p.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                        </Select>
-                    </div>
-                     <div className="space-y-2">
-                        <Label>Asignar Usuarios</Label>
-                        <Input placeholder="Buscar usuarios..." value={userSearchTerm} onChange={e => setUserSearchTerm(e.target.value)} />
-                        <ScrollArea className="h-48 border rounded-md p-2">
-                            <div className="space-y-1">
-                            {(userSearchTerm ? usersList.filter(u => u.processes.length === 0 && u.name.toLowerCase().includes(userSearchTerm.toLowerCase())) : usersList.filter(u => u.processes.length === 0)).map(u => (
-                                <div key={u.id} className="flex items-center space-x-2">
-                                    <Checkbox id={`assign-user-${u.id}`} checked={usersToAssign.has(u.id)} onCheckedChange={checked => {
-                                        setUsersToAssign(prev => {
-                                            const newSet = new Set(prev);
-                                            if(checked) newSet.add(u.id); else newSet.delete(u.id);
-                                            return newSet;
-                                        })
-                                    }}/>
-                                    <Label htmlFor={`assign-user-${u.id}`} className="font-normal">{u.name}</Label>
+                <form onSubmit={handleProcessFormSubmit}>
+                    <DialogHeader>
+                        <DialogTitle>{editingProcess ? 'Editar Proceso' : 'Crear Nuevo Proceso'}</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4 space-y-4">
+                        <div>
+                            <Label htmlFor="process-name">Nombre del Proceso</Label>
+                            <Input id="process-name" value={processName} onChange={(e) => setProcessName(e.target.value)} required disabled={isProcessing}/>
+                        </div>
+                        <div>
+                            <Label htmlFor="parent-process">Proceso Padre (Opcional)</Label>
+                            <Select value={processParentId || 'null'} onValueChange={(value) => setProcessParentId(value)} disabled={isProcessing}>
+                            <SelectTrigger id="parent-process"><SelectValue placeholder="Seleccionar proceso padre..." /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="null">Ninguno (Nivel Superior)</SelectItem>
+                                {flatProcesses.filter(p => p.id !== editingProcess?.id).map(p => (
+                                    <SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem`}}>
+                                        {p.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Asignar Usuarios</Label>
+                            <Input placeholder="Buscar usuarios..." value={userSearchTerm} onChange={e => setUserSearchTerm(e.target.value)} />
+                            <ScrollArea className="h-48 border rounded-md p-2">
+                                <div className="space-y-1">
+                                {usersList.filter(u => u.name.toLowerCase().includes(userSearchTerm.toLowerCase())).map(u => (
+                                    <div key={u.id} className="flex items-center space-x-2">
+                                        <Checkbox id={`assign-user-${u.id}`} checked={usersToAssign.has(u.id)} onCheckedChange={checked => {
+                                            setUsersToAssign(prev => {
+                                                const newSet = new Set(prev);
+                                                if(checked) newSet.add(u.id); else newSet.delete(u.id);
+                                                return newSet;
+                                            })
+                                        }}/>
+                                        <Label htmlFor={`assign-user-${u.id}`} className="font-normal">{u.name}</Label>
+                                    </div>
+                                ))}
                                 </div>
-                            ))}
-                            </div>
-                        </ScrollArea>
-                        <p className="text-xs text-muted-foreground">{usersToAssign.size} usuario(s) nuevo(s) seleccionado(s) para asignar.</p>
+                            </ScrollArea>
+                            <p className="text-xs text-muted-foreground">{usersToAssign.size} usuario(s) seleccionado(s) para asignar.</p>
+                        </div>
                     </div>
                     <DialogFooter>
                         <Button type="button" variant="ghost" onClick={() => setShowProcessModal(false)}>Cancelar</Button>

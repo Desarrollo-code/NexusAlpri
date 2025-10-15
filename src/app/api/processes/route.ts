@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { name, parentId } = await req.json();
+    const { name, parentId, userIds } = await req.json();
     if (!name) {
       return NextResponse.json({ message: 'El nombre es requerido' }, { status: 400 });
     }
@@ -92,6 +92,20 @@ export async function POST(req: NextRequest) {
         parentId: parentId || null,
       },
     });
+
+    // Si se proporcionan userIds, asignarlos al nuevo proceso.
+    if (userIds && Array.isArray(userIds) && userIds.length > 0) {
+      // Primero, desasignar estos usuarios de cualquier otro proceso.
+      await prisma.user.updateMany({
+          where: { id: { in: userIds } },
+          data: { processId: null }
+      });
+      // Luego, asignarlos al nuevo proceso.
+      await prisma.user.updateMany({
+          where: { id: { in: userIds } },
+          data: { processId: newProcess.id }
+      });
+    }
 
     return NextResponse.json(newProcess, { status: 201 });
   } catch (error) {
