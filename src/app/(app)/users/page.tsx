@@ -65,7 +65,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserProfileCard } from '@/components/profile/user-profile-card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 
 
 // --- TYPES ---
@@ -435,12 +434,10 @@ export default function UsersAndProcessesPage() {
           setEditingProcess(process);
           setProcessName(process.name);
           setProcessParentId(process.parentId);
-          setSelectedUserIds(process.users.map(u => u.id));
       } else {
           setEditingProcess(null);
           setProcessName('');
           setProcessParentId(null);
-          setSelectedUserIds([]);
       }
       setShowProcessModal(true);
   };
@@ -448,32 +445,24 @@ export default function UsersAndProcessesPage() {
   const handleProcessFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
-
+    
     try {
-        const processPayload = { name: processName, parentId: processParentId === 'null' ? null : processParentId };
+        const processPayload = { 
+            name: processName, 
+            parentId: processParentId === 'null' ? null : processParentId 
+        };
         
-        // Determinar el endpoint y el método
         const endpoint = editingProcess ? `/api/processes/${editingProcess.id}` : '/api/processes';
         const method = editingProcess ? 'PUT' : 'POST';
         
-        // Primero, crear o actualizar el proceso
         const processRes = await fetch(endpoint, {
             method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(processPayload),
         });
         if (!processRes.ok) throw new Error((await processRes.json()).message || 'Error al guardar el proceso.');
-        const savedProcess = await processRes.json();
-        
-        // Segundo, asignar los usuarios al proceso recién guardado/actualizado
-        const assignRes = await fetch('/api/processes/assign', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ processId: savedProcess.id, userIds: selectedUserIds }),
-        });
-        if (!assignRes.ok) throw new Error((await assignRes.json()).message || 'Error al asignar usuarios.');
 
-        toast({ title: '¡Éxito!', description: `Proceso y asignaciones guardados correctamente.`});
+        toast({ title: '¡Éxito!', description: `Proceso guardado correctamente.`});
         setShowProcessModal(false);
         await fetchAllData();
 
@@ -582,8 +571,7 @@ export default function UsersAndProcessesPage() {
       </CardHeader>
       <CardContent>
         {isLoading ? (<Skeleton className="h-64 w-full" />) : error ? (<p className="text-destructive text-center">{error}</p>) : (
-          <ScrollArea className="h-96 pr-3">
-              <div className="space-y-3">
+            <div className="space-y-3">
                 {processes.map((process) => (
                     <ProcessItem 
                         key={process.id} 
@@ -594,8 +582,7 @@ export default function UsersAndProcessesPage() {
                         isSubmitting={isProcessing}
                     />
                 ))}
-              </div>
-          </ScrollArea>
+            </div>
         )}
       </CardContent>
     </Card>
@@ -610,14 +597,14 @@ export default function UsersAndProcessesPage() {
               <p className="text-muted-foreground">Gestiona los usuarios y la estructura de procesos de la organización.</p>
           </div>
           
-          <div className="hidden lg:grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                <div className="lg:col-span-2"><UserListContent/></div>
                <div className="lg:col-span-1"><ProcessManagement/></div>
           </div>
       </div>
       
       <Dialog open={showProcessModal} onOpenChange={setShowProcessModal}>
-        <DialogContent className="max-w-lg">
+        <DialogContent>
             <form onSubmit={handleProcessFormSubmit}>
                 <DialogHeader>
                     <DialogTitle>{editingProcess ? 'Editar Proceso' : 'Crear Nuevo Proceso'}</DialogTitle>
