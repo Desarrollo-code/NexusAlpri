@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, List, Grid, Filter, Briefcase, UserPlus, MessageSquare, MoreVertical, Loader2 } from 'lucide-react';
+import { PlusCircle, Search, List, Grid, Filter, UserPlus, MoreVertical, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -28,13 +28,13 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Users as UsersIcon, Briefcase } from 'lucide-react';
 import { ProcessTree } from '@/components/users/process-tree';
 import { BulkAssignModal } from '@/components/users/bulk-assign-modal';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Identicon } from '@/components/ui/identicon';
-
+import { Label } from '@/components/ui/label';
 
 // --- TYPES & CONTEXT ---
 interface ProcessWithChildren extends Process {
@@ -46,6 +46,15 @@ interface UserWithProcess extends User {
 }
 
 const PAGE_SIZE = 12;
+
+const getRoleBadgeVariant = (role: UserRole) => {
+    switch(role) {
+      case 'ADMINISTRATOR': return 'destructive';
+      case 'INSTRUCTOR': return 'default';
+      case 'STUDENT': return 'secondary';
+      default: return 'outline';
+    }
+};
 
 const DraggableUserCard = ({ user, isSelected, onSelectionChange }: { user: UserWithProcess, isSelected: boolean, onSelectionChange: (id: string, selected: boolean) => void }) => {
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: user.id });
@@ -74,11 +83,7 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds }: { users: UserW
                             <Checkbox 
                                 checked={users.length > 0 && users.every(u => selectedUserIds.has(u.id))}
                                 onCheckedChange={(checked) => {
-                                    if(checked) {
-                                        onSelectionChange('all', true);
-                                    } else {
-                                        onSelectionChange('all', false);
-                                    }
+                                    onSelectionChange('all', !!checked);
                                 }}
                             />
                         </TableHead>
@@ -86,7 +91,6 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds }: { users: UserW
                         <TableHead>Rol</TableHead>
                         <TableHead>Proceso</TableHead>
                         <TableHead>Estado</TableHead>
-                        <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -113,7 +117,13 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds }: { users: UserW
                             <TableCell><Badge variant={getRoleBadgeVariant(user.role)}>{getRoleInSpanish(user.role)}</Badge></TableCell>
                             <TableCell>
                                 {user.process ? (
-                                    <Badge style={{ backgroundColor: getProcessColors(user.process.id).raw.light, color: getProcessColors(user.process.id).raw.dark }}>
+                                    <Badge 
+                                        className="text-xs"
+                                        style={{
+                                            backgroundColor: getProcessColors(user.process.id).raw.light,
+                                            color: getProcessColors(user.process.id).raw.dark,
+                                        }}
+                                    >
                                         {user.process.name}
                                     </Badge>
                                 ) : (
@@ -121,18 +131,6 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds }: { users: UserW
                                 )}
                             </TableCell>
                             <TableCell><Badge variant={user.isActive ? 'default' : 'secondary'} className={cn(user.isActive ? 'bg-green-500' : 'bg-gray-400', 'text-white')}>{user.isActive ? 'Activo' : 'Inactivo'}</Badge></TableCell>
-                            <TableCell className="text-right">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4"/></Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                        <DropdownMenuItem onClick={() => router.push(`/messages?new=${user.id}`)}>
-                                            <MessageSquare className="mr-2 h-4 w-4"/>Enviar Mensaje
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
@@ -162,8 +160,8 @@ export default function UsersPage() {
     const { toast } = useToast();
 
     const search = searchParams.get('search') || '';
-    const role = searchParams.get('role') as UserRole | null;
-    const status = searchParams.get('status');
+    const role = searchParams.get('role') as UserRole | 'ALL' | null;
+    const status = searchParams.get('status') as 'active' | 'inactive' | 'ALL' | null;
     const processId = searchParams.get('processId');
 
     const debouncedSearchTerm = useDebounce(search, 300);
@@ -180,35 +178,19 @@ export default function UsersPage() {
     
     const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
     const [isBulkAssignModalOpen, setIsBulkAssignModalOpen] = useState(false);
-
-    const handleSelectionChange = (userId: string, isSelected: boolean) => {
-        setSelectedUserIds(prev => {
-            const newSet = new Set(prev);
-            if (userId === 'all') {
-                const pageUserIds = usersList.map(u => u.id);
-                if (isSelected) {
-                    pageUserIds.forEach(id => newSet.add(id));
-                } else {
-                    pageUserIds.forEach(id => newSet.delete(id));
-                }
-            } else {
-                if (isSelected) newSet.add(userId);
-                else newSet.delete(userId);
-            }
-            return newSet;
-        });
-    };
     
     const createQueryString = useCallback((paramsToUpdate: Record<string, string | number | null>) => {
       const params = new URLSearchParams(searchParams.toString());
       Object.entries(paramsToUpdate).forEach(([name, value]) => {
-          if (value === null || value === '' || (name === 'role' && value === 'ALL') || (name === 'status' && value === 'ALL') || (name === 'processId' && value === 'ALL')) params.delete(name);
+          if (value === null || value === '' || value === 'ALL') params.delete(name);
           else params.set(name, String(value));
       });
       return params.toString();
     }, [searchParams]);
     
-    const activeFilters = { search, role, status, processId };
+    const activeFiltersCount = useMemo(() => {
+        return Object.values({ search, role, status, processId }).filter(v => v && v !== 'ALL').length;
+    }, [search, role, status, processId]);
 
     const fetchData = useCallback(async () => {
         if (!currentUser) return;
@@ -217,8 +199,8 @@ export default function UsersPage() {
         const params = new URLSearchParams();
         if (debouncedSearchTerm) params.set('search', debouncedSearchTerm);
         if (currentPage) params.set('page', String(currentPage));
-        if(role) params.set('role', role);
-        if(status) params.set('status', status);
+        if(role && role !== 'ALL') params.set('role', role);
+        if(status && status !== 'ALL') params.set('status', status);
         if(processId) params.set('processId', processId);
         params.set('pageSize', String(PAGE_SIZE));
 
@@ -253,6 +235,24 @@ export default function UsersPage() {
     useEffect(() => {
         setSelectedUserIds(new Set());
     }, [currentPage, debouncedSearchTerm, role, status, processId]);
+
+    const handleSelectionChange = useCallback((userId: string, isSelected: boolean) => {
+        setSelectedUserIds(prev => {
+            const newSet = new Set(prev);
+            if (userId === 'all') {
+                const pageUserIds = usersList.map(u => u.id);
+                if (isSelected) {
+                    pageUserIds.forEach(id => newSet.add(id));
+                } else {
+                    pageUserIds.forEach(id => newSet.delete(id));
+                }
+            } else {
+                if (isSelected) newSet.add(userId);
+                else newSet.delete(userId);
+            }
+            return newSet;
+        });
+    }, [usersList]);
     
     const handleFilterChange = (key: string, value: string | null) => {
         router.push(`${pathname}?${createQueryString({ [key]: value, page: 1 })}`);
@@ -312,7 +312,7 @@ export default function UsersPage() {
       let flatList: FlatProcess[] = [];
       processList.forEach(p => {
           flatList.push({ id: p.id, name: p.name, level });
-          if (p.children && p.children.length > 0) {
+          if ('children' in p && Array.isArray(p.children) && p.children.length > 0) {
               flatList.push(...flattenProcesses(p.children, level + 1));
           }
       });
@@ -320,8 +320,12 @@ export default function UsersPage() {
     };
     const flattenedProcesses = flattenProcesses(processes);
 
-    if (!currentUser || currentUser.role !== 'ADMINISTRATOR') {
+    if (!currentUser || (currentUser.role !== 'ADMINISTRATOR' && currentUser.role !== 'INSTRUCTOR')) {
         return <div className="text-center p-8"><AlertTriangle className="mx-auto h-12 w-12 text-destructive"/>Acceso Denegado</div>;
+    }
+
+    if (isLoading) {
+        return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin"/></div>
     }
 
     return (
@@ -338,14 +342,14 @@ export default function UsersPage() {
                                 <PopoverTrigger asChild>
                                     <Button variant="outline" className="w-full sm:w-auto justify-start">
                                         <Filter className="mr-2 h-4 w-4" />
-                                        Filtros ({Object.values(activeFilters).filter(v => v && v !== 'ALL').length})
+                                        Filtros ({activeFiltersCount})
                                     </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-64 p-0" align="end">
                                     <div className="p-4 space-y-4">
                                         <div className="space-y-2">
                                             <Label>Rol</Label>
-                                            <Select value={role || 'ALL'} onValueChange={(v) => handleFilterChange('role', v)}>
+                                            <Select value={role || 'ALL'} onValueChange={(v) => handleFilterChange('role', v as UserRole)}>
                                                 <SelectTrigger><SelectValue/></SelectTrigger>
                                                 <SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="ADMINISTRATOR">Admin</SelectItem><SelectItem value="INSTRUCTOR">Instructor</SelectItem><SelectItem value="STUDENT">Estudiante</SelectItem></SelectContent>
                                             </Select>
@@ -440,5 +444,5 @@ export default function UsersPage() {
             {showUserModal && <UserFormModal isOpen={showUserModal} onClose={() => setShowUserModal(false)} onSave={fetchData} user={userToEdit} processes={processes} />}
             {isBulkAssignModalOpen && <BulkAssignModal isOpen={isBulkAssignModalOpen} onClose={() => setIsBulkAssignModalOpen(false)} onSave={fetchData} userIds={Array.from(selectedUserIds)} processes={processes}/>}
         </DndContext>
-    )
+    );
 }

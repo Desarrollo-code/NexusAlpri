@@ -64,7 +64,7 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
       let flatList: FlatProcess[] = [];
       processList.forEach(p => {
           flatList.push({ id: p.id, name: p.name, level });
-          if (p.children && p.children.length > 0) {
+          if ('children' in p && Array.isArray(p.children) && p.children.length > 0) {
               flatList.push(...flattenProcesses(p.children, level + 1));
           }
       });
@@ -174,7 +174,7 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
                 </form>
                 <DialogFooter>
                     <Button variant="outline" onClick={onClose}>Cancelar</Button>
-                    <Button type="submit" form="user-form" disabled={isSaving}>
+                    <Button type="submit" form="user-form" disabled={isSaving || !name.trim() || !email.trim() || (!user && !password)}>
                         {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         {user ? 'Guardar Cambios' : 'Crear Colaborador'}
                     </Button>
