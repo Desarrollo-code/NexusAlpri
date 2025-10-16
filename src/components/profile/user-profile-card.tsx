@@ -15,7 +15,7 @@ import { Badge } from '../ui/badge';
 import { ScrollArea } from '../ui/scroll-area';
 
 interface UserProfileCardProps {
-    user: User & { processes?: { id: string; name: string }[] };
+    user: User & { process?: { id: string; name: string } | null, processes?: { id: string; name: string }[] };
 }
 
 export const UserProfileCard = ({ user }: UserProfileCardProps) => {
@@ -28,34 +28,32 @@ export const UserProfileCard = ({ user }: UserProfileCardProps) => {
     };
     
     const showMessageButton = currentUser?.id !== user.id;
+    
+    const displayProcess = user.process ? [user.process] : (user.processes || []);
 
     return (
-        <Card className="profile-card border-none shadow-none bg-card">
-            <div className="card__img">
-                <div className="card__img--gradient" />
-            </div>
-            <div className="card__avatar">
-                <Avatar className="avatar">
+        <Card className="profile-card flex flex-col items-center p-4 h-full bg-card shadow-lg hover:shadow-primary/20 transition-shadow duration-300">
+            <div className="relative mb-3">
+                 <Avatar className="h-20 w-20 border-4 border-background shadow-md">
                     <AvatarImage src={user.avatar || undefined} />
                     <AvatarFallback><Identicon userId={user.id} /></AvatarFallback>
                 </Avatar>
             </div>
-            <CardHeader className="p-4 pb-2">
-                <CardTitle className="text-xl font-bold font-headline flex items-center justify-center gap-2">
-                    {user.name}
+            
+            <div className="text-center flex-grow">
+                <CardTitle className="text-lg font-bold font-headline flex items-center justify-center gap-1.5">
+                    <span className="truncate max-w-[150px]">{user.name}</span>
                     <VerifiedBadge role={user.role} />
                 </CardTitle>
-                <CardDescription className="card__subtitle">
-                    {user.email}
+                <CardDescription className="text-xs text-primary font-medium mt-1">
+                    {getRoleInSpanish(user.role)}
                 </CardDescription>
-                <div className="mt-2 text-sm font-semibold text-primary">{getRoleInSpanish(user.role)}</div>
-            </CardHeader>
-            <CardContent className="p-4 pt-2">
-                {user.processes && user.processes.length > 0 && (
+
+                {displayProcess && displayProcess.length > 0 && (
                     <div className="mt-3">
-                         <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-2 flex items-center justify-center gap-2"><Briefcase className="h-4 w-4"/> Procesos</h4>
-                         <div className="flex flex-wrap justify-center gap-1.5">
-                            {user.processes.map(process => {
+                         <div className="flex flex-wrap justify-center gap-1">
+                            {displayProcess.map(process => {
+                                if (!process) return null;
                                 const colors = getProcessColors(process.id);
                                 return (
                                     <Badge key={process.id} variant="secondary" style={{ backgroundColor: colors.raw.light, color: colors.raw.dark, borderColor: colors.raw.medium }} className="border">
@@ -66,13 +64,14 @@ export const UserProfileCard = ({ user }: UserProfileCardProps) => {
                          </div>
                     </div>
                 )}
-            </CardContent>
+            </div>
+
             {showMessageButton && (
-                 <CardFooter className="p-4 pt-0">
-                    <Button size="sm" className="w-full" onClick={handleSendMessage}>
-                        <MessageSquare className="mr-2 h-4 w-4"/> Enviar Mensaje
+                 <div className="w-full mt-4">
+                    <Button size="sm" variant="outline" className="w-full" onClick={handleSendMessage}>
+                        <MessageSquare className="mr-2 h-4 w-4"/> Mensaje
                     </Button>
-                </CardFooter>
+                </div>
             )}
         </Card>
     );
