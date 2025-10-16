@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
-import { getInitials, getProcessColors } from '@/lib/utils';
+import { getProcessColors } from '@/lib/utils';
 import { getRoleInSpanish } from '@/lib/security-log-utils';
 import type { User } from '@/types';
 import { VerifiedBadge } from '../ui/verified-badge';
