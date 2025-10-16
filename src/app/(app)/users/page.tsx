@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SmartPagination } from '@/components/ui/pagination';
 import { useTitle } from '@/contexts/title-context';
@@ -39,7 +39,7 @@ import { getProcessColors } from '@/lib/utils';
 import { getRoleBadgeVariant, getRoleInSpanish } from '@/lib/security-log-utils';
 import { Identicon } from '@/components/ui/identicon';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DndContext, useDraggable, useDroppable, DragOverlay, type DragEndEvent } from '@dnd-kit/core';
+import { DndContext, useDraggable, useDroppable, DragOverlay, type DragEndEvent, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { UserFormModal } from '@/components/users/user-form-modal';
 import { ProcessFormModal } from '@/components/users/process-form-modal';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -65,8 +65,6 @@ const DraggableUserRow = ({ user, ...props }: { user: UserWithProcess } & React.
     return (
         <TableRow 
             ref={setNodeRef}
-            {...attributes}
-            {...listeners}
             className={cn(
                 "touch-none",
                 isDragging && "opacity-50",
@@ -75,15 +73,24 @@ const DraggableUserRow = ({ user, ...props }: { user: UserWithProcess } & React.
             {...props}
         >
             <TableCell>
-                <div className="flex items-center gap-3">
-                    <Avatar className="h-9 w-9"><AvatarImage src={user.avatar || undefined} alt={user.name} /><AvatarFallback>{getInitials(user.name)}</AvatarFallback></Avatar>
+                <div 
+                    {...attributes} 
+                    {...listeners} 
+                    className="flex items-center gap-3 cursor-grab"
+                >
+                    <GripVertical className="h-4 w-4 text-muted-foreground"/>
+                    <Avatar className="h-9 w-9">
+                        <AvatarImage src={user.avatar || undefined} alt={user.name} />
+                        <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                    </Avatar>
                     <div className="font-medium">{user.name}</div>
                 </div>
             </TableCell>
             <TableCell>{user.email}</TableCell>
             <TableCell><Badge variant={getRoleBadgeVariant(user.role)} className="capitalize">{getRoleInSpanish(user.role)}</Badge></TableCell>
-             <TableCell><Badge variant={user.isActive ? 'default' : 'destructive'} className={cn(user.isActive && "bg-green-600 hover:bg-green-700")}>{user.isActive ? 'Activo' : 'Inactivo'}</Badge></TableCell>
-             <TableCell>{/* Action Menu will be here */}</TableCell>
+            <TableCell><Badge variant={user.isActive ? 'default' : 'destructive'} className={cn(user.isActive && "bg-green-600 hover:bg-green-700")}>{user.isActive ? 'Activo' : 'Inactivo'}</Badge></TableCell>
+            <TableCell>{user.process?.name || <span className="text-muted-foreground italic">Sin asignar</span>}</TableCell>
+            <TableCell>{/* Action Menu will be here */}</TableCell>
         </TableRow>
     );
 };
@@ -132,6 +139,7 @@ export default function UsersPage() {
     const [userToEdit, setUserToEdit] = useState<UserWithProcess | null>(null);
     const [processToEdit, setProcessToEdit] = useState<ProcessWithChildren | null>(null);
     const [processToDelete, setProcessToDelete] = useState<ProcessWithChildren | null>(null);
+    const [isDeletingProcess, setIsDeletingProcess] = useState(false);
     
     const [showUserModal, setShowUserModal] = useState(false);
     const [showProcessModal, setShowProcessModal] = useState(false);
@@ -212,6 +220,22 @@ export default function UsersPage() {
             }
         }
     };
+
+     const handleDeleteProcess = async () => {
+        if (!processToDelete) return;
+        setIsDeletingProcess(true);
+        try {
+            const res = await fetch(`/api/processes/${processToDelete.id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error((await res.json()).message || 'No se pudo eliminar el proceso.');
+            toast({ title: 'Proceso Eliminado', description: `El proceso "${processToDelete.name}" ha sido eliminado.` });
+            fetchData();
+        } catch (err) {
+            toast({ title: 'Error', description: err instanceof Error ? err.message : 'Error desconocido', variant: 'destructive' });
+        } finally {
+            setIsDeletingProcess(false);
+            setProcessToDelete(null);
+        }
+    };
     
     const UserTable = () => (
         <Card>
@@ -228,9 +252,9 @@ export default function UsersPage() {
             </CardHeader>
             <CardContent>
                 <Table>
-                    <TableHeader><TableRow><TableHead>Nombre</TableHead><TableHead>Email</TableHead><TableHead>Rol</TableHead><TableHead>Estado</TableHead><TableHead><span className="sr-only">Acciones</span></TableHead></TableRow></TableHeader>
+                    <TableHeader><TableRow><TableHead>Nombre</TableHead><TableHead>Email</TableHead><TableHead>Rol</TableHead><TableHead>Estado</TableHead><TableHead>Proceso</TableHead><TableHead><span className="sr-only">Acciones</span></TableHead></TableRow></TableHeader>
                     <TableBody>
-                        {isLoading ? [...Array(5)].map((_,i) => (<TableRow key={i}><TableCell colSpan={5}><Skeleton className="h-10 w-full" /></TableCell></TableRow>)) :
+                        {isLoading ? [...Array(5)].map((_,i) => (<TableRow key={i}><TableCell colSpan={6}><Skeleton className="h-12 w-full" /></TableCell></TableRow>)) :
                         usersList.map(u => <DraggableUserRow key={u.id} user={u}/>)}
                     </TableBody>
                 </Table>
@@ -248,7 +272,7 @@ export default function UsersPage() {
             <CardContent>
                 <ScrollArea className="h-[60vh] pr-4">
                     {isLoading ? <Skeleton className="h-full w-full"/> : 
-                     processes.map(p => <ProcessDropZone key={p.id} process={p} onEdit={setProcessToEdit} onDelete={setProcessToDelete} />)
+                     processes.map(p => <ProcessDropZone key={p.id} process={p} onEdit={(process) => {setProcessToEdit(process); setShowProcessModal(true);}} onDelete={setProcessToDelete} />)
                     }
                 </ScrollArea>
             </CardContent>
@@ -266,7 +290,6 @@ export default function UsersPage() {
                         <p className="text-muted-foreground">Gestiona los colaboradores y la estructura de procesos de la organización.</p>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setShowProcessModal(true)}><Network className="mr-2 h-4 w-4"/> Gestionar Estructura</Button>
                         <Button size="sm" onClick={() => { setUserToEdit(null); setShowUserModal(true); }}><UserPlus className="mr-2 h-4 w-4"/> Añadir Colaborador</Button>
                     </div>
                 </div>
@@ -299,8 +322,10 @@ export default function UsersPage() {
                     <AlertDialogContent>
                         <AlertDialogHeader><AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle><AlertDialogDescription>Se eliminará el proceso "<strong>{processToDelete.name}</strong>". Los subprocesos y usuarios pasarán al nivel superior.</AlertDialogDescription></AlertDialogHeader>
                         <AlertDialogFooter>
-                           <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                           <AlertDialogAction>Eliminar</AlertDialogAction>
+                           <AlertDialogCancel disabled={isDeletingProcess}>Cancelar</AlertDialogCancel>
+                           <AlertDialogAction onClick={handleDeleteProcess} disabled={isDeletingProcess} className={cn(buttonVariants({ variant: 'destructive'}))}>
+                            {isDeletingProcess && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>} Eliminar
+                           </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
                  </AlertDialog>
