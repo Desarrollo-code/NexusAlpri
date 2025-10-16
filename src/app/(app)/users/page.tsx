@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, Edit, Trash2, UserPlus, Loader2, AlertTriangle, MoreHorizontal, UserCheck, UserX, Filter, Check, Network, GripVertical, Users as UsersIcon, Briefcase } from 'lucide-react';
+import { PlusCircle, Search, Edit, Trash2, UserPlus, Loader2, AlertTriangle, MoreVertical, UserCheck, UserX, Filter, Check, Network, GripVertical, Users as UsersIcon } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
@@ -19,14 +19,6 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import type { User, UserRole, Process } from '@/types';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,8 +40,6 @@ import { getRoleBadgeVariant, getRoleInSpanish } from '@/lib/security-log-utils'
 import { Identicon } from '@/components/ui/identicon';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DndContext, useDraggable, useDroppable, DragOverlay, type DragEndEvent } from '@dnd-kit/core';
-import { SortableContext, useSortable, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import { UserFormModal } from '@/components/users/user-form-modal';
 import { ProcessFormModal } from '@/components/users/process-form-modal';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -66,7 +56,7 @@ interface UserWithProcess extends User {
 const PAGE_SIZE = 10;
 
 // --- Components ---
-const DraggableUserRow = ({ user, colors, ...props }: { user: UserWithProcess, colors: any }) => {
+const DraggableUserRow = ({ user, ...props }: { user: UserWithProcess } & React.HTMLAttributes<HTMLTableRowElement>) => {
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
         id: user.id,
         data: { type: 'user', user }
@@ -86,17 +76,12 @@ const DraggableUserRow = ({ user, colors, ...props }: { user: UserWithProcess, c
         >
             <TableCell>
                 <div className="flex items-center gap-3">
-                    <Avatar className="h-9 w-9"><AvatarImage src={user.avatar || undefined} alt={user.name} /><AvatarFallback>{user.name.charAt(0)}</AvatarFallback></Avatar>
+                    <Avatar className="h-9 w-9"><AvatarImage src={user.avatar || undefined} alt={user.name} /><AvatarFallback>{getInitials(user.name)}</AvatarFallback></Avatar>
                     <div className="font-medium">{user.name}</div>
                 </div>
             </TableCell>
             <TableCell>{user.email}</TableCell>
             <TableCell><Badge variant={getRoleBadgeVariant(user.role)} className="capitalize">{getRoleInSpanish(user.role)}</Badge></TableCell>
-            <TableCell>
-                {user.process ? (
-                    <Badge variant="outline" style={{ backgroundColor: colors?.raw.light, color: colors?.raw.dark, borderColor: colors?.raw.medium }} className="border">{user.process.name}</Badge>
-                ) : <span className="text-xs text-muted-foreground">Sin asignar</span>}
-            </TableCell>
              <TableCell><Badge variant={user.isActive ? 'default' : 'destructive'} className={cn(user.isActive && "bg-green-600 hover:bg-green-700")}>{user.isActive ? 'Activo' : 'Inactivo'}</Badge></TableCell>
              <TableCell>{/* Action Menu will be here */}</TableCell>
         </TableRow>
@@ -109,19 +94,19 @@ const ProcessDropZone = ({ process, onEdit, onDelete }: { process: ProcessWithCh
 
     return (
         <div ref={setNodeRef} className={cn("pl-4", isOver && 'bg-primary/10 rounded-md')}>
-            <div className="flex items-center justify-between group">
-                <div className="flex items-center gap-2 py-1 flex-grow">
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: colors.raw.medium }} />
-                    <span className="font-semibold">{process.name}</span>
-                    <Badge variant="secondary">{process.users.length}</Badge>
+            <div className="flex items-center justify-between group py-1.5">
+                <div className="flex items-center gap-2 flex-grow min-w-0">
+                    <div className="w-1.5 h-6 rounded-full" style={{ backgroundColor: colors.raw.medium }} />
+                    <span className="font-semibold truncate">{process.name}</span>
+                    <Badge variant="secondary" className="rounded-full">{process.users.length}</Badge>
                 </div>
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEdit(process)}><Edit className="h-4 w-4"/></Button>
-                     <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => onDelete(process)}><Trash2 className="h-4 w-4"/></Button>
+                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => {e.stopPropagation(); onEdit(process)}}><Edit className="h-4 w-4"/></Button>
+                     <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={(e) => {e.stopPropagation(); onDelete(process)}}><Trash2 className="h-4 w-4"/></Button>
                 </div>
             </div>
             {process.children && process.children.length > 0 && (
-                 <div className="border-l-2 ml-1" style={{borderColor: colors.raw.light}}>
+                 <div className="ml-2 pl-2 border-l-2" style={{borderColor: colors.raw.light}}>
                     {process.children.map(child => <ProcessDropZone key={child.id} process={child} onEdit={onEdit} onDelete={onDelete}/>)}
                 </div>
             )}
@@ -143,9 +128,7 @@ export default function UsersPage() {
     const [totalUsers, setTotalUsers] = useState(0);
     const [processes, setProcesses] = useState<ProcessWithChildren[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
+    
     const [userToEdit, setUserToEdit] = useState<UserWithProcess | null>(null);
     const [processToEdit, setProcessToEdit] = useState<ProcessWithChildren | null>(null);
     const [processToDelete, setProcessToDelete] = useState<ProcessWithChildren | null>(null);
@@ -158,13 +141,13 @@ export default function UsersPage() {
     const searchTerm = searchParams.get('search') || '';
     const roleFilter = searchParams.get('role') || 'all';
     const statusFilter = searchParams.get('status') || 'all';
+    const processFilter = searchParams.get('processId') || 'all';
     const currentPage = Number(searchParams.get('page')) || 1;
     const totalPages = Math.ceil(totalUsers / PAGE_SIZE);
 
     const fetchData = useCallback(async () => {
         if (!currentUser) return;
         setIsLoading(true);
-        setError(null);
         const userParams = new URLSearchParams(searchParams.toString());
         
         try {
@@ -180,11 +163,11 @@ export default function UsersPage() {
             setTotalUsers(usersData.totalUsers || 0);
             setProcesses(processesData || []);
         } catch (err: any) {
-            setError(err.message);
+            toast({ title: 'Error', description: err.message, variant: 'destructive'});
         } finally {
             setIsLoading(false);
         }
-    }, [currentUser, searchParams]);
+    }, [currentUser, searchParams, toast]);
 
     useEffect(() => {
         setPageTitle('Control Central');
@@ -201,7 +184,7 @@ export default function UsersPage() {
       return params.toString();
     }, [searchParams]);
 
-    const handleFilterChange = (filterType: 'search' | 'role' | 'status', value: string) => {
+    const handleFilterChange = (filterType: 'search' | 'role' | 'status' | 'processId', value: string) => {
         router.push(`${pathname}?${createQueryString({ [filterType]: value, page: 1 })}`);
     };
 
@@ -231,19 +214,29 @@ export default function UsersPage() {
     };
     
     const UserTable = () => (
-        <div className="overflow-x-auto">
-            <Table>
-                <TableHeader><TableRow><TableHead>Nombre</TableHead><TableHead>Email</TableHead><TableHead>Rol</TableHead><TableHead>Proceso</TableHead><TableHead>Estado</TableHead><TableHead><span className="sr-only">Acciones</span></TableHead></TableRow></TableHeader>
-                <TableBody>
-                    {isLoading ? [...Array(5)].map((_,i) => (<TableRow key={i}><TableCell colSpan={6}><Skeleton className="h-10 w-full" /></TableCell></TableRow>)) :
-                     usersList.map(u => {
-                         const colors = u.process ? getProcessColors(u.process.id) : null;
-                         return <DraggableUserRow key={u.id} user={u} colors={colors}/>
-                     })}
-                </TableBody>
-             </Table>
-             { totalPages > 1 && !isLoading && <div className="p-4"><SmartPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} /></div> }
-        </div>
+        <Card>
+            <CardHeader>
+                <div className="flex items-center justify-between">
+                     <CardTitle>Lista de Colaboradores</CardTitle>
+                      <Input
+                        placeholder="Buscar por nombre o email..."
+                        value={searchTerm}
+                        onChange={(e) => handleFilterChange('search', e.target.value)}
+                        className="max-w-xs"
+                    />
+                </div>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader><TableRow><TableHead>Nombre</TableHead><TableHead>Email</TableHead><TableHead>Rol</TableHead><TableHead>Estado</TableHead><TableHead><span className="sr-only">Acciones</span></TableHead></TableRow></TableHeader>
+                    <TableBody>
+                        {isLoading ? [...Array(5)].map((_,i) => (<TableRow key={i}><TableCell colSpan={5}><Skeleton className="h-10 w-full" /></TableCell></TableRow>)) :
+                        usersList.map(u => <DraggableUserRow key={u.id} user={u}/>)}
+                    </TableBody>
+                </Table>
+            </CardContent>
+             { totalPages > 1 && !isLoading && <CardFooter><SmartPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} /></CardFooter> }
+        </Card>
     );
     
     const ProcessTree = () => (
@@ -264,22 +257,6 @@ export default function UsersPage() {
     
     if (!currentUser || currentUser.role !== 'ADMINISTRATOR') return <div className="text-center p-8"><AlertTriangle className="mx-auto h-12 w-12 text-destructive"/>Acceso Denegado</div>;
 
-    if (isMobile) {
-        return (
-            <Tabs defaultValue="users" className="w-full">
-                <div className="flex justify-between items-center mb-4">
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="users">Colaboradores</TabsTrigger>
-                        <TabsTrigger value="processes">Estructura</TabsTrigger>
-                    </TabsList>
-                    <Button size="icon" variant="ghost" onClick={() => { setShowUserModal(true); setUserToEdit(null); }}><UserPlus className="h-5 w-5"/></Button>
-                </div>
-                <TabsContent value="users"><UserTable /></TabsContent>
-                <TabsContent value="processes"><ProcessTree/></TabsContent>
-            </Tabs>
-        )
-    }
-
     return (
         <DndContext onDragStart={(e) => setActiveDraggable(e.active)} onDragEnd={handleDragEnd}>
             <div className="space-y-6">
@@ -288,11 +265,27 @@ export default function UsersPage() {
                         <h2 className="text-2xl font-semibold">Control Central</h2>
                         <p className="text-muted-foreground">Gestiona los colaboradores y la estructura de procesos de la organización.</p>
                     </div>
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setShowProcessModal(true)}><Network className="mr-2 h-4 w-4"/> Gestionar Estructura</Button>
+                        <Button size="sm" onClick={() => { setUserToEdit(null); setShowUserModal(true); }}><UserPlus className="mr-2 h-4 w-4"/> Añadir Colaborador</Button>
+                    </div>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                    <div className="lg:col-span-2"><UserTable/></div>
-                    <div className="lg:col-span-1 lg:sticky lg:top-24"><ProcessTree/></div>
-                </div>
+                
+                {isMobile ? (
+                    <Tabs defaultValue="users" className="w-full">
+                        <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="users">Colaboradores</TabsTrigger>
+                            <TabsTrigger value="processes">Estructura</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="users" className="mt-4"><UserTable /></TabsContent>
+                        <TabsContent value="processes" className="mt-4"><ProcessTree/></TabsContent>
+                    </Tabs>
+                ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                        <div className="lg:col-span-2"><UserTable/></div>
+                        <div className="lg:col-span-1 lg:sticky lg:top-24"><ProcessTree/></div>
+                    </div>
+                )}
             </div>
              <DragOverlay>
                 {activeDraggable?.data.current?.type === 'user' ? (
@@ -300,9 +293,18 @@ export default function UsersPage() {
                 ) : null}
             </DragOverlay>
             {showUserModal && <UserFormModal isOpen={showUserModal} onClose={() => setShowUserModal(false)} onSave={fetchData} user={userToEdit} processes={processes} />}
-            {processToEdit && <ProcessFormModal isOpen={!!processToEdit} onClose={() => setProcessToEdit(null)} onSave={fetchData} process={processToEdit} allProcesses={processes} />}
-            {processToDelete && <AlertDialog open={!!processToDelete} onOpenChange={() => setProcessToDelete(null)}><AlertDialogContent>...</AlertDialogContent></AlertDialog>}
+            {(showProcessModal || processToEdit) && <ProcessFormModal isOpen={showProcessModal || !!processToEdit} onClose={() => { setShowProcessModal(false); setProcessToEdit(null); }} onSave={fetchData} process={processToEdit} allProcesses={processes} />}
+            {processToDelete && (
+                 <AlertDialog open={!!processToDelete} onOpenChange={() => setProcessToDelete(null)}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader><AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle><AlertDialogDescription>Se eliminará el proceso "<strong>{processToDelete.name}</strong>". Los subprocesos y usuarios pasarán al nivel superior.</AlertDialogDescription></AlertDialogHeader>
+                        <AlertDialogFooter>
+                           <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                           <AlertDialogAction>Eliminar</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                 </AlertDialog>
+            )}
         </DndContext>
     );
 }
-```
