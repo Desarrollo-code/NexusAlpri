@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, createContext, useContext, use
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, Edit, Trash2, UserPlus, Loader2, MoreVertical, GripVertical, Users as UsersIcon, List, Grid, SlidersHorizontal, Briefcase, Filter, X } from 'lucide-react';
+import { PlusCircle, Search, Edit, Trash2, UserPlus, Loader2, MoreVertical, GripVertical, Users as UsersIcon, List, Grid, SlidersHorizontal, Briefcase, Filter, X, Check } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -13,24 +13,26 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import type { User, UserRole, Process } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SmartPagination } from '@/components/ui/pagination';
 import { useTitle } from '@/contexts/title-context';
 import { getProcessColors } from '@/lib/utils';
 import { getRoleBadgeVariant, getRoleInSpanish } from '@/lib/security-log-utils';
-import { DndContext, useDraggable, useDroppable, DragOverlay, type DragEndEvent, type Active, type Over } from '@dnd-kit/core';
+import { DndContext, useDraggable, useDroppable, DragOverlay, type DragEndEvent, type Active, type Over, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { UserFormModal } from '@/components/users/user-form-modal';
 import { ProcessFormModal } from '@/components/users/process-form-modal';
 import { UserProfileCard } from '@/components/profile/user-profile-card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuPortal, DropdownMenuSubContent, DropdownMenuCheckboxItem } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Separator } from '@/components/ui/separator';
 import { Identicon } from '@/components/ui/identicon';
 import { AlertTriangle } from 'lucide-react';
+import { ProcessTree } from '@/components/users/process-tree';
+import { BulkAssignModal } from '@/components/users/bulk-assign-modal';
+import { AnimatePresence, motion } from 'framer-motion';
 
 // --- TYPES & CONTEXT ---
 interface ProcessWithChildren extends Process {
@@ -39,158 +41,9 @@ interface ProcessWithChildren extends Process {
 }
 interface UserWithProcess extends User {
     process: { id: string; name: string } | null;
-    processes?: { id: string, name: string }[];
 }
 
 const PAGE_SIZE = 12;
-
-type UsersPageContextType = {
-    handleFilterChange: (key: string, value: string | null) => void;
-    setProcessToEdit: (p: ProcessWithChildren) => void;
-    setProcessToDelete: (p: ProcessWithChildren) => void;
-};
-const UsersPageContext = createContext<UsersPageContextType | null>(null);
-const useUsersPage = () => {
-    const context = useContext(UsersPageContext);
-    if (!context) throw new Error("useUsersPage must be used within UsersPageProvider");
-    return context;
-};
-
-// --- SUB-COMPONENTS ---
-const ProcessTreeFilter = ({ processes, activeFilter, onSelect }: { processes: ProcessWithChildren[], activeFilter: string | null, onSelect: (id: string | null) => void }) => {
-    const renderTree = (processList: ProcessWithChildren[], level = 0) => {
-        return processList.map(p => (
-            <React.Fragment key={p.id}>
-                <CommandItem
-                    value={p.name}
-                    onSelect={() => onSelect(p.id)}
-                    style={{ paddingLeft: `${level * 1.5 + 0.5}rem` }}
-                    className="flex justify-between items-center"
-                >
-                    <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getProcessColors(p.id).raw.medium }} />
-                        {p.name}
-                    </div>
-                </CommandItem>
-                {p.children.length > 0 && renderTree(p.children, level + 1)}
-            </React.Fragment>
-        ));
-    };
-
-    const activeProcessName = processes.flatMap(p => p.children.concat(p)).find(p => p.id === activeFilter)?.name || 'Todos los Procesos';
-
-    return (
-        <Popover>
-            <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full sm:w-auto justify-start">
-                    <Briefcase className="mr-2 h-4 w-4" />
-                    <span className="truncate">{activeProcessName}</span>
-                </Button>
-            </PopoverTrigger>
-            <PopoverContent className="p-0 w-[300px]" align="start">
-                <Command>
-                    <CommandInput placeholder="Buscar proceso..." />
-                    <CommandList>
-                        <CommandEmpty>No se encontraron procesos.</CommandEmpty>
-                        <CommandGroup>
-                             <CommandItem onSelect={() => onSelect(null)}>Todos los Procesos</CommandItem>
-                             <CommandItem onSelect={() => onSelect('unassigned')}>Sin Asignar</CommandItem>
-                             <Separator />
-                             {renderTree(processes)}
-                        </CommandGroup>
-                    </CommandList>
-                </Command>
-            </PopoverContent>
-        </Popover>
-    )
-}
-
-const FilterBar = ({ activeFilters, processes }: { activeFilters: Record<string, string | null>, processes: ProcessWithChildren[] }) => {
-    const { handleFilterChange } = useUsersPage();
-    
-    return (
-        <div className="flex flex-col sm:flex-row gap-2">
-            <ProcessTreeFilter processes={processes} activeFilter={activeFilters.processId || null} onSelect={(id) => handleFilterChange('processId', id)} />
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="w-full sm:w-auto"><Filter className="mr-2 h-4 w-4" />Filtros Avanzados</Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-[250px]">
-                    <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>Rol</DropdownMenuSubTrigger>
-                        <DropdownMenuSubContent>
-                             <DropdownMenuCheckboxItem checked={!activeFilters.role} onCheckedChange={() => handleFilterChange('role', null)}>Todos</DropdownMenuCheckboxItem>
-                             <DropdownMenuCheckboxItem checked={activeFilters.role === 'ADMINISTRATOR'} onCheckedChange={() => handleFilterChange('role', 'ADMINISTRATOR')}>Administrador</DropdownMenuCheckboxItem>
-                             <DropdownMenuCheckboxItem checked={activeFilters.role === 'INSTRUCTOR'} onCheckedChange={() => handleFilterChange('role', 'INSTRUCTOR')}>Instructor</DropdownMenuCheckboxItem>
-                             <DropdownMenuCheckboxItem checked={activeFilters.role === 'STUDENT'} onCheckedChange={() => handleFilterChange('role', 'STUDENT')}>Estudiante</DropdownMenuCheckboxItem>
-                        </DropdownMenuSubContent>
-                    </DropdownMenuSub>
-                    <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>Estado</DropdownMenuSubTrigger>
-                        <DropdownMenuSubContent>
-                            <DropdownMenuCheckboxItem checked={!activeFilters.status} onCheckedChange={() => handleFilterChange('status', null)}>Todos</DropdownMenuCheckboxItem>
-                            <DropdownMenuCheckboxItem checked={activeFilters.status === 'active'} onCheckedChange={() => handleFilterChange('status', 'active')}>Activo</DropdownMenuCheckboxItem>
-                            <DropdownMenuCheckboxItem checked={activeFilters.status === 'inactive'} onCheckedChange={() => handleFilterChange('status', 'inactive')}>Inactivo</DropdownMenuCheckboxItem>
-                        </DropdownMenuSubContent>
-                    </DropdownMenuSub>
-                </DropdownMenuContent>
-            </DropdownMenu>
-        </div>
-    )
-}
-
-const Header = ({ onAddUser, onAddProcess }: { onAddUser: () => void, onAddProcess: () => void }) => (
-    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-        <div className="space-y-1 flex-grow">
-            <h2 className="text-2xl font-semibold">Control Central</h2>
-            <p className="text-muted-foreground">Gestiona los colaboradores y la estructura de procesos de la organización.</p>
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-             <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button><PlusCircle className="mr-2 h-4 w-4"/> Añadir</Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={onAddUser}><UserPlus className="mr-2 h-4 w-4"/>Nuevo Colaborador</DropdownMenuItem>
-                    <DropdownMenuItem onSelect={onAddProcess}><Briefcase className="mr-2 h-4 w-4"/>Nuevo Proceso</DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
-        </div>
-    </div>
-);
-
-const UserTable = ({ users, onEdit }: { users: UserWithProcess[], onEdit: (user: User) => void }) => (
-     <Card><CardContent className="p-0"><Table><TableHeader><TableRow><TableHead>Colaborador</TableHead><TableHead className="hidden md:table-cell">Rol</TableHead><TableHead className="hidden lg:table-cell">Estado</TableHead><TableHead className="hidden lg:table-cell">Proceso</TableHead><TableHead className="text-right">Acciones</TableHead></TableRow></TableHeader>
-        <TableBody>
-            {users.map(u => (
-                <TableRow key={u.id}>
-                    <TableCell><div className="flex items-center gap-3"><Avatar className="h-9 w-9"><AvatarImage src={u.avatar || undefined} /><AvatarFallback><Identicon userId={u.id}/></AvatarFallback></Avatar><div><p className="font-semibold truncate">{u.name}</p><p className="text-xs text-muted-foreground truncate">{u.email}</p></div></div></TableCell>
-                    <TableCell className="hidden md:table-cell"><Badge variant={getRoleBadgeVariant(u.role)}>{getRoleInSpanish(u.role)}</Badge></TableCell>
-                    <TableCell className="hidden lg:table-cell"><Badge variant={u.isActive ? 'default' : 'destructive'} className={cn(u.isActive && 'bg-green-500 hover:bg-green-600')}>{u.isActive ? 'Activo' : 'Inactivo'}</Badge></TableCell>
-                    <TableCell className="hidden lg:table-cell">{u.process ? <Badge variant="secondary" style={{ backgroundColor: getProcessColors(u.process.id).raw.light, color: getProcessColors(u.process.id).raw.dark }}>{u.process.name}</Badge> : <span className="text-xs text-muted-foreground italic">Sin asignar</span>}</TableCell>
-                    <TableCell className="text-right">
-                        <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4"/></Button></DropdownMenuTrigger>
-                        <DropdownMenuContent align="end"><DropdownMenuItem onSelect={() => onEdit(u)}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
-                    </TableCell>
-                </TableRow>
-            ))}
-        </TableBody>
-    </Table></CardContent></Card>
-);
-
-const UserGrid = ({ users, onEdit }: { users: UserWithProcess[], onEdit: (user: User) => void }) => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {users.map(u => (
-             <div key={u.id} className="relative group">
-                <UserProfileCard user={u} />
-                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <DropdownMenu><DropdownMenuTrigger asChild><Button variant="secondary" size="icon" className="h-7 w-7"><MoreVertical className="h-4 w-4"/></Button></DropdownMenuTrigger>
-                    <DropdownMenuContent align="end"><DropdownMenuItem onSelect={() => onEdit(u)}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
-                </div>
-            </div>
-        ))}
-    </div>
-);
 
 // --- MAIN PAGE COMPONENT ---
 export default function UsersPage() {
@@ -203,12 +56,7 @@ export default function UsersPage() {
     const [isLoading, setIsLoading] = useState(true);
 
     const [userToEdit, setUserToEdit] = useState<User | null>(null);
-    const [processToEdit, setProcessToEdit] = useState<ProcessWithChildren | null>(null);
-    const [processToDelete, setProcessToDelete] = useState<ProcessWithChildren | null>(null);
-    const [isDeletingProcess, setIsDeletingProcess] = useState(false);
-
     const [showUserModal, setShowUserModal] = useState(false);
-    const [showProcessModal, setShowProcessModal] = useState(false);
     
     const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
     
@@ -225,11 +73,48 @@ export default function UsersPage() {
     const debouncedSearchTerm = useDebounce(search, 300);
     const currentPage = Number(searchParams.get('page')) || 1;
     const totalPages = Math.ceil(totalUsers / PAGE_SIZE);
+    
+    const [activeDraggable, setActiveDraggable] = useState<Active | null>(null);
+    const draggedUser = useMemo(() => {
+        if (!activeDraggable) return null;
+        return usersList.find(u => u.id === activeDraggable.id)
+    }, [activeDraggable, usersList]);
+
+    const sensors = useSensors(useSensor(MouseSensor, { activationConstraint: { distance: 10, }, }), useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5, }, }));
+    
+    // State for bulk selection
+    const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+    const [isBulkAssignModalOpen, setIsBulkAssignModalOpen] = useState(false);
+
+    const handleSelectionChange = (userId: string, isSelected: boolean) => {
+        setSelectedUserIds(prev => {
+            const newSet = new Set(prev);
+            if (isSelected) {
+                newSet.add(userId);
+            } else {
+                newSet.delete(userId);
+            }
+            return newSet;
+        });
+    };
+    
+    const selectAllOnPage = () => {
+        const pageUserIds = usersList.map(u => u.id);
+        const allSelected = pageUserIds.every(id => selectedUserIds.has(id));
+        if (allSelected) {
+            // Deselect all
+            setSelectedUserIds(new Set());
+        } else {
+            // Select all
+            setSelectedUserIds(new Set(pageUserIds));
+        }
+    };
+
 
     const createQueryString = useCallback((paramsToUpdate: Record<string, string | number | null>) => {
       const params = new URLSearchParams(searchParams.toString());
       Object.entries(paramsToUpdate).forEach(([name, value]) => {
-          if (value === null || value === '' || (name === 'role' && value === 'ALL') || (name === 'status' && value === 'ALL')) params.delete(name);
+          if (value === null || value === '' || (name === 'role' && value === 'ALL') || (name === 'status' && value === 'ALL') || (name === 'processId' && value === 'ALL')) params.delete(name);
           else params.set(name, String(value));
       });
       return params.toString();
@@ -270,7 +155,11 @@ export default function UsersPage() {
         setPageTitle('Control Central');
         if (currentUser?.role !== 'ADMINISTRATOR') return;
         fetchData();
-    }, [currentUser, fetchData, setPageTitle, debouncedSearchTerm, currentPage, role, status, processId]);
+    }, [currentUser, fetchData, setPageTitle]);
+    
+    useEffect(() => {
+        setSelectedUserIds(new Set());
+    }, [currentPage, debouncedSearchTerm, role, status, processId]);
     
     const handleFilterChange = (key: string, value: string | null) => {
         router.push(`${pathname}?${createQueryString({ [key]: value, page: 1 })}`);
@@ -289,49 +178,47 @@ export default function UsersPage() {
         setShowUserModal(true);
     };
 
-    const handleOpenProcessModal = (process: Process | null = null) => {
-        setProcessToEdit(process as ProcessWithChildren);
-        setShowProcessModal(true);
-    };
-    
-    const handleDeleteProcess = async () => {
-        if (!processToDelete) return;
-        setIsDeletingProcess(true);
+    const handleDragEnd = async (event: DragEndEvent) => {
+        setActiveDraggable(null);
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+        
+        const userId = active.id as string;
+        const targetProcessId = over.id as string;
+
+        // Optimistic UI update
+        const originalUsers = [...usersList];
+        setUsersList(prev => prev.map(u => 
+            u.id === userId 
+                ? { ...u, processId: targetProcessId, process: processes.flatMap(p => p.children.concat(p)).find(p => p.id === targetProcessId) || null }
+                : u
+        ));
+
         try {
-            const res = await fetch(`/api/processes/${processToDelete.id}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error((await res.json()).message || 'No se pudo eliminar el proceso.');
-            toast({ title: 'Proceso Eliminado', description: `El proceso "${processToDelete.name}" ha sido eliminado.` });
-            fetchData();
+            const res = await fetch(`/api/users/${userId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ processId: targetProcessId }),
+            });
+            if (!res.ok) throw new Error("No se pudo asignar el proceso.");
+            
+            toast({ title: "Usuario Asignado", description: "El colaborador ha sido movido al nuevo proceso."});
+            fetchData(); // Re-sync with server
         } catch (err) {
-            toast({ title: 'Error', description: err instanceof Error ? err.message : 'Error desconocido', variant: 'destructive' });
-        } finally {
-            setIsDeletingProcess(false);
-            setProcessToDelete(null);
+            toast({ title: 'Error', description: (err as Error).message, variant: 'destructive'});
+            setUsersList(originalUsers); // Revert on error
         }
     };
     
-    const contextValue = { handleFilterChange, setProcessToEdit: handleOpenProcessModal, setProcessToDelete };
+    const activeFilters = { search, role, status, processId };
 
     if (!currentUser || currentUser.role !== 'ADMINISTRATOR') {
         return <div className="text-center p-8"><AlertTriangle className="mx-auto h-12 w-12 text-destructive"/>Acceso Denegado</div>;
     }
-    
-    const activeFilters = { search, role, status, processId };
-
-    if (isLoading && usersList.length === 0) {
-        return (
-            <div className="space-y-6">
-                <Header onAddUser={() => {}} onAddProcess={() => {}} />
-                <Card><CardContent className="p-4"><Skeleton className="h-10 w-full" /></CardContent></Card>
-                <Skeleton className="h-96 w-full" />
-            </div>
-        );
-    }
 
     return (
-        <UsersPageContext.Provider value={contextValue}>
+        <DndContext sensors={sensors} onDragStart={(e) => setActiveDraggable(e.active)} onDragEnd={handleDragEnd}>
             <div className="space-y-6">
-                <Header onAddUser={() => handleOpenUserModal(null)} onAddProcess={() => handleOpenProcessModal(null)} />
                 <Card>
                     <CardContent className="p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div className="relative w-full md:max-w-xs">
@@ -339,47 +226,105 @@ export default function UsersPage() {
                              <Input placeholder="Buscar por nombre o email..." value={search} onChange={handleSearchChange} className="pl-10"/>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-                            <FilterBar activeFilters={activeFilters} processes={processes} />
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button variant="outline" className="w-full sm:w-auto justify-start">
+                                        <Filter className="mr-2 h-4 w-4" />
+                                        Filtros ({Object.values(activeFilters).filter(Boolean).length})
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-64 p-0" align="end">
+                                    <div className="p-4 space-y-4">
+                                        <div className="space-y-2">
+                                            <Label>Rol</Label>
+                                            <Select value={role || 'ALL'} onValueChange={(v) => handleFilterChange('role', v)}>
+                                                <SelectTrigger><SelectValue/></SelectTrigger>
+                                                <SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="ADMINISTRATOR">Admin</SelectItem><SelectItem value="INSTRUCTOR">Instructor</SelectItem><SelectItem value="STUDENT">Estudiante</SelectItem></SelectContent>
+                                            </Select>
+                                        </div>
+                                         <div className="space-y-2">
+                                            <Label>Estado</Label>
+                                            <Select value={status || 'ALL'} onValueChange={(v) => handleFilterChange('status', v)}>
+                                                <SelectTrigger><SelectValue/></SelectTrigger>
+                                                <SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="active">Activo</SelectItem><SelectItem value="inactive">Inactivo</SelectItem></SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" className="w-full sm:w-auto justify-start"><Grid className="mr-2 h-4 w-4" />Vista: {viewMode === 'grid' ? 'Cuadrícula' : 'Tabla'}</Button>
+                                    <Button variant="outline" className="w-full sm:w-auto justify-start"><Grid className="mr-2 h-4 w-4" />Vista</Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem onSelect={() => setViewMode('grid')}><Grid className="mr-2 h-4 w-4"/>Cuadrícula</DropdownMenuItem>
                                     <DropdownMenuItem onSelect={() => setViewMode('table')}><List className="mr-2 h-4 w-4"/>Tabla</DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
+                             <Button onClick={() => handleOpenUserModal(null)} className="w-full sm:w-auto"><UserPlus className="mr-2 h-4 w-4"/>Añadir Colaborador</Button>
                         </div>
                     </CardContent>
                 </Card>
 
-                {isLoading ? (
-                    viewMode === 'table' ? <Skeleton className="h-[400px] w-full" /> : <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">{[...Array(8)].map((_,i) => <Skeleton key={i} className="h-48 w-full" />)}</div>
-                ) : (
-                    <>
-                        {usersList.length > 0 ? (
-                           viewMode === 'table' ? <UserTable users={usersList} onEdit={handleOpenUserModal}/> : <UserGrid users={usersList} onEdit={handleOpenUserModal}/>
+                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+                    <div className="lg:col-span-3">
+                         {isLoading ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">{[...Array(8)].map((_,i) => <Skeleton key={i} className="h-48 w-full" />)}</div>
+                        ) : usersList.length > 0 ? (
+                           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                {usersList.map(u => (
+                                    <DraggableUserCard key={u.id} user={u} isSelected={selectedUserIds.has(u.id)} onSelectionChange={handleSelectionChange}/>
+                                ))}
+                            </div>
                         ) : (
-                           <div className="text-center py-16 border-2 border-dashed rounded-lg">
+                           <div className="text-center py-16 border-2 border-dashed rounded-lg col-span-full">
                                 <UsersIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4"/>
                                 <h3 className="text-xl font-semibold mb-2">No se encontraron colaboradores</h3>
                                 <p className="text-muted-foreground">Prueba a ajustar los filtros o a añadir un nuevo colaborador.</p>
                            </div>
                         )}
-                        {totalPages > 1 && <SmartPagination className="mt-4" currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />}
-                    </>
-                )}
+                         {totalPages > 1 && <SmartPagination className="mt-6" currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />}
+                    </div>
+
+                    <aside className="lg:col-span-1 lg:sticky lg:top-24">
+                        <ProcessTree processes={processes} onProcessUpdate={fetchData} />
+                    </aside>
+                </div>
             </div>
+             <DragOverlay dropAnimation={null}>
+                {draggedUser ? <UserProfileCard user={draggedUser} /> : null}
+            </DragOverlay>
+            
+            <AnimatePresence>
+                {selectedUserIds.size > 0 && (
+                    <motion.div initial={{ y: 100 }} animate={{ y: 0 }} exit={{ y: 100 }} className="fixed bottom-4 left-1/2 -translate-x-1/2 w-auto">
+                        <Card className="shadow-2xl flex items-center gap-4 p-2">
+                           <p className="text-sm font-semibold px-2">{selectedUserIds.size} seleccionados</p>
+                           <Button size="sm" onClick={() => setIsBulkAssignModalOpen(true)}><Briefcase className="mr-2 h-4 w-4"/> Asignar Proceso</Button>
+                           <Button size="sm" variant="ghost" onClick={() => setSelectedUserIds(new Set())}>Limpiar</Button>
+                        </Card>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {showUserModal && <UserFormModal isOpen={showUserModal} onClose={() => setShowUserModal(false)} onSave={fetchData} user={userToEdit} processes={processes} />}
-            {showProcessModal && <ProcessFormModal isOpen={showProcessModal} onClose={() => setShowProcessModal(false)} onSave={fetchData} process={processToEdit} allProcesses={processes} />}
-            
-            {processToDelete && (
-                 <AlertDialog open={!!processToDelete} onOpenChange={() => setProcessToDelete(null)}>
-                    <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle><AlertDialogDescription>Se eliminará el proceso "<strong>{processToDelete.name}</strong>". Los subprocesos y usuarios pasarán al nivel superior.</AlertDialogDescription></AlertDialogHeader>
-                    <AlertDialogFooter><AlertDialogCancel disabled={isDeletingProcess}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDeleteProcess} disabled={isDeletingProcess} className={cn(buttonVariants({ variant: 'destructive'}))}>{isDeletingProcess && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>} Eliminar</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
-                 </AlertDialog>
-            )}
-        </UsersPageContext.Provider>
+            {isBulkAssignModalOpen && <BulkAssignModal isOpen={isBulkAssignModalOpen} onClose={() => setIsBulkAssignModalOpen(false)} onSave={fetchData} userIds={Array.from(selectedUserIds)} processes={processes}/>}
+        </DndContext>
     );
 }
+
+const DraggableUserCard = ({ user, isSelected, onSelectionChange }: { user: UserWithProcess, isSelected: boolean, onSelectionChange: (id: string, selected: boolean) => void }) => {
+    const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: user.id });
+    
+    return (
+        <div ref={setNodeRef} {...attributes} {...listeners} className={cn("touch-none", isDragging && "opacity-30")}>
+            <div className="relative">
+                <UserProfileCard user={user} />
+                 <div className="absolute top-2 left-2">
+                    <Checkbox checked={isSelected} onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)} className="bg-background border-primary" />
+                </div>
+            </div>
+        </div>
+    )
+}
+```
