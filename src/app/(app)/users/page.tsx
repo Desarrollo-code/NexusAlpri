@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { PlusCircle, Search, Edit, Trash2, UserPlus, Loader2, AlertTriangle, MoreVertical, UserCheck, UserX, Filter, Check, Network, GripVertical, Users as UsersIcon } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
@@ -31,11 +31,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { cn, getInitials } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SmartPagination } from '@/components/ui/pagination';
 import { useTitle } from '@/contexts/title-context';
-import { getProcessColors } from '@/lib/utils';
+import { getProcessColors, getInitials } from '@/lib/utils';
 import { getRoleBadgeVariant, getRoleInSpanish } from '@/lib/security-log-utils';
 import { Identicon } from '@/components/ui/identicon';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -43,6 +43,8 @@ import { DndContext, useDraggable, useDroppable, DragOverlay, type DragEndEvent,
 import { UserFormModal } from '@/components/users/user-form-modal';
 import { ProcessFormModal } from '@/components/users/process-form-modal';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { useDebounce } from '@/hooks/use-debounce';
 
 // --- TYPES ---
 interface ProcessWithChildren extends Process {
@@ -56,54 +58,52 @@ interface UserWithProcess extends User {
 const PAGE_SIZE = 10;
 
 // --- Components ---
-const DraggableUserRow = ({ user, ...props }: { user: UserWithProcess } & React.HTMLAttributes<HTMLTableRowElement>) => {
+
+const DraggableUserCard = ({ user, ...props }: { user: UserWithProcess, isOverlay?: boolean } & React.HTMLAttributes<HTMLDivElement>) => {
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
         id: user.id,
         data: { type: 'user', user }
     });
 
     return (
-        <TableRow 
-            ref={setNodeRef}
-            className={cn(
-                "touch-none",
-                isDragging && "opacity-50",
-                !user.isActive && "opacity-60"
-            )}
-            {...props}
-        >
-            <TableCell>
-                <div 
-                    {...attributes} 
-                    {...listeners} 
-                    className="flex items-center gap-3 cursor-grab"
-                >
-                    <GripVertical className="h-4 w-4 text-muted-foreground"/>
-                    <Avatar className="h-9 w-9">
-                        <AvatarImage src={user.avatar || undefined} alt={user.name} />
-                        <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-                    </Avatar>
-                    <div className="font-medium">{user.name}</div>
+        <div ref={setNodeRef}>
+            <Card className={cn(
+                "flex items-center p-3 gap-3 transition-shadow",
+                !user.isActive && "opacity-60",
+                isDragging && "shadow-lg",
+                props.isOverlay && "shadow-2xl scale-105"
+            )}>
+                 <div {...attributes} {...listeners} className="cursor-grab p-1 touch-none">
+                    <GripVertical className="h-5 w-5 text-muted-foreground" />
                 </div>
-            </TableCell>
-            <TableCell>{user.email}</TableCell>
-            <TableCell><Badge variant={getRoleBadgeVariant(user.role)} className="capitalize">{getRoleInSpanish(user.role)}</Badge></TableCell>
-            <TableCell><Badge variant={user.isActive ? 'default' : 'destructive'} className={cn(user.isActive && "bg-green-600 hover:bg-green-700")}>{user.isActive ? 'Activo' : 'Inactivo'}</Badge></TableCell>
-            <TableCell>{user.process?.name || <span className="text-muted-foreground italic">Sin asignar</span>}</TableCell>
-            <TableCell>{/* Action Menu will be here */}</TableCell>
-        </TableRow>
-    );
-};
+                <Avatar className="h-10 w-10">
+                    <AvatarImage src={user.avatar || undefined} alt={user.name} />
+                    <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                </Avatar>
+                <div className="flex-grow overflow-hidden">
+                    <p className="font-semibold truncate">{user.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                </div>
+                 <div className="flex items-center gap-2 text-xs shrink-0">
+                    <Badge variant={getRoleBadgeVariant(user.role)} className="hidden sm:inline-flex">{getRoleInSpanish(user.role)}</Badge>
+                    <Badge variant={user.isActive ? 'default' : 'destructive'} className={cn(user.isActive && 'bg-green-500 hover:bg-green-600')}>{user.isActive ? 'Activo' : 'Inactivo'}</Badge>
+                </div>
+                {props.children}
+            </Card>
+        </div>
+    )
+}
 
 const ProcessDropZone = ({ process, onEdit, onDelete }: { process: ProcessWithChildren, onEdit: (p: ProcessWithChildren) => void, onDelete: (p: ProcessWithChildren) => void }) => {
     const { isOver, setNodeRef } = useDroppable({ id: process.id, data: { type: 'process' } });
     const colors = getProcessColors(process.id);
 
     return (
-        <div ref={setNodeRef} className={cn("pl-4", isOver && 'bg-primary/10 rounded-md')}>
+        <div ref={setNodeRef} className={cn("pl-4 relative transition-colors", isOver && 'bg-primary/10 rounded-md')}>
+             <div className="absolute left-2 top-0 bottom-0 w-px bg-border -z-10" />
             <div className="flex items-center justify-between group py-1.5">
                 <div className="flex items-center gap-2 flex-grow min-w-0">
-                    <div className="w-1.5 h-6 rounded-full" style={{ backgroundColor: colors.raw.medium }} />
+                    <div className="absolute left-[3px] top-3 h-2 w-2 rounded-full border-2 border-background" style={{ backgroundColor: colors.raw.medium }}/>
                     <span className="font-semibold truncate">{process.name}</span>
                     <Badge variant="secondary" className="rounded-full">{process.users.length}</Badge>
                 </div>
@@ -147,12 +147,12 @@ export default function UsersPage() {
     const [activeDraggable, setActiveDraggable] = useState<any>(null);
 
     const searchTerm = searchParams.get('search') || '';
+    const debouncedSearchTerm = useDebounce(searchTerm, 300);
     const roleFilter = searchParams.get('role') || 'all';
     const statusFilter = searchParams.get('status') || 'all';
     const processFilter = searchParams.get('processId') || 'all';
     const currentPage = Number(searchParams.get('page')) || 1;
-    const totalPages = Math.ceil(totalUsers / PAGE_SIZE);
-
+    
     const fetchData = useCallback(async () => {
         if (!currentUser) return;
         setIsLoading(true);
@@ -176,6 +176,8 @@ export default function UsersPage() {
             setIsLoading(false);
         }
     }, [currentUser, searchParams, toast]);
+    
+     const totalPages = Math.ceil(totalUsers / PAGE_SIZE);
 
     useEffect(() => {
         setPageTitle('Control Central');
@@ -238,10 +240,10 @@ export default function UsersPage() {
     };
     
     const UserTable = () => (
-        <Card>
+         <Card>
             <CardHeader>
                 <div className="flex items-center justify-between">
-                     <CardTitle>Lista de Colaboradores</CardTitle>
+                     <CardTitle>Colaboradores ({totalUsers})</CardTitle>
                       <Input
                         placeholder="Buscar por nombre o email..."
                         value={searchTerm}
@@ -250,14 +252,22 @@ export default function UsersPage() {
                     />
                 </div>
             </CardHeader>
-            <CardContent>
-                <Table>
-                    <TableHeader><TableRow><TableHead>Nombre</TableHead><TableHead>Email</TableHead><TableHead>Rol</TableHead><TableHead>Estado</TableHead><TableHead>Proceso</TableHead><TableHead><span className="sr-only">Acciones</span></TableHead></TableRow></TableHeader>
-                    <TableBody>
-                        {isLoading ? [...Array(5)].map((_,i) => (<TableRow key={i}><TableCell colSpan={6}><Skeleton className="h-12 w-full" /></TableCell></TableRow>)) :
-                        usersList.map(u => <DraggableUserRow key={u.id} user={u}/>)}
-                    </TableBody>
-                </Table>
+            <CardContent className="space-y-3">
+                {isLoading ? [...Array(5)].map((_,i) => <Skeleton key={i} className="h-[76px] w-full" />) :
+                usersList.map(u => (
+                    <DraggableUserCard key={u.id} user={u}>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                               <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0"><MoreVertical className="h-4 w-4"/></Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onSelect={() => {setUserToEdit(u); setShowUserModal(true);}}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
+                                <DropdownMenuSeparator/>
+                                <DropdownMenuItem onSelect={() => {}} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4"/>Inactivar</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </DraggableUserCard>
+                ))}
             </CardContent>
              { totalPages > 1 && !isLoading && <CardFooter><SmartPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} /></CardFooter> }
         </Card>
@@ -266,7 +276,7 @@ export default function UsersPage() {
     const ProcessTree = () => (
         <Card className="h-full">
             <CardHeader className="flex flex-row items-center justify-between">
-                <div className="space-y-1"><CardTitle className="flex items-center gap-2"><Network />Estructura Organizacional</CardTitle><CardDescription>Arrastra usuarios a un proceso.</CardDescription></div>
+                <div className="space-y-1"><CardTitle className="flex items-center gap-2"><Network />Estructura</CardTitle><CardDescription>Arrastra usuarios aquí.</CardDescription></div>
                 <Button size="sm" variant="outline" onClick={() => { setProcessToEdit(null); setShowProcessModal(true);}}><PlusCircle className="mr-2 h-4 w-4"/>Crear</Button>
             </CardHeader>
             <CardContent>
@@ -312,7 +322,7 @@ export default function UsersPage() {
             </div>
              <DragOverlay>
                 {activeDraggable?.data.current?.type === 'user' ? (
-                    <div className="p-2 bg-primary text-primary-foreground rounded-lg shadow-xl font-semibold">{activeDraggable.data.current.user.name}</div>
+                   <DraggableUserCard user={activeDraggable.data.current.user} isOverlay />
                 ) : null}
             </DragOverlay>
             {showUserModal && <UserFormModal isOpen={showUserModal} onClose={() => setShowUserModal(false)} onSave={fetchData} user={userToEdit} processes={processes} />}
