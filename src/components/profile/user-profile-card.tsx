@@ -32,44 +32,29 @@ export const UserProfileCard = ({ user }: UserProfileCardProps) => {
     const displayProcess = user.process ? [user.process] : (user.processes || []);
 
     return (
-        <Card className="profile-card flex flex-col items-center p-4 h-full bg-card shadow-lg hover:shadow-primary/20 transition-shadow duration-300">
-            <div className="relative mb-3">
-                 <Avatar className="h-20 w-20 border-4 border-background shadow-md">
-                    <AvatarImage src={user.avatar || undefined} />
-                    <AvatarFallback><Identicon userId={user.id} /></AvatarFallback>
-                </Avatar>
-            </div>
+        <Card className="flex flex-col items-center p-4 h-full bg-card shadow-md hover:shadow-primary/20 transition-shadow duration-300 text-center">
+            <Avatar className="h-16 w-16 mb-3 border-2 border-border">
+                <AvatarImage src={user.avatar || undefined} />
+                <AvatarFallback><Identicon userId={user.id} /></AvatarFallback>
+            </Avatar>
             
-            <div className="text-center flex-grow">
-                <CardTitle className="text-lg font-bold font-headline flex items-center justify-center gap-1.5">
-                    <span className="truncate max-w-[150px]">{user.name}</span>
-                    <VerifiedBadge role={user.role} />
-                </CardTitle>
-                <CardDescription className="text-xs text-primary font-medium mt-1">
-                    {getRoleInSpanish(user.role)}
-                </CardDescription>
-
-                {displayProcess && displayProcess.length > 0 && (
-                    <div className="mt-3">
-                         <div className="flex flex-wrap justify-center gap-1">
-                            {displayProcess.map(process => {
-                                if (!process) return null;
-                                const colors = getProcessColors(process.id);
-                                return (
-                                    <Badge key={process.id} variant="secondary" style={{ backgroundColor: colors.raw.light, color: colors.raw.dark, borderColor: colors.raw.medium }} className="border">
-                                        {process.name}
-                                    </Badge>
-                                )
-                            })}
-                         </div>
-                    </div>
-                )}
+            <div className="flex-grow">
+                <p className="font-semibold text-sm truncate max-w-[150px]">{user.name}</p>
+                <p className="text-xs text-primary font-medium">{getRoleInSpanish(user.role)}</p>
+                <p className="text-xs text-muted-foreground truncate max-w-[150px]">{user.email}</p>
             </div>
+
+            {displayProcess && displayProcess.length > 0 && (
+                <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
+                    <Briefcase className="h-3 w-3 shrink-0"/>
+                     <span className="truncate">{displayProcess.map(p => p.name).join(', ')}</span>
+                </div>
+            )}
 
             {showMessageButton && (
-                 <div className="w-full mt-4">
-                    <Button size="sm" variant="outline" className="w-full" onClick={handleSendMessage}>
-                        <MessageSquare className="mr-2 h-4 w-4"/> Mensaje
+                 <div className="w-full mt-3">
+                    <Button size="sm" variant="ghost" className="w-full h-8 text-xs" onClick={handleSendMessage}>
+                        <MessageSquare className="mr-1.5 h-3 w-3"/> Mensaje
                     </Button>
                 </div>
             )}
