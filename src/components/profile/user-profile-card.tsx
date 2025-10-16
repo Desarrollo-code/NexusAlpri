@@ -36,7 +36,7 @@ export const UserProfileCard = ({ user }: UserProfileCardProps) => {
             {/* Cabecera decorativa */}
             <div className="h-16 w-full relative bg-gradient-to-br from-primary/10 to-accent/10">
                  {/* Avatar superpuesto */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[-50%]">
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2">
                     <Avatar className="h-20 w-20 border-4 border-card shadow-lg">
                         <AvatarImage src={user.avatar || undefined} />
                         <AvatarFallback><Identicon userId={user.id} /></AvatarFallback>
