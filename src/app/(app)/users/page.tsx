@@ -1,12 +1,11 @@
-
 // src/app/(app)/users/page.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback, createContext, useContext, useMemo } from 'react';
-import { Button, buttonVariants } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, Edit, Trash2, UserPlus, Loader2, MoreVertical, GripVertical, Users as UsersIcon, List, Grid, SlidersHorizontal, Briefcase, Filter, X, Check, MessageSquare } from 'lucide-react';
+import { PlusCircle, Search, List, Grid, Filter, Briefcase, UserPlus, MessageSquare, MoreVertical, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -20,20 +19,22 @@ import { SmartPagination } from '@/components/ui/pagination';
 import { useTitle } from '@/contexts/title-context';
 import { getProcessColors } from '@/lib/utils';
 import { getRoleInSpanish } from '@/lib/security-log-utils';
-import { DndContext, useDraggable, useDroppable, DragOverlay, type DragEndEvent, type Active, type Over, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, useDraggable, DragOverlay, type DragEndEvent, type Active, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { UserFormModal } from '@/components/users/user-form-modal';
 import { ProcessFormModal } from '@/components/users/process-form-modal';
 import { UserProfileCard } from '@/components/profile/user-profile-card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Identicon } from '@/components/ui/identicon';
 import { AlertTriangle } from 'lucide-react';
 import { ProcessTree } from '@/components/users/process-tree';
 import { BulkAssignModal } from '@/components/users/bulk-assign-modal';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Identicon } from '@/components/ui/identicon';
+
 
 // --- TYPES & CONTEXT ---
 interface ProcessWithChildren extends Process {
@@ -73,7 +74,6 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds }: { users: UserW
                             <Checkbox 
                                 checked={users.length > 0 && users.every(u => selectedUserIds.has(u.id))}
                                 onCheckedChange={(checked) => {
-                                    const allPageIds = users.map(u => u.id);
                                     if(checked) {
                                         onSelectionChange('all', true);
                                     } else {
@@ -282,7 +282,7 @@ export default function UsersPage() {
         const originalUsers = [...usersList];
         setUsersList(prev => prev.map(u => 
             u.id === userId 
-                ? { ...u, processId: targetProcessId, process: processes.flatMap(p => p.children.concat(p)).find(p => p.id === targetProcessId) || null }
+                ? { ...u, processId: targetProcessId === 'unassigned' ? null : targetProcessId, process: processes.flatMap(p => [p, ...p.children]).find(p => p.id === targetProcessId) || null }
                 : u
         ));
 
@@ -290,7 +290,7 @@ export default function UsersPage() {
             const res = await fetch(`/api/users/${userId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ processId: targetProcessId }),
+                body: JSON.stringify({ processId: targetProcessId === 'unassigned' ? null : targetProcessId }),
             });
             if (!res.ok) throw new Error("No se pudo asignar el proceso.");
             
@@ -302,6 +302,12 @@ export default function UsersPage() {
         }
     };
     
+    interface FlatProcess {
+        id: string;
+        name: string;
+        level: number;
+    }
+
     const flattenProcesses = (processList: Process[], level = 0): FlatProcess[] => {
       let flatList: FlatProcess[] = [];
       processList.forEach(p => {
@@ -311,8 +317,8 @@ export default function UsersPage() {
           }
       });
       return flatList;
-  };
-  const flattenedProcesses = flattenProcesses(processes);
+    };
+    const flattenedProcesses = flattenProcesses(processes);
 
     if (!currentUser || currentUser.role !== 'ADMINISTRATOR') {
         return <div className="text-center p-8"><AlertTriangle className="mx-auto h-12 w-12 text-destructive"/>Acceso Denegado</div>;
