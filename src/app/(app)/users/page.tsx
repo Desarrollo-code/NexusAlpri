@@ -1,9 +1,9 @@
 // src/app/(app)/users/page.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import React, { useState, useEffect, useCallback, createContext, useContext, useMemo } from 'react';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { PlusCircle, Search, Edit, Trash2, UserPlus, Loader2, MoreVertical, GripVertical, Users as UsersIcon, List, Grid, SlidersHorizontal, Briefcase, Filter, X } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
@@ -18,9 +18,9 @@ import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SmartPagination } from '@/components/ui/pagination';
 import { useTitle } from '@/contexts/title-context';
-import { getProcessColors, getInitials } from '@/lib/utils';
+import { getProcessColors } from '@/lib/utils';
 import { getRoleBadgeVariant, getRoleInSpanish } from '@/lib/security-log-utils';
-import { DndContext, useDraggable, useDroppable, DragOverlay, type DragEndEvent } from '@dnd-kit/core';
+import { DndContext, useDraggable, useDroppable, DragOverlay, type DragEndEvent, type Active, type Over } from '@dnd-kit/core';
 import { UserFormModal } from '@/components/users/user-form-modal';
 import { ProcessFormModal } from '@/components/users/process-form-modal';
 import { UserProfileCard } from '@/components/profile/user-profile-card';
@@ -30,6 +30,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Separator } from '@/components/ui/separator';
 import { Identicon } from '@/components/ui/identicon';
+import { AlertTriangle } from 'lucide-react';
 
 // --- TYPES & CONTEXT ---
 interface ProcessWithChildren extends Process {
@@ -216,13 +217,12 @@ export default function UsersPage() {
     const searchParams = useSearchParams();
     const { toast } = useToast();
 
-    const activeFilters = {
-        search: searchParams.get('search') || '',
-        role: searchParams.get('role') as UserRole | null,
-        status: searchParams.get('status'),
-        processId: searchParams.get('processId'),
-    };
-    const debouncedSearchTerm = useDebounce(activeFilters.search, 300);
+    const search = searchParams.get('search') || '';
+    const role = searchParams.get('role') as UserRole | null;
+    const status = searchParams.get('status');
+    const processId = searchParams.get('processId');
+
+    const debouncedSearchTerm = useDebounce(search, 300);
     const currentPage = Number(searchParams.get('page')) || 1;
     const totalPages = Math.ceil(totalUsers / PAGE_SIZE);
 
@@ -242,9 +242,9 @@ export default function UsersPage() {
         const params = new URLSearchParams();
         if (debouncedSearchTerm) params.set('search', debouncedSearchTerm);
         if (currentPage) params.set('page', String(currentPage));
-        if(activeFilters.role) params.set('role', activeFilters.role);
-        if(activeFilters.status) params.set('status', activeFilters.status);
-        if(activeFilters.processId) params.set('processId', activeFilters.processId);
+        if(role) params.set('role', role);
+        if(status) params.set('status', status);
+        if(processId) params.set('processId', processId);
         params.set('pageSize', String(PAGE_SIZE));
 
         try {
@@ -264,13 +264,13 @@ export default function UsersPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [currentUser, debouncedSearchTerm, currentPage, activeFilters, toast]);
-
+    }, [currentUser, debouncedSearchTerm, currentPage, role, status, processId, toast]);
+    
     useEffect(() => {
         setPageTitle('Control Central');
         if (currentUser?.role !== 'ADMINISTRATOR') return;
         fetchData();
-    }, [currentUser, fetchData, setPageTitle]);
+    }, [currentUser, fetchData, setPageTitle, debouncedSearchTerm, currentPage, role, status, processId]);
     
     const handleFilterChange = (key: string, value: string | null) => {
         router.push(`${pathname}?${createQueryString({ [key]: value, page: 1 })}`);
@@ -315,6 +315,18 @@ export default function UsersPage() {
     if (!currentUser || currentUser.role !== 'ADMINISTRATOR') {
         return <div className="text-center p-8"><AlertTriangle className="mx-auto h-12 w-12 text-destructive"/>Acceso Denegado</div>;
     }
+    
+    const activeFilters = { search, role, status, processId };
+
+    if (isLoading && usersList.length === 0) {
+        return (
+            <div className="space-y-6">
+                <Header onAddUser={() => {}} onAddProcess={() => {}} />
+                <Card><CardContent className="p-4"><Skeleton className="h-10 w-full" /></CardContent></Card>
+                <Skeleton className="h-96 w-full" />
+            </div>
+        );
+    }
 
     return (
         <UsersPageContext.Provider value={contextValue}>
@@ -324,7 +336,7 @@ export default function UsersPage() {
                     <CardContent className="p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div className="relative w-full md:max-w-xs">
                              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                             <Input placeholder="Buscar por nombre o email..." value={activeFilters.search} onChange={handleSearchChange} className="pl-10"/>
+                             <Input placeholder="Buscar por nombre o email..." value={search} onChange={handleSearchChange} className="pl-10"/>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
                             <FilterBar activeFilters={activeFilters} processes={processes} />
@@ -345,7 +357,15 @@ export default function UsersPage() {
                     viewMode === 'table' ? <Skeleton className="h-[400px] w-full" /> : <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">{[...Array(8)].map((_,i) => <Skeleton key={i} className="h-48 w-full" />)}</div>
                 ) : (
                     <>
-                        {viewMode === 'table' ? <UserTable users={usersList} onEdit={handleOpenUserModal}/> : <UserGrid users={usersList} onEdit={handleOpenUserModal}/>}
+                        {usersList.length > 0 ? (
+                           viewMode === 'table' ? <UserTable users={usersList} onEdit={handleOpenUserModal}/> : <UserGrid users={usersList} onEdit={handleOpenUserModal}/>
+                        ) : (
+                           <div className="text-center py-16 border-2 border-dashed rounded-lg">
+                                <UsersIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4"/>
+                                <h3 className="text-xl font-semibold mb-2">No se encontraron colaboradores</h3>
+                                <p className="text-muted-foreground">Prueba a ajustar los filtros o a añadir un nuevo colaborador.</p>
+                           </div>
+                        )}
                         {totalPages > 1 && <SmartPagination className="mt-4" currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />}
                     </>
                 )}
