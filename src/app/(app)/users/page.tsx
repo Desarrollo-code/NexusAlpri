@@ -1,9 +1,10 @@
+
 // src/app/(app)/users/page.tsx
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { PlusCircle, Search, Edit, Trash2, UserPlus, Loader2, AlertTriangle, MoreVertical, UserCheck, UserX, Filter, Check, Network, GripVertical, Users as UsersIcon } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
@@ -343,3 +344,4 @@ export default function UsersPage() {
         </DndContext>
     );
 }
+
