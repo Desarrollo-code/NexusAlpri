@@ -213,6 +213,7 @@ export default function SecurityAuditPage() {
             </div>
 
             <Card id="security-log-table">
+              <TooltipProvider>
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
@@ -230,7 +231,6 @@ export default function SecurityAuditPage() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                  <TooltipProvider>
                     {(isLoading && logs.length === 0) ? <div className="text-center py-8"><Loader2 className="h-8 w-8 animate-spin mx-auto" /></div> : 
                      error ? <div className="text-center py-8 text-destructive">{error}</div> : 
                      logs.length === 0 ? <p className="text-center text-muted-foreground py-8">No hay registros para el filtro seleccionado.</p> : (
@@ -275,9 +275,9 @@ export default function SecurityAuditPage() {
                             </TableBody>
                         </Table>
                     )}
-                   </TooltipProvider>
                 </CardContent>
                  {totalPages > 1 && (<CardFooter><SmartPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} /></CardFooter>)}
+              </TooltipProvider>
             </Card>
         </div>
     );
