@@ -2,11 +2,11 @@
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
-import type { Process } from '@/types';
+import type { Process as AppProcess } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
-interface ProcessWithChildren extends Process {
+interface ProcessWithChildren extends AppProcess {
   children: ProcessWithChildren[];
 }
 
