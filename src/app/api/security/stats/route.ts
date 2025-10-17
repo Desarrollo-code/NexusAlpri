@@ -1,10 +1,12 @@
 // src/app/api/security/stats/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
-import { subHours } from 'date-fns';
+import { subDays, startOfDay, endOfDay, isValid, format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { parseUserAgent } from '@/lib/security-log-utils';
+import type { SecurityLogEvent } from '@/types';
 
-const prisma = new PrismaClient();
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
@@ -14,56 +16,86 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-        const twentyFourHoursAgo = subHours(new Date(), 24);
+        const today = endOfDay(new Date());
+        const last7Days = startOfDay(subDays(today, 6));
 
-        const successfulLogins = prisma.securityLog.count({
+        // 1. Obtener todos los logs de los últimos 7 días
+        const allLogs = await prisma.securityLog.findMany({
             where: {
-                event: 'SUCCESSFUL_LOGIN',
-                createdAt: { gte: twentyFourHoursAgo },
+                createdAt: {
+                    gte: last7Days,
+                    not: null, // Asegurarnos de que la fecha no sea nula
+                },
+            },
+            select: {
+                event: true,
+                createdAt: true,
+                userAgent: true,
             },
         });
+        
+        // 2. Procesar los datos de forma segura
+        const eventTrend: Record<string, { SUCCESSFUL_LOGIN: number; FAILED_LOGIN_ATTEMPT: number }> = {};
+        const browserCounts: Record<string, number> = {};
+        const osCounts: Record<string, number> = {};
+        const eventsLast24h: Record<SecurityLogEvent, number> = {
+            SUCCESSFUL_LOGIN: 0,
+            FAILED_LOGIN_ATTEMPT: 0,
+            PASSWORD_CHANGE_SUCCESS: 0,
+            TWO_FACTOR_ENABLED: 0,
+            TWO_FACTOR_DISABLED: 0,
+            USER_ROLE_CHANGED: 0,
+        };
 
-        const failedLogins = prisma.securityLog.count({
-            where: {
-                event: 'FAILED_LOGIN_ATTEMPT',
-                createdAt: { gte: twentyFourHoursAgo },
-            },
+        const yesterday = subDays(today, 1);
+
+        // Inicializar el trend para los 7 días
+        for (let i = 0; i < 7; i++) {
+            const date = format(subDays(today, i), 'yyyy-MM-dd');
+            eventTrend[date] = { SUCCESSFUL_LOGIN: 0, FAILED_LOGIN_ATTEMPT: 0 };
+        }
+
+        allLogs.forEach(log => {
+            if (!log.createdAt || !isValid(new Date(log.createdAt))) {
+                return; // Omitir registros con fecha inválida
+            }
+            const logDate = new Date(log.createdAt);
+
+            // Contadores de las últimas 24 horas
+            if (logDate >= yesterday) {
+                if (eventsLast24h[log.event] !== undefined) {
+                    eventsLast24h[log.event]++;
+                }
+            }
+
+            // Tendencia de eventos
+            const dateKey = format(logDate, 'yyyy-MM-dd');
+            if (eventTrend[dateKey]) {
+                if (log.event === 'SUCCESSFUL_LOGIN' || log.event === 'FAILED_LOGIN_ATTEMPT') {
+                    eventTrend[dateKey][log.event]++;
+                }
+            }
+            
+            // Distribución de User Agent
+            const { browser, os } = parseUserAgent(log.userAgent || 'Unknown');
+            if (browser !== 'Desconocido') {
+                browserCounts[browser] = (browserCounts[browser] || 0) + 1;
+            }
+            if (os !== 'Desconocido') {
+                osCounts[os] = (osCounts[os] || 0) + 1;
+            }
         });
 
-        const twoFactorEvents = prisma.securityLog.count({
-            where: {
-                OR: [
-                    { event: 'TWO_FACTOR_ENABLED' },
-                    { event: 'TWO_FACTOR_DISABLED' },
-                ],
-                createdAt: { gte: twentyFourHoursAgo },
-            },
-        });
-
-        const roleChanges = prisma.securityLog.count({
-            where: {
-                event: 'USER_ROLE_CHANGED',
-                createdAt: { gte: twentyFourHoursAgo },
-            },
-        });
-
-        const [
-            successfulLoginsCount,
-            failedLoginsCount,
-            twoFactorEventsCount,
-            roleChangesCount
-        ] = await Promise.all([
-            successfulLogins,
-            failedLogins,
-            twoFactorEvents,
-            roleChanges
-        ]);
+        const formattedEventTrend = Object.entries(eventTrend).map(([date, counts]) => ({ date, ...counts })).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        const formattedBrowserDistribution = Object.entries(browserCounts).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count).slice(0, 5);
+        const formattedOsDistribution = Object.entries(osCounts).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count).slice(0, 5);
 
         return NextResponse.json({
-            successfulLogins: successfulLoginsCount,
-            failedLogins: failedLoginsCount,
-            twoFactorEvents: twoFactorEventsCount,
-            roleChanges: roleChangesCount,
+            totalEvents: allLogs.length,
+            eventsLast24h: Object.entries(eventsLast24h).map(([type, count]) => ({ type, count })),
+            eventTrend: formattedEventTrend,
+            browserDistribution: formattedBrowserDistribution,
+            osDistribution: formattedOsDistribution,
         });
 
     } catch (error) {

@@ -14,9 +14,8 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { getEventDetails, parseUserAgent } from '@/lib/security-log-utils';
-import { useAnimatedCounter } from '@/hooks/use-animated-counter';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { useTitle } from '@/contexts/title-context';
 import { SmartPagination } from '@/components/ui/pagination';
 import { Identicon } from '@/components/ui/identicon';
@@ -25,16 +24,21 @@ import { cn } from '@/lib/utils';
 import { useTour } from '@/contexts/tour-context';
 import { securityAuditTour } from '@/lib/tour-steps';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ComposedChart, Legend, Line } from "recharts";
+import { format, parseISO } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 interface SecurityLogWithUser extends AppSecurityLog {
   user: Pick<AppUser, 'id' | 'name' | 'avatar'> | null;
 }
 
 interface SecurityStats {
-    successfulLogins: number;
-    failedLogins: number;
-    twoFactorEvents: number;
-    roleChanges: number;
+    totalEvents: number;
+    eventsLast24h: { type: SecurityLogEvent, count: number }[];
+    eventTrend: { date: string, SUCCESSFUL_LOGIN: number, FAILED_LOGIN_ATTEMPT: number }[];
+    browserDistribution: { name: string, count: number }[];
+    osDistribution: { name: string, count: number }[];
 }
 
 const PAGE_SIZE = 20;
@@ -49,23 +53,38 @@ const ALL_EVENTS: { value: SecurityLogEvent | 'ALL', label: string }[] = [
     { value: 'USER_ROLE_CHANGED', label: 'Cambios de Rol' },
 ];
 
+const activityChartConfig = {
+  SUCCESSFUL_LOGIN: { label: "Exitosos", color: "hsl(var(--chart-2))" },
+  FAILED_LOGIN_ATTEMPT: { label: "Fallidos", color: "hsl(var(--chart-3))" },
+} satisfies ChartConfig;
 
-const MetricCard = ({ title, value, icon: Icon, description, gradient }: { title: string; value: number; icon: React.ElementType; description?: string, gradient: string }) => {
-    const animatedValue = useAnimatedCounter(value);
-    return (
-        <Card className={cn("relative overflow-hidden text-white card-border-animated", gradient)}>
-            <div className="absolute inset-0 bg-black/10"></div>
-            <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-white/80">{title}</CardTitle>
-                <Icon className="h-4 w-4 text-white/80" />
-            </CardHeader>
-            <CardContent className="relative">
-                <div className="text-3xl font-bold text-white">{animatedValue}</div>
-                {description && <p className="text-xs text-white/70">{description}</p>}
-            </CardContent>
-        </Card>
-    );
+const formatDateTick = (tick: string) => {
+    try {
+        const date = parseISO(tick);
+        return format(date, "d MMM", { locale: es });
+    } catch(e) {
+        return tick;
+    }
 };
+
+const CustomBarChart = ({ data, title, datakey, color }: { data: any[], title: string, datakey: string, color: string }) => (
+    <Card>
+        <CardHeader>
+            <CardTitle className="text-base font-medium">{title}</CardTitle>
+        </CardHeader>
+        <CardContent className="h-48">
+            <ResponsiveContainer width="100%" height="100%">
+                 <BarChart data={data} layout="vertical" margin={{ left: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false}/>
+                    <XAxis type="number" allowDecimals={false} fontSize={12} />
+                    <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 12 }}/>
+                    <Tooltip cursor={{ fill: 'hsl(var(--muted))' }}/>
+                    <Bar dataKey={datakey} fill={color} radius={[0, 4, 4, 0]} barSize={15} />
+                </BarChart>
+            </ResponsiveContainer>
+        </CardContent>
+    </Card>
+)
 
 export default function SecurityAuditPage() {
     const { user: currentUser } = useAuth();
@@ -74,7 +93,6 @@ export default function SecurityAuditPage() {
     const searchParams = useSearchParams();
     const { toast } = useToast();
     const { setPageTitle } = useTitle();
-    const isMobile = useIsMobile();
     const { startTour, forceStartTour } = useTour();
 
     const [logs, setLogs] = useState<SecurityLogWithUser[]>([]);
@@ -97,23 +115,16 @@ export default function SecurityAuditPage() {
         setError(null);
         try {
             const logsParams = new URLSearchParams(searchParams.toString());
-
             const [logsResponse, statsResponse] = await Promise.all([
                 fetch(`/api/security/logs?${logsParams.toString()}`),
                 fetch('/api/security/stats')
             ]);
             
-            if (!logsResponse.ok) {
-                 const errorData = await logsResponse.json();
-                 throw new Error(errorData.message || 'Failed to fetch security logs');
-            }
-            if (!statsResponse.ok) {
-                 const errorData = await statsResponse.json();
-                 throw new Error(errorData.message || 'Failed to fetch security stats');
-            }
+            if (!logsResponse.ok) throw new Error((await logsResponse.json()).message || 'Failed to fetch security logs');
+            if (!statsResponse.ok) throw new Error((await statsResponse.json()).message || 'Failed to fetch security stats');
 
-            const logsData: { logs: SecurityLogWithUser[], totalLogs: number } = await logsResponse.json();
-            const statsData: SecurityStats = await statsResponse.json();
+            const logsData = await logsResponse.json();
+            const statsData = await statsResponse.json();
 
             setLogs(logsData.logs || []);
             setTotalLogs(logsData.totalLogs || 0);
@@ -135,18 +146,14 @@ export default function SecurityAuditPage() {
         fetchData();
     }, [currentUser, router, fetchData]);
     
-    
     const createQueryString = useCallback((paramsToUpdate: Record<string, string | number | null>) => {
         const params = new URLSearchParams(searchParams.toString());
         Object.entries(paramsToUpdate).forEach(([name, value]) => {
-            if (value === null || value === '' || (name === 'event' && value === 'ALL')) {
-                params.delete(name);
-            } else {
-                params.set(name, String(value));
-            }
+            if (value === null || value === '' || (name === 'event' && value === 'ALL')) params.delete(name);
+            else params.set(name, String(value));
         });
         return params.toString();
-      }, [searchParams]);
+    }, [searchParams]);
 
     const handleFilterChange = (newEvent: string) => {
         router.push(`${pathname}?${createQueryString({ event: newEvent, page: 1 })}`);
@@ -156,195 +163,118 @@ export default function SecurityAuditPage() {
         router.push(`${pathname}?${createQueryString({ page })}`);
     };
 
-
-    if (currentUser?.role !== 'ADMINISTRATOR') {
-        return (
-            <div className="flex h-full items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin" />
-            </div>
-        );
-    }
+    if (currentUser?.role !== 'ADMINISTRATOR') return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
     
     return (
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="space-y-1">
                     <h2 className="text-2xl font-semibold">Auditoría de Seguridad</h2>
-                    <p className="text-muted-foreground">Revisa los eventos de seguridad importantes de la plataforma.</p>
+                    <p className="text-muted-foreground">Revisa y analiza los eventos de seguridad importantes de la plataforma.</p>
                 </div>
                 <Button variant="outline" size="sm" onClick={() => forceStartTour('securityAudit', securityAuditTour)}>
                     <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
                 </Button>
             </div>
             
-            {(isLoading && !stats) ? (
-                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Skeleton className="h-28" />
-                    <Skeleton className="h-28" />
-                    <Skeleton className="h-28" />
-                    <Skeleton className="h-28" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Tendencia de Inicios de Sesión</CardTitle>
+                        <CardDescription>Actividad de los últimos 7 días.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="h-64">
+                         {(isLoading && !stats) ? <Skeleton className="h-full w-full"/> : (
+                             <ChartContainer config={activityChartConfig} className="w-full h-full -ml-4 pl-4">
+                                <ResponsiveContainer>
+                                    <ComposedChart data={stats?.eventTrend || []} margin={{ top: 5, right: 20, left: -20, bottom: 0 }}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                        <XAxis dataKey="date" tickFormatter={formatDateTick} tickLine={false} axisLine={false} tickMargin={10}/>
+                                        <YAxis allowDecimals={false} tickLine={false} axisLine={false} tickMargin={10}/>
+                                        <ChartTooltip content={<ChartTooltipContent />} />
+                                        <Legend />
+                                        <Line type="monotone" dataKey="SUCCESSFUL_LOGIN" name="Exitosos" stroke="var(--color-SUCCESSFUL_LOGIN)" strokeWidth={2} dot={false} />
+                                        <Line type="monotone" dataKey="FAILED_LOGIN_ATTEMPT" name="Fallidos" stroke="var(--color-FAILED_LOGIN_ATTEMPT)" strokeWidth={2} dot={false} />
+                                    </ComposedChart>
+                                </ResponsiveContainer>
+                             </ChartContainer>
+                         )}
+                    </CardContent>
+                </Card>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {(isLoading && !stats) ? <> <Skeleton className="h-full w-full"/> <Skeleton className="h-full w-full"/> </> : (
+                        <>
+                           <CustomBarChart data={stats?.browserDistribution || []} title="Distribución por Navegador" datakey="count" color="hsl(var(--chart-4))" />
+                           <CustomBarChart data={stats?.osDistribution || []} title="Distribución por S.O." datakey="count" color="hsl(var(--chart-5))"/>
+                        </>
+                    )}
                  </div>
-            ) : stats && (
-                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="security-stats-cards">
-                    <MetricCard title="Inicios de Sesión Exitosos" value={stats.successfulLogins} icon={ShieldCheck} description="Últimas 24 horas" gradient="bg-gradient-green" />
-                    <MetricCard title="Inicios de Sesión Fallidos" value={stats.failedLogins} icon={ShieldX} description="Últimas 24 horas" gradient="bg-gradient-orange" />
-                    <MetricCard title="Eventos 2FA" value={stats.twoFactorEvents} icon={KeyRound} description="Últimas 24 horas" gradient="bg-gradient-blue" />
-                    <MetricCard title="Cambios de Rol" value={stats.roleChanges} icon={UserCog} description="Últimas 24 horas" gradient="bg-gradient-purple" />
-                 </div>
-            )}
+            </div>
 
             <Card id="security-log-table">
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
                              <CardTitle>Registro de Eventos</CardTitle>
-                             <CardDescription>Mostrando los últimos registros de seguridad de la plataforma.</CardDescription>
+                             <CardDescription>Mostrando {totalLogs} registros de seguridad.</CardDescription>
                         </div>
                         <div id="security-event-filter">
                             <Select value={activeFilter} onValueChange={handleFilterChange}>
-                                <SelectTrigger className="w-full sm:w-[250px]">
-                                    <SelectValue placeholder="Filtrar por evento..." />
-                                </SelectTrigger>
+                                <SelectTrigger className="w-full sm:w-[250px]"><SelectValue /></SelectTrigger>
                                 <SelectContent>
-                                    {ALL_EVENTS.map(event => (
-                                        <SelectItem key={event.value} value={event.value}>{event.label}</SelectItem>
-                                    ))}
+                                    {ALL_EVENTS.map(event => (<SelectItem key={event.value} value={event.value}>{event.label}</SelectItem>))}
                                 </SelectContent>
                             </Select>
                         </div>
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {isLoading && logs.length === 0 ? (
-                        <div className="flex items-center justify-center py-12">
-                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                            <p className="ml-2">Cargando registros...</p>
-                        </div>
-                    ) : error ? (
-                        <div className="flex flex-col items-center justify-center py-12 text-destructive">
-                            <AlertTriangle className="h-8 w-8 mb-2" />
-                            <p className="font-semibold">{error}</p>
-                            <Button onClick={() => fetchData()} variant="outline" className="mt-4">
-                                Reintentar
-                            </Button>
-                        </div>
-                    ) : logs.length === 0 ? (
-                       <p className="text-center text-muted-foreground py-8">No hay registros para el filtro seleccionado.</p>
-                    ) : isMobile ? (
-                        <div className="space-y-4">
-                            {logs.map((log) => {
-                                const eventDetails = getEventDetails(log.event, log.details);
-                                const { browser, os } = parseUserAgent(log.userAgent);
-                                return (
-                                    <Card key={log.id} className="p-4">
-                                        <div className="flex items-start gap-4">
-                                            <div className="pt-1">{eventDetails.icon}</div>
-                                            <div className="flex-grow">
-                                                <div className="flex justify-between items-start">
-                                                    <Badge variant={eventDetails.variant}>{eventDetails.label}</Badge>
-                                                     <p className="text-xs text-muted-foreground">{new Date(log.createdAt).toLocaleString('es-CO', { timeStyle: 'short' })}</p>
-                                                </div>
-                                                <p className="text-sm mt-1">{eventDetails.details}</p>
+                    {(isLoading && logs.length === 0) ? <div className="text-center py-8"><Loader2 className="h-8 w-8 animate-spin mx-auto" /></div> : 
+                     error ? <div className="text-center py-8 text-destructive">{error}</div> : 
+                     logs.length === 0 ? <p className="text-center text-muted-foreground py-8">No hay registros para el filtro seleccionado.</p> : (
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="w-[200px]">Evento</TableHead>
+                                    <TableHead>Detalles</TableHead>
+                                    <TableHead>Usuario Afectado</TableHead>
+                                    <TableHead>Dispositivo</TableHead>
+                                    <TableHead>Ubicación</TableHead>
+                                    <TableHead className="text-right">Fecha y Hora</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {logs.map((log) => {
+                                    const eventDetails = getEventDetails(log.event, log.details);
+                                    const { browser, os } = parseUserAgent(log.userAgent);
+                                    return (
+                                        <TableRow key={log.id}>
+                                            <TableCell><div className="flex items-center gap-2">{eventDetails.icon}<Badge variant={eventDetails.variant}>{eventDetails.label}</Badge></div></TableCell>
+                                            <TableCell className="text-xs text-muted-foreground">{eventDetails.details}</TableCell>
+                                            <TableCell>
                                                 {log.user ? (
-                                                    <div className="flex items-center gap-2 mt-3 pt-3 border-t">
-                                                        <Avatar className="h-8 w-8"><AvatarImage src={log.user.avatar || undefined} /><AvatarFallback><Identicon userId={log.user.id} /></AvatarFallback></Avatar>
-                                                        <div>
-                                                            <p className="text-sm font-medium">{log.user.name}</p>
-                                                            <p className="text-xs text-muted-foreground">{log.emailAttempt}</p>
-                                                        </div>
-                                                    </div>
-                                                ) : <p className="text-xs text-muted-foreground mt-2 pt-2 border-t">{log.emailAttempt}</p>}
-                                                 <div className="text-xs text-muted-foreground mt-2 flex items-center gap-2"><Globe className="h-4 w-4"/> {log.city && log.country ? `${log.city}, ${log.country}` : (log.ipAddress || 'Desconocida')}</div>
-                                            </div>
-                                        </div>
-                                    </Card>
-                                )
-                            })}
-                        </div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="w-[200px]">Evento</TableHead>
-                                        <TableHead>Detalles</TableHead>
-                                        <TableHead>Usuario Afectado</TableHead>
-                                        <TableHead>Dispositivo</TableHead>
-                                        <TableHead>Ubicación</TableHead>
-                                        <TableHead className="text-right">Fecha y Hora</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {logs.map((log) => {
-                                        const eventDetails = getEventDetails(log.event, log.details);
-                                        const { browser, os } = parseUserAgent(log.userAgent);
-                                        return (
-                                            <TableRow key={log.id}>
-                                                <TableCell>
                                                     <div className="flex items-center gap-2">
-                                                        {eventDetails.icon}
-                                                        <Badge variant={eventDetails.variant}>
-                                                            {eventDetails.label}
-                                                        </Badge>
+                                                        <Avatar className="h-8 w-8"><AvatarImage src={log.user.avatar || undefined} /><AvatarFallback><Identicon userId={log.user.id} /></AvatarFallback></Avatar>
+                                                        <Link href={`/users?search=${encodeURIComponent(log.user.name || '')}`} className="font-medium hover:underline">{log.user.name}</Link>
                                                     </div>
-                                                </TableCell>
-                                                <TableCell className="text-xs text-muted-foreground">{eventDetails.details}</TableCell>
-                                                    <TableCell>
-                                                    {log.user ? (
-                                                        <div className="flex items-center gap-2">
-                                                            <Avatar className="h-8 w-8">
-                                                                {log.user.avatar ? <AvatarImage src={log.user.avatar} alt={log.user.name || 'User'} /> : null}
-                                                                <AvatarFallback>
-                                                                    <Identicon userId={log.user.id} />
-                                                                </AvatarFallback>
-                                                            </Avatar>
-                                                            <Link href={`/users?search=${encodeURIComponent(log.user.name || '')}`} className="font-medium hover:underline">{log.user.name}</Link>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="flex items-center gap-2 text-muted-foreground">
-                                                            <div className="h-8 w-8 flex items-center justify-center rounded-full bg-muted"><UserCog className="h-4 w-4"/></div>
-                                                            <span className="text-xs font-mono">{log.emailAttempt || 'Desconocido'}</span>
-                                                        </div>
-                                                    )}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <TooltipProvider>
-                                                        <Tooltip>
-                                                            <TooltipTrigger>
-                                                                <div className="flex items-center gap-2 text-xs">
-                                                                    <Monitor className="h-4 w-4 text-muted-foreground"/> {browser} en {os}
-                                                                </div>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent className="max-w-xs break-words">
-                                                                <p>{log.userAgent}</p>
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                    </TooltipProvider>
-                                                </TableCell>
-                                                    <TableCell>
-                                                    <div className="flex items-center gap-2 text-xs">
-                                                        <Globe className="h-4 w-4 text-muted-foreground"/>
-                                                        {log.city && log.country ? `${log.city}, ${log.country}` : (log.ipAddress || 'Desconocida')}
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="text-right text-xs text-muted-foreground">{new Date(log.createdAt).toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'medium', timeStyle: 'short' })}</TableCell>
-                                            </TableRow>
-                                        );
-                                    })}
-                                </TableBody>
-                            </Table>
-                        </div>
+                                                ) : <div className="flex items-center gap-2 text-muted-foreground"><div className="h-8 w-8 flex items-center justify-center rounded-full bg-muted"><UserCog className="h-4 w-4"/></div><span className="text-xs font-mono">{log.emailAttempt || 'Desconocido'}</span></div>}
+                                            </TableCell>
+                                            <TableCell>
+                                                <TooltipProvider><Tooltip>
+                                                    <TooltipTrigger><div className="flex items-center gap-2 text-xs"><Monitor className="h-4 w-4 text-muted-foreground"/> {browser} en {os}</div></TooltipTrigger>
+                                                    <TooltipContent className="max-w-xs break-words"><p>{log.userAgent}</p></TooltipContent>
+                                                </Tooltip></TooltipProvider>
+                                            </TableCell>
+                                            <TableCell><div className="flex items-center gap-2 text-xs"><Globe className="h-4 w-4 text-muted-foreground"/>{log.city && log.country ? `${log.city}, ${log.country}` : (log.ipAddress || 'Desconocida')}</div></TableCell>
+                                            <TableCell className="text-right text-xs text-muted-foreground">{new Date(log.createdAt).toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'medium', timeStyle: 'short' })}</TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
                     )}
                 </CardContent>
-                 {totalPages > 1 && (
-                    <CardFooter>
-                        <SmartPagination
-                           currentPage={currentPage}
-                           totalPages={totalPages}
-                           onPageChange={handlePageChange}
-                        />
-                    </CardFooter>
-                )}
+                 {totalPages > 1 && (<CardFooter><SmartPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} /></CardFooter>)}
             </Card>
         </div>
     );
