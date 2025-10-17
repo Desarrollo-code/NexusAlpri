@@ -14,7 +14,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
   const { id } = params;
   try {
-    const { name, parentId, userIds } = await req.json(); 
+    const { name, parentId, userIds } = await req.json();
     if (!name) {
       return NextResponse.json({ message: 'El nombre es requerido' }, { status: 400 });
     }
@@ -29,6 +29,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       });
 
       if (userIds && Array.isArray(userIds)) {
+          // Primero, desasigna a los usuarios que ya no pertenecen a este proceso
           await tx.user.updateMany({
               where: {
                   processId: id,
@@ -39,6 +40,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
               },
           });
           
+          // Luego, asigna los nuevos usuarios al proceso
           await tx.user.updateMany({
               where: { id: { in: userIds } },
               data: { processId: id },
@@ -65,14 +67,17 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   const { id } = params;
   try {
     await prisma.$transaction([
+        // Des-asigna los hijos para que no sean eliminados
         prisma.process.updateMany({
             where: { parentId: id },
             data: { parentId: null }
         }),
+        // Des-asigna los usuarios
         prisma.user.updateMany({
             where: { processId: id },
             data: { processId: null }
         }),
+        // Finalmente, elimina el proceso
         prisma.process.delete({
             where: { id },
         })
