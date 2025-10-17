@@ -1,3 +1,4 @@
+
 // src/app/(app)/users/page.tsx
 'use client';
 
@@ -533,12 +534,14 @@ export default function UsersPage() {
                         initial={{ y: 100 }} 
                         animate={{ y: 0 }} 
                         exit={{ y: 100 }} 
-                        className="fixed bottom-0 left-0 w-full md:bottom-4 md:left-1/2 md:w-auto md:-translate-x-1/2 z-40"
+                        className="fixed bottom-0 left-0 right-0 pb-16 md:pb-0 z-40"
                     >
-                        <div className="bg-background/80 backdrop-blur-lg p-2 border-t md:border md:rounded-lg shadow-lg flex items-center justify-center gap-4">
-                           <p className="text-sm font-semibold px-2">{selectedUserIds.size} seleccionados</p>
-                           <Button size="sm" onClick={() => setIsBulkAssignModalOpen(true)}><Briefcase className="mr-2 h-4 w-4"/> Asignar Proceso</Button>
-                           <Button size="sm" variant="ghost" onClick={() => setSelectedUserIds(new Set())}>Limpiar</Button>
+                        <div className="bg-background/80 backdrop-blur-lg p-2 md:border md:rounded-lg shadow-lg w-full md:w-auto md:mx-auto md:left-1/2 md:bottom-4">
+                            <div className="mx-auto flex max-w-md items-center justify-between gap-4 md:justify-center">
+                               <p className="text-sm font-semibold px-2">{selectedUserIds.size} seleccionados</p>
+                               <Button size="sm" onClick={() => setIsBulkAssignModalOpen(true)}><Briefcase className="mr-2 h-4 w-4"/> Asignar Proceso</Button>
+                               <Button size="sm" variant="ghost" onClick={() => setSelectedUserIds(new Set())}>Limpiar</Button>
+                            </div>
                         </div>
                     </motion.div>
                 )}
@@ -568,4 +571,3 @@ export default function UsersPage() {
         </DndContext>
     );
 }
-
