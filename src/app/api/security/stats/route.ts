@@ -17,13 +17,13 @@ export async function GET(req: NextRequest) {
 
     try {
         const today = endOfDay(new Date());
-        const last7Days = startOfDay(subDays(today, 6));
+        const last7DaysStart = startOfDay(subDays(today, 6));
 
         // 1. Get all logs from the last 7 days safely
         const allLogs = await prisma.securityLog.findMany({
             where: {
                 createdAt: {
-                    gte: last7Days,
+                    gte: last7DaysStart,
                 },
             },
             select: {
@@ -47,14 +47,17 @@ export async function GET(req: NextRequest) {
 
         const yesterday = subDays(today, 1);
         
+        // CORRECCIÓN: Crear el mapa de tendencias de forma robusta
         const trendMap = new Map<string, { SUCCESSFUL_LOGIN: number; FAILED_LOGIN_ATTEMPT: number }>();
         for (let i = 0; i < 7; i++) {
-            const dateKey = format(subDays(today, i), 'yyyy-MM-dd');
+            const date = subDays(today, i);
+            const dateKey = format(date, 'yyyy-MM-dd');
             trendMap.set(dateKey, { SUCCESSFUL_LOGIN: 0, FAILED_LOGIN_ATTEMPT: 0 });
         }
 
 
         allLogs.forEach(log => {
+            // CORRECCIÓN: Validar que la fecha del log es válida antes de usarla
             if (!log.createdAt || !isValid(new Date(log.createdAt))) {
                 return;
             }
