@@ -283,7 +283,7 @@ export default function SettingsPageComponent() {
         </div>
 
         <Tabs defaultValue="identity" className="w-full">
-            <TabsList id="settings-tabs-list" className="grid w-full grid-cols-2 sm:grid-cols-4">
+            <TabsList id="settings-tabs-list" className="grid w-full grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4">
                 <TabsTrigger value="identity">Identidad</TabsTrigger>
                 <TabsTrigger value="theme">Tema y Estilo</TabsTrigger>
                 <TabsTrigger value="security">Seguridad</TabsTrigger>
@@ -296,7 +296,7 @@ export default function SettingsPageComponent() {
                         <CardTitle className="flex items-center gap-2"><Building className="h-5 w-5 text-primary"/>Identidad y Marca</CardTitle>
                         <CardDescription>Nombre, logo, marca de agua e imágenes para las páginas públicas.</CardDescription>
                     </CardHeader>
-                    <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                        <div className="md:col-span-full space-y-2">
                            <Label htmlFor="platformName">Nombre de la Plataforma</Label>
                            <Input
