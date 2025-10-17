@@ -20,17 +20,40 @@ export interface User {
 export interface PlatformSettings {
     platformName: string;
     allowPublicRegistration: boolean;
-    enableEmailNotifications: boolean;
     emailWhitelist: string;
+
+    // MFA
     require2faForAdmins: boolean;
-    idleTimeoutMinutes: number;
-    enableIdleTimeout: boolean;
+    require2faForInstructors?: boolean;
+    require2faForAllUsers?: boolean;
+
+    // Password Policy
     passwordMinLength: number;
     passwordRequireUppercase: boolean;
     passwordRequireLowercase: boolean;
     passwordRequireNumber: boolean;
     passwordRequireSpecialChar: boolean;
+    passwordExpirationDays?: number | null;
+
+    // Lockout Policy
+    failedLoginLimit?: number;
+    lockoutDurationMinutes?: number;
+
+    // Session
+    enableIdleTimeout: boolean;
+    idleTimeoutMinutes: number;
+    
+    // Data & Compliance
+    logRetentionDays?: number;
+
+    // System
+    hideLmsVersion?: boolean;
+
+    // Deprecated / General
+    enableEmailNotifications: boolean;
     resourceCategories: string[];
+
+    // Theme & Branding
     primaryColor?: string;
     secondaryColor?: string;
     accentColor?: string;
@@ -48,6 +71,7 @@ export interface PlatformSettings {
     announcementsImageUrl?: string | null;
     publicPagesBgUrl?: string | null;
 }
+
 
 // --- NAVIGATION ---
 export interface NavItem {
@@ -296,6 +320,14 @@ type UserInfo = {
     value: number;
 };
 
+export type SecurityStats = {
+    successfulLogins24h: number;
+    failedLogins24h: number;
+    loginsLast7Days: { date: string; count: number }[];
+    topBrowsers: { browser: string; count: number }[];
+    topOS: { os: string; count: number }[];
+}
+
 export interface AdminDashboardStats {
     totalUsers: number;
     totalCourses: number;
@@ -308,7 +340,7 @@ export interface AdminDashboardStats {
     coursesByStatus: { status: CourseStatus; count: number }[];
     recentLogins: number;
     newEnrollmentsLast7Days: number;
-    userRegistrationTrend: { date: string, newCourses: number, newEnrollments: number, count: number }[];
+    userRegistrationTrend: { date: string, newCourses: number, newEnrollments: number, newUsers: number }[];
     averageCompletionRate: number;
     topCoursesByEnrollment: CourseInfo[];
     topCoursesByCompletion: CourseInfo[];
@@ -318,6 +350,7 @@ export interface AdminDashboardStats {
     topInstructorsByCourses: UserInfo[];
     interactiveEventsToday?: (CalendarEvent & { hasParticipated?: boolean })[];
     assignedCourses?: Course[];
+    securityStats?: SecurityStats;
 }
 
 // --- TEMPLATES ---
