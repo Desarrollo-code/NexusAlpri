@@ -217,6 +217,7 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
 export default function UsersPage() {
     const { user: currentUser } = useAuth();
     const { setPageTitle } = useTitle();
+    const isMobile = useIsMobile();
 
     const [usersList, setUsersList] = useState<UserWithProcess[]>([]);
     const [totalUsers, setTotalUsers] = useState(0);
@@ -424,11 +425,11 @@ export default function UsersPage() {
     if (isLoading && usersList.length === 0) {
         return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin"/></div>
     }
-
-    return (
-        <DndContext sensors={sensors} onDragStart={(e) => setActiveDraggable(e.active)} onDragEnd={handleDragEnd}>
-            <div className="space-y-6">
-                <Card>
+    
+    const Controls = () => (
+        <>
+            {isMobile ? (
+                 <Card>
                     <CardContent className="p-4 space-y-4">
                         <div className="relative w-full">
                              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -437,7 +438,7 @@ export default function UsersPage() {
                          <div className="grid grid-cols-2 gap-2">
                             <Popover>
                                 <PopoverTrigger asChild>
-                                    <Button variant="outline" className="w-full justify-start">
+                                    <Button variant="outline" className="w-auto justify-start">
                                         <Filter className="mr-2 h-4 w-4" />
                                         Filtros ({activeFiltersCount})
                                     </Button>
@@ -477,7 +478,7 @@ export default function UsersPage() {
                             </Popover>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" className="w-full justify-start">
+                                    <Button variant="outline" className="w-auto justify-start">
                                         {viewMode === 'grid' ? <Grid className="mr-2 h-4 w-4" /> : <List className="mr-2 h-4 w-4" />}
                                         Vista
                                     </Button>
@@ -493,8 +494,55 @@ export default function UsersPage() {
                         <Button onClick={() => handleOpenUserModal(null)} className="w-full"><UserPlus className="mr-2 h-4 w-4"/>Añadir</Button>
                     </CardFooter>
                 </Card>
+            ) : (
+                 <Card className="p-2">
+                    <div className="flex items-center gap-4">
+                        <div className="relative flex-grow">
+                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                             <Input placeholder="Buscar por nombre o email..." value={search} onChange={handleSearchChange} className="pl-10"/>
+                        </div>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline">
+                                    <Filter className="mr-2 h-4 w-4" />
+                                    Filtros ({activeFiltersCount})
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-64 p-0" align="end">
+                                <div className="p-4 space-y-4">
+                                     <div className="space-y-2"><Label>Rol</Label><Select value={role || 'ALL'} onValueChange={(v) => handleFilterChange('role', v as UserRole)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="ADMINISTRATOR">Admin</SelectItem><SelectItem value="INSTRUCTOR">Instructor</SelectItem><SelectItem value="STUDENT">Estudiante</SelectItem></SelectContent></Select></div>
+                                     <div className="space-y-2"><Label>Estado</Label><Select value={status || 'ALL'} onValueChange={(v) => handleFilterChange('status', v)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="active">Activo</SelectItem><SelectItem value="inactive">Inactivo</SelectItem></SelectContent></Select></div>
+                                     <div className="space-y-2"><Label>Proceso</Label><Select value={processId || 'ALL'} onValueChange={(v) => handleFilterChange('processId', v)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="unassigned">Sin Asignar</SelectItem><Separator/>{flattenedProcesses.map(p => (<SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem` }}>{p.name}</SelectItem>))}</SelectContent></Select></div>
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline">
+                                    {viewMode === 'grid' ? <Grid className="mr-2 h-4 w-4" /> : <List className="mr-2 h-4 w-4" />}
+                                    Vista
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onSelect={() => setViewMode('grid')}><Grid className="mr-2 h-4 w-4"/>Cuadrícula</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => setViewMode('table')}><List className="mr-2 h-4 w-4"/>Tabla</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Button onClick={() => handleOpenUserModal(null)}>
+                            <UserPlus className="mr-2 h-4 w-4"/>Añadir Colaborador
+                        </Button>
+                    </div>
+                </Card>
+            )}
+        </>
+    );
 
-                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start pb-24 md:pb-4">
+    return (
+        <DndContext sensors={sensors} onDragStart={(e) => setActiveDraggable(e.active)} onDragEnd={handleDragEnd}>
+            <div className="space-y-6">
+                 <Controls />
+
+                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start mb-24 md:mb-4">
                     <div className="lg:col-span-3">
                          {isLoading ? (
                             viewMode === 'grid' ? (
