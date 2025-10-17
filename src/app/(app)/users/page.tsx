@@ -1,3 +1,4 @@
+
 // src/app/(app)/users/page.tsx
 'use client';
 
@@ -529,14 +530,14 @@ export default function UsersPage() {
             
             <AnimatePresence>
                 {selectedUserIds.size > 0 && (
-                    <motion.div 
+                     <motion.div 
                         initial={{ y: 100 }} 
                         animate={{ y: 0 }} 
                         exit={{ y: 100 }} 
-                        className="fixed bottom-0 left-0 right-0 z-50 p-4 pointer-events-none"
+                        className="fixed bottom-0 left-0 right-0 z-40 pb-16 md:pb-0"
                     >
-                        <div className="container mx-auto flex items-center justify-center">
-                            <div className="bg-background/80 backdrop-blur-lg p-2 border rounded-lg shadow-2xl flex items-center gap-4 pointer-events-auto">
+                        <div className="container mx-auto p-4 flex items-center justify-center">
+                            <div className="bg-background/95 backdrop-blur-lg p-2 border-t md:border rounded-lg shadow-2xl flex items-center gap-4">
                                 <p className="text-sm font-semibold px-2">{selectedUserIds.size} seleccionados</p>
                                 <Button size="sm" onClick={() => setIsBulkAssignModalOpen(true)}><Briefcase className="mr-2 h-4 w-4"/> Asignar Proceso</Button>
                                 <Button size="sm" variant="ghost" onClick={() => setSelectedUserIds(new Set())}>Limpiar</Button>
