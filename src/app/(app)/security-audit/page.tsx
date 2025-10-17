@@ -23,11 +23,10 @@ import { useTour } from '@/contexts/tour-context';
 import { securityAuditTour } from '@/lib/tour-steps';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ComposedChart, Legend, Line, Bar, Cell } from "recharts";
+import { BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ComposedChart, Legend, Line, Bar, Cell, TooltipProps } from "recharts";
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { AlertTriangle } from 'lucide-react';
-import type { TooltipProps } from 'recharts';
 
 interface SecurityLogWithUser extends AppSecurityLog {
     user: Pick<AppUser, 'id' | 'name' | 'avatar'> | null;
