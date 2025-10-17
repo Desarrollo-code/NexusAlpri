@@ -1,4 +1,3 @@
-
 // src/app/(app)/security-audit/page.tsx
 'use client';
 

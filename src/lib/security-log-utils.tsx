@@ -1,5 +1,3 @@
-
-
 // src/lib/security-log-utils.tsx
 'use client';
 
