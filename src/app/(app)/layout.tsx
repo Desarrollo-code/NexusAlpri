@@ -32,12 +32,15 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
           !isMobile && (isCollapsed ? "ml-20" : "ml-72")
         )}>
           <TopBar />
-          <main className="flex-1 overflow-y-auto relative [transform:translateZ(0)]">
-            <DecorativeHeaderBackground />
-            <div className="relative z-10 p-4 md:p-6 lg:p-8">
-              {children}
-            </div>
-          </main>
+          {/* El contenido principal ahora está fuera del main para que los elementos fijos funcionen correctamente */}
+          <div className="relative flex-1 [transform:translateZ(0)]">
+            <main className="absolute inset-0 overflow-y-auto">
+              <DecorativeHeaderBackground />
+              <div className="relative z-10 p-4 md:p-6 lg:p-8">
+                {children}
+              </div>
+            </main>
+          </div>
         </div>
         {isTourActive && (
           <TourGuide
