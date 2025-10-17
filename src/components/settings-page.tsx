@@ -1,3 +1,4 @@
+
 // src/components/settings-page.tsx
 'use client';
 
@@ -83,10 +84,13 @@ const UploadWidget = ({
            </div>
         </div>
       ) : isUploading ? (
-         <div className="w-full h-32 flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg">
-             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-             <p className="text-sm text-muted-foreground">Subiendo...</p>
-             <Progress value={uploadProgress} className="w-3/4 h-1.5" />
+         <div className="w-full h-32 flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg bg-muted/50 p-2 relative">
+            {currentImageUrl && <Image src={currentImageUrl} alt="Subiendo" fill className="object-contain opacity-30 p-2"/>}
+            <div className="z-10 text-center space-y-2">
+                <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+                <p className="text-sm text-muted-foreground">Subiendo...</p>
+                <Progress value={uploadProgress} className="w-32 h-1.5" />
+            </div>
          </div>
       ) : (
         <UploadArea onFileSelect={onFileSelect} disabled={disabled} inputId={id}/>
@@ -102,38 +106,6 @@ const UploadWidget = ({
     </div>
   );
 };
-
-const ThemePreviewCard = ({ settings }: { settings: AppPlatformSettings | null }) => {
-    if (!settings) return null;
-    const fontVars = {
-        '--font-headline': (fontMap[settings.fontHeadline || 'Space Grotesk'] as any)?.style.fontFamily,
-        '--font-body': (fontMap[settings.fontBody || 'Inter'] as any)?.style.fontFamily,
-    } as React.CSSProperties;
-
-    return (
-        <Card className="overflow-hidden" style={fontVars}>
-            <CardHeader>
-                <CardTitle>Vista Previa del Tema</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="p-4 rounded-lg border bg-background">
-                    <div className="flex items-center gap-2 mb-4">
-                        <div className="relative w-8 h-8 rounded-md bg-muted">
-                           {settings.logoUrl && <Image src={settings.logoUrl} alt="logo" fill className="object-contain" />}
-                        </div>
-                        <h4 className="font-headline text-base font-bold" style={{ color: `hsl(${settings.primaryColor})` }}>{settings.platformName}</h4>
-                    </div>
-                    <p className="font-body text-sm" style={{ color: `hsl(${settings.foreground})` }}>Este es un texto de párrafo para previsualizar la fuente.</p>
-                    <div className="flex gap-2 mt-4">
-                        <Button style={{ backgroundColor: `hsl(${settings.primaryColor})`, color: `hsl(${settings.primaryColorForeground})` }} size="sm">Botón Primario</Button>
-                        <Button style={{ backgroundColor: `hsl(${settings.secondaryColor})`, color: `hsl(${settings.secondaryColorForeground})` }} size="sm">Botón Secundario</Button>
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
-    );
-}
-
 
 export default function SettingsPageComponent() {
   const { user, settings: globalSettings, updateSettings } = useAuth();
@@ -192,10 +164,7 @@ export default function SettingsPageComponent() {
       setUploadStates(prev => ({ ...prev, [field]: { isUploading: true, progress: 0 }}));
       
       let apiPath = '/api/upload/settings-image';
-      if (field === 'announcementsImageUrl') {
-          apiPath = '/api/upload/announcement-attachment';
-      }
-
+      
       try {
           const result = await uploadWithProgress(apiPath, file, (progress) => {
              setUploadStates(prev => ({ ...prev, [field]: { ...prev[field], progress }}));
@@ -355,23 +324,23 @@ export default function SettingsPageComponent() {
                 <Card className="card-border-animated">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><Paintbrush className="h-5 w-5 text-primary"/>Paleta de Colores</CardTitle>
-                        <CardDescription>Personaliza los colores principales de la plataforma. La vista previa se actualiza al instante.</CardDescription>
+                        <CardDescription>Personaliza los colores principales de la plataforma.</CardDescription>
                     </CardHeader>
                     <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <Label>Tema Claro</Label>
                             <div className="p-4 border rounded-lg mt-2 space-y-3">
-                                <div className="flex items-center justify-between"><Label htmlFor="primaryColor">Primario</Label><Input id="primaryColor" type="color" value={formState.primaryColor || '#000000'} onChange={(e) => handleInputChange('primaryColor', e.target.value)} className="w-20 p-1" /></div>
-                                <div className="flex items-center justify-between"><Label htmlFor="secondaryColor">Secundario</Label><Input id="secondaryColor" type="color" value={formState.secondaryColor || '#000000'} onChange={(e) => handleInputChange('secondaryColor', e.target.value)} className="w-20 p-1" /></div>
-                                <div className="flex items-center justify-between"><Label htmlFor="accentColor">Acento</Label><Input id="accentColor" type="color" value={formState.accentColor || '#000000'} onChange={(e) => handleInputChange('accentColor', e.target.value)} className="w-20 p-1" /></div>
-                                <div className="flex items-center justify-between"><Label htmlFor="backgroundColorLight">Fondo</Label><Input id="backgroundColorLight" type="color" value={formState.backgroundColorLight || '#FFFFFF'} onChange={(e) => handleInputChange('backgroundColorLight', e.target.value)} className="w-20 p-1" /></div>
+                                <div className="flex items-center justify-between"><Label htmlFor="primaryColor">Primario</Label><Input id="primaryColor" type="color" value={formState.primaryColor || '#000000'} onChange={(e) => handleInputChange('primaryColor', e.target.value)} className="w-20 p-1 h-10" /></div>
+                                <div className="flex items-center justify-between"><Label htmlFor="secondaryColor">Secundario</Label><Input id="secondaryColor" type="color" value={formState.secondaryColor || '#000000'} onChange={(e) => handleInputChange('secondaryColor', e.target.value)} className="w-20 p-1 h-10" /></div>
+                                <div className="flex items-center justify-between"><Label htmlFor="accentColor">Acento</Label><Input id="accentColor" type="color" value={formState.accentColor || '#000000'} onChange={(e) => handleInputChange('accentColor', e.target.value)} className="w-20 p-1 h-10" /></div>
+                                <div className="flex items-center justify-between"><Label htmlFor="backgroundColorLight">Fondo</Label><Input id="backgroundColorLight" type="color" value={formState.backgroundColorLight || '#FFFFFF'} onChange={(e) => handleInputChange('backgroundColorLight', e.target.value)} className="w-20 p-1 h-10" /></div>
                             </div>
                         </div>
                         <div>
                             <Label>Tema Oscuro</Label>
                              <div className="p-4 border rounded-lg mt-2 space-y-3">
-                                <div className="flex items-center justify-between"><Label htmlFor="primaryColorDark">Primario</Label><Input id="primaryColorDark" type="color" value={formState.primaryColorDark || '#FFFFFF'} onChange={(e) => handleInputChange('primaryColorDark', e.target.value)} className="w-20 p-1" /></div>
-                                <div className="flex items-center justify-between"><Label htmlFor="backgroundColorDark">Fondo</Label><Input id="backgroundColorDark" type="color" value={formState.backgroundColorDark || '#000000'} onChange={(e) => handleInputChange('backgroundColorDark', e.target.value)} className="w-20 p-1" /></div>
+                                <div className="flex items-center justify-between"><Label htmlFor="primaryColorDark">Primario</Label><Input id="primaryColorDark" type="color" value={formState.primaryColorDark || '#FFFFFF'} onChange={(e) => handleInputChange('primaryColorDark', e.target.value)} className="w-20 p-1 h-10" /></div>
+                                <div className="flex items-center justify-between"><Label htmlFor="backgroundColorDark">Fondo</Label><Input id="backgroundColorDark" type="color" value={formState.backgroundColorDark || '#000000'} onChange={(e) => handleInputChange('backgroundColorDark', e.target.value)} className="w-20 p-1 h-10" /></div>
                             </div>
                         </div>
                     </CardContent>
@@ -494,20 +463,12 @@ export default function SettingsPageComponent() {
                 </Card>
              </TabsContent>
         </Tabs>
-      </div>
-
-      <AlertDialog open={!!categoryToDelete} onOpenChange={(open) => !open && setCategoryToDelete(null)}>
-        <AlertDialogContent>
-            <AlertDialogHeader><AlertDialogTitle>¿Confirmar Eliminación?</AlertDialogTitle><AlertDialogDescription>Se verificará si la categoría "<strong>{categoryToDelete}</strong>" está en uso. Si no lo está, se eliminará de la lista (deberás guardar los cambios para confirmar). Si está en uso, se te notificará.</AlertDialogDescription></AlertDialogHeader>
-            <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><AlertDialogCancel disabled={isCheckingCategory}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDeleteCategory} disabled={isCheckingCategory} className={buttonVariants({ variant: "destructive" })}>{isCheckingCategory ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}Sí, eliminar</AlertDialogAction></AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-       <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-sm border-t lg:hidden">
-          <Button className="w-full" onClick={handleSaveSettings} disabled={isSaving || isLoading}>
-            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-            Guardar Configuración
-          </Button>
-      </div>
+        <AlertDialog open={!!categoryToDelete} onOpenChange={(isOpen) => { if (!isOpen) setCategoryToDelete(null); }}>
+          <AlertDialogContent>
+              <AlertDialogHeader><AlertDialogTitle>¿Confirmar Eliminación?</AlertDialogTitle><AlertDialogDescription>Se verificará si la categoría "<strong>{categoryToDelete}</strong>" está en uso. Si no lo está, se eliminará de la lista (deberás guardar los cambios para confirmar). Si está en uso, se te notificará.</AlertDialogDescription></AlertDialogHeader>
+              <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><AlertDialogCancel disabled={isCheckingCategory}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDeleteCategory} disabled={isCheckingCategory} className={buttonVariants({ variant: "destructive" })}>{isCheckingCategory ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}Sí, eliminar</AlertDialogAction></AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
     </div>
   );
 }
