@@ -58,7 +58,8 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
             setEmail(user.email || '');
             setRole(user.role || 'STUDENT');
             setPassword('');
-            setProcessId((user as any).processId || null);
+            // CORRECCIÓN: El objeto 'user' que viene de la API principal tiene el proceso anidado.
+            setProcessId((user as any).process?.id || (user as any).processId || null);
             setAvatarUrl(user.avatar || null);
         } else {
             // Reset for new user
@@ -87,6 +88,10 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
     const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
+            
+            if (localAvatarPreview) {
+                URL.revokeObjectURL(localAvatarPreview);
+            }
             const previewUrl = URL.createObjectURL(file);
             setLocalAvatarPreview(previewUrl);
 
@@ -98,6 +103,7 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
                  toast({ title: "Avatar subido", description: "La imagen se ha subido. Guarda los cambios para aplicarla." });
             } catch (err) {
                 toast({ title: 'Error de subida', description: (err as Error).message, variant: 'destructive' });
+                URL.revokeObjectURL(previewUrl);
                 setLocalAvatarPreview(null);
             } finally {
                 setIsUploading(false);
@@ -153,7 +159,7 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent>
+            <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>{user ? 'Editar Colaborador' : 'Añadir Nuevo Colaborador'}</DialogTitle>
                     <DialogDescription>
@@ -225,7 +231,7 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
                     </div>
                 </form>
                 <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2">
-                    <Button type="button" variant="ghost" onClick={onClose} disabled={isSaving}>Cancelar</Button>
+                    <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
                     <Button type="submit" form="user-form" disabled={isSaving || !name.trim() || !email.trim() || (!user && !password)}>
                         {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         <Save className="mr-2 h-4 w-4" />
