@@ -148,7 +148,9 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {users.map(user => (
+                    {users.map(user => {
+                        const processColors = user.process ? getProcessColors(user.process.id) : null;
+                        return (
                         <TableRow key={user.id}>
                             <TableCell>
                                 <Checkbox
@@ -170,12 +172,12 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
                             </TableCell>
                             <TableCell><Badge variant={getRoleBadgeVariant(user.role)}>{getRoleInSpanish(user.role)}</Badge></TableCell>
                             <TableCell>
-                                {user.process ? (
+                                {user.process && processColors ? (
                                     <Badge 
                                         className="text-xs"
                                         style={{
-                                            backgroundColor: getProcessColors(user.process.id).raw.light,
-                                            color: getProcessColors(user.process.id).raw.dark,
+                                            backgroundColor: processColors.raw.light,
+                                            color: processColors.raw.dark,
                                         }}
                                     >
                                         {user.process.name}
@@ -204,7 +206,7 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
                                 </DropdownMenu>
                             </TableCell>
                         </TableRow>
-                    ))}
+                    )})}
                 </TableBody>
             </Table>
         </Card>
@@ -482,7 +484,7 @@ export default function UsersPage() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem onSelect={() => setViewMode('grid')}><Grid className="mr-2 h-4 w-4"/>Cuadrícula</DropdownMenuItem>
-                                    <DropdownMenuItem onSelect={() => setViewMode('table')}><List className="mr-2 h-4 w-4"/>Tabla</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={()={() => setViewMode('table')}><List className="mr-2 h-4 w-4"/>Tabla</DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                              <Button onClick={() => handleOpenUserModal(null)} className="w-full"><UserPlus className="mr-2 h-4 w-4"/>Añadir</Button>
@@ -490,7 +492,7 @@ export default function UsersPage() {
                     </CardContent>
                 </Card>
 
-                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start mb-24 md:mb-4">
                     <div className="lg:col-span-3">
                          {isLoading ? (
                             viewMode === 'grid' ? (
@@ -523,20 +525,19 @@ export default function UsersPage() {
                     </aside>
                 </div>
             </div>
-            <DragOverlay dropAnimation={null}>
-                {draggedUser ? <UserProfileCard user={draggedUser} /> : null}
-            </DragOverlay>
             
+            {/* Action Bar */}
             <AnimatePresence>
                 {selectedUserIds.size > 0 && (
-                    <motion.div
+                     <motion.div
                         initial={{ y: 100, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: 100, opacity: 0 }}
-                        className="fixed bottom-0 left-0 right-0 z-50 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pointer-events-none"
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        className="fixed bottom-0 left-0 right-0 z-40 p-4 pb-4 md:bottom-4 pointer-events-none"
                     >
                         <div className="container mx-auto flex items-center justify-center">
-                            <div className="bg-background/95 backdrop-blur-lg border rounded-lg shadow-2xl flex items-center gap-4 p-2 pointer-events-auto">
+                            <div className="bg-background/90 backdrop-blur-lg border rounded-lg shadow-2xl flex items-center gap-4 p-2 pointer-events-auto">
                                 <p className="text-sm font-semibold px-2">{selectedUserIds.size} seleccionado(s)</p>
                                 <Button size="sm" onClick={() => setIsBulkAssignModalOpen(true)}><Briefcase className="mr-2 h-4 w-4"/> Asignar Proceso</Button>
                                 <Button size="sm" variant="ghost" onClick={() => setSelectedUserIds(new Set())}>Limpiar</Button>
@@ -546,7 +547,10 @@ export default function UsersPage() {
                 )}
             </AnimatePresence>
 
-
+            <DragOverlay dropAnimation={null}>
+                {draggedUser ? <UserProfileCard user={draggedUser} /> : null}
+            </DragOverlay>
+            
             {showUserModal && <UserFormModal isOpen={showUserModal} onClose={() => setShowUserModal(false)} onSave={fetchData} user={userToEdit} processes={processes} />}
             {isBulkAssignModalOpen && <BulkAssignModal isOpen={isBulkAssignModalOpen} onClose={() => setIsBulkAssignModalOpen(false)} onSave={fetchData} userIds={Array.from(selectedUserIds)} processes={processes}/>}
             
