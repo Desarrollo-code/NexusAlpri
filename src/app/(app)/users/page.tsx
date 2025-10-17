@@ -1,4 +1,3 @@
-
 // src/app/(app)/users/page.tsx
 'use client';
 
@@ -529,7 +528,7 @@ export default function UsersPage() {
         if (selectedUserIds.size === 0) return null;
 
         return (
-             <div className="bg-background/90 backdrop-blur-lg border rounded-lg shadow-2xl flex flex-wrap items-center justify-between gap-4 p-2">
+             <div className="bg-background/90 backdrop-blur-lg border rounded-lg shadow-2xl flex flex-wrap items-center justify-between gap-2 p-2">
                 <p className="text-sm font-semibold px-2">{selectedUserIds.size} seleccionado(s)</p>
                 <div className="flex items-center gap-2">
                     <Button size="sm" onClick={() => setIsBulkAssignModalOpen(true)}><Briefcase className="mr-2 h-4 w-4"/> Asignar Proceso</Button>
@@ -545,7 +544,7 @@ export default function UsersPage() {
                  {isMobile ? <MobileControls /> : <DesktopControls />}
 
                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-                    <div className="lg:col-span-3 mb-4">
+                    <div className="lg:col-span-3 mb-24 md:mb-4">
                          <div className="mb-4">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
@@ -563,7 +562,7 @@ export default function UsersPage() {
                                                 isSelected={selectedUserIds.has(u.id)} 
                                                 onSelectionChange={handleSelectionChange}
                                                 onEdit={handleOpenUserModal}
-                                                onRoleChange={handleOpenUserModal} // Reusing for simplicity, could be a different modal
+                                                onRoleChange={handleOpenUserModal}
                                                 onStatusChange={handleStatusChange}
                                             />
                                         ))}
@@ -584,19 +583,21 @@ export default function UsersPage() {
 
                     <aside className="hidden lg:block lg:col-span-1 lg:sticky lg:top-24 space-y-4">
                         <ProcessTree processes={processes} onProcessUpdate={fetchData} onProcessClick={(id) => handleFilterChange('processId', id)} activeProcessId={processId}/>
-                        <BulkActionsBar />
+                        <div className="md:bottom-4">
+                           <BulkActionsBar />
+                        </div>
                     </aside>
                 </div>
             </div>
             
             <AnimatePresence>
-                {isMobile && selectedUserIds.size > 0 && (
+                {selectedUserIds.size > 0 && (
                      <motion.div
                         initial={{ y: 100, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: 100, opacity: 0 }}
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        className="fixed bottom-24 left-4 right-4 z-50 pointer-events-none flex justify-center"
+                        className="fixed bottom-24 md:hidden left-4 right-4 z-50 pointer-events-none flex justify-center"
                     >
                        <div className="pointer-events-auto">
                            <BulkActionsBar />
@@ -606,7 +607,11 @@ export default function UsersPage() {
             </AnimatePresence>
 
             <DragOverlay dropAnimation={null}>
-                {draggedUser ? <UserProfileCard user={draggedUser} /> : null}
+                {draggedUser ? 
+                  <div className="opacity-80">
+                     <UserProfileCard user={draggedUser} /> 
+                  </div>
+                : null}
             </DragOverlay>
             
             {showUserModal && <UserFormModal isOpen={showUserModal} onClose={() => setShowUserModal(false)} onSave={fetchData} user={userToEdit} processes={processes} />}
@@ -633,4 +638,3 @@ export default function UsersPage() {
         </DndContext>
     );
 }
-

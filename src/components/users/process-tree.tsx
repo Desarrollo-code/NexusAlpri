@@ -78,7 +78,7 @@ export function ProcessTree({ processes, onProcessUpdate, onProcessClick, active
         setIsDeleting(true);
         try {
             const res = await fetch(`/api/processes/${processToDelete.id}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error("No se pudo eliminar el proceso.");
+            if (!res.ok) throw new Error((await res.json()).message || "No se pudo eliminar el proceso.");
             toast({ title: 'Proceso Eliminado' });
             onProcessUpdate();
         } catch(err) {
