@@ -33,7 +33,7 @@ import { Label } from '@/components/ui/label';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { UserProfileCard } from '@/components/profile/user-profile-card';
-import { getRoleInSpanish } from '@/lib/security-log-utils';
+import { getRoleInSpanish, getRoleBadgeVariant } from '@/lib/security-log-utils';
 import { getProcessColors } from '@/lib/utils';
 import { Identicon } from '@/components/ui/identicon';
 
@@ -49,15 +49,6 @@ interface UserWithProcess extends User {
 
 const PAGE_SIZE = 12;
 
-const getRoleBadgeVariant = (role: UserRole) => {
-    switch(role) {
-      case 'ADMINISTRATOR': return 'destructive';
-      case 'INSTRUCTOR': return 'default';
-      case 'STUDENT': return 'secondary';
-      default: return 'outline';
-    }
-};
-
 const DraggableUserCard = ({ user, isSelected, onSelectionChange }: { user: UserWithProcess, isSelected: boolean, onSelectionChange: (id: string, selected: boolean) => void }) => {
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: user.id });
     
@@ -65,7 +56,7 @@ const DraggableUserCard = ({ user, isSelected, onSelectionChange }: { user: User
         <div ref={setNodeRef} {...attributes} {...listeners} className={cn("touch-none", isDragging && "opacity-30")}>
             <div className="relative">
                 <UserProfileCard user={user} />
-                 <div className="absolute top-2 left-2">
+                 <div className="absolute top-2 left-2 z-20">
                     <Checkbox checked={isSelected} onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)} className="bg-background border-primary" />
                 </div>
             </div>
@@ -85,35 +76,47 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
 
     if (isMobile) {
         return (
-            <div className="space-y-4">
-                {users.map(user => (
-                    <Card key={user.id} className="p-3">
-                         <div className="flex items-center gap-3">
-                            <Checkbox
-                                checked={selectedUserIds.has(user.id)}
-                                onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)}
-                            />
-                            <Avatar className="h-10 w-10">
-                                <AvatarImage src={user.avatar || undefined} />
-                                <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
-                            </Avatar>
-                            <div className="flex-grow overflow-hidden">
-                                <p className="font-semibold truncate">{user.name}</p>
-                                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+            <div className="space-y-3">
+                {users.map(user => {
+                    const processColors = user.process ? getProcessColors(user.process.id) : null;
+                    return (
+                        <Card key={user.id} className="p-3 overflow-hidden">
+                            <div className="flex items-start gap-3">
+                                <Checkbox
+                                    className="mt-1"
+                                    checked={selectedUserIds.has(user.id)}
+                                    onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)}
+                                />
+                                <Avatar className="h-10 w-10">
+                                    <AvatarImage src={user.avatar || undefined} />
+                                    <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
+                                </Avatar>
+                                <div className="flex-grow overflow-hidden">
+                                    <p className="font-semibold truncate">{user.name}</p>
+                                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                                     <div className="flex items-center flex-wrap gap-1.5 mt-2">
+                                        <Badge variant={getRoleBadgeVariant(user.role)} className="text-xs">{getRoleInSpanish(user.role)}</Badge>
+                                        {user.process && processColors && (
+                                            <Badge className="text-xs" style={{backgroundColor: processColors.raw.light, color: processColors.raw.dark}}>
+                                                {user.process.name}
+                                            </Badge>
+                                        )}
+                                     </div>
+                                </div>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 flex-shrink-0"><MoreVertical className="h-4 w-4"/></Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        <DropdownMenuItem onSelect={() => onEdit(user)}><Edit className="mr-2 h-4 w-4"/>Editar Perfil</DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => onRoleChange(user)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol</DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => onStatusChange(user, !user.isActive)} className={user.isActive ? "text-destructive" : ""}><UserX className="mr-2 h-4 w-4"/>{user.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </div>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2"><MoreVertical className="h-4 w-4"/></Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuItem onSelect={() => onEdit(user)}><Edit className="mr-2 h-4 w-4"/>Editar Perfil</DropdownMenuItem>
-                                    <DropdownMenuItem onSelect={() => onRoleChange(user)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol</DropdownMenuItem>
-                                    <DropdownMenuItem onSelect={() => onStatusChange(user, !user.isActive)} className={user.isActive ? "text-destructive" : ""}><UserX className="mr-2 h-4 w-4"/>{user.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                         </div>
-                    </Card>
-                ))}
+                        </Card>
+                    );
+                })}
             </div>
         )
     }
@@ -314,7 +317,7 @@ export default function UsersPage() {
                 }
             } else {
                 if (isSelected) newSet.add(userId);
-                else newSet.delete(userId);
+                else newSet.delete(id);
             }
             return newSet;
         });
