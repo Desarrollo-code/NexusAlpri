@@ -49,6 +49,16 @@ interface UserWithProcess extends User {
 
 const PAGE_SIZE = 12;
 
+const DraggableUserPreview = ({ user }: { user: UserWithProcess }) => (
+    <Card className="flex items-center gap-2 p-2 shadow-lg w-48">
+        <Avatar className="h-8 w-8">
+            <AvatarImage src={user.avatar || undefined} />
+            <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
+        </Avatar>
+        <span className="font-semibold text-sm truncate">{user.name}</span>
+    </Card>
+);
+
 const DraggableUserCard = ({ user, isSelected, onSelectionChange, onEdit, onRoleChange, onStatusChange }: { 
     user: UserWithProcess, 
     isSelected: boolean, 
@@ -60,7 +70,7 @@ const DraggableUserCard = ({ user, isSelected, onSelectionChange, onEdit, onRole
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: user.id });
     
     return (
-        <div ref={setNodeRef} {...attributes} {...listeners} className={cn("touch-none", isDragging && "opacity-30")}>
+        <div ref={setNodeRef} {...attributes} {...listeners} className={cn("touch-none", isDragging && "opacity-50")}>
             <div className="relative">
                 <UserProfileCard 
                     user={user}
@@ -608,9 +618,7 @@ export default function UsersPage() {
 
             <DragOverlay dropAnimation={null}>
                 {draggedUser ? 
-                  <div className="opacity-80">
-                     <UserProfileCard user={draggedUser} /> 
-                  </div>
+                  <DraggableUserPreview user={draggedUser} /> 
                 : null}
             </DragOverlay>
             
