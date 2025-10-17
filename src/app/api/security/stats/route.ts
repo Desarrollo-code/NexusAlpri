@@ -19,12 +19,11 @@ export async function GET(req: NextRequest) {
         const today = endOfDay(new Date());
         const last7Days = startOfDay(subDays(today, 6));
 
-        // 1. Obtener todos los logs de los últimos 7 días
+        // 1. Obtener todos los logs de los últimos 7 días de forma segura
         const allLogs = await prisma.securityLog.findMany({
             where: {
                 createdAt: {
                     gte: last7Days,
-                    not: null, // Asegurarnos de que la fecha no sea nula
                 },
             },
             select: {
@@ -56,8 +55,9 @@ export async function GET(req: NextRequest) {
         }
 
         allLogs.forEach(log => {
+            // **VALIDACIÓN DE RAÍZ**: Si la fecha no es válida, se omite el registro.
             if (!log.createdAt || !isValid(new Date(log.createdAt))) {
-                return; // Omitir registros con fecha inválida
+                return;
             }
             const logDate = new Date(log.createdAt);
 
