@@ -69,7 +69,7 @@ const UploadWidget = ({
     <div className="space-y-2">
       <Label>{label}</Label>
       {currentImageUrl && !isUploading ? (
-             <div className="relative w-full max-w-[200px] aspect-square rounded-lg border overflow-hidden bg-muted/20 p-2">
+             <div className="relative w-40 h-32 rounded-lg border overflow-hidden bg-muted/20 p-2">
                 <Image src={currentImageUrl} alt={`Previsualización de ${label}`} fill className="object-contain p-2" />
                  <div className="absolute top-1 right-1 flex flex-col gap-1 z-10">
                     <Button type="button" variant="secondary" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={() => document.getElementById(id)?.click()} disabled={disabled}>
@@ -83,7 +83,7 @@ const UploadWidget = ({
                  </div>
             </div>
       ) : isUploading ? (
-         <div className="w-full h-32 flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg bg-muted/50 p-2 relative">
+         <div className="w-40 h-32 flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg bg-muted/50 p-2 relative">
             {currentImageUrl && <Image src={currentImageUrl} alt="Subiendo" fill className="object-contain opacity-30 p-2"/>}
             <div className="z-10 text-center space-y-2">
                 <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
@@ -281,7 +281,7 @@ export default function SettingsPageComponent() {
         </div>
 
         <Tabs defaultValue="identity" className="w-full">
-            <TabsList id="settings-tabs-list" className="inline-grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
+            <TabsList id="settings-tabs-list" className="inline-grid w-full grid-cols-2 sm:grid-cols-2 md:grid-cols-4 h-auto">
                 <TabsTrigger value="identity">Identidad</TabsTrigger>
                 <TabsTrigger value="theme">Tema y Estilo</TabsTrigger>
                 <TabsTrigger value="security">Seguridad</TabsTrigger>
