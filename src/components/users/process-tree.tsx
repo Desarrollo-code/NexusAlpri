@@ -27,8 +27,8 @@ const ProcessNode = ({ process, onEdit, onDelete, onProcessClick, activeProcessI
     const isActive = activeProcessId === process.id;
 
     return (
-        <div ref={setNodeRef}>
-            <div className={cn("flex items-center group gap-1 p-1 rounded-md transition-colors", isOver && "bg-primary/20", isActive && "bg-primary/10")}>
+        <div ref={setNodeRef} className={cn("rounded-md transition-colors", isOver && "bg-primary/20")}>
+            <div className={cn("flex items-center group gap-1 p-1 rounded-md transition-colors", isActive && "bg-primary/10")}>
                 <div className="flex items-center gap-2 flex-grow cursor-pointer" onClick={() => onProcessClick(isActive ? null : process.id)}>
                     <div className="w-1.5 h-6 rounded-full" style={{ backgroundColor: colors.raw.medium }} />
                     <span className="font-medium text-sm truncate">{process.name}</span>
