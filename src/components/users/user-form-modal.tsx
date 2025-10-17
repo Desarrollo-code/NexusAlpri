@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Camera } from 'lucide-react';
+import { Loader2, Camera, Save } from 'lucide-react';
 import { PasswordStrengthIndicator } from '@/components/password-strength-indicator';
 import type { User, UserRole, Process } from '@/types';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
@@ -58,7 +58,7 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
             setEmail(user.email || '');
             setRole(user.role || 'STUDENT');
             setPassword('');
-            setProcessId(user.processId || null);
+            setProcessId((user as any).processId || null);
             setAvatarUrl(user.avatar || null);
         } else {
             // Reset for new user
@@ -81,8 +81,8 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
         }
       });
       return list;
-  };
-  const flattenedProcesses = flattenProcesses(processes);
+    };
+    const flattenedProcesses = flattenProcesses(processes);
 
     const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -224,10 +224,11 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
                       </div>
                     </div>
                 </form>
-                <DialogFooter>
-                    <Button variant="outline" onClick={onClose}>Cancelar</Button>
+                <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2">
+                    <Button type="button" variant="ghost" onClick={onClose} disabled={isSaving}>Cancelar</Button>
                     <Button type="submit" form="user-form" disabled={isSaving || !name.trim() || !email.trim() || (!user && !password)}>
                         {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        <Save className="mr-2 h-4 w-4" />
                         {user ? 'Guardar Cambios' : 'Crear Colaborador'}
                     </Button>
                 </DialogFooter>

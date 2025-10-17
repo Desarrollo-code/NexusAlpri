@@ -17,11 +17,8 @@ import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SmartPagination } from '@/components/ui/pagination';
 import { useTitle } from '@/contexts/title-context';
-import { getProcessColors } from '@/lib/utils';
-import { getRoleInSpanish } from '@/lib/security-log-utils';
 import { DndContext, useDraggable, DragOverlay, type DragEndEvent, type Active, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { UserFormModal } from '@/components/users/user-form-modal';
-import { UserProfileCard } from '@/components/profile/user-profile-card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -32,10 +29,13 @@ import { ProcessTree } from '@/components/users/process-tree';
 import { BulkAssignModal } from '@/components/users/bulk-assign-modal';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Identicon } from '@/components/ui/identicon';
 import { Label } from '@/components/ui/label';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { UserProfileCard } from '@/components/profile/user-profile-card';
+import { getRoleInSpanish } from '@/lib/security-log-utils';
+import { getProcessColors } from '@/lib/utils';
+import { Identicon } from '@/components/ui/identicon';
 
 
 // --- TYPES & CONTEXT ---
@@ -365,7 +365,6 @@ export default function UsersPage() {
         }
     }
 
-
     const handleDragEnd = async (event: DragEndEvent) => {
         setActiveDraggable(null);
         const { active, over } = event;
@@ -373,13 +372,6 @@ export default function UsersPage() {
         
         const userId = active.id as string;
         const targetProcessId = over.id as string;
-
-        const originalUsers = [...usersList];
-        setUsersList(prev => prev.map(u => 
-            u.id === userId 
-                ? { ...u, processId: targetProcessId === 'unassigned' ? null : targetProcessId, process: processes.flatMap(p => [p, ...p.children]).find(p => p.id === targetProcessId) || null }
-                : u
-        ));
 
         try {
             const res = await fetch(`/api/users/${userId}`, {
@@ -390,10 +382,9 @@ export default function UsersPage() {
             if (!res.ok) throw new Error("No se pudo asignar el proceso.");
             
             toast({ title: "Usuario Asignado", description: "El colaborador ha sido movido al nuevo proceso."});
-            fetchData();
+            fetchData(); // Vuelve a cargar los datos para reflejar el cambio.
         } catch (err) {
             toast({ title: 'Error', description: (err as Error).message, variant: 'destructive'});
-            setUsersList(originalUsers);
         }
     };
     
