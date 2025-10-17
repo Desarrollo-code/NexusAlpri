@@ -1,3 +1,4 @@
+
 // src/app/(app)/users/page.tsx
 'use client';
 
@@ -469,7 +470,10 @@ export default function UsersPage() {
                             </Popover>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" className="w-full sm:w-auto justify-start"><Grid className="mr-2 h-4 w-4" />Vista</Button>
+                                    <Button variant="outline" className="w-full sm:w-auto justify-start">
+                                        {viewMode === 'grid' ? <Grid className="mr-2 h-4 w-4" /> : <List className="mr-2 h-4 w-4" />}
+                                        Vista
+                                    </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem onSelect={() => setViewMode('grid')}><Grid className="mr-2 h-4 w-4"/>Cuadrícula</DropdownMenuItem>
@@ -554,3 +558,4 @@ export default function UsersPage() {
         </DndContext>
     );
 }
+
