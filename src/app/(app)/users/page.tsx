@@ -100,8 +100,8 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
                                             <Badge 
                                                 className="text-xs"
                                                 style={{
-                                                    backgroundColor: colors.raw.light,
-                                                    color: colors.raw.dark,
+                                                    backgroundColor: processColors.raw.light,
+                                                    color: processColors.raw.dark,
                                                 }}
                                             >
                                                 {user.process.name}
@@ -428,7 +428,7 @@ export default function UsersPage() {
     return (
         <DndContext sensors={sensors} onDragStart={(e) => setActiveDraggable(e.active)} onDragEnd={handleDragEnd}>
             <div className="space-y-6">
-                 <Card>
+                <Card>
                     <CardContent className="p-4 space-y-4">
                         <div className="relative w-full">
                              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -494,7 +494,7 @@ export default function UsersPage() {
                     </CardFooter>
                 </Card>
 
-                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start mb-24 md:mb-4">
+                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start pb-24 md:pb-4">
                     <div className="lg:col-span-3">
                          {isLoading ? (
                             viewMode === 'grid' ? (
@@ -528,7 +528,6 @@ export default function UsersPage() {
                 </div>
             </div>
             
-            {/* Action Bar */}
             <AnimatePresence>
                 {selectedUserIds.size > 0 && (
                      <motion.div
@@ -536,7 +535,7 @@ export default function UsersPage() {
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: 100, opacity: 0 }}
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        className="fixed bottom-0 left-0 right-0 z-50 p-2 md:bottom-4 pointer-events-none"
+                        className="fixed bottom-4 left-0 right-0 z-50 p-2 pointer-events-none"
                     >
                         <div className="container mx-auto flex items-center justify-center">
                             <div className="bg-background/90 backdrop-blur-lg border rounded-lg shadow-2xl flex items-center gap-4 p-2 pointer-events-auto">
