@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { PlusCircle, Search, List, Grid, Filter, UserPlus, MoreVertical, Loader2, Briefcase, MessageSquare, Edit, Trash2, UserCog, UserX } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
@@ -100,8 +100,8 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
                                             <Badge 
                                                 className="text-xs"
                                                 style={{
-                                                    backgroundColor: processColors.raw.light,
-                                                    color: processColors.raw.dark,
+                                                    backgroundColor: colors.raw.light,
+                                                    color: colors.raw.dark,
                                                 }}
                                             >
                                                 {user.process.name}
@@ -429,12 +429,12 @@ export default function UsersPage() {
         <DndContext sensors={sensors} onDragStart={(e) => setActiveDraggable(e.active)} onDragEnd={handleDragEnd}>
             <div className="space-y-6">
                  <Card>
-                    <CardContent className="p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                        <div className="relative w-full md:max-w-xs">
+                    <CardContent className="p-4 space-y-4">
+                        <div className="relative w-full">
                              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                              <Input placeholder="Buscar por nombre o email..." value={search} onChange={handleSearchChange} className="pl-10"/>
                         </div>
-                         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                         <div className="grid grid-cols-2 gap-2">
                             <Popover>
                                 <PopoverTrigger asChild>
                                     <Button variant="outline" className="w-full justify-start">
@@ -442,7 +442,7 @@ export default function UsersPage() {
                                         Filtros ({activeFiltersCount})
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-64 p-0" align="end">
+                                <PopoverContent className="w-64 p-0" align="start">
                                     <div className="p-4 space-y-4">
                                         <div className="space-y-2">
                                             <Label>Rol</Label>
@@ -484,12 +484,14 @@ export default function UsersPage() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem onSelect={() => setViewMode('grid')}><Grid className="mr-2 h-4 w-4"/>Cuadrícula</DropdownMenuItem>
-                                    <DropdownMenuItem onSelect={()={() => setViewMode('table')}><List className="mr-2 h-4 w-4"/>Tabla</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => setViewMode('table')}><List className="mr-2 h-4 w-4"/>Tabla</DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
-                             <Button onClick={() => handleOpenUserModal(null)} className="w-full"><UserPlus className="mr-2 h-4 w-4"/>Añadir</Button>
                         </div>
                     </CardContent>
+                    <CardFooter className="p-4 pt-0">
+                        <Button onClick={() => handleOpenUserModal(null)} className="w-full"><UserPlus className="mr-2 h-4 w-4"/>Añadir</Button>
+                    </CardFooter>
                 </Card>
 
                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start mb-24 md:mb-4">
@@ -534,7 +536,7 @@ export default function UsersPage() {
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: 100, opacity: 0 }}
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        className="fixed bottom-0 left-0 right-0 z-40 p-4 pb-4 md:bottom-4 pointer-events-none"
+                        className="fixed bottom-0 left-0 right-0 z-50 p-2 md:bottom-4 pointer-events-none"
                     >
                         <div className="container mx-auto flex items-center justify-center">
                             <div className="bg-background/90 backdrop-blur-lg border rounded-lg shadow-2xl flex items-center gap-4 p-2 pointer-events-auto">
