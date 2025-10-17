@@ -427,44 +427,42 @@ export default function UsersPage() {
     }
     
     const DesktopControls = () => (
-         <Card className="p-2">
-            <div className="flex items-center gap-4">
-                <div className="relative flex-grow">
-                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                     <Input placeholder="Buscar por nombre o email..." value={search} onChange={handleSearchChange} className="pl-10"/>
-                </div>
-                <Popover>
-                    <PopoverTrigger asChild>
-                        <Button variant="outline">
-                            <Filter className="mr-2 h-4 w-4" />
-                            Filtros ({activeFiltersCount})
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-64 p-0" align="end">
-                        <div className="p-4 space-y-4">
-                             <div className="space-y-2"><Label>Rol</Label><Select value={role || 'ALL'} onValueChange={(v) => handleFilterChange('role', v as UserRole)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="ADMINISTRATOR">Admin</SelectItem><SelectItem value="INSTRUCTOR">Instructor</SelectItem><SelectItem value="STUDENT">Estudiante</SelectItem></SelectContent></Select></div>
-                             <div className="space-y-2"><Label>Estado</Label><Select value={status || 'ALL'} onValueChange={(v) => handleFilterChange('status', v)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="active">Activo</SelectItem><SelectItem value="inactive">Inactivo</SelectItem></SelectContent></Select></div>
-                             <div className="space-y-2"><Label>Proceso</Label><Select value={processId || 'ALL'} onValueChange={(v) => handleFilterChange('processId', v)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="unassigned">Sin Asignar</SelectItem><Separator/>{flattenedProcesses.map(p => (<SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem` }}>{p.name}</SelectItem>))}</SelectContent></Select></div>
-                        </div>
-                    </PopoverContent>
-                </Popover>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline">
-                            {viewMode === 'grid' ? <Grid className="mr-2 h-4 w-4" /> : <List className="mr-2 h-4 w-4" />}
-                            Vista
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuItem onSelect={() => setViewMode('grid')}><Grid className="mr-2 h-4 w-4"/>Cuadrícula</DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => setViewMode('table')}><List className="mr-2 h-4 w-4"/>Tabla</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-                <Button onClick={() => handleOpenUserModal(null)}>
-                    <UserPlus className="mr-2 h-4 w-4"/>Añadir Colaborador
-                </Button>
+         <div className="flex items-center gap-4">
+            <div className="relative flex-grow">
+                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                 <Input placeholder="Buscar por nombre o email..." value={search} onChange={handleSearchChange} className="pl-10"/>
             </div>
-        </Card>
+            <Popover>
+                <PopoverTrigger asChild>
+                    <Button variant="outline">
+                        <Filter className="mr-2 h-4 w-4" />
+                        Filtros ({activeFiltersCount})
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-64 p-0" align="end">
+                    <div className="p-4 space-y-4">
+                         <div className="space-y-2"><Label>Rol</Label><Select value={role || 'ALL'} onValueChange={(v) => handleFilterChange('role', v as UserRole)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="ADMINISTRATOR">Admin</SelectItem><SelectItem value="INSTRUCTOR">Instructor</SelectItem><SelectItem value="STUDENT">Estudiante</SelectItem></SelectContent></Select></div>
+                         <div className="space-y-2"><Label>Estado</Label><Select value={status || 'ALL'} onValueChange={(v) => handleFilterChange('status', v)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="active">Activo</SelectItem><SelectItem value="inactive">Inactivo</SelectItem></SelectContent></Select></div>
+                         <div className="space-y-2"><Label>Proceso</Label><Select value={processId || 'ALL'} onValueChange={(v) => handleFilterChange('processId', v)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="unassigned">Sin Asignar</SelectItem><Separator/>{flattenedProcesses.map(p => (<SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem` }}>{p.name}</SelectItem>))}</SelectContent></Select></div>
+                    </div>
+                </PopoverContent>
+            </Popover>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline">
+                        {viewMode === 'grid' ? <Grid className="mr-2 h-4 w-4" /> : <List className="mr-2 h-4 w-4" />}
+                        Vista
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onSelect={() => setViewMode('grid')}><Grid className="mr-2 h-4 w-4"/>Cuadrícula</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setViewMode('table')}><List className="mr-2 h-4 w-4"/>Tabla</DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <Button onClick={() => handleOpenUserModal(null)}>
+                <UserPlus className="mr-2 h-4 w-4"/>Añadir Colaborador
+            </Button>
+        </div>
     );
 
     const MobileControls = () => (
@@ -516,10 +514,12 @@ export default function UsersPage() {
         if (selectedUserIds.size === 0) return null;
 
         return (
-             <div className="bg-background/90 backdrop-blur-lg border rounded-lg shadow-2xl flex items-center gap-4 p-2">
+             <div className="bg-background/90 backdrop-blur-lg border rounded-lg shadow-2xl flex flex-wrap items-center justify-between gap-4 p-2">
                 <p className="text-sm font-semibold px-2">{selectedUserIds.size} seleccionado(s)</p>
-                <Button size="sm" onClick={() => setIsBulkAssignModalOpen(true)}><Briefcase className="mr-2 h-4 w-4"/> Asignar Proceso</Button>
-                <Button size="sm" variant="ghost" onClick={() => setSelectedUserIds(new Set())}>Limpiar</Button>
+                <div className="flex items-center gap-2">
+                    <Button size="sm" onClick={() => setIsBulkAssignModalOpen(true)}><Briefcase className="mr-2 h-4 w-4"/> Asignar Proceso</Button>
+                    <Button size="sm" variant="ghost" onClick={() => setSelectedUserIds(new Set())}>Limpiar</Button>
+                </div>
             </div>
         )
     }
@@ -529,9 +529,9 @@ export default function UsersPage() {
             <div className="space-y-6">
                  {isMobile ? <MobileControls /> : <DesktopControls />}
 
-                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start mb-24 md:mb-4">
+                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
                     <div className="lg:col-span-3">
-                         <div className="mb-6">
+                         <div className="mb-4">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">{[...Array(8)].map((_,i) => <Skeleton key={i} className="h-48 w-full" />)}</div>
@@ -562,9 +562,7 @@ export default function UsersPage() {
                     <aside className="hidden lg:block lg:col-span-1 lg:sticky lg:top-24">
                         <div className="space-y-4">
                             <ProcessTree processes={processes} onProcessUpdate={fetchData} onProcessClick={(id) => handleFilterChange('processId', id)} activeProcessId={processId}/>
-                             <AnimatePresence>
-                                {!isMobile && <BulkActionsBar />}
-                             </AnimatePresence>
+                            <BulkActionsBar />
                         </div>
                     </aside>
                 </div>
