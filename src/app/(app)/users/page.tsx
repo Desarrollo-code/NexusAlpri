@@ -100,8 +100,8 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
                                             <Badge 
                                                 className="text-xs"
                                                 style={{
-                                                    backgroundColor: processColors.raw.light,
-                                                    color: processColors.raw.dark,
+                                                    backgroundColor: colors.raw.light,
+                                                    color: colors.raw.dark,
                                                 }}
                                             >
                                                 {user.process.name}
@@ -432,7 +432,7 @@ export default function UsersPage() {
                              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                              <Input placeholder="Buscar por nombre o email..." value={search} onChange={handleSearchChange} className="pl-10"/>
                         </div>
-                        <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                             <Popover>
                                 <PopoverTrigger asChild>
                                     <Button variant="outline" className="w-full sm:w-auto justify-start">
@@ -485,7 +485,7 @@ export default function UsersPage() {
                                     <DropdownMenuItem onSelect={() => setViewMode('table')}><List className="mr-2 h-4 w-4"/>Tabla</DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
-                             <Button onClick={() => handleOpenUserModal(null)} className="w-full sm:w-auto"><UserPlus className="mr-2 h-4 w-4"/>Añadir Colaborador</Button>
+                             <Button onClick={() => handleOpenUserModal(null)} className="w-full sm:w-auto"><UserPlus className="mr-2 h-4 w-4"/>Añadir</Button>
                         </div>
                     </CardContent>
                 </Card>
@@ -527,7 +527,7 @@ export default function UsersPage() {
                 {draggedUser ? <UserProfileCard user={draggedUser} /> : null}
             </DragOverlay>
             
-             <div className="fixed bottom-0 left-0 right-0 z-50 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-4 pointer-events-none">
+            <div className="fixed bottom-0 left-0 right-0 z-40 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-4 pointer-events-none">
                 <AnimatePresence>
                     {selectedUserIds.size > 0 && (
                         <motion.div
