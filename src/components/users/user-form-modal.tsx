@@ -22,6 +22,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
 import { Identicon } from '../ui/identicon';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '../ui/progress';
+import { ScrollArea } from '../ui/scroll-area';
 
 interface UserFormModalProps {
     isOpen: boolean;
@@ -58,7 +59,6 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
             setEmail(user.email || '');
             setRole(user.role || 'STUDENT');
             setPassword('');
-            // CORRECCIÓN: El objeto 'user' que viene de la API principal tiene el proceso anidado.
             setProcessId((user as any).process?.id || (user as any).processId || null);
             setAvatarUrl(user.avatar || null);
         } else {
@@ -159,15 +159,16 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-md">
-                <DialogHeader>
+            <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col p-0 gap-0">
+                <DialogHeader className="p-6 pb-4 border-b">
                     <DialogTitle>{user ? 'Editar Colaborador' : 'Añadir Nuevo Colaborador'}</DialogTitle>
                     <DialogDescription>
                         {user ? 'Modifica la información del colaborador.' : 'Completa los datos para registrar un nuevo colaborador en la plataforma.'}
                     </DialogDescription>
                 </DialogHeader>
-                <form id="user-form" onSubmit={handleSubmit} className="space-y-4 py-4">
-                     <div className="flex flex-col items-center gap-4">
+                <ScrollArea className="flex-1 min-h-0">
+                  <form id="user-form" onSubmit={handleSubmit} className="space-y-4 px-6 py-4">
+                      <div className="flex flex-col items-center gap-4">
                         <div className="relative">
                              <Avatar className="h-24 w-24">
                                 <AvatarImage src={localAvatarPreview || avatarUrl || undefined}/>
@@ -229,8 +230,9 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
                           </Select>
                       </div>
                     </div>
-                </form>
-                <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2">
+                  </form>
+                </ScrollArea>
+                <DialogFooter className="p-6 pt-4 flex-col-reverse sm:flex-row sm:justify-end gap-2 border-t">
                     <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
                     <Button type="submit" form="user-form" disabled={isSaving || !name.trim() || !email.trim() || (!user && !password)}>
                         {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
