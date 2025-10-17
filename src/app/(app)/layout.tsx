@@ -29,7 +29,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         </Sidebar>
         <div className={cn("relative flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out", !isMobile && (isCollapsed ? "ml-20" : "ml-72"))}>
           <TopBar />
-          <main className="flex-1 overflow-y-auto relative bg-background">
+          <main className="flex-1 overflow-y-auto relative bg-background [transform:translateZ(0)]">
             <DecorativeHeaderBackground />
             <div className="relative z-10 p-4 md:p-6 lg:p-8">
               {children}
