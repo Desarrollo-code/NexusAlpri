@@ -1,14 +1,12 @@
-
-// src/app/(app)/security-audit/page.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, AlertTriangle, ShieldAlert, ShieldX, ShieldCheck, KeyRound, UserCog, Monitor, Globe, HelpCircle } from 'lucide-react';
+import { Loader2, UserCog, Monitor, Globe, HelpCircle } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, User as AppUser, SecurityLogEvent } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -20,18 +18,16 @@ import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/comp
 import { useTitle } from '@/contexts/title-context';
 import { SmartPagination } from '@/components/ui/pagination';
 import { Identicon } from '@/components/ui/identicon';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { cn } from '@/lib/utils';
 import { useTour } from '@/contexts/tour-context';
 import { securityAuditTour } from '@/lib/tour-steps';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ComposedChart, Legend, Line } from "recharts";
+import { ChartConfig, ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
+import { BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ComposedChart, Legend, Line } from "recharts";
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 interface SecurityLogWithUser extends AppSecurityLog {
-  user: Pick<AppUser, 'id' | 'name' | 'avatar'> | null;
+    user: Pick<AppUser, 'id' | 'name' | 'avatar'> | null;
 }
 
 interface SecurityStats {
@@ -55,8 +51,12 @@ const ALL_EVENTS: { value: SecurityLogEvent | 'ALL', label: string }[] = [
 ];
 
 const activityChartConfig = {
-  SUCCESSFUL_LOGIN: { label: "Exitosos", color: "hsl(var(--chart-2))" },
-  FAILED_LOGIN_ATTEMPT: { label: "Fallidos", color: "hsl(var(--chart-3))" },
+    SUCCESSFUL_LOGIN: { label: "Exitosos", color: "hsl(var(--chart-2))" },
+    FAILED_LOGIN_ATTEMPT: { label: "Fallidos", color: "hsl(var(--chart-3))" },
+} satisfies ChartConfig;
+
+const barChartConfig = {
+    count: { label: "Count", color: "hsl(var(--chart-4))" }
 } satisfies ChartConfig;
 
 const formatDateTick = (tick: string) => {
@@ -74,18 +74,20 @@ const CustomBarChart = ({ data, title, datakey, color }: { data: any[], title: s
             <CardTitle className="text-base font-medium">{title}</CardTitle>
         </CardHeader>
         <CardContent className="h-48">
-            <ResponsiveContainer width="100%" height="100%">
-                 <BarChart data={data} layout="vertical" margin={{ left: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false}/>
-                    <XAxis type="number" allowDecimals={false} fontSize={12} />
-                    <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 12 }}/>
-                    <Tooltip cursor={{ fill: 'hsl(var(--muted))' }}/>
-                    <Bar dataKey={datakey} fill={color} radius={[0, 4, 4, 0]} barSize={15} />
-                </BarChart>
-            </ResponsiveContainer>
+            <ChartContainer config={barChartConfig} className="w-full h-full -ml-4 pl-4">
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={data} layout="vertical" margin={{ left: 20 }}>
+                        <CartesianGrid strokeDasharray="3 3" horizontal={false}/>
+                        <XAxis type="number" allowDecimals={false} fontSize={12} />
+                        <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 12 }}/>
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Bar dataKey={datakey} fill={color} radius={[0, 4, 4, 0]} barSize={15} />
+                    </BarChart>
+                </ResponsiveContainer>
+            </ChartContainer>
         </CardContent>
     </Card>
-)
+);
 
 export default function SecurityAuditPage() {
     const { user: currentUser } = useAuth();
@@ -167,118 +169,120 @@ export default function SecurityAuditPage() {
     if (currentUser?.role !== 'ADMINISTRATOR') return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
     
     return (
-        <div className="space-y-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div className="space-y-1">
-                    <h2 className="text-2xl font-semibold">Auditoría de Seguridad</h2>
-                    <p className="text-muted-foreground">Revisa y analiza los eventos de seguridad importantes de la plataforma.</p>
-                </div>
-                <Button variant="outline" size="sm" onClick={() => forceStartTour('securityAudit', securityAuditTour)}>
-                    <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
-                </Button>
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Tendencia de Inicios de Sesión</CardTitle>
-                        <CardDescription>Actividad de los últimos 7 días.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="h-64">
-                         {(isLoading && !stats) ? <Skeleton className="h-full w-full"/> : (
-                             <ChartContainer config={activityChartConfig} className="w-full h-full -ml-4 pl-4">
-                                <ResponsiveContainer>
-                                    <ComposedChart data={stats?.eventTrend || []} margin={{ top: 5, right: 20, left: -20, bottom: 0 }}>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                        <XAxis dataKey="date" tickFormatter={formatDateTick} tickLine={false} axisLine={false} tickMargin={10}/>
-                                        <YAxis allowDecimals={false} tickLine={false} axisLine={false} tickMargin={10}/>
-                                        <ChartTooltip content={<ChartTooltipContent />} />
-                                        <Legend />
-                                        <Line type="monotone" dataKey="SUCCESSFUL_LOGIN" name="Exitosos" stroke="var(--color-SUCCESSFUL_LOGIN)" strokeWidth={2} dot={false} />
-                                        <Line type="monotone" dataKey="FAILED_LOGIN_ATTEMPT" name="Fallidos" stroke="var(--color-FAILED_LOGIN_ATTEMPT)" strokeWidth={2} dot={false} />
-                                    </ComposedChart>
-                                </ResponsiveContainer>
-                             </ChartContainer>
-                         )}
-                    </CardContent>
-                </Card>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {(isLoading && !stats) ? <> <Skeleton className="h-full w-full"/> <Skeleton className="h-full w-full"/> </> : (
-                        <>
-                           <CustomBarChart data={stats?.browserDistribution || []} title="Distribución por Navegador" datakey="count" color="hsl(var(--chart-4))" />
-                           <CustomBarChart data={stats?.osDistribution || []} title="Distribución por S.O." datakey="count" color="hsl(var(--chart-5))"/>
-                        </>
-                    )}
-                 </div>
-            </div>
-
-            <Card id="security-log-table">
-              <TooltipProvider>
-                <CardHeader>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div>
-                             <CardTitle>Registro de Eventos</CardTitle>
-                             <CardDescription>Mostrando {totalLogs} registros de seguridad.</CardDescription>
-                        </div>
-                        <div id="security-event-filter">
-                            <Select value={activeFilter} onValueChange={handleFilterChange}>
-                                <SelectTrigger className="w-full sm:w-[250px]"><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                    {ALL_EVENTS.map(event => (<SelectItem key={event.value} value={event.value}>{event.label}</SelectItem>))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+        // El TooltipProvider envuelve todo el contenido para que los gráficos y la tabla funcionen.
+        <TooltipProvider> 
+            <div className="space-y-8">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div className="space-y-1">
+                        <h2 className="text-2xl font-semibold">Auditoría de Seguridad</h2>
+                        <p className="text-muted-foreground">Revisa y analiza los eventos de seguridad importantes de la plataforma.</p>
                     </div>
-                </CardHeader>
-                <CardContent>
-                    {(isLoading && logs.length === 0) ? <div className="text-center py-8"><Loader2 className="h-8 w-8 animate-spin mx-auto" /></div> : 
-                     error ? <div className="text-center py-8 text-destructive">{error}</div> : 
-                     logs.length === 0 ? <p className="text-center text-muted-foreground py-8">No hay registros para el filtro seleccionado.</p> : (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="w-[200px]">Evento</TableHead>
-                                    <TableHead>Detalles</TableHead>
-                                    <TableHead>Usuario Afectado</TableHead>
-                                    <TableHead>Dispositivo</TableHead>
-                                    <TableHead>Ubicación</TableHead>
-                                    <TableHead className="text-right">Fecha y Hora</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {logs.map((log) => {
-                                    const eventDetails = getEventDetails(log.event, log.details);
-                                    const { browser, os } = parseUserAgent(log.userAgent);
-                                    return (
-                                        <TableRow key={log.id}>
-                                            <TableCell><div className="flex items-center gap-2">{eventDetails.icon}<Badge variant={eventDetails.variant}>{eventDetails.label}</Badge></div></TableCell>
-                                            <TableCell className="text-xs text-muted-foreground">{eventDetails.details}</TableCell>
-                                            <TableCell>
-                                                {log.user ? (
-                                                    <div className="flex items-center gap-2">
-                                                        <Avatar className="h-8 w-8"><AvatarImage src={log.user.avatar || undefined} /><AvatarFallback><Identicon userId={log.user.id} /></AvatarFallback></Avatar>
-                                                        <Link href={`/users?search=${encodeURIComponent(log.user.name || '')}`} className="font-medium hover:underline">{log.user.name}</Link>
-                                                    </div>
-                                                ) : <div className="flex items-center gap-2 text-muted-foreground"><div className="h-8 w-8 flex items-center justify-center rounded-full bg-muted"><UserCog className="h-4 w-4"/></div><span className="text-xs font-mono">{log.emailAttempt || 'Desconocido'}</span></div>}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Tooltip>
-                                                    <TooltipTrigger><div className="flex items-center gap-2 text-xs"><Monitor className="h-4 w-4 text-muted-foreground"/> {browser} en {os}</div></TooltipTrigger>
-                                                    <TooltipContent className="max-w-xs break-words"><p>{log.userAgent}</p></TooltipContent>
-                                                </Tooltip>
-                                            </TableCell>
-                                            <TableCell><div className="flex items-center gap-2 text-xs"><Globe className="h-4 w-4 text-muted-foreground"/>{log.city && log.country ? `${log.city}, ${log.country}` : (log.ipAddress || 'Desconocida')}</div></TableCell>
-                                            <TableCell className="text-right text-xs text-muted-foreground">{new Date(log.createdAt).toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'medium', timeStyle: 'short' })}</TableCell>
+                    <Button variant="outline" size="sm" onClick={() => forceStartTour('securityAudit', securityAuditTour)}>
+                        <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+                    </Button>
+                </div>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Tendencia de Inicios de Sesión</CardTitle>
+                            <CardDescription>Actividad de los últimos 7 días.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="h-64">
+                            {(isLoading && !stats) ? <Skeleton className="h-full w-full"/> : (
+                                <ChartContainer config={activityChartConfig} className="w-full h-full -ml-4 pl-4">
+                                    <ResponsiveContainer>
+                                        <ComposedChart data={stats?.eventTrend || []} margin={{ top: 5, right: 20, left: -20, bottom: 0 }}>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                            <XAxis dataKey="date" tickFormatter={formatDateTick} tickLine={false} axisLine={false} tickMargin={10}/>
+                                            <YAxis allowDecimals={false} tickLine={false} axisLine={false} tickMargin={10}/>
+                                            <ChartTooltip content={<ChartTooltipContent />} />
+                                            <Legend />
+                                            <Line type="monotone" dataKey="SUCCESSFUL_LOGIN" name="Exitosos" stroke="var(--color-SUCCESSFUL_LOGIN)" strokeWidth={2} dot={false} />
+                                            <Line type="monotone" dataKey="FAILED_LOGIN_ATTEMPT" name="Fallidos" stroke="var(--color-FAILED_LOGIN_ATTEMPT)" strokeWidth={2} dot={false} />
+                                        </ComposedChart>
+                                    </ResponsiveContainer>
+                                </ChartContainer>
+                            )}
+                        </CardContent>
+                    </Card>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {(isLoading && !stats) ? <> <Skeleton className="h-full w-full"/> <Skeleton className="h-full w-full"/> </> : (
+                            <>
+                                <CustomBarChart data={stats?.browserDistribution || []} title="Distribución por Navegador" datakey="count" color="hsl(var(--chart-4))" />
+                                <CustomBarChart data={stats?.osDistribution || []} title="Distribución por S.O." datakey="count" color="hsl(var(--chart-5))"/>
+                            </>
+                        )}
+                    </div>
+                </div>
+
+                <Card id="security-log-table">
+                    <CardHeader>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div>
+                                <CardTitle>Registro de Eventos</CardTitle>
+                                <CardDescription>Mostrando {totalLogs} registros de seguridad.</CardDescription>
+                            </div>
+                            <div id="security-event-filter">
+                                <Select value={activeFilter} onValueChange={handleFilterChange}>
+                                    <SelectTrigger className="w-full sm:w-[250px]"><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        {ALL_EVENTS.map(event => (<SelectItem key={event.value} value={event.value}>{event.label}</SelectItem>))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        {(isLoading && logs.length === 0) ? <div className="text-center py-8"><Loader2 className="h-8 w-8 animate-spin mx-auto" /></div> : 
+                            error ? <div className="text-center py-8 text-destructive">{error}</div> : 
+                            logs.length === 0 ? <p className="text-center text-muted-foreground py-8">No hay registros para el filtro seleccionado.</p> : (
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="w-[200px]">Evento</TableHead>
+                                            <TableHead>Detalles</TableHead>
+                                            <TableHead>Usuario Afectado</TableHead>
+                                            <TableHead>Dispositivo</TableHead>
+                                            <TableHead>Ubicación</TableHead>
+                                            <TableHead className="text-right">Fecha y Hora</TableHead>
                                         </TableRow>
-                                    );
-                                })}
-                            </TableBody>
-                        </Table>
-                    )}
-                </CardContent>
-                 {totalPages > 1 && (<CardFooter><SmartPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} /></CardFooter>)}
-              </TooltipProvider>
-            </Card>
-        </div>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {logs.map((log) => {
+                                            const eventDetails = getEventDetails(log.event, log.details);
+                                            const { browser, os } = parseUserAgent(log.userAgent);
+                                            return (
+                                                <TableRow key={log.id}>
+                                                    <TableCell><div className="flex items-center gap-2">{eventDetails.icon}<Badge variant={eventDetails.variant}>{eventDetails.label}</Badge></div></TableCell>
+                                                    <TableCell className="text-xs text-muted-foreground">{eventDetails.details}</TableCell>
+                                                    <TableCell>
+                                                        {log.user ? (
+                                                            <div className="flex items-center gap-2">
+                                                                <Avatar className="h-8 w-8"><AvatarImage src={log.user.avatar || undefined} /><AvatarFallback><Identicon userId={log.user.id} /></AvatarFallback></Avatar>
+                                                                <Link href={`/users?search=${encodeURIComponent(log.user.name || '')}`} className="font-medium hover:underline">{log.user.name}</Link>
+                                                            </div>
+                                                        ) : <div className="flex items-center gap-2 text-muted-foreground"><div className="h-8 w-8 flex items-center justify-center rounded-full bg-muted"><UserCog className="h-4 w-4"/></div><span className="text-xs font-mono">{log.emailAttempt || 'Desconocido'}</span></div>}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {/* Tooltip funcionando correctamente */}
+                                                        <Tooltip>
+                                                            <TooltipTrigger><div className="flex items-center gap-2 text-xs"><Monitor className="h-4 w-4 text-muted-foreground"/> {browser} en {os}</div></TooltipTrigger>
+                                                            <TooltipContent className="max-w-xs break-words"><p>{log.userAgent}</p></TooltipContent>
+                                                        </Tooltip>
+                                                    </TableCell>
+                                                    <TableCell><div className="flex items-center gap-2 text-xs"><Globe className="h-4 w-4 text-muted-foreground"/>{log.city && log.country ? `${log.city}, ${log.country}` : (log.ipAddress || 'Desconocida')}</div></TableCell>
+                                                    <TableCell className="text-right text-xs text-muted-foreground">{new Date(log.createdAt).toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'medium', timeStyle: 'short' })}</TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            )}
+                    </CardContent>
+                    {totalPages > 1 && (<CardFooter><SmartPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} /></CardFooter>)}
+                </Card>
+            </div>
+        </TooltipProvider>
     );
 }
