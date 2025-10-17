@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
         const today = endOfDay(new Date());
         const last7Days = startOfDay(subDays(today, 6));
 
-        // 1. Obtener todos los logs de los últimos 7 días de forma segura
+        // 1. Get all logs from the last 7 days safely
         const allLogs = await prisma.securityLog.findMany({
             where: {
                 createdAt: {
@@ -33,8 +33,7 @@ export async function GET(req: NextRequest) {
             },
         });
         
-        // 2. Procesar los datos de forma segura
-        const eventTrend: Record<string, { SUCCESSFUL_LOGIN: number; FAILED_LOGIN_ATTEMPT: number }> = {};
+        // 2. Safely process the data
         const browserCounts: Record<string, number> = {};
         const osCounts: Record<string, number> = {};
         const eventsLast24h: Record<SecurityLogEvent, number> = {
@@ -47,36 +46,39 @@ export async function GET(req: NextRequest) {
         };
 
         const yesterday = subDays(today, 1);
-
-        // Inicializar el trend para los 7 días
+        
+        // Use a Map for the trend for safer key handling
+        const trendMap = new Map<string, { SUCCESSFUL_LOGIN: number; FAILED_LOGIN_ATTEMPT: number }>();
         for (let i = 0; i < 7; i++) {
-            const date = format(subDays(today, i), 'yyyy-MM-dd');
-            eventTrend[date] = { SUCCESSFUL_LOGIN: 0, FAILED_LOGIN_ATTEMPT: 0 };
+            const dateKey = format(subDays(today, i), 'yyyy-MM-dd');
+            trendMap.set(dateKey, { SUCCESSFUL_LOGIN: 0, FAILED_LOGIN_ATTEMPT: 0 });
         }
 
+
         allLogs.forEach(log => {
-            // **VALIDACIÓN DE RAÍZ**: Si la fecha no es válida, se omite el registro.
+            // **ROOT VALIDATION**: If the date is invalid, skip this record entirely.
             if (!log.createdAt || !isValid(new Date(log.createdAt))) {
                 return;
             }
             const logDate = new Date(log.createdAt);
 
-            // Contadores de las últimas 24 horas
+            // Tally events in the last 24 hours
             if (logDate >= yesterday) {
                 if (eventsLast24h[log.event] !== undefined) {
                     eventsLast24h[log.event]++;
                 }
             }
 
-            // Tendencia de eventos
+            // Tally event trend
             const dateKey = format(logDate, 'yyyy-MM-dd');
-            if (eventTrend[dateKey]) {
+            const trendEntry = trendMap.get(dateKey);
+            if (trendEntry) {
                 if (log.event === 'SUCCESSFUL_LOGIN' || log.event === 'FAILED_LOGIN_ATTEMPT') {
-                    eventTrend[dateKey][log.event]++;
+                    trendEntry[log.event]++;
                 }
             }
             
-            // Distribución de User Agent
+            // Tally User Agent distribution
             const { browser, os } = parseUserAgent(log.userAgent || 'Unknown');
             if (browser !== 'Desconocido') {
                 browserCounts[browser] = (browserCounts[browser] || 0) + 1;
@@ -86,7 +88,10 @@ export async function GET(req: NextRequest) {
             }
         });
 
-        const formattedEventTrend = Object.entries(eventTrend).map(([date, counts]) => ({ date, ...counts })).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        const formattedEventTrend = Array.from(trendMap.entries())
+            .map(([date, counts]) => ({ date, ...counts }))
+            .sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
         const formattedBrowserDistribution = Object.entries(browserCounts).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count).slice(0, 5);
         const formattedOsDistribution = Object.entries(osCounts).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count).slice(0, 5);
 
