@@ -186,7 +186,6 @@ export default function SecurityAuditPage() {
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="space-y-1">
-                    <h2 className="text-2xl font-semibold">Auditoría de Seguridad</h2>
                     <p className="text-muted-foreground">Revisa y analiza los eventos de seguridad importantes de la plataforma.</p>
                 </div>
                 <Button variant="outline" size="sm" onClick={() => forceStartTour('securityAudit', securityAuditTour)}>
