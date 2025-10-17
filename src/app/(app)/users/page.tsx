@@ -1,3 +1,4 @@
+
 // src/app/(app)/users/page.tsx
 'use client';
 
@@ -97,7 +98,13 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
                                      <div className="flex items-center flex-wrap gap-1.5 mt-2">
                                         <Badge variant={getRoleBadgeVariant(user.role)} className="text-xs">{getRoleInSpanish(user.role)}</Badge>
                                         {user.process && processColors && (
-                                            <Badge className="text-xs" style={{backgroundColor: processColors.raw.light, color: processColors.raw.dark}}>
+                                            <Badge 
+                                                className="text-xs"
+                                                style={{
+                                                    backgroundColor: processColors.raw.light,
+                                                    color: processColors.raw.dark,
+                                                }}
+                                            >
                                                 {user.process.name}
                                             </Badge>
                                         )}
@@ -317,7 +324,7 @@ export default function UsersPage() {
                 }
             } else {
                 if (isSelected) newSet.add(userId);
-                else newSet.delete(id);
+                else newSet.delete(userId);
             }
             return newSet;
         });
@@ -557,3 +564,6 @@ export default function UsersPage() {
         </DndContext>
     );
 }
+
+
+    
