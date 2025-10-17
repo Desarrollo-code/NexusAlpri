@@ -298,5 +298,4 @@ export default function SecurityAuditPage() {
             </div>
         </TooltipProvider>
     );
-
-    
+}
