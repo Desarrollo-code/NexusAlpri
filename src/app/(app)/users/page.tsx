@@ -97,7 +97,7 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
                                      <div className="flex items-center flex-wrap gap-1.5 mt-2">
                                         <Badge variant={getRoleBadgeVariant(user.role)} className="text-xs">{getRoleInSpanish(user.role)}</Badge>
                                         {user.process && processColors && (
-                                            <Badge className="text-xs" style={{backgroundColor: colors.raw.light, color: colors.raw.dark}}>
+                                            <Badge className="text-xs" style={{backgroundColor: processColors.raw.light, color: processColors.raw.dark}}>
                                                 {user.process.name}
                                             </Badge>
                                         )}
