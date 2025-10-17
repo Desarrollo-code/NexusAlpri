@@ -1,4 +1,3 @@
-
 // src/app/(app)/users/page.tsx
 'use client';
 
@@ -98,7 +97,7 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
                                      <div className="flex items-center flex-wrap gap-1.5 mt-2">
                                         <Badge variant={getRoleBadgeVariant(user.role)} className="text-xs">{getRoleInSpanish(user.role)}</Badge>
                                         {user.process && processColors && (
-                                            <Badge className="text-xs" style={{backgroundColor: processColors.raw.light, color: processColors.raw.dark}}>
+                                            <Badge className="text-xs" style={{backgroundColor: colors.raw.light, color: colors.raw.dark}}>
                                                 {user.process.name}
                                             </Badge>
                                         )}
@@ -410,7 +409,7 @@ export default function UsersPage() {
     };
     const flattenedProcesses = flattenProcesses(processes);
 
-    if (!currentUser || (currentUser.role !== 'ADMINISTRATOR' && currentUser.role !== 'INSTRUCTOR')) {
+    if (!currentUser || (currentUser.role !== 'ADMINISTRATOR')) {
         return <div className="text-center p-8"><AlertTriangle className="mx-auto h-12 w-12 text-destructive"/>Acceso Denegado</div>;
     }
 
@@ -537,7 +536,7 @@ export default function UsersPage() {
             {showUserModal && <UserFormModal isOpen={showUserModal} onClose={() => setShowUserModal(false)} onSave={fetchData} user={userToEdit} processes={processes} />}
             {isBulkAssignModalOpen && <BulkAssignModal isOpen={isBulkAssignModalOpen} onClose={() => setIsBulkAssignModalOpen(false)} onSave={fetchData} userIds={Array.from(selectedUserIds)} processes={processes}/>}
             
-            <AlertDialog open={!!userToDeactivate} onOpenChange={setUserToDeactivate}>
+            <AlertDialog open={!!userToDeactivate} onOpenChange={(open) => setUserToDeactivate(open ? userToDeactivate : null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>¿Confirmar cambio de estado?</AlertDialogTitle>
@@ -558,4 +557,3 @@ export default function UsersPage() {
         </DndContext>
     );
 }
-

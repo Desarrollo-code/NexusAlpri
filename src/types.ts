@@ -1,5 +1,5 @@
 // src/types.ts
-import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug, AnnouncementAttachment, EnterpriseResource as PrismaResource, RecurrenceType, MotivationalMessageTriggerType, MotivationalMessage as PrismaMotivationalMessage, Course as PrismaCourse, CourseAssignment as PrismaCourseAssignment, CertificateTemplate, ChatAttachment } from "@prisma/client";
+import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug, AnnouncementAttachment, EnterpriseResource as PrismaResource, RecurrenceType, MotivationalMessageTriggerType, MotivationalMessage as PrismaMotivationalMessage, Course as PrismaCourse, CourseAssignment as PrismaCourseAssignment, CertificateTemplate, ChatAttachment, Process as PrismaProcess } from "@prisma/client";
 
 // --- USER & AUTH ---
 export type UserRole = 'ADMINISTRATOR' | 'INSTRUCTOR' | 'STUDENT';
@@ -8,7 +8,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  avatar?: string | null;
+  avatar: string | null;
   role: UserRole;
   isTwoFactorEnabled?: boolean;
   registeredDate?: string | Date;
@@ -362,5 +362,8 @@ export type AppForm = PrismaForm & {
 
 // --- CHAT ---
 export { type ChatAttachment };
+
+// --- PROCESSES ---
+export type Process = PrismaProcess;
 
 export { type FormStatus, type FormFieldType, type AnnouncementAttachment, type RecurrenceType };

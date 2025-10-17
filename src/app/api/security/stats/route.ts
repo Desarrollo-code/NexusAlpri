@@ -47,7 +47,6 @@ export async function GET(req: NextRequest) {
 
         const yesterday = subDays(today, 1);
         
-        // Use a Map for the trend for safer key handling
         const trendMap = new Map<string, { SUCCESSFUL_LOGIN: number; FAILED_LOGIN_ATTEMPT: number }>();
         for (let i = 0; i < 7; i++) {
             const dateKey = format(subDays(today, i), 'yyyy-MM-dd');
@@ -56,7 +55,6 @@ export async function GET(req: NextRequest) {
 
 
         allLogs.forEach(log => {
-            // **ROOT VALIDATION**: If the date is invalid, skip this record entirely.
             if (!log.createdAt || !isValid(new Date(log.createdAt))) {
                 return;
             }
@@ -64,8 +62,9 @@ export async function GET(req: NextRequest) {
 
             // Tally events in the last 24 hours
             if (logDate >= yesterday) {
-                if (eventsLast24h[log.event] !== undefined) {
-                    eventsLast24h[log.event]++;
+                const eventType = log.event as SecurityLogEvent;
+                if (eventsLast24h[eventType] !== undefined) {
+                    eventsLast24h[eventType]++;
                 }
             }
 
@@ -73,8 +72,9 @@ export async function GET(req: NextRequest) {
             const dateKey = format(logDate, 'yyyy-MM-dd');
             const trendEntry = trendMap.get(dateKey);
             if (trendEntry) {
-                if (log.event === 'SUCCESSFUL_LOGIN' || log.event === 'FAILED_LOGIN_ATTEMPT') {
-                    trendEntry[log.event]++;
+                const eventType = log.event as SecurityLogEvent;
+                if (eventType === 'SUCCESSFUL_LOGIN' || eventType === 'FAILED_LOGIN_ATTEMPT') {
+                    trendEntry[eventType]++;
                 }
             }
             

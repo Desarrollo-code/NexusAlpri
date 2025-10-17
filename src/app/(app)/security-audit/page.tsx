@@ -183,52 +183,52 @@ export default function SecurityAuditPage() {
     if (currentUser?.role !== 'ADMINISTRATOR') return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
     
     return (
-        <TooltipProvider> 
-            <div className="space-y-8">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div className="space-y-1">
-                        <h2 className="text-2xl font-semibold">Auditoría de Seguridad</h2>
-                        <p className="text-muted-foreground">Revisa y analiza los eventos de seguridad importantes de la plataforma.</p>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={() => forceStartTour('securityAudit', securityAuditTour)}>
-                        <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
-                    </Button>
+        <div className="space-y-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="space-y-1">
+                    <h2 className="text-2xl font-semibold">Auditoría de Seguridad</h2>
+                    <p className="text-muted-foreground">Revisa y analiza los eventos de seguridad importantes de la plataforma.</p>
                 </div>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Tendencia de Inicios de Sesión</CardTitle>
-                            <CardDescription>Actividad de los últimos 7 días.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="h-64">
-                            {(isLoading && !stats) ? <Skeleton className="h-full w-full"/> : (
-                                <ChartContainer config={activityChartConfig} className="w-full h-full -ml-4 pl-4">
-                                    <ResponsiveContainer>
-                                        <ComposedChart data={stats?.eventTrend || []} margin={{ top: 5, right: 20, left: -20, bottom: 0 }}>
-                                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                            <XAxis dataKey="date" tickFormatter={formatDateTick} tickLine={false} axisLine={false} tickMargin={10}/>
-                                            <YAxis allowDecimals={false} tickLine={false} axisLine={false} tickMargin={10}/>
-                                            <ChartTooltip content={<ChartTooltipContent />} />
-                                            <Legend />
-                                            <Line type="monotone" dataKey="SUCCESSFUL_LOGIN" name="Exitosos" stroke="var(--color-SUCCESSFUL_LOGIN)" strokeWidth={2} dot={false} />
-                                            <Line type="monotone" dataKey="FAILED_LOGIN_ATTEMPT" name="Fallidos" stroke="var(--color-FAILED_LOGIN_ATTEMPT)" strokeWidth={2} dot={false} />
-                                        </ComposedChart>
-                                    </ResponsiveContainer>
-                                </ChartContainer>
-                            )}
-                        </CardContent>
-                    </Card>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {(isLoading && !stats) ? <> <Skeleton className="h-full w-full"/> <Skeleton className="h-full w-full"/> </> : (
-                            <>
-                                <CustomBarChart data={stats?.browserDistribution || []} title="Distribución por Navegador" datakey="count" color="hsl(var(--chart-4))" />
-                                <CustomBarChart data={stats?.osDistribution || []} title="Distribución por S.O." datakey="count" color="hsl(var(--chart-5))"/>
-                            </>
+                <Button variant="outline" size="sm" onClick={() => forceStartTour('securityAudit', securityAuditTour)}>
+                    <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+                </Button>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Tendencia de Inicios de Sesión</CardTitle>
+                        <CardDescription>Actividad de los últimos 7 días.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="h-64">
+                        {(isLoading && !stats) ? <Skeleton className="h-full w-full"/> : (
+                            <ChartContainer config={activityChartConfig} className="w-full h-full -ml-4 pl-4">
+                                <ResponsiveContainer>
+                                    <ComposedChart data={stats?.eventTrend || []} margin={{ top: 5, right: 20, left: -20, bottom: 0 }}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                        <XAxis dataKey="date" tickFormatter={formatDateTick} tickLine={false} axisLine={false} tickMargin={10}/>
+                                        <YAxis allowDecimals={false} tickLine={false} axisLine={false} tickMargin={10}/>
+                                        <ChartTooltip content={<ChartTooltipContent />} />
+                                        <Legend />
+                                        <Line type="monotone" dataKey="SUCCESSFUL_LOGIN" name="Exitosos" stroke="var(--color-SUCCESSFUL_LOGIN)" strokeWidth={2} dot={false} />
+                                        <Line type="monotone" dataKey="FAILED_LOGIN_ATTEMPT" name="Fallidos" stroke="var(--color-FAILED_LOGIN_ATTEMPT)" strokeWidth={2} dot={false} />
+                                    </ComposedChart>
+                                </ResponsiveContainer>
+                            </ChartContainer>
                         )}
-                    </div>
+                    </CardContent>
+                </Card>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {(isLoading && !stats) ? <> <Skeleton className="h-full w-full"/> <Skeleton className="h-full w-full"/> </> : (
+                        <>
+                            <CustomBarChart data={stats?.browserDistribution || []} title="Distribución por Navegador" datakey="count" color="hsl(var(--chart-4))" />
+                            <CustomBarChart data={stats?.osDistribution || []} title="Distribución por S.O." datakey="count" color="hsl(var(--chart-5))"/>
+                        </>
+                    )}
                 </div>
+            </div>
 
+            <TooltipProvider>
                 <Card id="security-log-table">
                     <CardHeader>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -263,7 +263,7 @@ export default function SecurityAuditPage() {
                                     </TableHeader>
                                     <TableBody>
                                         {logs.map((log) => {
-                                            const eventDetails = getEventDetails(log.event, log.details);
+                                            const eventDetails = getEventDetails(log.event as SecurityLogEvent, log.details);
                                             const { browser, os } = parseUserAgent(log.userAgent);
                                             return (
                                                 <TableRow key={log.id}>
@@ -294,7 +294,7 @@ export default function SecurityAuditPage() {
                     </CardContent>
                     {totalPages > 1 && (<CardFooter><SmartPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} /></CardFooter>)}
                 </Card>
-            </div>
-        </TooltipProvider>
+            </TooltipProvider>
+        </div>
     );
 }
