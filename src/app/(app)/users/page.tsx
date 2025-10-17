@@ -323,7 +323,7 @@ export default function UsersPage() {
                 }
             } else {
                 if (isSelected) newSet.add(userId);
-                else newSet.delete(userId);
+                else newSet.delete(id);
             }
             return newSet;
         });
@@ -425,7 +425,7 @@ export default function UsersPage() {
 
     return (
         <DndContext sensors={sensors} onDragStart={(e) => setActiveDraggable(e.active)} onDragEnd={handleDragEnd}>
-            <div className="space-y-6">
+            <div className="space-y-6 relative">
                  <Card>
                     <CardContent className="p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div className="relative w-full md:max-w-xs">
@@ -529,15 +529,15 @@ export default function UsersPage() {
             
             <AnimatePresence>
                 {selectedUserIds.size > 0 && (
-                     <motion.div 
-                        initial={{ y: 100, opacity: 0 }} 
-                        animate={{ y: 0, opacity: 1 }} 
-                        exit={{ y: 100, opacity: 0 }} 
+                     <motion.div
+                        initial={{ y: 100, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 100, opacity: 0 }}
                         className="fixed bottom-0 left-0 right-0 z-50 p-4"
                     >
                         <div className="container mx-auto flex items-center justify-center">
-                            <div className="bg-background/95 backdrop-blur-lg p-2 border rounded-lg shadow-2xl flex items-center gap-4">
-                                <p className="text-sm font-semibold px-2">{selectedUserIds.size} seleccionados</p>
+                            <div className="bg-background/95 backdrop-blur-lg border rounded-lg shadow-2xl flex items-center gap-4 p-2">
+                                <p className="text-sm font-semibold px-2">{selectedUserIds.size} seleccionado(s)</p>
                                 <Button size="sm" onClick={() => setIsBulkAssignModalOpen(true)}><Briefcase className="mr-2 h-4 w-4"/> Asignar Proceso</Button>
                                 <Button size="sm" variant="ghost" onClick={() => setSelectedUserIds(new Set())}>Limpiar</Button>
                             </div>
