@@ -1,3 +1,4 @@
+
 // src/app/(app)/security-audit/page.tsx
 'use client';
 
@@ -229,6 +230,7 @@ export default function SecurityAuditPage() {
                     </div>
                 </CardHeader>
                 <CardContent>
+                  <TooltipProvider>
                     {(isLoading && logs.length === 0) ? <div className="text-center py-8"><Loader2 className="h-8 w-8 animate-spin mx-auto" /></div> : 
                      error ? <div className="text-center py-8 text-destructive">{error}</div> : 
                      logs.length === 0 ? <p className="text-center text-muted-foreground py-8">No hay registros para el filtro seleccionado.</p> : (
@@ -260,10 +262,10 @@ export default function SecurityAuditPage() {
                                                 ) : <div className="flex items-center gap-2 text-muted-foreground"><div className="h-8 w-8 flex items-center justify-center rounded-full bg-muted"><UserCog className="h-4 w-4"/></div><span className="text-xs font-mono">{log.emailAttempt || 'Desconocido'}</span></div>}
                                             </TableCell>
                                             <TableCell>
-                                                <TooltipProvider><Tooltip>
+                                                <Tooltip>
                                                     <TooltipTrigger><div className="flex items-center gap-2 text-xs"><Monitor className="h-4 w-4 text-muted-foreground"/> {browser} en {os}</div></TooltipTrigger>
                                                     <TooltipContent className="max-w-xs break-words"><p>{log.userAgent}</p></TooltipContent>
-                                                </Tooltip></TooltipProvider>
+                                                </Tooltip>
                                             </TableCell>
                                             <TableCell><div className="flex items-center gap-2 text-xs"><Globe className="h-4 w-4 text-muted-foreground"/>{log.city && log.country ? `${log.city}, ${log.country}` : (log.ipAddress || 'Desconocida')}</div></TableCell>
                                             <TableCell className="text-right text-xs text-muted-foreground">{new Date(log.createdAt).toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'medium', timeStyle: 'short' })}</TableCell>
@@ -273,6 +275,7 @@ export default function SecurityAuditPage() {
                             </TableBody>
                         </Table>
                     )}
+                   </TooltipProvider>
                 </CardContent>
                  {totalPages > 1 && (<CardFooter><SmartPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} /></CardFooter>)}
             </Card>
