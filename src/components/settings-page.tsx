@@ -281,7 +281,7 @@ export default function SettingsPageComponent() {
         </div>
 
         <Tabs defaultValue="identity" className="w-full">
-            <TabsList id="settings-tabs-list" className="inline-grid w-full grid-cols-2 sm:grid-cols-2 md:grid-cols-4 h-auto">
+            <TabsList id="settings-tabs-list" className="inline-grid w-full grid-cols-2 md:grid-cols-4 h-auto bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg">
                 <TabsTrigger value="identity">Identidad</TabsTrigger>
                 <TabsTrigger value="theme">Tema y Estilo</TabsTrigger>
                 <TabsTrigger value="security">Seguridad</TabsTrigger>
