@@ -100,8 +100,8 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
                                             <Badge 
                                                 className="text-xs"
                                                 style={{
-                                                    backgroundColor: colors.raw.light,
-                                                    color: colors.raw.dark,
+                                                    backgroundColor: processColors.raw.light,
+                                                    color: processColors.raw.dark,
                                                 }}
                                             >
                                                 {user.process.name}
@@ -435,7 +435,7 @@ export default function UsersPage() {
                          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                             <Popover>
                                 <PopoverTrigger asChild>
-                                    <Button variant="outline" className="w-full sm:w-auto justify-start">
+                                    <Button variant="outline" className="w-full justify-start">
                                         <Filter className="mr-2 h-4 w-4" />
                                         Filtros ({activeFiltersCount})
                                     </Button>
@@ -475,7 +475,7 @@ export default function UsersPage() {
                             </Popover>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" className="w-full sm:w-auto justify-start">
+                                    <Button variant="outline" className="w-full justify-start">
                                         {viewMode === 'grid' ? <Grid className="mr-2 h-4 w-4" /> : <List className="mr-2 h-4 w-4" />}
                                         Vista
                                     </Button>
@@ -485,7 +485,7 @@ export default function UsersPage() {
                                     <DropdownMenuItem onSelect={() => setViewMode('table')}><List className="mr-2 h-4 w-4"/>Tabla</DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
-                             <Button onClick={() => handleOpenUserModal(null)} className="w-full sm:w-auto"><UserPlus className="mr-2 h-4 w-4"/>Añadir</Button>
+                             <Button onClick={() => handleOpenUserModal(null)} className="w-full"><UserPlus className="mr-2 h-4 w-4"/>Añadir</Button>
                         </div>
                     </CardContent>
                 </Card>
@@ -527,26 +527,24 @@ export default function UsersPage() {
                 {draggedUser ? <UserProfileCard user={draggedUser} /> : null}
             </DragOverlay>
             
-            <div className="fixed bottom-0 left-0 right-0 z-40 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-4 pointer-events-none">
-                <AnimatePresence>
-                    {selectedUserIds.size > 0 && (
-                        <motion.div
-                            initial={{ y: 100, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            exit={{ y: 100, opacity: 0 }}
-                            className="pointer-events-auto"
-                        >
-                            <div className="container mx-auto flex items-center justify-center">
-                                <div className="bg-background/95 backdrop-blur-lg border rounded-lg shadow-2xl flex items-center gap-4 p-2">
-                                    <p className="text-sm font-semibold px-2">{selectedUserIds.size} seleccionado(s)</p>
-                                    <Button size="sm" onClick={() => setIsBulkAssignModalOpen(true)}><Briefcase className="mr-2 h-4 w-4"/> Asignar Proceso</Button>
-                                    <Button size="sm" variant="ghost" onClick={() => setSelectedUserIds(new Set())}>Limpiar</Button>
-                                </div>
+            <AnimatePresence>
+                {selectedUserIds.size > 0 && (
+                    <motion.div
+                        initial={{ y: 100, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 100, opacity: 0 }}
+                        className="fixed bottom-0 left-0 right-0 z-50 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pointer-events-none"
+                    >
+                        <div className="container mx-auto flex items-center justify-center">
+                            <div className="bg-background/95 backdrop-blur-lg border rounded-lg shadow-2xl flex items-center gap-4 p-2 pointer-events-auto">
+                                <p className="text-sm font-semibold px-2">{selectedUserIds.size} seleccionado(s)</p>
+                                <Button size="sm" onClick={() => setIsBulkAssignModalOpen(true)}><Briefcase className="mr-2 h-4 w-4"/> Asignar Proceso</Button>
+                                <Button size="sm" variant="ghost" onClick={() => setSelectedUserIds(new Set())}>Limpiar</Button>
                             </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
 
             {showUserModal && <UserFormModal isOpen={showUserModal} onClose={() => setShowUserModal(false)} onSave={fetchData} user={userToEdit} processes={processes} />}
