@@ -1,3 +1,4 @@
+// src/app/(app)/security-audit/page.tsx
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -21,10 +22,12 @@ import { Identicon } from '@/components/ui/identicon';
 import { useTour } from '@/contexts/tour-context';
 import { securityAuditTour } from '@/lib/tour-steps';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChartConfig, ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ComposedChart, Legend, Line } from "recharts";
+import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ComposedChart, Legend, Line, Bar, Cell } from "recharts";
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { AlertTriangle } from 'lucide-react';
+import type { TooltipProps } from 'recharts';
 
 interface SecurityLogWithUser extends AppSecurityLog {
     user: Pick<AppUser, 'id' | 'name' | 'avatar'> | null;
@@ -68,6 +71,18 @@ const formatDateTick = (tick: string) => {
     }
 };
 
+const CustomBarTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="rounded-lg border bg-background/90 p-2 shadow-sm backdrop-blur-sm">
+          <p className="font-bold">{label}</p>
+          <p className="text-primary">{`${payload[0].value} evento(s)`}</p>
+        </div>
+      );
+    }
+    return null;
+};
+
 const CustomBarChart = ({ data, title, datakey, color }: { data: any[], title: string, datakey: string, color: string }) => (
     <Card>
         <CardHeader>
@@ -80,7 +95,7 @@ const CustomBarChart = ({ data, title, datakey, color }: { data: any[], title: s
                         <CartesianGrid strokeDasharray="3 3" horizontal={false}/>
                         <XAxis type="number" allowDecimals={false} fontSize={12} />
                         <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 12 }}/>
-                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <ChartTooltip content={<CustomBarTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
                         <Bar dataKey={datakey} fill={color} radius={[0, 4, 4, 0]} barSize={15} />
                     </BarChart>
                 </ResponsiveContainer>
@@ -169,7 +184,6 @@ export default function SecurityAuditPage() {
     if (currentUser?.role !== 'ADMINISTRATOR') return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
     
     return (
-        // El TooltipProvider envuelve todo el contenido para que los gráficos y la tabla funcionen.
         <TooltipProvider> 
             <div className="space-y-8">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -265,7 +279,6 @@ export default function SecurityAuditPage() {
                                                         ) : <div className="flex items-center gap-2 text-muted-foreground"><div className="h-8 w-8 flex items-center justify-center rounded-full bg-muted"><UserCog className="h-4 w-4"/></div><span className="text-xs font-mono">{log.emailAttempt || 'Desconocido'}</span></div>}
                                                     </TableCell>
                                                     <TableCell>
-                                                        {/* Tooltip funcionando correctamente */}
                                                         <Tooltip>
                                                             <TooltipTrigger><div className="flex items-center gap-2 text-xs"><Monitor className="h-4 w-4 text-muted-foreground"/> {browser} en {os}</div></TooltipTrigger>
                                                             <TooltipContent className="max-w-xs break-words"><p>{log.userAgent}</p></TooltipContent>
@@ -285,4 +298,5 @@ export default function SecurityAuditPage() {
             </div>
         </TooltipProvider>
     );
-}
+
+    
