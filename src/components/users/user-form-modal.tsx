@@ -159,14 +159,14 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col p-0 gap-0">
+            <DialogContent className="w-[95vw] sm:max-w-md max-h-[90vh] flex flex-col p-0 gap-0 rounded-2xl">
                 <DialogHeader className="p-6 pb-4 border-b">
                     <DialogTitle>{user ? 'Editar Colaborador' : 'Añadir Nuevo Colaborador'}</DialogTitle>
                     <DialogDescription>
                         {user ? 'Modifica la información del colaborador.' : 'Completa los datos para registrar un nuevo colaborador en la plataforma.'}
                     </DialogDescription>
                 </DialogHeader>
-                <ScrollArea className="flex-1 min-h-0">
+                <ScrollArea className="flex-1 min-h-0 thin-scrollbar">
                   <form id="user-form" onSubmit={handleSubmit} className="space-y-4 px-6 py-4">
                       <div className="flex flex-col items-center gap-4">
                         <div className="relative">
