@@ -7,7 +7,7 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, UserCog, Monitor, Globe, HelpCircle } from 'lucide-react';
+import { Loader2, UserCog, Monitor, Globe, HelpCircle, AlertTriangle } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, User as AppUser, SecurityLogEvent } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -26,7 +26,6 @@ import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "
 import { BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ComposedChart, Legend, Line, Bar, Cell, TooltipProps } from "recharts";
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { AlertTriangle } from 'lucide-react';
 
 interface SecurityLogWithUser extends AppSecurityLog {
     user: Pick<AppUser, 'id' | 'name' | 'avatar'> | null;
