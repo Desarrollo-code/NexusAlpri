@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, List, Grid, Filter, UserPlus, MoreVertical, Loader2 } from 'lucide-react';
+import { PlusCircle, Search, List, Grid, Filter, UserPlus, MoreVertical, Loader2, Briefcase, MessageSquare, Edit, Trash2, UserCog } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -21,14 +21,13 @@ import { getProcessColors } from '@/lib/utils';
 import { getRoleInSpanish } from '@/lib/security-log-utils';
 import { DndContext, useDraggable, DragOverlay, type DragEndEvent, type Active, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { UserFormModal } from '@/components/users/user-form-modal';
-import { ProcessFormModal } from '@/components/users/process-form-modal';
 import { UserProfileCard } from '@/components/profile/user-profile-card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { AlertTriangle, Users as UsersIcon, Briefcase } from 'lucide-react';
+import { AlertTriangle, Users as UsersIcon } from 'lucide-react';
 import { ProcessTree } from '@/components/users/process-tree';
 import { BulkAssignModal } from '@/components/users/bulk-assign-modal';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -71,8 +70,14 @@ const DraggableUserCard = ({ user, isSelected, onSelectionChange }: { user: User
     )
 }
 
-const UserTable = ({ users, onSelectionChange, selectedUserIds }: { users: UserWithProcess[], onSelectionChange: (id: string, selected: boolean) => void, selectedUserIds: Set<string> }) => {
-    const router = useRouter();
+const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleChange, onStatusChange }: { 
+    users: UserWithProcess[], 
+    onSelectionChange: (id: string, selected: boolean) => void, 
+    selectedUserIds: Set<string>,
+    onEdit: (user: User) => void,
+    onRoleChange: (user: User) => void,
+    onStatusChange: (user: User, status: boolean) => void
+}) => {
 
     return (
          <Card>
@@ -91,6 +96,7 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds }: { users: UserW
                         <TableHead>Rol</TableHead>
                         <TableHead>Proceso</TableHead>
                         <TableHead>Estado</TableHead>
+                        <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -131,6 +137,24 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds }: { users: UserW
                                 )}
                             </TableCell>
                             <TableCell><Badge variant={user.isActive ? 'default' : 'secondary'} className={cn(user.isActive ? 'bg-green-500' : 'bg-gray-400', 'text-white')}>{user.isActive ? 'Activo' : 'Inactivo'}</Badge></TableCell>
+                            <TableCell className="text-right">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4"/></Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        <DropdownMenuItem onSelect={() => onEdit(user)}>
+                                            <Edit className="mr-2 h-4 w-4"/>Editar Perfil
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => onRoleChange(user)}>
+                                            <UserCog className="mr-2 h-4 w-4"/>Cambiar Rol
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => onStatusChange(user, !user.isActive)} className={user.isActive ? "text-destructive" : ""}>
+                                            <Trash2 className="mr-2 h-4 w-4"/>{user.isActive ? 'Inactivar' : 'Activar'}
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
@@ -408,7 +432,7 @@ export default function UsersPage() {
                                     ))}
                                 </div>
                            ) : (
-                                <UserTable users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} />
+                                <UserTable users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} onEdit={handleOpenUserModal} onRoleChange={handleOpenUserModal} onStatusChange={(user, status) => {}} />
                            )
                         ) : (
                            <div className="text-center py-16 border-2 border-dashed rounded-lg col-span-full">

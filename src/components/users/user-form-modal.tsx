@@ -15,9 +15,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Camera } from 'lucide-react';
 import { PasswordStrengthIndicator } from '@/components/password-strength-indicator';
 import type { User, UserRole, Process } from '@/types';
+import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
+import { Identicon } from '../ui/identicon';
+import { uploadWithProgress } from '@/lib/upload-with-progress';
+import { Progress } from '../ui/progress';
 
 interface UserFormModalProps {
     isOpen: boolean;
@@ -41,15 +45,21 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
     const [password, setPassword] = useState('');
     const [role, setRole] = useState<UserRole>('STUDENT');
     const [processId, setProcessId] = useState<string | null>(null);
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [localAvatarPreview, setLocalAvatarPreview] = useState<string | null>(null);
+
     useEffect(() => {
         if (user) {
             setName(user.name || '');
             setEmail(user.email || '');
             setRole(user.role || 'STUDENT');
-            setPassword(''); // No precargar la contraseña por seguridad
+            setPassword('');
             setProcessId(user.processId || null);
+            setAvatarUrl(user.avatar || null);
         } else {
             // Reset for new user
             setName('');
@@ -57,20 +67,43 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
             setPassword('');
             setRole('STUDENT');
             setProcessId(null);
+            setAvatarUrl(null);
         }
+         setLocalAvatarPreview(null);
     }, [user, isOpen]);
 
     const flattenProcesses = (processList: Process[], level = 0): FlatProcess[] => {
-      let flatList: FlatProcess[] = [];
+      let list: FlatProcess[] = [];
       processList.forEach(p => {
-          flatList.push({ id: p.id, name: p.name, level });
-          if ('children' in p && Array.isArray(p.children) && p.children.length > 0) {
-              flatList.push(...flattenProcesses(p.children, level + 1));
-          }
+        list.push({ id: p.id, name: p.name, level });
+        if ('children' in p && Array.isArray(p.children) && p.children.length > 0) {
+          list.push(...flattenProcesses(p.children, level + 1));
+        }
       });
-      return flatList;
+      return list;
   };
   const flattenedProcesses = flattenProcesses(processes);
+
+    const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            const previewUrl = URL.createObjectURL(file);
+            setLocalAvatarPreview(previewUrl);
+
+            setIsUploading(true);
+            setUploadProgress(0);
+            try {
+                 const result = await uploadWithProgress('/api/upload/avatar', file, setUploadProgress);
+                 setAvatarUrl(result.url);
+                 toast({ title: "Avatar subido", description: "La imagen se ha subido. Guarda los cambios para aplicarla." });
+            } catch (err) {
+                toast({ title: 'Error de subida', description: (err as Error).message, variant: 'destructive' });
+                setLocalAvatarPreview(null);
+            } finally {
+                setIsUploading(false);
+            }
+        }
+    };
 
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -82,7 +115,8 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
                 email,
                 role,
                 processId,
-                ...(password && { password }), // Solo incluir la contraseña si se ha escrito
+                avatar: avatarUrl,
+                ...(password && { password }),
             };
 
             const endpoint = user ? `/api/users/${user.id}` : '/api/users';
@@ -127,6 +161,24 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
                     </DialogDescription>
                 </DialogHeader>
                 <form id="user-form" onSubmit={handleSubmit} className="space-y-4 py-4">
+                     <div className="flex flex-col items-center gap-4">
+                        <div className="relative">
+                             <Avatar className="h-24 w-24">
+                                <AvatarImage src={localAvatarPreview || avatarUrl || undefined}/>
+                                <AvatarFallback className="text-3xl"><Identicon userId={user?.id || name}/></AvatarFallback>
+                            </Avatar>
+                             <Label htmlFor="avatar-upload" className="absolute -bottom-1 -right-1 bg-secondary text-secondary-foreground rounded-full p-1.5 cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors shadow-md">
+                                <Camera className="h-5 w-5" />
+                                <input id="avatar-upload" type="file" className="hidden" onChange={handleAvatarChange} accept="image/*" disabled={isUploading}/>
+                            </Label>
+                        </div>
+                        {isUploading && (
+                            <div className="w-full max-w-xs space-y-1">
+                               <Progress value={uploadProgress} />
+                               <p className="text-xs text-center text-muted-foreground">Subiendo...</p>
+                            </div>
+                        )}
+                    </div>
                     <div className="space-y-2">
                         <Label htmlFor="name">Nombre Completo</Label>
                         <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
