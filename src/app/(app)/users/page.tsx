@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, List, Grid, Filter, UserPlus, MoreVertical, Loader2, Briefcase, MessageSquare, Edit, Trash2, UserCog } from 'lucide-react';
+import { PlusCircle, Search, List, Grid, Filter, UserPlus, MoreVertical, Loader2, Briefcase, MessageSquare, Edit, Trash2, UserCog, UserX } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -34,6 +34,9 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Identicon } from '@/components/ui/identicon';
 import { Label } from '@/components/ui/label';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+
 
 // --- TYPES & CONTEXT ---
 interface ProcessWithChildren extends Process {
@@ -78,6 +81,60 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
     onRoleChange: (user: User) => void,
     onStatusChange: (user: User, status: boolean) => void
 }) => {
+    const isMobile = useIsMobile();
+
+    if (isMobile) {
+        return (
+            <div className="space-y-4">
+                {users.map(user => (
+                    <Card key={user.id} className="p-4">
+                        <div className="flex items-start gap-4">
+                             <Checkbox
+                                checked={selectedUserIds.has(user.id)}
+                                onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)}
+                                className="mt-1"
+                            />
+                             <div className="flex items-center gap-3 flex-grow">
+                                <Avatar className="h-10 w-10">
+                                    <AvatarImage src={user.avatar || undefined} />
+                                    <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
+                                </Avatar>
+                                <div className="flex-grow overflow-hidden">
+                                    <p className="font-semibold truncate">{user.name}</p>
+                                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                                </div>
+                            </div>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2"><MoreVertical className="h-4 w-4"/></Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuItem onSelect={() => onEdit(user)}><Edit className="mr-2 h-4 w-4"/>Editar Perfil</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => onRoleChange(user)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => onStatusChange(user, !user.isActive)} className={user.isActive ? "text-destructive" : ""}><UserX className="mr-2 h-4 w-4"/>{user.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                        <div className="mt-3 pl-12 flex flex-wrap gap-2 items-center text-xs">
+                             <Badge variant={getRoleBadgeVariant(user.role)}>{getRoleInSpanish(user.role)}</Badge>
+                             <Badge variant={user.isActive ? 'default' : 'secondary'} className={cn(user.isActive ? 'bg-green-500' : 'bg-gray-400', 'text-white')}>{user.isActive ? 'Activo' : 'Inactivo'}</Badge>
+                             {user.process && (
+                                <Badge 
+                                    className="text-xs"
+                                    style={{
+                                        backgroundColor: getProcessColors(user.process.id).raw.light,
+                                        color: getProcessColors(user.process.id).raw.dark,
+                                    }}
+                                >
+                                    {user.process.name}
+                                </Badge>
+                             )}
+                        </div>
+                    </Card>
+                ))}
+            </div>
+        )
+    }
 
     return (
          <Card>
@@ -112,7 +169,7 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
                                  <div className="flex items-center gap-3">
                                     <Avatar className="h-9 w-9">
                                         <AvatarImage src={user.avatar || undefined} />
-                                        <AvatarFallback><Identicon userId={user.id} /></AvatarFallback>
+                                        <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
                                     </Avatar>
                                     <div>
                                         <div className="font-medium">{user.name}</div>
@@ -150,7 +207,7 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
                                             <UserCog className="mr-2 h-4 w-4"/>Cambiar Rol
                                         </DropdownMenuItem>
                                         <DropdownMenuItem onSelect={() => onStatusChange(user, !user.isActive)} className={user.isActive ? "text-destructive" : ""}>
-                                            <Trash2 className="mr-2 h-4 w-4"/>{user.isActive ? 'Inactivar' : 'Activar'}
+                                            <UserX className="mr-2 h-4 w-4"/>{user.isActive ? 'Inactivar' : 'Activar'}
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
@@ -177,6 +234,9 @@ export default function UsersPage() {
     const [showUserModal, setShowUserModal] = useState(false);
     
     const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+    
+    const [userToDeactivate, setUserToDeactivate] = useState<User | null>(null);
+    const [isDeactivating, setIsDeactivating] = useState(false);
     
     const router = useRouter();
     const pathname = usePathname();
@@ -213,7 +273,7 @@ export default function UsersPage() {
     }, [searchParams]);
     
     const activeFiltersCount = useMemo(() => {
-        return Object.values({ search, role, status, processId }).filter(v => v && v !== 'ALL').length;
+        return Object.values({ search, role, status, processId }).filter(v => v && v !== 'ALL' && v !== null).length;
     }, [search, role, status, processId]);
 
     const fetchData = useCallback(async () => {
@@ -294,6 +354,35 @@ export default function UsersPage() {
         setUserToEdit(user);
         setShowUserModal(true);
     };
+    
+    const handleStatusChange = async (user: User, newStatus: boolean) => {
+        if(user.id === currentUser?.id) {
+            toast({ title: "Acción no permitida", description: "No puedes inactivar tu propia cuenta.", variant: "destructive" });
+            return;
+        }
+        setUserToDeactivate(user);
+    }
+    
+    const confirmStatusChange = async () => {
+        if (!userToDeactivate) return;
+        setIsDeactivating(true);
+        try {
+            const res = await fetch(`/api/users/${userToDeactivate.id}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isActive: !userToDeactivate.isActive }),
+            });
+            if (!res.ok) throw new Error("No se pudo cambiar el estado del usuario.");
+            toast({ title: 'Estado Actualizado', description: `El usuario ${userToDeactivate.name} ha sido ${!userToDeactivate.isActive ? 'activado' : 'inactivado'}.`});
+            fetchData();
+        } catch(err) {
+            toast({ title: 'Error', description: (err as Error).message, variant: 'destructive'});
+        } finally {
+            setIsDeactivating(false);
+            setUserToDeactivate(null);
+        }
+    }
+
 
     const handleDragEnd = async (event: DragEndEvent) => {
         setActiveDraggable(null);
@@ -348,7 +437,7 @@ export default function UsersPage() {
         return <div className="text-center p-8"><AlertTriangle className="mx-auto h-12 w-12 text-destructive"/>Acceso Denegado</div>;
     }
 
-    if (isLoading) {
+    if (isLoading && usersList.length === 0) {
         return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin"/></div>
     }
 
@@ -432,7 +521,7 @@ export default function UsersPage() {
                                     ))}
                                 </div>
                            ) : (
-                                <UserTable users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} onEdit={handleOpenUserModal} onRoleChange={handleOpenUserModal} onStatusChange={(user, status) => {}} />
+                                <UserTable users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} onEdit={handleOpenUserModal} onRoleChange={handleOpenUserModal} onStatusChange={handleStatusChange} />
                            )
                         ) : (
                            <div className="text-center py-16 border-2 border-dashed rounded-lg col-span-full">
@@ -444,7 +533,7 @@ export default function UsersPage() {
                          {totalPages > 1 && <SmartPagination className="mt-6" currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />}
                     </div>
 
-                    <aside className="lg:col-span-1 lg:sticky lg:top-24">
+                    <aside className="hidden lg:block lg:col-span-1 lg:sticky lg:top-24">
                         <ProcessTree processes={processes} onProcessUpdate={fetchData} onProcessClick={(id) => handleFilterChange('processId', id)} activeProcessId={processId}/>
                     </aside>
                 </div>
@@ -467,6 +556,26 @@ export default function UsersPage() {
 
             {showUserModal && <UserFormModal isOpen={showUserModal} onClose={() => setShowUserModal(false)} onSave={fetchData} user={userToEdit} processes={processes} />}
             {isBulkAssignModalOpen && <BulkAssignModal isOpen={isBulkAssignModalOpen} onClose={() => setIsBulkAssignModalOpen(false)} onSave={fetchData} userIds={Array.from(selectedUserIds)} processes={processes}/>}
+            
+            <AlertDialog open={!!userToDeactivate} onOpenChange={setUserToDeactivate}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Confirmar cambio de estado?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Estás a punto de {userToDeactivate?.isActive ? 'inactivar' : 'activar'} la cuenta de <strong>{userToDeactivate?.name}</strong>. 
+                            Un usuario inactivo no podrá iniciar sesión.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isDeactivating}>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmStatusChange} disabled={isDeactivating} className={cn(!userToDeactivate?.isActive && 'bg-green-600 hover:bg-green-700', userToDeactivate?.isActive && 'bg-destructive hover:bg-destructive/90')}>
+                            {isDeactivating ? <Loader2 className="animate-spin mr-2"/> : null}
+                            Sí, {userToDeactivate?.isActive ? 'Inactivar' : 'Activar'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </DndContext>
     );
 }
+```
