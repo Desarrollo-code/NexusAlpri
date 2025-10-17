@@ -1,3 +1,4 @@
+
 // src/components/profile/user-profile-card.tsx
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';

@@ -1,3 +1,4 @@
+
 // src/app/(app)/users/page.tsx
 'use client';
 
@@ -49,13 +50,25 @@ interface UserWithProcess extends User {
 
 const PAGE_SIZE = 12;
 
-const DraggableUserCard = ({ user, isSelected, onSelectionChange }: { user: UserWithProcess, isSelected: boolean, onSelectionChange: (id: string, selected: boolean) => void }) => {
+const DraggableUserCard = ({ user, isSelected, onSelectionChange, onEdit, onRoleChange, onStatusChange }: { 
+    user: UserWithProcess, 
+    isSelected: boolean, 
+    onSelectionChange: (id: string, selected: boolean) => void,
+    onEdit: (user: User) => void,
+    onRoleChange: (user: User) => void,
+    onStatusChange: (user: User, status: boolean) => void
+}) => {
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: user.id });
     
     return (
         <div ref={setNodeRef} {...attributes} {...listeners} className={cn("touch-none", isDragging && "opacity-30")}>
             <div className="relative">
-                <UserProfileCard user={user} />
+                <UserProfileCard 
+                    user={user}
+                    onEdit={onEdit}
+                    onRoleChange={onRoleChange}
+                    onStatusChange={onStatusChange}
+                />
                  <div className="absolute top-2 left-2 z-20">
                     <Checkbox checked={isSelected} onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)} className="bg-background border-primary" />
                 </div>
@@ -532,7 +545,7 @@ export default function UsersPage() {
                  {isMobile ? <MobileControls /> : <DesktopControls />}
 
                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-                    <div className="lg:col-span-3">
+                    <div className="lg:col-span-3 mb-4">
                          <div className="mb-4">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
@@ -544,7 +557,15 @@ export default function UsersPage() {
                                viewMode === 'grid' ? (
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {usersList.map(u => (
-                                            <DraggableUserCard key={u.id} user={u} isSelected={selectedUserIds.has(u.id)} onSelectionChange={handleSelectionChange}/>
+                                            <DraggableUserCard 
+                                                key={u.id} 
+                                                user={u} 
+                                                isSelected={selectedUserIds.has(u.id)} 
+                                                onSelectionChange={handleSelectionChange}
+                                                onEdit={handleOpenUserModal}
+                                                onRoleChange={handleOpenUserModal} // Reusing for simplicity, could be a different modal
+                                                onStatusChange={handleStatusChange}
+                                            />
                                         ))}
                                     </div>
                                ) : (
@@ -563,7 +584,7 @@ export default function UsersPage() {
 
                     <aside className="hidden lg:block lg:col-span-1 lg:sticky lg:top-24 space-y-4">
                         <ProcessTree processes={processes} onProcessUpdate={fetchData} onProcessClick={(id) => handleFilterChange('processId', id)} activeProcessId={processId}/>
-                        {selectedUserIds.size > 0 && <BulkActionsBar />}
+                        <BulkActionsBar />
                     </aside>
                 </div>
             </div>
@@ -612,3 +633,4 @@ export default function UsersPage() {
         </DndContext>
     );
 }
+
