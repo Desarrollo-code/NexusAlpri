@@ -338,7 +338,7 @@ export default function UsersPage() {
                 }
             } else {
                 if (isSelected) newSet.add(userId);
-                else newSet.delete(userId);
+                else newSet.delete(id);
             }
             return newSet;
         });
@@ -528,8 +528,8 @@ export default function UsersPage() {
         if (selectedUserIds.size === 0) return null;
 
         return (
-             <div className="bg-background/90 backdrop-blur-lg border rounded-lg shadow-2xl flex flex-wrap items-center justify-between gap-2 p-2">
-                <p className="text-sm font-semibold px-2">{selectedUserIds.size} seleccionado(s)</p>
+             <div className="flex flex-wrap items-center justify-between gap-2 p-2 bg-background border rounded-lg shadow-lg">
+                <p className="px-2 text-sm font-semibold">{selectedUserIds.size} seleccionado(s)</p>
                 <div className="flex items-center gap-2">
                     <Button size="sm" onClick={() => setIsBulkAssignModalOpen(true)}><Briefcase className="mr-2 h-4 w-4"/> Asignar Proceso</Button>
                     <Button size="sm" variant="ghost" onClick={() => setSelectedUserIds(new Set())}>Limpiar</Button>
@@ -538,38 +538,38 @@ export default function UsersPage() {
         )
     }
 
+    const GridView = () => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {usersList.map(u => (
+                <DraggableUserCard 
+                    key={u.id} 
+                    user={u} 
+                    isSelected={selectedUserIds.has(u.id)} 
+                    onSelectionChange={handleSelectionChange}
+                    onEdit={handleOpenUserModal}
+                    onRoleChange={handleOpenUserModal}
+                    onStatusChange={handleStatusChange}
+                />
+            ))}
+        </div>
+    );
+
     return (
         <DndContext sensors={sensors} onDragStart={(e) => setActiveDraggable(e.active)} onDragEnd={handleDragEnd}>
             <div className="space-y-6">
                  {isMobile ? <MobileControls /> : <DesktopControls />}
 
                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-                    <div className="lg:col-span-3 mb-24 md:mb-4">
-                         <div className="mb-4">
+                    <div className="lg:col-span-3">
+                         <div className="mb-24 md:mb-4">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">{[...Array(8)].map((_,i) => <Skeleton key={i} className="h-48 w-full" />)}</div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">{[...Array(8)].map((_,i) => <Skeleton key={i} className="h-48 w-full" />)}</div>
                                 ) : (
                                     <Card><CardContent className="p-4"><Skeleton className="h-96 w-full"/></CardContent></Card>
                                 )
                             ) : usersList.length > 0 ? (
-                               viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {usersList.map(u => (
-                                            <DraggableUserCard 
-                                                key={u.id} 
-                                                user={u} 
-                                                isSelected={selectedUserIds.has(u.id)} 
-                                                onSelectionChange={handleSelectionChange}
-                                                onEdit={handleOpenUserModal}
-                                                onRoleChange={handleOpenUserModal}
-                                                onStatusChange={handleStatusChange}
-                                            />
-                                        ))}
-                                    </div>
-                               ) : (
-                                    <UserTable users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} onEdit={handleOpenUserModal} onRoleChange={handleOpenUserModal} onStatusChange={handleStatusChange} />
-                               )
+                               viewMode === 'grid' ? <GridView /> : <UserTable users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} onEdit={handleOpenUserModal} onRoleChange={handleOpenUserModal} onStatusChange={handleStatusChange} />
                             ) : (
                                <div className="text-center py-16 border-2 border-dashed rounded-lg col-span-full">
                                     <UsersIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4"/>
@@ -591,13 +591,13 @@ export default function UsersPage() {
             </div>
             
             <AnimatePresence>
-                {selectedUserIds.size > 0 && (
+                {selectedUserIds.size > 0 && isMobile && (
                      <motion.div
                         initial={{ y: 100, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: 100, opacity: 0 }}
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        className="fixed bottom-24 md:hidden left-4 right-4 z-50 pointer-events-none flex justify-center"
+                        className="fixed bottom-24 left-4 right-4 z-50 pointer-events-none flex justify-center"
                     >
                        <div className="pointer-events-auto">
                            <BulkActionsBar />
