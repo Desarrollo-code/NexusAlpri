@@ -7,7 +7,7 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, UserCog, Monitor, Globe, HelpCircle, AlertTriangle } from 'lucide-react';
+import { Loader2, Monitor, Globe, HelpCircle, AlertTriangle } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, User as AppUser, SecurityLogEvent } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -22,21 +22,9 @@ import { Identicon } from '@/components/ui/identicon';
 import { useTour } from '@/contexts/tour-context';
 import { securityAuditTour } from '@/lib/tour-steps';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ComposedChart, Legend, Line, Bar, Cell, TooltipProps } from "recharts";
-import { format, parseISO } from 'date-fns';
-import { es } from 'date-fns/locale';
 
 interface SecurityLogWithUser extends AppSecurityLog {
     user: Pick<AppUser, 'id' | 'name' | 'avatar'> | null;
-}
-
-interface SecurityStats {
-    totalEvents: number;
-    eventsLast24h: { type: SecurityLogEvent, count: number }[];
-    eventTrend: { date: string, SUCCESSFUL_LOGIN: number, FAILED_LOGIN_ATTEMPT: number }[];
-    browserDistribution: { name: string, count: number }[];
-    osDistribution: { name: string, count: number }[];
 }
 
 const PAGE_SIZE = 20;
@@ -51,57 +39,6 @@ const ALL_EVENTS: { value: SecurityLogEvent | 'ALL', label: string }[] = [
     { value: 'USER_ROLE_CHANGED', label: 'Cambios de Rol' },
 ];
 
-const activityChartConfig = {
-    SUCCESSFUL_LOGIN: { label: "Exitosos", color: "hsl(var(--chart-2))" },
-    FAILED_LOGIN_ATTEMPT: { label: "Fallidos", color: "hsl(var(--chart-3))" },
-} satisfies ChartConfig;
-
-const barChartConfig = {
-    count: { label: "Count", color: "hsl(var(--chart-4))" }
-} satisfies ChartConfig;
-
-const formatDateTick = (tick: string) => {
-    try {
-        const date = parseISO(tick);
-        return format(date, "d MMM", { locale: es });
-    } catch(e) {
-        return tick;
-    }
-};
-
-const CustomBarTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="rounded-lg border bg-background/90 p-2 shadow-sm backdrop-blur-sm">
-          <p className="font-bold">{label}</p>
-          <p className="text-primary">{`${payload[0].value} evento(s)`}</p>
-        </div>
-      );
-    }
-    return null;
-};
-
-const CustomBarChart = ({ data, title, datakey, color }: { data: any[], title: string, datakey: string, color: string }) => (
-    <Card>
-        <CardHeader>
-            <CardTitle className="text-base font-medium">{title}</CardTitle>
-        </CardHeader>
-        <CardContent className="h-48">
-            <ChartContainer config={barChartConfig} className="w-full h-full -ml-4 pl-4">
-                <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data} layout="vertical" margin={{ left: 20 }}>
-                        <CartesianGrid strokeDasharray="3 3" horizontal={false}/>
-                        <XAxis type="number" allowDecimals={false} fontSize={12} />
-                        <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 12 }}/>
-                        <ChartTooltip content={<CustomBarTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
-                        <Bar dataKey={datakey} fill={color} radius={[0, 4, 4, 0]} barSize={15} />
-                    </BarChart>
-                </ResponsiveContainer>
-            </ChartContainer>
-        </CardContent>
-    </Card>
-);
-
 export default function SecurityAuditPage() {
     const { user: currentUser } = useAuth();
     const router = useRouter();
@@ -113,7 +50,6 @@ export default function SecurityAuditPage() {
 
     const [logs, setLogs] = useState<SecurityLogWithUser[]>([]);
     const [totalLogs, setTotalLogs] = useState(0);
-    const [stats, setStats] = useState<SecurityStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     
@@ -131,20 +67,13 @@ export default function SecurityAuditPage() {
         setError(null);
         try {
             const logsParams = new URLSearchParams(searchParams.toString());
-            const [logsResponse, statsResponse] = await Promise.all([
-                fetch(`/api/security/logs?${logsParams.toString()}`),
-                fetch('/api/security/stats')
-            ]);
+            const logsResponse = await fetch(`/api/security/logs?${logsParams.toString()}`);
             
             if (!logsResponse.ok) throw new Error((await logsResponse.json()).message || 'Failed to fetch security logs');
-            if (!statsResponse.ok) throw new Error((await statsResponse.json()).message || 'Failed to fetch security stats');
-
+            
             const logsData = await logsResponse.json();
-            const statsData = await statsResponse.json();
-
             setLogs(logsData.logs || []);
             setTotalLogs(logsData.totalLogs || 0);
-            setStats(statsData);
 
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Unknown error fetching data');
@@ -179,53 +108,22 @@ export default function SecurityAuditPage() {
         router.push(`${pathname}?${createQueryString({ page })}`);
     };
 
-    if (currentUser?.role !== 'ADMINISTRATOR') return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+    if (currentUser?.role !== 'ADMINISTRATOR') {
+        return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+    }
     
     return (
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="space-y-1">
-                    <p className="text-muted-foreground">Revisa y analiza los eventos de seguridad importantes de la plataforma.</p>
+                    <h1 className="text-2xl font-bold">Auditoría de Seguridad</h1>
+                    <p className="text-muted-foreground">Revisa los eventos de seguridad importantes de la plataforma.</p>
                 </div>
                 <Button variant="outline" size="sm" onClick={() => forceStartTour('securityAudit', securityAuditTour)}>
                     <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
                 </Button>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Tendencia de Inicios de Sesión</CardTitle>
-                        <CardDescription>Actividad de los últimos 7 días.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="h-64">
-                        {(isLoading && !stats) ? <Skeleton className="h-full w-full"/> : (
-                            <ChartContainer config={activityChartConfig} className="w-full h-full -ml-4 pl-4">
-                                <ResponsiveContainer>
-                                    <ComposedChart data={stats?.eventTrend || []} margin={{ top: 5, right: 20, left: -20, bottom: 0 }}>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                        <XAxis dataKey="date" tickFormatter={formatDateTick} tickLine={false} axisLine={false} tickMargin={10}/>
-                                        <YAxis allowDecimals={false} tickLine={false} axisLine={false} tickMargin={10}/>
-                                        <ChartTooltip content={<ChartTooltipContent />} />
-                                        <Legend />
-                                        <Line type="monotone" dataKey="SUCCESSFUL_LOGIN" name="Exitosos" stroke="var(--color-SUCCESSFUL_LOGIN)" strokeWidth={2} dot={false} />
-                                        <Line type="monotone" dataKey="FAILED_LOGIN_ATTEMPT" name="Fallidos" stroke="var(--color-FAILED_LOGIN_ATTEMPT)" strokeWidth={2} dot={false} />
-                                    </ComposedChart>
-                                </ResponsiveContainer>
-                            </ChartContainer>
-                        )}
-                    </CardContent>
-                </Card>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {(isLoading && !stats) ? <> <Skeleton className="h-full w-full"/> <Skeleton className="h-full w-full"/> </> : (
-                        <>
-                            <CustomBarChart data={stats?.browserDistribution || []} title="Distribución por Navegador" datakey="count" color="hsl(var(--chart-4))" />
-                            <CustomBarChart data={stats?.osDistribution || []} title="Distribución por S.O." datakey="count" color="hsl(var(--chart-5))"/>
-                        </>
-                    )}
-                </div>
-            </div>
-
             <TooltipProvider>
                 <Card id="security-log-table">
                     <CardHeader>
