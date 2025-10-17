@@ -162,10 +162,8 @@ export default function SettingsPageComponent() {
   const handleImageUpload = useCallback(async (field: ImageField, file: File) => {
       setUploadStates(prev => ({ ...prev, [field]: { isUploading: true, progress: 0 }}));
       
-      let apiPath = '/api/upload/settings-image';
-      
       try {
-          const result = await uploadWithProgress(apiPath, file, (progress) => {
+          const result = await uploadWithProgress('/api/upload/settings-image', file, (progress) => {
              setUploadStates(prev => ({ ...prev, [field]: { ...prev[field], progress }}));
           });
           handleInputChange(field, result.url);
@@ -296,8 +294,8 @@ export default function SettingsPageComponent() {
                         <CardTitle className="flex items-center gap-2"><Building className="h-5 w-5 text-primary"/>Identidad y Marca</CardTitle>
                         <CardDescription>Nombre, logo, marca de agua e imágenes para las páginas públicas.</CardDescription>
                     </CardHeader>
-                    <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                       <div className="md:col-span-full space-y-2">
+                    <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 place-items-center md:place-items-start">
+                       <div className="md:col-span-full space-y-2 w-full">
                            <Label htmlFor="platformName">Nombre de la Plataforma</Label>
                            <Input
                                id="platformName"
@@ -463,7 +461,7 @@ export default function SettingsPageComponent() {
              </TabsContent>
         </Tabs>
 
-        <AlertDialog open={!!categoryToDelete} onOpenChange={(isOpen) => !isOpen && setCategoryToDelete(null)}>
+        <AlertDialog open={!!categoryToDelete} onOpenChange={(isOpen) => { if (!isOpen) setCategoryToDelete(null); }}>
           <AlertDialogContent>
               <AlertDialogHeader><AlertDialogTitle>¿Confirmar Eliminación?</AlertDialogTitle><AlertDialogDescription>Se verificará si la categoría "<strong>{categoryToDelete}</strong>" está en uso. Si no lo está, se eliminará de la lista (deberás guardar los cambios para confirmar). Si está en uso, se te notificará.</AlertDialogDescription></AlertDialogHeader>
               <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><AlertDialogCancel disabled={isCheckingCategory}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDeleteCategory} disabled={isCheckingCategory} className={buttonVariants({ variant: "destructive" })}>{isCheckingCategory ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}Sí, eliminar</AlertDialogAction></AlertDialogFooter>
