@@ -1,4 +1,3 @@
-
 // src/components/settings-page.tsx
 'use client';
 
@@ -463,6 +462,7 @@ export default function SettingsPageComponent() {
                 </Card>
              </TabsContent>
         </Tabs>
+
         <AlertDialog open={!!categoryToDelete} onOpenChange={(isOpen) => { if (!isOpen) setCategoryToDelete(null); }}>
           <AlertDialogContent>
               <AlertDialogHeader><AlertDialogTitle>¿Confirmar Eliminación?</AlertDialogTitle><AlertDialogDescription>Se verificará si la categoría "<strong>{categoryToDelete}</strong>" está en uso. Si no lo está, se eliminará de la lista (deberás guardar los cambios para confirmar). Si está en uso, se te notificará.</AlertDialogDescription></AlertDialogHeader>
