@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { PlusCircle, Search, List, Grid, Filter, UserPlus, MoreVertical, Loader2, Briefcase, MessageSquare, Edit, Trash2, UserCog, UserX } from 'lucide-react';
@@ -87,22 +87,19 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
         return (
             <div className="space-y-4">
                 {users.map(user => (
-                    <Card key={user.id} className="p-4">
-                        <div className="flex items-start gap-4">
-                             <Checkbox
+                    <Card key={user.id} className="p-3">
+                         <div className="flex items-center gap-3">
+                            <Checkbox
                                 checked={selectedUserIds.has(user.id)}
                                 onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)}
-                                className="mt-1"
                             />
-                             <div className="flex items-center gap-3 flex-grow">
-                                <Avatar className="h-10 w-10">
-                                    <AvatarImage src={user.avatar || undefined} />
-                                    <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
-                                </Avatar>
-                                <div className="flex-grow overflow-hidden">
-                                    <p className="font-semibold truncate">{user.name}</p>
-                                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-                                </div>
+                            <Avatar className="h-10 w-10">
+                                <AvatarImage src={user.avatar || undefined} />
+                                <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
+                            </Avatar>
+                            <div className="flex-grow overflow-hidden">
+                                <p className="font-semibold truncate">{user.name}</p>
+                                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                             </div>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
@@ -114,22 +111,7 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
                                     <DropdownMenuItem onSelect={() => onStatusChange(user, !user.isActive)} className={user.isActive ? "text-destructive" : ""}><UserX className="mr-2 h-4 w-4"/>{user.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
-                        </div>
-                        <div className="mt-3 pl-12 flex flex-wrap gap-2 items-center text-xs">
-                             <Badge variant={getRoleBadgeVariant(user.role)}>{getRoleInSpanish(user.role)}</Badge>
-                             <Badge variant={user.isActive ? 'default' : 'secondary'} className={cn(user.isActive ? 'bg-green-500' : 'bg-gray-400', 'text-white')}>{user.isActive ? 'Activo' : 'Inactivo'}</Badge>
-                             {user.process && (
-                                <Badge 
-                                    className="text-xs"
-                                    style={{
-                                        backgroundColor: getProcessColors(user.process.id).raw.light,
-                                        color: getProcessColors(user.process.id).raw.dark,
-                                    }}
-                                >
-                                    {user.process.name}
-                                </Badge>
-                             )}
-                        </div>
+                         </div>
                     </Card>
                 ))}
             </div>
@@ -578,4 +560,3 @@ export default function UsersPage() {
         </DndContext>
     );
 }
-```
