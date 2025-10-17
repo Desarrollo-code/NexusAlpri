@@ -6,7 +6,7 @@ import { type LucideProps } from "lucide-react";
 import React from 'react';
 
 interface GradientIconProps extends LucideProps {
-  icon: React.ComponentType<LucideProps>;
+  icon: React.ComponentType<LucideProps> | React.ElementType; // Accept both Lucide and other components
   size?: 'default' | 'sm' | 'lg' | 'xl';
   isActive?: boolean;
 }
@@ -26,8 +26,6 @@ export const GradientIcon = ({
     'xl': 'w-7 h-7',
   };
   
-  // Renderiza el ícono directamente. 
-  // El color será heredado del elemento padre (text-sidebar-accent-foreground o text-sidebar-muted-foreground)
   return (
     <Icon 
       className={cn(sizeClasses[size], className)}

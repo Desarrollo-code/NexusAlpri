@@ -2,7 +2,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
-import type { Process } from '@prisma/client';
+import type { Process } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -91,9 +91,7 @@ export async function POST(req: NextRequest) {
             },
         });
         
-        // Si se proporcionan userIds, se asignan al nuevo proceso.
         if (userIds && Array.isArray(userIds) && userIds.length > 0) {
-            // Desvinculamos a estos usuarios de cualquier otro proceso al que pertenezcan.
             await prisma.user.updateMany({
                 where: { id: { in: userIds }, processId: { not: null } },
                 data: { processId: null }

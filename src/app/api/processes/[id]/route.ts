@@ -19,9 +19,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ message: 'El nombre es requerido' }, { status: 400 });
     }
 
-    // Usamos una transacción para actualizar el proceso y las asignaciones de usuarios.
     const [updatedProcess] = await prisma.$transaction(async (tx) => {
-      // 1. Actualizar el proceso
       const processUpdate = tx.process.update({
           where: { id },
           data: {
@@ -30,9 +28,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
           },
       });
 
-      // 2. Si se proporcionan `userIds`, gestionamos las asignaciones.
       if (userIds && Array.isArray(userIds)) {
-          // Desasignar a todos los usuarios que actualmente están en este proceso pero no en la nueva lista.
           await tx.user.updateMany({
               where: {
                   processId: id,
@@ -42,9 +38,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                   processId: null,
               },
           });
-
-          // Asignar los usuarios de la nueva lista a este proceso.
-          // `updateMany` es seguro, si el usuario ya está asignado no hace nada.
+          
           await tx.user.updateMany({
               where: { id: { in: userIds } },
               data: { processId: id },

@@ -5,11 +5,9 @@ import { cache } from 'react';
 import type { User as PrismaUser } from '@prisma/client';
 import prisma from '@/lib/prisma';
 
-// IMPORTANT: JWT_SECRET is the single source of truth for the secret key.
 const secretKey = process.env.JWT_SECRET;
 
 if (!secretKey) {
-  // This will now only fail if JWT_SECRET is not set.
   throw new Error('La variable de entorno JWT_SECRET debe estar configurada.');
 }
 const key = new TextEncoder().encode(secretKey);
@@ -17,6 +15,7 @@ const key = new TextEncoder().encode(secretKey);
 interface JWTPayload {
   userId: string;
   expires: Date;
+  [key: string]: any; 
 }
 
 async function encrypt(payload: JWTPayload): Promise<string> {
@@ -33,7 +32,6 @@ async function decrypt(input: string): Promise<any> {
     const { payload } = await jwtVerify(input, key, { algorithms: ['HS256'] });
     return payload;
   } catch (error) {
-    // console.error("Error decrypting JWT:", error);
     return null;
   }
 }
@@ -78,8 +76,6 @@ export const getUserFromSession = cache(async (): Promise<PrismaUser | null> => 
 
     return user || null;
   } catch (error) {
-    // If any error occurs (e.g., DB down), we can't get the user.
-    // This is safer than letting the error propagate.
     console.error("Error in getUserFromSession, returning null:", error);
     return null;
   }

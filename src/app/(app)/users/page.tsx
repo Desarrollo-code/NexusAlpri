@@ -1,4 +1,3 @@
-
 // src/app/(app)/users/page.tsx
 'use client';
 
@@ -324,7 +323,7 @@ export default function UsersPage() {
                 }
             } else {
                 if (isSelected) newSet.add(userId);
-                else newSet.delete(id);
+                else newSet.delete(userId);
             }
             return newSet;
         });
@@ -524,17 +523,18 @@ export default function UsersPage() {
                     </aside>
                 </div>
             </div>
-             <DragOverlay dropAnimation={null}>
+            <DragOverlay dropAnimation={null}>
                 {draggedUser ? <UserProfileCard user={draggedUser} /> : null}
             </DragOverlay>
             
-            <div className="fixed bottom-0 left-0 right-0 z-40 pb-16 md:pb-0">
+             <div className="fixed bottom-0 left-0 right-0 z-50 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-4 pointer-events-none">
                 <AnimatePresence>
                     {selectedUserIds.size > 0 && (
                         <motion.div
                             initial={{ y: 100, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
                             exit={{ y: 100, opacity: 0 }}
+                            className="pointer-events-auto"
                         >
                             <div className="container mx-auto flex items-center justify-center">
                                 <div className="bg-background/95 backdrop-blur-lg border rounded-lg shadow-2xl flex items-center gap-4 p-2">
@@ -573,5 +573,3 @@ export default function UsersPage() {
         </DndContext>
     );
 }
-
-```
