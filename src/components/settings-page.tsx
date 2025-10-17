@@ -283,7 +283,7 @@ export default function SettingsPageComponent() {
         </div>
 
         <Tabs defaultValue="identity" className="w-full">
-            <TabsList id="settings-tabs-list" className="grid w-full grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4">
+            <TabsList id="settings-tabs-list" className="inline-grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
                 <TabsTrigger value="identity">Identidad</TabsTrigger>
                 <TabsTrigger value="theme">Tema y Estilo</TabsTrigger>
                 <TabsTrigger value="security">Seguridad</TabsTrigger>
@@ -463,7 +463,7 @@ export default function SettingsPageComponent() {
              </TabsContent>
         </Tabs>
 
-        <AlertDialog open={!!categoryToDelete} onOpenChange={(isOpen) => { if (!isOpen) setCategoryToDelete(null); }}>
+        <AlertDialog open={!!categoryToDelete} onOpenChange={(isOpen) => !isOpen && setCategoryToDelete(null)}>
           <AlertDialogContent>
               <AlertDialogHeader><AlertDialogTitle>¿Confirmar Eliminación?</AlertDialogTitle><AlertDialogDescription>Se verificará si la categoría "<strong>{categoryToDelete}</strong>" está en uso. Si no lo está, se eliminará de la lista (deberás guardar los cambios para confirmar). Si está en uso, se te notificará.</AlertDialogDescription></AlertDialogHeader>
               <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><AlertDialogCancel disabled={isCheckingCategory}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDeleteCategory} disabled={isCheckingCategory} className={buttonVariants({ variant: "destructive" })}>{isCheckingCategory ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}Sí, eliminar</AlertDialogAction></AlertDialogFooter>
