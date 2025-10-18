@@ -7,8 +7,8 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Monitor, Globe, HelpCircle, AlertTriangle } from 'lucide-react';
-import type { SecurityLog as AppSecurityLog, User as AppUser, SecurityLogEvent } from '@/types';
+import { Loader2, Monitor, Globe, HelpCircle, AlertTriangle, BarChart3, TrendingUp, Users, Shield, Clock } from 'lucide-react';
+import type { SecurityLog as AppSecurityLog, User as AppUser, SecurityLogEvent, AdminDashboardStats } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -22,12 +22,16 @@ import { Identicon } from '@/components/ui/identicon';
 import { useTour } from '@/contexts/tour-context';
 import { securityAuditTour } from '@/lib/tour-steps';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, BarChart, XAxis, YAxis, CartesianGrid, Bar, PieChart, Pie, Cell } from '@/components/ui/chart';
+import type { ChartConfig } from '@/components/ui/chart';
+import { MetricCard } from '@/components/analytics/metric-card';
+import { Separator } from '@/components/ui/separator';
 
 interface SecurityLogWithUser extends AppSecurityLog {
     user: Pick<AppUser, 'id' | 'name' | 'avatar'> | null;
 }
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 15;
 
 const ALL_EVENTS: { value: SecurityLogEvent | 'ALL', label: string }[] = [
     { value: 'ALL', label: 'Todos los Eventos' },
@@ -50,6 +54,7 @@ export default function SecurityAuditPage() {
 
     const [logs, setLogs] = useState<SecurityLogWithUser[]>([]);
     const [totalLogs, setTotalLogs] = useState(0);
+    const [stats, setStats] = useState<AdminDashboardStats['securityStats'] | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     
@@ -67,13 +72,22 @@ export default function SecurityAuditPage() {
         setError(null);
         try {
             const logsParams = new URLSearchParams(searchParams.toString());
-            const logsResponse = await fetch(`/api/security/logs?${logsParams.toString()}`);
+            logsParams.set('pageSize', String(PAGE_SIZE));
             
+            const [logsResponse, statsResponse] = await Promise.all([
+                 fetch(`/api/security/logs?${logsParams.toString()}`),
+                 fetch('/api/dashboard/data') // Fetch full dashboard data
+            ]);
+
             if (!logsResponse.ok) throw new Error((await logsResponse.json()).message || 'Failed to fetch security logs');
+            if (!statsResponse.ok) throw new Error((await statsResponse.json()).message || 'Failed to fetch security stats');
             
             const logsData = await logsResponse.json();
+            const fullDashboardData = await statsResponse.json();
+
             setLogs(logsData.logs || []);
             setTotalLogs(logsData.totalLogs || 0);
+            setStats(fullDashboardData.adminStats.securityStats || null);
 
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Unknown error fetching data');
@@ -84,11 +98,11 @@ export default function SecurityAuditPage() {
     }, [toast, searchParams]);
 
     useEffect(() => {
-        if (currentUser?.role !== 'ADMINISTRATOR') {
-            router.push('/dashboard');
-            return;
+        if (currentUser?.role === 'ADMINISTRATOR') {
+            fetchData();
+        } else if (currentUser) {
+             router.push('/dashboard');
         }
-        fetchData();
     }, [currentUser, router, fetchData]);
     
     const createQueryString = useCallback((paramsToUpdate: Record<string, string | number | null>) => {
@@ -108,10 +122,21 @@ export default function SecurityAuditPage() {
         router.push(`${pathname}?${createQueryString({ page })}`);
     };
 
-    if (currentUser?.role !== 'ADMINISTRATOR') {
+    if (!currentUser || currentUser.role !== 'ADMINISTRATOR') {
         return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
     }
     
+    const browserChartConfig: ChartConfig = useMemo(() => {
+        const config: ChartConfig = {};
+        stats?.topBrowsers.forEach((item, index) => {
+            config[item.browser] = {
+                label: item.browser,
+                color: `hsl(var(--chart-${(index % 5) + 1}))`
+            }
+        });
+        return config;
+    }, [stats]);
+
     return (
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -124,12 +149,58 @@ export default function SecurityAuditPage() {
                 </Button>
             </div>
             
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4" id="security-stats-cards">
+                <MetricCard title="Inicios de Sesión Exitosos" value={stats?.successfulLogins24h || 0} icon={Users} description="Últimas 24h" gradient="bg-gradient-green" />
+                <MetricCard title="Intentos de Acceso Fallidos" value={stats?.failedLogins24h || 0} icon={AlertTriangle} description="Últimas 24h" gradient="bg-gradient-orange" />
+                <MetricCard title="Cambios de Roles" value={stats?.roleChanges24h || 0} icon={UserCog} description="Últimas 24h" gradient="bg-gradient-purple" />
+                <MetricCard title="Eventos Críticos" value={stats?.criticalEvents24h || 0} icon={Shield} description="Últimas 24h" gradient="bg-gradient-blue" />
+            </div>
+
+            <Separator />
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <Card className="lg:col-span-2">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><TrendingUp/>Actividad de Inicios de Sesión</CardTitle>
+                        <CardDescription>Resumen de los últimos 7 días.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="h-72">
+                         <ChartContainer config={browserChartConfig} className="w-full h-full">
+                            <BarChart data={stats?.loginsLast7Days || []} margin={{top: 5, right: 10, left: -20, bottom: 5}}>
+                               <CartesianGrid vertical={false} />
+                               <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} tickFormatter={(value) => new Date(value).toLocaleDateString('es-ES', { weekday: 'short' })}/>
+                               <YAxis tickLine={false} axisLine={false} tickMargin={10} allowDecimals={false} />
+                               <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line"/>} />
+                               <Bar dataKey="count" fill="var(--color-chrome)" radius={4} />
+                           </BarChart>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Monitor/>Navegadores Utilizados</CardTitle>
+                    </CardHeader>
+                    <CardContent className="h-72 flex items-center justify-center">
+                         <ChartContainer config={browserChartConfig} className="w-full h-full">
+                            <PieChart>
+                                <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                                <Pie data={stats?.topBrowsers} dataKey="count" nameKey="browser" innerRadius={50} strokeWidth={2}>
+                                {stats?.topBrowsers.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={browserChartConfig[entry.browser]?.color} />
+                                ))}
+                                </Pie>
+                            </PieChart>
+                         </ChartContainer>
+                    </CardContent>
+                </Card>
+            </div>
+            
             <TooltipProvider>
                 <Card id="security-log-table">
                     <CardHeader>
                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                             <div>
-                                <CardTitle>Registro de Eventos</CardTitle>
+                                <CardTitle>Registro de Eventos Detallado</CardTitle>
                                 <CardDescription>Mostrando {totalLogs} registros de seguridad.</CardDescription>
                             </div>
                             <div id="security-event-filter">

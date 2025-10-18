@@ -256,8 +256,8 @@ const ChartTooltipContent = React.forwardRef<
 )
 ChartTooltipContent.displayName = "ChartTooltip"
 
-// Recharts components - UTILS
 const ChartLegend = RechartsPrimitive.Legend
+
 const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> &
@@ -316,7 +316,6 @@ const ChartLegendContent = React.forwardRef<
 )
 ChartLegendContent.displayName = "ChartLegend"
 
-// Helper to extract item config from a payload.
 function getPayloadConfigFromPayload(
   config: ChartConfig,
   payload: unknown,
@@ -355,11 +354,9 @@ function getPayloadConfigFromPayload(
     : config[key as keyof typeof config]
 }
 
-// Main components
 const BarChart = RechartsPrimitive.BarChart
 const Bar = RechartsPrimitive.Bar
 const Cell = RechartsPrimitive.Cell
-const Area = RechartsPrimitive.Area
 const AreaChart = RechartsPrimitive.AreaChart
 const PieChart = RechartsPrimitive.PieChart
 const Pie = RechartsPrimitive.Pie
@@ -371,6 +368,8 @@ const CartesianGrid = RechartsPrimitive.CartesianGrid;
 const XAxis = RechartsPrimitive.XAxis;
 const YAxis = RechartsPrimitive.YAxis;
 const Legend = RechartsPrimitive.Legend;
+const Area = RechartsPrimitive.Area;
+
 
 export {
   ChartContainer,
@@ -379,12 +378,11 @@ export {
   ChartLegend,
   ChartLegendContent,
   ChartStyle,
-  // Recharts components
   BarChart,
   Bar,
   Cell,
-  Area,
   AreaChart,
+  Area,
   PieChart,
   Pie,
   ComposedChart,
