@@ -76,7 +76,7 @@ export default function SecurityAuditPage() {
             
             const [logsResponse, statsResponse] = await Promise.all([
                  fetch(`/api/security/logs?${logsParams.toString()}`),
-                 fetch('/api/dashboard/data') // Fetch full dashboard data
+                 fetch('/api/dashboard/data') 
             ]);
 
             if (!logsResponse.ok) throw new Error((await logsResponse.json()).message || 'Failed to fetch security logs');
