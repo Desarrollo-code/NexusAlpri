@@ -1,7 +1,7 @@
 // src/app/(app)/security-audit/page.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -127,7 +127,7 @@ export default function SecurityAuditPage() {
             <TooltipProvider>
                 <Card id="security-log-table">
                     <CardHeader>
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                             <div>
                                 <CardTitle>Registro de Eventos</CardTitle>
                                 <CardDescription>Mostrando {totalLogs} registros de seguridad.</CardDescription>
