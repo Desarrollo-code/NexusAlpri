@@ -4,9 +4,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, AlertTriangle, Shield, Clock, UserCog, MapIcon, ArrowRight, FileText, ShieldCheck, Filter, Monitor } from 'lucide-react';
+import { Loader2, AlertTriangle, Shield, UserCog, ShieldCheck, MapIcon, HelpCircle } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, SecurityStats } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { useTitle } from '@/contexts/title-context';
@@ -19,7 +19,7 @@ import { DeviceDistributionChart } from '@/components/security/device-distributi
 import { SecurityLogDetailSheet } from '@/components/security/security-log-detail-sheet';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { format, subDays, startOfDay, endOfDay } from 'date-fns';
+import { startOfDay, endOfDay, subDays } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 import { parseUserAgent } from '@/lib/security-log-utils';
 
@@ -43,7 +43,7 @@ export default function SecurityAuditPage() {
     const endDateParam = searchParams.get('endDate');
 
     const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
-        const from = startDateParam ? new Date(startDateParam) : subDays(new Date(), 29);
+        const from = startDateParam ? new Date(startDateParam) : subDays(new Date(), 6);
         const to = endDateParam ? new Date(endDateParam) : new Date();
         return { from: startOfDay(from), to: endOfDay(to) };
     });
@@ -88,7 +88,7 @@ export default function SecurityAuditPage() {
 
             const [logsResponse, statsResponse] = await Promise.all([
                 fetch(`/api/security/logs?${params.toString()}`),
-                fetch(`/api/security/stats?${params.toString()}`)
+                fetch(`/api/security/stats`)
             ]);
             
             if (!logsResponse.ok) throw new Error((await logsResponse.json()).message || 'Failed to fetch security logs');
@@ -121,8 +121,8 @@ export default function SecurityAuditPage() {
         const oses = new Map<string, number>();
         logs.forEach(log => {
             const { browser, os } = parseUserAgent(log.userAgent);
-            if (browser !== 'Desconocido') browsers.set(browser, (browsers.get(browser) || 0) + 1);
-            if (os !== 'Desconocido') oses.set(os, (oses.get(os) || 0) + 1);
+            browsers.set(browser, (browsers.get(browser) || 0) + 1);
+            oses.set(os, (oses.get(os) || 0) + 1);
         });
         const browserData = Array.from(browsers.entries()).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count).slice(0, 5);
         const osData = Array.from(oses.entries()).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count).slice(0, 5);
@@ -133,13 +133,8 @@ export default function SecurityAuditPage() {
         return (
             <div className="flex h-full items-center justify-center">
                 <Card className="w-full max-w-md text-center">
-                    <CardHeader>
-                        <CardTitle>Acceso Denegado</CardTitle>
-                        <CardDescription>Esta página solo está disponible para administradores.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Button asChild><Link href="/dashboard">Volver al Panel Principal</Link></Button>
-                    </CardContent>
+                    <CardHeader><CardTitle>Acceso Denegado</CardTitle><CardDescription>Esta página solo está disponible para administradores.</CardDescription></CardHeader>
+                    <CardContent><Button asChild><Link href="/dashboard">Volver al Panel Principal</Link></Button></CardContent>
                 </Card>
             </div>
         );
@@ -163,35 +158,29 @@ export default function SecurityAuditPage() {
     return (
         <div className="space-y-6">
              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <p className="text-muted-foreground">Monitoriza la actividad y la seguridad de tu plataforma.</p>
-                </div>
+                <div><p className="text-muted-foreground">Monitoriza la actividad y la seguridad de tu plataforma.</p></div>
                 <div className="flex flex-wrap items-center gap-2">
                     <Select value={eventFilter} onValueChange={handleEventFilterChange}>
-                        <SelectTrigger className="w-full sm:w-[200px] h-9">
-                            <SelectValue placeholder="Filtrar por evento..." />
-                        </SelectTrigger>
+                        <SelectTrigger className="w-full sm:w-[200px] h-9"><SelectValue placeholder="Filtrar por evento..." /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="ALL">Todos los Eventos</SelectItem>
                             <SelectItem value="SUCCESSFUL_LOGIN">Inicios Exitosos</SelectItem>
                             <SelectItem value="FAILED_LOGIN_ATTEMPT">Intentos Fallidos</SelectItem>
                             <SelectItem value="USER_ROLE_CHANGED">Cambios de Rol</SelectItem>
                             <SelectItem value="PASSWORD_CHANGE_SUCCESS">Cambios de Contraseña</SelectItem>
-                            <SelectItem value="TWO_FACTOR_ENABLED">2FA Activado</SelectItem>
-                            <SelectItem value="TWO_FACTOR_DISABLED">2FA Desactivado</SelectItem>
                         </SelectContent>
                     </Select>
                     <DateRangePicker date={dateRange} onDateChange={handleDateRangeChange} />
-                    <Button variant="outline" size="sm" onClick={() => forceStartTour('securityAudit', securityAuditTour)}>
-                        <HelpCircle className="mr-2 h-4 w-4" /> Guía
-                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => forceStartTour('securityAudit', securityAuditTour)}><HelpCircle className="mr-2 h-4 w-4" /> Guía</Button>
                 </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-                <MetricCard id="successful-logins-card" title="Inicios Exitosos" value={stats?.successfulLogins24h || 0} icon={ShieldCheck} trendData={stats?.loginsLast7Days || []} dataKey="count" gradient="bg-gradient-green" onClick={() => handleEventFilterChange('SUCCESSFUL_LOGIN')} />
-                <MetricCard id="failed-logins-card" title="Intentos Fallidos" value={stats?.failedLogins24h || 0} icon={AlertTriangle} gradient="bg-gradient-orange" onClick={() => handleEventFilterChange('FAILED_LOGIN_ATTEMPT')} />
-                <MetricCard id="role-changes-card" title="Cambios de Rol" value={stats?.roleChanges24h || 0} icon={UserCog} gradient="bg-gradient-blue" onClick={() => handleEventFilterChange('USER_ROLE_CHANGED')} />
+                 <div className="md:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <MetricCard id="successful-logins-card" title="Inicios Exitosos" value={stats?.successfulLogins24h || 0} icon={ShieldCheck} trendData={stats?.loginsLast7Days || []} gradient="bg-gradient-green" onClick={() => handleEventFilterChange('SUCCESSFUL_LOGIN')} />
+                    <MetricCard id="failed-logins-card" title="Intentos Fallidos" value={stats?.failedLogins24h || 0} icon={AlertTriangle} gradient="bg-gradient-orange" onClick={() => handleEventFilterChange('FAILED_LOGIN_ATTEMPT')} />
+                    <MetricCard id="role-changes-card" title="Cambios de Rol" value={stats?.roleChanges24h || 0} icon={UserCog} gradient="bg-gradient-blue" onClick={() => handleEventFilterChange('USER_ROLE_CHANGED')} />
+                </div>
                 <div className="md:col-span-2">
                     <DeviceDistributionChart browserData={deviceData.browserData} osData={deviceData.osData} />
                 </div>
@@ -199,28 +188,13 @@ export default function SecurityAuditPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
                 <div className="md:col-span-3">
-                    <SecurityLogTable logs={logs} onRowClick={setSelectedLog}/>
+                    <Card><CardHeader><CardTitle>Registro de Eventos Detallado</CardTitle></CardHeader><CardContent><SecurityLogTable logs={logs} onRowClick={setSelectedLog}/></CardContent></Card>
                 </div>
                 <div className="md:col-span-2">
-                    <Card id="access-map" className="h-full">
-                        <CardHeader>
-                            <CardTitle className="text-lg flex items-center gap-2"><MapIcon className="h-5 w-5 text-primary"/>Mapa de Accesos</CardTitle>
-                        </CardHeader>
-                        <CardContent className="h-full min-h-[300px] flex flex-col items-center justify-center">
-                            <AnimatedGlobe />
-                            <h3 className="font-semibold text-lg text-foreground mt-4">Próximamente</h3>
-                            <p className="text-sm text-muted-foreground">Visualización geográfica de inicios de sesión.</p>
-                        </CardContent>
-                    </Card>
+                    <Card id="access-map" className="h-full"><CardHeader><CardTitle className="text-lg flex items-center gap-2"><MapIcon className="h-5 w-5 text-primary"/>Mapa de Accesos</CardTitle></CardHeader><CardContent className="h-full min-h-[300px] flex flex-col items-center justify-center"><AnimatedGlobe /><h3 className="font-semibold text-lg text-foreground mt-4">Próximamente</h3><p className="text-sm text-muted-foreground">Visualización geográfica de inicios de sesión.</p></CardContent></Card>
                 </div>
             </div>
-            {selectedLog && (
-                <SecurityLogDetailSheet
-                    log={selectedLog}
-                    isOpen={!!selectedLog}
-                    onClose={() => setSelectedLog(null)}
-                />
-            )}
+            {selectedLog && <SecurityLogDetailSheet log={selectedLog} isOpen={!!selectedLog} onClose={() => setSelectedLog(null)} />}
         </div>
     );
 }
