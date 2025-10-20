@@ -1,4 +1,3 @@
-
 // src/app/api/announcements/[id]/route.ts
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
