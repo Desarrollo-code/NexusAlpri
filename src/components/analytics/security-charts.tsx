@@ -1,11 +1,12 @@
+
 // src/components/analytics/security-charts.tsx
 'use client';
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell, TooltipProps } from 'recharts';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { ChartContainer, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import { Chrome, Apple, Monitor, Globe } from 'lucide-react';
-import { IconBrandWindows, IconBrandLinux } from 'tabler-icons-react';
+import { BrandWindows, BrandLinux } from 'tabler-icons-react';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
@@ -14,9 +15,9 @@ const iconMap: Record<string, React.ElementType> = {
     'Firefox': Globe, 
     'Safari': Globe,
     'Edge': Globe,
-    'Windows': IconBrandWindows,
+    'Windows': BrandWindows,
     'macOS': Apple,
-    'Linux': IconBrandLinux,
+    'Linux': BrandLinux,
     'Android': Monitor,
     'iOS': Apple,
 };
@@ -35,23 +36,11 @@ const CustomYAxisTick = ({ y, payload }: any) => {
     );
 }
 
-const CustomTooltipContent = ({ active, payload, label }: TooltipProps<number, string>) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="p-2 text-sm bg-background/80 border rounded-lg shadow-lg backdrop-blur-sm">
-          <p className="font-bold">{label}</p>
-          <p className="text-primary">Cantidad: {payload[0].value}</p>
-        </div>
-      );
-    }
-    return null;
-};
-
-const Chart = ({ data, config }: { data: any[], config: ChartConfig }) => (
+const Chart = ({ data }: { data: any[] }) => (
     <div className="h-24"> 
         {data.length > 0 ? (
-            <ChartContainer config={config} className="w-full h-full">
-                <BarChart data={data} layout="vertical" margin={{ top: 5, right: 0, left: 70, bottom: 5 }} barGap={0}>
+            <ChartContainer config={{ count: { label: "Cantidad" } }} className="w-full h-full">
+                <BarChart data={data} layout="vertical" margin={{ top: 5, right: 0, left: 70, bottom: 5 }} barSize={8} barGap={0}>
                     <XAxis type="number" hide />
                     <YAxis 
                         type="category" 
@@ -63,12 +52,12 @@ const Chart = ({ data, config }: { data: any[], config: ChartConfig }) => (
                         interval={0}
                     />
                     <Tooltip 
-                        content={<CustomTooltipContent />} 
+                        content={<ChartTooltipContent indicator="line" nameKey="name" labelKey="count" />} 
                         cursor={{ fill: 'hsl(var(--muted))' }} 
                     />
-                    <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={8}>
-                        {data.map((entry) => (
-                            <Cell key={`cell-${entry.name}`} fill={`var(--color-${entry.name})`} />
+                    <Bar dataKey="count" radius={[0, 4, 4, 0]}>
+                        {data.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={`hsl(var(--chart-${(index % 5) + 1}))`} />
                         ))}
                     </Bar>
                 </BarChart>
@@ -79,17 +68,6 @@ const Chart = ({ data, config }: { data: any[], config: ChartConfig }) => (
 
 
 export const DeviceDistributionChart = ({ browserData, osData }: { browserData: any[], osData: any[] }) => {
-    const chartConfig: ChartConfig = React.useMemo(() => {
-        const config: ChartConfig = {};
-        [...browserData, ...osData].forEach((item, index) => {
-            config[item.name] = {
-                color: `hsl(var(--chart-${(index % 5) + 1}))`
-            }
-        });
-        config["count"] = { label: "Cantidad" };
-        return config;
-    }, [browserData, osData]);
-
     return (
         <Card className="lg:col-span-1">
             <CardHeader>
@@ -101,12 +79,12 @@ export const DeviceDistributionChart = ({ browserData, osData }: { browserData: 
             <CardContent className="space-y-6">
                 <div>
                     <h4 className="font-medium text-sm mb-2">Navegadores</h4>
-                    <Chart data={browserData} config={chartConfig} />
+                    <Chart data={browserData} />
                 </div>
                 <Separator />
                 <div>
                     <h4 className="font-medium text-sm mb-2">Sistemas Operativos</h4>
-                    <Chart data={osData} config={chartConfig} />
+                    <Chart data={osData} />
                 </div>
             </CardContent>
         </Card>
