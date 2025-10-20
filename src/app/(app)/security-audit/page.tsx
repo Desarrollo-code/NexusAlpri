@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, AlertTriangle, Shield, UserCog, ShieldCheck, HelpCircle, Filter, FileDown, ShieldX } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, SecurityStats } from '@/types';
@@ -22,6 +22,7 @@ import { startOfDay, endOfDay, subDays } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 import { parseUserAgent, getEventDetails } from '@/lib/security-log-utils';
 import { SmartPagination } from '@/components/ui/pagination';
+import { AnimatedGlobe } from '@/components/analytics/animated-globe';
 
 
 const PAGE_SIZE = 15;
@@ -224,15 +225,15 @@ export default function SecurityAuditPage() {
                 </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                 <MetricCard id="successful-logins-card" title="Inicios Exitosos" value={stats?.successfulLogins24h || 0} icon={ShieldCheck} trendData={stats?.loginsLast7Days || []} gradient="bg-gradient-green" onClick={() => handleEventFilterChange('SUCCESSFUL_LOGIN')} />
-                 <MetricCard id="failed-logins-card" title="Intentos Fallidos" value={stats?.failedLogins24h || 0} icon={AlertTriangle} gradient="bg-gradient-orange" onClick={() => handleEventFilterChange('FAILED_LOGIN_ATTEMPT')} />
-                 <MetricCard id="role-changes-card" title="Cambios de Rol" value={stats?.roleChanges24h || 0} icon={UserCog} gradient="bg-gradient-blue" onClick={() => handleEventFilterChange('USER_ROLE_CHANGED')} />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                 <MetricCard id="successful-logins-card" title="Inicios Exitosos" value={stats?.successfulLogins24h || 0} icon={ShieldCheck} onClick={() => handleEventFilterChange('SUCCESSFUL_LOGIN')} />
+                 <MetricCard id="failed-logins-card" title="Intentos Fallidos" value={stats?.failedLogins24h || 0} icon={AlertTriangle} onClick={() => handleEventFilterChange('FAILED_LOGIN_ATTEMPT')} />
+                 <MetricCard id="role-changes-card" title="Cambios de Rol" value={stats?.roleChanges24h || 0} icon={UserCog} onClick={() => handleEventFilterChange('USER_ROLE_CHANGED')} />
                  <DeviceDistributionChart browserData={deviceData.browserData} osData={deviceData.osData} />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                <div className="lg:col-span-3">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
                     <Card id="security-log-table">
                         <CardHeader>
                             <CardTitle>Registro de Eventos Detallado</CardTitle>
@@ -241,15 +242,17 @@ export default function SecurityAuditPage() {
                         <CardContent className="p-0">
                           <SecurityLogTable logs={logs} onRowClick={setSelectedLog} />
                         </CardContent>
-                        <CardFooter className="pt-4">
-                           <SmartPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
-                        </CardFooter>
+                        {totalPages > 1 && (
+                            <CardFooter className="pt-4">
+                               <SmartPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+                            </CardFooter>
+                        )}
                     </Card>
                 </div>
-                <div className="lg:col-span-1">
-                     <Card id="critical-events" className="h-full">
+                <div className="lg:col-span-1 space-y-6">
+                     <Card>
                          <CardHeader>
-                             <CardTitle className="text-base flex items-center gap-2"><ShieldX className="h-5 w-5 text-destructive"/>Eventos Críticos Recientes</CardTitle>
+                             <CardTitle className="text-base flex items-center gap-2">Eventos Críticos Recientes</CardTitle>
                          </CardHeader>
                          <CardContent>
                             {criticalEvents.length > 0 ? (
@@ -270,6 +273,17 @@ export default function SecurityAuditPage() {
                             ) : <p className="text-sm text-center text-muted-foreground py-4">No hay eventos críticos recientes.</p>}
                          </CardContent>
                     </Card>
+                     <Card className="h-full">
+                        <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2">Mapa de Accesos</CardTitle>
+                        </CardHeader>
+                         <CardContent className="flex items-center justify-center">
+                            <AnimatedGlobe />
+                        </CardContent>
+                        <CardFooter>
+                           <p className="text-xs text-muted-foreground text-center w-full">Visualización de accesos globales próximamente.</p>
+                        </CardFooter>
+                     </Card>
                 </div>
             </div>
             {selectedLog && <SecurityLogDetailSheet log={selectedLog} isOpen={!!selectedLog} onClose={() => setSelectedLog(null)} />}
