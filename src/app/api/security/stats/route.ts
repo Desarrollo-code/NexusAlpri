@@ -55,16 +55,18 @@ export async function GET(req: NextRequest) {
             loginsByDayMap.set(d.toISOString().split('T')[0], 0);
         }
         
-        allSecurityLogs.forEach(log => {
-            const date = log.createdAt.toISOString().split('T')[0];
-            if (loginsByDayMap.has(date)) {
-                loginsByDayMap.set(date, (loginsByDayMap.get(date) || 0) + 1);
-            }
+        if (Array.isArray(allSecurityLogs)) {
+            allSecurityLogs.forEach(log => {
+                const date = log.createdAt.toISOString().split('T')[0];
+                if (loginsByDayMap.has(date)) {
+                    loginsByDayMap.set(date, (loginsByDayMap.get(date) || 0) + 1);
+                }
 
-            const { browser, os } = parseUserAgent(log.userAgent);
-            if (browser !== 'Desconocido') browserCounts[browser] = (browserCounts[browser] || 0) + 1;
-            if (os !== 'Desconocido') osCounts[os] = (osCounts[os] || 0) + 1;
-        });
+                const { browser, os } = parseUserAgent(log.userAgent);
+                if (browser !== 'Desconocido') browserCounts[browser] = (browserCounts[browser] || 0) + 1;
+                if (os !== 'Desconocido') osCounts[os] = (osCounts[os] || 0) + 1;
+            });
+        }
         
         const loginsLast7Days = Array.from(loginsByDayMap.entries())
             .map(([date, count]) => ({ date, count }))

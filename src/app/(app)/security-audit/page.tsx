@@ -215,7 +215,7 @@ export default function SecurityAuditPage() {
                                 <PieChart>
                                     <ChartTooltip content={<ChartTooltipContent hideLabel />} />
                                     <Pie data={stats?.topBrowsers} dataKey="count" nameKey="browser" innerRadius={50} strokeWidth={2}>
-                                    {stats?.topBrowsers.map((entry, index) => (
+                                    {(stats?.topBrowsers || []).map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={browserChartConfig[entry.browser]?.color} />
                                     ))}
                                     </Pie>
@@ -234,7 +234,7 @@ export default function SecurityAuditPage() {
                                 <PieChart>
                                     <ChartTooltip content={<ChartTooltipContent hideLabel />} />
                                     <Pie data={stats?.topOS} dataKey="count" nameKey="os" innerRadius={50} strokeWidth={2}>
-                                    {stats?.topOS.map((entry, index) => (
+                                    {(stats?.topOS || []).map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={osChartConfig[entry.os]?.color} />
                                     ))}
                                     </Pie>
