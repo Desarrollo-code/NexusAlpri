@@ -39,22 +39,34 @@ const DataRow = ({ name, value, total }: { name: string, value: number, total: n
     )
 }
 
-const ChartSection = ({ title, data }: { title: string, data: any[]}) => {
+const ChartSection = ({ title, data }: { title: string, data?: { name: string, count: number }[] }) => {
+    // CORRECCIÓN: Manejar el caso en que `data` sea undefined o un array vacío.
+    if (!data || data.length === 0) {
+        return (
+            <div className="w-1/2 flex-grow">
+                <h4 className="font-medium text-sm mb-2">{title}</h4>
+                <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground text-center py-2">No hay datos.</p>
+                </div>
+            </div>
+        );
+    }
+
     const total = data.reduce((acc, item) => acc + item.count, 0);
 
     return (
         <div className="w-1/2 flex-grow">
             <h4 className="font-medium text-sm mb-2">{title}</h4>
             <div className="space-y-2">
-                 {data.length > 0 ? data.map(item => (
+                {data.map(item => (
                     <DataRow key={item.name} name={item.name} value={item.count} total={total} />
-                )) : <p className="text-xs text-muted-foreground text-center py-2">No hay datos.</p>}
+                ))}
             </div>
         </div>
     );
 };
 
-export const DeviceDistributionChart = ({ browserData, osData }: { browserData: any[], osData: any[] }) => {
+export const DeviceDistributionChart = ({ browserData, osData }: { browserData?: any[], osData?: any[] }) => {
     return (
         <Card>
             <CardHeader>

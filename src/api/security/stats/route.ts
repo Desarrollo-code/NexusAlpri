@@ -42,19 +42,18 @@ export async function GET(req: NextRequest) {
             successfulLogins24h,
             failedLogins24h,
             roleChanges24h,
-            allLogsForDeviceStats, // Fetch all logs in the period for device stats
+            allLogsForDeviceStats,
         ] = await Promise.all([
             prisma.securityLog.count({ where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: twentyFourHoursAgo } } }),
             prisma.securityLog.count({ where: { event: 'FAILED_LOGIN_ATTEMPT', createdAt: { gte: twentyFourHoursAgo } } }),
             prisma.securityLog.count({ where: { event: 'USER_ROLE_CHANGED', createdAt: { gte: twentyFourHoursAgo } } }),
             prisma.securityLog.findMany({ 
                 select: { userAgent: true },
-                // You might want to filter this by a date range in a real application
-                // For now, we take all for simplicity of the example
             }),
         ]);
         
-        const { browsers, os } = aggregateByUserAgent(allLogsForDeviceStats);
+        // CORRECCIÓN: Asegurarse de que `browsers` y `os` siempre sean arrays, incluso si `allLogsForDeviceStats` está vacío.
+        const { browsers, os } = aggregateByUserAgent(allLogsForDeviceStats || []);
         
         const stats: SecurityStats = {
             successfulLogins24h,
