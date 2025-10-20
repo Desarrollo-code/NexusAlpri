@@ -21,3 +21,5 @@ export * from './icon-shield-alert';
 export * from './icon-settings';
 export * from './icon-user-cog';
 export * from './icon-message-square';
+export * from './icon-brand-windows';
+export * from './icon-brand-linux';

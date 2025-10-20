@@ -1,5 +1,5 @@
 // src/types.ts
-import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug, AnnouncementAttachment, EnterpriseResource as PrismaResource, RecurrenceType, MotivationalMessageTriggerType, MotivationalMessage as PrismaMotivationalMessage, Course as PrismaCourse, CourseAssignment as PrismaCourseAssignment, CertificateTemplate, ChatAttachment, Process as PrismaProcess } from "@prisma/client";
+import type { Prisma } from '@prisma/client';
 
 // --- USER & AUTH ---
 export type UserRole = 'ADMINISTRATOR' | 'INSTRUCTOR' | 'STUDENT';
@@ -30,11 +30,6 @@ export interface PlatformSettings {
     passwordRequireLowercase: boolean;
     passwordRequireNumber: boolean;
     passwordRequireSpecialChar: boolean;
-    passwordExpirationDays?: number | null;
-    failedLoginLimit?: number | null;
-    lockoutDurationMinutes?: number | null;
-    logRetentionDays?: number | null;
-    hideLmsVersion?: boolean;
     resourceCategories: string[];
     primaryColor?: string;
     secondaryColor?: string;
@@ -53,7 +48,6 @@ export interface PlatformSettings {
     announcementsImageUrl?: string | null;
     publicPagesBgUrl?: string | null;
 }
-
 
 // --- NAVIGATION ---
 export interface NavItem {
@@ -119,34 +113,30 @@ export interface Module {
   lessons: Lesson[];
 }
 
-export type CoursePrerequisiteInfo = {
+export interface Course {
   id: string;
   title: string;
-} | null;
-
-export interface Course extends Omit<PrismaCourse, 'instructor' | 'prerequisite' | 'isMandatory'> {
+  description: string;
+  category?: string;
   instructor: {
       id: string;
       name: string;
       avatar: string | null;
   };
+  instructorId?: string;
+  imageUrl?: string;
   modulesCount: number;
   lessonsCount?: number;
   modules: Module[];
+  status: CourseStatus;
   isEnrolled?: boolean;
   enrollmentsCount?: number;
   averageCompletion?: number;
-  prerequisite: CoursePrerequisiteInfo;
-  userProgress?: {
-      completedAt: Date | null;
-  }[] | null;
-  prerequisiteCompleted?: boolean;
-  isMandatory: boolean;
+  publicationDate?: Date | null;
 }
 
 
 export interface EnrolledCourse extends Course {
-    enrollmentId: string;
     enrolledAt: string;
     progressPercentage?: number;
 }
@@ -176,20 +166,25 @@ export interface UserNote {
     updatedAt: string;
 }
 
-export type CourseAssignment = PrismaCourseAssignment;
-
 
 // --- RESOURCES ---
-export type ResourceType = 'FOLDER' | 'DOCUMENT' | 'GUIDE' | 'MANUAL' | 'POLICY' | 'VIDEO' | 'EXTERNAL_LINK' | 'OTHER' | 'DOCUMENTO_EDITABLE';
-export type ResourceStatus = 'ACTIVE' | 'ARCHIVED';
+export type ResourceType = 'FOLDER' | 'DOCUMENT' | 'GUIDE' | 'MANUAL' | 'POLICY' | 'VIDEO' | 'EXTERNAL_LINK' | 'OTHER';
 
-export interface EnterpriseResource extends Omit<PrismaResource, 'tags' | 'status'> {
+export interface EnterpriseResource {
+    id: string;
+    title: string;
+    type: ResourceType;
+    description?: string | null;
+    url?: string | null;
+    uploadDate: string;
+    uploaderId: string;
+    uploaderName?: string;
+    category?: string | null;
     tags: string[];
-    uploaderName: string;
+    ispublic: boolean;
     hasPin: boolean;
-    status: ResourceStatus;
-    uploader?: { id: string, name: string | null, avatar: string | null } | null;
-    sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
+    sharedWith: Pick<User, 'id' | 'name' | 'avatar'>[];
+    parentId?: string | null;
 }
 
 
@@ -209,11 +204,11 @@ export interface Announcement {
     title: string;
     content: string;
     date: string;
-    author: { id: string; name: string | null; avatar?: string | null; role?: string } | null;
-    audience: UserRole[] | 'ALL' | string;
+    author: { id: string; name: string | null; avatar?: string | null; } | null;
+    audience: UserRole[] | 'ALL';
     priority?: 'Normal' | 'Urgente';
     isPinned: boolean;
-    attachments: AnnouncementAttachment[];
+    attachments: { id: string; name: string; url: string; type: string; size: number }[];
     reads: { id: string; name: string | null; avatar?: string | null; }[];
     reactions: Reaction[];
     _count: {
@@ -231,17 +226,12 @@ export interface Notification {
     date: string; // ISO string from DB
     link?: string;
     read: boolean;
-    isMotivational?: boolean;
-    motivationalMessageId?: string | null;
-    interactiveEventId?: string | null;
-    interactiveEventOccurrence?: Date | string | null;
 }
 
 // --- CALENDAR ---
 export type EventAudienceType = 'ALL' | UserRole | 'SPECIFIC';
 
 export interface Attachment {
-    id?: string;
     name: string;
     url: string;
     type: string;
@@ -263,10 +253,6 @@ export interface CalendarEvent {
     creator?: { id: string, name: string | null };
     videoConferenceLink?: string | null;
     attachments: Attachment[];
-    recurrence: RecurrenceType;
-    recurrenceEndDate?: string | null;
-    parentId?: string | null;
-    isInteractive: boolean;
 }
 
 // --- SECURITY ---
@@ -292,61 +278,25 @@ export type SecurityStats = {
 }
 
 // --- ANALYTICS ---
-type CourseInfo = {
-    id: string;
-    title: string;
-    imageUrl: string | null;
-    value: number;
-};
-
-type UserInfo = {
-    id: string;
-    name: string | null;
-    avatar: string | null;
-    value: number;
-};
-
 export interface AdminDashboardStats {
     totalUsers: number;
     totalCourses: number;
-    totalPublishedCourses: number;
     totalEnrollments: number;
-    totalResources: number;
-    totalAnnouncements: number;
-    totalForms: number;
     usersByRole: { role: UserRole; count: number }[];
     coursesByStatus: { status: CourseStatus; count: number }[];
-    userRegistrationTrend: { date: string, newCourses: number, newEnrollments: number, newUsers: number }[];
-    averageCompletionRate: number;
-    topCoursesByEnrollment: CourseInfo[];
-    topCoursesByCompletion: CourseInfo[];
-    lowestCoursesByCompletion: CourseInfo[];
-    topStudentsByEnrollment: UserInfo[];
-    topStudentsByCompletion: UserInfo[];
-    topInstructorsByCourses: UserInfo[];
-    interactiveEventsToday?: (CalendarEvent & { hasParticipated?: boolean })[];
-    assignedCourses?: Course[];
-    securityStats?: SecurityStats;
+    recentLogins: number;
+    newEnrollmentsLast7Days: number;
+    userRegistrationTrend: { date: string, count: number }[];
 }
 
 // --- TEMPLATES ---
 export type TemplateType = 'SYSTEM' | 'USER';
-export { type LessonTemplate, type TemplateBlock, type CertificateTemplate };
-
-// --- GAMIFICATION ---
-export type UserAchievement = Prisma.UserAchievementGetPayload<{
-    include: {
-        achievement: true;
-    }
-}>;
-export { type AchievementSlug };
-
-// --- MOTIVATIONAL MESSAGES ---
-export type MotivationalMessage = PrismaMotivationalMessage;
-export { type MotivationalMessageTriggerType };
-
+export { type LessonTemplate, type TemplateBlock };
 
 // --- FORMS ---
+export type FormFieldType = 'SHORT_TEXT' | 'LONG_TEXT' | 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE';
+export type FormStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+
 export interface FormFieldOption {
   id: string;
   text: string;
@@ -368,11 +318,3 @@ export type AppForm = PrismaForm & {
     } | null;
     sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
 };
-
-// --- CHAT ---
-export { type ChatAttachment };
-
-// --- PROCESSES ---
-export type Process = PrismaProcess;
-
-export { type FormStatus, type FormFieldType, type AnnouncementAttachment, type RecurrenceType };

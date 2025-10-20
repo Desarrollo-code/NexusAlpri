@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, AlertTriangle, Shield, UserCog, ShieldCheck, MapIcon, HelpCircle } from 'lucide-react';
+import { Loader2, AlertTriangle, Shield, UserCog, ShieldCheck, MapIcon, HelpCircle, Filter } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, SecurityStats } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { useTitle } from '@/contexts/title-context';
@@ -161,7 +161,7 @@ export default function SecurityAuditPage() {
                 <div><p className="text-muted-foreground">Monitoriza la actividad y la seguridad de tu plataforma.</p></div>
                 <div className="flex flex-wrap items-center gap-2">
                     <Select value={eventFilter} onValueChange={handleEventFilterChange}>
-                        <SelectTrigger className="w-full sm:w-[200px] h-9"><SelectValue placeholder="Filtrar por evento..." /></SelectTrigger>
+                        <SelectTrigger id="security-event-filter" className="w-full sm:w-[200px] h-9"><SelectValue placeholder="Filtrar por evento..." /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="ALL">Todos los Eventos</SelectItem>
                             <SelectItem value="SUCCESSFUL_LOGIN">Inicios Exitosos</SelectItem>
@@ -175,22 +175,20 @@ export default function SecurityAuditPage() {
                 </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-                 <div className="md:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-6">
-                    <MetricCard id="successful-logins-card" title="Inicios Exitosos" value={stats?.successfulLogins24h || 0} icon={ShieldCheck} trendData={stats?.loginsLast7Days || []} gradient="bg-gradient-green" onClick={() => handleEventFilterChange('SUCCESSFUL_LOGIN')} />
-                    <MetricCard id="failed-logins-card" title="Intentos Fallidos" value={stats?.failedLogins24h || 0} icon={AlertTriangle} gradient="bg-gradient-orange" onClick={() => handleEventFilterChange('FAILED_LOGIN_ATTEMPT')} />
-                    <MetricCard id="role-changes-card" title="Cambios de Rol" value={stats?.roleChanges24h || 0} icon={UserCog} gradient="bg-gradient-blue" onClick={() => handleEventFilterChange('USER_ROLE_CHANGED')} />
-                </div>
-                <div className="md:col-span-2">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                 <MetricCard id="successful-logins-card" title="Inicios Exitosos" value={stats?.successfulLogins24h || 0} icon={ShieldCheck} trendData={stats?.loginsLast7Days || []} gradient="bg-gradient-green" onClick={() => handleEventFilterChange('SUCCESSFUL_LOGIN')} />
+                 <MetricCard id="failed-logins-card" title="Intentos Fallidos" value={stats?.failedLogins24h || 0} icon={AlertTriangle} gradient="bg-gradient-orange" onClick={() => handleEventFilterChange('FAILED_LOGIN_ATTEMPT')} />
+                 <MetricCard id="role-changes-card" title="Cambios de Rol" value={stats?.roleChanges24h || 0} icon={UserCog} gradient="bg-gradient-blue" onClick={() => handleEventFilterChange('USER_ROLE_CHANGED')} />
+                 <div className="md:col-span-1">
                     <DeviceDistributionChart browserData={deviceData.browserData} osData={deviceData.osData} />
-                </div>
+                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="md:col-span-3">
-                    <Card><CardHeader><CardTitle>Registro de Eventos Detallado</CardTitle></CardHeader><CardContent><SecurityLogTable logs={logs} onRowClick={setSelectedLog}/></CardContent></Card>
+                    <Card id="security-log-table"><CardHeader><CardTitle>Registro de Eventos Detallado</CardTitle></CardHeader><CardContent><SecurityLogTable logs={logs} onRowClick={setSelectedLog}/></CardContent></Card>
                 </div>
-                <div className="md:col-span-2">
+                <div className="md:col-span-1">
                     <Card id="access-map" className="h-full"><CardHeader><CardTitle className="text-lg flex items-center gap-2"><MapIcon className="h-5 w-5 text-primary"/>Mapa de Accesos</CardTitle></CardHeader><CardContent className="h-full min-h-[300px] flex flex-col items-center justify-center"><AnimatedGlobe /><h3 className="font-semibold text-lg text-foreground mt-4">Próximamente</h3><p className="text-sm text-muted-foreground">Visualización geográfica de inicios de sesión.</p></CardContent></Card>
                 </div>
             </div>

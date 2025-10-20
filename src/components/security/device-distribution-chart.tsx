@@ -1,12 +1,11 @@
-// src/components/analytics/security-charts.tsx
+// src/components/security/device-distribution-chart.tsx
 'use client';
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Monitor, Chrome, Apple, HelpCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import { IconBrandWindows } from '@/components/icons/icon-brand-windows';
-import { IconBrandLinux } from '@/components/icons/icon-brand-linux';
+import { IconBrandWindows, IconBrandLinux } from '@/components/icons';
 
 const iconMap: Record<string, React.ElementType> = {
     'Chrome': Chrome,
