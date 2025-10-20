@@ -190,6 +190,10 @@ export default function SecurityAuditPage() {
                     </CardContent>
                 </Card>
 
+                <DeviceDistributionChart browserData={deviceData.browserData} osData={deviceData.osData} />
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card>
                     <CardHeader>
                          <CardTitle className="text-lg flex items-center gap-2">
@@ -203,10 +207,6 @@ export default function SecurityAuditPage() {
                         <p className="text-sm text-muted-foreground">Visualización geográfica de inicios de sesión.</p>
                     </CardContent>
                 </Card>
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <DeviceDistributionChart browserData={deviceData.browserData} osData={deviceData.osData} />
 
                 <Card id="security-log-table">
                     <CardHeader>
