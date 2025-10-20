@@ -20,12 +20,13 @@ import { getEventDetails } from '@/lib/security-log-utils';
 import { cn } from '@/lib/utils';
 import { ExportToCsvButton } from '@/components/ui/export-to-csv';
 import { Skeleton } from "@/components/ui/skeleton";
+import { GlobalAccessMap } from '@/components/security/global-access-map';
+
 
 export default function SecurityAuditPage() {
     const { setPageTitle, setHeaderActions } = useTitle();
     const { user } = useAuth();
     const [logs, setLogs] = useState<SecurityLog[]>([]);
-    const [allLogsForMap, setAllLogsForMap] = useState<SecurityLog[]>([]);
     const [stats, setStats] = useState<SecurityStats | null>(null);
     const [isLoadingLogs, setIsLoadingLogs] = useState(true);
     const [isStatsLoading, setIsStatsLoading] = useState(true);
@@ -101,13 +102,14 @@ export default function SecurityAuditPage() {
 
     return (
         <>
-            <div className="grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-3 gap-6 items-start">
-                {/* Main Content Area */}
-                <div className="lg:col-span-3 xl:col-span-2 space-y-6">
+           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                
+                {/* Columna Izquierda: Línea de Tiempo */}
+                <div className="lg:col-span-4 xl:col-span-3">
                     <Card id="security-log-timeline">
                         <CardHeader>
                             <CardTitle>Registro de Eventos</CardTitle>
-                            <CardDescription>Actividad reciente en la plataforma. Haz clic en un evento para ver los detalles.</CardDescription>
+                            <CardDescription>Actividad reciente en la plataforma.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             {isLoadingLogs ? <div className="h-96 flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div> :
@@ -118,8 +120,23 @@ export default function SecurityAuditPage() {
                     </Card>
                 </div>
                 
-                 {/* Sidebar */}
-                <aside className="lg:col-span-1 xl:col-span-1 lg:sticky lg:top-24 space-y-6">
+                 {/* Columna Central: Globo y Lista de IPs */}
+                 <div className="lg:col-span-5 xl:col-span-6 space-y-6">
+                    <Card className="h-[400px]">
+                      <CardContent className="p-0 h-full">
+                        <GlobalAccessMap accessPoints={logs} />
+                      </CardContent>
+                    </Card>
+                    <Card>
+                       <CardHeader><CardTitle>Lista de IPs</CardTitle></CardHeader>
+                       <CardContent>
+                           <p className="text-muted-foreground text-sm">Próximamente: Aquí se mostrará una lista detallada y agrupada de las direcciones IP con más actividad.</p>
+                       </CardContent>
+                    </Card>
+                 </div>
+                
+                 {/* Columna Derecha: Barra Lateral de Métricas */}
+                <aside className="lg:col-span-3 xl:col-span-3 lg:sticky lg:top-24 space-y-6">
                     {isStatsLoading ? (
                         <div className="space-y-4">
                            <div className="space-y-2"><Skeleton className="h-20" /><Skeleton className="h-20" /><Skeleton className="h-20" /></div>
