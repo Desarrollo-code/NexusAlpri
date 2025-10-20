@@ -1,5 +1,5 @@
 // src/types.ts
-import type { Prisma } from '@prisma/client';
+import type { Prisma, User as PrismaUser } from '@prisma/client';
 
 // --- USER & AUTH ---
 export type UserRole = 'ADMINISTRATOR' | 'INSTRUCTOR' | 'STUDENT';

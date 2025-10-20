@@ -8,8 +8,11 @@ import { useAuth } from '@/contexts/auth-context';
 import { fontMap } from '@/lib/fonts';
 
 export const AVAILABLE_THEMES = [
-  { value: 'light', label: 'Claro' },
-  { value: 'dark', label: 'Oscuro' },
+  { value: 'light', label: 'Claro', previewClass: 'bg-slate-100' },
+  { value: 'dark', label: 'Oscuro', previewClass: 'bg-slate-900' },
+  { value: 'matrix', label: 'Matrix', previewClass: 'bg-emerald-900' },
+  { value: 'sunset', label: 'Atardecer', previewClass: 'bg-rose-900' },
+  { value: 'ocean', label: 'Océano', previewClass: 'bg-sky-100' },
 ];
 
 const hexToHsl = (hex: string): string | null => {
@@ -52,18 +55,6 @@ const StyleInjector = () => {
         if (!settings || typeof window === 'undefined') return;
 
         const root = document.documentElement;
-
-        const setVar = (varName: string, hex: string | null | undefined, isDark = false) => {
-            const hsl = hexToHsl(hex || '');
-            if (hsl) {
-                if(isDark) {
-                     // For dark mode, we just need to set the variable inside the .dark selector,
-                     // which is handled by the <style> tag approach.
-                } else {
-                    root.style.setProperty(varName, hsl);
-                }
-            }
-        };
 
         const cssVariables = `
           :root {

@@ -27,6 +27,8 @@ import { VerifiedBadge } from '@/components/ui/verified-badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { AchievementsView } from '@/components/gamification/achievements-view';
 import Link from 'next/link';
+import { useTheme } from 'next-themes';
+import { AVAILABLE_THEMES } from '@/components/theme-provider';
 
 // Gamification Level Calculation
 const calculateLevel = (xp: number) => {
@@ -350,6 +352,55 @@ const ProfileCard = ({ user, onAvatarChange, isUploading, uploadProgress }: { us
     </Card>
 )};
 
+const ThemeSelectorCard = () => {
+    const { theme, setTheme } = useTheme();
+    const { user, updateUser } = useAuth();
+  
+    const handleThemeChange = async (newTheme: string) => {
+        if (!user) {
+          setTheme(newTheme);
+          return;
+        }
+        setTheme(newTheme);
+        updateUser({ theme: newTheme });
+
+        try {
+          await fetch(`/api/users/${user.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ theme: newTheme }),
+          });
+        } catch (error) {
+          console.error('Error saving theme preference:', error);
+        }
+    };
+  
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Tema de la Interfaz</CardTitle>
+          <CardDescription>Elige tu paleta de colores preferida.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          {AVAILABLE_THEMES.map((t) => (
+            <div key={t.value} onClick={() => handleThemeChange(t.value)} className="cursor-pointer">
+              <div
+                className={cn(
+                  'rounded-lg p-2 border-2',
+                  theme === t.value ? 'border-primary' : 'border-transparent'
+                )}
+              >
+                <div className={cn('h-16 w-full rounded-md flex items-center justify-center text-xs font-semibold', t.previewClass)}>
+                  {t.label}
+                </div>
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    );
+};
+
 
 // Main component
 function ProfilePageContent() {
@@ -425,6 +476,7 @@ function ProfilePageContent() {
                         </div>
                         <div className="lg:col-span-2 space-y-6">
                             <InfoCard user={user} updateUser={updateUser} />
+                            <ThemeSelectorCard />
                             <SecurityCard 
                                 user={user} 
                                 newPassword={newPassword}

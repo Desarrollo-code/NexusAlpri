@@ -57,7 +57,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const userData = await userRes.json();
           const fetchedUser = userData.user;
           setUser(fetchedUser);
-          // Set theme based on user preference, but fall back to a default (e.g., 'dark')
           if (fetchedUser?.theme) {
             setTheme(fetchedUser.theme);
           } else {
@@ -65,14 +64,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
         } else {
           setUser(null);
-          // For unauthenticated users, default to light theme for public pages
           setTheme('light');
         }
     } catch (error) {
         console.error("[AuthContext] Fallo al obtener los datos de la sesión:", error);
         setUser(null);
         setSettings(DEFAULT_SETTINGS);
-        setTheme('dark'); // Fallback to dark on error
+        setTheme('dark');
     } finally {
         setIsLoading(false);
     }
@@ -99,7 +97,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Fallo al llamar a la API de logout", error);
     } finally {
       setUser(null);
-      setTheme('light'); // Forzar tema claro en páginas públicas tras cerrar sesión
+      setTheme('light');
       router.push('/sign-in');
     }
   }, [router, setTheme]);
@@ -109,7 +107,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!prevUser) return null;
       return { ...prevUser, ...updatedData };
     });
-    // No need to call setTheme here as the ThemeToggle component handles it optimistically
   }, []);
 
   const updateSettings = useCallback((updatedData: Partial<PlatformSettings>) => {

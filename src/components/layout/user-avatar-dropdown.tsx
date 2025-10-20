@@ -36,24 +36,17 @@ function ThemeToggle() {
       setTheme(newTheme);
       return;
     }
-    
-    // 1. Optimistic UI update (handled by next-themes `setTheme`)
     setTheme(newTheme);
-    
-    // 2. Silently update user context without causing a re-render of layouts
     updateUser({ theme: newTheme });
 
-    // 3. Save to backend in the background without blocking
     try {
       await fetch(`/api/users/${user.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ theme: newTheme }),
       });
-      // No need to process response if we are doing optimistic updates
     } catch (error) {
       console.error('Error saving theme preference:', error);
-      // Optional: Add a small toast to inform user of sync error
     }
   };
 
