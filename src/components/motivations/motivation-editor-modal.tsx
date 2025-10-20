@@ -1,4 +1,3 @@
-
 // src/components/motivations/motivation-editor-modal.tsx
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
@@ -17,13 +16,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Save, Image as ImageIcon, Video, BookOpen, Sparkles, XCircle, Replace, Users } from 'lucide-react';
+import { Loader2, Save, ImageIcon, Video, Sparkles, XCircle, Replace } from 'lucide-react';
 import type { MotivationalMessage, MotivationalMessageTriggerType, Course } from '@/types';
 import { UploadArea } from '../ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '../ui/progress';
 import Image from 'next/image';
-import { cn } from '@/lib/utils';
 
 interface MotivationEditorModalProps {
     isOpen: boolean;
@@ -37,8 +35,15 @@ const levelTriggers = Array.from({ length: 20 }, (_, i) => ({
   title: `Alcanzar Nivel ${i + 2}`,
 }));
 
+const triggerLabels: Record<MotivationalMessageTriggerType, string> = {
+    COURSE_ENROLLMENT: 'Al inscribirse a un curso',
+    COURSE_MID_PROGRESS: 'Al 50% de un curso',
+    COURSE_NEAR_COMPLETION: 'Al 90% de un curso',
+    COURSE_COMPLETION: 'Al completar un curso',
+    LEVEL_UP: 'Al subir de nivel',
+};
+
 export function MotivationEditorModal({ isOpen, onClose, message, onSave }: MotivationEditorModalProps) {
-    const { user } = useAuth();
     const { toast } = useToast();
 
     // Form state
@@ -69,13 +74,14 @@ export function MotivationEditorModal({ isOpen, onClose, message, onSave }: Moti
     }, [toast]);
 
     useEffect(() => {
-        // Reset and cleanup local preview URL when modal closes or changes
+        // Cleanup local preview URL when modal closes
         return () => {
             if (localImagePreview) {
                 URL.revokeObjectURL(localImagePreview);
             }
         };
-    }, [isOpen, message, localImagePreview]);
+    }, [isOpen, localImagePreview]);
+    
 
     useEffect(() => {
         if (isOpen) {
@@ -113,7 +119,7 @@ export function MotivationEditorModal({ isOpen, onClose, message, onSave }: Moti
         try {
             const result = await uploadWithProgress('/api/upload/settings-image', file, setUploadProgress);
             setImageUrl(result.url);
-            toast({ title: 'Imagen Subida'});
+            toast({ title: 'Imagen Subida' });
         } catch (err) {
             toast({ title: 'Error de subida', description: (err as Error).message, variant: 'destructive' });
             URL.revokeObjectURL(previewUrl);
@@ -168,14 +174,6 @@ export function MotivationEditorModal({ isOpen, onClose, message, onSave }: Moti
         'COURSE_NEAR_COMPLETION': courses,
         'COURSE_COMPLETION': courses,
         'LEVEL_UP': levelTriggers,
-    };
-
-    const triggerLabels = {
-        'COURSE_ENROLLMENT': 'Al inscribirse a un curso',
-        'COURSE_MID_PROGRESS': 'Al 50% de un curso',
-        'COURSE_NEAR_COMPLETION': 'Al 90% de un curso',
-        'COURSE_COMPLETION': 'Al completar un curso',
-        'LEVEL_UP': 'Al subir de nivel',
     };
 
     return (

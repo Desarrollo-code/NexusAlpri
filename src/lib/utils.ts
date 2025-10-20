@@ -27,12 +27,12 @@ export const getInitials = (name?: string | null): string => {
 /**
  * Gets a descriptive label for a motivational message trigger.
  * @param triggerType The type of the trigger.
- * @param triggerCourse The course associated with the trigger, if any.
+ * @param triggerEntity The associated entity (course or custom object for level).
  * @returns A user-friendly string describing the trigger.
  */
 export const getMotivationalTriggerLabel = (
   triggerType: MotivationalMessageTriggerType,
-  triggerCourse?: { title: string } | null
+  triggerEntity?: { title: string } | null
 ): string => {
   const labels: Record<MotivationalMessageTriggerType, string> = {
     COURSE_ENROLLMENT: "Al inscribirse a:",
@@ -43,13 +43,9 @@ export const getMotivationalTriggerLabel = (
   };
 
   const baseLabel = labels[triggerType] || "Disparador desconocido:";
-
-  if (triggerType.startsWith('COURSE_') && triggerCourse) {
-    return `${baseLabel} ${triggerCourse.title}`;
-  }
-
-  if (triggerType === 'LEVEL_UP' && triggerCourse?.title) {
-    return `${baseLabel} ${triggerCourse.title}`;
+  
+  if (triggerEntity?.title) {
+    return `${baseLabel} ${triggerEntity.title}`;
   }
 
   return baseLabel.replace(':', '');
