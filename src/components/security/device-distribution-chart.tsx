@@ -40,14 +40,11 @@ const DataRow = ({ name, value, total }: { name: string, value: number, total: n
 }
 
 const ChartSection = ({ title, data }: { title: string, data?: { name: string, count: number }[] }) => {
-    // CORRECCIÓN: Manejar el caso en que `data` sea undefined o un array vacío.
     if (!data || data.length === 0) {
         return (
-            <div className="w-1/2 flex-grow">
-                <h4 className="font-medium text-sm mb-2">{title}</h4>
-                <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground text-center py-2">No hay datos.</p>
-                </div>
+            <div className="w-1/2 flex-grow flex flex-col items-center justify-center">
+                <h4 className="font-medium text-sm mb-2 self-start">{title}</h4>
+                <p className="text-xs text-muted-foreground text-center flex-grow flex items-center justify-center">No hay datos.</p>
             </div>
         );
     }
