@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 'use client';
 
@@ -706,7 +705,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     <div className="flex h-full w-full">
         {/* --- Sidebar (desktop) --- */}
         {!isMobile && isSidebarVisible && (
-            <aside className="w-80 flex-shrink-0 border-r bg-card flex flex-col h-full">
+            <aside className="w-80 flex-shrink-0 border-r bg-card flex flex-col h-full sticky top-20">
                 <SidebarContent />
             </aside>
         )}
