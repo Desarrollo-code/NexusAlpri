@@ -15,16 +15,17 @@ const iconMap: Record<string, React.ElementType> = {
     'Windows': Monitor,
     'macOS': Apple,
     'Linux': Monitor,
-    'Android': Monitor, // Placeholder, se puede usar un icono de Android específico
+    'Android': Monitor,
     'iOS': Apple,
 };
 
 const CustomYAxisTick = ({ y, payload }: any) => {
     const Icon = iconMap[payload.value] || Monitor;
+    // Ajustamos la posición vertical para centrar el icono y el texto
     return (
         <g transform={`translate(0,${y})`}>
-            <foreignObject x="-70" y="-10" width="60" height="20" className="text-right">
-                <div className="flex items-center justify-end gap-1.5 w-full">
+            <foreignObject x="-70" y="-8" width="60" height="16" className="text-right overflow-visible">
+                <div className="flex items-center justify-end gap-1.5 w-full h-full">
                     <span className="text-xs text-muted-foreground truncate">{payload.value}</span>
                     <Icon className="h-3.5 w-3.5 text-foreground shrink-0" />
                 </div>
@@ -34,24 +35,25 @@ const CustomYAxisTick = ({ y, payload }: any) => {
 }
 
 const Chart = ({ data, config }: { data: any[], config: ChartConfig }) => (
-    <div className="h-48">
+    <div className="h-24"> 
         {data.length > 0 ? (
             <ChartContainer config={config} className="w-full h-full">
-                <BarChart data={data} layout="vertical" margin={{ top: 0, right: 0, left: 70, bottom: 0 }}>
+                <BarChart data={data} layout="vertical" margin={{ top: 5, right: 0, left: 70, bottom: 5 }} barCategoryGap={0}>
                     <XAxis type="number" hide />
                     <YAxis 
                         type="category" 
                         dataKey="name" 
-                        hide 
                         tickLine={false} 
                         axisLine={false} 
-                        tick={<CustomYAxisTick />} 
+                        tick={<CustomYAxisTick />}
+                        width={80} // Damos espacio suficiente para el tick
+                        interval={0}
                     />
                     <Tooltip 
                         content={<ChartTooltipContent />} 
                         cursor={{ fill: 'hsl(var(--muted))' }} 
                     />
-                    <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={12}>
+                    <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={8}>
                         {data.map((entry) => (
                             <Cell key={`cell-${entry.name}`} fill={`var(--color-${entry.name})`} />
                         ))}
@@ -61,6 +63,7 @@ const Chart = ({ data, config }: { data: any[], config: ChartConfig }) => (
         ) : <p className="text-xs text-muted-foreground h-full flex items-center justify-center">No hay datos suficientes.</p>}
     </div>
 );
+
 
 export const DeviceDistributionChart = ({ browserData, osData }: { browserData: any[], osData: any[] }) => {
     const chartConfig: ChartConfig = React.useMemo(() => {
