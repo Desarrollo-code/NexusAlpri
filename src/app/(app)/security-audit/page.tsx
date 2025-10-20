@@ -120,16 +120,17 @@ export default function SecurityAuditPage() {
                     <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
                 </Button>
             </div>
-
+            
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                {/* Fila 1: Métricas y Gráficos */}
-                <MetricCard id="successful-logins-card" title="Inicios Exitosos" value={stats?.successfulLogins24h || 0} icon={ShieldCheck} description="Últimas 24h" trendData={stats?.loginsLast7Days || []} dataKey="count" gradient="bg-gradient-green" color="hsl(var(--chart-2))" className="lg:col-span-1"/>
-                <MetricCard id="failed-logins-card" title="Intentos Fallidos" value={stats?.failedLogins24h || 0} icon={AlertTriangle} description="Últimas 24h" gradient="bg-gradient-orange" color="hsl(var(--chart-4))" className="lg:col-span-1"/>
-                <MetricCard id="role-changes-card" title="Cambios de Rol" value={stats?.roleChanges24h || 0} icon={UserCog} description="Últimas 24h" gradient="bg-gradient-blue" color="hsl(var(--chart-1))" className="lg:col-span-1"/>
+                 {/* Métricas */}
+                <div id="successful-logins-card" className="lg:col-span-1"><MetricCard title="Inicios Exitosos" value={stats?.successfulLogins24h || 0} icon={ShieldCheck} description="Últimas 24h" trendData={stats?.loginsLast7Days || []} dataKey="count" gradient="bg-gradient-green" color="hsl(var(--chart-2))" /></div>
+                <div id="failed-logins-card" className="lg:col-span-1"><MetricCard title="Intentos Fallidos" value={stats?.failedLogins24h || 0} icon={AlertTriangle} description="Últimas 24h" gradient="bg-gradient-orange" color="hsl(var(--chart-4))"/></div>
+                <div id="role-changes-card" className="lg:col-span-1"><MetricCard title="Cambios de Rol" value={stats?.roleChanges24h || 0} icon={UserCog} description="Últimas 24h" gradient="bg-gradient-blue" color="hsl(var(--chart-1))"/></div>
                 
-                <div className="lg:col-span-2 hidden lg:block"></div> {/* Espacio vacío para empujar las tarjetas a 3 */}
+                 {/* Espacio vacío para empujar las tarjetas */}
+                <div className="lg:col-span-2 hidden lg:block"></div> 
 
-                {/* Fila 2: Distribución y Mapa */}
+                {/* Distribución y Mapa */}
                 <div className="lg:col-span-2">
                     {deviceData && <DeviceDistributionChart browserData={deviceData.browserData} osData={deviceData.osData} />}
                 </div>
@@ -137,12 +138,9 @@ export default function SecurityAuditPage() {
                 <div className="lg:col-span-3">
                     <Card id="access-map" className="h-full">
                         <CardHeader>
-                            <CardTitle className="text-lg flex items-center gap-2">
-                                <MapIcon className="h-5 w-5 text-primary"/>
-                                Mapa de Accesos
-                            </CardTitle>
+                            <CardTitle className="text-lg flex items-center gap-2"><MapIcon className="h-5 w-5 text-primary"/>Mapa de Accesos</CardTitle>
                         </CardHeader>
-                        <CardContent className="h-full min-h-[250px] flex flex-col items-center justify-center">
+                        <CardContent className="h-full min-h-[300px] flex flex-col items-center justify-center">
                             <AnimatedGlobe />
                             <h3 className="font-semibold text-lg text-foreground mt-4">Próximamente</h3>
                             <p className="text-sm text-muted-foreground">Visualización geográfica de inicios de sesión.</p>
@@ -153,53 +151,50 @@ export default function SecurityAuditPage() {
             
             <Card id="security-log-table">
                 <CardHeader>
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                        <div>
-                            <CardTitle className="text-lg flex items-center gap-2">
-                                <FileText className="h-5 w-5 text-primary" />
-                                Registro de Eventos Recientes
-                            </CardTitle>
-                        </div>
-                    </div>
+                    <CardTitle className="text-lg flex items-center gap-2"><FileText className="h-5 w-5 text-primary" />Registro de Eventos Recientes</CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-[180px]">Evento</TableHead>
-                                <TableHead>Detalles</TableHead>
-                                <TableHead>Usuario</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {logs.length === 0 ? (
-                                <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground py-8">No hay registros para mostrar.</TableCell></TableRow>
-                            ) : (
-                                logs.slice(0, 5).map((log) => {
-                                    const eventDetails = getEventDetails(log.event as SecurityLogEvent, log.details);
-                                    return (
-                                        <TableRow key={log.id}>
-                                            <TableCell>
-                                              <div className="flex items-center gap-2">
-                                                {eventDetails.icon}
-                                                <span className="font-medium text-sm">{eventDetails.label}</span>
-                                              </div>
-                                            </TableCell>
-                                            <TableCell className="text-xs text-muted-foreground">{eventDetails.details}</TableCell>
-                                            <TableCell>
-                                                {log.user ? (
-                                                    <div className="flex items-center gap-2">
-                                                        <Avatar className="h-7 w-7"><AvatarImage src={log.user.avatar || undefined} /><AvatarFallback><Identicon userId={log.user.id} /></AvatarFallback></Avatar>
-                                                        <span className="text-sm font-medium">{log.user.name}</span>
-                                                    </div>
-                                                ) : <div className="text-xs font-mono text-muted-foreground">{log.emailAttempt || 'Sistema'}</div>}
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })
-                            )}
-                        </TableBody>
-                    </Table>
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="w-[180px]">Evento</TableHead>
+                                    <TableHead>Detalles</TableHead>
+                                    <TableHead>Usuario</TableHead>
+                                    <TableHead>Ubicación</TableHead>
+                                    <TableHead>Dispositivo</TableHead>
+                                    <TableHead className="text-right">Fecha</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {logs.length === 0 ? (
+                                    <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No hay registros para mostrar.</TableCell></TableRow>
+                                ) : (
+                                    logs.slice(0, 7).map((log) => {
+                                        const eventDetails = getEventDetails(log.event as SecurityLogEvent, log.details);
+                                        const device = parseUserAgent(log.userAgent);
+                                        return (
+                                            <TableRow key={log.id}>
+                                                <TableCell><div className="flex items-center gap-2">{eventDetails.icon}<span className="font-medium text-sm">{eventDetails.label}</span></div></TableCell>
+                                                <TableCell className="text-xs text-muted-foreground">{eventDetails.details}</TableCell>
+                                                <TableCell>
+                                                    {log.user ? (
+                                                        <div className="flex items-center gap-2">
+                                                            <Avatar className="h-7 w-7"><AvatarImage src={log.user.avatar || undefined} /><AvatarFallback><Identicon userId={log.user.id} /></AvatarFallback></Avatar>
+                                                            <span className="text-sm font-medium">{log.user.name}</span>
+                                                        </div>
+                                                    ) : <div className="text-xs font-mono text-muted-foreground">{log.emailAttempt || 'Sistema'}</div>}
+                                                </TableCell>
+                                                <TableCell className="text-xs text-muted-foreground">{log.ipAddress}<br/>{log.city || 'N/A'}, {log.country || 'N/A'}</TableCell>
+                                                <TableCell className="text-xs text-muted-foreground">{device.browser}<br/>{device.os}</TableCell>
+                                                <TableCell className="text-right text-xs text-muted-foreground">{new Date(log.createdAt).toLocaleString('es-CO')}</TableCell>
+                                            </TableRow>
+                                        );
+                                    })
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
                 </CardContent>
                 <CardFooter>
                    <Button variant="outline" size="sm" asChild className="w-full">
