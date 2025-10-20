@@ -7,7 +7,7 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Monitor, Globe, HelpCircle, AlertTriangle, BarChart3, TrendingUp, Users, Shield, Clock, UserCog, Map } from 'lucide-react';
+import { Loader2, Monitor, Globe, HelpCircle, AlertTriangle, BarChart3, TrendingUp, Users, Shield, Clock, UserCog, Map, Chrome, Firefox, GlobeIcon, Apple, Windows, Smartphone } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, User as AppUser, SecurityLogEvent, SecurityStats } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -22,8 +22,7 @@ import { Identicon } from '@/components/ui/identicon';
 import { useTour } from '@/contexts/tour-context';
 import { securityAuditTour } from '@/lib/tour-steps';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, BarChart, XAxis, YAxis, CartesianGrid, Bar, Cell } from '@/components/ui/chart';
-import { ResponsiveContainer } from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, BarChart, XAxis, YAxis, CartesianGrid, Bar, Cell, ResponsiveContainer } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
 import { MetricCard } from '@/components/analytics/metric-card';
 import { Separator } from '@/components/ui/separator';
@@ -72,6 +71,52 @@ const processDeviceData = (logs: SecurityLogWithUser[]) => {
         osData: toChartData(osCounts),
     };
 };
+
+const CustomYAxisTick = ({ y, payload }: any) => {
+    const iconMap: Record<string, React.ElementType> = {
+        'Chrome': Chrome,
+        'Firefox': Firefox,
+        'Safari': GlobeIcon,
+        'Edge': GlobeIcon,
+        'Windows 11/10': Windows,
+        'macOS': Apple,
+        'Linux': Monitor,
+        'Android': Smartphone,
+        'iOS': Apple,
+    };
+    const Icon = iconMap[payload.value] || Monitor;
+    return (
+        <g transform={`translate(0,${y})`}>
+            <foreignObject x="-70" y="-10" width="60" height="20" className="text-right">
+                <div className="flex items-center justify-end gap-1.5 w-full">
+                    <span className="text-xs text-muted-foreground truncate">{payload.value}</span>
+                    <Icon className="h-3.5 w-3.5 text-foreground shrink-0" />
+                </div>
+            </foreignObject>
+        </g>
+    );
+}
+
+const DeviceDistributionChart = ({ title, data, config }: { title: string, data: any[], config: ChartConfig }) => (
+    <div>
+        <h4 className="font-medium text-sm mb-2">{title}</h4>
+        {data.length > 0 ? (
+            <div className="h-40">
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={data} layout="vertical" margin={{ top: 0, right: 0, left: 70, bottom: 0 }}>
+                        <XAxis type="number" hide />
+                        <YAxis type="category" dataKey="name" hide tickLine={false} axisLine={false} tick={<CustomYAxisTick />} />
+                        <Bar dataKey="count" radius={[0, 4, 4, 0]}>
+                            {data.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={`var(--color-${entry.name})`} />
+                            ))}
+                        </Bar>
+                    </BarChart>
+                </ResponsiveContainer>
+            </div>
+        ) : <p className="text-xs text-muted-foreground h-40 flex items-center justify-center">No hay datos suficientes.</p>}
+    </div>
+);
 
 
 export default function SecurityAuditPage() {
@@ -172,6 +217,16 @@ export default function SecurityAuditPage() {
     const handlePageChange = (page: number) => {
         router.push(`${pathname}?${createQueryString({ page })}`);
     };
+    
+    const deviceChartConfig: ChartConfig = useMemo(() => {
+        const config: ChartConfig = {};
+        [...deviceData.browserData, ...deviceData.osData].forEach((item, index) => {
+            config[item.name] = {
+                color: `hsl(var(--chart-${(index % 5) + 1}))`
+            }
+        });
+        return config;
+    }, [deviceData]);
 
     if (!currentUser || currentUser.role !== 'ADMINISTRATOR') {
         return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
@@ -229,42 +284,14 @@ export default function SecurityAuditPage() {
                         <p className="text-sm text-muted-foreground">Visualización geográfica de inicios de sesión.</p>
                     </CardContent>
                 </Card>
-                 <Card className="lg:col-span-1">
+                 <Card>
                     <CardHeader><CardTitle>Distribución de Dispositivos</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
-                         <div>
-                            <h4 className="font-medium text-sm mb-2">Navegadores</h4>
-                            {deviceData.browserData.length > 0 ? (
-                                <div className="h-24">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={deviceData.browserData} layout="vertical" margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                                    <XAxis type="number" hide />
-                                    <YAxis type="category" dataKey="name" hide />
-                                    <Bar dataKey="count" fill="hsl(var(--primary))" radius={4} layout="vertical">
-                                        {deviceData.browserData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} />
-                                        ))}
-                                    </Bar>
-                                    </BarChart>
-                                </ResponsiveContainer>
-                                </div>
-                            ) : <p className="text-xs text-muted-foreground">No hay datos.</p>}
-                        </div>
-                        <Separator />
-                        <div>
-                            <h4 className="font-medium text-sm mb-2">Sistemas Operativos</h4>
-                             {deviceData.osData.length > 0 ? (
-                                <div className="h-24">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={deviceData.osData} layout="vertical" margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                                    <XAxis type="number" hide />
-                                    <YAxis type="category" dataKey="name" hide />
-                                    <Bar dataKey="count" fill="hsl(var(--chart-2))" radius={4} layout="vertical" />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                                </div>
-                            ) : <p className="text-xs text-muted-foreground">No hay datos.</p>}
-                        </div>
+                        <ChartContainer config={deviceChartConfig} className="w-full">
+                           <DeviceDistributionChart title="Navegadores" data={deviceData.browserData} config={deviceChartConfig}/>
+                           <Separator className="my-4"/>
+                           <DeviceDistributionChart title="Sistemas Operativos" data={deviceData.osData} config={deviceChartConfig}/>
+                        </ChartContainer>
                     </CardContent>
                  </Card>
              </div>
