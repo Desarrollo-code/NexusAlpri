@@ -122,11 +122,11 @@ export default function SecurityAuditPage() {
                 
                  {/* Columna Central: Globo y Lista de IPs */}
                  <div className="lg:col-span-5 xl:col-span-6 space-y-6">
-                    <Card className="h-[400px] overflow-hidden bg-card/80 backdrop-blur-lg">
-                        <CardHeader>
+                    <Card className="h-[400px] bg-card/80 backdrop-blur-lg p-4">
+                        <CardHeader className="p-0 mb-2">
                             <CardTitle>Mapa de Accesos Global</CardTitle>
                         </CardHeader>
-                         <CardContent className="p-0 h-full">
+                         <CardContent className="p-0 h-[calc(100%-48px)]">
                             <GlobalAccessMap accessPoints={logs} />
                         </CardContent>
                     </Card>
