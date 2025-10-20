@@ -1,7 +1,7 @@
 // src/app/(app)/security-audit/page.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
-import { getEventDetails } from '@/lib/security-log-utils';
+import { getEventDetails, parseUserAgent } from '@/lib/security-log-utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTitle } from '@/contexts/title-context';
 import { Identicon } from '@/components/ui/identicon';
@@ -39,7 +39,7 @@ export default function SecurityAuditPage() {
     const [stats, setStats] = useState<SecurityStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [deviceData, setDeviceData] = useState<{ browserData: any[], osData: any[] }>({ browserData: [], osData: [] });
+    const [deviceData, setDeviceData] = useState<{ browserData: any[], osData: any[] } | null>(null);
     
     useEffect(() => {
         setPageTitle('Auditoría de Seguridad');
@@ -50,20 +50,35 @@ export default function SecurityAuditPage() {
         setIsLoading(true);
         setError(null);
         try {
-            const [tableResponse, statsResponse] = await Promise.all([
-                fetch(`/api/security/logs?all=true`), // Fetch all logs for client-side processing
+            const [logsResponse, statsResponse] = await Promise.all([
+                fetch(`/api/security/logs?all=true`),
                 fetch('/api/security/stats')
             ]);
             
-            if (!tableResponse.ok) throw new Error((await tableResponse.json()).message || 'Failed to fetch security logs');
+            if (!logsResponse.ok) throw new Error((await logsResponse.json()).message || 'Failed to fetch security logs');
             if (!statsResponse.ok) throw new Error((await statsResponse.json()).message || 'Failed to fetch security stats');
             
-            const tableData = await tableResponse.json();
+            const logsData = await logsResponse.json();
             const statsData = await statsResponse.json();
 
-            setLogs(tableData.logs || []);
-            setTotalLogs(tableData.totalLogs || 0);
+            setLogs(logsData.logs || []);
+            setTotalLogs(logsData.totalLogs || 0);
             setStats(statsData);
+
+            if (logsData.logs) {
+                const browsers = new Map<string, number>();
+                const oses = new Map<string, number>();
+
+                logsData.logs.forEach((log: SecurityLogWithUser) => {
+                    const { browser, os } = parseUserAgent(log.userAgent);
+                    if (browser !== 'Desconocido') browsers.set(browser, (browsers.get(browser) || 0) + 1);
+                    if (os !== 'Desconocido') oses.set(os, (oses.get(os) || 0) + 1);
+                });
+                
+                const browserData = Array.from(browsers.entries()).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count).slice(0, 5);
+                const osData = Array.from(oses.entries()).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count).slice(0, 5);
+                setDeviceData({ browserData, osData });
+            }
 
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Unknown error';
@@ -106,28 +121,34 @@ export default function SecurityAuditPage() {
                 </Button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                <div className="xl:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-6" id="security-stats-cards">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 lg:col-span-3" id="security-stats-cards">
                     <MetricCard title="Inicios Exitosos" value={stats?.successfulLogins24h || 0} icon={ShieldCheck} description="Últimas 24h" trendData={stats?.loginsLast7Days || []} dataKey="count" gradient="bg-gradient-green" color="hsl(var(--chart-2))" />
                     <MetricCard title="Intentos Fallidos" value={stats?.failedLogins24h || 0} icon={AlertTriangle} description="Últimas 24h" gradient="bg-gradient-orange" color="hsl(var(--chart-4))" />
                     <MetricCard title="Cambios de Rol" value={stats?.roleChanges24h || 0} icon={UserCog} description="Últimas 24h" gradient="bg-gradient-blue" color="hsl(var(--chart-1))" />
                 </div>
                 
-                 <Card id="access-map" className="lg:row-span-2 xl:row-span-1 xl:col-span-1">
-                    <CardHeader>
-                         <CardTitle className="text-lg flex items-center gap-2">
-                             <MapIcon className="h-5 w-5 text-primary"/>
-                             Mapa de Accesos
-                         </CardTitle>
-                    </CardHeader>
-                    <CardContent className="h-56 flex flex-col items-center justify-center">
-                        <AnimatedGlobe />
-                        <h3 className="font-semibold text-lg text-foreground mt-4">Próximamente</h3>
-                        <p className="text-sm text-muted-foreground">Visualización geográfica de inicios de sesión.</p>
-                    </CardContent>
-                </Card>
-
-                <DeviceDistributionChart logs={logs} />
+                 {deviceData && (
+                    <div className="lg:col-span-1">
+                        <DeviceDistributionChart browserData={deviceData.browserData} osData={deviceData.osData} />
+                    </div>
+                 )}
+                
+                 <div className="lg:col-span-2">
+                    <Card id="access-map" className="h-full">
+                        <CardHeader>
+                            <CardTitle className="text-lg flex items-center gap-2">
+                                <MapIcon className="h-5 w-5 text-primary"/>
+                                Mapa de Accesos
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="h-56 flex flex-col items-center justify-center">
+                            <AnimatedGlobe />
+                            <h3 className="font-semibold text-lg text-foreground mt-4">Próximamente</h3>
+                            <p className="text-sm text-muted-foreground">Visualización geográfica de inicios de sesión.</p>
+                        </CardContent>
+                    </Card>
+                 </div>
             </div>
             
             <Card id="security-log-table">

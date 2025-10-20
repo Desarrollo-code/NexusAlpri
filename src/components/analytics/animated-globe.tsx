@@ -59,7 +59,7 @@ export function AnimatedGlobe() {
             cx="50"
             cy="50"
             rx={globeRadius}
-            ry={globeRadius * Math.cos((i * 30 * Math.PI) / 180)}
+            ry={globeRadius * Math.abs(Math.cos((i * 30 * Math.PI) / 180))}
             fill="none"
             stroke="hsl(var(--primary) / 0.2)"
             strokeWidth="0.3"
