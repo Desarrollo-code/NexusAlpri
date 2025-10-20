@@ -7,7 +7,7 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Monitor, Globe, HelpCircle, AlertTriangle, BarChart3, Users, Shield, Clock, UserCog, Map as MapIcon, Chrome, Apple, Smartphone, GlobeIcon, ArrowRight, UserPlus, ShieldCheck } from 'lucide-react';
+import { Loader2, Monitor, Globe, HelpCircle, AlertTriangle, BarChart3, Users, Shield, Clock, UserCog, Map as MapIcon, Chrome, Apple, Smartphone, GlobeIcon, ArrowRight, UserPlus, ShieldCheck, FileText, Map } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, User as AppUser, SecurityLogEvent, SecurityStats } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -30,7 +30,7 @@ interface SecurityLogWithUser extends AppSecurityLog {
     user: Pick<AppUser, 'id' | 'name' | 'avatar'> | null;
 }
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 10;
 
 const ALL_EVENTS: { value: SecurityLogEvent | 'ALL', label: string }[] = [
     { value: 'ALL', label: 'Todos los Eventos' },
@@ -81,8 +81,7 @@ export default function SecurityAuditPage() {
     const [logs, setLogs] = useState<SecurityLogWithUser[]>([]);
     const [totalLogs, setTotalLogs] = useState(0);
     const [stats, setStats] = useState<SecurityStats | null>(null);
-    const [isLoadingLogs, setIsLoadingLogs] = useState(true);
-    const [isLoadingStats, setIsLoadingStats] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [deviceData, setDeviceData] = useState<{ browserData: any[], osData: any[] }>({ browserData: [], osData: [] });
     
@@ -95,54 +94,45 @@ export default function SecurityAuditPage() {
         startTour('securityAudit', securityAuditTour);
     }, [setPageTitle, startTour]);
 
-    const fetchLogsAndDeviceData = useCallback(async () => {
-        setIsLoadingLogs(true);
+    const fetchData = useCallback(async () => {
+        setIsLoading(true);
         setError(null);
         try {
             const tableParams = new URLSearchParams(searchParams.toString());
             tableParams.set('pageSize', String(PAGE_SIZE));
-            const tableResponse = await fetch(`/api/security/logs?${tableParams.toString()}`);
+
+            const [tableResponse, statsResponse] = await Promise.all([
+                fetch(`/api/security/logs?${tableParams.toString()}`),
+                fetch('/api/security/stats')
+            ]);
+            
             if (!tableResponse.ok) throw new Error((await tableResponse.json()).message || 'Failed to fetch security logs');
+            if (!statsResponse.ok) throw new Error((await statsResponse.json()).message || 'Failed to fetch security stats');
+            
             const tableData = await tableResponse.json();
+            const statsData = await statsResponse.json();
+
             setLogs(tableData.logs || []);
             setTotalLogs(tableData.totalLogs || 0);
-
-            const allLogsResponse = await fetch(`/api/security/logs?all=true`);
-            if (allLogsResponse.ok) {
-                const allLogsData = await allLogsResponse.json();
-                setDeviceData(processDeviceData(allLogsData.logs || []));
-            }
+            setStats(statsData);
+            setDeviceData(processDeviceData(tableData.logs || []));
 
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Unknown error fetching logs');
-            toast({ title: 'Error', description: err instanceof Error ? err.message : 'Could not load security logs.', variant: 'destructive' });
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+            setError(errorMessage);
+            toast({ title: 'Error', description: errorMessage, variant: 'destructive' });
         } finally {
-            setIsLoadingLogs(false);
+            setIsLoading(false);
         }
     }, [searchParams, toast]);
     
-    const fetchStats = useCallback(async () => {
-        setIsLoadingStats(true);
-        try {
-            const response = await fetch('/api/security/stats');
-            if (!response.ok) throw new Error((await response.json()).message || 'Failed to fetch security stats');
-            const data = await response.json();
-            setStats(data);
-        } catch (err) {
-             console.error("Stats fetching error:", err);
-        } finally {
-            setIsLoadingStats(false);
-        }
-    }, []);
-
     useEffect(() => {
         if (currentUser?.role === 'ADMINISTRATOR') {
-            fetchLogsAndDeviceData();
-            fetchStats();
+            fetchData();
         } else if (currentUser) {
              router.push('/dashboard');
         }
-    }, [currentUser, router, fetchLogsAndDeviceData, fetchStats]);
+    }, [currentUser, router, fetchData]);
     
     const createQueryString = useCallback((paramsToUpdate: Record<string, string | number | null>) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -161,37 +151,72 @@ export default function SecurityAuditPage() {
         router.push(`${pathname}?${createQueryString({ page })}`);
     };
     
-    if (!currentUser || currentUser.role !== 'ADMINISTRATOR') {
+    if (isLoading) {
         return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
     }
     
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center h-full text-center p-6">
+                <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
+                <h2 className="text-xl font-semibold">Error al Cargar Datos</h2>
+                <p className="text-muted-foreground">{error}</p>
+                <Button onClick={fetchData} className="mt-4">Reintentar</Button>
+            </div>
+        );
+    }
+
     return (
-        <div className="space-y-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div className="space-y-1">
-                    <p className="text-muted-foreground">Revisa los eventos de seguridad importantes de la plataforma.</p>
-                </div>
+        <div className="space-y-6">
+             <div className="flex items-center justify-between">
+                <p className="text-muted-foreground">Monitoriza la actividad y la seguridad de tu plataforma.</p>
                 <Button variant="outline" size="sm" onClick={() => forceStartTour('securityAudit', securityAuditTour)}>
                     <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
                 </Button>
             </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card id="security-stats-cards">
+                    <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                            <Shield className="h-5 w-5 text-primary"/>
+                            Actividad Reciente
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <MetricCard title="Inicios Exitosos" value={stats?.successfulLogins24h || 0} icon={ShieldCheck} description="Últimas 24h" trendData={stats?.loginsLast7Days || []} dataKey="count" gradient="bg-gradient-green" color="hsl(var(--chart-2))" />
+                        <MetricCard title="Intentos Fallidos" value={stats?.failedLogins24h || 0} icon={AlertTriangle} description="Últimas 24h" gradient="bg-gradient-orange" color="hsl(var(--chart-4))" />
+                        <MetricCard title="Cambios de Rol" value={stats?.roleChanges24h || 0} icon={UserCog} description="Últimas 24h" gradient="bg-gradient-blue" color="hsl(var(--chart-1))" />
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                         <CardTitle className="text-lg flex items-center gap-2">
+                             <Map className="h-5 w-5 text-primary"/>
+                             Mapa de Accesos
+                         </CardTitle>
+                    </CardHeader>
+                    <CardContent className="h-40 flex flex-col items-center justify-center bg-muted/30 rounded-lg">
+                        <MapIcon className="h-10 w-10 text-muted-foreground mb-2"/>
+                        <h3 className="font-semibold text-lg text-foreground">Próximamente</h3>
+                        <p className="text-sm text-muted-foreground">Visualización geográfica de inicios de sesión.</p>
+                    </CardContent>
+                </Card>
+            </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                 <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4" id="security-stats-cards">
-                    <MetricCard title="Inicios Exitosos" value={stats?.successfulLogins24h || 0} icon={ShieldCheck} description="Últimas 24h" trendData={stats?.loginsLast7Days || []} dataKey="count" gradient="bg-gradient-green" color="hsl(var(--chart-2))" />
-                    <MetricCard title="Intentos Fallidos" value={stats?.failedLogins24h || 0} icon={AlertTriangle} description="Últimas 24h" gradient="bg-gradient-orange" color="hsl(var(--chart-4))" />
-                    <MetricCard title="Cambios de Rol" value={stats?.roleChanges24h || 0} icon={UserCog} description="Últimas 24h" gradient="bg-gradient-blue" color="hsl(var(--chart-1))" />
-                </div>
-                 <DeviceDistributionChart browserData={deviceData.browserData} osData={deviceData.osData} />
-             </div>
-            
-            <TooltipProvider>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <DeviceDistributionChart browserData={deviceData.browserData} osData={deviceData.osData} />
+
                 <Card id="security-log-table">
                     <CardHeader>
                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                             <div>
-                                <CardTitle>Registro de Eventos Detallado</CardTitle>
-                                <CardDescription>Mostrando {totalLogs} registros de seguridad.</CardDescription>
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                    <FileText className="h-5 w-5 text-primary" />
+                                    Registro de Eventos Detallado
+                                </CardTitle>
+                                <CardDescription>Mostrando los últimos {logs.length} de {totalLogs} registros.</CardDescription>
                             </div>
                             <div id="security-event-filter">
                                 <Select value={activeFilter} onValueChange={handleFilterChange}>
@@ -203,58 +228,38 @@ export default function SecurityAuditPage() {
                             </div>
                         </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-0">
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead className="w-[200px]">Evento</TableHead>
+                                    <TableHead className="w-[180px]">Evento</TableHead>
                                     <TableHead>Detalles</TableHead>
-                                    <TableHead>Usuario Afectado</TableHead>
-                                    <TableHead>Dispositivo</TableHead>
-                                    <TableHead>Ubicación</TableHead>
-                                    <TableHead className="text-right">Fecha y Hora</TableHead>
+                                    <TableHead>Usuario</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {isLoadingLogs ? (
-                                    [...Array(5)].map((_, i) => (
-                                        <TableRow key={i}>
-                                            <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                                            <TableCell><Skeleton className="h-4 w-full" /></TableCell>
-                                            <TableCell><div className="flex items-center gap-2"><Skeleton className="h-8 w-8 rounded-full" /><Skeleton className="h-4 w-24" /></div></TableCell>
-                                            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                                            <TableCell className="text-right"><Skeleton className="h-4 w-32" /></TableCell>
-                                        </TableRow>
-                                    ))
-                                ) : error ? (
-                                    <TableRow><TableCell colSpan={6} className="text-center text-destructive">{error}</TableCell></TableRow>
-                                ) : logs.length === 0 ? (
-                                    <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No hay registros para el filtro seleccionado.</TableCell></TableRow>
+                                {logs.length === 0 ? (
+                                    <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground py-8">No hay registros para el filtro seleccionado.</TableCell></TableRow>
                                 ) : (
                                     logs.map((log) => {
                                         const eventDetails = getEventDetails(log.event as SecurityLogEvent, log.details);
-                                        const { browser, os } = parseUserAgent(log.userAgent);
                                         return (
                                             <TableRow key={log.id}>
-                                                <TableCell><div className="flex items-center gap-2">{eventDetails.icon}<Badge variant={eventDetails.variant}>{eventDetails.label}</Badge></div></TableCell>
+                                                <TableCell>
+                                                  <div className="flex items-center gap-2">
+                                                    {eventDetails.icon}
+                                                    <Badge variant={eventDetails.variant}>{eventDetails.label}</Badge>
+                                                  </div>
+                                                </TableCell>
                                                 <TableCell className="text-xs text-muted-foreground">{eventDetails.details}</TableCell>
                                                 <TableCell>
                                                     {log.user ? (
                                                         <div className="flex items-center gap-2">
-                                                            <Avatar className="h-8 w-8"><AvatarImage src={log.user.avatar || undefined} /><AvatarFallback><Identicon userId={log.user.id} /></AvatarFallback></Avatar>
-                                                            <Link href={`/users?search=${encodeURIComponent(log.user.name || '')}`} className="font-medium hover:underline">{log.user.name}</Link>
+                                                            <Avatar className="h-7 w-7"><AvatarImage src={log.user.avatar || undefined} /><AvatarFallback><Identicon userId={log.user.id} /></AvatarFallback></Avatar>
+                                                            <span className="text-sm font-medium">{log.user.name}</span>
                                                         </div>
-                                                    ) : <div className="flex items-center gap-2 text-muted-foreground"><div className="h-8 w-8 flex items-center justify-center rounded-full bg-muted"><UserPlus className="h-4 w-4"/></div><span className="text-xs font-mono">{log.emailAttempt || 'Desconocido'}</span></div>}
+                                                    ) : <div className="flex items-center gap-2 text-muted-foreground"><div className="h-7 w-7 flex items-center justify-center rounded-full bg-muted"><UserPlus className="h-4 w-4"/></div><span className="text-xs font-mono">{log.emailAttempt || 'Desconocido'}</span></div>}
                                                 </TableCell>
-                                                <TableCell>
-                                                    <Tooltip>
-                                                        <TooltipTrigger><div className="flex items-center gap-2 text-xs"><Monitor className="h-4 w-4 text-muted-foreground"/> {browser} en {os}</div></TooltipTrigger>
-                                                        <TooltipContent className="max-w-xs break-words"><p>{log.userAgent}</p></TooltipContent>
-                                                    </Tooltip>
-                                                </TableCell>
-                                                <TableCell><div className="flex items-center gap-2 text-xs"><Globe className="h-4 w-4 text-muted-foreground"/>{log.city && log.country ? `${log.city}, ${log.country}` : (log.ipAddress || 'Desconocida')}</div></TableCell>
-                                                <TableCell className="text-right text-xs text-muted-foreground">{new Date(log.createdAt).toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'medium', timeStyle: 'short' })}</TableCell>
                                             </TableRow>
                                         );
                                     })
@@ -262,9 +267,15 @@ export default function SecurityAuditPage() {
                             </TableBody>
                         </Table>
                     </CardContent>
-                    {totalPages > 1 && (<CardFooter><SmartPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} /></CardFooter>)}
+                    <CardFooter>
+                       <Button variant="outline" size="sm" asChild className="w-full">
+                           <Link href="/security-audit/full-log">
+                                Ver todos los eventos <ArrowRight className="ml-2 h-4 w-4"/>
+                           </Link>
+                       </Button>
+                    </CardFooter>
                 </Card>
-            </TooltipProvider>
+            </div>
         </div>
     );
 }

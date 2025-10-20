@@ -1,20 +1,19 @@
-
 // src/components/analytics/security-charts.tsx
 'use client';
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { ChartContainer, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
-import { Chrome, Apple, Monitor, Globe } from 'lucide-react';
+import { Chrome, Apple, Monitor } from 'lucide-react';
 import { BrandWindows, BrandLinux } from 'tabler-icons-react';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
 const iconMap: Record<string, React.ElementType> = {
     'Chrome': Chrome,
-    'Firefox': Globe, 
-    'Safari': Globe,
-    'Edge': Globe,
+    'Firefox': Monitor, 
+    'Safari': Apple,
+    'Edge': Monitor,
     'Windows': BrandWindows,
     'macOS': Apple,
     'Linux': BrandLinux,
@@ -36,10 +35,21 @@ const CustomYAxisTick = ({ y, payload }: any) => {
     );
 }
 
+const chartConfig = {
+    count: {
+        label: "Cantidad",
+    },
+    Chrome: { color: "hsl(var(--chart-1))" },
+    Windows: { color: "hsl(var(--chart-2))" },
+    macOS: { color: "hsl(var(--chart-3))" },
+    Android: { color: "hsl(var(--chart-4))" },
+    Linux: { color: "hsl(var(--chart-5))" },
+} satisfies ChartConfig
+
 const Chart = ({ data }: { data: any[] }) => (
     <div className="h-24"> 
         {data.length > 0 ? (
-            <ChartContainer config={{ count: { label: "Cantidad" } }} className="w-full h-full">
+            <ChartContainer config={chartConfig} className="w-full h-full">
                 <BarChart data={data} layout="vertical" margin={{ top: 5, right: 0, left: 70, bottom: 5 }} barSize={8} barGap={0}>
                     <XAxis type="number" hide />
                     <YAxis 
@@ -57,7 +67,7 @@ const Chart = ({ data }: { data: any[] }) => (
                     />
                     <Bar dataKey="count" radius={[0, 4, 4, 0]}>
                         {data.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={`hsl(var(--chart-${(index % 5) + 1}))`} />
+                            <Cell key={`cell-${index}`} fill={cn(chartConfig[entry.name as keyof typeof chartConfig]?.color || 'hsl(var(--chart-1))')} />
                         ))}
                     </Bar>
                 </BarChart>
