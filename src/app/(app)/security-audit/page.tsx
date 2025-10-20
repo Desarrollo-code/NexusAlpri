@@ -22,9 +22,9 @@ import { Identicon } from '@/components/ui/identicon';
 import { useTour } from '@/contexts/tour-context';
 import { securityAuditTour } from '@/lib/tour-steps';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, BarChart, XAxis, YAxis, CartesianGrid, Bar, Cell, ResponsiveContainer } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, BarChart, XAxis, YAxis, CartesianGrid, Bar, Cell } from '@/components/ui/chart';
+import { ResponsiveContainer } from 'recharts';
 import type { ChartConfig } from '@/components/ui/chart';
-import { MetricCard } from '@/components/analytics/metric-card';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -75,10 +75,10 @@ const processDeviceData = (logs: SecurityLogWithUser[]) => {
 const CustomYAxisTick = ({ y, payload }: any) => {
     const iconMap: Record<string, React.ElementType> = {
         'Chrome': Chrome,
-        'Firefox': Globe, // Reemplazado
+        'Firefox': Globe, 
         'Safari': Globe,
         'Edge': Globe,
-        'Windows': Monitor, // Reemplazado
+        'Windows': Monitor,
         'macOS': Apple,
         'Linux': Monitor,
         'Android': Smartphone,
@@ -119,6 +119,18 @@ const DeviceDistributionChart = ({ title, data, config }: { title: string, data:
     </div>
 );
 
+const MetricCard = ({ title, value, icon: Icon, description }: { title: string; value: number | string; icon: React.ElementType; description: string; }) => (
+    <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{title}</CardTitle>
+            <Icon className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+            <div className="text-2xl font-bold">{value}</div>
+            <p className="text-xs text-muted-foreground">{description}</p>
+        </CardContent>
+    </Card>
+);
 
 export default function SecurityAuditPage() {
     const { user: currentUser } = useAuth();
@@ -146,25 +158,26 @@ export default function SecurityAuditPage() {
         startTour('securityAudit', securityAuditTour);
     }, [setPageTitle, startTour]);
 
-    const fetchLogs = useCallback(async (fetchAllForChart = false) => {
+    const fetchLogsAndDeviceData = useCallback(async () => {
         setIsLoadingLogs(true);
         setError(null);
         try {
-            const params = new URLSearchParams(searchParams.toString());
-            params.set('pageSize', String(PAGE_SIZE));
-             if (fetchAllForChart) {
-                params.set('all', 'true');
+            // Fetch paginated logs for the table
+            const tableParams = new URLSearchParams(searchParams.toString());
+            tableParams.set('pageSize', String(PAGE_SIZE));
+            const tableResponse = await fetch(`/api/security/logs?${tableParams.toString()}`);
+            if (!tableResponse.ok) throw new Error((await tableResponse.json()).message || 'Failed to fetch security logs');
+            const tableData = await tableResponse.json();
+            setLogs(tableData.logs || []);
+            setTotalLogs(tableData.totalLogs || 0);
+
+            // Fetch all logs for device data calculation (can be optimized in the future)
+            const allLogsResponse = await fetch(`/api/security/logs?all=true`);
+            if (allLogsResponse.ok) {
+                const allLogsData = await allLogsResponse.json();
+                setDeviceData(processDeviceData(allLogsData.logs || []));
             }
-            const response = await fetch(`/api/security/logs?${params.toString()}`);
-            if (!response.ok) throw new Error((await response.json()).message || 'Failed to fetch security logs');
-            const data = await response.json();
-            
-            if (fetchAllForChart) {
-                 setDeviceData(processDeviceData(data.logs || []));
-            } else {
-                setLogs(data.logs || []);
-                setTotalLogs(data.totalLogs || 0);
-            }
+
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Unknown error fetching logs');
             toast({ title: 'Error', description: err instanceof Error ? err.message : 'Could not load security logs.', variant: 'destructive' });
@@ -177,7 +190,7 @@ export default function SecurityAuditPage() {
         setIsLoadingStats(true);
         try {
             const response = await fetch('/api/security/stats');
-             if (!response.ok) throw new Error((await response.json()).message || 'Failed to fetch security stats');
+            if (!response.ok) throw new Error((await response.json()).message || 'Failed to fetch security stats');
             const data = await response.json();
             setStats(data);
         } catch (err) {
@@ -189,13 +202,12 @@ export default function SecurityAuditPage() {
 
     useEffect(() => {
         if (currentUser?.role === 'ADMINISTRATOR') {
-            fetchLogs();
+            fetchLogsAndDeviceData();
             fetchStats();
-            fetchLogs(true); // Fetch all for charts
         } else if (currentUser) {
              router.push('/dashboard');
         }
-    }, [currentUser, router, fetchLogs, fetchStats]);
+    }, [currentUser, router, fetchLogsAndDeviceData, fetchStats]);
     
     const createQueryString = useCallback((paramsToUpdate: Record<string, string | number | null>) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -239,37 +251,17 @@ export default function SecurityAuditPage() {
                 </Button>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4" id="security-stats-cards">
-                {isLoadingStats ? [...Array(4)].map((_, i) => <Skeleton key={i} className="h-28" />) : <>
-                    <MetricCard title="Inicios de Sesión Exitosos" value={stats?.successfulLogins24h || 0} icon={Users} description="Últimas 24h" gradient="bg-gradient-green" />
-                    <MetricCard title="Intentos de Acceso Fallidos" value={stats?.failedLogins24h || 0} icon={AlertTriangle} description="Últimas 24h" gradient="bg-gradient-orange" />
-                    <MetricCard title="Cambios de Roles" value={stats?.roleChanges24h || 0} icon={UserCog} description="Últimas 24h" gradient="bg-gradient-purple" />
-                    <MetricCard title="Eventos Críticos" value={stats?.criticalEvents24h || 0} icon={Shield} description="Últimas 24h" gradient="bg-gradient-blue" />
-                </>}
-            </div>
-
-             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <Card className="lg:col-span-1">
                     <CardHeader><CardTitle>Actividad Reciente</CardTitle></CardHeader>
                     <CardContent>
-                        {isLoadingLogs ? (
-                            <div className="space-y-4">{[...Array(5)].map((_, i) => (<div key={i} className="flex items-center gap-3"><Skeleton className="h-9 w-9 rounded-full" /><div className="space-y-1.5"><Skeleton className="h-4 w-32" /><Skeleton className="h-3 w-24" /></div></div>))}</div>
-                        ) : (
-                            <ul className="space-y-4">
-                                {logs.slice(0, 5).map(log => {
-                                   const eventUI = getEventDetails(log.event as SecurityLogEvent, log.details);
-                                   return (
-                                    <li key={log.id} className="flex items-center gap-3">
-                                        <div className="p-2 bg-muted rounded-full">{eventUI.icon}</div>
-                                        <div className="text-sm">
-                                            <p className="font-semibold">{log.user?.name || log.emailAttempt}</p>
-                                            <p className="text-muted-foreground">{eventUI.label}</p>
-                                        </div>
-                                    </li>
-                                   )
-                                })}
-                            </ul>
-                        )}
+                        {isLoadingStats ? <div className="space-y-4">{[...Array(4)].map((_, i) => (<div key={i} className="flex items-center gap-3"><Skeleton className="h-9 w-9 rounded-full" /><div className="space-y-1.5"><Skeleton className="h-4 w-32" /><Skeleton className="h-3 w-24" /></div></div>))}</div> :
+                            <div className="space-y-2">
+                                <MetricCard title="Inicios de Sesión Exitosos" value={stats?.successfulLogins24h.toLocaleString() || '0'} icon={Users} description="Últimas 24h" />
+                                <MetricCard title="Intentos de Acceso Fallidos" value={stats?.failedLogins24h.toLocaleString() || '0'} icon={AlertTriangle} description="Últimas 24h" />
+                                <MetricCard title="Cambios de Roles" value={stats?.roleChanges24h.toLocaleString() || '0'} icon={UserCog} description="Últimas 24h" />
+                            </div>
+                        }
                     </CardContent>
                 </Card>
                 <Card className="lg:col-span-1 flex flex-col items-center justify-center text-center">
@@ -283,11 +275,13 @@ export default function SecurityAuditPage() {
                  <Card>
                     <CardHeader><CardTitle>Distribución de Dispositivos</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
-                        <ChartContainer config={deviceChartConfig} className="w-full">
+                       {isLoadingLogs ? <div className="flex justify-center items-center h-48"><Loader2 className="animate-spin" /></div> :
+                         <ChartContainer config={deviceChartConfig} className="w-full">
                            <DeviceDistributionChart title="Navegadores" data={deviceData.browserData} config={deviceChartConfig}/>
                            <Separator className="my-4"/>
                            <DeviceDistributionChart title="Sistemas Operativos" data={deviceData.osData} config={deviceChartConfig}/>
                         </ChartContainer>
+                       }
                     </CardContent>
                  </Card>
              </div>
