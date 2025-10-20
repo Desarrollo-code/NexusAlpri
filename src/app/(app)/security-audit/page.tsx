@@ -104,7 +104,6 @@ export default function SecurityAuditPage() {
         <>
            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 
-                {/* Columna Izquierda: Línea de Tiempo */}
                 <div className="lg:col-span-4 xl:col-span-3">
                     <Card id="security-log-timeline" className="bg-card/80 backdrop-blur-lg">
                         <CardHeader>
@@ -120,13 +119,12 @@ export default function SecurityAuditPage() {
                     </Card>
                 </div>
                 
-                 {/* Columna Central: Globo y Lista de IPs */}
                  <div className="lg:col-span-5 xl:col-span-6 space-y-6">
-                    <Card className="h-[400px] bg-card/80 backdrop-blur-lg p-4">
+                    <Card className="h-[400px] flex flex-col bg-card/80 backdrop-blur-lg p-4">
                         <CardHeader className="p-0 mb-2">
                             <CardTitle>Mapa de Accesos Global</CardTitle>
                         </CardHeader>
-                         <CardContent className="p-0 h-[calc(100%-48px)]">
+                         <CardContent className="p-0 flex-grow">
                             <GlobalAccessMap accessPoints={logs} />
                         </CardContent>
                     </Card>
@@ -154,7 +152,6 @@ export default function SecurityAuditPage() {
                     </Card>
                  </div>
                 
-                 {/* Columna Derecha: Barra Lateral de Métricas */}
                 <aside className="lg:col-span-3 xl:col-span-3 lg:sticky lg:top-24 space-y-6">
                     <Card className="bg-card/80 backdrop-blur-lg">
                         <CardContent className="p-4 space-y-4">

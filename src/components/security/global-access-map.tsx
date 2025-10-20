@@ -49,7 +49,7 @@ export const GlobalAccessMap: React.FC<GlobalAccessMapProps> = ({ accessPoints }
         if (globeEl.current) {
             globeEl.current.controls().autoRotate = true;
             globeEl.current.controls().autoRotateSpeed = 0.2;
-            globeEl.current.controls().enableZoom = true;
+            globeEl.current.controls().enableZoom = false; // Deshabilitamos el zoom por scroll
         }
     }, []);
 
@@ -64,7 +64,7 @@ export const GlobalAccessMap: React.FC<GlobalAccessMapProps> = ({ accessPoints }
     }
     
     return (
-        <div className="relative w-full h-full flex items-center justify-center">
+        <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
             <GlobeGl
                 ref={globeEl}
                 globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
@@ -75,9 +75,11 @@ export const GlobalAccessMap: React.FC<GlobalAccessMapProps> = ({ accessPoints }
                 pointRadius={0.4}
                 pointColor={(point: any) => point.success ? 'rgba(52, 211, 153, 0.8)' : 'rgba(239, 68, 68, 0.8)'}
                 onPointHover={handlePointHover}
+                width={360}
+                height={360}
             />
 
-             <div className="absolute bottom-4 right-4 flex flex-col gap-2">
+             <div className="absolute bottom-2 right-2 flex flex-col gap-2">
                 <Button size="icon" variant="secondary" onClick={() => handleZoom(0.8)}>
                     <ZoomIn className="h-4 w-4" />
                 </Button>
@@ -87,7 +89,7 @@ export const GlobalAccessMap: React.FC<GlobalAccessMapProps> = ({ accessPoints }
             </div>
 
             {hoveredPoint && (
-                <div className="absolute top-4 left-4 pointer-events-none z-10">
+                <div className="absolute top-2 left-2 pointer-events-none z-10">
                     <Card className="bg-background/80 backdrop-blur-sm max-w-sm">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
