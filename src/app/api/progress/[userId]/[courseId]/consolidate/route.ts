@@ -1,10 +1,9 @@
-
 // src/app/api/progress/[userId]/[courseId]/consolidate/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
-import { checkAndAwardCourseCompletionAchievements } from '@/lib/gamification';
+import { checkAndAwardCourseCompletionAchievements, triggerMotivationalMessage } from '@/lib/gamification';
 
 export const dynamic = 'force-dynamic';
 
@@ -69,8 +68,9 @@ export async function POST(req: NextRequest, { params }: { params: { userId: str
             }
         });
         
-        // Otorgar logros por completar cursos
+        // Otorgar logros por completar cursos y mensajes motivacionales
         await checkAndAwardCourseCompletionAchievements(userId, finalPercentage);
+        await triggerMotivationalMessage(userId, 'COURSE_COMPLETION', courseId);
         
         return NextResponse.json({
             ...updatedProgress,
