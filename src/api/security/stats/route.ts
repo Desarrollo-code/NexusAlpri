@@ -1,4 +1,4 @@
-// src/api/security/stats/route.ts
+// src/app/api/security/stats/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -52,7 +52,6 @@ export async function GET(req: NextRequest) {
             }),
         ]);
         
-        // CORRECCIÓN: Asegurarse de que `browsers` y `os` siempre sean arrays, incluso si `allLogsForDeviceStats` está vacío.
         const { browsers, os } = aggregateByUserAgent(allLogsForDeviceStats || []);
         
         const stats: SecurityStats = {
