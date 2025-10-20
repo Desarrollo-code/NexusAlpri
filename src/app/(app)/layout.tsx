@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Sidebar, SidebarContent, SidebarFooter, useSidebar, SidebarProvider } from '@/components/ui/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
-import { Loader2 } from 'lucide-react';
+import { ColorfulLoader } from '@/components/ui/colorful-loader';
 import Image from 'next/image';
 import { SidebarHeader } from '@/components/layout/sidebar-header';
 import { TourProvider, useTour } from '@/contexts/tour-context';
@@ -70,7 +70,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (isLoading) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background text-foreground">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <ColorfulLoader />
       </div>
     );
   }
@@ -80,7 +80,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (!user) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background text-foreground">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <ColorfulLoader />
       </div>
     );
   }

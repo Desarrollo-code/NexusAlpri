@@ -1,46 +1,42 @@
-
+// src/components/ui/colorful-loader.tsx
 'use client';
 
 import * as React from 'react';
-import { cn } from "@/lib/utils";
 
 export const ColorfulLoader = () => {
-  const colors = [
-    '#F87171', // Red
-    '#EC4899', // Pink
-    '#A855F7', // Purple
-    '#60A5FA', // Blue
-    '#4ADE80', // Green
-    '#FBBF24', // Yellow
-  ];
-
   return (
-    <div className="relative w-20 h-20 animate-spin-slow">
-      {colors.map((color, i) => (
-        <div
-          key={i}
-          className="absolute w-full h-full animate-bloom"
-          style={{ 
-            transform: `rotate(${i * 60}deg)`,
-            animationDelay: `${i * 150}ms`,
-          }}
-        >
-          <svg
-            width="100%"
-            height="100%"
-            viewBox="0 0 100 100"
-            style={{
-              transform: `translate(0, -100%)`, 
-              transformOrigin: '50% 150%',
-            }}
-          >
-            <path
-              d="M50 0 C 65 0, 75 20, 50 40 C 25 20, 35 0, 50 0 Z"
-              fill={color}
-            />
-          </svg>
-        </div>
-      ))}
+    <div
+      className="loader"
+      style={{
+        position: 'relative',
+        width: '75px',
+        height: '100px',
+        backgroundRepeat: 'no-repeat',
+        backgroundImage: `
+          linear-gradient(hsl(var(--chart-1)) 50px, transparent 0),
+          linear-gradient(hsl(var(--chart-2)) 50px, transparent 0),
+          linear-gradient(hsl(var(--chart-3)) 50px, transparent 0),
+          linear-gradient(hsl(var(--chart-4)) 50px, transparent 0),
+          linear-gradient(hsl(var(--chart-5)) 50px, transparent 0)
+        `,
+        backgroundSize: '8px 100%',
+        backgroundPosition: '0px 90px, 15px 78px, 30px 66px, 45px 58px, 60px 50px',
+        animation: 'pillerPushUp 4s linear infinite',
+      }}
+    >
+      <style jsx>{`
+        .loader::after {
+          content: '';
+          position: absolute;
+          bottom: 10px;
+          left: 0;
+          width: 10px;
+          height: 10px;
+          background: hsl(var(--accent));
+          border-radius: 50%;
+          animation: ballStepUp 4s linear infinite;
+        }
+      `}</style>
     </div>
   );
 };
