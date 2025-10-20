@@ -8,8 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Sidebar, SidebarContent, SidebarFooter, useSidebar, SidebarProvider } from '@/components/ui/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
-import { ColorfulLoader } from '@/components/ui/colorful-loader';
-import { DecorativeHeaderBackground } from '@/components/layout/decorative-header-background';
+import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { SidebarHeader } from '@/components/layout/sidebar-header';
 import { TourProvider, useTour } from '@/contexts/tour-context';
@@ -35,7 +34,6 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
           {/* El contenido principal ahora está fuera del main para que los elementos fijos funcionen correctamente */}
           <div className="relative flex-1 [transform:translateZ(0)]">
             <main className="absolute inset-0 overflow-y-auto">
-              <DecorativeHeaderBackground />
               <div className="relative z-10 p-4 md:p-6 lg:p-8">
                 {children}
               </div>
@@ -72,7 +70,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (isLoading) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background text-foreground">
-        <ColorfulLoader />
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
       </div>
     );
   }
@@ -82,7 +80,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (!user) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background text-foreground">
-        <ColorfulLoader />
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
       </div>
     );
   }
