@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Loader2, Monitor, HelpCircle, AlertTriangle, Shield, Clock, UserCog, Map as MapIcon, ArrowRight, FileText, ShieldCheck } from 'lucide-react';
@@ -42,7 +42,7 @@ export default function SecurityAuditPage() {
     const [deviceData, setDeviceData] = useState<{ browserData: any[], osData: any[] } | null>(null);
     
     useEffect(() => {
-        setPageTitle('Auditoría de Seguridad');
+        setPageTitle('Seguridad');
         startTour('securityAudit', securityAuditTour);
     }, [setPageTitle, startTour]);
 
@@ -121,20 +121,20 @@ export default function SecurityAuditPage() {
                 </Button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 lg:col-span-3" id="security-stats-cards">
-                    <MetricCard title="Inicios Exitosos" value={stats?.successfulLogins24h || 0} icon={ShieldCheck} description="Últimas 24h" trendData={stats?.loginsLast7Days || []} dataKey="count" gradient="bg-gradient-green" color="hsl(var(--chart-2))" />
-                    <MetricCard title="Intentos Fallidos" value={stats?.failedLogins24h || 0} icon={AlertTriangle} description="Últimas 24h" gradient="bg-gradient-orange" color="hsl(var(--chart-4))" />
-                    <MetricCard title="Cambios de Rol" value={stats?.roleChanges24h || 0} icon={UserCog} description="Últimas 24h" gradient="bg-gradient-blue" color="hsl(var(--chart-1))" />
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                {/* Fila 1: Métricas y Gráficos */}
+                <MetricCard id="successful-logins-card" title="Inicios Exitosos" value={stats?.successfulLogins24h || 0} icon={ShieldCheck} description="Últimas 24h" trendData={stats?.loginsLast7Days || []} dataKey="count" gradient="bg-gradient-green" color="hsl(var(--chart-2))" className="lg:col-span-1"/>
+                <MetricCard id="failed-logins-card" title="Intentos Fallidos" value={stats?.failedLogins24h || 0} icon={AlertTriangle} description="Últimas 24h" gradient="bg-gradient-orange" color="hsl(var(--chart-4))" className="lg:col-span-1"/>
+                <MetricCard id="role-changes-card" title="Cambios de Rol" value={stats?.roleChanges24h || 0} icon={UserCog} description="Últimas 24h" gradient="bg-gradient-blue" color="hsl(var(--chart-1))" className="lg:col-span-1"/>
+                
+                <div className="lg:col-span-2 hidden lg:block"></div> {/* Espacio vacío para empujar las tarjetas a 3 */}
+
+                {/* Fila 2: Distribución y Mapa */}
+                <div className="lg:col-span-2">
+                    {deviceData && <DeviceDistributionChart browserData={deviceData.browserData} osData={deviceData.osData} />}
                 </div>
-                
-                 {deviceData && (
-                    <div className="lg:col-span-1">
-                        <DeviceDistributionChart browserData={deviceData.browserData} osData={deviceData.osData} />
-                    </div>
-                 )}
-                
-                 <div className="lg:col-span-2">
+
+                <div className="lg:col-span-3">
                     <Card id="access-map" className="h-full">
                         <CardHeader>
                             <CardTitle className="text-lg flex items-center gap-2">
@@ -142,13 +142,13 @@ export default function SecurityAuditPage() {
                                 Mapa de Accesos
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="h-56 flex flex-col items-center justify-center">
+                        <CardContent className="h-full min-h-[250px] flex flex-col items-center justify-center">
                             <AnimatedGlobe />
                             <h3 className="font-semibold text-lg text-foreground mt-4">Próximamente</h3>
                             <p className="text-sm text-muted-foreground">Visualización geográfica de inicios de sesión.</p>
                         </CardContent>
                     </Card>
-                 </div>
+                </div>
             </div>
             
             <Card id="security-log-table">

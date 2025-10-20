@@ -30,7 +30,7 @@ export const MetricCard = ({ title, value, icon: Icon, description, suffix = '',
                 <div className="text-3xl font-bold text-white">{animatedValue}{suffix}</div>
                 {description && <p className="text-xs text-white/80">{description}</p>}
                 {trendData && trendData.length > 0 && (
-                     <div className="absolute bottom-[-20px] right-0 left-0 h-20 opacity-30">
+                     <div className="absolute bottom-[-28px] right-0 left-0 h-20 opacity-30">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={trendData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                                 <defs>
