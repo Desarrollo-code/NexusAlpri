@@ -50,7 +50,7 @@ const TimelineItem = ({ log, onLogClick, isLast }: { log: SecurityLog, onLogClic
                     onClick={() => onLogClick(log)} 
                     className="p-2.5 rounded-lg border bg-card hover:bg-muted/50 cursor-pointer shadow-sm hover:shadow-md transition-all"
                 >
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-start justify-between flex-wrap gap-x-4 gap-y-1">
                          <div className="flex items-center gap-2">
                              <Avatar className="h-7 w-7">
                                  <AvatarImage src={log.user?.avatar || undefined} />
@@ -58,7 +58,7 @@ const TimelineItem = ({ log, onLogClick, isLast }: { log: SecurityLog, onLogClic
                              </Avatar>
                              <p className="font-semibold text-sm truncate">{log.user?.name || log.emailAttempt}</p>
                          </div>
-                         <Badge variant={eventUI.variant} className="hidden sm:inline-flex whitespace-nowrap">{eventUI.label}</Badge>
+                         <Badge variant={eventUI.variant} className="whitespace-nowrap">{eventUI.label}</Badge>
                     </div>
                     <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground pl-9">
                         <div className="flex items-center gap-1.5">
