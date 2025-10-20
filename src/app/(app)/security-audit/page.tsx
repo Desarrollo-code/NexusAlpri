@@ -124,7 +124,7 @@ export default function SecurityAuditPage() {
                          <CardHeader>
                             <CardTitle>Mapa de Accesos Global</CardTitle>
                         </CardHeader>
-                         <CardContent className="p-0 flex-grow">
+                         <CardContent className="p-0 flex-grow flex items-center justify-center">
                             <GlobalAccessMap accessPoints={logs} />
                         </CardContent>
                     </Card>
