@@ -292,8 +292,6 @@ export type SecurityStats = {
     roleChanges24h: number;
     criticalEvents24h: number;
     loginsLast7Days: { date: string; count: number }[];
-    topBrowsers: { browser: string; count: number }[];
-    topOS: { os: string; count: number }[];
 }
 
 // --- ANALYTICS ---

@@ -191,50 +191,63 @@ export default function SecurityAuditPage() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        {(isLoadingLogs && logs.length === 0) ? <div className="text-center py-8"><Loader2 className="h-8 w-8 animate-spin mx-auto" /></div> : 
-                            error ? <div className="text-center py-8 text-destructive">{error}</div> : 
-                            logs.length === 0 ? <p className="text-center text-muted-foreground py-8">No hay registros para el filtro seleccionado.</p> : (
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="w-[200px]">Evento</TableHead>
-                                            <TableHead>Detalles</TableHead>
-                                            <TableHead>Usuario Afectado</TableHead>
-                                            <TableHead>Dispositivo</TableHead>
-                                            <TableHead>Ubicación</TableHead>
-                                            <TableHead className="text-right">Fecha y Hora</TableHead>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="w-[200px]">Evento</TableHead>
+                                    <TableHead>Detalles</TableHead>
+                                    <TableHead>Usuario Afectado</TableHead>
+                                    <TableHead>Dispositivo</TableHead>
+                                    <TableHead>Ubicación</TableHead>
+                                    <TableHead className="text-right">Fecha y Hora</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {isLoadingLogs ? (
+                                    [...Array(5)].map((_, i) => (
+                                        <TableRow key={i}>
+                                            <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                                            <TableCell><Skeleton className="h-4 w-full" /></TableCell>
+                                            <TableCell><div className="flex items-center gap-2"><Skeleton className="h-8 w-8 rounded-full" /><Skeleton className="h-4 w-24" /></div></TableCell>
+                                            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                            <TableCell className="text-right"><Skeleton className="h-4 w-32" /></TableCell>
                                         </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {logs.map((log) => {
-                                            const eventDetails = getEventDetails(log.event as SecurityLogEvent, log.details);
-                                            const { browser, os } = parseUserAgent(log.userAgent);
-                                            return (
-                                                <TableRow key={log.id}>
-                                                    <TableCell><div className="flex items-center gap-2">{eventDetails.icon}<Badge variant={eventDetails.variant}>{eventDetails.label}</Badge></div></TableCell>
-                                                    <TableCell className="text-xs text-muted-foreground">{eventDetails.details}</TableCell>
-                                                    <TableCell>
-                                                        {log.user ? (
-                                                            <div className="flex items-center gap-2">
-                                                                <Avatar className="h-8 w-8"><AvatarImage src={log.user.avatar || undefined} /><AvatarFallback><Identicon userId={log.user.id} /></AvatarFallback></Avatar>
-                                                                <Link href={`/users?search=${encodeURIComponent(log.user.name || '')}`} className="font-medium hover:underline">{log.user.name}</Link>
-                                                            </div>
-                                                        ) : <div className="flex items-center gap-2 text-muted-foreground"><div className="h-8 w-8 flex items-center justify-center rounded-full bg-muted"><UserCog className="h-4 w-4"/></div><span className="text-xs font-mono">{log.emailAttempt || 'Desconocido'}</span></div>}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Tooltip>
-                                                            <TooltipTrigger><div className="flex items-center gap-2 text-xs"><Monitor className="h-4 w-4 text-muted-foreground"/> {browser} en {os}</div></TooltipTrigger>
-                                                            <TooltipContent className="max-w-xs break-words"><p>{log.userAgent}</p></TooltipContent>
-                                                        </Tooltip>
-                                                    </TableCell>
-                                                    <TableCell><div className="flex items-center gap-2 text-xs"><Globe className="h-4 w-4 text-muted-foreground"/>{log.city && log.country ? `${log.city}, ${log.country}` : (log.ipAddress || 'Desconocida')}</div></TableCell>
-                                                    <TableCell className="text-right text-xs text-muted-foreground">{new Date(log.createdAt).toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'medium', timeStyle: 'short' })}</TableCell>
-                                                </TableRow>
-                                            );
-                                        })}
-                                    </TableBody>
-                                </Table>
-                            )}
+                                    ))
+                                ) : error ? (
+                                    <TableRow><TableCell colSpan={6} className="text-center text-destructive">{error}</TableCell></TableRow>
+                                ) : logs.length === 0 ? (
+                                    <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No hay registros para el filtro seleccionado.</TableCell></TableRow>
+                                ) : (
+                                    logs.map((log) => {
+                                        const eventDetails = getEventDetails(log.event as SecurityLogEvent, log.details);
+                                        const { browser, os } = parseUserAgent(log.userAgent);
+                                        return (
+                                            <TableRow key={log.id}>
+                                                <TableCell><div className="flex items-center gap-2">{eventDetails.icon}<Badge variant={eventDetails.variant}>{eventDetails.label}</Badge></div></TableCell>
+                                                <TableCell className="text-xs text-muted-foreground">{eventDetails.details}</TableCell>
+                                                <TableCell>
+                                                    {log.user ? (
+                                                        <div className="flex items-center gap-2">
+                                                            <Avatar className="h-8 w-8"><AvatarImage src={log.user.avatar || undefined} /><AvatarFallback><Identicon userId={log.user.id} /></AvatarFallback></Avatar>
+                                                            <Link href={`/users?search=${encodeURIComponent(log.user.name || '')}`} className="font-medium hover:underline">{log.user.name}</Link>
+                                                        </div>
+                                                    ) : <div className="flex items-center gap-2 text-muted-foreground"><div className="h-8 w-8 flex items-center justify-center rounded-full bg-muted"><UserCog className="h-4 w-4"/></div><span className="text-xs font-mono">{log.emailAttempt || 'Desconocido'}</span></div>}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Tooltip>
+                                                        <TooltipTrigger><div className="flex items-center gap-2 text-xs"><Monitor className="h-4 w-4 text-muted-foreground"/> {browser} en {os}</div></TooltipTrigger>
+                                                        <TooltipContent className="max-w-xs break-words"><p>{log.userAgent}</p></TooltipContent>
+                                                    </Tooltip>
+                                                </TableCell>
+                                                <TableCell><div className="flex items-center gap-2 text-xs"><Globe className="h-4 w-4 text-muted-foreground"/>{log.city && log.country ? `${log.city}, ${log.country}` : (log.ipAddress || 'Desconocida')}</div></TableCell>
+                                                <TableCell className="text-right text-xs text-muted-foreground">{new Date(log.createdAt).toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'medium', timeStyle: 'short' })}</TableCell>
+                                            </TableRow>
+                                        );
+                                    })
+                                )}
+                            </TableBody>
+                        </Table>
                     </CardContent>
                     {totalPages > 1 && (<CardFooter><SmartPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} /></CardFooter>)}
                 </Card>
