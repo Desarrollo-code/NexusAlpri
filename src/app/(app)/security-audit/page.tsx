@@ -19,10 +19,10 @@ import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/comp
 import { useTitle } from '@/contexts/title-context';
 import { SmartPagination } from '@/components/ui/pagination';
 import { Identicon } from '@/components/ui/identicon';
-import { useTour } from '@/components/tour-context';
+import { useTour } from '@/contexts/tour-context';
 import { securityAuditTour } from '@/lib/tour-steps';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, BarChart, XAxis, YAxis, CartesianGrid, Bar } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, BarChart, XAxis, YAxis, CartesianGrid, Bar, Cell } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
 import { MetricCard } from '@/components/analytics/metric-card';
 import { Separator } from '@/components/ui/separator';

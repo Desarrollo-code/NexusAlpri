@@ -1,4 +1,3 @@
-
 // src/app/(app)/enrollments/page.tsx
 'use client';
 
