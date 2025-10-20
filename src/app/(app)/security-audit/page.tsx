@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Monitor, Globe, HelpCircle, AlertTriangle, BarChart3, TrendingUp, Users, Shield, Clock, UserCog } from 'lucide-react';
-import type { SecurityLog as AppSecurityLog, User as AppUser, SecurityLogEvent, AdminDashboardStats } from '@/types';
+import type { SecurityLog as AppSecurityLog, User as AppUser, SecurityLogEvent, SecurityStats } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -26,6 +26,8 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, BarChart, XAxis, YAx
 import type { ChartConfig } from '@/components/ui/chart';
 import { MetricCard } from '@/components/analytics/metric-card';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 
 interface SecurityLogWithUser extends AppSecurityLog {
     user: Pick<AppUser, 'id' | 'name' | 'avatar'> | null;
@@ -54,8 +56,9 @@ export default function SecurityAuditPage() {
 
     const [logs, setLogs] = useState<SecurityLogWithUser[]>([]);
     const [totalLogs, setTotalLogs] = useState(0);
-    const [stats, setStats] = useState<AdminDashboardStats['securityStats'] | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [stats, setStats] = useState<SecurityStats | null>(null);
+    const [isLoadingLogs, setIsLoadingLogs] = useState(true);
+    const [isLoadingStats, setIsLoadingStats] = useState(true);
     const [error, setError] = useState<string | null>(null);
     
     const activeFilter = searchParams.get('event') || 'ALL';
@@ -67,43 +70,47 @@ export default function SecurityAuditPage() {
         startTour('securityAudit', securityAuditTour);
     }, [setPageTitle, startTour]);
 
-    const fetchData = useCallback(async () => {
-        setIsLoading(true);
+    const fetchLogs = useCallback(async () => {
+        setIsLoadingLogs(true);
         setError(null);
         try {
-            const logsParams = new URLSearchParams(searchParams.toString());
-            logsParams.set('pageSize', String(PAGE_SIZE));
-            
-            const [logsResponse, statsResponse] = await Promise.all([
-                 fetch(`/api/security/logs?${logsParams.toString()}`),
-                 fetch('/api/dashboard/data') 
-            ]);
-
-            if (!logsResponse.ok) throw new Error((await logsResponse.json()).message || 'Failed to fetch security logs');
-            if (!statsResponse.ok) throw new Error((await statsResponse.json()).message || 'Failed to fetch security stats');
-            
-            const logsData = await logsResponse.json();
-            const fullDashboardData = await statsResponse.json();
-
-            setLogs(logsData.logs || []);
-            setTotalLogs(logsData.totalLogs || 0);
-            setStats(fullDashboardData.adminStats.securityStats || null);
-
+            const params = new URLSearchParams(searchParams.toString());
+            params.set('pageSize', String(PAGE_SIZE));
+            const response = await fetch(`/api/security/logs?${params.toString()}`);
+            if (!response.ok) throw new Error((await response.json()).message || 'Failed to fetch security logs');
+            const data = await response.json();
+            setLogs(data.logs || []);
+            setTotalLogs(data.totalLogs || 0);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Unknown error fetching data');
-            toast({ title: 'Error', description: err instanceof Error ? err.message : 'Could not load security data.', variant: 'destructive' });
+            setError(err instanceof Error ? err.message : 'Unknown error fetching logs');
+            toast({ title: 'Error', description: err instanceof Error ? err.message : 'Could not load security logs.', variant: 'destructive' });
         } finally {
-            setIsLoading(false);
+            setIsLoadingLogs(false);
         }
-    }, [toast, searchParams]);
+    }, [searchParams, toast]);
+    
+    const fetchStats = useCallback(async () => {
+        setIsLoadingStats(true);
+        try {
+            const response = await fetch('/api/security/stats');
+             if (!response.ok) throw new Error((await response.json()).message || 'Failed to fetch security stats');
+            const data = await response.json();
+            setStats(data);
+        } catch (err) {
+             console.error("Stats fetching error:", err); // Log but don't show toast for stats
+        } finally {
+            setIsLoadingStats(false);
+        }
+    }, []);
 
     useEffect(() => {
         if (currentUser?.role === 'ADMINISTRATOR') {
-            fetchData();
+            fetchLogs();
+            fetchStats();
         } else if (currentUser) {
              router.push('/dashboard');
         }
-    }, [currentUser, router, fetchData]);
+    }, [currentUser, router, fetchLogs, fetchStats]);
     
     const createQueryString = useCallback((paramsToUpdate: Record<string, string | number | null>) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -127,10 +134,23 @@ export default function SecurityAuditPage() {
     }
     
     const browserChartConfig: ChartConfig = useMemo(() => {
+        if (!stats?.topBrowsers) return {};
         const config: ChartConfig = {};
-        stats?.topBrowsers.forEach((item, index) => {
+        stats.topBrowsers.slice(0, 5).forEach((item, index) => {
             config[item.browser] = {
                 label: item.browser,
+                color: `hsl(var(--chart-${(index % 5) + 1}))`
+            }
+        });
+        return config;
+    }, [stats]);
+    
+    const osChartConfig: ChartConfig = useMemo(() => {
+        if (!stats?.topOS) return {};
+        const config: ChartConfig = {};
+        stats.topOS.slice(0, 5).forEach((item, index) => {
+            config[item.os] = {
+                label: item.os,
                 color: `hsl(var(--chart-${(index % 5) + 1}))`
             }
         });
@@ -150,50 +170,80 @@ export default function SecurityAuditPage() {
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4" id="security-stats-cards">
-                <MetricCard title="Inicios de Sesión Exitosos" value={stats?.successfulLogins24h || 0} icon={Users} description="Últimas 24h" gradient="bg-gradient-green" />
-                <MetricCard title="Intentos de Acceso Fallidos" value={stats?.failedLogins24h || 0} icon={AlertTriangle} description="Últimas 24h" gradient="bg-gradient-orange" />
-                <MetricCard title="Cambios de Roles" value={stats?.roleChanges24h || 0} icon={UserCog} description="Últimas 24h" gradient="bg-gradient-purple" />
-                <MetricCard title="Eventos Críticos" value={stats?.criticalEvents24h || 0} icon={Shield} description="Últimas 24h" gradient="bg-gradient-blue" />
+                {isLoadingStats ? [...Array(4)].map((_, i) => <Skeleton key={i} className="h-28" />) : <>
+                    <MetricCard title="Inicios de Sesión Exitosos" value={stats?.successfulLogins24h || 0} icon={Users} description="Últimas 24h" gradient="bg-gradient-green" />
+                    <MetricCard title="Intentos de Acceso Fallidos" value={stats?.failedLogins24h || 0} icon={AlertTriangle} description="Últimas 24h" gradient="bg-gradient-orange" />
+                    <MetricCard title="Cambios de Roles" value={stats?.roleChanges24h || 0} icon={UserCog} description="Últimas 24h" gradient="bg-gradient-purple" />
+                    <MetricCard title="Eventos Críticos" value={stats?.criticalEvents24h || 0} icon={Shield} description="Últimas 24h" gradient="bg-gradient-blue" />
+                </>}
             </div>
 
             <Separator />
             
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="lg:col-span-2">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><TrendingUp/>Actividad de Inicios de Sesión</CardTitle>
-                        <CardDescription>Resumen de los últimos 7 días.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="h-72">
-                         <ChartContainer config={browserChartConfig} className="w-full h-full">
-                            <BarChart data={stats?.loginsLast7Days || []} margin={{top: 5, right: 10, left: -20, bottom: 5}}>
-                               <CartesianGrid vertical={false} />
-                               <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} tickFormatter={(value) => new Date(value).toLocaleDateString('es-ES', { weekday: 'short' })}/>
-                               <YAxis tickLine={false} axisLine={false} tickMargin={10} allowDecimals={false} />
-                               <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line"/>} />
-                               <Bar dataKey="count" fill="var(--color-chrome)" radius={4} />
-                           </BarChart>
-                        </ChartContainer>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Monitor/>Navegadores Utilizados</CardTitle>
-                    </CardHeader>
-                    <CardContent className="h-72 flex items-center justify-center">
-                         <ChartContainer config={browserChartConfig} className="w-full h-full">
-                            <PieChart>
-                                <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                                <Pie data={stats?.topBrowsers} dataKey="count" nameKey="browser" innerRadius={50} strokeWidth={2}>
-                                {stats?.topBrowsers.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={browserChartConfig[entry.browser]?.color} />
-                                ))}
-                                </Pie>
-                            </PieChart>
-                         </ChartContainer>
-                    </CardContent>
-                </Card>
-            </div>
+            <Tabs defaultValue="activity">
+                 <TabsList className="grid w-full grid-cols-3 max-w-lg mx-auto">
+                    <TabsTrigger value="activity">Actividad</TabsTrigger>
+                    <TabsTrigger value="browsers">Navegadores</TabsTrigger>
+                    <TabsTrigger value="os">Sistemas Operativos</TabsTrigger>
+                 </TabsList>
+                 <TabsContent value="activity" className="mt-4">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><TrendingUp/>Actividad de Inicios de Sesión</CardTitle>
+                            <CardDescription>Resumen de los últimos 7 días.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="h-72">
+                            {isLoadingStats ? <Skeleton className="h-full w-full"/> : <ChartContainer config={{count: {label: "Inicios de Sesión"}}} className="w-full h-full">
+                                <BarChart data={stats?.loginsLast7Days || []} margin={{top: 5, right: 10, left: -20, bottom: 5}}>
+                                <CartesianGrid vertical={false} />
+                                <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} tickFormatter={(value) => new Date(value).toLocaleDateString('es-ES', { weekday: 'short' })}/>
+                                <YAxis tickLine={false} axisLine={false} tickMargin={10} allowDecimals={false} />
+                                <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line"/>} />
+                                <Bar dataKey="count" fill="hsl(var(--primary))" radius={4} />
+                            </BarChart>
+                            </ChartContainer>}
+                        </CardContent>
+                    </Card>
+                 </TabsContent>
+                 <TabsContent value="browsers" className="mt-4">
+                     <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><Monitor/>Navegadores Más Utilizados</CardTitle>
+                        </CardHeader>
+                        <CardContent className="h-72 flex items-center justify-center">
+                            {isLoadingStats ? <Skeleton className="h-full w-full"/> : <ChartContainer config={browserChartConfig} className="w-full h-full">
+                                <PieChart>
+                                    <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                                    <Pie data={stats?.topBrowsers} dataKey="count" nameKey="browser" innerRadius={50} strokeWidth={2}>
+                                    {stats?.topBrowsers.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={browserChartConfig[entry.browser]?.color} />
+                                    ))}
+                                    </Pie>
+                                </PieChart>
+                            </ChartContainer>}
+                        </CardContent>
+                    </Card>
+                 </TabsContent>
+                 <TabsContent value="os" className="mt-4">
+                      <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><Monitor/>Sistemas Operativos Más Utilizados</CardTitle>
+                        </CardHeader>
+                        <CardContent className="h-72 flex items-center justify-center">
+                            {isLoadingStats ? <Skeleton className="h-full w-full"/> : <ChartContainer config={osChartConfig} className="w-full h-full">
+                                <PieChart>
+                                    <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                                    <Pie data={stats?.topOS} dataKey="count" nameKey="os" innerRadius={50} strokeWidth={2}>
+                                    {stats?.topOS.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={osChartConfig[entry.os]?.color} />
+                                    ))}
+                                    </Pie>
+                                </PieChart>
+                            </ChartContainer>}
+                        </CardContent>
+                    </Card>
+                 </TabsContent>
+            </Tabs>
             
             <TooltipProvider>
                 <Card id="security-log-table">
@@ -214,7 +264,7 @@ export default function SecurityAuditPage() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        {(isLoading && logs.length === 0) ? <div className="text-center py-8"><Loader2 className="h-8 w-8 animate-spin mx-auto" /></div> : 
+                        {(isLoadingLogs && logs.length === 0) ? <div className="text-center py-8"><Loader2 className="h-8 w-8 animate-spin mx-auto" /></div> : 
                             error ? <div className="text-center py-8 text-destructive">{error}</div> : 
                             logs.length === 0 ? <p className="text-center text-muted-foreground py-8">No hay registros para el filtro seleccionado.</p> : (
                                 <Table>

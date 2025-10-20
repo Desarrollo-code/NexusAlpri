@@ -20,40 +20,22 @@ export interface User {
 export interface PlatformSettings {
     platformName: string;
     allowPublicRegistration: boolean;
+    enableEmailNotifications: boolean;
     emailWhitelist: string;
-
-    // MFA
     require2faForAdmins: boolean;
-    require2faForInstructors?: boolean;
-    require2faForAllUsers?: boolean;
-
-    // Password Policy
+    idleTimeoutMinutes: number;
+    enableIdleTimeout: boolean;
     passwordMinLength: number;
     passwordRequireUppercase: boolean;
     passwordRequireLowercase: boolean;
     passwordRequireNumber: boolean;
     passwordRequireSpecialChar: boolean;
     passwordExpirationDays?: number | null;
-
-    // Lockout Policy
-    failedLoginLimit?: number;
-    lockoutDurationMinutes?: number;
-
-    // Session
-    enableIdleTimeout: boolean;
-    idleTimeoutMinutes: number;
-    
-    // Data & Compliance
-    logRetentionDays?: number;
-
-    // System
+    failedLoginLimit?: number | null;
+    lockoutDurationMinutes?: number | null;
+    logRetentionDays?: number | null;
     hideLmsVersion?: boolean;
-
-    // Deprecated / General
-    enableEmailNotifications: boolean;
     resourceCategories: string[];
-
-    // Theme & Branding
     primaryColor?: string;
     secondaryColor?: string;
     accentColor?: string;
@@ -304,6 +286,15 @@ export type SecurityLog = Prisma.SecurityLogGetPayload<{
     country: string | null;
 };
 
+export type SecurityStats = {
+    successfulLogins24h: number;
+    failedLogins24h: number;
+    roleChanges24h: number;
+    criticalEvents24h: number;
+    loginsLast7Days: { date: string; count: number }[];
+    topBrowsers: { browser: string; count: number }[];
+    topOS: { os: string; count: number }[];
+}
 
 // --- ANALYTICS ---
 type CourseInfo = {
@@ -320,14 +311,6 @@ type UserInfo = {
     value: number;
 };
 
-export type SecurityStats = {
-    successfulLogins24h: number;
-    failedLogins24h: number;
-    loginsLast7Days: { date: string; count: number }[];
-    topBrowsers: { browser: string; count: number }[];
-    topOS: { os: string; count: number }[];
-}
-
 export interface AdminDashboardStats {
     totalUsers: number;
     totalCourses: number;
@@ -338,8 +321,6 @@ export interface AdminDashboardStats {
     totalForms: number;
     usersByRole: { role: UserRole; count: number }[];
     coursesByStatus: { status: CourseStatus; count: number }[];
-    recentLogins: number;
-    newEnrollmentsLast7Days: number;
     userRegistrationTrend: { date: string, newCourses: number, newEnrollments: number, newUsers: number }[];
     averageCompletionRate: number;
     topCoursesByEnrollment: CourseInfo[];

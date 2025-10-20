@@ -67,7 +67,7 @@ export const getEventDetails = (event: SecurityLogEvent, details?: string | null
          case 'USER_ROLE_CHANGED':
             return {
                 label: 'Cambio de Rol',
-                icon: <UserCog className="h-4 w-4 text-purple-500" />,
+                icon: <UserCog className="h-4 w-4 text-blue-500" />,
                 variant: 'default' as BadgeVariant,
                 details: details || 'El rol del usuario ha sido modificado.'
             };
