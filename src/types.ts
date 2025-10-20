@@ -283,6 +283,15 @@ export type SecurityLog = Prisma.SecurityLogGetPayload<{
     lng?: number | null;
 };
 
+export type SecurityStats = {
+    successfulLogins24h: number;
+    failedLogins24h: number;
+    roleChanges24h: number;
+    browsers: { name: string, count: number }[];
+    os: { name: string, count: number }[];
+};
+
+
 // --- ANALYTICS ---
 export interface AdminDashboardStats {
     totalUsers: number;
@@ -294,8 +303,6 @@ export interface AdminDashboardStats {
     totalForms: number;
     usersByRole: { role: UserRole; count: number }[];
     coursesByStatus: { status: CourseStatus; count: number }[];
-    recentLogins: { date: string, count: number }[];
-    newEnrollmentsLast7Days: { date: string, count: number }[];
     userRegistrationTrend: { date: string, newCourses: number, newEnrollments: number, newUsers: number }[];
     averageCompletionRate: number;
     topCoursesByEnrollment: any[];

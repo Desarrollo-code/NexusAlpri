@@ -43,7 +43,7 @@ const ChartSection = ({ title, data }: { title: string, data: any[]}) => {
     const total = data.reduce((acc, item) => acc + item.count, 0);
 
     return (
-        <div className="w-1/2">
+        <div className="w-1/2 flex-grow">
             <h4 className="font-medium text-sm mb-2">{title}</h4>
             <div className="space-y-2">
                  {data.length > 0 ? data.map(item => (

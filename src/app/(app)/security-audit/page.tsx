@@ -3,11 +3,11 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTitle } from '@/contexts/title-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { AlertTriangle, Globe, HelpCircle, Filter } from 'lucide-react';
+import { AlertTriangle, Globe, HelpCircle, Filter, CheckCircle, XCircle, UserCog } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { Loader2 } from 'lucide-react';
 import { DateRangePicker } from "@/components/ui/date-range-picker";
-import type { SecurityLog, SecurityLogEvent } from '@/types';
+import type { SecurityLog, SecurityLogEvent, SecurityStats } from '@/types';
 import { Button } from '@/components/ui/button';
 import { startOfDay, subDays } from 'date-fns';
 import { SmartPagination } from '@/components/ui/pagination';
@@ -15,15 +15,20 @@ import { useTour } from '@/contexts/tour-context';
 import { securityAuditTour } from '@/lib/tour-steps';
 import { SecurityLogDetailSheet } from '@/components/security/security-log-detail-sheet';
 import { SecurityLogTimeline } from '@/components/security/security-log-timeline';
-import { GlobalAccessMap } from '@/components/security/global-access-map';
 import { MetricCard } from '@/components/security/metric-card';
+import { DeviceDistributionChart } from '@/components/security/device-distribution-chart';
+import { getEventDetails } from '@/lib/security-log-utils';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Identicon } from '@/components/ui/identicon';
+
+const PAGE_SIZE = 20;
 
 export default function SecurityAuditPage() {
     const { setPageTitle } = useTitle();
     const { user } = useAuth();
     const [logs, setLogs] = useState<SecurityLog[]>([]);
-    const [stats, setStats] = useState<any>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [stats, setStats] = useState<SecurityStats | null>(null);
+    const [isLoadingLogs, setIsLoadingLogs] = useState(true);
     const [isStatsLoading, setIsStatsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedLog, setSelectedLog] = useState<SecurityLog | null>(null);
@@ -32,7 +37,6 @@ export default function SecurityAuditPage() {
     const [page, setPage] = useState(1);
     const [totalLogs, setTotalLogs] = useState(0);
     const { startTour, forceStartTour } = useTour();
-    const PAGE_SIZE = 20;
     
     const totalPages = Math.ceil(totalLogs / PAGE_SIZE);
 
@@ -41,35 +45,55 @@ export default function SecurityAuditPage() {
         startTour('securityAudit', securityAuditTour);
     }, [setPageTitle, startTour]);
 
-    const fetchLogs = useCallback(async (pageNumber = 1, fetchAll = false) => {
+    const fetchLogs = useCallback(async (pageNumber = 1) => {
         if (user?.role !== 'ADMINISTRATOR') return;
-        setIsLoading(true);
+        setIsLoadingLogs(true);
         try {
             const params = new URLSearchParams({
                 page: String(pageNumber),
-                pageSize: fetchAll ? '1000' : String(PAGE_SIZE), // Fetch more for the map
+                pageSize: String(PAGE_SIZE),
             });
             if (filterEvent !== 'ALL') params.set('event', filterEvent);
-            if (dateRange.from) params.set('startDate', dateRange.from.toISOString());
-            if (dateRange.to) params.set('endDate', dateRange.to.toISOString());
-            if (fetchAll) params.set('all', 'true');
 
             const response = await fetch(`/api/security/logs?${params.toString()}`);
-            if (!response.ok) throw new Error('No se pudieron cargar los registros de seguridad.');
+            if (!response.ok) throw new Error('No se pudieron cargar los registros.');
             const data = await response.json();
             setLogs(data.logs || []);
             setTotalLogs(data.totalLogs || 0);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Error desconocido');
         } finally {
-            setIsLoading(false);
+            setIsLoadingLogs(false);
         }
-    }, [user, filterEvent, dateRange]);
+    }, [user, filterEvent]);
+
+    const fetchStats = useCallback(async () => {
+        if (user?.role !== 'ADMINISTRATOR') return;
+        setIsStatsLoading(true);
+        try {
+             const response = await fetch('/api/security/stats');
+             if (!response.ok) throw new Error('No se pudieron cargar las estadísticas.');
+             const data = await response.json();
+             setStats(data);
+        } catch(err) {
+            // Silently fail on stats
+        } finally {
+            setIsStatsLoading(false);
+        }
+    }, [user]);
 
     useEffect(() => {
-        fetchLogs(page, true); // Fetch all logs for the map initially
-    }, [page, fetchLogs]);
+        fetchLogs(page);
+        fetchStats();
+    }, [page, fetchLogs, fetchStats]);
     
+    const criticalEvents = useMemo(() => {
+        return logs
+            .filter(log => log.event === 'FAILED_LOGIN_ATTEMPT' || log.event === 'USER_ROLE_CHANGED')
+            .slice(0, 5); // Take the 5 most recent critical events from the current page
+    }, [logs]);
+
+
     return (
         <>
             <div className="space-y-6">
@@ -81,21 +105,22 @@ export default function SecurityAuditPage() {
                            <Button variant="outline" size="sm" onClick={() => forceStartTour('securityAudit', securityAuditTour)}>
                                 <HelpCircle className="mr-2 h-4 w-4" /> Guía Rápida
                             </Button>
+                            <Button variant="outline" size="sm">Exportar CSV</Button>
                            <DateRangePicker date={dateRange} onDateChange={(range) => { if (range) setDateRange(range); }} />
                       </div>
                  </div>
                  
-                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
                     {/* Columna Izquierda: Línea de Tiempo */}
-                    <main className="lg:col-span-1">
+                    <main className="lg:col-span-3">
                          <Card id="security-log-timeline">
                             <CardHeader>
                                 <CardTitle>Registro de Eventos</CardTitle>
-                                <CardDescription>Actividad reciente en la plataforma.</CardDescription>
+                                <CardDescription>Actividad reciente en la plataforma. Haz clic en un evento para ver detalles.</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                {isLoading ? <div className="h-96 flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div> :
-                                 logs.length > 0 ? <SecurityLogTimeline logs={logs.slice(0, PAGE_SIZE)} onLogClick={setSelectedLog} /> :
+                                {isLoadingLogs ? <div className="h-96 flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div> :
+                                 logs.length > 0 ? <SecurityLogTimeline logs={logs} onLogClick={setSelectedLog} /> :
                                  <div className="h-48 flex flex-col items-center justify-center text-muted-foreground"><p>No hay eventos para el período seleccionado.</p></div>
                                 }
                             </CardContent>
@@ -107,20 +132,70 @@ export default function SecurityAuditPage() {
                          </Card>
                     </main>
                     
-                    {/* Columna Derecha: Mapa y Métricas */}
-                    <aside className="lg:col-span-2 lg:sticky lg:top-24 space-y-6">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Globe className="h-5 w-5 text-primary" />
-                                    Mapa de Accesos Global
-                                </CardTitle>
-                                <CardDescription>Visualización de los eventos de seguridad por ubicación geográfica.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="h-96 bg-muted/30 rounded-lg overflow-hidden">
-                                <GlobalAccessMap accessPoints={logs} />
-                            </CardContent>
-                        </Card>
+                    {/* Columna Derecha: Métricas y Resúmenes */}
+                    <aside className="lg:col-span-1 lg:sticky lg:top-24 space-y-6">
+                        {isStatsLoading ? (
+                            <div className="space-y-4">
+                                <Skeleton className="h-24 w-full" />
+                                <Skeleton className="h-24 w-full" />
+                                <Skeleton className="h-24 w-full" />
+                                <Skeleton className="h-48 w-full" />
+                                <Skeleton className="h-64 w-full" />
+                            </div>
+                        ) : stats ? (
+                             <>
+                                <MetricCard 
+                                    id="successful-logins"
+                                    title="Inicios Exitosos (24h)"
+                                    value={stats.successfulLogins24h || 0}
+                                    icon={CheckCircle}
+                                    onClick={() => setFilterEvent('SUCCESSFUL_LOGIN')}
+                                />
+                                <MetricCard 
+                                    id="failed-logins"
+                                    title="Intentos Fallidos (24h)"
+                                    value={stats.failedLogins24h || 0}
+                                    icon={XCircle}
+                                    onClick={() => setFilterEvent('FAILED_LOGIN_ATTEMPT')}
+                                />
+                                 <MetricCard 
+                                    id="role-changes"
+                                    title="Cambios de Rol (24h)"
+                                    value={stats.roleChanges24h || 0}
+                                    icon={UserCog}
+                                    onClick={() => setFilterEvent('USER_ROLE_CHANGED')}
+                                />
+                                <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} />
+                                
+                                 <Card>
+                                    <CardHeader>
+                                        <CardTitle className="text-base flex items-center gap-2">
+                                            <AlertTriangle className="h-4 w-4 text-destructive"/> Eventos Críticos Recientes
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        {criticalEvents.length > 0 ? (
+                                            <div className="space-y-3">
+                                                {criticalEvents.map(log => {
+                                                    const eventUI = getEventDetails(log.event, log.details);
+                                                    return (
+                                                        <div key={log.id} className="flex items-center gap-3 text-sm">
+                                                            <div className="p-2 bg-muted rounded-full">{React.cloneElement(eventUI.icon, {className: "h-4 w-4"})}</div>
+                                                            <div>
+                                                                <p className="font-semibold">{log.user?.name || log.emailAttempt}</p>
+                                                                <p className="text-xs text-muted-foreground">{eventUI.label}</p>
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                        ) : (
+                                            <p className="text-xs text-center text-muted-foreground py-4">No hay eventos críticos recientes.</p>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </>
+                        ): null}
                     </aside>
                  </div>
             </div>

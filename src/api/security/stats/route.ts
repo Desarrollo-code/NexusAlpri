@@ -1,11 +1,33 @@
-// src/app/api/security/stats/route.ts
+// src/api/security/stats/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { subDays, startOfDay } from 'date-fns';
 import type { SecurityStats } from '@/types';
+import { parseUserAgent } from '@/lib/security-log-utils';
 
 export const dynamic = 'force-dynamic';
+
+const aggregateByUserAgent = (logs: { userAgent: string | null }[]) => {
+    const browserCounts: Record<string, number> = {};
+    const osCounts: Record<string, number> = {};
+
+    logs.forEach(log => {
+        const { browser, os } = parseUserAgent(log.userAgent);
+        browserCounts[browser] = (browserCounts[browser] || 0) + 1;
+        osCounts[os] = (osCounts[os] || 0) + 1;
+    });
+    
+    const toSortedArray = (counts: Record<string, number>) => Object.entries(counts)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count);
+
+    return {
+        browsers: toSortedArray(browserCounts),
+        os: toSortedArray(osCounts),
+    };
+};
+
 
 export async function GET(req: NextRequest) {
     const session = await getCurrentUser();
@@ -15,50 +37,31 @@ export async function GET(req: NextRequest) {
 
     try {
         const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-        const sevenDaysAgo = startOfDay(subDays(new Date(), 6));
-
+        
         const [
             successfulLogins24h,
             failedLogins24h,
             roleChanges24h,
-            loginData,
+            allLogsForDeviceStats, // Fetch all logs in the period for device stats
         ] = await Promise.all([
             prisma.securityLog.count({ where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: twentyFourHoursAgo } } }),
             prisma.securityLog.count({ where: { event: 'FAILED_LOGIN_ATTEMPT', createdAt: { gte: twentyFourHoursAgo } } }),
             prisma.securityLog.count({ where: { event: 'USER_ROLE_CHANGED', createdAt: { gte: twentyFourHoursAgo } } }),
-            prisma.securityLog.groupBy({
-                by: ['createdAt'],
-                where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: sevenDaysAgo } },
-                _count: { id: true },
-                orderBy: { createdAt: 'asc' },
+            prisma.securityLog.findMany({ 
+                select: { userAgent: true },
+                // You might want to filter this by a date range in a real application
+                // For now, we take all for simplicity of the example
             }),
         ]);
-
-        const loginsByDayMap = new Map<string, number>();
-        for (let i = 0; i < 7; i++) {
-            const d = subDays(new Date(), i);
-            loginsByDayMap.set(d.toISOString().split('T')[0], 0);
-        }
         
-        loginData.forEach(log => {
-            const date = log.createdAt.toISOString().split('T')[0];
-            if (loginsByDayMap.has(date)) {
-                loginsByDayMap.set(date, (loginsByDayMap.get(date) || 0) + 1);
-            }
-        });
+        const { browsers, os } = aggregateByUserAgent(allLogsForDeviceStats);
         
-        const loginsLast7Days = Array.from(loginsByDayMap.entries())
-            .map(([date, count]) => ({ date, count }))
-            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-        
-        const criticalEvents24h = failedLogins24h + roleChanges24h;
-
         const stats: SecurityStats = {
             successfulLogins24h,
             failedLogins24h,
             roleChanges24h,
-            criticalEvents24h,
-            loginsLast7Days,
+            browsers,
+            os,
         };
 
         return NextResponse.json(stats);
