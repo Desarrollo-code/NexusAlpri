@@ -1,13 +1,13 @@
 // src/app/(app)/security-audit/page.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Monitor, Globe, HelpCircle, AlertTriangle, BarChart3, Users, Shield, Clock, UserCog, Map, Chrome, Apple, Smartphone, GlobeIcon, ArrowRight } from 'lucide-react';
+import { Loader2, Monitor, Globe, HelpCircle, AlertTriangle, BarChart3, Users, Shield, Clock, UserCog, Map as MapIcon, Chrome, Apple, Smartphone, GlobeIcon, ArrowRight, UserPlus, ShieldCheck } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, User as AppUser, SecurityLogEvent, SecurityStats } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -22,10 +22,9 @@ import { Identicon } from '@/components/ui/identicon';
 import { useTour } from '@/contexts/tour-context';
 import { securityAuditTour } from '@/lib/tour-steps';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ResponsiveContainer, BarChart, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltipComponent, Bar, Cell } from 'recharts';
-import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
-import type { ChartConfig } from '@/components/ui/chart';
-import { Separator } from '@/components/ui/separator';
+import { MetricCard } from '@/components/analytics/metric-card';
+import { DeviceDistributionChart } from '@/components/analytics/security-charts';
+
 
 interface SecurityLogWithUser extends AppSecurityLog {
     user: Pick<AppUser, 'id' | 'name' | 'avatar'> | null;
@@ -69,61 +68,6 @@ const processDeviceData = (logs: SecurityLogWithUser[]) => {
         osData: toChartData(osCounts),
     };
 };
-
-const CustomYAxisTick = ({ y, payload }: any) => {
-    const iconMap: Record<string, React.ElementType> = {
-        'Chrome': Chrome,
-        'Firefox': Globe, 
-        'Safari': Globe,
-        'Edge': Globe,
-        'Windows': Monitor,
-        'macOS': Apple,
-        'Linux': Monitor,
-        'Android': Smartphone,
-        'iOS': Apple,
-    };
-    const Icon = iconMap[payload.value] || Monitor;
-    return (
-        <g transform={`translate(0,${y})`}>
-            <foreignObject x="-70" y="-10" width="60" height="20" className="text-right">
-                <div className="flex items-center justify-end gap-1.5 w-full">
-                    <span className="text-xs text-muted-foreground truncate">{payload.value}</span>
-                    <Icon className="h-3.5 w-3.5 text-foreground shrink-0" />
-                </div>
-            </foreignObject>
-        </g>
-    );
-}
-
-const DeviceDistributionChart = ({ title, data, config }: { title: string, data: any[], config: ChartConfig }) => (
-    <div>
-        <h4 className="font-medium text-sm mb-2">{title}</h4>
-        {data.length > 0 ? (
-            <div className="h-40">
-                <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data} layout="vertical" margin={{ top: 0, right: 0, left: 70, bottom: 0 }}>
-                        <XAxis type="number" hide />
-                        <YAxis type="category" dataKey="name" hide tickLine={false} axisLine={false} tick={<CustomYAxisTick />} />
-                        <ChartTooltipComponent content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
-                        <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-                            {data.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={`var(--color-${entry.name})`} />
-                            ))}
-                        </Bar>
-                    </BarChart>
-                </ResponsiveContainer>
-            </div>
-        ) : <div className="text-xs text-muted-foreground h-40 flex items-center justify-center">No hay datos suficientes.</div>}
-    </div>
-);
-
-const MetricCard = ({ title, value, icon: Icon, description }: { title: string; value: number | string; icon: React.ElementType; description: string; }) => (
-    <div className="space-y-1">
-        <h4 className="text-sm font-medium text-muted-foreground flex items-center gap-2"><Icon className="h-4 w-4" />{title}</h4>
-        <p className="text-2xl font-bold">{value}</p>
-        <p className="text-xs text-muted-foreground">{description}</p>
-    </div>
-);
 
 export default function SecurityAuditPage() {
     const { user: currentUser } = useAuth();
@@ -217,16 +161,6 @@ export default function SecurityAuditPage() {
         router.push(`${pathname}?${createQueryString({ page })}`);
     };
     
-    const deviceChartConfig: ChartConfig = useMemo(() => {
-        const config: ChartConfig = {};
-        [...deviceData.browserData, ...deviceData.osData].forEach((item, index) => {
-            config[item.name] = {
-                color: `hsl(var(--chart-${(index % 5) + 1}))`
-            }
-        });
-        return config;
-    }, [deviceData]);
-
     if (!currentUser || currentUser.role !== 'ADMINISTRATOR') {
         return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
     }
@@ -243,46 +177,12 @@ export default function SecurityAuditPage() {
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="lg:col-span-1">
-                    <CardHeader>
-                        <CardTitle className="text-lg">Actividad Reciente</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {isLoadingStats ? (
-                            <div className="space-y-4">{[...Array(3)].map((_, i) => <div key={i}><Skeleton className="h-5 w-24 mb-1"/><Skeleton className="h-3 w-32"/></div>)}</div>
-                        ) : stats ? (
-                             <div className="space-y-4">
-                                <MetricCard title="Inicios de Sesión Exitosos" value={stats.successfulLogins24h.toLocaleString()} icon={Users} description="Últimas 24h" />
-                                <MetricCard title="Intentos Fallidos" value={stats.failedLogins24h.toLocaleString()} icon={AlertTriangle} description="Últimas 24h" />
-                                <MetricCard title="Cambios de Rol" value={stats.roleChanges24h.toLocaleString()} icon={UserCog} description="Últimas 24h" />
-                            </div>
-                        ) : <p className="text-sm text-muted-foreground">No se pudieron cargar las estadísticas.</p>}
-                    </CardContent>
-                </Card>
-                <Card className="lg:col-span-1 flex flex-col items-center justify-center text-center">
-                    <CardHeader>
-                        <CardTitle className="text-lg">Mapa de Accesos</CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex-grow flex flex-col items-center justify-center">
-                        <Map className="h-16 w-16 text-muted-foreground mb-4"/>
-                        <p className="font-semibold">Próximamente</p>
-                        <p className="text-sm text-muted-foreground">Visualización geográfica de inicios de sesión.</p>
-                    </CardContent>
-                </Card>
-                 <Card>
-                    <CardHeader>
-                        <CardTitle className="text-lg">Distribución de Dispositivos</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                       {isLoadingLogs ? <div className="flex justify-center items-center h-48"><Loader2 className="animate-spin" /></div> :
-                         <ChartContainer config={deviceChartConfig} className="w-full">
-                           <DeviceDistributionChart title="Navegadores" data={deviceData.browserData} config={deviceChartConfig}/>
-                           <Separator className="my-4"/>
-                           <DeviceDistributionChart title="Sistemas Operativos" data={deviceData.osData} config={deviceChartConfig}/>
-                        </ChartContainer>
-                       }
-                    </CardContent>
-                 </Card>
+                 <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4" id="security-stats-cards">
+                    <MetricCard title="Inicios Exitosos" value={stats?.successfulLogins24h || 0} icon={ShieldCheck} description="Últimas 24h" trendData={stats?.loginsLast7Days || []} dataKey="count" gradient="bg-gradient-green" color="hsl(var(--chart-2))" />
+                    <MetricCard title="Intentos Fallidos" value={stats?.failedLogins24h || 0} icon={AlertTriangle} description="Últimas 24h" gradient="bg-gradient-orange" color="hsl(var(--chart-4))" />
+                    <MetricCard title="Cambios de Rol" value={stats?.roleChanges24h || 0} icon={UserCog} description="Últimas 24h" gradient="bg-gradient-blue" color="hsl(var(--chart-1))" />
+                </div>
+                 <DeviceDistributionChart browserData={deviceData.browserData} osData={deviceData.osData} />
              </div>
             
             <TooltipProvider>
@@ -345,7 +245,7 @@ export default function SecurityAuditPage() {
                                                             <Avatar className="h-8 w-8"><AvatarImage src={log.user.avatar || undefined} /><AvatarFallback><Identicon userId={log.user.id} /></AvatarFallback></Avatar>
                                                             <Link href={`/users?search=${encodeURIComponent(log.user.name || '')}`} className="font-medium hover:underline">{log.user.name}</Link>
                                                         </div>
-                                                    ) : <div className="flex items-center gap-2 text-muted-foreground"><div className="h-8 w-8 flex items-center justify-center rounded-full bg-muted"><UserCog className="h-4 w-4"/></div><span className="text-xs font-mono">{log.emailAttempt || 'Desconocido'}</span></div>}
+                                                    ) : <div className="flex items-center gap-2 text-muted-foreground"><div className="h-8 w-8 flex items-center justify-center rounded-full bg-muted"><UserPlus className="h-4 w-4"/></div><span className="text-xs font-mono">{log.emailAttempt || 'Desconocido'}</span></div>}
                                                 </TableCell>
                                                 <TableCell>
                                                     <Tooltip>
