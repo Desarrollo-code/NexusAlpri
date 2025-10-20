@@ -703,9 +703,9 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   }
 
   return (
-    <div className="flex h-full w-full">
+    <div className="flex h-[calc(100vh-5rem)] md:h-auto md:relative">
       {!isMobile && isSidebarVisible && (
-        <aside className="w-80 flex-shrink-0 border-r bg-card flex flex-col h-full sticky top-0 self-start">
+        <aside className="w-80 flex-shrink-0 border-r bg-card flex flex-col sticky top-20 self-start max-h-[calc(100vh-5rem)]">
             <SidebarContent />
         </aside>
       )}
@@ -720,7 +720,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
       </Sheet>
       
       <div className={cn(
-        "flex-1 flex flex-col min-w-0 h-full transition-[margin-right] duration-300 ease-in-out",
+        "flex-1 flex flex-col min-w-0 transition-[margin-right] duration-300 ease-in-out",
         isNotesPanelOpen && !isMobile && "mr-[28rem]"
       )}>
           <main className="flex-1 overflow-y-auto thin-scrollbar">
@@ -731,7 +731,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
       </div>
 
       {isNotesPanelOpen && !isMobile && (
-          <aside className="w-full max-w-md md:w-[28rem] flex-shrink-0 h-full fixed top-0 right-0 z-20 mt-20">
+          <aside className="w-full max-w-md md:w-[28rem] flex-shrink-0 fixed top-20 right-0 z-20 h-[calc(100vh-5rem)]">
               {selectedLessonId && isEnrolled && (
                   <LessonNotesPanel 
                       lessonId={selectedLessonId}
