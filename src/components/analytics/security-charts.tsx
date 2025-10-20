@@ -2,26 +2,27 @@
 'use client';
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from 'recharts';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell, TooltipProps } from 'recharts';
 import { ChartContainer, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import { Chrome, Apple, Monitor, Globe } from 'lucide-react';
+import { IconBrandWindows, IconBrandLinux } from 'tabler-icons-react';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 const iconMap: Record<string, React.ElementType> = {
     'Chrome': Chrome,
     'Firefox': Globe, 
     'Safari': Globe,
     'Edge': Globe,
-    'Windows': Monitor,
+    'Windows': IconBrandWindows,
     'macOS': Apple,
-    'Linux': Monitor,
+    'Linux': IconBrandLinux,
     'Android': Monitor,
     'iOS': Apple,
 };
 
 const CustomYAxisTick = ({ y, payload }: any) => {
     const Icon = iconMap[payload.value] || Monitor;
-    // Ajustamos la posición vertical para centrar el icono y el texto
     return (
         <g transform={`translate(0,${y})`}>
             <foreignObject x="-70" y="-8" width="60" height="16" className="text-right overflow-visible">
@@ -34,11 +35,23 @@ const CustomYAxisTick = ({ y, payload }: any) => {
     );
 }
 
+const CustomTooltipContent = ({ active, payload, label }: TooltipProps<number, string>) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="p-2 text-sm bg-background/80 border rounded-lg shadow-lg backdrop-blur-sm">
+          <p className="font-bold">{label}</p>
+          <p className="text-primary">Cantidad: {payload[0].value}</p>
+        </div>
+      );
+    }
+    return null;
+};
+
 const Chart = ({ data, config }: { data: any[], config: ChartConfig }) => (
     <div className="h-24"> 
         {data.length > 0 ? (
             <ChartContainer config={config} className="w-full h-full">
-                <BarChart data={data} layout="vertical" margin={{ top: 5, right: 0, left: 70, bottom: 5 }} barCategoryGap={0}>
+                <BarChart data={data} layout="vertical" margin={{ top: 5, right: 0, left: 70, bottom: 5 }} barGap={0}>
                     <XAxis type="number" hide />
                     <YAxis 
                         type="category" 
@@ -46,11 +59,11 @@ const Chart = ({ data, config }: { data: any[], config: ChartConfig }) => (
                         tickLine={false} 
                         axisLine={false} 
                         tick={<CustomYAxisTick />}
-                        width={80} // Damos espacio suficiente para el tick
+                        width={80}
                         interval={0}
                     />
                     <Tooltip 
-                        content={<ChartTooltipContent />} 
+                        content={<CustomTooltipContent />} 
                         cursor={{ fill: 'hsl(var(--muted))' }} 
                     />
                     <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={8}>
@@ -73,6 +86,7 @@ export const DeviceDistributionChart = ({ browserData, osData }: { browserData: 
                 color: `hsl(var(--chart-${(index % 5) + 1}))`
             }
         });
+        config["count"] = { label: "Cantidad" };
         return config;
     }, [browserData, osData]);
 
