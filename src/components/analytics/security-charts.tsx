@@ -5,13 +5,14 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { ChartContainer, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import { Chrome, Apple, Monitor } from 'lucide-react';
-import { IconBrandWindows, IconBrandLinux } from 'tabler-icons-react';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { IconBrandWindows } from '../icons/icon-brand-windows';
+import { IconBrandLinux } from '../icons/icon-brand-linux';
 
 const iconMap: Record<string, React.ElementType> = {
     'Chrome': Chrome,
-    'Firefox': Monitor,
+    'Firefox': Monitor, 
     'Safari': Apple,
     'Edge': Monitor,
     'Windows': IconBrandWindows,
@@ -44,6 +45,9 @@ const chartConfig = {
     macOS: { color: "hsl(var(--chart-3))" },
     Android: { color: "hsl(var(--chart-4))" },
     Linux: { color: "hsl(var(--chart-5))" },
+    Firefox: { color: "hsl(var(--chart-4))" },
+    Safari: { color: "hsl(var(--chart-3))" },
+    Edge: { color: "hsl(var(--chart-2))" },
 } satisfies ChartConfig
 
 const Chart = ({ data }: { data: any[] }) => (
@@ -62,7 +66,7 @@ const Chart = ({ data }: { data: any[] }) => (
                         interval={0}
                     />
                     <Tooltip 
-                        content={<ChartTooltipContent indicator="line" labelKey="count" />} 
+                        content={<ChartTooltipContent indicator="line" nameKey="name" labelKey="count" />}
                         cursor={{ fill: 'hsl(var(--muted))' }} 
                     />
                     <Bar dataKey="count" radius={[0, 4, 4, 0]}>
