@@ -26,14 +26,14 @@ const DataRow = ({ name, value, total }: { name: string, value: number, total: n
     
     return (
         <div className="space-y-1">
-            <div className="flex justify-between items-center text-sm">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                    <Icon className="h-4 w-4" />
+            <div className="flex justify-between items-center text-xs">
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Icon className="h-3.5 w-3.5" />
                     <span>{name}</span>
                 </div>
-                <span className="font-semibold text-foreground">{percentage.toFixed(1)}%</span>
+                <span className="font-semibold text-foreground">{percentage.toFixed(0)}%</span>
             </div>
-            <Progress value={percentage} className="h-1.5"/>
+            <Progress value={percentage} className="h-1"/>
         </div>
     )
 }
@@ -42,12 +42,12 @@ const ChartSection = ({ title, data }: { title: string, data: any[]}) => {
     const total = data.reduce((acc, item) => acc + item.count, 0);
 
     return (
-        <div>
-            <h4 className="font-medium text-sm mb-3">{title}</h4>
-            <div className="space-y-3">
+        <div className="w-1/2">
+            <h4 className="font-medium text-sm mb-2">{title}</h4>
+            <div className="space-y-2">
                  {data.length > 0 ? data.map(item => (
                     <DataRow key={item.name} name={item.name} value={item.count} total={total} />
-                )) : <p className="text-xs text-muted-foreground text-center py-2">No hay datos suficientes.</p>}
+                )) : <p className="text-xs text-muted-foreground text-center py-2">No hay datos.</p>}
             </div>
         </div>
     );
@@ -57,14 +57,14 @@ export const DeviceDistributionChart = ({ browserData, osData }: { browserData: 
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                    <Monitor className="h-5 w-5 text-primary" />
+                <CardTitle className="text-base flex items-center gap-2">
+                    <Monitor className="h-4 w-4 text-primary" />
                     Distribución de Dispositivos
                 </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="flex gap-4">
                 <ChartSection title="Navegadores" data={browserData} />
-                <Separator />
+                <Separator orientation="vertical" className="h-auto" />
                 <ChartSection title="Sistemas Operativos" data={osData} />
             </CardContent>
         </Card>

@@ -22,7 +22,6 @@ import { startOfDay, endOfDay, subDays } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 import { parseUserAgent, getEventDetails } from '@/lib/security-log-utils';
 import { SmartPagination } from '@/components/ui/pagination';
-import { AnimatedGlobe } from '@/components/analytics/animated-globe';
 
 
 const PAGE_SIZE = 15;
@@ -225,15 +224,8 @@ export default function SecurityAuditPage() {
                 </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                 <MetricCard id="successful-logins-card" title="Inicios Exitosos" value={stats?.successfulLogins24h || 0} icon={ShieldCheck} onClick={() => handleEventFilterChange('SUCCESSFUL_LOGIN')} />
-                 <MetricCard id="failed-logins-card" title="Intentos Fallidos" value={stats?.failedLogins24h || 0} icon={AlertTriangle} onClick={() => handleEventFilterChange('FAILED_LOGIN_ATTEMPT')} />
-                 <MetricCard id="role-changes-card" title="Cambios de Rol" value={stats?.roleChanges24h || 0} icon={UserCog} onClick={() => handleEventFilterChange('USER_ROLE_CHANGED')} />
-                 <DeviceDistributionChart browserData={deviceData.browserData} osData={deviceData.osData} />
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+                <div className="lg:col-span-3 space-y-6">
                     <Card id="security-log-table">
                         <CardHeader>
                             <CardTitle>Registro de Eventos Detallado</CardTitle>
@@ -249,7 +241,13 @@ export default function SecurityAuditPage() {
                         )}
                     </Card>
                 </div>
-                <div className="lg:col-span-1 space-y-6">
+                <aside className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
+                     <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-4">
+                         <MetricCard id="successful-logins-card" title="Inicios Exitosos" value={stats?.successfulLogins24h || 0} icon={ShieldCheck} onClick={() => handleEventFilterChange('SUCCESSFUL_LOGIN')} />
+                         <MetricCard id="failed-logins-card" title="Intentos Fallidos" value={stats?.failedLogins24h || 0} icon={ShieldX} onClick={() => handleEventFilterChange('FAILED_LOGIN_ATTEMPT')} />
+                         <MetricCard id="role-changes-card" title="Cambios de Rol" value={stats?.roleChanges24h || 0} icon={UserCog} onClick={() => handleEventFilterChange('USER_ROLE_CHANGED')} />
+                     </div>
+                     <DeviceDistributionChart browserData={deviceData.browserData} osData={deviceData.osData} />
                      <Card>
                          <CardHeader>
                              <CardTitle className="text-base flex items-center gap-2">Eventos Críticos Recientes</CardTitle>
@@ -260,7 +258,7 @@ export default function SecurityAuditPage() {
                                 {criticalEvents.map(log => {
                                     const eventUI = getEventDetails(log.event, log.details);
                                     return (
-                                        <div key={log.id} className="flex items-center gap-2 text-sm p-2 rounded-md bg-muted/50">
+                                        <div key={log.id} className="flex items-center gap-2 text-sm p-2 rounded-md bg-muted/50 cursor-pointer hover:bg-muted" onClick={() => setSelectedLog(log)}>
                                             {eventUI.icon}
                                             <div className="flex-grow min-w-0">
                                                 <p className="font-semibold truncate">{log.user?.name || log.emailAttempt}</p>
@@ -273,18 +271,7 @@ export default function SecurityAuditPage() {
                             ) : <p className="text-sm text-center text-muted-foreground py-4">No hay eventos críticos recientes.</p>}
                          </CardContent>
                     </Card>
-                     <Card className="h-full">
-                        <CardHeader>
-                            <CardTitle className="text-base flex items-center gap-2">Mapa de Accesos</CardTitle>
-                        </CardHeader>
-                         <CardContent className="flex items-center justify-center">
-                            <AnimatedGlobe />
-                        </CardContent>
-                        <CardFooter>
-                           <p className="text-xs text-muted-foreground text-center w-full">Visualización de accesos globales próximamente.</p>
-                        </CardFooter>
-                     </Card>
-                </div>
+                </aside>
             </div>
             {selectedLog && <SecurityLogDetailSheet log={selectedLog} isOpen={!!selectedLog} onClose={() => setSelectedLog(null)} />}
         </div>
