@@ -5,9 +5,7 @@ import { useTitle } from '@/contexts/title-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { AlertTriangle, Globe, Activity, CheckCircle, XCircle, Shield, UserCog, KeyRound, Clock, FileDown, HelpCircle, Filter } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
-import dynamic from 'next/dynamic';
 import { Loader2 } from 'lucide-react';
-import { MetricCard } from '@/components/security/metric-card';
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import type { SecurityLog, SecurityLogEvent } from '@/types';
 import { getEventDetails } from '@/lib/security-log-utils';
@@ -17,10 +15,11 @@ import { es } from 'date-fns/locale';
 import { SmartPagination } from '@/components/ui/pagination';
 import { useTour } from '@/contexts/tour-context';
 import { securityAuditTour } from '@/lib/tour-steps';
-import { SecurityLogTable } from '@/components/security/security-log-table';
 import { SecurityLogDetailSheet } from '@/components/security/security-log-detail-sheet';
 import { DeviceDistributionChart } from '@/components/security/device-distribution-chart';
 import { parseUserAgent } from '@/lib/security-log-utils';
+import { SecurityLogTimeline } from '@/components/security/security-log-timeline';
+import { MetricCard } from '@/components/security/metric-card';
 
 export default function SecurityAuditPage() {
     const { setPageTitle } = useTitle();
@@ -36,9 +35,8 @@ export default function SecurityAuditPage() {
     const [page, setPage] = useState(1);
     const [totalLogs, setTotalLogs] = useState(0);
     const { startTour, forceStartTour } = useTour();
-    const PAGE_SIZE = 15;
+    const PAGE_SIZE = 20;
     
-    // --- FIX: Define totalPages before it's used ---
     const totalPages = Math.ceil(totalLogs / PAGE_SIZE);
 
     useEffect(() => {
@@ -177,32 +175,32 @@ export default function SecurityAuditPage() {
                                 <HelpCircle className="mr-2 h-4 w-4" /> Guía Rápida
                             </Button>
                            <Button variant="outline" size="sm" onClick={handleExport} disabled={logs.length === 0}>
-                               <FileDown className="mr-2 h-4 w-4"/> Exportar CSV
+                               <FileDown className="mr-2 h-4 w-4"/> Exportar
                            </Button>
                            <DateRangePicker date={dateRange} onDateChange={(range) => { if (range) setDateRange(range); }} />
                       </div>
                  </div>
                  
                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-                    <div className="lg:col-span-3">
-                         <Card id="security-log-table">
+                    <main className="lg:col-span-3">
+                         <Card id="security-log-timeline">
                             <CardHeader>
                                 <CardTitle>Registro de Eventos Detallado</CardTitle>
-                                <CardDescription>Actividad reciente en la plataforma. Haz clic en una fila para ver más detalles.</CardDescription>
+                                <CardDescription>Actividad reciente en la plataforma. Haz clic en un evento para ver más detalles.</CardDescription>
                             </CardHeader>
-                            <CardContent className="p-0">
+                            <CardContent>
                                 {isLoading ? <div className="h-96 flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div> :
-                                 logs.length > 0 ? <SecurityLogTable logs={logs} onRowClick={setSelectedLog} /> :
+                                 logs.length > 0 ? <SecurityLogTimeline logs={logs} onLogClick={setSelectedLog} /> :
                                  <div className="h-48 flex flex-col items-center justify-center text-muted-foreground"><p>No hay eventos para el período seleccionado.</p></div>
                                 }
                             </CardContent>
                              {totalPages > 1 && (
-                                <CardFooter className="pt-4">
+                                <CardFooter className="pt-4 border-t">
                                    <SmartPagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
                                 </CardFooter>
                             )}
                          </Card>
-                    </div>
+                    </main>
                     <aside className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
                         <div className="grid grid-cols-1 gap-4" id="security-stats-cards">
                            <MetricCard id="success-card" title="Inicios Exitosos (24h)" value={stats?.successfulLogins24h || 0} icon={CheckCircle} onClick={() => handleFilterClick('SUCCESSFUL_LOGIN')}/>
@@ -210,27 +208,6 @@ export default function SecurityAuditPage() {
                            <MetricCard id="role-card" title="Cambios de Rol (24h)" value={stats?.roleChanges24h || 0} icon={UserCog} onClick={() => handleFilterClick('USER_ROLE_CHANGED')}/>
                         </div>
                         <DeviceDistributionChart browserData={deviceData.browsers} osData={deviceData.os} />
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-destructive"/> Eventos Críticos Recientes</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <ul className="space-y-3">
-                                    {criticalEvents.length > 0 ? criticalEvents.map(log => {
-                                        const eventUI = getEventDetails(log.event, log.details);
-                                        return (
-                                            <li key={log.id} className="flex items-center gap-3 text-xs cursor-pointer hover:bg-muted/50 p-1 rounded-md" onClick={() => setSelectedLog(log)}>
-                                                <div className="p-1.5 bg-muted rounded-full">{eventUI.icon}</div>
-                                                <div className="flex-grow">
-                                                    <p className="font-semibold text-foreground truncate">{log.user?.name || log.emailAttempt}</p>
-                                                    <p className="text-muted-foreground">{eventUI.label}</p>
-                                                </div>
-                                            </li>
-                                        )
-                                    }) : <p className="text-xs text-center text-muted-foreground py-4">No hay eventos críticos recientes.</p>}
-                                </ul>
-                            </CardContent>
-                        </Card>
                     </aside>
                  </div>
             </div>
