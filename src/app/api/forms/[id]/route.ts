@@ -33,11 +33,6 @@ export async function GET(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
 
-    const permission = await checkPermissions(formId, session);
-    // Para GET, también podríamos permitir a los usuarios a quienes se les compartió el formulario.
-    // Esta lógica se simplifica aquí por ahora.
-    if (!permission.authorized) return permission.error;
-
     const form = await prisma.form.findUnique({
       where: { id: formId },
       include: {
@@ -183,12 +178,27 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   if (!permission.authorized) return permission.error;
 
   try {
-    await prisma.form.delete({ where: { id: formId } });
+    // Inicia una transacción para asegurar la coherencia
+    await prisma.$transaction([
+      // 1. Eliminar las notificaciones relacionadas con este formulario
+      prisma.notification.deleteMany({
+        where: {
+          link: {
+            contains: `/forms/${formId}`
+          }
+        }
+      }),
+      // 2. Eliminar el formulario (Prisma se encargará de eliminar en cascada las respuestas y campos)
+      prisma.form.delete({ where: { id: formId } })
+    ]);
+
     return new NextResponse(null, { status: 204 });
+
   } catch (error) {
     console.error(`[DELETE_FORM_ID: ${formId}] Error al eliminar el formulario:`, error);
     if ((error as any).code === 'P2025') {
-       return NextResponse.json({ message: 'El formulario a eliminar no fue encontrado.' }, { status: 404 });
+       // Si el formulario ya no existe, la operación es idempotente, así que es un éxito.
+       return new NextResponse(null, { status: 204 });
     }
     return NextResponse.json({ message: 'Error al eliminar el formulario' }, { status: 500 });
   }
