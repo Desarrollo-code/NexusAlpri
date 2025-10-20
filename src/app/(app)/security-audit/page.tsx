@@ -22,6 +22,7 @@ import { ExportToCsvButton } from '@/components/ui/export-to-csv';
 import { Skeleton } from "@/components/ui/skeleton";
 import { GlobalAccessMap } from '@/components/security/global-access-map';
 
+const PAGE_SIZE = 100; // Aumentar para que la línea de tiempo tenga más datos
 
 export default function SecurityAuditPage() {
     const { setPageTitle, setHeaderActions } = useTitle();
@@ -122,15 +123,15 @@ export default function SecurityAuditPage() {
                 
                  {/* Columna Central: Globo y Lista de IPs */}
                  <div className="lg:col-span-5 xl:col-span-6 space-y-6">
-                    <Card className="h-[400px]">
-                      <CardContent className="p-0 h-full">
-                        <GlobalAccessMap accessPoints={logs} />
-                      </CardContent>
+                    <Card className="h-[400px] overflow-hidden">
+                        <CardContent className="p-0 h-full">
+                           <GlobalAccessMap accessPoints={logs} />
+                        </CardContent>
                     </Card>
                     <Card>
                        <CardHeader><CardTitle>Lista de IPs</CardTitle></CardHeader>
                        <CardContent>
-                           <p className="text-muted-foreground text-sm">Próximamente: Aquí se mostrará una lista detallada y agrupada de las direcciones IP con más actividad.</p>
+                           <p className="text-muted-foreground text-sm text-center py-8">Próximamente: Aquí se mostrará una lista detallada y agrupada de las direcciones IP con más actividad.</p>
                        </CardContent>
                     </Card>
                  </div>
