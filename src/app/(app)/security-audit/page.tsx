@@ -7,7 +7,7 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Monitor, Globe, HelpCircle, AlertTriangle, BarChart3, TrendingUp, Users, Shield, Clock, UserCog, Map, Chrome, Firefox, GlobeIcon, Apple, Windows, Smartphone } from 'lucide-react';
+import { Loader2, Monitor, Globe, HelpCircle, AlertTriangle, BarChart3, Users, Shield, Clock, UserCog, Map, Chrome, Apple, Smartphone } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, User as AppUser, SecurityLogEvent, SecurityStats } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -75,10 +75,10 @@ const processDeviceData = (logs: SecurityLogWithUser[]) => {
 const CustomYAxisTick = ({ y, payload }: any) => {
     const iconMap: Record<string, React.ElementType> = {
         'Chrome': Chrome,
-        'Firefox': Firefox,
-        'Safari': GlobeIcon,
-        'Edge': GlobeIcon,
-        'Windows 11/10': Windows,
+        'Firefox': Globe, // Reemplazado
+        'Safari': Globe,
+        'Edge': Globe,
+        'Windows': Monitor, // Reemplazado
         'macOS': Apple,
         'Linux': Monitor,
         'Android': Smartphone,
@@ -106,6 +106,7 @@ const DeviceDistributionChart = ({ title, data, config }: { title: string, data:
                     <BarChart data={data} layout="vertical" margin={{ top: 0, right: 0, left: 70, bottom: 0 }}>
                         <XAxis type="number" hide />
                         <YAxis type="category" dataKey="name" hide tickLine={false} axisLine={false} tick={<CustomYAxisTick />} />
+                        <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
                         <Bar dataKey="count" radius={[0, 4, 4, 0]}>
                             {data.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={`var(--color-${entry.name})`} />
@@ -114,7 +115,7 @@ const DeviceDistributionChart = ({ title, data, config }: { title: string, data:
                     </BarChart>
                 </ResponsiveContainer>
             </div>
-        ) : <p className="text-xs text-muted-foreground h-40 flex items-center justify-center">No hay datos suficientes.</p>}
+        ) : <div className="text-xs text-muted-foreground h-40 flex items-center justify-center">No hay datos suficientes.</div>}
     </div>
 );
 
@@ -145,17 +146,25 @@ export default function SecurityAuditPage() {
         startTour('securityAudit', securityAuditTour);
     }, [setPageTitle, startTour]);
 
-    const fetchLogs = useCallback(async () => {
+    const fetchLogs = useCallback(async (fetchAllForChart = false) => {
         setIsLoadingLogs(true);
         setError(null);
         try {
             const params = new URLSearchParams(searchParams.toString());
             params.set('pageSize', String(PAGE_SIZE));
+             if (fetchAllForChart) {
+                params.set('all', 'true');
+            }
             const response = await fetch(`/api/security/logs?${params.toString()}`);
             if (!response.ok) throw new Error((await response.json()).message || 'Failed to fetch security logs');
             const data = await response.json();
-            setLogs(data.logs || []);
-            setTotalLogs(data.totalLogs || 0);
+            
+            if (fetchAllForChart) {
+                 setDeviceData(processDeviceData(data.logs || []));
+            } else {
+                setLogs(data.logs || []);
+                setTotalLogs(data.totalLogs || 0);
+            }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Unknown error fetching logs');
             toast({ title: 'Error', description: err instanceof Error ? err.message : 'Could not load security logs.', variant: 'destructive' });
@@ -164,19 +173,6 @@ export default function SecurityAuditPage() {
         }
     }, [searchParams, toast]);
     
-     const fetchAllLogsForCharts = useCallback(async () => {
-        try {
-            const response = await fetch(`/api/security/logs?all=true`);
-            if (!response.ok) throw new Error('Failed to fetch all logs for charts');
-            const data = await response.json();
-            if (data.logs) {
-                setDeviceData(processDeviceData(data.logs));
-            }
-        } catch (err) {
-            console.error(err); // Log error silently
-        }
-    }, []);
-
     const fetchStats = useCallback(async () => {
         setIsLoadingStats(true);
         try {
@@ -185,7 +181,7 @@ export default function SecurityAuditPage() {
             const data = await response.json();
             setStats(data);
         } catch (err) {
-             console.error("Stats fetching error:", err); // Log but don't show toast for stats
+             console.error("Stats fetching error:", err);
         } finally {
             setIsLoadingStats(false);
         }
@@ -195,11 +191,11 @@ export default function SecurityAuditPage() {
         if (currentUser?.role === 'ADMINISTRATOR') {
             fetchLogs();
             fetchStats();
-            fetchAllLogsForCharts();
+            fetchLogs(true); // Fetch all for charts
         } else if (currentUser) {
              router.push('/dashboard');
         }
-    }, [currentUser, router, fetchLogs, fetchStats, fetchAllLogsForCharts]);
+    }, [currentUser, router, fetchLogs, fetchStats]);
     
     const createQueryString = useCallback((paramsToUpdate: Record<string, string | number | null>) => {
         const params = new URLSearchParams(searchParams.toString());
