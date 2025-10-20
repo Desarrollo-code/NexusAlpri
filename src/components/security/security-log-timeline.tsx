@@ -11,10 +11,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Separator } from '@/components/ui/separator';
 
 const TimelineItem = ({ log, onLogClick, isLast }: { log: SecurityLog, onLogClick: (log: SecurityLog) => void, isLast: boolean }) => {
     const eventUI = getEventDetails(log.event, log.details);
-    const { os } = parseUserAgent(log.userAgent);
+    const { browser, os } = parseUserAgent(log.userAgent);
     const isMobileDevice = os === 'Android' || os === 'iOS';
     const hasGeo = log.country || log.city;
 
@@ -63,7 +64,7 @@ const TimelineItem = ({ log, onLogClick, isLast }: { log: SecurityLog, onLogClic
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
                         <div className="flex items-center gap-1.5">
                             {isMobileDevice ? <Smartphone className="h-3.5 w-3.5"/> : <Monitor className="h-3.5 w-3.5"/>}
-                            <span className="truncate">{parseUserAgent(log.userAgent).browser}, {parseUserAgent(log.userAgent).os}</span>
+                            <span className="truncate">{browser}, {os}</span>
                         </div>
                         {hasGeo && (
                             <div className="flex items-center gap-1.5">
