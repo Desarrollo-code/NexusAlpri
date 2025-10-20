@@ -1,14 +1,13 @@
-
 // src/app/(app)/security-audit/page.tsx
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Monitor, Globe, HelpCircle, AlertTriangle, BarChart3, Users, Shield, Clock, UserCog, Map, Chrome, Apple, Smartphone, GlobeIcon } from 'lucide-react';
+import { Loader2, Monitor, Globe, HelpCircle, AlertTriangle, BarChart3, Users, Shield, Clock, UserCog, Map, Chrome, Apple, Smartphone, GlobeIcon, ArrowRight } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, User as AppUser, SecurityLogEvent, SecurityStats } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -23,18 +22,8 @@ import { Identicon } from '@/components/ui/identicon';
 import { useTour } from '@/contexts/tour-context';
 import { securityAuditTour } from '@/lib/tour-steps';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ResponsiveContainer } from 'recharts';
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  BarChart,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Bar,
-  Cell,
-} from '@/components/ui/chart';
+import { ResponsiveContainer, BarChart, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltipComponent, Bar, Cell } from 'recharts';
+import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
 import { Separator } from '@/components/ui/separator';
 
@@ -115,7 +104,7 @@ const DeviceDistributionChart = ({ title, data, config }: { title: string, data:
                     <BarChart data={data} layout="vertical" margin={{ top: 0, right: 0, left: 70, bottom: 0 }}>
                         <XAxis type="number" hide />
                         <YAxis type="category" dataKey="name" hide tickLine={false} axisLine={false} tick={<CustomYAxisTick />} />
-                        <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
+                        <ChartTooltipComponent content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
                         <Bar dataKey="count" radius={[0, 4, 4, 0]}>
                             {data.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={`var(--color-${entry.name})`} />
@@ -129,16 +118,11 @@ const DeviceDistributionChart = ({ title, data, config }: { title: string, data:
 );
 
 const MetricCard = ({ title, value, icon: Icon, description }: { title: string; value: number | string; icon: React.ElementType; description: string; }) => (
-    <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{title}</CardTitle>
-            <Icon className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-            <div className="text-2xl font-bold">{value}</div>
-            <p className="text-xs text-muted-foreground">{description}</p>
-        </CardContent>
-    </Card>
+    <div className="space-y-1">
+        <h4 className="text-sm font-medium text-muted-foreground flex items-center gap-2"><Icon className="h-4 w-4" />{title}</h4>
+        <p className="text-2xl font-bold">{value}</p>
+        <p className="text-xs text-muted-foreground">{description}</p>
+    </div>
 );
 
 export default function SecurityAuditPage() {
@@ -171,7 +155,6 @@ export default function SecurityAuditPage() {
         setIsLoadingLogs(true);
         setError(null);
         try {
-            // Fetch paginated logs for the table
             const tableParams = new URLSearchParams(searchParams.toString());
             tableParams.set('pageSize', String(PAGE_SIZE));
             const tableResponse = await fetch(`/api/security/logs?${tableParams.toString()}`);
@@ -180,7 +163,6 @@ export default function SecurityAuditPage() {
             setLogs(tableData.logs || []);
             setTotalLogs(tableData.totalLogs || 0);
 
-            // Fetch all logs for device data calculation (can be optimized in the future)
             const allLogsResponse = await fetch(`/api/security/logs?all=true`);
             if (allLogsResponse.ok) {
                 const allLogsData = await allLogsResponse.json();
@@ -262,19 +244,25 @@ export default function SecurityAuditPage() {
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <Card className="lg:col-span-1">
-                    <CardHeader><CardTitle>Actividad Reciente</CardTitle></CardHeader>
-                    <CardContent>
-                        {isLoadingStats ? <div className="space-y-4">{[...Array(4)].map((_, i) => (<div key={i} className="flex items-center gap-3"><Skeleton className="h-9 w-9 rounded-full" /><div className="space-y-1.5"><Skeleton className="h-4 w-32" /><Skeleton className="h-3 w-24" /></div></div>))}</div> :
-                            <div className="space-y-2">
-                                <MetricCard title="Inicios de Sesión Exitosos" value={stats?.successfulLogins24h.toLocaleString() || '0'} icon={Users} description="Últimas 24h" />
-                                <MetricCard title="Intentos de Acceso Fallidos" value={stats?.failedLogins24h.toLocaleString() || '0'} icon={AlertTriangle} description="Últimas 24h" />
-                                <MetricCard title="Cambios de Roles" value={stats?.roleChanges24h.toLocaleString() || '0'} icon={UserCog} description="Últimas 24h" />
+                    <CardHeader>
+                        <CardTitle className="text-lg">Actividad Reciente</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {isLoadingStats ? (
+                            <div className="space-y-4">{[...Array(3)].map((_, i) => <div key={i}><Skeleton className="h-5 w-24 mb-1"/><Skeleton className="h-3 w-32"/></div>)}</div>
+                        ) : stats ? (
+                             <div className="space-y-4">
+                                <MetricCard title="Inicios de Sesión Exitosos" value={stats.successfulLogins24h.toLocaleString()} icon={Users} description="Últimas 24h" />
+                                <MetricCard title="Intentos Fallidos" value={stats.failedLogins24h.toLocaleString()} icon={AlertTriangle} description="Últimas 24h" />
+                                <MetricCard title="Cambios de Rol" value={stats.roleChanges24h.toLocaleString()} icon={UserCog} description="Últimas 24h" />
                             </div>
-                        }
+                        ) : <p className="text-sm text-muted-foreground">No se pudieron cargar las estadísticas.</p>}
                     </CardContent>
                 </Card>
                 <Card className="lg:col-span-1 flex flex-col items-center justify-center text-center">
-                    <CardHeader><CardTitle>Mapa de Accesos</CardTitle></CardHeader>
+                    <CardHeader>
+                        <CardTitle className="text-lg">Mapa de Accesos</CardTitle>
+                    </CardHeader>
                     <CardContent className="flex-grow flex flex-col items-center justify-center">
                         <Map className="h-16 w-16 text-muted-foreground mb-4"/>
                         <p className="font-semibold">Próximamente</p>
@@ -282,8 +270,10 @@ export default function SecurityAuditPage() {
                     </CardContent>
                 </Card>
                  <Card>
-                    <CardHeader><CardTitle>Distribución de Dispositivos</CardTitle></CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardHeader>
+                        <CardTitle className="text-lg">Distribución de Dispositivos</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
                        {isLoadingLogs ? <div className="flex justify-center items-center h-48"><Loader2 className="animate-spin" /></div> :
                          <ChartContainer config={deviceChartConfig} className="w-full">
                            <DeviceDistributionChart title="Navegadores" data={deviceData.browserData} config={deviceChartConfig}/>
