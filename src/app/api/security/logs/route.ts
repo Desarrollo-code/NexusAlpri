@@ -18,6 +18,8 @@ export async function GET(req: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1', 10);
     const pageSize = parseInt(searchParams.get('pageSize') || '20', 10);
     const eventType = searchParams.get('event') as SecurityLogEvent | null;
+    const getAll = searchParams.get('all') === 'true'; // New parameter
+
     const skip = (page - 1) * pageSize;
 
     let whereClause: any = {};
@@ -26,23 +28,26 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-        const [logs, totalLogs] = await prisma.$transaction([
-            prisma.securityLog.findMany({
-                where: whereClause,
-                orderBy: {
-                    createdAt: 'desc',
-                },
-                skip: skip,
-                take: pageSize,
-                include: {
-                    user: {
-                        select: {
-                            id: true,
-                            name: true,
-                            avatar: true,
-                        },
+        const findOptions = {
+            where: whereClause,
+            orderBy: {
+                createdAt: 'desc',
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        avatar: true,
                     },
                 },
+            },
+        };
+        
+        const [logs, totalLogs] = await prisma.$transaction([
+            prisma.securityLog.findMany({
+                ...findOptions,
+                ...(!getAll && { skip, take: pageSize }), // Apply pagination only if not getting all
             }),
             prisma.securityLog.count({ where: whereClause })
         ]);

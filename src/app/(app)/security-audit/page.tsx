@@ -7,7 +7,7 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Monitor, Globe, HelpCircle, AlertTriangle, BarChart3, TrendingUp, Users, Shield, Clock, UserCog } from 'lucide-react';
+import { Loader2, Monitor, Globe, HelpCircle, AlertTriangle, BarChart3, TrendingUp, Users, Shield, Clock, UserCog, Map } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, User as AppUser, SecurityLogEvent, SecurityStats } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,7 @@ import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/comp
 import { useTitle } from '@/contexts/title-context';
 import { SmartPagination } from '@/components/ui/pagination';
 import { Identicon } from '@/components/ui/identicon';
-import { useTour } from '@/contexts/tour-context';
+import { useTour } from '@/components/tour-context';
 import { securityAuditTour } from '@/lib/tour-steps';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, BarChart, XAxis, YAxis, CartesianGrid, Bar } from '@/components/ui/chart';
@@ -43,6 +43,34 @@ const ALL_EVENTS: { value: SecurityLogEvent | 'ALL', label: string }[] = [
     { value: 'USER_ROLE_CHANGED', label: 'Cambios de Rol' },
 ];
 
+const processDeviceData = (logs: SecurityLogWithUser[]) => {
+    const browserCounts: { [key: string]: number } = {};
+    const osCounts: { [key: string]: number } = {};
+
+    logs.forEach(log => {
+        const { browser, os } = parseUserAgent(log.userAgent);
+        if (browser !== 'Desconocido') {
+            browserCounts[browser] = (browserCounts[browser] || 0) + 1;
+        }
+        if (os !== 'Desconocido') {
+            osCounts[os] = (osCounts[os] || 0) + 1;
+        }
+    });
+
+    const toChartData = (counts: { [key: string]: number }) => {
+        return Object.entries(counts)
+            .map(([name, count]) => ({ name, count }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 5);
+    };
+
+    return {
+        browserData: toChartData(browserCounts),
+        osData: toChartData(osCounts),
+    };
+};
+
+
 export default function SecurityAuditPage() {
     const { user: currentUser } = useAuth();
     const router = useRouter();
@@ -58,6 +86,7 @@ export default function SecurityAuditPage() {
     const [isLoadingLogs, setIsLoadingLogs] = useState(true);
     const [isLoadingStats, setIsLoadingStats] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [deviceData, setDeviceData] = useState<{ browserData: any[], osData: any[] }>({ browserData: [], osData: [] });
     
     const activeFilter = searchParams.get('event') || 'ALL';
     const currentPage = Number(searchParams.get('page')) || 1;
@@ -87,6 +116,19 @@ export default function SecurityAuditPage() {
         }
     }, [searchParams, toast]);
     
+     const fetchAllLogsForCharts = useCallback(async () => {
+        try {
+            const response = await fetch(`/api/security/logs?all=true`);
+            if (!response.ok) throw new Error('Failed to fetch all logs for charts');
+            const data = await response.json();
+            if (data.logs) {
+                setDeviceData(processDeviceData(data.logs));
+            }
+        } catch (err) {
+            console.error(err); // Log error silently
+        }
+    }, []);
+
     const fetchStats = useCallback(async () => {
         setIsLoadingStats(true);
         try {
@@ -105,10 +147,11 @@ export default function SecurityAuditPage() {
         if (currentUser?.role === 'ADMINISTRATOR') {
             fetchLogs();
             fetchStats();
+            fetchAllLogsForCharts();
         } else if (currentUser) {
              router.push('/dashboard');
         }
-    }, [currentUser, router, fetchLogs, fetchStats]);
+    }, [currentUser, router, fetchLogs, fetchStats, fetchAllLogsForCharts]);
     
     const createQueryString = useCallback((paramsToUpdate: Record<string, string | number | null>) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -152,25 +195,77 @@ export default function SecurityAuditPage() {
                 </>}
             </div>
 
-            <Separator />
-            
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><TrendingUp/>Actividad de Inicios de Sesión</CardTitle>
-                    <CardDescription>Resumen de los últimos 7 días.</CardDescription>
-                </CardHeader>
-                <CardContent className="h-72">
-                    {isLoadingStats ? <Skeleton className="h-full w-full"/> : <ChartContainer config={{count: {label: "Inicios de Sesión"}}} className="w-full h-full">
-                        <BarChart data={stats?.loginsLast7Days || []} margin={{top: 5, right: 10, left: -20, bottom: 5}}>
-                        <CartesianGrid vertical={false} />
-                        <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} tickFormatter={(value) => new Date(value).toLocaleDateString('es-ES', { weekday: 'short' })}/>
-                        <YAxis tickLine={false} axisLine={false} tickMargin={10} allowDecimals={false} />
-                        <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line"/>} />
-                        <Bar dataKey="count" fill="hsl(var(--primary))" radius={4} />
-                    </BarChart>
-                    </ChartContainer>}
-                </CardContent>
-            </Card>
+             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <Card className="lg:col-span-1">
+                    <CardHeader><CardTitle>Actividad Reciente</CardTitle></CardHeader>
+                    <CardContent>
+                        {isLoadingLogs ? (
+                            <div className="space-y-4">{[...Array(5)].map((_, i) => (<div key={i} className="flex items-center gap-3"><Skeleton className="h-9 w-9 rounded-full" /><div className="space-y-1.5"><Skeleton className="h-4 w-32" /><Skeleton className="h-3 w-24" /></div></div>))}</div>
+                        ) : (
+                            <ul className="space-y-4">
+                                {logs.slice(0, 5).map(log => {
+                                   const eventUI = getEventDetails(log.event as SecurityLogEvent, log.details);
+                                   return (
+                                    <li key={log.id} className="flex items-center gap-3">
+                                        <div className="p-2 bg-muted rounded-full">{eventUI.icon}</div>
+                                        <div className="text-sm">
+                                            <p className="font-semibold">{log.user?.name || log.emailAttempt}</p>
+                                            <p className="text-muted-foreground">{eventUI.label}</p>
+                                        </div>
+                                    </li>
+                                   )
+                                })}
+                            </ul>
+                        )}
+                    </CardContent>
+                </Card>
+                <Card className="lg:col-span-1 flex flex-col items-center justify-center text-center">
+                    <CardHeader><CardTitle>Mapa de Accesos</CardTitle></CardHeader>
+                    <CardContent className="flex-grow flex flex-col items-center justify-center">
+                        <Map className="h-16 w-16 text-muted-foreground mb-4"/>
+                        <p className="font-semibold">Próximamente</p>
+                        <p className="text-sm text-muted-foreground">Visualización geográfica de inicios de sesión.</p>
+                    </CardContent>
+                </Card>
+                 <Card className="lg:col-span-1">
+                    <CardHeader><CardTitle>Distribución de Dispositivos</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                         <div>
+                            <h4 className="font-medium text-sm mb-2">Navegadores</h4>
+                            {deviceData.browserData.length > 0 ? (
+                                <div className="h-24">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={deviceData.browserData} layout="vertical" margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                                    <XAxis type="number" hide />
+                                    <YAxis type="category" dataKey="name" hide />
+                                    <Bar dataKey="count" fill="hsl(var(--primary))" radius={4} layout="vertical">
+                                        {deviceData.browserData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} />
+                                        ))}
+                                    </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                                </div>
+                            ) : <p className="text-xs text-muted-foreground">No hay datos.</p>}
+                        </div>
+                        <Separator />
+                        <div>
+                            <h4 className="font-medium text-sm mb-2">Sistemas Operativos</h4>
+                             {deviceData.osData.length > 0 ? (
+                                <div className="h-24">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={deviceData.osData} layout="vertical" margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                                    <XAxis type="number" hide />
+                                    <YAxis type="category" dataKey="name" hide />
+                                    <Bar dataKey="count" fill="hsl(var(--chart-2))" radius={4} layout="vertical" />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                                </div>
+                            ) : <p className="text-xs text-muted-foreground">No hay datos.</p>}
+                        </div>
+                    </CardContent>
+                 </Card>
+             </div>
             
             <TooltipProvider>
                 <Card id="security-log-table">
