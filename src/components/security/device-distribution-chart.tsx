@@ -5,7 +5,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Monitor, Chrome, Apple, HelpCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import { IconBrandWindows, IconBrandLinux } from '@/components/icons';
+import { IconBrandWindows } from '@/components/icons/icon-brand-windows';
+import { IconBrandLinux } from '@/components/icons/icon-brand-linux';
 
 const iconMap: Record<string, React.ElementType> = {
     'Chrome': Chrome,

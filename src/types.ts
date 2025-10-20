@@ -113,30 +113,35 @@ export interface Module {
   lessons: Lesson[];
 }
 
-export interface Course {
+export type CoursePrerequisiteInfo = {
   id: string;
   title: string;
-  description: string;
-  category?: string;
+} | null;
+
+export interface Course extends Omit<Prisma.Course, 'instructor' | 'prerequisite' | 'isMandatory'> {
   instructor: {
       id: string;
       name: string;
       avatar: string | null;
   };
-  instructorId?: string;
-  imageUrl?: string;
   modulesCount: number;
   lessonsCount?: number;
   modules: Module[];
-  status: CourseStatus;
   isEnrolled?: boolean;
   enrollmentsCount?: number;
   averageCompletion?: number;
   publicationDate?: Date | null;
+  prerequisite: CoursePrerequisiteInfo;
+  userProgress?: {
+      completedAt: Date | null;
+  }[] | null;
+  prerequisiteCompleted?: boolean;
+  isMandatory: boolean;
 }
 
 
 export interface EnrolledCourse extends Course {
+    enrollmentId: string;
     enrolledAt: string;
     progressPercentage?: number;
 }
@@ -166,25 +171,20 @@ export interface UserNote {
     updatedAt: string;
 }
 
+export type CourseAssignment = Prisma.CourseAssignment;
+
 
 // --- RESOURCES ---
-export type ResourceType = 'FOLDER' | 'DOCUMENT' | 'GUIDE' | 'MANUAL' | 'POLICY' | 'VIDEO' | 'EXTERNAL_LINK' | 'OTHER';
+export type ResourceType = 'FOLDER' | 'DOCUMENT' | 'GUIDE' | 'MANUAL' | 'POLICY' | 'VIDEO' | 'EXTERNAL_LINK' | 'OTHER' | 'DOCUMENTO_EDITABLE';
+export type ResourceStatus = 'ACTIVE' | 'ARCHIVED';
 
-export interface EnterpriseResource {
-    id: string;
-    title: string;
-    type: ResourceType;
-    description?: string | null;
-    url?: string | null;
-    uploadDate: string;
-    uploaderId: string;
-    uploaderName?: string;
-    category?: string | null;
+export interface EnterpriseResource extends Omit<Prisma.EnterpriseResource, 'tags' | 'status'> {
     tags: string[];
-    ispublic: boolean;
+    uploaderName: string;
     hasPin: boolean;
-    sharedWith: Pick<User, 'id' | 'name' | 'avatar'>[];
-    parentId?: string | null;
+    status: ResourceStatus;
+    uploader?: { id: string, name: string | null, avatar: string | null } | null;
+    sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
 }
 
 
@@ -204,11 +204,11 @@ export interface Announcement {
     title: string;
     content: string;
     date: string;
-    author: { id: string; name: string | null; avatar?: string | null; } | null;
-    audience: UserRole[] | 'ALL';
+    author: { id: string; name: string | null; avatar?: string | null; role?: string } | null;
+    audience: UserRole[] | 'ALL' | string;
     priority?: 'Normal' | 'Urgente';
     isPinned: boolean;
-    attachments: { id: string; name: string; url: string; type: string; size: number }[];
+    attachments: Prisma.AnnouncementAttachment[];
     reads: { id: string; name: string | null; avatar?: string | null; }[];
     reactions: Reaction[];
     _count: {
@@ -226,12 +226,17 @@ export interface Notification {
     date: string; // ISO string from DB
     link?: string;
     read: boolean;
+    isMotivational?: boolean;
+    motivationalMessageId?: string | null;
+    interactiveEventId?: string | null;
+    interactiveEventOccurrence?: Date | string | null;
 }
 
 // --- CALENDAR ---
 export type EventAudienceType = 'ALL' | UserRole | 'SPECIFIC';
 
 export interface Attachment {
+    id?: string;
     name: string;
     url: string;
     type: string;
@@ -253,6 +258,10 @@ export interface CalendarEvent {
     creator?: { id: string, name: string | null };
     videoConferenceLink?: string | null;
     attachments: Attachment[];
+    recurrence: Prisma.RecurrenceType;
+    recurrenceEndDate?: string | null;
+    parentId?: string | null;
+    isInteractive: boolean;
 }
 
 // --- SECURITY ---
@@ -265,38 +274,58 @@ export type SecurityLogEvent =
     | 'USER_ROLE_CHANGED';
 
 export type SecurityLog = Prisma.SecurityLogGetPayload<{
-    include: { user: { select: { id: true, name: true, avatar: true } } }
-}>;
-
-
-export type SecurityStats = {
-    successfulLogins24h: number;
-    failedLogins24h: number;
-    roleChanges24h: number;
-    criticalEvents24h: number;
-    loginsLast7Days: { date: string; count: number }[];
-}
+    include: { user: { select: { id: true, name: true, avatar: true, email: true } } }
+}> & {
+    userAgent: string | null;
+    city: string | null;
+    country: string | null;
+    lat?: number | null;
+    lng?: number | null;
+};
 
 // --- ANALYTICS ---
 export interface AdminDashboardStats {
     totalUsers: number;
     totalCourses: number;
+    totalPublishedCourses: number;
     totalEnrollments: number;
+    totalResources: number;
+    totalAnnouncements: number;
+    totalForms: number;
     usersByRole: { role: UserRole; count: number }[];
     coursesByStatus: { status: CourseStatus; count: number }[];
-    recentLogins: number;
-    newEnrollmentsLast7Days: number;
-    userRegistrationTrend: { date: string, count: number }[];
+    recentLogins: { date: string, count: number }[];
+    newEnrollmentsLast7Days: { date: string, count: number }[];
+    userRegistrationTrend: { date: string, newCourses: number, newEnrollments: number, newUsers: number }[];
+    averageCompletionRate: number;
+    topCoursesByEnrollment: any[];
+    topCoursesByCompletion: any[];
+    lowestCoursesByCompletion: any[];
+    topStudentsByEnrollment: any[];
+    topStudentsByCompletion: any[];
+    topInstructorsByCourses: any[];
+    interactiveEventsToday?: (CalendarEvent & { hasParticipated?: boolean })[];
+    assignedCourses?: Course[];
 }
 
 // --- TEMPLATES ---
 export type TemplateType = 'SYSTEM' | 'USER';
-export { type LessonTemplate, type TemplateBlock };
+export { type LessonTemplate, type TemplateBlock, type CertificateTemplate } from '@prisma/client';
+
+// --- GAMIFICATION ---
+export type UserAchievement = Prisma.UserAchievementGetPayload<{
+    include: {
+        achievement: true;
+    }
+}>;
+export { type AchievementSlug } from '@prisma/client';
+
+// --- MOTIVATIONAL MESSAGES ---
+export type MotivationalMessage = Prisma.MotivationalMessage;
+export { type MotivationalMessageTriggerType } from '@prisma/client';
+
 
 // --- FORMS ---
-export type FormFieldType = 'SHORT_TEXT' | 'LONG_TEXT' | 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE';
-export type FormStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
-
 export interface FormFieldOption {
   id: string;
   text: string;
@@ -304,11 +333,11 @@ export interface FormFieldOption {
   points: number;
 }
 
-export type FormField = Omit<PrismaFormField, 'options'> & {
+export type FormField = Omit<Prisma.FormField, 'options'> & {
   options: FormFieldOption[];
 };
 
-export type AppForm = PrismaForm & {
+export type AppForm = Prisma.Form & {
     fields: FormField[];
     _count: {
         responses: number;
@@ -318,3 +347,11 @@ export type AppForm = PrismaForm & {
     } | null;
     sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
 };
+
+// --- CHAT ---
+export { type ChatAttachment } from '@prisma/client';
+
+// --- PROCESSES ---
+export type Process = Prisma.Process;
+
+export { type FormStatus, type FormFieldType, type AnnouncementAttachment, type RecurrenceType } from '@prisma/client';

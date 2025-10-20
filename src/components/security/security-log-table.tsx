@@ -14,7 +14,7 @@ const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     if (isToday(date)) return format(date, 'HH:mm:ss', { locale: es });
     if (isYesterday(date)) return 'Ayer';
-    return format(date, "d MMM yyyy", { locale: es });
+    return format(date, "d MMM, yyyy", { locale: es });
 };
 
 
@@ -40,7 +40,7 @@ export const SecurityLogTable = ({ logs, onRowClick }: { logs: SecurityLog[], on
                         return (
                             <TableRow key={log.id} onClick={() => onRowClick(log)} className="cursor-pointer">
                                 <TableCell>
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-2">
                                         <Avatar className="h-8 w-8">
                                             <AvatarImage src={log.user?.avatar || undefined} />
                                             <AvatarFallback><Identicon userId={log.user?.id || log.emailAttempt || ''} /></AvatarFallback>
@@ -51,13 +51,13 @@ export const SecurityLogTable = ({ logs, onRowClick }: { logs: SecurityLog[], on
                                     </div>
                                 </TableCell>
                                 <TableCell>
-                                    <Badge variant={eventUI.variant} className="gap-1.5 whitespace-nowrap text-xs">
+                                    <Badge variant={eventUI.variant} className="gap-1.5 whitespace-nowrap text-xs py-1 px-2">
                                         {eventUI.icon} {eventUI.label}
                                     </Badge>
                                 </TableCell>
                                  <TableCell className="hidden md:table-cell">
                                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                        {isMobileDevice ? <Smartphone className="h-4 w-4"/> : <Monitor className="h-4 w-4"/>}
+                                        {isMobileDevice ? <Smartphone className="h-3.5 w-3.5"/> : <Monitor className="h-3.5 w-3.5"/>}
                                         <span>{browser}, {os}</span>
                                     </div>
                                 </TableCell>
