@@ -8,6 +8,7 @@ import { Globe, CheckCircle, XCircle, ZoomIn, ZoomOut } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Button } from '../ui/button';
+import { cn } from '@/lib/utils';
 
 const GlobeGl = dynamic(() => import('react-globe.gl'), { ssr: false });
 
@@ -28,6 +29,8 @@ interface GlobalAccessMapProps {
 
 export const GlobalAccessMap: React.FC<GlobalAccessMapProps> = ({ accessPoints }) => {
     const globeEl = useRef<any>();
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [dimensions, setDimensions] = useState({ width: 360, height: 360 });
     const [hoveredPoint, setHoveredPoint] = useState<AccessPoint | null>(null);
 
     const pointsData = useMemo(() => {
@@ -49,8 +52,31 @@ export const GlobalAccessMap: React.FC<GlobalAccessMapProps> = ({ accessPoints }
         if (globeEl.current) {
             globeEl.current.controls().autoRotate = true;
             globeEl.current.controls().autoRotateSpeed = 0.2;
-            globeEl.current.controls().enableZoom = false; // Deshabilitamos el zoom por scroll
+            globeEl.current.controls().enableZoom = true;
         }
+    }, []);
+    
+    useEffect(() => {
+        const handleResize = () => {
+            if (containerRef.current) {
+                setDimensions({
+                    width: containerRef.current.offsetWidth,
+                    height: containerRef.current.offsetHeight
+                });
+            }
+        };
+
+        handleResize(); // Initial size
+        const resizeObserver = new ResizeObserver(handleResize);
+        if (containerRef.current) {
+            resizeObserver.observe(containerRef.current);
+        }
+        
+        return () => {
+            if(containerRef.current) {
+                resizeObserver.unobserve(containerRef.current);
+            }
+        };
     }, []);
 
     const handlePointHover = (point: any) => {
@@ -64,7 +90,7 @@ export const GlobalAccessMap: React.FC<GlobalAccessMapProps> = ({ accessPoints }
     }
     
     return (
-        <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+        <div ref={containerRef} className="relative w-full h-full flex items-center justify-center overflow-hidden">
             <GlobeGl
                 ref={globeEl}
                 globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
@@ -75,8 +101,8 @@ export const GlobalAccessMap: React.FC<GlobalAccessMapProps> = ({ accessPoints }
                 pointRadius={0.4}
                 pointColor={(point: any) => point.success ? 'rgba(52, 211, 153, 0.8)' : 'rgba(239, 68, 68, 0.8)'}
                 onPointHover={handlePointHover}
-                width={360}
-                height={360}
+                width={dimensions.width}
+                height={dimensions.height}
             />
 
              <div className="absolute bottom-2 right-2 flex flex-col gap-2">

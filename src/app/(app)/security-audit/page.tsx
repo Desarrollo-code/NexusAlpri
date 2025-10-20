@@ -120,8 +120,8 @@ export default function SecurityAuditPage() {
                 </div>
                 
                  <div className="lg:col-span-5 xl:col-span-6 space-y-6">
-                    <Card className="h-[400px] flex flex-col bg-card/80 backdrop-blur-lg p-4">
-                        <CardHeader className="p-0 mb-2">
+                    <Card className="h-[400px] flex flex-col bg-card/80 backdrop-blur-lg p-0 overflow-hidden">
+                         <CardHeader>
                             <CardTitle>Mapa de Accesos Global</CardTitle>
                         </CardHeader>
                          <CardContent className="p-0 flex-grow">
