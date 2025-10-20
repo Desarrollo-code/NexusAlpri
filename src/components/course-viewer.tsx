@@ -313,9 +313,25 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     }
   }, []);
 
-  const recordInteraction = useCallback(async (lessonId: string, type: 'view' | 'quiz' | 'video') => {
+ const recordInteraction = useCallback(async (lessonId: string, type: 'view' | 'quiz' | 'video') => {
     if (isCreatorViewingCourse || !user || !courseId || !isEnrolled || completedLessonIds.has(lessonId)) return;
-
+    
+    const originalProgress = courseProgress; // Guardar estado previo
+    
+    // --- Actualización optimista de la UI ---
+    setCourseProgress(prev => {
+        if (!prev) return null;
+        const newCompletedLesson = { lessonId, type, score: null };
+        const newCompletedLessons = [...prev.completedLessons, newCompletedLesson];
+        const newPercentage = Math.round((newCompletedLessons.length / totalLessonsCount) * 100);
+        return {
+            ...prev,
+            completedLessons: newCompletedLessons,
+            progressPercentage: newPercentage
+        };
+    });
+    // ----------------------------------------
+    
     try {
         const response = await fetch(`/api/progress/${user.id}/${courseId}/lesson`, {
           method: 'POST',
@@ -325,7 +341,9 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
 
         if (!response.ok) throw new Error('Failed to record interaction');
         
-        await fetchProgress(user.id, courseId);
+        // La actualización real del servidor se hará en segundo plano, no necesitamos esperar aquí
+        // a menos que queramos confirmar. Para una UI más rápida, no esperamos.
+        // await fetchProgress(user.id, courseId);
         
         const lesson = allLessons.find(l => l.id === lessonId);
         if (lesson) {
@@ -334,9 +352,10 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
 
     } catch (e) {
       console.error("Failed to record interaction:", e);
+      setCourseProgress(originalProgress); // Revertir en caso de error
       toast({ title: 'Error de Sincronización', description: 'No se pudo guardar tu progreso. Inténtalo de nuevo.', variant: 'destructive'});
     }
-  }, [user, courseId, isEnrolled, isCreatorViewingCourse, toast, allLessons, completedLessonIds, fetchProgress]);
+  }, [user, courseId, isEnrolled, isCreatorViewingCourse, toast, allLessons, completedLessonIds, fetchProgress, courseProgress, totalLessonsCount]);
   
   const handleConsolidateProgress = useCallback(async () => {
       if (!user || !courseId || isConsolidating) return;
@@ -750,7 +769,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
           )}
            {!isMobile && (
                <Button size="icon" className="rounded-full h-12 w-12 shadow-lg" onClick={() => setIsSidebarVisible(!isSidebarVisible)}>
-                  <PanelLeft className="h-5 w-5" />
+                  <PanelLeft className="h-5 w-5"/>
               </Button>
            )}
           {isEnrolled && !isCreatorViewingCourse && (
