@@ -1,13 +1,14 @@
+
 // src/app/(app)/security-audit/page.tsx
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Monitor, Globe, HelpCircle, AlertTriangle, BarChart3, Users, Shield, Clock, UserCog, Map, Chrome, Apple, Smartphone } from 'lucide-react';
+import { Loader2, Monitor, Globe, HelpCircle, AlertTriangle, BarChart3, Users, Shield, Clock, UserCog, Map, Chrome, Apple, Smartphone, GlobeIcon } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, User as AppUser, SecurityLogEvent, SecurityStats } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -22,12 +23,20 @@ import { Identicon } from '@/components/ui/identicon';
 import { useTour } from '@/contexts/tour-context';
 import { securityAuditTour } from '@/lib/tour-steps';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, BarChart, XAxis, YAxis, CartesianGrid, Bar, Cell } from '@/components/ui/chart';
 import { ResponsiveContainer } from 'recharts';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  BarChart,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Bar,
+  Cell,
+} from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
 import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
 
 interface SecurityLogWithUser extends AppSecurityLog {
     user: Pick<AppUser, 'id' | 'name' | 'avatar'> | null;
