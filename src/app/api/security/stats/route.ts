@@ -18,38 +18,26 @@ export async function GET(req: NextRequest) {
         const twentyFourHoursAgo = subDays(new Date(), 1);
         const sevenDaysAgo = subDays(new Date(), 7);
 
-        // 1. Fetch all necessary data using Promise.allSettled for resilience
-        const [
-            successfulLoginsResult,
-            failedLoginsResult,
-            roleChangesResult,
-            allSecurityLogsResult
-        ] = await Promise.allSettled([
+        const results = await Promise.allSettled([
             prisma.securityLog.count({ where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: twentyFourHoursAgo } } }),
             prisma.securityLog.count({ where: { event: 'FAILED_LOGIN_ATTEMPT', createdAt: { gte: twentyFourHoursAgo } } }),
             prisma.securityLog.count({ where: { event: 'USER_ROLE_CHANGED', createdAt: { gte: twentyFourHoursAgo } } }),
             prisma.securityLog.findMany({ where: { createdAt: { gte: sevenDaysAgo } }, select: { userAgent: true, createdAt: true } }),
         ]);
 
-        // 2. Safely process the results
-        const successfulLogins24h = successfulLoginsResult.status === 'fulfilled' ? successfulLoginsResult.value : 0;
-        const failedLogins24h = failedLoginsResult.status === 'fulfilled' ? failedLoginsResult.value : 0;
-        const roleChanges24h = roleChangesResult.status === 'fulfilled' ? roleChangesResult.value : 0;
-        const allSecurityLogs = allSecurityLogsResult.status === 'fulfilled' ? allSecurityLogsResult.value : [];
+        const successfulLogins24h = results[0].status === 'fulfilled' ? results[0].value : 0;
+        const failedLogins24h = results[1].status === 'fulfilled' ? results[1].value : 0;
+        const roleChanges24h = results[2].status === 'fulfilled' ? results[2].value : 0;
+        const allSecurityLogs = results[3].status === 'fulfilled' ? results[3].value : [];
         
-        // Log errors if any promises were rejected
-        if (successfulLoginsResult.status === 'rejected') console.error("Error fetching successful logins:", successfulLoginsResult.reason);
-        if (failedLoginsResult.status === 'rejected') console.error("Error fetching failed logins:", failedLoginsResult.reason);
-        if (roleChangesResult.status === 'rejected') console.error("Error fetching role changes:", roleChangesResult.reason);
-        if (allSecurityLogsResult.status === 'rejected') console.error("Error fetching all security logs:", allSecurityLogsResult.reason);
+        // Log errors for debugging if any promises were rejected
+        results.forEach((result, index) => {
+            if (result.status === 'rejected') {
+                console.error(`Error en la consulta de estadísticas de seguridad [${index}]:`, result.reason);
+            }
+        });
 
-
-        // 3. Process logs for charts (now guaranteed to have a safe 'allSecurityLogs' array)
         const loginsByDayMap = new Map<string, number>();
-        const browserCounts: { [key: string]: number } = {};
-        const osCounts: { [key: string]: number } = {};
-
-        // Initialize last 7 days in map
         for (let i = 0; i < 7; i++) {
             const d = subDays(new Date(), i);
             loginsByDayMap.set(d.toISOString().split('T')[0], 0);
@@ -61,10 +49,6 @@ export async function GET(req: NextRequest) {
                 if (loginsByDayMap.has(date)) {
                     loginsByDayMap.set(date, (loginsByDayMap.get(date) || 0) + 1);
                 }
-
-                const { browser, os } = parseUserAgent(log.userAgent);
-                if (browser !== 'Desconocido') browserCounts[browser] = (browserCounts[browser] || 0) + 1;
-                if (os !== 'Desconocido') osCounts[os] = (osCounts[os] || 0) + 1;
             });
         }
         
@@ -72,8 +56,6 @@ export async function GET(req: NextRequest) {
             .map(([date, count]) => ({ date, count }))
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
             
-        const topBrowsers = Object.entries(browserCounts).sort(([, a], [, b]) => b - a).slice(0, 5).map(([browser, count]) => ({ browser, count }));
-        const topOS = Object.entries(osCounts).sort(([, a], [, b]) => b - a).slice(0, 5).map(([os, count]) => ({ os, count }));
         const criticalEvents24h = failedLogins24h + roleChanges24h;
 
         const stats: SecurityStats = {
@@ -82,8 +64,8 @@ export async function GET(req: NextRequest) {
             roleChanges24h,
             criticalEvents24h,
             loginsLast7Days,
-            topBrowsers,
-            topOS,
+            topBrowsers: [], // Temporalmente deshabilitado
+            topOS: [],       // Temporalmente deshabilitado
         };
 
         return NextResponse.json(stats);

@@ -22,12 +22,10 @@ import { Identicon } from '@/components/ui/identicon';
 import { useTour } from '@/contexts/tour-context';
 import { securityAuditTour } from '@/lib/tour-steps';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, BarChart, XAxis, YAxis, CartesianGrid, Bar, PieChart, Pie, Cell } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, BarChart, XAxis, YAxis, CartesianGrid, Bar } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
 import { MetricCard } from '@/components/analytics/metric-card';
 import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
 
 interface SecurityLogWithUser extends AppSecurityLog {
     user: Pick<AppUser, 'id' | 'name' | 'avatar'> | null;
@@ -133,30 +131,6 @@ export default function SecurityAuditPage() {
         return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
     }
     
-    const browserChartConfig: ChartConfig = useMemo(() => {
-        if (!stats?.topBrowsers) return {};
-        const config: ChartConfig = {};
-        stats.topBrowsers.slice(0, 5).forEach((item, index) => {
-            config[item.browser] = {
-                label: item.browser,
-                color: `hsl(var(--chart-${(index % 5) + 1}))`
-            }
-        });
-        return config;
-    }, [stats]);
-    
-    const osChartConfig: ChartConfig = useMemo(() => {
-        if (!stats?.topOS) return {};
-        const config: ChartConfig = {};
-        stats.topOS.slice(0, 5).forEach((item, index) => {
-            config[item.os] = {
-                label: item.os,
-                color: `hsl(var(--chart-${(index % 5) + 1}))`
-            }
-        });
-        return config;
-    }, [stats]);
-
     return (
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -180,70 +154,23 @@ export default function SecurityAuditPage() {
 
             <Separator />
             
-            <Tabs defaultValue="activity">
-                 <TabsList className="grid w-full grid-cols-3 max-w-lg mx-auto">
-                    <TabsTrigger value="activity">Actividad</TabsTrigger>
-                    <TabsTrigger value="browsers">Navegadores</TabsTrigger>
-                    <TabsTrigger value="os">Sistemas Operativos</TabsTrigger>
-                 </TabsList>
-                 <TabsContent value="activity" className="mt-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><TrendingUp/>Actividad de Inicios de Sesión</CardTitle>
-                            <CardDescription>Resumen de los últimos 7 días.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="h-72">
-                            {isLoadingStats ? <Skeleton className="h-full w-full"/> : <ChartContainer config={{count: {label: "Inicios de Sesión"}}} className="w-full h-full">
-                                <BarChart data={stats?.loginsLast7Days || []} margin={{top: 5, right: 10, left: -20, bottom: 5}}>
-                                <CartesianGrid vertical={false} />
-                                <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} tickFormatter={(value) => new Date(value).toLocaleDateString('es-ES', { weekday: 'short' })}/>
-                                <YAxis tickLine={false} axisLine={false} tickMargin={10} allowDecimals={false} />
-                                <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line"/>} />
-                                <Bar dataKey="count" fill="hsl(var(--primary))" radius={4} />
-                            </BarChart>
-                            </ChartContainer>}
-                        </CardContent>
-                    </Card>
-                 </TabsContent>
-                 <TabsContent value="browsers" className="mt-4">
-                     <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><Monitor/>Navegadores Más Utilizados</CardTitle>
-                        </CardHeader>
-                        <CardContent className="h-72 flex items-center justify-center">
-                            {isLoadingStats ? <Skeleton className="h-full w-full"/> : <ChartContainer config={browserChartConfig} className="w-full h-full">
-                                <PieChart>
-                                    <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                                    <Pie data={stats?.topBrowsers} dataKey="count" nameKey="browser" innerRadius={50} strokeWidth={2}>
-                                    {(stats?.topBrowsers || []).map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={browserChartConfig[entry.browser]?.color} />
-                                    ))}
-                                    </Pie>
-                                </PieChart>
-                            </ChartContainer>}
-                        </CardContent>
-                    </Card>
-                 </TabsContent>
-                 <TabsContent value="os" className="mt-4">
-                      <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><Monitor/>Sistemas Operativos Más Utilizados</CardTitle>
-                        </CardHeader>
-                        <CardContent className="h-72 flex items-center justify-center">
-                            {isLoadingStats ? <Skeleton className="h-full w-full"/> : <ChartContainer config={osChartConfig} className="w-full h-full">
-                                <PieChart>
-                                    <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                                    <Pie data={stats?.topOS} dataKey="count" nameKey="os" innerRadius={50} strokeWidth={2}>
-                                    {(stats?.topOS || []).map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={osChartConfig[entry.os]?.color} />
-                                    ))}
-                                    </Pie>
-                                </PieChart>
-                            </ChartContainer>}
-                        </CardContent>
-                    </Card>
-                 </TabsContent>
-            </Tabs>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><TrendingUp/>Actividad de Inicios de Sesión</CardTitle>
+                    <CardDescription>Resumen de los últimos 7 días.</CardDescription>
+                </CardHeader>
+                <CardContent className="h-72">
+                    {isLoadingStats ? <Skeleton className="h-full w-full"/> : <ChartContainer config={{count: {label: "Inicios de Sesión"}}} className="w-full h-full">
+                        <BarChart data={stats?.loginsLast7Days || []} margin={{top: 5, right: 10, left: -20, bottom: 5}}>
+                        <CartesianGrid vertical={false} />
+                        <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} tickFormatter={(value) => new Date(value).toLocaleDateString('es-ES', { weekday: 'short' })}/>
+                        <YAxis tickLine={false} axisLine={false} tickMargin={10} allowDecimals={false} />
+                        <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line"/>} />
+                        <Bar dataKey="count" fill="hsl(var(--primary))" radius={4} />
+                    </BarChart>
+                    </ChartContainer>}
+                </CardContent>
+            </Card>
             
             <TooltipProvider>
                 <Card id="security-log-table">
