@@ -23,9 +23,12 @@ import { useTour } from '@/contexts/tour-context';
 import { securityAuditTour } from '@/lib/tour-steps';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, BarChart, XAxis, YAxis, CartesianGrid, Bar, Cell } from '@/components/ui/chart';
+import { ResponsiveContainer } from "recharts";
 import type { ChartConfig } from '@/components/ui/chart';
 import { MetricCard } from '@/components/analytics/metric-card';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 
 interface SecurityLogWithUser extends AppSecurityLog {
     user: Pick<AppUser, 'id' | 'name' | 'avatar'> | null;
@@ -178,7 +181,6 @@ export default function SecurityAuditPage() {
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="space-y-1">
-                    <h1 className="text-2xl font-bold">Auditoría de Seguridad</h1>
                     <p className="text-muted-foreground">Revisa los eventos de seguridad importantes de la plataforma.</p>
                 </div>
                 <Button variant="outline" size="sm" onClick={() => forceStartTour('securityAudit', securityAuditTour)}>
