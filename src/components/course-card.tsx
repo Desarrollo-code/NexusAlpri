@@ -18,7 +18,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Identicon } from './ui/identicon';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from './ui/tooltip';
-import { IconGraduationCap } from './icons/icon-graduation-cap';
 
 
 interface CourseCardProps {
@@ -145,7 +144,7 @@ export function CourseCard({
         <Card className="flex items-center p-4 bg-card border-l-4 border-green-500">
             <div className="flex-shrink-0">
                 <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                    <IconGraduationCap className="w-7 h-7" />
+                    <Award className="w-7 h-7" />
                 </div>
             </div>
             <div className="flex-grow ml-4">
