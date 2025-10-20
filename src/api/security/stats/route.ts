@@ -43,6 +43,7 @@ export async function GET(req: NextRequest) {
             failedLogins24h,
             roleChanges24h,
             allLogsForDeviceStats,
+            topIps,
         ] = await Promise.all([
             prisma.securityLog.count({ where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: twentyFourHoursAgo } } }),
             prisma.securityLog.count({ where: { event: 'FAILED_LOGIN_ATTEMPT', createdAt: { gte: twentyFourHoursAgo } } }),
@@ -50,6 +51,23 @@ export async function GET(req: NextRequest) {
             prisma.securityLog.findMany({ 
                 select: { userAgent: true },
             }),
+            prisma.securityLog.groupBy({
+                by: ['ipAddress', 'country'],
+                _count: {
+                    ipAddress: true,
+                },
+                orderBy: {
+                    _count: {
+                        ipAddress: 'desc',
+                    },
+                },
+                take: 5,
+                where: {
+                    ipAddress: {
+                        not: null
+                    }
+                }
+            })
         ]);
         
         const { browsers, os } = aggregateByUserAgent(allLogsForDeviceStats || []);
@@ -60,6 +78,7 @@ export async function GET(req: NextRequest) {
             roleChanges24h,
             browsers,
             os,
+            topIps,
         };
 
         return NextResponse.json(stats);

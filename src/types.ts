@@ -289,6 +289,7 @@ export type SecurityStats = {
     roleChanges24h: number;
     browsers: { name: string, count: number }[];
     os: { name: string, count: number }[];
+    topIps: { ipAddress: string; country: string | null; _count: { ipAddress: number } }[];
 };
 
 

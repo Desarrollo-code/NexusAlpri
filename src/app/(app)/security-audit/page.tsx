@@ -7,7 +7,7 @@ import { AlertTriangle, Globe, HelpCircle, Filter, CheckCircle, XCircle, UserCog
 import { useAuth } from '@/contexts/auth-context';
 import { Loader2 } from 'lucide-react';
 import { DateRangePicker } from "@/components/ui/date-range-picker";
-import type { SecurityLog, SecurityLogEvent, SecurityStats } from '@/types';
+import type { SecurityLog, SecurityStats } from '@/types';
 import { Button } from '@/components/ui/button';
 import { startOfDay, subDays } from 'date-fns';
 import { useTour } from '@/contexts/tour-context';
@@ -21,8 +21,7 @@ import { cn } from '@/lib/utils';
 import { ExportToCsvButton } from '@/components/ui/export-to-csv';
 import { Skeleton } from "@/components/ui/skeleton";
 import { GlobalAccessMap } from '@/components/security/global-access-map';
-
-const PAGE_SIZE = 100; // Aumentar para que la línea de tiempo tenga más datos
+import { Separator } from '@/components/ui/separator';
 
 export default function SecurityAuditPage() {
     const { setPageTitle, setHeaderActions } = useTitle();
@@ -103,11 +102,14 @@ export default function SecurityAuditPage() {
 
     return (
         <>
+            <div className="fixed inset-0 z-[-1]">
+               <GlobalAccessMap accessPoints={logs} />
+            </div>
            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 
                 {/* Columna Izquierda: Línea de Tiempo */}
                 <div className="lg:col-span-4 xl:col-span-3">
-                    <Card id="security-log-timeline">
+                    <Card id="security-log-timeline" className="bg-card/80 backdrop-blur-lg">
                         <CardHeader>
                             <CardTitle>Registro de Eventos</CardTitle>
                             <CardDescription>Actividad reciente en la plataforma.</CardDescription>
@@ -121,66 +123,83 @@ export default function SecurityAuditPage() {
                     </Card>
                 </div>
                 
-                 {/* Columna Central: Globo y Lista de IPs */}
+                 {/* Columna Central: Marcadores de posición */}
                  <div className="lg:col-span-5 xl:col-span-6 space-y-6">
-                    <Card className="h-[400px] overflow-hidden">
-                        <CardContent className="p-0 h-full">
-                           <GlobalAccessMap accessPoints={logs} />
+                    <Card className="h-[400px] overflow-hidden bg-card/80 backdrop-blur-lg">
+                        <CardHeader>
+                            <CardTitle>Mapa de Accesos Global</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0 h-full flex items-center justify-center">
+                            <p className="text-muted-foreground">El mapa está activo en el fondo.</p>
                         </CardContent>
                     </Card>
-                    <Card>
+                    <Card className="bg-card/80 backdrop-blur-lg">
                        <CardHeader><CardTitle>Lista de IPs</CardTitle></CardHeader>
                        <CardContent>
-                           <p className="text-muted-foreground text-sm text-center py-8">Próximamente: Aquí se mostrará una lista detallada y agrupada de las direcciones IP con más actividad.</p>
+                           {isStatsLoading ? (
+                               <div className="space-y-2 p-4"><Skeleton className="h-6 w-full" /><Skeleton className="h-6 w-full" /><Skeleton className="h-6 w-full" /></div>
+                           ) : stats && stats.topIps && stats.topIps.length > 0 ? (
+                               <div className="space-y-3">
+                                   {stats.topIps.map((ipInfo, index) => (
+                                       <div key={index} className="flex justify-between items-center text-sm">
+                                           <div className="flex items-center gap-2">
+                                               <span className="font-mono bg-muted px-2 py-1 rounded-md text-foreground">{ipInfo.ipAddress}</span>
+                                               <span className="text-muted-foreground">{ipInfo.country || 'Desconocido'}</span>
+                                           </div>
+                                           <span className="font-bold">{ipInfo._count.ipAddress} eventos</span>
+                                       </div>
+                                   ))}
+                               </div>
+                           ) : (
+                               <p className="text-muted-foreground text-center py-8">No hay suficiente actividad de IP para mostrar.</p>
+                           )}
                        </CardContent>
                     </Card>
                  </div>
                 
                  {/* Columna Derecha: Barra Lateral de Métricas */}
                 <aside className="lg:col-span-3 xl:col-span-3 lg:sticky lg:top-24 space-y-6">
-                    {isStatsLoading ? (
-                        <div className="space-y-4">
-                           <div className="space-y-2"><Skeleton className="h-20" /><Skeleton className="h-20" /><Skeleton className="h-20" /></div>
-                           <Skeleton className="h-48" />
-                           <Skeleton className="h-64" />
-                        </div>
-                    ) : stats ? (
-                         <>
-                             <div className="space-y-4">
-                                <MetricCard id="successful-logins" title="Inicios Exitosos (24h)" value={stats.successfulLogins24h || 0} icon={CheckCircle} />
-                                <MetricCard id="failed-logins" title="Intentos Fallidos (24h)" value={stats.failedLogins24h || 0} icon={XCircle} />
-                                <MetricCard id="role-changes" title="Cambios de Rol (24h)" value={stats.roleChanges24h || 0} icon={UserCog} />
-                            </div>
-                            <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} />
-                             <Card id="critical-events">
-                                <CardHeader>
-                                    <CardTitle className="text-base flex items-center gap-2">
-                                        <AlertTriangle className="h-4 w-4 text-destructive"/> Eventos Críticos Recientes
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    {criticalEvents.length > 0 ? (
-                                        <div className="space-y-3">
-                                            {criticalEvents.map(log => {
-                                                const eventUI = getEventDetails(log.event, log.details);
-                                                return (
-                                                    <div key={log.id} className="flex items-center gap-3 text-sm">
-                                                         <div className="p-1.5 bg-muted rounded-full">{eventUI.icon}</div>
-                                                         <div>
-                                                            <p className="font-semibold">{log.user?.name || log.emailAttempt}</p>
-                                                            <p className="text-xs text-muted-foreground">{eventUI.label}</p>
-                                                        </div>
-                                                    </div>
-                                                )
-                                            })}
-                                        </div>
-                                    ) : (
-                                        <p className="text-xs text-center text-muted-foreground py-4">No hay eventos críticos recientes.</p>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        </>
-                    ): <p className="text-xs text-muted-foreground">No se pudieron cargar las estadísticas.</p>}
+                    <Card className="bg-card/80 backdrop-blur-lg">
+                        <CardContent className="p-4 space-y-4">
+                            {isStatsLoading ? (
+                                <div className="space-y-2"><Skeleton className="h-20" /><Skeleton className="h-20" /><Skeleton className="h-20" /></div>
+                            ) : stats ? (
+                                <>
+                                    <MetricCard id="successful-logins" title="Inicios Exitosos (24h)" value={stats.successfulLogins24h || 0} icon={CheckCircle} />
+                                    <MetricCard id="failed-logins" title="Intentos Fallidos (24h)" value={stats.failedLogins24h || 0} icon={XCircle} />
+                                    <MetricCard id="role-changes" title="Cambios de Rol (24h)" value={stats.roleChanges24h || 0} icon={UserCog} />
+                                </>
+                            ): <p className="text-xs text-muted-foreground">No se pudieron cargar las estadísticas.</p>}
+                        </CardContent>
+                    </Card>
+                    <DeviceDistributionChart browserData={stats?.browsers} osData={stats?.os} />
+                     <Card id="critical-events" className="bg-card/80 backdrop-blur-lg">
+                        <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <AlertTriangle className="h-4 w-4 text-destructive"/> Eventos Críticos Recientes
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {criticalEvents.length > 0 ? (
+                                <div className="space-y-3">
+                                    {criticalEvents.map(log => {
+                                        const eventUI = getEventDetails(log.event, log.details);
+                                        return (
+                                            <div key={log.id} className="flex items-center gap-3 text-sm">
+                                                 <div className="p-1.5 bg-muted rounded-full">{eventUI.icon}</div>
+                                                 <div>
+                                                    <p className="font-semibold">{log.user?.name || log.emailAttempt}</p>
+                                                    <p className="text-xs text-muted-foreground">{eventUI.label}</p>
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            ) : (
+                                <p className="text-xs text-center text-muted-foreground py-4">No hay eventos críticos recientes.</p>
+                            )}
+                        </CardContent>
+                    </Card>
                 </aside>
             </div>
             {selectedLog && <SecurityLogDetailSheet log={selectedLog} isOpen={!!selectedLog} onClose={() => setSelectedLog(null)} />}
