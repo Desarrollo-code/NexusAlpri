@@ -54,16 +54,15 @@ export async function GET(req: NextRequest) {
 
         // Enriquecer con datos de geolocalización (simulado para demostración)
         const logsWithGeo = logs.map(log => {
-            let lat = 0;
-            let lng = 0;
+            let lat = null;
+            let lng = null;
             if (log.ipAddress) {
-                const ipHash = log.ipAddress.split('.').reduce((acc, part, index) => acc + parseInt(part, 10) * Math.pow(256, 3-index), 0);
-                lat = (ipHash % 180) - 90 + Math.random() * 0.5 - 0.25;
-                lng = (ipHash * 37 % 360) - 180 + Math.random() * 0.5 - 0.25;
-            } else {
-                 // Default a una ubicación si no hay IP, p.ej. tu oficina
-                lat = 4.60971; // Bogotá
-                lng = -74.08175;
+                // Simple hash para generar coordenadas consistentes pero aleatorias
+                const ipParts = log.ipAddress.split('.').map(part => parseInt(part, 10));
+                if (ipParts.length === 4) {
+                    lat = (ipParts[0] * ipParts[2]) % 180 - 90 + (Math.random() - 0.5) * 2;
+                    lng = (ipParts[1] * ipParts[3]) % 360 - 180 + (Math.random() - 0.5) * 2;
+                }
             }
             return {
                 ...log,
