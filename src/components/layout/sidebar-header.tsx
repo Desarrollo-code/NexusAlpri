@@ -13,12 +13,12 @@ export const SidebarHeader = () => {
   
   if (isMobile) {
       return (
-         <div className="bg-gradient-to-b from-card to-sidebar-background flex items-center h-20 border-b border-sidebar-border px-4">
+         <div className="bg-card flex items-center h-20 border-b px-4">
              <Link href="/dashboard" className="inline-flex items-center gap-3">
                  <div className="relative h-12 w-12 flex-shrink-0 rounded-lg overflow-hidden bg-primary/20">
                     {settings?.logoUrl ? <Image src={settings.logoUrl} alt="Logo" fill className="object-contain p-1" /> : <div className="w-full h-full rounded-md bg-muted" />}
                  </div>
-                 <span className="text-xl font-bold text-sidebar-accent-foreground whitespace-nowrap">{settings?.platformName || 'NexusAlpri'}</span>
+                 <span className="text-xl font-bold text-foreground whitespace-nowrap">{settings?.platformName || 'NexusAlpri'}</span>
              </Link>
          </div>
       );
@@ -27,8 +27,7 @@ export const SidebarHeader = () => {
   // Vista para escritorio
   return (
     <div className={cn(
-      "flex items-center h-20 border-b border-white/20", // Borde sutil
-      "bg-gradient-to-b from-red-600 to-black",
+      "flex items-center h-20 border-b border-sidebar-border",
       isCollapsed ? 'justify-center' : 'justify-start px-4'
     )}>
       <Link href="/dashboard" className="inline-flex items-center gap-3">
@@ -38,14 +37,14 @@ export const SidebarHeader = () => {
           )}>
             {settings?.logoUrl ? 
               <div className="relative w-full h-full">
-                <Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" className={cn("object-contain p-1")} />
+                <Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" className={cn("object-contain p-1.5")} />
               </div> 
               : <div className="w-full h-full rounded-md bg-muted" />
             }
           </div>
         
         {!isCollapsed && (
-            <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-white">
+            <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-sidebar-foreground">
               {settings?.platformName || 'NexusAlpri'}
             </span>
         )}
