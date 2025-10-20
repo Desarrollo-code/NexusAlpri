@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 'use client';
 
@@ -703,111 +704,105 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
 
   return (
     <div className="flex h-full w-full">
-        {/* --- Sidebar (desktop) --- */}
-        {!isMobile && isSidebarVisible && (
-            <aside className="w-80 flex-shrink-0 border-r bg-card flex flex-col h-full sticky top-20">
-                <SidebarContent />
-            </aside>
-        )}
-        
-        {/* --- Sidebar (mobile) --- */}
-        <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
-          <SheetContent side="left" className="p-0 w-full max-w-sm">
-            <SheetHeader className="p-4 border-b">
-                <SheetTitle>Contenido del Curso</SheetTitle>
-            </SheetHeader>
+      {!isMobile && isSidebarVisible && (
+        <aside className="w-80 flex-shrink-0 border-r bg-card flex flex-col h-full sticky top-0 self-start">
             <SidebarContent />
-          </SheetContent>
-        </Sheet>
-        
-        {/* --- Main Content Area --- */}
-        <div className={cn(
-          "flex-1 flex flex-col min-w-0 h-full transition-[margin-right] duration-300 ease-in-out",
-          isNotesPanelOpen && !isMobile && "mr-[28rem]"
-        )}>
-            <main className="flex-1 overflow-y-auto thin-scrollbar">
-                <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8">
-                   {renderLessonContent()}
-                </div>
-            </main>
-        </div>
+        </aside>
+      )}
+      
+      <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
+        <SheetContent side="left" className="p-0 w-full max-w-sm">
+          <SheetHeader className="p-4 border-b">
+              <SheetTitle>Contenido del Curso</SheetTitle>
+          </SheetHeader>
+          <SidebarContent />
+        </SheetContent>
+      </Sheet>
+      
+      <div className={cn(
+        "flex-1 flex flex-col min-w-0 h-full transition-[margin-right] duration-300 ease-in-out",
+        isNotesPanelOpen && !isMobile && "mr-[28rem]"
+      )}>
+          <main className="flex-1 overflow-y-auto thin-scrollbar">
+              <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8">
+                 {renderLessonContent()}
+              </div>
+          </main>
+      </div>
 
-        {/* --- Notes Panel (desktop) --- */}
-        {isNotesPanelOpen && !isMobile && (
-            <aside className="w-full max-w-md md:w-[28rem] flex-shrink-0 h-full fixed top-0 right-0 z-20 mt-20">
-                {selectedLessonId && isEnrolled && (
-                    <LessonNotesPanel 
-                        lessonId={selectedLessonId}
-                        isOpen={isNotesPanelOpen}
-                        onClose={() => setIsNotesPanelOpen(false)}
-                    />
-                )}
-            </aside>
-        )}
+      {isNotesPanelOpen && !isMobile && (
+          <aside className="w-full max-w-md md:w-[28rem] flex-shrink-0 h-full fixed top-0 right-0 z-20 mt-20">
+              {selectedLessonId && isEnrolled && (
+                  <LessonNotesPanel 
+                      lessonId={selectedLessonId}
+                      isOpen={isNotesPanelOpen}
+                      onClose={() => setIsNotesPanelOpen(false)}
+                  />
+              )}
+          </aside>
+      )}
 
-        {/* Floating Action Buttons */}
-        <div className="fixed bottom-20 right-4 z-40 flex flex-col gap-3">
-             {isMobile && (
-                <Button size="icon" className="rounded-full h-12 w-12 shadow-lg" onClick={() => setIsMobileSheetOpen(true)}>
-                    <PanelLeft className="h-5 w-5" />
-                </Button>
-            )}
-             {!isMobile && (
-                 <Button size="icon" className="rounded-full h-12 w-12 shadow-lg" onClick={() => setIsSidebarVisible(!isSidebarVisible)}>
-                    <PanelLeft className="h-5 w-5" />
-                </Button>
-             )}
-            {isEnrolled && !isCreatorViewingCourse && (
-                <Sheet open={isMobile && isNotesPanelOpen} onOpenChange={setIsNotesPanelOpen}>
-                    <SheetTrigger asChild>
-                         <Button 
-                            size="icon" 
-                            className={cn(
-                              "rounded-full h-12 w-12 shadow-lg transition-colors",
-                              isNotesPanelOpen && "bg-primary text-primary-foreground"
-                            )}
-                            onClick={() => !isMobile && setIsNotesPanelOpen(!isNotesPanelOpen)}>
-                            <Notebook className="h-5 w-5" />
-                        </Button>
-                    </SheetTrigger>
-                    {isMobile && (
-                        <SheetContent side="right" className="p-0 w-full max-w-sm">
-                             {selectedLessonId && (
-                                <LessonNotesPanel 
-                                    lessonId={selectedLessonId}
-                                    isOpen={isNotesPanelOpen}
-                                    onClose={() => setIsNotesPanelOpen(false)}
-                                />
-                             )}
-                        </SheetContent>
-                    )}
-                </Sheet>
-            )}
-        </div>
+      <div className="fixed bottom-20 right-4 z-40 flex flex-col gap-3">
+           {isMobile && (
+              <Button size="icon" className="rounded-full h-12 w-12 shadow-lg" onClick={() => setIsMobileSheetOpen(true)}>
+                  <PanelLeft className="h-5 w-5" />
+              </Button>
+          )}
+           {!isMobile && (
+               <Button size="icon" className="rounded-full h-12 w-12 shadow-lg" onClick={() => setIsSidebarVisible(!isSidebarVisible)}>
+                  <PanelLeft className="h-5 w-5" />
+              </Button>
+           )}
+          {isEnrolled && !isCreatorViewingCourse && (
+              <Sheet open={isMobile && isNotesPanelOpen} onOpenChange={setIsNotesPanelOpen}>
+                  <SheetTrigger asChild>
+                       <Button 
+                          size="icon" 
+                          className={cn(
+                            "rounded-full h-12 w-12 shadow-lg transition-colors",
+                            isNotesPanelOpen && "bg-primary text-primary-foreground"
+                          )}
+                          onClick={() => !isMobile && setIsNotesPanelOpen(!isNotesPanelOpen)}>
+                          <Notebook className="h-5 w-5" />
+                      </Button>
+                  </SheetTrigger>
+                  {isMobile && (
+                      <SheetContent side="right" className="p-0 w-full max-w-sm">
+                           {selectedLessonId && (
+                              <LessonNotesPanel 
+                                  lessonId={selectedLessonId}
+                                  isOpen={isNotesPanelOpen}
+                                  onClose={() => setIsNotesPanelOpen(false)}
+                              />
+                           )}
+                      </SheetContent>
+                  )}
+              </Sheet>
+          )}
+      </div>
 
-        {/* Image Viewer Modal */}
-        <Dialog open={!!imageToView} onOpenChange={(isOpen) => !isOpen && setImageToView(null)}>
-            <DialogContent className="w-screen h-screen max-w-full max-h-full p-2 flex items-center justify-center bg-black/80 backdrop-blur-sm border-0 rounded-none">
-                <DialogHeader>
-                    <DialogTitle className="sr-only">Visor de Imagen</DialogTitle>
-                </DialogHeader>
-                 <div className="absolute top-4 right-4 z-50">
-                    <Button variant="ghost" size="icon" className="text-white hover:text-white hover:bg-white/20" onClick={() => setImageToView(null)}>
-                        <X className="h-6 w-6"/>
-                        <span className="sr-only">Cerrar</span>
-                    </Button>
-                </div>
-                <div className="relative w-full h-full max-w-6xl max-h-[90vh]">
-                    <Image
-                        src={imageToView || ''}
-                        alt="Vista ampliada de la imagen de la lección"
-                        fill
-                        className="object-contain"
-                        quality={100}
-                    />
-                </div>
-            </DialogContent>
-        </Dialog>
+      <Dialog open={!!imageToView} onOpenChange={(isOpen) => !isOpen && setImageToView(null)}>
+          <DialogContent className="w-screen h-screen max-w-full max-h-full p-2 flex items-center justify-center bg-black/80 backdrop-blur-sm border-0 rounded-none">
+              <DialogHeader>
+                  <DialogTitle className="sr-only">Visor de Imagen</DialogTitle>
+              </DialogHeader>
+               <div className="absolute top-4 right-4 z-50">
+                  <Button variant="ghost" size="icon" className="text-white hover:text-white hover:bg-white/20" onClick={() => setImageToView(null)}>
+                      <X className="h-6 w-6"/>
+                      <span className="sr-only">Cerrar</span>
+                  </Button>
+              </div>
+              <div className="relative w-full h-full max-w-6xl max-h-[90vh]">
+                  <Image
+                      src={imageToView || ''}
+                      alt="Vista ampliada de la imagen de la lección"
+                      fill
+                      className="object-contain"
+                      quality={100}
+                  />
+              </div>
+          </DialogContent>
+      </Dialog>
     </div>
   );
 }
