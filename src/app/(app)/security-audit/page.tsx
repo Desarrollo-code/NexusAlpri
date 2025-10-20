@@ -6,13 +6,12 @@ import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, AlertTriangle, Shield, UserCog, ShieldCheck, MapIcon, HelpCircle, Filter } from 'lucide-react';
+import { Loader2, AlertTriangle, Shield, UserCog, ShieldCheck, HelpCircle, Filter, FileDown, ShieldX } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, SecurityStats } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { useTitle } from '@/contexts/title-context';
 import { useTour } from '@/contexts/tour-context';
 import { securityAuditTour } from '@/lib/tour-steps';
-import { AnimatedGlobe } from '@/components/analytics/animated-globe';
 import { MetricCard } from '@/components/security/metric-card';
 import { SecurityLogTable } from '@/components/security/security-log-table';
 import { DeviceDistributionChart } from '@/components/security/device-distribution-chart';
@@ -21,7 +20,50 @@ import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { startOfDay, endOfDay, subDays } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
-import { parseUserAgent } from '@/lib/security-log-utils';
+import { parseUserAgent, getEventDetails } from '@/lib/security-log-utils';
+import { SmartPagination } from '@/components/ui/pagination';
+
+
+const PAGE_SIZE = 15;
+
+const exportToCSV = (logs: AppSecurityLog[], filename = 'security-logs.csv') => {
+  if (!logs || logs.length === 0) {
+    return;
+  }
+  const headers = "ID,Evento,Usuario,Email,Dirección IP,Ubicación,Fecha,Navegador,SO,Dispositivo\n";
+  const rows = logs.map(log => {
+      const { browser, os } = parseUserAgent(log.userAgent);
+      const eventInfo = getEventDetails(log.event, log.details);
+      
+      const csvRow = [
+          log.id,
+          eventInfo.label,
+          `"${log.user?.name || ''}"`,
+          log.emailAttempt || log.user?.email,
+          log.ipAddress,
+          `"${log.city || ''}, ${log.country || ''}"`,
+          new Date(log.createdAt).toISOString(),
+          browser,
+          os,
+          log.userAgent
+      ].join(',');
+      return csvRow;
+  }).join('\n');
+
+  const csvContent = headers + rows;
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement("a");
+  if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", filename);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+  }
+};
+
 
 export default function SecurityAuditPage() {
     const { user: currentUser } = useAuth();
@@ -33,6 +75,7 @@ export default function SecurityAuditPage() {
     const { startTour, forceStartTour } = useTour();
 
     const [logs, setLogs] = useState<AppSecurityLog[]>([]);
+    const [totalLogs, setTotalLogs] = useState(0);
     const [stats, setStats] = useState<SecurityStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -41,6 +84,8 @@ export default function SecurityAuditPage() {
     const eventFilter = searchParams.get('event') || 'ALL';
     const startDateParam = searchParams.get('startDate');
     const endDateParam = searchParams.get('endDate');
+    const currentPage = Number(searchParams.get('page')) || 1;
+    const totalPages = Math.ceil(totalLogs / PAGE_SIZE);
 
     const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
         const from = startDateParam ? new Date(startDateParam) : subDays(new Date(), 6);
@@ -70,11 +115,16 @@ export default function SecurityAuditPage() {
         router.push(`${pathname}?${createQueryString({ 
             startDate: range?.from ? range.from.toISOString() : null,
             endDate: range?.to ? range.to.toISOString() : null,
+            page: 1,
         })}`, { scroll: false });
     };
 
     const handleEventFilterChange = (value: string) => {
-        router.push(`${pathname}?${createQueryString({ event: value })}`, { scroll: false });
+        router.push(`${pathname}?${createQueryString({ event: value, page: 1 })}`, { scroll: false });
+    };
+    
+    const handlePageChange = (page: number) => {
+      router.push(`${pathname}?${createQueryString({ page })}`, { scroll: false });
     };
 
     const fetchData = useCallback(async () => {
@@ -85,6 +135,8 @@ export default function SecurityAuditPage() {
             if (dateRange?.from) params.set('startDate', dateRange.from.toISOString());
             if (dateRange?.to) params.set('endDate', dateRange.to.toISOString());
             if (eventFilter !== 'ALL') params.set('event', eventFilter);
+            params.set('page', String(currentPage));
+            params.set('pageSize', String(PAGE_SIZE));
 
             const [logsResponse, statsResponse] = await Promise.all([
                 fetch(`/api/security/logs?${params.toString()}`),
@@ -98,6 +150,7 @@ export default function SecurityAuditPage() {
             const statsData = await statsResponse.json();
             
             setLogs(logsData.logs || []);
+            setTotalLogs(logsData.totalLogs || 0);
             setStats(statsData);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Unknown error');
@@ -105,7 +158,7 @@ export default function SecurityAuditPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [toast, dateRange, eventFilter]);
+    }, [toast, dateRange, eventFilter, currentPage]);
     
     useEffect(() => {
         if (currentUser?.role === 'ADMINISTRATOR') {
@@ -128,6 +181,10 @@ export default function SecurityAuditPage() {
         const osData = Array.from(oses.entries()).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count).slice(0, 5);
         return { browserData, osData };
     }, [logs]);
+    
+    const criticalEvents = useMemo(() => {
+        return logs.filter(log => log.event === 'FAILED_LOGIN_ATTEMPT' || log.event === 'USER_ROLE_CHANGED').slice(0, 5);
+    }, [logs]);
 
     if (!currentUser || currentUser.role !== 'ADMINISTRATOR') {
         return (
@@ -139,26 +196,18 @@ export default function SecurityAuditPage() {
             </div>
         );
     }
-
-    if (isLoading) {
-        return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
-    }
     
-    if (error) {
-        return (
-            <div className="flex flex-col items-center justify-center h-full text-center p-6">
-                <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
-                <h2 className="text-xl font-semibold">Error al Cargar Datos</h2>
-                <p className="text-muted-foreground">{error}</p>
-                <Button onClick={fetchData} className="mt-4">Reintentar</Button>
-            </div>
-        );
+    if (isLoading && logs.length === 0) {
+        return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
     }
 
     return (
         <div className="space-y-6">
              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div><p className="text-muted-foreground">Monitoriza la actividad y la seguridad de tu plataforma.</p></div>
+                <div className="space-y-1">
+                    <h2 className="text-2xl font-semibold">Auditoría de Seguridad</h2>
+                    <p className="text-muted-foreground">Monitoriza la actividad y la seguridad de tu plataforma.</p>
+                </div>
                 <div className="flex flex-wrap items-center gap-2">
                     <Select value={eventFilter} onValueChange={handleEventFilterChange}>
                         <SelectTrigger id="security-event-filter" className="w-full sm:w-[200px] h-9"><SelectValue placeholder="Filtrar por evento..." /></SelectTrigger>
@@ -171,25 +220,56 @@ export default function SecurityAuditPage() {
                         </SelectContent>
                     </Select>
                     <DateRangePicker date={dateRange} onDateChange={handleDateRangeChange} />
-                    <Button variant="outline" size="sm" onClick={() => forceStartTour('securityAudit', securityAuditTour)}><HelpCircle className="mr-2 h-4 w-4" /> Guía</Button>
+                    <Button variant="outline" size="sm" onClick={() => exportToCSV(logs)}><FileDown className="mr-2 h-4 w-4"/>Exportar</Button>
                 </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                  <MetricCard id="successful-logins-card" title="Inicios Exitosos" value={stats?.successfulLogins24h || 0} icon={ShieldCheck} trendData={stats?.loginsLast7Days || []} gradient="bg-gradient-green" onClick={() => handleEventFilterChange('SUCCESSFUL_LOGIN')} />
                  <MetricCard id="failed-logins-card" title="Intentos Fallidos" value={stats?.failedLogins24h || 0} icon={AlertTriangle} gradient="bg-gradient-orange" onClick={() => handleEventFilterChange('FAILED_LOGIN_ATTEMPT')} />
                  <MetricCard id="role-changes-card" title="Cambios de Rol" value={stats?.roleChanges24h || 0} icon={UserCog} gradient="bg-gradient-blue" onClick={() => handleEventFilterChange('USER_ROLE_CHANGED')} />
-                 <div className="md:col-span-1">
-                    <DeviceDistributionChart browserData={deviceData.browserData} osData={deviceData.osData} />
-                 </div>
+                 <DeviceDistributionChart browserData={deviceData.browserData} osData={deviceData.osData} />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="md:col-span-3">
-                    <Card id="security-log-table"><CardHeader><CardTitle>Registro de Eventos Detallado</CardTitle></CardHeader><CardContent><SecurityLogTable logs={logs} onRowClick={setSelectedLog}/></CardContent></Card>
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div className="lg:col-span-3">
+                    <Card id="security-log-table">
+                        <CardHeader>
+                            <CardTitle>Registro de Eventos Detallado</CardTitle>
+                            <CardDescription>Mostrando {logs.length} de {totalLogs} registros.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                          <SecurityLogTable logs={logs} onRowClick={setSelectedLog} />
+                        </CardContent>
+                        <CardFooter className="pt-4">
+                           <SmartPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+                        </CardFooter>
+                    </Card>
                 </div>
-                <div className="md:col-span-1">
-                    <Card id="access-map" className="h-full"><CardHeader><CardTitle className="text-lg flex items-center gap-2"><MapIcon className="h-5 w-5 text-primary"/>Mapa de Accesos</CardTitle></CardHeader><CardContent className="h-full min-h-[300px] flex flex-col items-center justify-center"><AnimatedGlobe /><h3 className="font-semibold text-lg text-foreground mt-4">Próximamente</h3><p className="text-sm text-muted-foreground">Visualización geográfica de inicios de sesión.</p></CardContent></Card>
+                <div className="lg:col-span-1">
+                     <Card id="critical-events" className="h-full">
+                         <CardHeader>
+                             <CardTitle className="text-base flex items-center gap-2"><ShieldX className="h-5 w-5 text-destructive"/>Eventos Críticos Recientes</CardTitle>
+                         </CardHeader>
+                         <CardContent>
+                            {criticalEvents.length > 0 ? (
+                               <div className="space-y-3">
+                                {criticalEvents.map(log => {
+                                    const eventUI = getEventDetails(log.event, log.details);
+                                    return (
+                                        <div key={log.id} className="flex items-center gap-2 text-sm p-2 rounded-md bg-muted/50">
+                                            {eventUI.icon}
+                                            <div className="flex-grow min-w-0">
+                                                <p className="font-semibold truncate">{log.user?.name || log.emailAttempt}</p>
+                                                <p className="text-xs text-muted-foreground">{eventUI.label}</p>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                               </div>
+                            ) : <p className="text-sm text-center text-muted-foreground py-4">No hay eventos críticos recientes.</p>}
+                         </CardContent>
+                    </Card>
                 </div>
             </div>
             {selectedLog && <SecurityLogDetailSheet log={selectedLog} isOpen={!!selectedLog} onClose={() => setSelectedLog(null)} />}
