@@ -50,24 +50,19 @@ export async function GET(req: NextRequest, { params }: { params: { courseId: st
             return NextResponse.json({ message: "Curso no encontrado" }, { status: 404 });
         }
         
-        // Calculate total lessons for the course
         const totalLessons = course.modules.reduce((sum, mod) => sum + mod.lessons.length, 0);
 
-        // Calculate average progress for the whole course
         const allProgressRecords = course.enrollments.map(e => e.progress?.progressPercentage).filter(p => p !== null && p !== undefined) as number[];
         const avgProgress = allProgressRecords.length > 0 ? allProgressRecords.reduce((a, b) => a + b, 0) / allProgressRecords.length : 0;
         
-        // Calculate overall average quiz score for the course
         const allQuizAttempts = await prisma.quizAttempt.findMany({
             where: { quiz: { contentBlock: { lesson: { module: { courseId: courseId } } } } },
             select: { score: true }
         });
         const avgQuizScore = allQuizAttempts.length > 0 ? allQuizAttempts.reduce((sum, attempt) => sum + attempt.score, 0) / allQuizAttempts.length : 0;
 
-        // Enhance enrollments with individual average quiz scores and last activity date
         const enrollmentsWithDetails = await Promise.all(course.enrollments.map(async (enrollment) => {
             const progress = enrollment.progress;
-            // CORRECCIÓN: Si no hay progreso, se devuelve un objeto con valores por defecto en lugar de null.
             if (!progress) {
                 return { 
                     ...enrollment, 
@@ -101,7 +96,7 @@ export async function GET(req: NextRequest, { params }: { params: { courseId: st
                 ...enrollment,
                 progress: {
                     ...progress,
-                    progressPercentage: progress.progressPercentage, // Aseguramos que el valor se pasa correctamente.
+                    progressPercentage: progress.progressPercentage,
                     avgQuizScore: userAvgQuizScore,
                     lastActivity
                 }

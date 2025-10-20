@@ -114,7 +114,6 @@ const PaginationEllipsis = ({
 PaginationEllipsis.displayName = "PaginationEllipsis"
 
 
-// --- Nuevo componente de paginación inteligente ---
 interface SmartPaginationProps {
   currentPage: number;
   totalPages: number;
