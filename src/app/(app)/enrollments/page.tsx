@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import type { Course as AppCourse, User, CourseProgress, LessonCompletionRecord } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, AlertTriangle, UsersRound, Filter, MoreVertical, BookOpen, LineChart, Target, FileText, Search, CheckCircle, Percent, HelpCircle, UserX, BarChartHorizontal, ArrowRight, Download } from 'lucide-react';
+import { Loader2, AlertTriangle, UsersRound, Filter, MoreVertical, BookOpen, LineChart, TrendingDown, Search, CheckCircle, Percent, HelpCircle, UserX, BarChartHorizontal, ArrowRight, Download, MessageSquare, User as UserIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -27,9 +27,13 @@ import { cn } from '@/lib/utils';
 import { useTour } from '@/contexts/tour-context';
 import { enrollmentsTour } from '@/lib/tour-steps';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { ResponsiveContainer, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, Bar, TooltipProps } from 'recharts';
+import { ResponsiveContainer, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, Bar, TooltipProps, ComposedChart, Line } from 'recharts';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
+import { startOfDay, subDays, format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import Link from 'next/link';
 
 // --- TYPE DEFINITIONS ---
 interface StudentEnrollmentDetails {
@@ -61,6 +65,8 @@ interface CourseEnrollmentInfo extends AppCourse {
   enrollments: StudentEnrollmentDetails[];
   avgProgress: number | null;
   avgQuizScore: number | null;
+  completionTrend: { date: string, count: number }[];
+  lessonCompletions: { lessonId: string, title: string, completions: number }[];
   modules: {
       id: string;
       title: string;
@@ -143,43 +149,10 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>)
     return null;
 };
 
-const ProgressDistributionChart = ({ enrollments }: { enrollments: StudentEnrollmentDetails[] }) => {
-    const data = useMemo(() => {
-        const ranges = {
-            '0-25%': 0, '26-50%': 0, '51-75%': 0, '76-99%': 0, '100%': 0,
-        };
-        enrollments.forEach(e => {
-            const p = e.progress?.progressPercentage || 0;
-            if (p === 100) ranges['100%']++;
-            else if (p >= 76) ranges['76-99%']++;
-            else if (p >= 51) ranges['51-75%']++;
-            else if (p >= 26) ranges['26-50%']++;
-            else ranges['0-25%']++;
-        });
-        return Object.entries(ranges).map(([name, value]) => ({ name, value }));
-    }, [enrollments]);
-
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2"><BarChartHorizontal/> Distribución del Progreso</CardTitle>
-            </CardHeader>
-            <CardContent className="h-[250px] pr-4 -ml-4">
-                 <ResponsiveContainer width="100%" height="100%">
-                    <BarChart layout="vertical" data={data} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" horizontal={false}/>
-                        <XAxis type="number" allowDecimals={false} fontSize={12}/>
-                        <YAxis type="category" dataKey="name" width={60} fontSize={12} />
-                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }}/>
-                        <Bar dataKey="value" fill="hsl(var(--primary))" barSize={20} radius={[0, 4, 4, 0]} name="Estudiantes"/>
-                    </BarChart>
-                </ResponsiveContainer>
-            </CardContent>
-        </Card>
-    )
-}
-
-const EnrolledStudentList = ({ enrollments, onAction }: { enrollments: StudentEnrollmentDetails[], onAction: (user: StudentEnrollmentDetails) => void }) => {
+const EnrolledStudentList = ({ enrollments, onAction }: { 
+    enrollments: StudentEnrollmentDetails[], 
+    onAction: (action: 'details' | 'unenroll' | 'message', user: StudentEnrollmentDetails) => void 
+}) => {
     return (
         <div className="overflow-x-auto">
             <Table>
@@ -189,7 +162,7 @@ const EnrolledStudentList = ({ enrollments, onAction }: { enrollments: StudentEn
                         <TableHead>Progreso</TableHead>
                         <TableHead>Calificación Quizzes</TableHead>
                         <TableHead>Estado</TableHead>
-                        <TableHead className="w-[50px]"><span className="sr-only">Acciones</span></TableHead>
+                        <TableHead className="w-[50px] text-right"><span className="sr-only">Acciones</span></TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -229,8 +202,18 @@ const EnrolledStudentList = ({ enrollments, onAction }: { enrollments: StudentEn
                                        {isCompleted ? `Completado` : 'En Progreso'}
                                     </Badge>
                                 </TableCell>
-                                <TableCell>
-                                    <Button variant="outline" size="sm" onClick={() => onAction(enrollment)}>Ver Detalles <ArrowRight className="ml-2 h-4 w-4"/></Button>
+                                <TableCell className="text-right">
+                                     <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4"/></Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onSelect={() => onAction('details', enrollment)}><ArrowRight className="mr-2 h-4 w-4"/>Ver Detalles</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => onAction('message', enrollment)}><MessageSquare className="mr-2 h-4 w-4"/>Enviar Mensaje</DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem onSelect={() => onAction('unenroll', enrollment)} className="text-destructive focus:text-destructive"><UserX className="mr-2 h-4 w-4"/>Cancelar Inscripción</DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                     </DropdownMenu>
                                 </TableCell>
                             </TableRow>
                         );
@@ -254,18 +237,23 @@ export default function EnrollmentsPage() {
 
   const [courses, setCourses] = useState<AppCourse[]>([]);
   const [selectedCourseInfo, setSelectedCourseInfo] = useState<CourseEnrollmentInfo | null>(null);
-  const [isLoadingCourses, setIsLoadingCourses] = useState(true);
-  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [isLoadingCourses, setIsLoadingCourses = useState(true);
+  const [isLoadingDetails, setIsLoadingDetails = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [studentToView, setStudentToView] = useState<StudentEnrollmentDetails | null>(null);
   const [studentToUnenroll, setStudentToUnenroll] = useState<StudentEnrollmentDetails | null>(null);
-  const [isUnenrolling, setIsUnenrolling] = useState(false);
+  const [isUnenrolling, setIsUnenrolling = useState(false);
 
   const selectedCourseId = searchParams.get('courseId') || '';
   const searchTerm = searchParams.get('search') || '';
   const currentPage = Number(searchParams.get('page')) || 1;
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: subDays(new Date(), 29),
+    to: new Date(),
+  });
 
   useEffect(() => {
     setPageTitle('Inscripciones');
@@ -287,11 +275,10 @@ export default function EnrollmentsPage() {
   const fetchCourseList = useCallback(async () => {
     if (isAuthLoading || !currentUser) return;
     setIsLoadingCourses(true);
-    setError(null);
     try {
         let url = `/api/courses?manageView=true&userId=${currentUser.id}&userRole=${currentUser.role}`;
         const response = await fetch(url, { cache: 'no-store' });
-        if (!response.ok) throw new Error('Failed to fetch courses');
+        if (!response.ok) throw new Error('No se pudieron cargar los cursos');
         const data = await response.json();
         const coursesArray = data.courses || data;
         setCourses(coursesArray);
@@ -299,8 +286,7 @@ export default function EnrollmentsPage() {
             router.replace(`${pathname}?${createQueryString({ courseId: coursesArray[0].id, page: 1, search: null })}`);
         }
     } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error fetching courses');
-        toast({ title: "Error", description: "Could not load courses.", variant: "destructive" });
+        toast({ title: "Error", description: err instanceof Error ? err.message : "No se pudieron cargar los cursos.", variant: "destructive" });
     } finally {
         setIsLoadingCourses(false);
     }
@@ -310,18 +296,22 @@ export default function EnrollmentsPage() {
     if (!courseId) return;
     setIsLoadingDetails(true);
     try {
-        const response = await fetch(`/api/enrollments/course/${courseId}/details`, { cache: 'no-store' });
-        if (!response.ok) throw new Error((await response.json()).message || 'Failed to fetch course details');
+        const params = new URLSearchParams();
+        if (dateRange.from) params.set('startDate', dateRange.from.toISOString());
+        if (dateRange.to) params.set('endDate', dateRange.to.toISOString());
+
+        const response = await fetch(`/api/enrollments/course/${courseId}/details?${params.toString()}`, { cache: 'no-store' });
+        if (!response.ok) throw new Error((await response.json()).message || 'No se pudieron cargar los detalles del curso');
         const data: CourseEnrollmentInfo = await response.json();
         setSelectedCourseInfo(data);
     } catch(err) {
-        setError(err instanceof Error ? err.message : 'Unknown error fetching details');
-        toast({ title: "Error", description: `Could not load details for course: ${err instanceof Error ? err.message : ''}`, variant: "destructive" });
+        setError(err instanceof Error ? err.message : 'Error desconocido');
+        toast({ title: "Error", description: err instanceof Error ? err.message : 'No se pudieron cargar los detalles del curso.', variant: "destructive" });
         setSelectedCourseInfo(null);
     } finally {
         setIsLoadingDetails(false);
     }
-  }, [toast]);
+  }, [toast, dateRange]);
   
   useEffect(() => {
     fetchCourseList();
@@ -344,23 +334,24 @@ export default function EnrollmentsPage() {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       router.push(`${pathname}?${createQueryString({ search: e.target.value, page: 1 })}`);
   }
+  
+  const handleAction = (action: 'details' | 'unenroll' | 'message', enrollment: StudentEnrollmentDetails) => {
+      if(action === 'details') setStudentToView(enrollment);
+      if(action === 'unenroll') setStudentToUnenroll(enrollment);
+      if(action === 'message') router.push(`/messages?new=${enrollment.user.id}`);
+  }
 
   const handleUnenrollStudent = async () => {
     if (!studentToUnenroll || !selectedCourseId) return;
     setIsUnenrolling(true);
     try {
-        const params = new URLSearchParams({
-            courseId: selectedCourseId,
-            userId: studentToUnenroll.user.id
-        });
-        const response = await fetch(`/api/enrollments?${params.toString()}`, {
-            method: 'DELETE',
-        });
-         if (!response.ok) throw new Error((await response.json()).message || 'No se pudo cancelar la inscripción');
+        const params = new URLSearchParams({ courseId: selectedCourseId, userId: studentToUnenroll.user.id });
+        const response = await fetch(`/api/enrollments?${params.toString()}`, { method: 'DELETE' });
+        if (!response.ok) throw new Error((await response.json()).message || 'No se pudo cancelar la inscripción');
         toast({ title: 'Inscripción Cancelada', description: `Se ha cancelado la inscripción de ${studentToUnenroll.user.name}.` });
         setStudentToView(null);
         setStudentToUnenroll(null);
-        fetchCourseDetails(selectedCourseId); // Refresh data
+        fetchCourseDetails(selectedCourseId);
     } catch(err) {
         toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
     } finally {
@@ -370,32 +361,23 @@ export default function EnrollmentsPage() {
 
   const handleExport = () => {
     if (!selectedCourseInfo || !selectedCourseInfo.enrollments) return;
-
     const headers = "Nombre,Email,Progreso (%),Calificación Quizzes (%),Estado,Fecha Inscripción,Fecha Completado\n";
-    
     const rows = selectedCourseInfo.enrollments.map(e => {
-        const name = `"${e.user.name || ''}"`;
-        const email = e.user.email;
+        const name = `"${e.user.name || ''}"`; const email = e.user.email;
         const progress = e.progress?.progressPercentage?.toFixed(0) || 0;
         const quizScore = e.progress?.avgQuizScore?.toFixed(0) || 'N/A';
-        const isCompleted = Number(progress) === 100;
-        const status = isCompleted ? 'Completado' : 'En Progreso';
+        const isCompleted = Number(progress) === 100; const status = isCompleted ? 'Completado' : 'En Progreso';
         const enrolledDate = new Date(e.enrolledAt).toLocaleDateString('es-CO');
         const completedDate = e.progress?.completedAt ? new Date(e.progress.completedAt).toLocaleDateString('es-CO') : 'N/A';
         return [name, email, progress, quizScore, status, enrolledDate, completedDate].join(',');
     }).join('\n');
 
     const csvContent = "data:text/csv;charset=utf-8," + headers + rows;
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `progreso_${selectedCourseInfo.title.replace(/\s+/g, '_').toLowerCase()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const encodedUri = encodeURI(csvContent); const link = document.createElement("a");
+    link.setAttribute("href", encodedUri); link.setAttribute("download", `progreso_${selectedCourseInfo.title.replace(/\s+/g, '_').toLowerCase()}.csv`);
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
     toast({title: "Exportación Iniciada", description: "La descarga de tu reporte ha comenzado."})
   }
-
 
   const filteredEnrollments = useMemo(() => {
     if (!selectedCourseInfo) return [];
@@ -420,6 +402,10 @@ export default function EnrollmentsPage() {
   if (!currentUser || (currentUser.role !== 'ADMINISTRATOR' && currentUser.role !== 'INSTRUCTOR')) {
     return <div className="text-center py-10">Acceso denegado a esta sección.</div>;
   }
+  
+  const mostDifficultLessons = selectedCourseInfo 
+    ? [...selectedCourseInfo.lessonCompletions].sort((a,b) => a.completions - b.completions).slice(0,3)
+    : [];
 
   return (
     <>
@@ -441,7 +427,7 @@ export default function EnrollmentsPage() {
                 <div className="w-full sm:w-auto flex items-center gap-2">
                     <CourseSelector courses={courses} onSelect={handleCourseSelection} selectedCourseId={selectedCourseId} isLoading={isLoadingCourses} />
                     <Button variant="outline" size="sm" onClick={handleExport} disabled={!selectedCourseInfo || selectedCourseInfo.enrollments.length === 0}>
-                        <Download className="mr-2 h-4 w-4" /> Exportar Reporte
+                        <Download className="mr-2 h-4 w-4" /> Reporte
                     </Button>
                 </div>
             </div>
@@ -451,20 +437,50 @@ export default function EnrollmentsPage() {
           <CardContent>
             {isLoadingDetails ? (
                 <div className="flex items-center justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
-            ) : selectedCourseInfo && (
+            ) : selectedCourseInfo ? (
                 <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="enrollments-stats-cards">
-                       <Card className="lg:col-span-1">
-                         <CardHeader><CardTitle className="text-base">Métricas Clave</CardTitle></CardHeader>
-                         <CardContent className="space-y-4">
-                            <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Total Inscritos</span> <span className="font-bold">{selectedCourseInfo._count.enrollments}</span></div>
-                            <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Finalización Promedio</span> <span className="font-bold">{selectedCourseInfo.avgProgress?.toFixed(1)}%</span></div>
-                            <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Nota Quizzes Promedio</span> <span className="font-bold">{selectedCourseInfo.avgQuizScore?.toFixed(1)}%</span></div>
-                         </CardContent>
-                       </Card>
-                       <div className="lg:col-span-2">
-                            <ProgressDistributionChart enrollments={selectedCourseInfo.enrollments} />
-                       </div>
+                       <StatCard icon={UsersRound} title="Total Inscritos" value={selectedCourseInfo._count.enrollments} />
+                       <StatCard icon={Percent} title="Finalización Promedio" value={selectedCourseInfo.avgProgress || 0} unit="%" />
+                       <StatCard icon={CheckCircle} title="Nota Quizzes Promedio" value={selectedCourseInfo.avgQuizScore || 0} unit="%" />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                         <Card className="xl:col-span-2">
+                             <CardHeader>
+                                <CardTitle className="text-base flex items-center gap-2"><LineChart/> Tendencia de Finalización</CardTitle>
+                             </CardHeader>
+                              <CardContent className="h-[250px] pr-4 -ml-4">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <ComposedChart data={selectedCourseInfo.completionTrend}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false}/>
+                                        <XAxis dataKey="date" tickFormatter={(str) => format(new Date(str), 'd MMM', {locale: es})} fontSize={12} />
+                                        <YAxis allowDecimals={false} width={30}/>
+                                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }}/>
+                                        <Bar dataKey="count" fill="hsl(var(--primary))" barSize={20} radius={[4, 4, 0, 0]} name="Finalizados"/>
+                                    </ComposedChart>
+                                </ResponsiveContainer>
+                            </CardContent>
+                         </Card>
+                         <Card>
+                             <CardHeader>
+                                <CardTitle className="text-base flex items-center gap-2"><TrendingDown/> Puntos de Fricción</CardTitle>
+                                <CardDescription className="text-xs">Lecciones con menos finalizaciones.</CardDescription>
+                             </CardHeader>
+                             <CardContent>
+                                <div className="space-y-2">
+                                {mostDifficultLessons.length > 0 ? mostDifficultLessons.map(l => (
+                                    <div key={l.lessonId} className="text-sm">
+                                        <div className="flex justify-between items-center">
+                                            <p className="font-medium truncate pr-2">{l.title}</p>
+                                            <p className="font-bold shrink-0">{l.completions} <span className="font-normal text-muted-foreground">de {selectedCourseInfo._count.enrollments}</span></p>
+                                        </div>
+                                         <Progress value={(l.completions / selectedCourseInfo._count.enrollments) * 100} className="h-1.5 mt-1"/>
+                                    </div>
+                                )) : <p className="text-sm text-muted-foreground text-center py-4">No hay suficientes datos de progreso.</p>}
+                                </div>
+                             </CardContent>
+                         </Card>
                     </div>
 
                     <Card className="bg-muted/20" id="enrollments-student-list">
@@ -479,7 +495,7 @@ export default function EnrollmentsPage() {
                     </CardHeader>
                     <CardContent>
                         {paginatedEnrollments.length > 0 ? (
-                           <EnrolledStudentList enrollments={paginatedEnrollments} onAction={setStudentToView} />
+                           <EnrolledStudentList enrollments={paginatedEnrollments} onAction={handleAction} />
                         ) : <p className="text-center text-muted-foreground py-6">{searchTerm ? "Ningún estudiante coincide con tu búsqueda." : "No hay estudiantes inscritos en este curso aún."}</p>}
                     </CardContent>
                     {totalPages > 1 && (
@@ -493,7 +509,7 @@ export default function EnrollmentsPage() {
                     )}
                     </Card>
                 </div>
-            )}
+            ) : <div className="text-center py-10"><AlertTriangle className="mx-auto mb-2 h-8 w-8 text-destructive" /><p className="font-semibold">Error al cargar datos</p><p className="text-sm text-muted-foreground">{error}</p></div>}
           </CardContent>
         )}
       </Card>
@@ -551,11 +567,6 @@ export default function EnrollmentsPage() {
                         ))}
                        </div>
                     </ScrollArea>
-                    <DialogFooter>
-                        <Button variant="destructive" onClick={() => { setStudentToView(null); setStudentToUnenroll(studentToView); }}>
-                            <UserX className="mr-2 h-4 w-4"/> Cancelar Inscripción
-                        </Button>
-                    </DialogFooter>
                 </div>
             )}
         </DialogContent>
