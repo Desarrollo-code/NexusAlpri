@@ -12,6 +12,7 @@ import { Identicon } from '@/components/ui/identicon';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const TimelineItem = ({ log, onLogClick, isLast }: { log: SecurityLog, onLogClick: (log: SecurityLog) => void, isLast: boolean }) => {
     const eventUI = getEventDetails(log.event, log.details);
@@ -26,7 +27,7 @@ const TimelineItem = ({ log, onLogClick, isLast }: { log: SecurityLog, onLogClic
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="flex items-start gap-4"
+            className="flex items-start gap-3"
         >
             {/* Time and Line */}
             <div className="flex flex-col items-center">
@@ -45,7 +46,7 @@ const TimelineItem = ({ log, onLogClick, isLast }: { log: SecurityLog, onLogClic
             </div>
 
             {/* Card Content */}
-            <div className="w-full pb-8 pt-1">
+            <div className="w-full pb-6 pt-1">
                 <div 
                     onClick={() => onLogClick(log)} 
                     className="p-3 rounded-lg border bg-card hover:bg-muted/50 cursor-pointer shadow-sm hover:shadow-md transition-all"
@@ -58,10 +59,10 @@ const TimelineItem = ({ log, onLogClick, isLast }: { log: SecurityLog, onLogClic
                              </Avatar>
                              <p className="font-semibold text-sm truncate">{log.user?.name || log.emailAttempt}</p>
                          </div>
-                         <Badge variant={eventUI.variant}>{eventUI.label}</Badge>
+                         <Badge variant={eventUI.variant} className="hidden sm:inline-flex">{eventUI.label}</Badge>
                     </div>
                     <Separator className="my-2" />
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                         <div className="flex items-center gap-1.5">
                             {isMobileDevice ? <Smartphone className="h-3.5 w-3.5"/> : <Monitor className="h-3.5 w-3.5"/>}
                             <span className="truncate">{browser}, {os}</span>
@@ -81,17 +82,19 @@ const TimelineItem = ({ log, onLogClick, isLast }: { log: SecurityLog, onLogClic
 
 export const SecurityLogTimeline = ({ logs, onLogClick }: { logs: SecurityLog[], onLogClick: (log: SecurityLog) => void }) => {
     return (
-        <div className="relative">
-            <AnimatePresence>
-                {logs.map((log, index) => (
-                    <TimelineItem 
-                        key={log.id} 
-                        log={log} 
-                        onLogClick={onLogClick} 
-                        isLast={index === logs.length - 1} 
-                    />
-                ))}
-            </AnimatePresence>
-        </div>
+        <ScrollArea className="h-[70vh] pr-4">
+            <div className="relative">
+                <AnimatePresence>
+                    {logs.map((log, index) => (
+                        <TimelineItem 
+                            key={log.id} 
+                            log={log} 
+                            onLogClick={onLogClick} 
+                            isLast={index === logs.length - 1} 
+                        />
+                    ))}
+                </AnimatePresence>
+            </div>
+        </ScrollArea>
     );
 };

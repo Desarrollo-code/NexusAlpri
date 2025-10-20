@@ -4,9 +4,10 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import type { SecurityLog } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
-import { Globe, CheckCircle, XCircle } from 'lucide-react';
+import { Globe, CheckCircle, XCircle, ZoomIn, ZoomOut } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { Button } from '../ui/button';
 
 const GlobeGl = dynamic(() => import('react-globe.gl'), { ssr: false });
 
@@ -54,11 +55,13 @@ export const GlobalAccessMap: React.FC<GlobalAccessMapProps> = ({ accessPoints }
 
     const handlePointHover = (point: any) => {
         setHoveredPoint(point);
-        if (globeEl.current && point) {
-            const { lat, lng } = point;
-            globeEl.current.pointOfView({ lat, lng, altitude: 1.5 }, 1000);
-        }
     };
+
+    const handleZoom = (factor: number) => {
+        if (!globeEl.current) return;
+        const currentAltitude = globeEl.current.pointOfView().altitude;
+        globeEl.current.pointOfView({ altitude: currentAltitude * factor }, 500);
+    }
     
     return (
         <div className="relative w-full h-full">
@@ -73,6 +76,15 @@ export const GlobalAccessMap: React.FC<GlobalAccessMapProps> = ({ accessPoints }
                 pointColor={(point: any) => point.success ? 'rgba(52, 211, 153, 0.8)' : 'rgba(239, 68, 68, 0.8)'}
                 onPointHover={handlePointHover}
             />
+
+             <div className="absolute bottom-4 right-4 flex flex-col gap-2">
+                <Button size="icon" variant="secondary" onClick={() => handleZoom(0.8)}>
+                    <ZoomIn className="h-4 w-4" />
+                </Button>
+                <Button size="icon" variant="secondary" onClick={() => handleZoom(1.2)}>
+                    <ZoomOut className="h-4 w-4" />
+                </Button>
+            </div>
 
             {hoveredPoint && (
                 <div className="absolute top-4 left-4 pointer-events-none z-10">

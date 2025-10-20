@@ -1,10 +1,9 @@
 // src/app/api/security/logs/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { SecurityLogEvent } from '@/types';
 
-const prisma = new PrismaClient();
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
@@ -16,7 +15,7 @@ export async function GET(req: NextRequest) {
     
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get('page') || '1', 10);
-    const pageSize = parseInt(searchParams.get('pageSize') || '50', 10); // Aumentado para el mapa
+    const pageSize = parseInt(searchParams.get('pageSize') || '20', 10);
     const eventType = searchParams.get('event') as SecurityLogEvent | null;
     const getAll = searchParams.get('all') === 'true';
 
@@ -39,7 +38,7 @@ export async function GET(req: NextRequest) {
                         id: true,
                         name: true,
                         avatar: true,
-                        email: true
+                        email: true,
                     },
                 },
             },
@@ -53,23 +52,25 @@ export async function GET(req: NextRequest) {
             prisma.securityLog.count({ where: whereClause })
         ]);
 
-        // Enriquecer con datos de geolocalización (simulado)
+        // Enriquecer con datos de geolocalización (simulado para demostración)
         const logsWithGeo = logs.map(log => {
-            // Lógica simple de hash para generar coordenadas falsas pero consistentes para una IP
             let lat = 0;
             let lng = 0;
             if (log.ipAddress) {
-                const ipHash = log.ipAddress.split('.').reduce((acc, part) => acc + parseInt(part, 10), 0);
-                lat = (ipHash % 180) - 90; // Rango de -90 a 90
-                lng = (ipHash * 37 % 360) - 180; // Rango de -180 a 180
+                const ipHash = log.ipAddress.split('.').reduce((acc, part, index) => acc + parseInt(part, 10) * Math.pow(256, 3-index), 0);
+                lat = (ipHash % 180) - 90 + Math.random() * 0.5 - 0.25;
+                lng = (ipHash * 37 % 360) - 180 + Math.random() * 0.5 - 0.25;
+            } else {
+                 // Default a una ubicación si no hay IP, p.ej. tu oficina
+                lat = 4.60971; // Bogotá
+                lng = -74.08175;
             }
             return {
                 ...log,
                 lat,
-                lng
+                lng,
             };
         });
-
 
         return NextResponse.json({ logs: logsWithGeo, totalLogs });
     } catch (error) {
