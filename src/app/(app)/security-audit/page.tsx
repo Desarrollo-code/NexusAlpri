@@ -102,9 +102,6 @@ export default function SecurityAuditPage() {
 
     return (
         <>
-            <div className="fixed inset-0 z-[-1]">
-               <GlobalAccessMap accessPoints={logs} />
-            </div>
            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 
                 {/* Columna Izquierda: Línea de Tiempo */}
@@ -123,18 +120,18 @@ export default function SecurityAuditPage() {
                     </Card>
                 </div>
                 
-                 {/* Columna Central: Marcadores de posición */}
+                 {/* Columna Central: Globo y Lista de IPs */}
                  <div className="lg:col-span-5 xl:col-span-6 space-y-6">
                     <Card className="h-[400px] overflow-hidden bg-card/80 backdrop-blur-lg">
                         <CardHeader>
                             <CardTitle>Mapa de Accesos Global</CardTitle>
                         </CardHeader>
-                        <CardContent className="p-0 h-full flex items-center justify-center">
-                            <p className="text-muted-foreground">El mapa está activo en el fondo.</p>
+                         <CardContent className="p-0 h-full">
+                            <GlobalAccessMap accessPoints={logs} />
                         </CardContent>
                     </Card>
                     <Card className="bg-card/80 backdrop-blur-lg">
-                       <CardHeader><CardTitle>Lista de IPs</CardTitle></CardHeader>
+                       <CardHeader><CardTitle>Top IPs por Actividad</CardTitle></CardHeader>
                        <CardContent>
                            {isStatsLoading ? (
                                <div className="space-y-2 p-4"><Skeleton className="h-6 w-full" /><Skeleton className="h-6 w-full" /><Skeleton className="h-6 w-full" /></div>

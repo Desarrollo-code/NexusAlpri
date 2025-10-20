@@ -1,4 +1,4 @@
-// src/app/api/security/stats/route.ts
+// src/api/security/stats/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
