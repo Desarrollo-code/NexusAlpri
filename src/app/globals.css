@@ -39,31 +39,30 @@
     --event-red: 0 80% 60%;
     --event-orange: 25 90% 60%;
 
-    /* Sidebar - Light Theme */
-    --sidebar-background: 220 20% 98%;
-    --sidebar-foreground: 220 10% 30%;
-    --sidebar-muted-foreground: 220 10% 50%;
-    --sidebar-hover: 220 20% 94%;
-    --sidebar-border: 220 20% 90%;
-    --sidebar-accent: hsl(var(--primary));
+    /* Sidebar */
+    --sidebar-background: 220 40% 5%; 
+    --sidebar-foreground: 45 80% 70%;
+    --sidebar-muted-foreground: 45 50% 55%;
+    --sidebar-accent: 210 90% 55%;
     --sidebar-accent-foreground: hsl(var(--primary-foreground));
+    --sidebar-border: 220 40% 10%;
   }
  
   .dark {
-    /* Tema oscuro */
+    /* Tema oscuro con colores complementarios */
     --background: 220 15% 8%;
     --foreground: 220 10% 95%;
     --card: 220 15% 12%;
     --card-foreground: 220 10% 95%;
     --popover: 220, 15%, 8%;
     --popover-foreground: 220, 10%, 95%;
-    --primary: 210 90% 65%;
+    --primary: 210 90% 65%; /* Azul más brillante */
     --primary-foreground: 0 0% 100%;
     --secondary: 220 10% 20%;
     --secondary-foreground: 0 0% 98%;
     --muted: 220 10% 16%;
     --muted-foreground: 220 5% 65%;
-    --accent: 25 90% 65%;
+    --accent: 25 90% 65%; /* Naranja más brillante */
     --accent-foreground: 0 0% 10%;
     --destructive: 0 70% 60%;
     --destructive-foreground: 0 0% 98%;
@@ -72,19 +71,11 @@
     --ring: 210 90% 65%;
     
     /* Gráficos en tema oscuro */
-    --chart-1: 216 80% 65%;
-    --chart-2: 158 55% 55%;
-    --chart-3: 336 75% 65%;
-    --chart-4: 36 85% 60%;
-    --chart-5: 262 80% 70%;
-
-    /* Sidebar - Dark Theme */
-    --sidebar-background: 220 40% 5%; 
-    --sidebar-foreground: 45 80% 70%;
-    --sidebar-muted-foreground: 45 50% 55%;
-    --sidebar-accent: hsl(var(--primary));
-    --sidebar-accent-foreground: hsl(var(--primary-foreground));
-    --sidebar-border: 220 40% 10%;
+    --chart-1: 216 80% 65%; /* blue */
+    --chart-2: 158 55% 55%; /* emerald */
+    --chart-3: 336 75% 65%; /* fuchsia */
+    --chart-4: 36 85% 60%;  /* amber */
+    --chart-5: 262 80% 70%; /* violet */
   }
 }
  
@@ -237,6 +228,23 @@
     animation: aurora-3 18s ease-in-out infinite;
 }
 
+/* Animaciones para el globo */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+}
+
+@keyframes draw-arc {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
 
 .quill-editor .ql-toolbar {
   @apply rounded-t-lg border-b bg-muted/50;
