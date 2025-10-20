@@ -68,18 +68,26 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     const { id: messageId } = params;
 
     const permission = await checkPermissions(session, messageId);
-    if (!permission.authorized) return permission.error;
+    if (!permission.authorized && permission.error) return permission.error;
     
     try {
-        await prisma.motivationalMessage.delete({
-            where: { id: messageId },
-        });
+        await prisma.$transaction([
+            // 1. Eliminar todas las notificaciones que dependen de este mensaje
+            prisma.notification.deleteMany({
+                where: { motivationalMessageId: messageId },
+            }),
+            // 2. Eliminar el mensaje de motivación en sí
+            prisma.motivationalMessage.delete({
+                where: { id: messageId },
+            }),
+        ]);
 
         return new NextResponse(null, { status: 204 });
 
     } catch (error) {
-        if ((error as any).code === 'P2025') {
-             return NextResponse.json({ message: 'El mensaje ya había sido eliminado.' }, { status: 404 });
+        if ((error as any).code === 'P2025') { // "Record to delete does not exist"
+             // Si ya fue eliminado, consideramos la operación un éxito.
+             return new NextResponse(null, { status: 204 });
         }
         console.error(`[MOTIVATION_DELETE_ERROR: ${messageId}]`, error);
         return NextResponse.json({ message: 'Error al eliminar el mensaje' }, { status: 500 });
