@@ -64,7 +64,7 @@ export const GlobalAccessMap: React.FC<GlobalAccessMapProps> = ({ accessPoints }
     }
     
     return (
-        <div className="relative w-full h-full">
+        <div className="relative w-full h-full flex items-center justify-center">
             <GlobeGl
                 ref={globeEl}
                 globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
