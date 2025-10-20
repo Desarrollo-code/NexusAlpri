@@ -228,23 +228,6 @@
     animation: aurora-3 18s ease-in-out infinite;
 }
 
-/* Animaciones para el globo */
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(0.95);
-    opacity: 0.7;
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 1;
-  }
-}
-
-@keyframes draw-arc {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
 
 .quill-editor .ql-toolbar {
   @apply rounded-t-lg border-b bg-muted/50;
@@ -278,3 +261,13 @@
      @apply !p-1 !h-6 !w-6;
   }
 }
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+.animate-fade-out {
+  animation: fade-out 1s ease-out forwards;
+}
+
