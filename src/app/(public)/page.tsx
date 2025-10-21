@@ -1,3 +1,4 @@
+
 // src/app/(public)/page.tsx
 'use client'; 
 
@@ -88,7 +89,7 @@ export default function LandingPage() {
                   alt="Hero"
                   fill
                   className="object-cover"
-                  data-ai-hint="team collaboration"
+                  data-ai-hint="diverse team collaborating"
                   quality={100}
                   priority
                 />
@@ -98,7 +99,7 @@ export default function LandingPage() {
         
         <section className="w-full bg-transparent py-6 md:py-8 mt-6 md:mt-8">
                  <div className="mx-auto max-w-4xl text-center">
-                    <div className="inline-block rounded-lg bg-white/20 text-slate-900/80 px-3 py-1 text-sm font-semibold border border-white/30">
+                    <div className="inline-block rounded-lg bg-background/20 text-slate-900/80 px-3 py-1 text-sm font-semibold border border-white/30 backdrop-blur-sm">
                         Capacidades
                     </div>
                     <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900 mt-2">Una Solución de Formación Integral</h2>
@@ -134,7 +135,7 @@ export default function LandingPage() {
                             alt="Beneficios"
                             fill
                             className="object-cover"
-                            data-ai-hint="diverse team working"
+                            data-ai-hint="professionals learning"
                             quality={100}
                         />
                      </div>
