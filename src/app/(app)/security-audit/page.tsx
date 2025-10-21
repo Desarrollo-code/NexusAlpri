@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTitle } from '@/contexts/title-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { AlertTriangle, Globe, HelpCircle, Filter, CheckCircle, XCircle, UserCog, Monitor, Download } from 'lucide-react';
+import { AlertTriangle, Globe, HelpCircle, Filter, CheckCircle, XCircle, UserCog, Monitor, Download, Calendar as CalendarIcon } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { Loader2 } from 'lucide-react';
 import { DateRangePicker } from "@/components/ui/date-range-picker";
