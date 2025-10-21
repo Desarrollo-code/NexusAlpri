@@ -28,6 +28,7 @@ const config: Config = {
     },
     extend: {
       backgroundImage: {
+        'primary-gradient': 'linear-gradient(to bottom, hsl(var(--primary)), hsl(var(--accent)))',
         'gradient-blue': 'linear-gradient(to right bottom, hsl(var(--chart-1)), hsl(var(--chart-1)/0.8))',
         'gradient-green': 'linear-gradient(to right bottom, hsl(var(--chart-2)), hsl(var(--chart-2)/0.8))',
         'gradient-purple': 'linear-gradient(to right bottom, hsl(var(--chart-5)), hsl(var(--chart-5)/0.8))',
@@ -134,7 +135,7 @@ const config: Config = {
           '0%, 70%, 100%': { opacity: '1' },
           '20%, 50%': { opacity: '0' },
         },
-        'spin-slow': {
+        'orbit': {
             from: { transform: 'rotate(0deg)' },
             to: { transform: 'rotate(360deg)' },
         },
@@ -167,7 +168,7 @@ const config: Config = {
         'press': 'press 0.2s 1 linear',
         'throw': 'throw 0.4s ease-out forwards',
         'caret-blink': 'caret-blink 1.25s ease-out infinite',
-        'spin-slow': 'spin-slow 3s linear infinite',
+        'orbit': 'orbit linear infinite',
         'bloom': 'bloom 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'aurora-1': 'aurora-1 20s ease-in-out infinite',
         'aurora-2': 'aurora-2 25s ease-in-out infinite',
