@@ -379,19 +379,19 @@ const ThemeSelectorCard = () => {
       <Card>
         <CardHeader>
           <CardTitle>Tema de la Interfaz</CardTitle>
-          <CardDescription>Elige tu paleta de colores preferida.</CardDescription>
+          <CardDescription>Elige tu paleta de colores preferida para personalizar tu experiencia.</CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {AVAILABLE_THEMES.map((t) => (
-            <div key={t.value} onClick={() => handleThemeChange(t.value)} className="cursor-pointer">
+            <div key={t.value} onClick={() => handleThemeChange(t.value)} className="cursor-pointer group">
               <div
                 className={cn(
-                  'rounded-lg p-2 border-2',
-                  theme === t.value ? 'border-primary' : 'border-transparent'
+                  'rounded-lg p-2 border-2 transition-all',
+                  theme === t.value ? 'border-primary ring-2 ring-primary/50' : 'border-border group-hover:border-primary/50'
                 )}
               >
-                <div className={cn('h-16 w-full rounded-md flex items-center justify-center text-xs font-semibold', t.previewClass)}>
-                  {t.label}
+                <div className={cn('h-16 w-full rounded-md flex items-center justify-center text-sm font-semibold', t.previewClass)}>
+                  <span className={cn('px-2 py-1 rounded-md', t.value.includes('dark') || t.value === 'matrix' || t.value === 'cyberpunk' || t.value === 'dracula' || t.value === 'grape' || t.value === 'royal' || t.value === 'sunset' || t.value === 'coffee' ? 'text-white bg-black/20' : 'text-black bg-white/20')}>{t.label}</span>
                 </div>
               </div>
             </div>
