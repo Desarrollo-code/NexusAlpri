@@ -32,13 +32,11 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         )}>
           <TopBar />
           {/* El contenido principal ahora está fuera del main para que los elementos fijos funcionen correctamente */}
-          <div className="relative flex-1 [transform:translateZ(0)]">
-            <main className="absolute inset-0 overflow-y-auto">
-              <div className="relative z-10 p-4 md:p-6 lg:p-8">
-                {children}
-              </div>
-            </main>
-          </div>
+          <main className="relative flex-1 overflow-y-auto" style={{ transform: 'translateZ(0)' }}>
+            <div className="relative z-10 p-4 md:p-6 lg:p-8">
+              {children}
+            </div>
+          </main>
         </div>
         {isTourActive && (
           <TourGuide
