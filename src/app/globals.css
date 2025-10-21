@@ -203,7 +203,7 @@
 
 @layer components {
   .top-bar-gradient {
-    @apply bg-primary;
+    background-image: linear-gradient(to bottom, hsl(var(--primary)/0.8), hsl(var(--accent)/0.7));
   }
 
   .announcement-pattern-bg {
