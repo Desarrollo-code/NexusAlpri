@@ -85,7 +85,7 @@ export function ThemeProvider({ children, ...props }: Omit<ThemeProviderProps, '
       attribute="data-theme"
       defaultTheme="dark"
       enableSystem={false}
-      disableTransitionOnChange={false} // Permite transiciones suaves
+      disableTransitionOnChange={false} // PERMITE transiciones suaves
       themes={AVAILABLE_THEMES.map(t => t.value)}
     >
       <ThemeInjector />

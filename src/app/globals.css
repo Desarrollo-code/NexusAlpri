@@ -37,16 +37,11 @@
     --event-blue: 210 90% 55%; --event-green: 145 63% 42%;
     --event-red: 0 80% 60%; --event-orange: 25 90% 60%;
 
-    /* Sidebar - Unificada con card */
-    --sidebar-background: var(--card);
-    --sidebar-foreground: var(--card-foreground);
-    --sidebar-muted-foreground: var(--muted-foreground);
-    --sidebar-accent: var(--primary);
-    --sidebar-accent-foreground: var(--primary-foreground);
-    --sidebar-border: var(--border);
-    --sidebar-hover: var(--muted);
+    /* Fuentes */
+    --font-body: 'Inter', sans-serif;
+    --font-headline: 'Space Grotesk', sans-serif;
   }
- 
+
   [data-theme="dark"] {
     --background: 225 15% 8%; --foreground: 225 10% 95%;
     --card: 225 15% 12%; --card-foreground: 225 10% 95%;
@@ -194,18 +189,22 @@
  
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border transition-colors duration-300 ease-in-out;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground transition-colors duration-300 ease-in-out;
+    font-family: var(--font-body);
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-headline);
   }
 }
 
 @layer components {
   .top-bar-gradient {
-    background-image: linear-gradient(to bottom, hsl(var(--primary)/0.8), hsl(var(--accent)/0.7));
+    @apply bg-gradient-to-r from-primary to-accent;
   }
-
+  
   .announcement-pattern-bg {
     background-size: cover;
     background-position: center;
