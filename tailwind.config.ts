@@ -135,17 +135,9 @@ const config: Config = {
           '0%, 70%, 100%': { opacity: '1' },
           '20%, 50%': { opacity: '0' },
         },
-        'spin-slow': {
-            from: { transform: 'rotate(0deg)' },
-            to: { transform: 'rotate(360deg)' },
-        },
-        'spin-reverse': {
-            from: { transform: 'rotate(360deg)' },
-            to: { transform: 'rotate(0deg)' },
-        },
-        'bloom': {
-          '0%, 100%': { transform: 'scale(0.8)', opacity: 0.7 },
-          '50%': { transform: 'scale(1.1)', opacity: 1 },
+        'piller-push-up': {
+          '0%, 100%': { transform: 'scaleY(0.2)' },
+          '50%': { transform: 'scaleY(1)' },
         },
         'aurora-1': {
             '0%, 100%': { transform: 'translate(0%, 0%) scale(1)', opacity: 0.2 },
@@ -172,9 +164,7 @@ const config: Config = {
         'press': 'press 0.2s 1 linear',
         'throw': 'throw 0.4s ease-out forwards',
         'caret-blink': 'caret-blink 1.25s ease-out infinite',
-        'spin-slow': 'spin-slow 3s linear infinite',
-        'spin-reverse': 'spin-reverse 3s linear infinite',
-        'bloom': 'bloom 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'piller-push-up': 'piller-push-up 1s ease-in-out infinite alternate',
         'aurora-1': 'aurora-1 20s ease-in-out infinite',
         'aurora-2': 'aurora-2 25s ease-in-out infinite',
         'aurora-3': 'aurora-3 18s ease-in-out infinite',
