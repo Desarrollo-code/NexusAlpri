@@ -6,6 +6,7 @@ import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from 'n
 import { type ThemeProviderProps } from 'next-themes/dist/types';
 import { useAuth } from '@/contexts/auth-context';
 import { colord } from 'colord';
+import { fontMap } from '@/lib/fonts';
 
 export const AVAILABLE_THEMES = [
   { value: 'light', label: 'Claro (Personalizado)', previewClass: 'bg-gradient-to-br from-slate-100 to-slate-300' },
@@ -45,33 +46,37 @@ function ThemeInjector() {
     };
 
     const isCustomizableTheme = theme === 'light' || theme === 'dark';
+    
+    // Lista de propiedades a limpiar
+    const propsToClean = [
+      '--primary', '--secondary', '--accent', '--background', 
+      '--font-headline', '--font-body'
+    ];
+    propsToClean.forEach(prop => root.style.removeProperty(prop));
 
-    // 1. Limpiar siempre los estilos inyectados al cambiar de tema para evitar conflictos.
-    const customProps = ['--primary', '--secondary', '--accent', '--background'];
-    customProps.forEach(prop => root.style.removeProperty(prop));
-
-    // 2. Aplicar estilos solo si el tema es personalizable y hay configuración.
-    if (settings && isCustomizableTheme) {
-      const varsToSet = {
-        '--primary': hexToHslString(theme === 'light' ? settings.primaryColor : settings.primaryColorDark),
-        '--secondary': hexToHslString(settings.secondaryColor),
-        '--accent': hexToHslString(settings.accentColor),
-        '--background': hexToHslString(theme === 'light' ? settings.backgroundColorLight : settings.backgroundColorDark),
-      };
-
-      Object.entries(varsToSet).forEach(([property, value]) => {
-        if (value) {
-          root.style.setProperty(property, value);
-        }
-      });
-    }
-
-    // 3. Aplicar las fuentes siempre, ya que son independientes del tema de color.
     if (settings) {
-       root.style.setProperty('--font-headline', settings.fontHeadline || 'Space Grotesk');
-       root.style.setProperty('--font-body', settings.fontBody || 'Inter');
-    }
+      // 1. Aplicar estilos de color si el tema es personalizable.
+      if (isCustomizableTheme) {
+        const varsToSet = {
+          '--primary': hexToHslString(theme === 'light' ? settings.primaryColor : settings.primaryColorDark),
+          '--secondary': hexToHslString(settings.secondaryColor),
+          '--accent': hexToHslString(settings.accentColor),
+          '--background': hexToHslString(theme === 'light' ? settings.backgroundColorLight : settings.backgroundColorDark),
+        };
 
+        Object.entries(varsToSet).forEach(([property, value]) => {
+          if (value) root.style.setProperty(property, value);
+        });
+      }
+
+      // 2. Aplicar siempre las fuentes seleccionadas por el administrador.
+      const headlineFontFamily = fontMap[settings.fontHeadline || 'Space Grotesk']?.style.fontFamily || 'sans-serif';
+      const bodyFontFamily = fontMap[settings.fontBody || 'Inter']?.style.fontFamily || 'sans-serif';
+      
+      root.style.setProperty('--font-headline', headlineFontFamily);
+      root.style.setProperty('--font-body', bodyFontFamily);
+    }
+    
   }, [settings, theme]);
 
   return null;
@@ -85,7 +90,7 @@ export function ThemeProvider({ children, ...props }: Omit<ThemeProviderProps, '
       attribute="data-theme"
       defaultTheme="dark"
       enableSystem={false}
-      disableTransitionOnChange={false} // PERMITE transiciones suaves
+      disableTransitionOnChange={false}
       themes={AVAILABLE_THEMES.map(t => t.value)}
     >
       <ThemeInjector />
@@ -94,5 +99,4 @@ export function ThemeProvider({ children, ...props }: Omit<ThemeProviderProps, '
   );
 }
 
-// Re-export useTheme from next-themes
 export const useTheme = useNextTheme;
