@@ -126,12 +126,12 @@ export const TopBar = () => {
             {/* Left side */}
             <div className="flex items-center gap-2 flex-1 min-w-0">
                  {isMobile ? (
-                    <Button onClick={toggleSidebar} variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground bg-white/20 hover:bg-white/30 hover:text-primary-foreground">
+                    <Button onClick={toggleSidebar} variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground bg-black/20 hover:bg-black/30 hover:text-primary-foreground">
                         <PanelLeft className="h-5 w-5"/>
                         <span className="sr-only">Toggle Menu</span>
                     </Button>
                  ) : showBackButton ? (
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground bg-white/20 hover:bg-white/30 hover:text-primary-foreground" onClick={() => router.back()}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground bg-black/20 hover:bg-black/30 hover:text-primary-foreground" onClick={() => router.back()}>
                         <ArrowLeft className="h-4 w-4"/>
                         <span className="sr-only">Volver</span>
                     </Button>
@@ -143,10 +143,10 @@ export const TopBar = () => {
 
             {/* Right side */}
             <div className="flex items-center gap-3">
-                 {headerActions && <div className="hidden md:flex items-center gap-2">{headerActions}</div>}
+                 {headerActions && <div className="hidden md:flex items-center gap-2 text-foreground">{headerActions}</div>}
                  <Popover>
                     <PopoverTrigger asChild>
-                        <Button variant="ghost" size="icon" className="relative text-primary-foreground bg-white/20 hover:bg-white/30 hover:text-primary-foreground">
+                        <Button variant="ghost" size="icon" className="relative text-primary-foreground bg-black/20 hover:bg-black/30 hover:text-primary-foreground">
                             <Bell className="h-5 w-5"/>
                             {unreadCount > 0 && (
                                 <span className="absolute top-1 right-1 flex h-4 w-4">
@@ -192,7 +192,7 @@ export const TopBar = () => {
                 <UserAvatarDropdown />
             </div>
             {headerActions && isMobile && (
-              <div className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t p-2 flex justify-around gap-2 z-50">
+              <div className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t p-2 flex justify-around gap-2 z-50 text-foreground">
                 {headerActions}
               </div>
             )}

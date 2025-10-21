@@ -28,12 +28,12 @@ const config: Config = {
     },
     extend: {
       backgroundImage: {
+        'primary-gradient': 'linear-gradient(to bottom, hsl(var(--primary)), hsl(var(--accent)))',
         'gradient-blue': 'linear-gradient(to right bottom, hsl(var(--chart-1)), hsl(var(--chart-1)/0.8))',
         'gradient-green': 'linear-gradient(to right bottom, hsl(var(--chart-2)), hsl(var(--chart-2)/0.8))',
         'gradient-purple': 'linear-gradient(to right bottom, hsl(var(--chart-5)), hsl(var(--chart-5)/0.8))',
         'gradient-orange': 'linear-gradient(to right bottom, hsl(var(--chart-4)), hsl(var(--chart-4)/0.8))',
         'gradient-pink': 'linear-gradient(to right bottom, hsl(var(--chart-3)), hsl(var(--chart-3)/0.8))',
-        'primary-gradient': 'linear-gradient(to bottom, hsl(var(--primary)), hsl(var(--primary) / 0.8))',
       },
       borderRadius: {
         lg: "var(--radius)",
