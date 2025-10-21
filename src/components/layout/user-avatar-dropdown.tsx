@@ -32,21 +32,22 @@ function ThemeToggle() {
   const { user, updateUser } = useAuth();
 
   const handleThemeChange = async (newTheme: string) => {
-    if (!user) {
-      setTheme(newTheme);
-      return;
-    }
+    // 1. Optimistically update the UI
     setTheme(newTheme);
-    updateUser({ theme: newTheme });
-
-    try {
-      await fetch(`/api/users/${user.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ theme: newTheme }),
-      });
-    } catch (error) {
-      console.error('Error saving theme preference:', error);
+    
+    // 2. If a user is logged in, update their preference in the context and backend
+    if (user) {
+        updateUser({ theme: newTheme }); // Optimistic update in context
+        try {
+          await fetch(`/api/users/${user.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ theme: newTheme }),
+          });
+        } catch (error) {
+          console.error('Error saving theme preference:', error);
+          // Optional: handle error, e.g., revert theme change or show a toast
+        }
     }
   };
 

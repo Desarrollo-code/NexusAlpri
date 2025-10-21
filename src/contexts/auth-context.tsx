@@ -57,20 +57,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const userData = await userRes.json();
           const fetchedUser = userData.user;
           setUser(fetchedUser);
+          // La lógica del tema se traslada a ThemeProvider
           if (fetchedUser?.theme) {
             setTheme(fetchedUser.theme);
           } else {
-            setTheme('dark');
+            // El tema por defecto se gestiona en ThemeProvider
           }
         } else {
           setUser(null);
+          // Si no hay usuario, el tema por defecto es 'light' para las páginas públicas
           setTheme('light');
         }
     } catch (error) {
         console.error("[AuthContext] Fallo al obtener los datos de la sesión:", error);
         setUser(null);
         setSettings(DEFAULT_SETTINGS);
-        setTheme('dark');
+        setTheme('dark'); // Fallback a oscuro si todo falla
     } finally {
         setIsLoading(false);
     }
@@ -84,6 +86,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(userData);
     if (userData.theme) {
       setTheme(userData.theme);
+    } else {
+      setTheme('dark'); // Default to dark for logged-in users if not set
     }
     const params = new URLSearchParams(window.location.search);
     const redirectedFrom = params.get('redirectedFrom');
@@ -97,7 +101,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Fallo al llamar a la API de logout", error);
     } finally {
       setUser(null);
-      setTheme('light');
+      setTheme('light'); // Default to light for public pages
       router.push('/sign-in');
     }
   }, [router, setTheme]);

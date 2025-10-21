@@ -5,11 +5,11 @@ import * as React from 'react';
 import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from 'next-themes';
 import { type ThemeProviderProps } from 'next-themes/dist/types';
 import { useAuth } from '@/contexts/auth-context';
-import { colord, HslColor } from 'colord';
+import { colord } from 'colord';
 
 export const AVAILABLE_THEMES = [
-  { value: 'light', label: 'Claro', previewClass: 'bg-gradient-to-br from-slate-100 to-slate-300' },
-  { value: 'dark', label: 'Oscuro', previewClass: 'bg-gradient-to-br from-slate-800 to-slate-900' },
+  { value: 'light', label: 'Claro (Personalizado)', previewClass: 'bg-gradient-to-br from-slate-100 to-slate-300' },
+  { value: 'dark', label: 'Oscuro (Personalizado)', previewClass: 'bg-gradient-to-br from-slate-800 to-slate-900' },
   { value: 'terminal', label: 'Terminal', previewClass: 'bg-gradient-to-br from-emerald-500 to-emerald-900' },
   { value: 'sunset', label: 'Atardecer', previewClass: 'bg-gradient-to-br from-orange-400 via-red-500 to-purple-600' },
   { value: 'ocean', label: 'Océano', previewClass: 'bg-gradient-to-br from-sky-400 to-blue-600' },
@@ -44,8 +44,14 @@ function ThemeInjector() {
       return `${h} ${s}% ${l}%`;
     };
 
-    // Solo aplicar estilos si el tema es 'light' o 'dark'
-    if (settings && (theme === 'light' || theme === 'dark')) {
+    const isCustomizableTheme = theme === 'light' || theme === 'dark';
+
+    // 1. Limpiar siempre los estilos inyectados al cambiar de tema para evitar conflictos.
+    const customProps = ['--primary', '--secondary', '--accent', '--background'];
+    customProps.forEach(prop => root.style.removeProperty(prop));
+
+    // 2. Aplicar estilos solo si el tema es personalizable y hay configuración.
+    if (settings && isCustomizableTheme) {
       const varsToSet = {
         '--primary': hexToHslString(theme === 'light' ? settings.primaryColor : settings.primaryColorDark),
         '--secondary': hexToHslString(settings.secondaryColor),
@@ -56,20 +62,11 @@ function ThemeInjector() {
       Object.entries(varsToSet).forEach(([property, value]) => {
         if (value) {
           root.style.setProperty(property, value);
-        } else {
-          // Si el valor no es válido, eliminamos la propiedad para que herede del CSS
-          root.style.removeProperty(property);
         }
-      });
-    } else {
-      // Para cualquier otro tema, nos aseguramos de limpiar los estilos inyectados
-      // para que se apliquen los valores fijos del archivo globals.css
-      ['--primary', '--secondary', '--accent', '--background'].forEach(prop => {
-        root.style.removeProperty(prop);
       });
     }
 
-    // Aplicar las fuentes siempre, ya que no dependen del tema claro/oscuro
+    // 3. Aplicar las fuentes siempre, ya que son independientes del tema de color.
     if (settings) {
        root.style.setProperty('--font-headline', settings.fontHeadline || 'Space Grotesk');
        root.style.setProperty('--font-body', settings.fontBody || 'Inter');
@@ -77,7 +74,7 @@ function ThemeInjector() {
 
   }, [settings, theme]);
 
-  return null; // Este componente no renderiza nada
+  return null;
 }
 
 
@@ -88,7 +85,7 @@ export function ThemeProvider({ children, ...props }: Omit<ThemeProviderProps, '
       attribute="data-theme"
       defaultTheme="dark"
       enableSystem={false}
-      disableTransitionOnChange={false}
+      disableTransitionOnChange={false} // Permite transiciones suaves
       themes={AVAILABLE_THEMES.map(t => t.value)}
     >
       <ThemeInjector />
