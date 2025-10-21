@@ -161,6 +161,10 @@ const config: Config = {
             '50%': { transform: 'translate(-15%, -10%) scale(0.8)', opacity: 0.1 },
             '75%': { transform: 'translate(5%, -5%) scale(1.1)', opacity: 0.18 },
         },
+         'piller-push-up': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-20px)' },
+        }
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -173,6 +177,7 @@ const config: Config = {
         'aurora-1': 'aurora-1 20s ease-in-out infinite',
         'aurora-2': 'aurora-2 25s ease-in-out infinite',
         'aurora-3': 'aurora-3 18s ease-in-out infinite',
+        'piller-push-up': 'piller-push-up 1.2s ease-in-out infinite',
       },
     },
   },

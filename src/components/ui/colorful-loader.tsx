@@ -2,41 +2,16 @@
 'use client';
 
 import * as React from 'react';
+import { cn } from '@/lib/utils';
 
 export const ColorfulLoader = () => {
   return (
-    <div
-      className="loader"
-      style={{
-        position: 'relative',
-        width: '75px',
-        height: '100px',
-        backgroundRepeat: 'no-repeat',
-        backgroundImage: `
-          linear-gradient(hsl(var(--chart-1)) 50px, transparent 0),
-          linear-gradient(hsl(var(--chart-2)) 50px, transparent 0),
-          linear-gradient(hsl(var(--chart-3)) 50px, transparent 0),
-          linear-gradient(hsl(var(--chart-4)) 50px, transparent 0),
-          linear-gradient(hsl(var(--chart-5)) 50px, transparent 0)
-        `,
-        backgroundSize: '8px 100%',
-        backgroundPosition: '0px 90px, 15px 78px, 30px 66px, 45px 58px, 60px 50px',
-        animation: 'pillerPushUp 4s linear infinite',
-      }}
-    >
-      <style jsx>{`
-        .loader::after {
-          content: '';
-          position: absolute;
-          bottom: 10px;
-          left: 0;
-          width: 10px;
-          height: 10px;
-          background: hsl(var(--accent));
-          border-radius: 50%;
-          animation: ballStepUp 4s linear infinite;
-        }
-      `}</style>
+    <div className="flex items-end justify-center h-24 w-20 gap-1.5" aria-label="Cargando...">
+        <div className="w-4 h-8 rounded-full bg-[hsl(var(--chart-1))] animate-piller-push-up" style={{ animationDelay: '0s' }} />
+        <div className="w-4 h-12 rounded-full bg-[hsl(var(--chart-2))] animate-piller-push-up" style={{ animationDelay: '0.1s' }} />
+        <div className="w-4 h-16 rounded-full bg-[hsl(var(--chart-3))] animate-piller-push-up" style={{ animationDelay: '0.2s' }} />
+        <div className="w-4 h-12 rounded-full bg-[hsl(var(--chart-4))] animate-piller-push-up" style={{ animationDelay: '0.3s' }} />
+        <div className="w-4 h-8 rounded-full bg-[hsl(var(--chart-5))] animate-piller-push-up" style={{ animationDelay: '0.4s' }} />
     </div>
   );
 };
