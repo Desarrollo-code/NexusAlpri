@@ -4,6 +4,8 @@
 import * as React from 'react';
 import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from 'next-themes';
 import { type ThemeProviderProps } from 'next-themes/dist/types';
+import { useAuth } from '@/contexts/auth-context';
+import { colord, HslColor } from 'colord';
 
 export const AVAILABLE_THEMES = [
   { value: 'light', label: 'Claro', previewClass: 'bg-gradient-to-br from-slate-100 to-slate-300' },
@@ -23,6 +25,61 @@ export const AVAILABLE_THEMES = [
   { value: 'imperial-gold', label: 'Dorado Imperial', previewClass: 'bg-gradient-to-br from-[#0a192f] to-[#ffaf00]' },
 ];
 
+/**
+ * Componente interno que maneja la inyección de estilos CSS dinámicos
+ * basados en la configuración del administrador y el tema actual.
+ */
+function ThemeInjector() {
+  const { settings } = useAuth();
+  const { theme } = useNextTheme();
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const root = document.documentElement;
+
+    const hexToHslString = (hex: string | undefined | null): string | null => {
+      if (!hex || !colord(hex).isValid()) return null;
+      const { h, s, l } = colord(hex).toHsl();
+      return `${h} ${s}% ${l}%`;
+    };
+
+    // Solo aplicar estilos si el tema es 'light' o 'dark'
+    if (settings && (theme === 'light' || theme === 'dark')) {
+      const varsToSet = {
+        '--primary': hexToHslString(theme === 'light' ? settings.primaryColor : settings.primaryColorDark),
+        '--secondary': hexToHslString(settings.secondaryColor),
+        '--accent': hexToHslString(settings.accentColor),
+        '--background': hexToHslString(theme === 'light' ? settings.backgroundColorLight : settings.backgroundColorDark),
+      };
+
+      Object.entries(varsToSet).forEach(([property, value]) => {
+        if (value) {
+          root.style.setProperty(property, value);
+        } else {
+          // Si el valor no es válido, eliminamos la propiedad para que herede del CSS
+          root.style.removeProperty(property);
+        }
+      });
+    } else {
+      // Para cualquier otro tema, nos aseguramos de limpiar los estilos inyectados
+      // para que se apliquen los valores fijos del archivo globals.css
+      ['--primary', '--secondary', '--accent', '--background'].forEach(prop => {
+        root.style.removeProperty(prop);
+      });
+    }
+
+    // Aplicar las fuentes siempre, ya que no dependen del tema claro/oscuro
+    if (settings) {
+       root.style.setProperty('--font-headline', settings.fontHeadline || 'Space Grotesk');
+       root.style.setProperty('--font-body', settings.fontBody || 'Inter');
+    }
+
+  }, [settings, theme]);
+
+  return null; // Este componente no renderiza nada
+}
+
 
 export function ThemeProvider({ children, ...props }: Omit<ThemeProviderProps, 'themes'>) {
   return (
@@ -34,6 +91,7 @@ export function ThemeProvider({ children, ...props }: Omit<ThemeProviderProps, '
       disableTransitionOnChange={false}
       themes={AVAILABLE_THEMES.map(t => t.value)}
     >
+      <ThemeInjector />
       {children}
     </NextThemesProvider>
   );
