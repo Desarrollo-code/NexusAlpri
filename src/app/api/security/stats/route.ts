@@ -53,6 +53,9 @@ export async function GET(req: NextRequest) {
             }),
             prisma.securityLog.groupBy({
                 by: ['ipAddress', 'country'],
+                _count: {
+                    ipAddress: true,
+                },
                 where: {
                     ipAddress: {
                         not: null,
@@ -60,9 +63,6 @@ export async function GET(req: NextRequest) {
                      createdAt: {
                         gte: subDays(new Date(), 30) // Look at activity over the last 30 days
                     }
-                },
-                _count: {
-                    ipAddress: true,
                 },
                 orderBy: {
                     _count: {
@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
             roleChanges24h,
             browsers,
             os,
-            topIps: topIps,
+            topIps: topIps as any, // Cast to any to avoid type errors with groupBy result
         };
 
         return NextResponse.json(stats);
