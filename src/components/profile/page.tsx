@@ -1,4 +1,3 @@
-
 // src/app/(app)/profile/page.tsx
 'use client';
 
@@ -8,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Camera, User, KeyRound, Shield, Eye, EyeOff, Save, CheckCircle, Award, Star, HelpCircle } from 'lucide-react';
+import { Loader2, Camera, User, KeyRound, Shield, Eye, EyeOff, Save, CheckCircle, Award, Star, HelpCircle, Trophy, Palette } from 'lucide-react';
 import React, { useState, ChangeEvent, FormEvent, useEffect, useCallback, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { PasswordStrengthIndicator } from '@/components/password-strength-indicator';
@@ -22,11 +21,16 @@ import { Progress as UploadProgress } from '@/components/ui/progress';
 import { useTour } from '@/contexts/tour-context';
 import { profileTour } from '@/lib/tour-steps';
 import type { UserAchievement } from '@/types';
-import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { Progress } from '@/components/ui/progress';
 import Image from 'next/image';
+import { VerifiedBadge } from '@/components/ui/verified-badge';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { AchievementsView } from '@/components/gamification/achievements-view';
+import Link from 'next/link';
+import { useTheme } from 'next-themes';
+import { AVAILABLE_THEMES } from '@/components/theme-provider';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-// --- Components defined outside of the main component to prevent re-creation on render ---
 
 // Gamification Level Calculation
 const calculateLevel = (xp: number) => {
@@ -45,6 +49,8 @@ const calculateLevel = (xp: number) => {
     return { level, currentXPInLevel: xp, xpForNextLevel, progressPercentage };
 };
 
+
+// --- Components defined outside of the main component to prevent re-creation on render ---
 const InfoCard = ({ user, updateUser }: { user: any, updateUser: (data: any) => void }) => {
     const [name, setName] = useState(user?.name || '');
     const [isSavingInfo, setIsSavingInfo] = useState(false);
@@ -299,7 +305,9 @@ const TwoFactorCard = ({ user, updateUser }: { user: any, updateUser: (data: any
     );
 };
 
-const ProfileCard = ({ user, onAvatarChange, isUploading, uploadProgress }: { user: any, onAvatarChange: (e: any) => void, isUploading: boolean, uploadProgress: number }) => (
+const ProfileCard = ({ user, onAvatarChange, isUploading, uploadProgress }: { user: any, onAvatarChange: (e: any) => void, isUploading: boolean, uploadProgress: number }) => {
+    const { level, currentXPInLevel, xpForNextLevel, progressPercentage } = useMemo(() => calculateLevel(user?.xp || 0), [user?.xp]);
+    return (
      <Card className="profile-card" id="profile-card-display">
         <div className="card__img">
             <div className="card__img--gradient" />
@@ -315,10 +323,26 @@ const ProfileCard = ({ user, onAvatarChange, isUploading, uploadProgress }: { us
             </label>
         </div>
          <CardContent className="px-6 pb-6 pt-4">
-            <CardTitle className="text-2xl font-bold font-headline">{user.name}</CardTitle>
+            <CardTitle className="text-2xl font-bold font-headline flex items-center justify-center gap-2">
+                {user.name}
+                <VerifiedBadge role={user.role} />
+            </CardTitle>
             <CardDescription className="card__subtitle">
                 {user.email}
             </CardDescription>
+             <div className="mt-6">
+                <div className="flex justify-between items-end mb-1">
+                    <p className="font-semibold text-primary">Nivel {level}</p>
+                    <p className="text-sm text-muted-foreground">{user.xp || 0} XP</p>
+                </div>
+                <Progress value={progressPercentage} className="h-2"/>
+                <p className="text-xs text-right text-muted-foreground mt-1">
+                    {xpForNextLevel - currentXPInLevel} XP para el siguiente nivel
+                </p>
+            </div>
+             <Button asChild variant="outline" className="w-full mt-4">
+                <Link href="/leaderboard"><Trophy className="mr-2 h-4 w-4"/> Ver Ranking</Link>
+             </Button>
         </CardContent>
         <CardFooter className="p-0">
             {isUploading && (
@@ -328,54 +352,77 @@ const ProfileCard = ({ user, onAvatarChange, isUploading, uploadProgress }: { us
             )}
         </CardFooter>
     </Card>
-);
-
-const GamificationCard = ({ user, achievements, isLoadingAchievements }: { user: any, achievements: any[], isLoadingAchievements: boolean }) => {
-    const { level, currentXPInLevel, xpForNextLevel, progressPercentage } = useMemo(() => calculateLevel(user?.xp || 0), [user?.xp]);
-    return (
-     <Card id="gamification-card-desktop">
-        <CardHeader>
-            <CardTitle>Progreso y Logros</CardTitle>
-        </CardHeader>
-        <CardContent>
-             <div className="flex justify-between items-end mb-1">
-                <p className="font-semibold text-primary">Nivel {level}</p>
-                <p className="text-sm text-muted-foreground">{user.xp || 0} XP</p>
-             </div>
-             <Progress value={progressPercentage} className="h-2"/>
-             <p className="text-xs text-right text-muted-foreground mt-1">
-                {currentXPInLevel} / {xpForNextLevel} XP para el siguiente nivel
-             </p>
-             
-              <div className="mt-6">
-                <h4 className="font-semibold mb-2">Logros Desbloqueados</h4>
-                {isLoadingAchievements ? (
-                    <p className="text-sm text-muted-foreground">Cargando...</p>
-                ) : achievements.length > 0 ? (
-                    <TooltipProvider>
-                        <div className="flex flex-wrap gap-3">
-                            {achievements.map((ach) => (
-                                <Tooltip key={ach.achievement.id}>
-                                    <TooltipTrigger>
-                                        <div className="h-10 w-10 bg-primary/10 text-primary rounded-full flex items-center justify-center border-2 border-primary/20">
-                                            <Award className="h-5 w-5" />
-                                        </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p className="font-bold">{ach.achievement.name}</p>
-                                        <p>{ach.achievement.description}</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            ))}
-                        </div>
-                    </TooltipProvider>
-                ) : (
-                    <p className="text-sm text-muted-foreground italic">Aún no has desbloqueado logros. ¡Sigue aprendiendo!</p>
-                )}
-            </div>
-        </CardContent>
-    </Card>
 )};
+
+const ThemeSelectorCard = () => {
+    const { theme, setTheme } = useTheme();
+    const { user, updateUser } = useAuth();
+  
+    const handleThemeChange = async (newTheme: string) => {
+        if (!user) {
+          setTheme(newTheme);
+          return;
+        }
+        setTheme(newTheme);
+        updateUser({ theme: newTheme });
+
+        try {
+          await fetch(`/api/users/${user.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ theme: newTheme }),
+          });
+        } catch (error) {
+          console.error('Error saving theme preference:', error);
+        }
+    };
+  
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Tema de la Interfaz</CardTitle>
+          <CardDescription>Elige tu paleta de colores preferida.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3">
+             <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                         <button className="relative aspect-square rounded-full border-2 flex items-center justify-center bg-muted/50 cursor-not-allowed opacity-60">
+                           <Palette className="h-6 w-6 text-muted-foreground" />
+                        </button>
+                    </TooltipTrigger>
+                     <TooltipContent>
+                        <p>Personalizar (Próximamente)</p>
+                    </TooltipContent>
+                </Tooltip>
+              {AVAILABLE_THEMES.map((t) => (
+                  <Tooltip key={t.value}>
+                    <TooltipTrigger asChild>
+                         <button
+                            onClick={() => handleThemeChange(t.value)}
+                            className={cn(
+                                'relative aspect-square rounded-full border-2 transition-all hover:scale-105',
+                                theme === t.value ? 'border-primary ring-2 ring-primary ring-offset-2 ring-offset-background' : 'border-transparent'
+                            )}
+                         >
+                            <div className={cn('w-full h-full rounded-full', t.previewClass)} />
+                            {theme === t.value && (
+                                <div className="absolute top-0 right-0 h-5 w-5 bg-primary rounded-full text-primary-foreground flex items-center justify-center border-2 border-background">
+                                    <Check className="h-3 w-3" />
+                                </div>
+                            )}
+                         </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>{t.label}</p>
+                    </TooltipContent>
+                  </Tooltip>
+              ))}
+            </TooltipProvider>
+        </CardContent>
+      </Card>
+    );
+};
 
 
 // Main component
@@ -387,8 +434,6 @@ function ProfilePageContent() {
 
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
-    const [achievements, setAchievements] = useState<UserAchievement[]>([]);
-    const [isLoadingAchievements, setIsLoadingAchievements] = useState(true);
 
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
@@ -399,38 +444,15 @@ function ProfilePageContent() {
         startTour('profile', profileTour);
     }, [setPageTitle, startTour]);
 
-    const fetchAchievements = useCallback(async () => {
-        if (!user) return;
-        setIsLoadingAchievements(true);
-        try {
-            const res = await fetch(`/api/users/${user.id}/achievements`);
-            if (res.ok) {
-                const data = await res.json();
-                setAchievements(data);
-            }
-        } catch (error) {
-            console.error("Failed to fetch achievements", error);
-        } finally {
-            setIsLoadingAchievements(false);
-        }
-    }, [user]);
-
-    useEffect(() => {
-        fetchAchievements();
-    }, [fetchAchievements]);
-
-
     const handleAvatarChange = async (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0] && user) {
             const file = e.target.files[0];
-            const formData = new FormData();
-            formData.append('file', file);
             
             setIsUploading(true);
             setUploadProgress(0);
 
             try {
-                const result = await uploadWithProgress('/api/upload/avatar', formData, setUploadProgress);
+                const result = await uploadWithProgress('/api/upload/avatar', file, setUploadProgress);
                 
                 const updateUserResponse = await fetch(`/api/users/${user.id}`, {
                     method: 'PUT',
@@ -454,28 +476,30 @@ function ProfilePageContent() {
     
     if (!user) return <Loader2 className="h-8 w-8 animate-spin" />;
     
-    const isMobile = useIsMobile();
-
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="space-y-1">
-                    <p className="text-muted-foreground">Gestiona tu información personal y la seguridad de tu cuenta.</p>
+                    <p className="text-muted-foreground">Gestiona tu información personal, seguridad y logros.</p>
                 </div>
                  <Button variant="outline" size="sm" onClick={() => forceStartTour('profile', profileTour)}>
                     <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
                 </Button>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-                <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
-                    <ProfileCard user={user} onAvatarChange={handleAvatarChange} isUploading={isUploading} uploadProgress={uploadProgress} />
-                    <GamificationCard user={user} achievements={achievements} isLoadingAchievements={isLoadingAchievements} />
-                </div>
-                <div className="lg:col-span-2">
-                     {isMobile ? (
-                        <div className="space-y-6">
+             <Tabs defaultValue="profile">
+                <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="profile">Perfil y Seguridad</TabsTrigger>
+                    <TabsTrigger value="achievements">Mis Logros</TabsTrigger>
+                </TabsList>
+                <TabsContent value="profile" className="mt-6">
+                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                        <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
+                            <ProfileCard user={user} onAvatarChange={handleAvatarChange} isUploading={isUploading} uploadProgress={uploadProgress} />
+                        </div>
+                        <div className="lg:col-span-2 space-y-6">
                             <InfoCard user={user} updateUser={updateUser} />
+                            <ThemeSelectorCard />
                             <SecurityCard 
                                 user={user} 
                                 newPassword={newPassword}
@@ -487,31 +511,12 @@ function ProfilePageContent() {
                             />
                              <TwoFactorCard user={user} updateUser={updateUser} />
                         </div>
-                     ) : (
-                         <div className="space-y-6">
-                            <InfoCard user={user} updateUser={updateUser} />
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Seguridad</CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-6">
-                                    <SecurityCard
-                                        user={user} 
-                                        newPassword={newPassword}
-                                        setNewPassword={setNewPassword}
-                                        confirmPassword={confirmPassword}
-                                        setConfirmPassword={setConfirmPassword}
-                                        currentPassword={currentPassword}
-                                        setCurrentPassword={setCurrentPassword}
-                                    />
-                                    <Separator/>
-                                    <TwoFactorCard user={user} updateUser={updateUser} />
-                                </CardContent>
-                            </Card>
-                        </div>
-                    )}
-                </div>
-            </div>
+                    </div>
+                </TabsContent>
+                <TabsContent value="achievements" className="mt-6">
+                    <AchievementsView />
+                </TabsContent>
+            </Tabs>
         </div>
     );
 }
