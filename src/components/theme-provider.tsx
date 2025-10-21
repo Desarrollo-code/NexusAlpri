@@ -10,19 +10,19 @@ import { fontMap } from '@/lib/fonts';
 export const AVAILABLE_THEMES = [
   { value: 'light', label: 'Claro', previewClass: 'bg-slate-100' },
   { value: 'dark', label: 'Oscuro', previewClass: 'bg-slate-900' },
-  { value: 'matrix', label: 'Matrix', previewClass: 'bg-emerald-900' },
+  { value: 'matrix', label: 'Terminal', previewClass: 'bg-emerald-900' },
   { value: 'sunset', label: 'Atardecer', previewClass: 'bg-rose-900' },
   { value: 'ocean', label: 'Océano', previewClass: 'bg-sky-100' },
   { value: 'forest', label: 'Bosque', previewClass: 'bg-green-900' },
-  { value: 'rose', label: 'Rosa', previewClass: 'bg-rose-100' },
-  { value: 'cyberpunk', label: 'Cyberpunk', previewClass: 'bg-fuchsia-900' },
-  { value: 'dracula', label: 'Drácula', previewClass: 'bg-violet-900' },
+  { value: 'rose', label: 'Cuarzo Rosa', previewClass: 'bg-rose-100' },
+  { value: 'cyberpunk', label: 'Neón', previewClass: 'bg-fuchsia-900' },
+  { value: 'dracula', label: 'Noche Púrpura', previewClass: 'bg-violet-900' },
   { value: 'coffee', label: 'Café', previewClass: 'bg-amber-950' },
   { value: 'mint', label: 'Menta', previewClass: 'bg-emerald-100' },
-  { value: 'grape', label: 'Uva', previewClass: 'bg-purple-900' },
+  { value: 'grape', label: 'Lavanda', previewClass: 'bg-purple-900' },
   { value: 'solarized-light', label: 'Solarized Claro', previewClass: 'bg-yellow-50' },
   { value: 'solarized-dark', label: 'Solarized Oscuro', previewClass: 'bg-cyan-950' },
-  { value: 'royal', label: 'Realeza', previewClass: 'bg-indigo-900' },
+  { value: 'royal', label: 'Dorado Imperial', previewClass: 'bg-indigo-900' },
 ];
 
 const hexToHsl = (hex: string): string | null => {
