@@ -383,42 +383,21 @@ const ThemeSelectorCard = () => {
           <CardTitle>Tema de la Interfaz</CardTitle>
           <CardDescription>Elige tu paleta de colores preferida.</CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3">
-             <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                         <button className="relative aspect-square rounded-full border-2 flex items-center justify-center bg-muted/50 cursor-not-allowed opacity-60">
-                           <Palette className="h-6 w-6 text-muted-foreground" />
-                        </button>
-                    </TooltipTrigger>
-                     <TooltipContent>
-                        <p>Personalizar (Próximamente)</p>
-                    </TooltipContent>
-                </Tooltip>
-              {AVAILABLE_THEMES.map((t) => (
-                  <Tooltip key={t.value}>
-                    <TooltipTrigger asChild>
-                         <button
-                            onClick={() => handleThemeChange(t.value)}
-                            className={cn(
-                                'relative aspect-square rounded-full border-2 transition-all hover:scale-105',
-                                theme === t.value ? 'border-primary ring-2 ring-primary ring-offset-2 ring-offset-background' : 'border-transparent'
-                            )}
-                         >
-                            <div className={cn('w-full h-full rounded-full', t.previewClass)} />
-                            {theme === t.value && (
-                                <div className="absolute top-0 right-0 h-5 w-5 bg-primary rounded-full text-primary-foreground flex items-center justify-center border-2 border-background">
-                                    <Check className="h-3 w-3" />
-                                </div>
-                            )}
-                         </button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>{t.label}</p>
-                    </TooltipContent>
-                  </Tooltip>
-              ))}
-            </TooltipProvider>
+        <CardContent className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          {AVAILABLE_THEMES.map((t) => (
+            <div key={t.value} onClick={() => handleThemeChange(t.value)} className="cursor-pointer group">
+              <div
+                className={cn(
+                  'rounded-lg p-2 border-2 transition-all',
+                  theme === t.value ? 'border-primary ring-2 ring-primary/50' : 'border-border group-hover:border-primary/50'
+                )}
+              >
+                <div className={cn('h-16 w-full rounded-md flex items-center justify-center text-sm font-semibold', t.previewClass)}>
+                  <span className={cn('px-2 py-1 rounded-md', ['dark', 'terminal', 'sunset', 'neon', 'dracula', 'lavender', 'solarized-dark', 'imperial-gold'].includes(t.value) ? 'text-white bg-black/20' : 'text-black bg-white/20')}>{t.label}</span>
+                </div>
+              </div>
+            </div>
+          ))}
         </CardContent>
       </Card>
     );

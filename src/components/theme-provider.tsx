@@ -16,14 +16,15 @@ export const AVAILABLE_THEMES = [
   { value: 'forest', label: 'Bosque', previewClass: 'bg-gradient-to-br from-green-700 to-teal-900' },
   { value: 'rose', label: 'Cuarzo Rosa', previewClass: 'bg-gradient-to-br from-rose-300 to-pink-400' },
   { value: 'neon', label: 'Neón', previewClass: 'bg-gradient-to-br from-fuchsia-600 to-purple-700' },
-  { value: 'midnight-purple', label: 'Noche Púrpura', previewClass: 'bg-gradient-to-br from-violet-700 to-indigo-900' },
+  { value: 'dracula', label: 'Noche Púrpura', previewClass: 'bg-gradient-to-br from-violet-700 to-indigo-900' },
   { value: 'coffee', label: 'Café', previewClass: 'bg-gradient-to-br from-amber-800 to-stone-900' },
   { value: 'mint', label: 'Menta', previewClass: 'bg-gradient-to-br from-emerald-300 to-teal-500' },
   { value: 'lavender', label: 'Lavanda', previewClass: 'bg-gradient-to-br from-purple-400 to-violet-500' },
-  { value: 'solarized-light', label: 'Solarized Claro', previewClass: 'bg-gradient-to-br from-yellow-100 to-cyan-100' },
-  { value: 'solarized-dark', label: 'Solarized Oscuro', previewClass: 'bg-gradient-to-br from-cyan-900 to-blue-950' },
+  { value: 'solarized-light', label: 'Solarizado Claro', previewClass: 'bg-gradient-to-br from-yellow-100 to-cyan-100' },
+  { value: 'solarized-dark', label: 'Solarizado Oscuro', previewClass: 'bg-gradient-to-br from-cyan-900 to-blue-950' },
   { value: 'imperial-gold', label: 'Dorado Imperial', previewClass: 'bg-gradient-to-br from-indigo-800 to-yellow-500' },
 ];
+
 
 const hexToHsl = (hex: string): string | null => {
     if (!hex) return null;
