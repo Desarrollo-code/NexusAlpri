@@ -53,6 +53,90 @@ const usersToSeed = [
     { name: 'Administrador', email: 'admin@alprigrama.com', role: UserRole.ADMINISTRATOR, password: 'Administrador123*.' },
 ];
 
+async function seedProcesses() {
+  console.log('Creando procesos...');
+
+  const administracion = await prisma.process.upsert({
+    where: { name: 'ADMINISTRACION' },
+    update: {},
+    create: { name: 'ADMINISTRACION' },
+  });
+
+  const comercial = await prisma.process.upsert({
+    where: { name: 'COMERCIAL' },
+    update: {},
+    create: { name: 'COMERCIAL' },
+  });
+  
+  const produccion = await prisma.process.upsert({
+    where: { name: 'PRODUCCION' },
+    update: {},
+    create: { name: 'PRODUCCION' },
+  });
+
+  await prisma.process.upsert({
+    where: { name: 'GERENCIA' },
+    update: {},
+    create: { name: 'GERENCIA', parentId: administracion.id },
+  });
+
+  await prisma.process.upsert({
+    where: { name: 'GESTION HUMANA' },
+    update: {},
+    create: { name: 'GESTION HUMANA', parentId: administracion.id },
+  });
+
+  await prisma.process.upsert({
+    where: { name: 'CONTABILIDAD' },
+    update: {},
+    create: { name: 'CONTABILIDAD', parentId: administracion.id },
+  });
+
+  await prisma.process.upsert({
+    where: { name: 'CALIDAD' },
+    update: {},
+    create: { name: 'CALIDAD', parentId: administracion.id },
+  });
+
+  await prisma.process.upsert({
+    where: { name: 'DISEÑO' },
+    update: {},
+    create: { name: 'DISEÑO', parentId: comercial.id },
+  });
+
+  await prisma.process.upsert({
+    where: { name: 'PUBLICIDAD' },
+    update: {},
+    create: { name: 'PUBLICIDAD', parentId: comercial.id },
+  });
+
+  await prisma.process.upsert({
+    where: { name: 'DIGITAL' },
+    update: {},
+    create: { name: 'DIGITAL', parentId: produccion.id },
+  });
+
+  await prisma.process.upsert({
+    where: { name: 'OFFSET' },
+    update: {},
+    create: { name: 'OFFSET', parentId: produccion.id },
+  });
+
+  await prisma.process.upsert({
+    where: { name: 'TERMINADOS' },
+    update: {},
+    create: { name: 'TERMINADOS', parentId: produccion.id },
+  });
+
+  await prisma.process.upsert({
+    where: { name: 'LOGISTICA' },
+    update: {},
+    create: { name: 'LOGISTICA', parentId: produccion.id },
+  });
+
+  console.log('Procesos creados.');
+}
+
 async function main() {
   console.log('Iniciando el proceso de seeding no destructivo...');
   
@@ -68,11 +152,22 @@ async function main() {
             enableEmailNotifications: true, 
             emailWhitelist: "alprigrama.com",
             resourceCategories: "Recursos Humanos,TI y Seguridad,Marketing,Ventas,Legal,Operaciones,Finanzas,Formación Interna,Documentación de Producto,General",
-            passwordMinLength: 8, passwordRequireUppercase: true, passwordRequireLowercase: true, passwordRequireNumber: true, passwordRequireSpecialChar: false,
-            enableIdleTimeout: true, idleTimeoutMinutes: 20, require2faForAdmins: false,
-            primaryColor: '#6366f1', secondaryColor: '#a5b4fc', accentColor: '#ec4899', backgroundColorLight: '#f8fafc',
-            primaryColorDark: '#a5b4fc', backgroundColorDark: '#020617',
-            fontHeadline: 'Space Grotesk', fontBody: 'Inter',
+            passwordMinLength: 8,
+            passwordRequireUppercase: true,
+            passwordRequireLowercase: true,
+            passwordRequireNumber: true,
+            passwordRequireSpecialChar: false,
+            enableIdleTimeout: true,
+            idleTimeoutMinutes: 20,
+            require2faForAdmins: false,
+            primaryColor: '#6366f1',
+            secondaryColor: '#a5b4fc',
+            accentColor: '#ec4899',
+            backgroundColorLight: '#f8fafc',
+            primaryColorDark: '#a5b4fc',
+            backgroundColorDark: '#020617',
+            fontHeadline: 'Space Grotesk',
+            fontBody: 'Inter',
             announcementsImageUrl: 'https://izefimwyuayfvektsstg.supabase.co/storage/v1/object/public/settings_images/announcement-bg.jpg',
       }
   });
@@ -82,7 +177,10 @@ async function main() {
   }
   console.log('Configuración y logros listos.');
 
-  // --- 2. USUARIOS (siempre `upsert`) ---
+  // --- 2. PROCESOS ---
+  await seedProcesses();
+
+  // --- 3. USUARIOS (siempre `upsert`) ---
   console.log('Creando y/o actualizando usuarios de la lista...');
   const userUpsertPromises = usersToSeed.map(async user => {
     const hashedPassword = await bcrypt.hash(user.password, 10);
@@ -150,6 +248,8 @@ async function main() {
   const module1 = await prisma.module.upsert({ where: { id: 'clseedmodule01' }, update: { title: 'Módulo 1: Introducción al Marketing'}, create: { id: 'clseedmodule01', title: 'Módulo 1: Introducción al Marketing', courseId: courseInstructor.id, order: 0 }});
   const lesson1_1 = await prisma.lesson.upsert({ where: { id: 'clseedlesson11' }, update: {}, create: { id: 'clseedlesson11', title: '¿Qué es el Marketing Digital?', moduleId: module1.id, order: 0 }});
   await prisma.contentBlock.upsert({ where: { id: 'clseedblock111' }, update: {}, create: { id: 'clseedblock111', type: 'TEXT', content: '<p>El marketing digital es la aplicación de las estrategias de comercialización llevadas a cabo en los medios digitales.</p>', lessonId: lesson1_1.id, order: 0 }});
+  const lesson1_2 = await prisma.lesson.upsert({ where: { id: 'clseedlesson12' }, update: {}, create: { id: 'clseedlesson12', title: 'Video: ¿Qué es el SEO?', moduleId: module1.id, order: 1 }});
+  await prisma.contentBlock.upsert({ where: { id: 'clseedblock121' }, update: { content: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }, create: { id: 'clseedblock121', type: 'VIDEO', content: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', lessonId: lesson1_2.id, order: 0 }});
   
   // Para inscripciones, es mejor verificar y crear si no existen, para no sobreescribir progreso.
   await prisma.enrollment.upsert({ where: { userId_courseId: { userId: student1Id, courseId: courseInstructor.id } }, update: {}, create: { userId: student1Id, courseId: courseInstructor.id, progress: { create: { userId: student1Id, courseId: courseInstructor.id }}}});

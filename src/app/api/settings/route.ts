@@ -18,16 +18,9 @@ const DEFAULT_DB_SETTINGS = {
   passwordRequireLowercase: true,
   passwordRequireNumber: true,
   passwordRequireSpecialChar: false,
-  passwordExpirationDays: null,
   enableIdleTimeout: true,
   idleTimeoutMinutes: 20,
   require2faForAdmins: false,
-  require2faForInstructors: false,
-  require2faForAllUsers: false,
-  failedLoginLimit: null,
-  lockoutDurationMinutes: null,
-  logRetentionDays: 90,
-  hideLmsVersion: false,
   primaryColor: '#6366f1',
   secondaryColor: '#a5b4fc',
   accentColor: '#ec4899',
@@ -45,7 +38,6 @@ const DEFAULT_DB_SETTINGS = {
   fontHeadline: 'Space Grotesk',
   fontBody: 'Inter'
 };
-
 
 const getFallbackSettings = (): AppPlatformSettings => {
     return {
@@ -93,26 +85,49 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
-    const dataFromClient: AppPlatformSettings = await req.json();
+    const dataFromClient: Partial<AppPlatformSettings> = await req.json();
+    
+    const safeParseInt = (value: any): number | null => {
+        if (value === null || value === undefined || value === '') return null;
+        const num = Number(value);
+        return isNaN(num) ? null : num;
+    };
     
     const dataToSave = {
-        ...dataFromClient,
-        resourceCategories: dataFromClient.resourceCategories.join(','),
-        // Ensure numeric values are numbers, not strings
-        passwordMinLength: Number(dataFromClient.passwordMinLength) || 8,
-        passwordExpirationDays: dataFromClient.passwordExpirationDays ? Number(dataFromClient.passwordExpirationDays) : null,
-        failedLoginLimit: dataFromClient.failedLoginLimit ? Number(dataFromClient.failedLoginLimit) : null,
-        lockoutDurationMinutes: dataFromClient.lockoutDurationMinutes ? Number(dataFromClient.lockoutDurationMinutes) : null,
-        idleTimeoutMinutes: Number(dataFromClient.idleTimeoutMinutes) || 20,
-        logRetentionDays: dataFromClient.logRetentionDays ? Number(dataFromClient.logRetentionDays) : 90,
+      platformName: dataFromClient.platformName,
+      allowPublicRegistration: dataFromClient.allowPublicRegistration,
+      enableEmailNotifications: dataFromClient.enableEmailNotifications,
+      emailWhitelist: dataFromClient.emailWhitelist,
+      resourceCategories: Array.isArray(dataFromClient.resourceCategories) ? dataFromClient.resourceCategories.join(',') : dataFromClient.resourceCategories,
+      passwordMinLength: safeParseInt(dataFromClient.passwordMinLength) ?? 8,
+      passwordRequireUppercase: dataFromClient.passwordRequireUppercase,
+      passwordRequireLowercase: dataFromClient.passwordRequireLowercase,
+      passwordRequireNumber: dataFromClient.passwordRequireNumber,
+      passwordRequireSpecialChar: dataFromClient.passwordRequireSpecialChar,
+      enableIdleTimeout: dataFromClient.enableIdleTimeout,
+      idleTimeoutMinutes: safeParseInt(dataFromClient.idleTimeoutMinutes) ?? 20,
+      require2faForAdmins: dataFromClient.require2faForAdmins,
+      primaryColor: dataFromClient.primaryColor,
+      secondaryColor: dataFromClient.secondaryColor,
+      accentColor: dataFromClient.accentColor,
+      backgroundColorLight: dataFromClient.backgroundColorLight,
+      primaryColorDark: dataFromClient.primaryColorDark,
+      backgroundColorDark: dataFromClient.backgroundColorDark,
+      logoUrl: dataFromClient.logoUrl,
+      watermarkUrl: dataFromClient.watermarkUrl,
+      landingImageUrl: dataFromClient.landingImageUrl,
+      authImageUrl: dataFromClient.authImageUrl,
+      aboutImageUrl: dataFromClient.aboutImageUrl,
+      benefitsImageUrl: dataFromClient.benefitsImageUrl,
+      announcementsImageUrl: dataFromClient.announcementsImageUrl,
+      publicPagesBgUrl: dataFromClient.publicPagesBgUrl,
+      fontHeadline: dataFromClient.fontHeadline,
+      fontBody: dataFromClient.fontBody,
     };
-
-    delete (dataToSave as any).id;
-    delete (dataToSave as any).updatedAt;
     
     const currentSettings = await prisma.platformSettings.findFirst();
     
-    if (currentSettings && currentSettings.resourceCategories) {
+    if (currentSettings && currentSettings.resourceCategories && dataToSave.resourceCategories) {
         const oldCategories = currentSettings.resourceCategories.split(',').filter(Boolean);
         const newCategories = dataToSave.resourceCategories.split(',').filter(Boolean);
         const deletedCategories = oldCategories.filter(cat => !newCategories.includes(cat));
