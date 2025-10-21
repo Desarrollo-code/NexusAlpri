@@ -27,7 +27,7 @@ export const SidebarHeader = () => {
   // Vista para escritorio
   return (
     <div className={cn(
-      "flex items-center h-20 border-b border-sidebar-border",
+      "flex items-center h-20",
       isCollapsed ? 'justify-center' : 'justify-start px-4'
     )}>
       <Link href="/dashboard" className="inline-flex items-center gap-3">
@@ -44,7 +44,7 @@ export const SidebarHeader = () => {
           </div>
         
         {!isCollapsed && (
-            <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-sidebar-foreground">
+            <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-foreground">
               {settings?.platformName || 'NexusAlpri'}
             </span>
         )}
