@@ -35,7 +35,7 @@ const timeSince = (date: Date): string => {
 };
 
 export const TopBar = () => {
-    const { toggleSidebar, isCollapsed } = useSidebar();
+    const { toggleSidebar } = useSidebar();
     const { pageTitle, headerActions, showBackButton } = useTitle();
     const { user } = useAuth();
     const router = useRouter();
@@ -121,21 +121,22 @@ export const TopBar = () => {
     return (
         <div className={cn(
             "flex items-center justify-between h-20 px-4 shrink-0 border-b sticky top-0 z-30",
-            "top-bar-gradient text-primary-foreground backdrop-blur-sm border-border"
+            "bg-primary-gradient text-primary-foreground backdrop-blur-sm border-border"
         )}>
             {/* Left side */}
             <div className="flex items-center gap-2 flex-1 min-w-0">
-                 {!isMobile && (
-                     <Button onClick={toggleSidebar} variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground/70 hover:bg-white/20 hover:text-primary-foreground">
+                 {isMobile ? (
+                    <Button onClick={toggleSidebar} variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground/70 hover:bg-white/20 hover:text-primary-foreground">
                         <PanelLeft className="h-5 w-5"/>
                         <span className="sr-only">Toggle Menu</span>
                     </Button>
-                 )}
-                 {isMobile && showBackButton && (
+                 ) : showBackButton ? (
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground/70" onClick={() => router.back()}>
                         <ArrowLeft className="h-4 w-4"/>
                         <span className="sr-only">Volver</span>
                     </Button>
+                 ) : (
+                    <div className="w-8"/> // Placeholder to keep alignment
                  )}
                  <h1 className="text-xl font-semibold truncate text-primary-foreground">{currentPageTitle}</h1>
             </div>
