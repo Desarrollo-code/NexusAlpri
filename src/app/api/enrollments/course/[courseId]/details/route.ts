@@ -2,6 +2,8 @@
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { startOfDay, subDays, format, endOfDay, isValid } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +15,9 @@ export async function GET(req: NextRequest, { params }: { params: { courseId: st
 
     try {
         const { courseId } = params;
+        const { searchParams } = new URL(req.url);
+        const startDateParam = searchParams.get('startDate');
+        const endDateParam = searchParams.get('endDate');
 
         const course = await prisma.course.findUnique({
             where: { id: courseId },
@@ -103,6 +108,60 @@ export async function GET(req: NextRequest, { params }: { params: { courseId: st
             }
         }));
 
+        // --- Completion Trend Logic ---
+        const startDate = startDateParam && isValid(new Date(startDateParam)) ? startOfDay(new Date(startDateParam)) : startOfDay(subDays(new Date(), 29));
+        const endDate = endDateParam && isValid(new Date(endDateParam)) ? endOfDay(new Date(endDateParam)) : endOfDay(new Date());
+
+        const completions = await prisma.courseProgress.findMany({
+            where: {
+                courseId: courseId,
+                completedAt: {
+                    gte: startDate,
+                    lte: endDate,
+                }
+            },
+            select: { completedAt: true }
+        });
+
+        const completionTrendMap = new Map<string, number>();
+        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+            completionTrendMap.set(format(d, 'yyyy-MM-dd'), 0);
+        }
+
+        completions.forEach(c => {
+            if(c.completedAt) {
+                const dateKey = format(c.completedAt, 'yyyy-MM-dd');
+                if (completionTrendMap.has(dateKey)) {
+                    completionTrendMap.set(dateKey, completionTrendMap.get(dateKey)! + 1);
+                }
+            }
+        });
+        const completionTrend = Array.from(completionTrendMap.entries()).map(([date, count]) => ({ date, count }));
+        
+        
+        // --- Lesson Completions Logic (Friction Points) ---
+        const allLessonsFlat = course.modules.flatMap(m => m.lessons);
+        let lessonCompletions: { lessonId: string, title: string, completions: number }[] = [];
+
+        if (allLessonsFlat.length > 0) {
+            const lessonCompletionCounts = await prisma.lessonCompletionRecord.groupBy({
+                by: ['lessonId'],
+                where: {
+                    lessonId: { in: allLessonsFlat.map(l => l.id) },
+                    progress: { courseId: courseId }
+                },
+                _count: { lessonId: true }
+            });
+
+            const completionMap = new Map(lessonCompletionCounts.map(l => [l.lessonId, l._count.lessonId]));
+            lessonCompletions = allLessonsFlat.map(lesson => ({
+                lessonId: lesson.id,
+                title: lesson.title,
+                completions: completionMap.get(lesson.id) || 0
+            }));
+        }
+
+
         const response = {
             ...course,
             enrollments: enrollmentsWithDetails,
@@ -111,7 +170,9 @@ export async function GET(req: NextRequest, { params }: { params: { courseId: st
               lessons: totalLessons,
             },
             avgProgress: Math.round(avgProgress),
-            avgQuizScore: Math.round(avgQuizScore)
+            avgQuizScore: Math.round(avgQuizScore),
+            completionTrend,
+            lessonCompletions,
         };
 
         return NextResponse.json(response);
