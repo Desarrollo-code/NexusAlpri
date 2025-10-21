@@ -12,7 +12,7 @@ import { useAuth } from '@/contexts/auth-context';
 const features = [
   {
     icon: (props: any) => (
-        <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center">
+        <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
             <Layers3 {...props} className="h-8 w-8 text-white"/>
         </div>
     ),
@@ -21,8 +21,8 @@ const features = [
   },
   {
     icon: (props: any) => (
-        <div className="w-12 h-12 rounded-full bg-blue-200 flex items-center justify-center">
-            <ArrowUp {...props} className="h-8 w-8 text-blue-800" strokeWidth={3}/>
+        <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+            <ArrowUp {...props} className="h-8 w-8 text-white" strokeWidth={3}/>
         </div>
     ),
     title: 'Impulsa el Crecimiento',
@@ -30,8 +30,8 @@ const features = [
   },
   {
     icon: (props: any) => (
-        <div className="w-12 h-12 rounded-full bg-green-400 flex items-center justify-center">
-            <Users {...props} className="h-8 w-8 text-green-900" />
+        <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+            <Users {...props} className="h-8 w-8 text-white" />
         </div>
     ),
     title: 'Fomenta la Colaboración',
@@ -118,12 +118,12 @@ export default function LandingPage() {
                      return (
                      <div 
                         key={feature.title}
-                        className="group relative rounded-2xl p-6 text-left h-full transition-all duration-300 overflow-hidden bg-primary backdrop-blur-sm shadow-lg hover:shadow-primary/20 hover:-translate-y-2 border border-white/30 text-primary-foreground"
+                        className="group relative rounded-2xl p-6 text-left h-full transition-all duration-300 overflow-hidden bg-accent backdrop-blur-sm shadow-lg hover:shadow-accent/20 hover:-translate-y-2 border border-white/30 text-accent-foreground"
                       >
                        <div className="relative z-10 flex flex-col items-start justify-start h-full gap-4">
                          <Icon className="w-12 h-12"/>
                          <h3 className="text-xl font-bold font-headline mb-2">{feature.title}</h3>
-                         <p className="text-sm text-primary-foreground/80">{feature.description}</p>
+                         <p className="text-sm text-accent-foreground/80">{feature.description}</p>
                        </div>
                      </div>
                    )})}
