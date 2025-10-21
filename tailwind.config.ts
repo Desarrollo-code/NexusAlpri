@@ -139,6 +139,10 @@ const config: Config = {
             from: { transform: 'rotate(0deg)' },
             to: { transform: 'rotate(360deg)' },
         },
+        'spin-reverse': {
+            from: { transform: 'rotate(360deg)' },
+            to: { transform: 'rotate(0deg)' },
+        },
         'bloom': {
           '0%, 100%': { transform: 'scale(0.8)', opacity: 0.7 },
           '50%': { transform: 'scale(1.1)', opacity: 1 },
@@ -169,6 +173,7 @@ const config: Config = {
         'throw': 'throw 0.4s ease-out forwards',
         'caret-blink': 'caret-blink 1.25s ease-out infinite',
         'spin-slow': 'spin-slow 3s linear infinite',
+        'spin-reverse': 'spin-reverse 3s linear infinite',
         'bloom': 'bloom 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'aurora-1': 'aurora-1 20s ease-in-out infinite',
         'aurora-2': 'aurora-2 25s ease-in-out infinite',
