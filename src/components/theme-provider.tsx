@@ -114,3 +114,6 @@ export function ThemeProvider({ children, ...props }: Omit<ThemeProviderProps, '
     </NextThemesProvider>
   );
 }
+
+// Re-export useTheme from next-themes
+export const useTheme = useNextTheme;
