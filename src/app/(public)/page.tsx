@@ -12,27 +12,21 @@ import { useAuth } from '@/contexts/auth-context';
 const features = [
   {
     icon: (props: any) => (
-        <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-            <Layers3 {...props} className="h-8 w-8 text-white"/>
-        </div>
+      <Layers3 {...props} className="w-8 h-8 text-white" />
     ),
     title: 'Cultura tu Conocimiento',
     description: 'Crea y comparte cursos dinámicos, combinando videos, quizzes interactivos y documentos esenciales en una única plataforma centralizada.',
   },
   {
     icon: (props: any) => (
-        <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-            <ArrowUp {...props} className="h-8 w-8 text-white" strokeWidth={3}/>
-        </div>
+      <ArrowUp {...props} className="w-8 h-8 text-white" strokeWidth={3}/>
     ),
     title: 'Impulsa el Crecimiento',
     description: 'Visualiza el progreso del equipo en tiempo real, identifica oportunidades de mejora y toma decisiones basadas en datos para potenciar el talento.',
   },
   {
     icon: (props: any) => (
-        <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-            <Users {...props} className="h-8 w-8 text-white" />
-        </div>
+      <Users {...props} className="w-8 h-8 text-white" />
     ),
     title: 'Fomenta la Colaboración',
     description: 'Construye una comunidad de aprendizaje activa a través de foros de discusión, mensajería directa y actividades grupales dinámicas.',
@@ -118,12 +112,14 @@ export default function LandingPage() {
                      return (
                      <div 
                         key={feature.title}
-                        className="group relative rounded-2xl p-6 text-left h-full transition-all duration-300 overflow-hidden bg-accent backdrop-blur-sm shadow-lg hover:shadow-accent/20 hover:-translate-y-2 border border-white/30 text-accent-foreground"
+                        className="group relative rounded-2xl p-6 text-left h-full transition-all duration-300 overflow-hidden bg-background/20 backdrop-blur-sm shadow-lg hover:shadow-primary/20 hover:-translate-y-2 border border-white/30"
                       >
-                       <div className="relative z-10 flex flex-col items-start justify-start h-full gap-4">
-                         <Icon className="w-12 h-12"/>
-                         <h3 className="text-xl font-bold font-headline mb-2">{feature.title}</h3>
-                         <p className="text-sm text-accent-foreground/80">{feature.description}</p>
+                       <div className="relative z-10 flex flex-col items-start justify-start h-full">
+                         <div className="w-12 h-12 rounded-lg bg-black flex items-center justify-center">
+                            <Icon />
+                         </div>
+                         <h3 className="text-xl font-bold font-headline mt-4 text-slate-900">{feature.title}</h3>
+                         <p className="text-sm text-slate-900/80 mt-2">{feature.description}</p>
                        </div>
                      </div>
                    )})}
