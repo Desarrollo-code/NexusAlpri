@@ -359,21 +359,21 @@ const ThemeSelectorCard = ({ className }: { className?: string }) => {
     const { user, updateUser } = useAuth();
 
     const handleThemeChange = async (newTheme: string) => {
-        if (!user) {
-          setTheme(newTheme);
-          return;
-        }
+        // Optimistically update the UI
         setTheme(newTheme);
-        updateUser({ theme: newTheme });
-
-        try {
-          await fetch(`/api/users/${user.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ theme: newTheme }),
-          });
-        } catch (error) {
-          console.error('Error saving theme preference:', error);
+        if (user) {
+            updateUser({ theme: newTheme }); // Update context
+            // Asynchronously save to backend
+            try {
+                await fetch(`/api/users/${user.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ theme: newTheme }),
+                });
+            } catch (error) {
+                console.error('Error saving theme preference:', error);
+                // Optionally, revert the theme change on error
+            }
         }
     };
 
@@ -385,6 +385,19 @@ const ThemeSelectorCard = ({ className }: { className?: string }) => {
         </CardHeader>
         <CardContent>
             <div className="grid grid-cols-5 gap-4">
+                <TooltipProvider delayDuration={100}>
+                   <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div className="cursor-pointer group flex flex-col items-center gap-2">
+                                <div className="h-12 w-12 rounded-full flex items-center justify-center border-2 border-dashed border-border/80">
+                                    <Palette className="h-6 w-6 text-muted-foreground"/>
+                                </div>
+                            </div>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Personalizar (Próximamente)</p></TooltipContent>
+                   </Tooltip>
+                </TooltipProvider>
+
               {AVAILABLE_THEMES.map((t) => (
                 <TooltipProvider key={t.value} delayDuration={100}>
                     <Tooltip>
@@ -392,17 +405,15 @@ const ThemeSelectorCard = ({ className }: { className?: string }) => {
                              <div onClick={() => handleThemeChange(t.value)} className="cursor-pointer group flex flex-col items-center gap-2">
                                 <div
                                     className={cn(
-                                    'h-12 w-12 rounded-full flex items-center justify-center border-2 transition-all',
-                                    theme === t.value ? 'border-primary ring-2 ring-primary/50' : 'border-border/50 group-hover:border-primary/70'
+                                        'h-12 w-12 rounded-full flex items-center justify-center border-2 transition-all',
+                                        theme === t.value ? 'border-primary ring-2 ring-primary/50' : 'border-border/50 group-hover:border-primary/70'
                                     )}
                                 >
                                     <div className={cn('h-10 w-10 rounded-full', t.previewClass)} />
                                 </div>
                             </div>
                         </TooltipTrigger>
-                        <TooltipContent>
-                           <p>{t.label}</p>
-                        </TooltipContent>
+                        <TooltipContent><p>{t.label}</p></TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
               ))}
