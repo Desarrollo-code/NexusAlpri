@@ -43,8 +43,6 @@ export default function PublicLayout({
             quality={80}
             data-ai-hint="abstract background"
           />
-          {/* Superposición opcional para oscurecer/aclarar */}
-          <div className="absolute inset-0 bg-background/50" />
         </div>
       )}
 
