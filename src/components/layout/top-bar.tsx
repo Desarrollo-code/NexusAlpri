@@ -126,12 +126,12 @@ export const TopBar = () => {
             {/* Left side */}
             <div className="flex items-center gap-2 flex-1 min-w-0">
                  {isMobile ? (
-                    <Button onClick={toggleSidebar} variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground/70 bg-black/20 hover:bg-black/30 hover:text-primary-foreground">
+                    <Button onClick={toggleSidebar} variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground bg-white/20 hover:bg-white/30 hover:text-primary-foreground">
                         <PanelLeft className="h-5 w-5"/>
                         <span className="sr-only">Toggle Menu</span>
                     </Button>
                  ) : showBackButton ? (
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground/70 bg-black/20 hover:bg-black/30 hover:text-primary-foreground" onClick={() => router.back()}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground bg-white/20 hover:bg-white/30 hover:text-primary-foreground" onClick={() => router.back()}>
                         <ArrowLeft className="h-4 w-4"/>
                         <span className="sr-only">Volver</span>
                     </Button>
@@ -146,7 +146,7 @@ export const TopBar = () => {
                  {headerActions && <div className="hidden md:flex items-center gap-2">{headerActions}</div>}
                  <Popover>
                     <PopoverTrigger asChild>
-                        <Button variant="ghost" size="icon" className="relative text-primary-foreground/70 bg-black/20 hover:bg-black/30 hover:text-primary-foreground">
+                        <Button variant="ghost" size="icon" className="relative text-primary-foreground bg-white/20 hover:bg-white/30 hover:text-primary-foreground">
                             <Bell className="h-5 w-5"/>
                             {unreadCount > 0 && (
                                 <span className="absolute top-1 right-1 flex h-4 w-4">

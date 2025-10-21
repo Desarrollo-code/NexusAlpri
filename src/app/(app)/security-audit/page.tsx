@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTitle } from '@/contexts/title-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { AlertTriangle, Globe, HelpCircle, Filter, CheckCircle, XCircle, UserCog, Monitor } from 'lucide-react';
+import { AlertTriangle, Globe, HelpCircle, Filter, CheckCircle, XCircle, UserCog, Monitor, Download } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { Loader2 } from 'lucide-react';
 import { DateRangePicker } from "@/components/ui/date-range-picker";
@@ -81,8 +81,8 @@ export default function SecurityAuditPage() {
             <div className="flex items-center gap-2">
                 <ExportToCsvButton data={logs} filename={`seguridad_${new Date().toISOString().split('T')[0]}`} />
                 <DateRangePicker date={{ from: dateRange.from, to: dateRange.to }} onDateChange={setDateRange} />
-                <Button variant="outline" size="sm" onClick={() => forceStartTour('securityAudit', securityAuditTour)}>
-                    <HelpCircle className="mr-2 h-4 w-4" /> Guía Rápida
+                <Button variant="ghost" size="icon" onClick={() => forceStartTour('securityAudit', securityAuditTour)}>
+                    <HelpCircle className="h-5 w-5" />
                 </Button>
             </div>
         );
