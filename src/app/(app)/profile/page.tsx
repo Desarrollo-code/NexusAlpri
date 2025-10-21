@@ -86,7 +86,7 @@ const InfoCard = ({ user, updateUser }: { user: any, updateUser: (data: any) => 
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="name">Nombre</Label>
-                        <Input id="name" value={name} onChange={e => setName(e.target.value)} disabled={isSavingInfo} />
+                        <Input id="name" value={name} onChange={e => setName(e.target.value)} disabled={isSavingInfo} autoComplete="name" />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
@@ -384,7 +384,7 @@ const ThemeSelectorCard = ({ className }: { className?: string }) => {
           <CardDescription>Elige tu paleta de colores preferida.</CardDescription>
         </CardHeader>
         <CardContent>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-5 gap-4">
               {AVAILABLE_THEMES.map((t) => (
                 <TooltipProvider key={t.value} delayDuration={100}>
                     <Tooltip>
@@ -392,7 +392,7 @@ const ThemeSelectorCard = ({ className }: { className?: string }) => {
                              <div onClick={() => handleThemeChange(t.value)} className="cursor-pointer group flex flex-col items-center gap-2">
                                 <div
                                     className={cn(
-                                    'h-14 w-14 rounded-full flex items-center justify-center border-2 transition-all',
+                                    'h-12 w-12 rounded-full flex items-center justify-center border-2 transition-all',
                                     theme === t.value ? 'border-primary ring-2 ring-primary/50' : 'border-border/50 group-hover:border-primary/70'
                                     )}
                                 >

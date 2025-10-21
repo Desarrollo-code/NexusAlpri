@@ -8,21 +8,21 @@ import { useAuth } from '@/contexts/auth-context';
 import { fontMap } from '@/lib/fonts';
 
 export const AVAILABLE_THEMES = [
-  { value: 'light', label: 'Claro', previewClass: 'bg-slate-100' },
-  { value: 'dark', label: 'Oscuro', previewClass: 'bg-slate-900' },
-  { value: 'terminal', label: 'Terminal', previewClass: 'bg-gradient-to-br from-emerald-900 to-green-950' },
-  { value: 'sunset', label: 'Atardecer', previewClass: 'bg-gradient-to-br from-rose-700 via-orange-600 to-yellow-500' },
-  { value: 'ocean', label: 'Océano', previewClass: 'bg-gradient-to-br from-sky-400 to-blue-600' },
-  { value: 'forest', label: 'Bosque', previewClass: 'bg-gradient-to-br from-green-700 to-teal-900' },
-  { value: 'rose', label: 'Cuarzo Rosa', previewClass: 'bg-gradient-to-br from-rose-300 to-pink-400' },
-  { value: 'neon', label: 'Neón', previewClass: 'bg-gradient-to-br from-fuchsia-600 to-purple-700' },
-  { value: 'dracula', label: 'Noche Púrpura', previewClass: 'bg-gradient-to-br from-violet-700 to-indigo-900' },
-  { value: 'coffee', label: 'Café', previewClass: 'bg-gradient-to-br from-amber-800 to-stone-900' },
-  { value: 'mint', label: 'Menta', previewClass: 'bg-gradient-to-br from-emerald-300 to-teal-500' },
-  { value: 'lavender', label: 'Lavanda', previewClass: 'bg-gradient-to-br from-purple-400 to-violet-500' },
-  { value: 'solarized-light', label: 'Solarizado Claro', previewClass: 'bg-gradient-to-br from-yellow-100 to-cyan-100' },
-  { value: 'solarized-dark', label: 'Solarizado Oscuro', previewClass: 'bg-gradient-to-br from-cyan-900 to-blue-950' },
-  { value: 'imperial-gold', label: 'Dorado Imperial', previewClass: 'bg-gradient-to-br from-indigo-800 to-yellow-500' },
+  { value: 'light', label: 'Claro', previewClass: 'bg-[hsl(220,20%,99%)]' },
+  { value: 'dark', label: 'Oscuro', previewClass: 'bg-[hsl(225,15%,8%)]' },
+  { value: 'terminal', label: 'Terminal', previewClass: 'bg-gradient-to-br from-[hsl(140,80%,50%)] to-[hsl(140,15%,10%)]' },
+  { value: 'sunset', label: 'Atardecer', previewClass: 'bg-gradient-to-br from-[hsl(330,85%,65%)] via-[hsl(25,90%,60%)] to-[hsl(50,90%,55%)]' },
+  { value: 'ocean', label: 'Océano', previewClass: 'bg-gradient-to-br from-[hsl(190,85%,45%)] to-[hsl(170,70%,40%)]' },
+  { value: 'forest', label: 'Bosque', previewClass: 'bg-gradient-to-br from-[hsl(150,60%,35%)] to-[hsl(40,70%,50%)]' },
+  { value: 'rose', label: 'Cuarzo Rosa', previewClass: 'bg-gradient-to-br from-[hsl(345,80%,60%)] to-[hsl(330,85%,65%)]' },
+  { value: 'neon', label: 'Neón', previewClass: 'bg-gradient-to-br from-[hsl(300,100%,60%)] to-[hsl(180,100%,50%)]' },
+  { value: 'dracula', label: 'Noche Púrpura', previewClass: 'bg-gradient-to-br from-[hsl(265,89%,78%)] to-[hsl(231,15%,22%)]' },
+  { value: 'coffee', label: 'Café', previewClass: 'bg-gradient-to-br from-[hsl(30,40%,40%)] to-[hsl(30,30%,15%)]' },
+  { value: 'mint', label: 'Menta', previewClass: 'bg-gradient-to-br from-[hsl(160,80%,40%)] to-[hsl(170,70%,45%)]' },
+  { value: 'lavender', label: 'Lavanda', previewClass: 'bg-gradient-to-br from-[hsl(275,80%,70%)] to-[hsl(300,85%,75%)]' },
+  { value: 'solarized-light', label: 'Solarizado Claro', previewClass: 'bg-gradient-to-br from-[hsl(46,100%,98%)] to-[hsl(45,30%,92%)]' },
+  { value: 'solarized-dark', label: 'Solarizado Oscuro', previewClass: 'bg-gradient-to-br from-[hsl(205,30%,12%)] to-[hsl(205,25%,20%)]' },
+  { value: 'imperial-gold', label: 'Dorado Imperial', previewClass: 'bg-gradient-to-br from-[hsl(220,50%,10%)] to-[hsl(45,100%,50%)]' },
 ];
 
 
