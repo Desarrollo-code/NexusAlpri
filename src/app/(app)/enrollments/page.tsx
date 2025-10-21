@@ -17,7 +17,7 @@ import { useTitle } from '@/contexts/title-context';
 import { Identicon } from '@/components/ui/identicon';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Separator } from '@/components/ui/separator';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SmartPagination } from '@/components/ui/pagination';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
@@ -554,7 +554,7 @@ export default function EnrollmentsPage() {
                                 <h4 className="font-semibold text-base">{module.title}</h4>
                                 <ul className="mt-2 space-y-1.5 text-sm ml-2">
                                     {module.lessons.map(lesson => {
-                                        const isCompleted = studentToView.progress?.completedLessons.some(cl => cl.lessonId === lesson.id);
+                                        const isCompleted = studentToView.progress?.completedLessons?.some(cl => cl.lessonId === lesson.id);
                                         return (
                                             <li key={lesson.id} className="flex items-center gap-2">
                                                 {isCompleted ? <CheckCircle className="h-4 w-4 text-green-500"/> : <div className="h-4 w-4 flex-shrink-0" />}
