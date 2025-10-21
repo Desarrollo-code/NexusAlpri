@@ -86,7 +86,7 @@ export function UserAvatarDropdown() {
  return (
   <DropdownMenu>
    <DropdownMenuTrigger asChild>
-    <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-primary/10 p-0">
+    <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0 bg-white/10 hover:bg-white/20">
      <Avatar className="h-9 w-9 bg-primary/20 text-primary-foreground">
       {avatarSrc ? <AvatarImage src={avatarSrc} alt={userDisplayName} data-ai-hint="user avatar" /> : null}
       <AvatarFallback>
