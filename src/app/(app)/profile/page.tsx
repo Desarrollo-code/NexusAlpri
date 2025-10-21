@@ -146,7 +146,7 @@ const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setC
                     <div className="space-y-2">
                         <Label htmlFor="current-password">Contraseña Actual</Label>
                         <div className="relative">
-                            <Input id="current-password" type={showCurrentPassword ? "text" : "password"} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required disabled={isSavingPassword} />
+                            <Input id="current-password" type={showCurrentPassword ? "text" : "password"} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required disabled={isSavingPassword} autoComplete="current-password" />
                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowCurrentPassword(!showCurrentPassword)}>
                                 {showCurrentPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
                             </Button>
@@ -155,7 +155,7 @@ const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setC
                     <div className="space-y-2">
                         <Label htmlFor="new-password">Nueva Contraseña</Label>
                         <div className="relative">
-                             <Input id="new-password" type={showNewPassword ? "text" : "password"} value={newPassword} onChange={e => setNewPassword(e.target.value)} required disabled={isSavingPassword}/>
+                             <Input id="new-password" type={showNewPassword ? "text" : "password"} value={newPassword} onChange={e => setNewPassword(e.target.value)} required disabled={isSavingPassword} autoComplete="new-password"/>
                              <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowNewPassword(!showNewPassword)}>
                                 {showNewPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
                             </Button>
@@ -165,7 +165,7 @@ const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setC
                     <div className="space-y-2">
                         <Label htmlFor="confirm-password">Confirmar Nueva Contraseña</Label>
                          <div className="relative">
-                            <Input id="confirm-password" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required disabled={isSavingPassword}/>
+                            <Input id="confirm-password" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required disabled={isSavingPassword} autoComplete="new-password"/>
                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
                                 {showConfirmPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
                             </Button>
@@ -352,10 +352,10 @@ const ProfileCard = ({ user, onAvatarChange, isUploading, uploadProgress }: { us
     </Card>
 )};
 
-const ThemeSelectorCard = () => {
+const ThemeSelectorCard = ({ className }: { className?: string }) => {
     const { theme, setTheme } = useTheme();
     const { user, updateUser } = useAuth();
-  
+
     const handleThemeChange = async (newTheme: string) => {
         if (!user) {
           setTheme(newTheme);
@@ -374,28 +374,37 @@ const ThemeSelectorCard = () => {
           console.error('Error saving theme preference:', error);
         }
     };
-  
+
     return (
-      <Card>
+      <Card className={cn(className)}>
         <CardHeader>
           <CardTitle>Tema de la Interfaz</CardTitle>
-          <CardDescription>Elige tu paleta de colores preferida para personalizar tu experiencia.</CardDescription>
+          <CardDescription>Elige tu paleta de colores preferida.</CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {AVAILABLE_THEMES.map((t) => (
-            <div key={t.value} onClick={() => handleThemeChange(t.value)} className="cursor-pointer group">
-              <div
-                className={cn(
-                  'rounded-lg p-2 border-2 transition-all',
-                  theme === t.value ? 'border-primary ring-2 ring-primary/50' : 'border-border group-hover:border-primary/50'
-                )}
-              >
-                <div className={cn('h-16 w-full rounded-md flex items-center justify-center text-sm font-semibold', t.previewClass)}>
-                  <span className={cn('px-2 py-1 rounded-md', t.value.includes('dark') || t.value === 'matrix' || t.value === 'cyberpunk' || t.value === 'dracula' || t.value === 'grape' || t.value === 'royal' || t.value === 'sunset' || t.value === 'coffee' ? 'text-white bg-black/20' : 'text-black bg-white/20')}>{t.label}</span>
-                </div>
-              </div>
+        <CardContent>
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+              {AVAILABLE_THEMES.map((t) => (
+                <TooltipProvider key={t.value} delayDuration={100}>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                             <div onClick={() => handleThemeChange(t.value)} className="cursor-pointer group flex flex-col items-center gap-2">
+                                <div
+                                    className={cn(
+                                    'h-14 w-14 rounded-full flex items-center justify-center border-2 transition-all',
+                                    theme === t.value ? 'border-primary ring-2 ring-primary/50' : 'border-border/50 group-hover:border-primary/70'
+                                    )}
+                                >
+                                    <div className={cn('h-10 w-10 rounded-full', t.previewClass)} />
+                                </div>
+                            </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                           <p>{t.label}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+              ))}
             </div>
-          ))}
         </CardContent>
       </Card>
     );
