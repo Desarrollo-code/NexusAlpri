@@ -40,7 +40,6 @@ const DataRow = ({ name, value, total }: { name: string, value: number, total: n
 }
 
 const ChartSection = ({ title, data }: { title: string, data?: { name: string, count: number }[] }) => {
-    // Si no hay datos, muestra un mensaje.
     if (!data || data.length === 0) {
         return (
             <div className="w-1/2 flex-grow flex flex-col">

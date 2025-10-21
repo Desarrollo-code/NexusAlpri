@@ -43,8 +43,8 @@ export async function GET(req: NextRequest) {
             failedLogins24h,
             roleChanges24h,
             allLogsForDeviceStats,
-            topIps,
-        ] = await Promise.all([
+            topIpsResult,
+        ] = await Promise.allSettled([
             prisma.securityLog.count({ where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: twentyFourHoursAgo } } }),
             prisma.securityLog.count({ where: { event: 'FAILED_LOGIN_ATTEMPT', createdAt: { gte: twentyFourHoursAgo } } }),
             prisma.securityLog.count({ where: { event: 'USER_ROLE_CHANGED', createdAt: { gte: twentyFourHoursAgo } } }),
@@ -52,36 +52,30 @@ export async function GET(req: NextRequest) {
                 select: { userAgent: true },
             }),
             prisma.securityLog.groupBy({
-                by: ['ipAddress', 'country'],
-                _count: {
-                    ipAddress: true,
-                },
+                by: ['ipAddress'],
+                _count: { ipAddress: true },
                 where: {
-                    ipAddress: {
-                        not: null,
-                    },
-                     createdAt: {
-                        gte: subDays(new Date(), 30) // Look at activity over the last 30 days
-                    }
+                    ipAddress: { not: null },
+                    createdAt: { gte: subDays(new Date(), 30) }
                 },
-                orderBy: {
-                    _count: {
-                        ipAddress: 'desc',
-                    },
-                },
+                orderBy: { _count: { ipAddress: 'desc' } },
                 take: 5,
             }),
         ]);
         
-        const { browsers, os } = aggregateByUserAgent(allLogsForDeviceStats || []);
+        const getResult = <T>(promise: PromiseSettledResult<T>, fallback: T): T => 
+            promise.status === 'fulfilled' ? promise.value : fallback;
+
+        const { browsers, os } = aggregateByUserAgent(getResult(allLogsForDeviceStats, []));
+        const topIps = getResult(topIpsResult, []);
         
         const stats: SecurityStats = {
-            successfulLogins24h,
-            failedLogins24h,
-            roleChanges24h,
+            successfulLogins24h: getResult(successfulLogins24h, 0),
+            failedLogins24h: getResult(failedLogins24h, 0),
+            roleChanges24h: getResult(roleChanges24h, 0),
             browsers,
             os,
-            topIps: topIps as any, // Cast to any to avoid type errors with groupBy result
+            topIps: topIps as any,
         };
 
         return NextResponse.json(stats);
