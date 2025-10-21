@@ -103,7 +103,7 @@ export function ThemeProvider({ children, ...props }: Omit<ThemeProviderProps, '
   return (
     <NextThemesProvider
       {...props}
-      attribute="class"
+      attribute="data-theme"
       defaultTheme="dark"
       enableSystem={false}
       disableTransitionOnChange={false}
