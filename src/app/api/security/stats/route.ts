@@ -38,12 +38,12 @@ export async function GET(req: NextRequest) {
     try {
         const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
         
-        // Se elimina la consulta `groupBy` para `topIps` temporalmente
         const [
             successfulLogins24h,
             failedLogins24h,
             roleChanges24h,
             allLogsForDeviceStats,
+            topIps,
         ] = await Promise.all([
             prisma.securityLog.count({ where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: twentyFourHoursAgo } } }),
             prisma.securityLog.count({ where: { event: 'FAILED_LOGIN_ATTEMPT', createdAt: { gte: twentyFourHoursAgo } } }),
@@ -51,18 +51,37 @@ export async function GET(req: NextRequest) {
             prisma.securityLog.findMany({ 
                 select: { userAgent: true },
             }),
+            prisma.securityLog.groupBy({
+                by: ['ipAddress', 'country'],
+                where: {
+                    ipAddress: {
+                        not: null,
+                    },
+                     createdAt: {
+                        gte: subDays(new Date(), 30) // Look at activity over the last 30 days
+                    }
+                },
+                _count: {
+                    ipAddress: true,
+                },
+                orderBy: {
+                    _count: {
+                        ipAddress: 'desc',
+                    },
+                },
+                take: 5,
+            }),
         ]);
         
         const { browsers, os } = aggregateByUserAgent(allLogsForDeviceStats || []);
         
-        // Se devuelve un array vacío para topIps para evitar errores en el frontend.
         const stats: SecurityStats = {
             successfulLogins24h,
             failedLogins24h,
             roleChanges24h,
             browsers,
             os,
-            topIps: [],
+            topIps: topIps,
         };
 
         return NextResponse.json(stats);
