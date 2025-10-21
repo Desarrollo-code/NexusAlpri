@@ -27,7 +27,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
           <SidebarFooter />
         </Sidebar>
         <div className={cn(
-          "relative flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out", 
+          "relative flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out bg-background", 
           !isMobile && (isCollapsed ? "ml-20" : "ml-72")
         )}>
           <TopBar />
