@@ -1,4 +1,3 @@
-
 // src/app/error.tsx
 'use client'; // Los archivos de error deben ser Componentes de Cliente
 

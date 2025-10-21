@@ -237,13 +237,13 @@ export default function EnrollmentsPage() {
 
   const [courses, setCourses] = useState<AppCourse[]>([]);
   const [selectedCourseInfo, setSelectedCourseInfo] = useState<CourseEnrollmentInfo | null>(null);
-  const [isLoadingCourses, setIsLoadingCourses = useState(true);
-  const [isLoadingDetails, setIsLoadingDetails = useState(false);
+  const [isLoadingCourses, setIsLoadingCourses] = useState(true);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [studentToView, setStudentToView] = useState<StudentEnrollmentDetails | null>(null);
   const [studentToUnenroll, setStudentToUnenroll] = useState<StudentEnrollmentDetails | null>(null);
-  const [isUnenrolling, setIsUnenrolling = useState(false);
+  const [isUnenrolling, setIsUnenrolling] = useState(false);
 
   const selectedCourseId = searchParams.get('courseId') || '';
   const searchTerm = searchParams.get('search') || '';
@@ -456,7 +456,7 @@ export default function EnrollmentsPage() {
                                         <CartesianGrid strokeDasharray="3 3" vertical={false}/>
                                         <XAxis dataKey="date" tickFormatter={(str) => format(new Date(str), 'd MMM', {locale: es})} fontSize={12} />
                                         <YAxis allowDecimals={false} width={30}/>
-                                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }}/>
+                                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
                                         <Bar dataKey="count" fill="hsl(var(--primary))" barSize={20} radius={[4, 4, 0, 0]} name="Finalizados"/>
                                     </ComposedChart>
                                 </ResponsiveContainer>
