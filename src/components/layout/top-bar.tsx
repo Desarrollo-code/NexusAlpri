@@ -121,23 +121,23 @@ export const TopBar = () => {
     return (
         <div className={cn(
             "flex items-center justify-between h-20 px-4 shrink-0 border-b sticky top-0 z-30",
-            "top-bar-gradient backdrop-blur-sm border-border"
+            "bg-primary backdrop-blur-sm border-border"
         )}>
             {/* Left side */}
             <div className="flex items-center gap-2 flex-1 min-w-0">
                  {!isMobile && (
-                     <Button onClick={toggleSidebar} variant="ghost" size="icon" className="h-8 w-8 text-foreground/70">
+                     <Button onClick={toggleSidebar} variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground/70 hover:bg-white/20 hover:text-primary-foreground">
                         <PanelLeft className="h-5 w-5"/>
                         <span className="sr-only">Toggle Menu</span>
                     </Button>
                  )}
                  {isMobile && showBackButton && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-foreground/70" onClick={() => router.back()}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground/70" onClick={() => router.back()}>
                         <ArrowLeft className="h-4 w-4"/>
                         <span className="sr-only">Volver</span>
                     </Button>
                  )}
-                 <h1 className="text-xl font-semibold truncate text-foreground">{currentPageTitle}</h1>
+                 <h1 className="text-xl font-semibold truncate text-primary-foreground">{currentPageTitle}</h1>
             </div>
 
             {/* Right side */}
@@ -145,7 +145,7 @@ export const TopBar = () => {
                  {headerActions && <div className="hidden md:flex items-center gap-2">{headerActions}</div>}
                  <Popover>
                     <PopoverTrigger asChild>
-                        <Button variant="ghost" size="icon" className="relative text-foreground/70 hover:bg-accent/80 hover:text-accent-foreground">
+                        <Button variant="ghost" size="icon" className="relative text-primary-foreground/70 hover:bg-white/20 hover:text-primary-foreground">
                             <Bell className="h-5 w-5"/>
                             {unreadCount > 0 && (
                                 <span className="absolute top-1 right-1 flex h-4 w-4">
@@ -187,7 +187,7 @@ export const TopBar = () => {
                          </div>
                     </PopoverContent>
                  </Popover>
-                <Separator orientation="vertical" className="h-8" />
+                <Separator orientation="vertical" className="h-8 bg-primary-foreground/30" />
                 <UserAvatarDropdown />
             </div>
             {headerActions && isMobile && (
