@@ -34,7 +34,7 @@ export default function AboutPage() {
                 />
               </div>
               <div className="space-y-4 text-left order-last lg:order-first">
-                <div className="inline-block rounded-lg bg-indigo-100 text-indigo-800 px-3 py-1 text-sm font-semibold border border-indigo-200 backdrop-blur-sm">
+                <div className="inline-block rounded-lg bg-blue-100 text-blue-800 px-3 py-1 text-sm font-semibold border border-blue-200 backdrop-blur-sm">
                   Nuestra Visión
                 </div>
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl font-headline text-slate-900">

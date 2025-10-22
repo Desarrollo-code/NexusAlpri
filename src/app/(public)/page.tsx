@@ -98,7 +98,7 @@ export default function LandingPage() {
         
         <section className="w-full bg-transparent py-6 md:py-8 mt-6 md:mt-8">
                  <div className="mx-auto max-w-4xl text-center">
-                    <div className="inline-block rounded-lg bg-emerald-100 text-emerald-800 px-3 py-1 text-sm font-semibold border border-emerald-200 backdrop-blur-sm">
+                    <div className="inline-block rounded-lg bg-blue-100 text-blue-800 px-3 py-1 text-sm font-semibold border border-blue-200 backdrop-blur-sm">
                         Capacidades
                     </div>
                     <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900 mt-2">Una Solución de Formación Integral</h2>
