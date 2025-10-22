@@ -346,7 +346,7 @@
 
 .loader {
   color: hsl(var(--primary));
-  font-size: 20px;
+  font-size: 45px;
   width: 1em;
   height: 1em;
   border-radius: 50%;
