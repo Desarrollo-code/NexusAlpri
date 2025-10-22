@@ -1,7 +1,7 @@
 // src/app/(public)/layout.tsx
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense } from 'react';
 import { PublicTopBar } from '@/components/layout/public-top-bar';
 import { AuthenticatedPublicHeader } from '@/components/layout/authenticated-public-header';
 import { BottomNav } from '@/components/layout/bottom-nav';
@@ -15,15 +15,15 @@ import AppWatermark from '@/components/layout/app-watermark';
 // Componente interno que renderiza el contenido del layout público
 function PublicLayoutContent({ children }: { children: React.ReactNode }) {
   const { user, settings, isLoading } = useAuth();
-  const { setTheme, theme } = useTheme();
-
-  // Forzar el tema claro en las páginas públicas si el usuario no está logueado
-  useEffect(() => {
-    if (theme !== 'light' && !user) {
-      setTheme('light');
-    }
-  }, [theme, setTheme, user]);
   
+  if (isLoading) {
+    return (
+        <div className="flex items-center justify-center h-screen">
+            <ColorfulLoader />
+        </div>
+    )
+  }
+
   return (
     <div className="relative flex flex-col min-h-screen items-center antialiased bg-background text-slate-900">
       
@@ -44,7 +44,7 @@ function PublicLayoutContent({ children }: { children: React.ReactNode }) {
         {user ? <AuthenticatedPublicHeader /> : <PublicTopBar />}
         
         <main className="flex-1 flex flex-col items-center justify-center w-full pt-24 md:pt-28 pb-16 md:pb-8 px-4">
-            {isLoading ? <div className="flex items-center justify-center h-full"><ColorfulLoader /></div> : children}
+            {children}
         </main>
         
         <Footer />
@@ -61,5 +61,9 @@ export default function PublicLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <PublicLayoutContent>{children}</PublicLayoutContent>;
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-screen"><ColorfulLoader /></div>}>
+        <PublicLayoutContent>{children}</PublicLayoutContent>
+    </Suspense>
+  );
 }

@@ -1,7 +1,7 @@
 // src/app/(app)/enrollments/page.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import type { Course as AppCourse, User, CourseProgress, LessonCompletionRecord } from '@/types';
 import { useToast } from '@/hooks/use-toast';
@@ -225,8 +225,7 @@ const EnrolledStudentList = ({ enrollments, onAction }: {
 };
 
 // --- MAIN PAGE COMPONENT ---
-
-export default function EnrollmentsPage() {
+function EnrollmentsPageComponent() {
   const { user: currentUser, isLoading: isAuthLoading } = useAuth();
   const { toast } = useToast();
   const { setPageTitle } = useTitle();
@@ -587,4 +586,12 @@ export default function EnrollmentsPage() {
     </AlertDialog>
     </>
   );
+}
+
+export default function EnrollmentsPage() {
+    return (
+        <Suspense fallback={<div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
+            <EnrollmentsPageComponent />
+        </Suspense>
+    )
 }

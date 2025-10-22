@@ -1,7 +1,7 @@
 // src/app/(app)/announcements/page.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import type { Announcement as AnnouncementType, UserRole } from '@/types'; 
 import { PlusCircle, Megaphone, Loader2, AlertTriangle, Paperclip } from 'lucide-react';
@@ -15,15 +15,13 @@ import { AnnouncementCreator } from '@/components/announcements/announcement-cre
 import { AnnouncementsView } from '@/components/announcements/announcements-view';
 import { NotificationsView } from '@/components/announcements/notifications-view';
 
-export default function CommunicationsPage() {
+function CommunicationsPageComponent() {
   const { user, settings } = useAuth();
   const { setPageTitle } = useTitle();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // El estado de la pestaña ahora determina qué se muestra.
-  // 'announcements' o 'notifications'
   const activeTab = searchParams.get('tab') || 'announcements';
 
   const [isCreatorOpen, setIsCreatorOpen] = useState(false);
@@ -38,7 +36,6 @@ export default function CommunicationsPage() {
   };
 
   const handleAnnouncementCreated = () => {
-    // Forzar una actualización de la vista de anuncios
     setUpdateSignal(prev => prev + 1);
     setIsCreatorOpen(false);
   }
@@ -86,4 +83,12 @@ export default function CommunicationsPage() {
       </div>
     </div>
   );
+}
+
+export default function CommunicationsPage() {
+    return (
+        <Suspense fallback={<div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
+            <CommunicationsPageComponent />
+        </Suspense>
+    )
 }

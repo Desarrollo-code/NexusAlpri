@@ -1,11 +1,12 @@
 // src/app/(public)/sign-in/2fa/page.tsx
 'use client';
 
+import React, { Suspense } from 'react';
 import TwoFactorAuthForm from '@/components/auth/2fa-form';
 import AuthFormContainer from '@/components/auth/auth-form-container';
+import { Loader2 } from 'lucide-react';
 
-export default function TwoFactorAuthPage() {
-    
+function TwoFactorAuthPageComponent() {
     return (
        <AuthFormContainer>
             <div className="text-center mb-6">
@@ -18,5 +19,14 @@ export default function TwoFactorAuthPage() {
             </div>
             <TwoFactorAuthForm />
        </AuthFormContainer>
+    );
+}
+
+
+export default function TwoFactorAuthPage() {
+    return (
+        <Suspense fallback={<div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
+            <TwoFactorAuthPageComponent />
+        </Suspense>
     );
 }

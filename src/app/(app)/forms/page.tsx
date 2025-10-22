@@ -1,7 +1,7 @@
 // src/app/(app)/forms/page.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlusCircle, FileText, Share2, Users, FilePen, Trash2, Eye, BarChart, MoreVertical, Loader2, AlertTriangle, ShieldAlert, ArrowRight, User as UserIcon, Zap } from 'lucide-react';
@@ -244,7 +244,7 @@ const ShareFormModal = ({ form, isOpen, onOpenChange, onShareSuccess }: { form: 
     );
 }
 
-export default function FormsPage() {
+function FormsPageComponent() {
     const { user } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
@@ -513,4 +513,12 @@ export default function FormsPage() {
             </AlertDialog>
         </div>
     );
+}
+
+export default function FormsPage() {
+    return (
+        <Suspense fallback={<div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
+            <FormsPageComponent />
+        </Suspense>
+    )
 }

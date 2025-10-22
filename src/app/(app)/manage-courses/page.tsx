@@ -1,10 +1,10 @@
 // src/app/(app)/manage-courses/page.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
-import { PlusCircle, List, Edit, Users, Grid, ListPlus, Loader2, AlertTriangle, ShieldAlert, MoreVertical, Archive, ArchiveRestore, Trash2, Eye, HelpCircle, LineChart, BookOpen, Layers, Check, Award } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { PlusCircle, List, Grid, Filter, UserPlus, MoreVertical, Loader2, AlertTriangle, ShieldAlert, Archive, ArchiveRestore, Trash2, Eye, HelpCircle, LineChart, BookOpen, Layers, Check, Award } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
 import type { Course as AppCourseType, CourseStatus, UserRole, User } from '@/types';
@@ -72,7 +72,7 @@ const getStatusInSpanish = (status: CourseStatus) => {
 };
 
 
-export default function ManageCoursesPage() {
+function ManageCoursesPageComponent() {
   const { user } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
@@ -446,4 +446,12 @@ const ManagementDropdown = ({ course, onStatusChange, onDelete, onAssign, isProc
             </DropdownMenuContent>
         </DropdownMenu>
     );
+}
+
+export default function ManageCoursesPage() {
+    return (
+        <Suspense fallback={<div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
+            <ManageCoursesPageComponent />
+        </Suspense>
+    )
 }

@@ -1,6 +1,7 @@
 // src/app/(public)/sign-up/page.tsx
 'use client';
 
+import React, { Suspense } from 'react';
 import AuthForm from '@/components/auth/auth-form';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
@@ -8,8 +9,9 @@ import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { Loader2 } from 'lucide-react';
 
-export default function SignUpPage() {
+function SignUpPageComponent() {
     const { settings, isLoading } = useAuth();
     const router = useRouter();
 
@@ -20,7 +22,7 @@ export default function SignUpPage() {
     }, [settings, isLoading, router]);
 
     if (isLoading) {
-        return null; 
+        return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>;
     }
     
     if (!settings?.allowPublicRegistration) {
@@ -40,4 +42,12 @@ export default function SignUpPage() {
     }
 
     return <AuthForm defaultView="signUp" />;
+}
+
+export default function SignUpPage() {
+    return (
+        <Suspense fallback={<div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
+            <SignUpPageComponent />
+        </Suspense>
+    )
 }

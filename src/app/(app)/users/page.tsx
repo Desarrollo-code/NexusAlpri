@@ -1,7 +1,7 @@
 // src/app/(app)/users/page.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -122,8 +122,8 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
                                             <Badge 
                                                 className="text-xs"
                                                 style={{
-                                                    backgroundColor: processColors.raw.light,
-                                                    color: processColors.raw.dark,
+                                                    backgroundColor: colors.raw.light,
+                                                    color: colors.raw.dark,
                                                 }}
                                             >
                                                 {user.process.name}
@@ -198,8 +198,8 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
                                     <Badge 
                                         className="text-xs"
                                         style={{
-                                            backgroundColor: processColors.raw.light,
-                                            color: processColors.raw.dark,
+                                            backgroundColor: colors.raw.light,
+                                            color: colors.raw.dark,
                                         }}
                                     >
                                         {user.process.name}
@@ -236,7 +236,7 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
 };
 
 // --- MAIN PAGE COMPONENT ---
-export default function UsersPage() {
+function UsersPageComponent() {
     const { user: currentUser } = useAuth();
     const { setPageTitle } = useTitle();
     const isMobile = useIsMobile();
@@ -645,4 +645,12 @@ export default function UsersPage() {
             </AlertDialog>
         </DndContext>
     );
+}
+
+export default function UsersPage() {
+    return (
+        <Suspense fallback={<div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
+            <UsersPageComponent />
+        </Suspense>
+    )
 }
