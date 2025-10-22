@@ -44,6 +44,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { setTheme } = useTheme();
 
   const fetchSessionData = useCallback(async () => {
+    setIsLoading(true);
     try {
         const [settingsRes, userRes] = await Promise.all([
             fetch('/api/settings', { cache: 'no-store' }),
@@ -53,15 +54,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const settingsData = settingsRes.ok ? await settingsRes.json() : DEFAULT_SETTINGS;
         setSettings(settingsData);
         
+        let finalTheme = 'light'; // Default theme
         if (userRes.ok) {
           const userData = await userRes.json();
           const fetchedUser = userData.user;
           setUser(fetchedUser);
-          setTheme(fetchedUser?.theme || 'light');
+          if (fetchedUser?.theme) {
+            finalTheme = fetchedUser.theme;
+          }
         } else {
           setUser(null);
-          setTheme('light');
         }
+        setTheme(finalTheme);
+        
     } catch (error) {
         console.error("[AuthContext] Fallo al obtener los datos de la sesión:", error);
         setUser(null);
@@ -119,14 +124,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     updateUser,
     updateSettings,
   }), [user, settings, login, logout, isLoading, updateUser, updateSettings]);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <ColorfulLoader />
-      </div>
-    );
-  }
 
   return (
     <AuthContext.Provider value={contextValue}>

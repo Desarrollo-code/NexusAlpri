@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from 'next-themes';
-import { type ThemeProviderProps } from 'next-themes/dist/types';
+import type { ThemeProviderProps } from 'next-themes/dist/types';
 import { useAuth } from '@/contexts/auth-context';
 import { colord } from 'colord';
 import { fontMap } from '@/lib/fonts';
@@ -96,7 +96,6 @@ export function ThemeProvider({ children, ...props }: Omit<ThemeProviderProps, '
     <NextThemesProvider
       {...props}
       attribute="data-theme"
-      defaultTheme="light" 
       enableSystem={false}
       disableTransitionOnChange={false}
       themes={AVAILABLE_THEMES.map(t => t.value)}
