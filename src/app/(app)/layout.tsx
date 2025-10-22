@@ -11,6 +11,8 @@ import { useAuth } from '@/contexts/auth-context';
 import { TourGuide } from '@/components/tour/tour-guide';
 import { useTour } from '@/contexts/tour-context';
 import AppWatermark from '@/components/layout/app-watermark';
+import { SidebarHeader } from '@/components/layout/sidebar-header';
+import { Toaster } from '@/components/ui/toaster';
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const { isMobile, isCollapsed } = useSidebar();
@@ -31,6 +33,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   return (
       <div className="flex h-screen bg-background text-foreground">
         <Sidebar>
+          <SidebarHeader />
           <SidebarContent />
           <SidebarFooter />
         </Sidebar>
@@ -54,6 +57,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
           />
         )}
         <AppWatermark />
+        <Toaster />
       </div>
   );
 }

@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
+import AppWatermark from '@/components/layout/app-watermark';
 
 // Componente interno que renderiza el contenido del layout público
 function PublicLayoutContent({ children }: { children: React.ReactNode }) {
@@ -48,6 +49,7 @@ function PublicLayoutContent({ children }: { children: React.ReactNode }) {
         
         <Footer />
         <BottomNav />
+        <AppWatermark />
       </div>
     </div>
   );
