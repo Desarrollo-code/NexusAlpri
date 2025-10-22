@@ -6,6 +6,8 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback,
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
+import { AppLayoutClient } from '@/components/layout/app-layout-client';
+import { PublicLayoutClient } from '@/components/layout/public-layout-client';
 
 interface AuthContextType {
   user: User | null;
@@ -44,7 +46,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { setTheme } = useTheme();
 
   const fetchSessionData = useCallback(async () => {
-    setIsLoading(true);
     try {
         const [settingsRes, userRes] = await Promise.all([
             fetch('/api/settings', { cache: 'no-store' }),
@@ -54,7 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const settingsData = settingsRes.ok ? await settingsRes.json() : DEFAULT_SETTINGS;
         setSettings(settingsData);
         
-        let finalTheme = 'light'; // Default theme
+        let finalTheme = 'light';
         if (userRes.ok) {
           const userData = await userRes.json();
           const fetchedUser = userData.user;
@@ -124,6 +125,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     updateUser,
     updateSettings,
   }), [user, settings, login, logout, isLoading, updateUser, updateSettings]);
+
+  if (isLoading) {
+      return (
+        <div className="flex items-center justify-center h-screen w-screen bg-background">
+          <ColorfulLoader />
+        </div>
+      )
+  }
 
   return (
     <AuthContext.Provider value={contextValue}>

@@ -91,7 +91,7 @@ function ThemeInjector() {
 }
 
 
-export function ThemeProvider({ children, ...props }: Omit<ThemeProviderProps, 'themes'>) {
+export function ThemeProvider({ children, ...props }: Omit<ThemeProviderProps, 'themes' | 'defaultTheme'>) {
   return (
     <NextThemesProvider
       {...props}
