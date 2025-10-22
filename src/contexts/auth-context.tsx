@@ -57,12 +57,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const userData = await userRes.json();
           const fetchedUser = userData.user;
           setUser(fetchedUser);
-          // La lógica del tema se traslada a ThemeProvider
-          if (fetchedUser?.theme) {
-            setTheme(fetchedUser.theme);
-          } else {
-            // El tema por defecto se gestiona en ThemeProvider
-          }
+          // Aplicar tema del usuario si existe, si no, el tema por defecto para usuarios logueados.
+          setTheme(fetchedUser?.theme || 'dark');
         } else {
           setUser(null);
           // Si no hay usuario, el tema por defecto es 'light' para las páginas públicas
@@ -72,7 +68,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.error("[AuthContext] Fallo al obtener los datos de la sesión:", error);
         setUser(null);
         setSettings(DEFAULT_SETTINGS);
-        setTheme('dark'); // Fallback a oscuro si todo falla
+        setTheme('light'); // Fallback a light si todo falla
     } finally {
         setIsLoading(false);
     }
@@ -87,7 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (userData.theme) {
       setTheme(userData.theme);
     } else {
-      setTheme('dark'); // Default to dark for logged-in users if not set
+      setTheme('dark'); // Default a oscuro para usuarios logueados
     }
     const params = new URLSearchParams(window.location.search);
     const redirectedFrom = params.get('redirectedFrom');
@@ -101,7 +97,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Fallo al llamar a la API de logout", error);
     } finally {
       setUser(null);
-      setTheme('light'); // Default to light for public pages
+      setTheme('light'); // Volver a tema claro para páginas públicas
       router.push('/sign-in');
     }
   }, [router, setTheme]);
