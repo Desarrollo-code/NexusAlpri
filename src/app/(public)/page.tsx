@@ -89,7 +89,7 @@ export default function LandingPage() {
                   alt="Hero"
                   fill
                   className="object-cover"
-                  data-ai-hint="diverse team collaborating"
+                  data-ai-hint="abstract knowledge network"
                   quality={100}
                   priority
                 />
@@ -135,7 +135,7 @@ export default function LandingPage() {
                             alt="Beneficios"
                             fill
                             className="object-cover"
-                            data-ai-hint="professionals learning"
+                            data-ai-hint="team growth success"
                             quality={100}
                         />
                      </div>
@@ -144,7 +144,7 @@ export default function LandingPage() {
                           const Icon = benefit.icon;
                           return (
                             <div key={benefit.title} className="flex items-start gap-4">
-                              <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                              <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full bg-accent text-accent-foreground">
                                 <Icon className="w-6 h-6" />
                               </div>
                               <div className="flex-grow">

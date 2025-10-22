@@ -31,7 +31,7 @@ export default function AboutPage() {
                   fill
                   quality={100}
                   className="object-cover"
-                  data-ai-hint="team mission"
+                  data-ai-hint="visionary strategy whiteboard"
                 />
               </div>
               <div className="space-y-4 text-left order-last lg:order-first">
@@ -50,7 +50,7 @@ export default function AboutPage() {
 
         <section className="w-full bg-transparent py-6 md:py-8 mt-6 md:mt-8">
             <div className="mx-auto max-w-4xl text-center md:text-left">
-              <div className="inline-block rounded-lg bg-background/20 text-slate-900/80 px-3 py-1 text-sm font-semibold border border-border/30 backdrop-blur-sm">
+              <div className="inline-block rounded-lg bg-blue-100 text-blue-800 px-3 py-1 text-sm font-semibold border border-blue-200 backdrop-blur-sm">
                 Tecnología
               </div>
               <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900 mt-2">Ingeniería para la Excelencia</h2>

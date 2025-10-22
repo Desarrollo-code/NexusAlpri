@@ -20,7 +20,7 @@ export default function AuthFormContainer({ children }: { children: React.ReactN
                     alt="Bienvenida a NexusAlpri" 
                     fill 
                     className="object-cover"
-                    data-ai-hint="focused learning"
+                    data-ai-hint="futuristic learning environment"
                     quality={100}
                     priority
                 />
