@@ -35,11 +35,11 @@ export default function AboutPage() {
                 />
               </div>
               <div className="space-y-4 text-left order-last lg:order-first">
-                <div className="inline-block rounded-lg bg-background/20 text-slate-900/80 px-3 py-1 text-sm font-semibold border border-border/30 backdrop-blur-sm">
+                <div className="inline-block rounded-lg bg-indigo-100 text-indigo-800 px-3 py-1 text-sm font-semibold border border-indigo-200 backdrop-blur-sm">
                   Nuestra Visión
                 </div>
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl font-headline text-slate-900">
-                  Cultivar el Talento, Impulsar el Futuro de All Print Graphic & Marketing S.A.S.
+                  Una ilustración de un cerebro del que florecen ideas y se convierten en un árbol de conocimiento, representando el desarrollo del talento.
                 </h1>
                 <p className="max-w-[600px] text-slate-900/70 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                   NexusAlpri es más que una plataforma; es nuestro compromiso con el crecimiento. Nuestra misión es empoderar a cada colaborador con el conocimiento para innovar, la confianza para liderar y las habilidades para construir juntos el próximo capítulo de nuestro éxito.
