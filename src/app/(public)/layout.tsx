@@ -1,4 +1,3 @@
-
 // src/app/(public)/layout.tsx
 'use client';
 
@@ -7,23 +6,20 @@ import { PublicTopBar } from '@/components/layout/public-top-bar';
 import { AuthenticatedPublicHeader } from '@/components/layout/authenticated-public-header';
 import { BottomNav } from '@/components/layout/bottom-nav';
 import { Footer } from '@/components/layout/footer';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth, AuthProvider } from '@/contexts/auth-context';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
 import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
+import { Toaster } from '@/components/ui/toaster';
 
-export default function PublicLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+// Componente interno que renderiza el contenido del layout público
+function PublicLayoutContent({ children }: { children: React.ReactNode }) {
   const { user, settings, isLoading } = useAuth();
-  const pathname = usePathname();
   const { setTheme, theme } = useTheme();
 
-  // Forzar el tema claro en las páginas públicas
+  // Forzar el tema claro en las páginas públicas si el usuario no está logueado
   useEffect(() => {
     if (theme !== 'light' && !user) {
       setTheme('light');
@@ -33,7 +29,6 @@ export default function PublicLayout({
   return (
     <div className="relative flex flex-col min-h-screen items-center antialiased bg-background text-slate-900">
       
-      {/* CAPA 0: Imagen de fondo */}
       {settings?.publicPagesBgUrl && (
         <div className="fixed inset-0 z-0">
           <Image 
@@ -47,7 +42,6 @@ export default function PublicLayout({
         </div>
       )}
 
-      {/* CAPA 10: Contenido principal */}
       <div className="relative z-10 flex flex-col min-h-screen w-full">
         {user ? <AuthenticatedPublicHeader /> : <PublicTopBar />}
         
@@ -57,7 +51,22 @@ export default function PublicLayout({
         
         <Footer />
         <BottomNav />
+        <Toaster />
       </div>
     </div>
+  );
+}
+
+
+// El layout ahora solo envuelve en el AuthProvider, que se necesita para la barra superior
+export default function PublicLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <AuthProvider>
+      <PublicLayoutContent>{children}</PublicLayoutContent>
+    </AuthProvider>
   );
 }

@@ -1,16 +1,11 @@
 // src/app/layout.tsx
-'use client';
-
 import './globals.css';
-import { Toaster } from '@/components/ui/toaster';
-import { AuthProvider } from '@/contexts/auth-context';
 import React from 'react';
-import { TitleProvider } from '@/contexts/title-context';
 import { cn } from '@/lib/utils';
 import { getFontVariables } from '@/lib/fonts';
 import { ThemeProvider } from '@/components/theme-provider';
-import AppWatermark from '@/components/layout/app-watermark';
 
+// Este es ahora un Server Component.
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -23,13 +18,7 @@ export default function RootLayout({
       <head />
       <body className={cn("min-h-screen bg-background font-body antialiased")}>
         <ThemeProvider>
-          <AuthProvider>
-            <TitleProvider>
-                {children}
-                <AppWatermark />
-                <Toaster />
-            </TitleProvider>
-          </AuthProvider>
+          {children}
         </ThemeProvider>
       </body>
     </html>
