@@ -47,29 +47,37 @@ function ThemeInjector() {
 
     const isCustomizableTheme = theme === 'light' || theme === 'dark';
     
-    // Lista de propiedades a limpiar
+    // Clear custom properties before applying new ones to avoid stale values
     const propsToClean = [
       '--primary', '--secondary', '--accent', '--background', 
-      '--font-headline', '--font-body'
+      '--font-headline', '--font-body', '--primary-foreground'
     ];
     propsToClean.forEach(prop => root.style.removeProperty(prop));
 
     if (settings) {
-      // 1. Aplicar estilos de color si el tema es personalizable.
       if (isCustomizableTheme) {
-        const varsToSet = {
-          '--primary': hexToHslString(theme === 'light' ? settings.primaryColor : settings.primaryColorDark),
+        const primaryColor = theme === 'light' ? settings.primaryColor : settings.primaryColorDark;
+        const backgroundColor = theme === 'light' ? settings.backgroundColorLight : settings.backgroundColorDark;
+        
+        const varsToSet: Record<string, string | null> = {
+          '--primary': hexToHslString(primaryColor),
           '--secondary': hexToHslString(settings.secondaryColor),
           '--accent': hexToHslString(settings.accentColor),
-          '--background': hexToHslString(theme === 'light' ? settings.backgroundColorLight : settings.backgroundColorDark),
+          '--background': hexToHslString(backgroundColor),
         };
+        
+        // Determinar el color del texto del botón primario
+        if (primaryColor) {
+            const primaryIsDark = colord(primaryColor).isDark();
+            varsToSet['--primary-foreground'] = primaryIsDark ? '0 0% 100%' : '0 0% 0%';
+        }
 
         Object.entries(varsToSet).forEach(([property, value]) => {
           if (value) root.style.setProperty(property, value);
         });
       }
 
-      // 2. Aplicar siempre las fuentes seleccionadas por el administrador.
+      // Always apply admin-selected fonts
       const headlineFontFamily = fontMap[settings.fontHeadline || 'Space Grotesk']?.style.fontFamily || 'sans-serif';
       const bodyFontFamily = fontMap[settings.fontBody || 'Inter']?.style.fontFamily || 'sans-serif';
       
@@ -88,7 +96,7 @@ export function ThemeProvider({ children, ...props }: Omit<ThemeProviderProps, '
     <NextThemesProvider
       {...props}
       attribute="data-theme"
-      defaultTheme="light" // Se establece light como default, pero AuthProvider lo sobreescribirá
+      defaultTheme="light" 
       enableSystem={false}
       disableTransitionOnChange={false}
       themes={AVAILABLE_THEMES.map(t => t.value)}
