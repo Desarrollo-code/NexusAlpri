@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
                 by: ['ipAddress'],
                 _count: { ipAddress: true },
                 where: {
-                    ipAddress: { not: null },
+                    ipAddress: { not: null }, // Filtrar registros sin IP
                     createdAt: { gte: subDays(new Date(), 30) }
                 },
                 orderBy: { _count: { ipAddress: 'desc' } },
