@@ -1,10 +1,11 @@
+
 // src/app/layout.tsx
 'use client';
 
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/auth-context';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { TitleProvider } from '@/contexts/title-context';
 import { cn } from '@/lib/utils';
 import { getFontVariables } from '@/lib/fonts';
@@ -16,22 +17,21 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // `getFontVariables` ya no es asíncrona, por lo que podemos llamarla directamente.
   const fontVariables = getFontVariables();
   
   return (
     <html lang="es" suppressHydrationWarning className={fontVariables}>
       <head />
       <body className={cn("min-h-screen bg-background font-body antialiased")}>
-        <ThemeProvider>
-          <AuthProvider>
+        <AuthProvider>
+          <ThemeProvider>
               <TitleProvider>
                   {children}
                   <AppWatermark />
                   <Toaster />
               </TitleProvider>
-          </AuthProvider>
-        </ThemeProvider>
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );
