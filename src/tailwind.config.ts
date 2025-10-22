@@ -135,6 +135,10 @@ const config: Config = {
           '0%, 70%, 100%': { opacity: '1' },
           '20%, 50%': { opacity: '0' },
         },
+        'piller-push-up': {
+          '0%, 100%': { transform: 'scaleY(0.2)' },
+          '50%': { transform: 'scaleY(1)' },
+        },
         'aurora-1': {
             '0%, 100%': { transform: 'translate(0%, 0%) scale(1)', opacity: 0.2 },
             '25%': { transform: 'translate(20%, -10%) scale(1.1)', opacity: 0.3 },
@@ -160,6 +164,7 @@ const config: Config = {
         'press': 'press 0.2s 1 linear',
         'throw': 'throw 0.4s ease-out forwards',
         'caret-blink': 'caret-blink 1.25s ease-out infinite',
+        'piller-push-up': 'piller-push-up 1s ease-in-out infinite alternate',
         'aurora-1': 'aurora-1 20s ease-in-out infinite',
         'aurora-2': 'aurora-2 25s ease-in-out infinite',
         'aurora-3': 'aurora-3 18s ease-in-out infinite',
