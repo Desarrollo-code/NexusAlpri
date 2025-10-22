@@ -2,13 +2,11 @@
 'use client';
 
 import * as React from 'react';
-import { cn } from '@/lib/utils';
 
 export const ColorfulLoader = () => {
   return (
-    <div 
-      className="h-16 w-16 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent"
-      aria-label="Cargando..."
-    />
+    <div className="flex items-center justify-center">
+      <span className="loader" aria-label="Cargando..."></span>
+    </div>
   );
 };
