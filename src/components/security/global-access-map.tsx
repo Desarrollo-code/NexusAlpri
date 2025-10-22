@@ -10,6 +10,7 @@ import { es } from 'date-fns/locale';
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils';
 
+// Carga dinámica del componente del globo para evitar problemas con SSR.
 const GlobeGl = dynamic(() => import('react-globe.gl'), { ssr: false });
 
 type AccessPoint = {
@@ -32,6 +33,9 @@ export const GlobalAccessMap: React.FC<GlobalAccessMapProps> = ({ accessPoints }
     const containerRef = useRef<HTMLDivElement>(null);
     const [dimensions, setDimensions] = useState({ width: 360, height: 360 });
     const [hoveredPoint, setHoveredPoint] = useState<AccessPoint | null>(null);
+    
+    // Ubicación central de la empresa (ej. Medellín, Colombia)
+    const COMPANY_LOCATION = { lat: 6.2442, lng: -75.5812 };
 
     const pointsData = useMemo(() => {
         return accessPoints
@@ -47,11 +51,23 @@ export const GlobalAccessMap: React.FC<GlobalAccessMapProps> = ({ accessPoints }
                 country: log.country || 'Desconocido',
             }));
     }, [accessPoints]);
+    
+    // Creación de datos para los arcos animados
+    const arcsData = useMemo(() => {
+        return pointsData.map(point => ({
+            startLat: point.lat,
+            startLng: point.lng,
+            endLat: COMPANY_LOCATION.lat,
+            endLng: COMPANY_LOCATION.lng,
+            color: point.success ? 'rgba(52, 211, 153, 0.6)' : 'rgba(239, 68, 68, 0.6)',
+        }));
+    }, [pointsData]);
+
 
     useEffect(() => {
         if (globeEl.current) {
             globeEl.current.controls().autoRotate = true;
-            globeEl.current.controls().autoRotateSpeed = 0.2;
+            globeEl.current.controls().autoRotateSpeed = 0.3; // Un poco más rápido
             globeEl.current.controls().enableZoom = true;
         }
     }, []);
@@ -66,7 +82,7 @@ export const GlobalAccessMap: React.FC<GlobalAccessMapProps> = ({ accessPoints }
             }
         };
 
-        handleResize(); // Initial size
+        handleResize();
         const resizeObserver = new ResizeObserver(handleResize);
         if (containerRef.current) {
             resizeObserver.observe(containerRef.current);
@@ -93,14 +109,24 @@ export const GlobalAccessMap: React.FC<GlobalAccessMapProps> = ({ accessPoints }
         <div ref={containerRef} className="relative w-full h-full flex items-center justify-center overflow-hidden">
             <GlobeGl
                 ref={globeEl}
-                globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
+                globeImageUrl="//unpkg.com/three-globe/example/img/earth-day.jpg" // <-- Mapa diurno
                 bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
                 backgroundColor="rgba(0,0,0,0)"
+                
+                // Propiedades de los Puntos de Acceso
                 pointsData={pointsData}
-                pointAltitude={0.01}
-                pointRadius={0.4}
-                pointColor={(point: any) => point.success ? 'rgba(52, 211, 153, 0.8)' : 'rgba(239, 68, 68, 0.8)'}
+                pointAltitude={0.02} // Ligeramente más elevados
+                pointRadius={0.5}   // Un poco más grandes
+                pointColor={(point: any) => point.success ? 'rgba(52, 211, 153, 0.9)' : 'rgba(239, 68, 68, 0.9)'}
                 onPointHover={handlePointHover}
+
+                // Propiedades de los Arcos Animados
+                arcsData={arcsData}
+                arcColor={'color'}
+                arcDashLength={0.4}
+                arcDashGap={0.6}
+                arcDashAnimateTime={2500} // Velocidad de la animación del arco
+                
                 width={dimensions.width}
                 height={dimensions.height}
             />
