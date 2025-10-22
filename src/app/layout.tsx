@@ -3,9 +3,12 @@ import './globals.css';
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { getFontVariables } from '@/lib/fonts';
+import { AuthProvider } from '@/contexts/auth-context';
 import { ThemeProvider } from '@/components/theme-provider';
+import { TitleProvider } from '@/contexts/title-context';
+import { Toaster } from '@/components/ui/toaster';
+import { TourProvider } from '@/contexts/tour-context';
 
-// Este es ahora un Server Component.
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -17,9 +20,16 @@ export default function RootLayout({
     <html lang="es" suppressHydrationWarning className={fontVariables}>
       <head />
       <body className={cn("min-h-screen bg-background font-body antialiased")}>
-        <ThemeProvider>
-          {children}
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider>
+            <TitleProvider>
+              <TourProvider>
+                {children}
+                <Toaster />
+              </TourProvider>
+            </TitleProvider>
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

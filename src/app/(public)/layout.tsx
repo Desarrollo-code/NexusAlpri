@@ -6,13 +6,10 @@ import { PublicTopBar } from '@/components/layout/public-top-bar';
 import { AuthenticatedPublicHeader } from '@/components/layout/authenticated-public-header';
 import { BottomNav } from '@/components/layout/bottom-nav';
 import { Footer } from '@/components/layout/footer';
-import { useAuth, AuthProvider } from '@/contexts/auth-context';
+import { useAuth } from '@/contexts/auth-context';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
-import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
-import { cn } from '@/lib/utils';
-import { Toaster } from '@/components/ui/toaster';
 
 // Componente interno que renderiza el contenido del layout público
 function PublicLayoutContent({ children }: { children: React.ReactNode }) {
@@ -51,22 +48,16 @@ function PublicLayoutContent({ children }: { children: React.ReactNode }) {
         
         <Footer />
         <BottomNav />
-        <Toaster />
       </div>
     </div>
   );
 }
 
-
-// El layout ahora solo envuelve en el AuthProvider, que se necesita para la barra superior
+// El layout ahora solo renderiza el contenido, asumiendo que AuthProvider ya está en la raíz.
 export default function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <AuthProvider>
-      <PublicLayoutContent>{children}</PublicLayoutContent>
-    </AuthProvider>
-  );
+  return <PublicLayoutContent>{children}</PublicLayoutContent>;
 }

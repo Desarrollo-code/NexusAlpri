@@ -2,20 +2,15 @@
 'use client';
 
 import React from 'react';
-import { AuthProvider } from '@/contexts/auth-context';
 import { useIdleTimeout } from '@/hooks/use-idle-timeout';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Sidebar, SidebarContent, SidebarFooter, useSidebar, SidebarProvider } from '@/components/ui/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
-import { ColorfulLoader } from '@/components/ui/colorful-loader';
-import Image from 'next/image';
-import { SidebarHeader } from '@/components/layout/sidebar-header';
-import { TourProvider, useTour } from '@/contexts/tour-context';
+import { useAuth } from '@/contexts/auth-context';
 import { TourGuide } from '@/components/tour/tour-guide';
-import { Toaster } from '@/components/ui/toaster';
+import { useTour } from '@/contexts/tour-context';
 import AppWatermark from '@/components/layout/app-watermark';
-import { TitleProvider } from '@/contexts/title-context';
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const { isMobile, isCollapsed } = useSidebar();
@@ -36,7 +31,6 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   return (
       <div className="flex h-screen bg-background text-foreground">
         <Sidebar>
-          <SidebarHeader />
           <SidebarContent />
           <SidebarFooter />
         </Sidebar>
@@ -59,23 +53,15 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
             onStop={stopTour}
           />
         )}
-        <Toaster />
         <AppWatermark />
       </div>
   );
 }
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  // Envolvemos todo el layout privado con los providers del lado del cliente.
   return (
-    <AuthProvider>
-        <TitleProvider>
-            <SidebarProvider>
-              <TourProvider>
-                <AppLayoutContent>{children}</AppLayoutContent>
-              </TourProvider>
-            </SidebarProvider>
-        </TitleProvider>
-    </AuthProvider>
+    <SidebarProvider>
+      <AppLayoutContent>{children}</AppLayoutContent>
+    </SidebarProvider>
   );
 }
