@@ -1,3 +1,4 @@
+
 // src/components/layout/authenticated-public-header.tsx
 'use client';
 
