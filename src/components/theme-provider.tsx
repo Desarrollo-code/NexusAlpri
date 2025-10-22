@@ -88,7 +88,7 @@ export function ThemeProvider({ children, ...props }: Omit<ThemeProviderProps, '
     <NextThemesProvider
       {...props}
       attribute="data-theme"
-      defaultTheme="dark"
+      defaultTheme="light" // Se establece light como default, pero AuthProvider lo sobreescribirá
       enableSystem={false}
       disableTransitionOnChange={false}
       themes={AVAILABLE_THEMES.map(t => t.value)}

@@ -58,7 +58,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const fetchedUser = userData.user;
           setUser(fetchedUser);
           // Aplicar tema del usuario si existe, si no, el tema por defecto para usuarios logueados.
-          setTheme(fetchedUser?.theme || 'dark');
+          if (fetchedUser?.theme) {
+            setTheme(fetchedUser.theme);
+          }
         } else {
           setUser(null);
           // Si no hay usuario, el tema por defecto es 'light' para las páginas públicas
@@ -82,8 +84,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(userData);
     if (userData.theme) {
       setTheme(userData.theme);
-    } else {
-      setTheme('dark'); // Default a oscuro para usuarios logueados
     }
     const params = new URLSearchParams(window.location.search);
     const redirectedFrom = params.get('redirectedFrom');
