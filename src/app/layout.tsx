@@ -23,15 +23,15 @@ export default function RootLayout({
     <html lang="es" suppressHydrationWarning className={fontVariables}>
       <head />
       <body className={cn("min-h-screen bg-background font-body antialiased")}>
-        <AuthProvider>
-          <ThemeProvider>
+        <ThemeProvider>
+          <AuthProvider>
               <TitleProvider>
                   {children}
                   <AppWatermark />
                   <Toaster />
               </TitleProvider>
-          </ThemeProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

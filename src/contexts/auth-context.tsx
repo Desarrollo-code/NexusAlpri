@@ -57,22 +57,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const userData = await userRes.json();
           const fetchedUser = userData.user;
           setUser(fetchedUser);
-          // Prioritize user's theme. Fallback to 'light' if none is set.
-          if (fetchedUser?.theme) {
-            setTheme(fetchedUser.theme);
-          } else {
-             setTheme('light');
-          }
+          // PRIORITIZE USER THEME: Apply user's saved theme, or fallback to light
+          setTheme(fetchedUser?.theme || 'light');
         } else {
           setUser(null);
-          // Default to 'light' for public pages if no user is logged in
+          // Default to 'light' for public pages
           setTheme('light');
         }
     } catch (error) {
         console.error("[AuthContext] Fallo al obtener los datos de la sesión:", error);
         setUser(null);
         setSettings(DEFAULT_SETTINGS);
-        setTheme('light'); // Fallback to light theme on error
+        setTheme('light'); // Fallback to light theme on any error
     } finally {
         setIsLoading(false);
     }
@@ -84,11 +80,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = useCallback((userData: User) => {
     setUser(userData);
-    if (userData.theme) {
-      setTheme(userData.theme);
-    } else {
-      setTheme('light'); // Default to light on login if no theme is set
-    }
+    // On login, immediately apply the user's theme or default to light
+    setTheme(userData.theme || 'light');
     const params = new URLSearchParams(window.location.search);
     const redirectedFrom = params.get('redirectedFrom');
     router.replace(redirectedFrom || '/dashboard');

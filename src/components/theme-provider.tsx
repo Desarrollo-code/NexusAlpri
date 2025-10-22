@@ -31,11 +31,11 @@ export const AVAILABLE_THEMES = [
  * basados en la configuración del administrador y el tema actual.
  */
 function ThemeInjector() {
-  const { settings } = useAuth();
+  const { settings, isLoading: isAuthLoading } = useAuth();
   const { theme } = useNextTheme();
 
   React.useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (isAuthLoading || typeof window === 'undefined') return;
 
     const root = document.documentElement;
 
@@ -85,7 +85,7 @@ function ThemeInjector() {
       root.style.setProperty('--font-body', bodyFontFamily);
     }
     
-  }, [settings, theme]);
+  }, [settings, theme, isAuthLoading]);
 
   return null;
 }
