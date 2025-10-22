@@ -57,18 +57,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const userData = await userRes.json();
           const fetchedUser = userData.user;
           setUser(fetchedUser);
-          // PRIORITIZE USER THEME: Apply user's saved theme, or fallback to light
           setTheme(fetchedUser?.theme || 'light');
         } else {
           setUser(null);
-          // Default to 'light' for public pages
           setTheme('light');
         }
     } catch (error) {
         console.error("[AuthContext] Fallo al obtener los datos de la sesión:", error);
         setUser(null);
         setSettings(DEFAULT_SETTINGS);
-        setTheme('light'); // Fallback to light theme on any error
+        setTheme('light');
     } finally {
         setIsLoading(false);
     }
@@ -80,7 +78,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = useCallback((userData: User) => {
     setUser(userData);
-    // On login, immediately apply the user's theme or default to light
     setTheme(userData.theme || 'light');
     const params = new URLSearchParams(window.location.search);
     const redirectedFrom = params.get('redirectedFrom');
@@ -94,7 +91,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Fallo al llamar a la API de logout", error);
     } finally {
       setUser(null);
-      setTheme('light'); // Revert to light theme for public pages
+      setTheme('light');
       router.push('/sign-in');
     }
   }, [router, setTheme]);

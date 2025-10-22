@@ -1,4 +1,3 @@
-
 // src/app/layout.tsx
 'use client';
 
@@ -23,15 +22,15 @@ export default function RootLayout({
     <html lang="es" suppressHydrationWarning className={fontVariables}>
       <head />
       <body className={cn("min-h-screen bg-background font-body antialiased")}>
-        <AuthProvider>
-          <ThemeProvider>
-              <TitleProvider>
-                  {children}
-                  <AppWatermark />
-                  <Toaster />
-              </TitleProvider>
-          </ThemeProvider>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <TitleProvider>
+                {children}
+                <AppWatermark />
+                <Toaster />
+            </TitleProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
