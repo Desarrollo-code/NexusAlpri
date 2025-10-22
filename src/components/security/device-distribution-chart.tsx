@@ -7,6 +7,7 @@ import { Monitor, Chrome, Apple, HelpCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { IconBrandWindows } from '@/components/icons/icon-brand-windows';
 import { IconBrandLinux } from '@/components/icons/icon-brand-linux';
+import { Skeleton } from '../ui/skeleton';
 
 const iconMap: Record<string, React.ElementType> = {
     'Chrome': Chrome,
@@ -65,7 +66,7 @@ const ChartSection = ({ title, data }: { title: string, data?: { name: string, c
     );
 };
 
-export const DeviceDistributionChart = ({ browserData, osData }: { browserData?: any[], osData?: any[] }) => {
+export const DeviceDistributionChart = ({ browserData, osData, isLoading }: { browserData?: any[], osData?: any[], isLoading: boolean }) => {
     return (
         <Card>
             <CardHeader>
@@ -75,9 +76,19 @@ export const DeviceDistributionChart = ({ browserData, osData }: { browserData?:
                 </CardTitle>
             </CardHeader>
             <CardContent className="flex gap-4">
-                <ChartSection title="Navegadores" data={browserData} />
-                <Separator orientation="vertical" className="h-auto" />
-                <ChartSection title="Sistemas Operativos" data={osData} />
+                {isLoading ? (
+                    <>
+                        <div className="w-1/2 space-y-2"><Skeleton className="h-4 w-20 mb-2"/><Skeleton className="h-6"/><Skeleton className="h-6"/></div>
+                        <Separator orientation="vertical" className="h-auto"/>
+                        <div className="w-1/2 space-y-2"><Skeleton className="h-4 w-20 mb-2"/><Skeleton className="h-6"/><Skeleton className="h-6"/></div>
+                    </>
+                ) : (
+                    <>
+                        <ChartSection title="Navegadores" data={browserData} />
+                        <Separator orientation="vertical" className="h-auto" />
+                        <ChartSection title="Sistemas" data={osData} />
+                    </>
+                )}
             </CardContent>
         </Card>
     );

@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const twentyFourHoursAgo = subDays(new Date(), 1);
         
         const [
             successfulLogins24h,
@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
                 by: ['ipAddress'],
                 _count: { ipAddress: true },
                 where: {
-                    ipAddress: { not: null }, // Filtrar registros sin IP
+                    ipAddress: { not: null },
                     createdAt: { gte: subDays(new Date(), 30) }
                 },
                 orderBy: { _count: { ipAddress: 'desc' } },

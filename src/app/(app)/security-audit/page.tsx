@@ -2,8 +2,8 @@
 'use client';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTitle } from '@/contexts/title-context';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { AlertTriangle, Globe, HelpCircle, Filter, CheckCircle, XCircle, UserCog, Monitor, Download, Calendar as CalendarIcon, Server, ShieldX } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertTriangle, Globe, HelpCircle, CheckCircle, XCircle, UserCog, Monitor, Download, Calendar as CalendarIcon, Server, ShieldX } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { Loader2 } from 'lucide-react';
 import { DateRangePicker } from "@/components/ui/date-range-picker";
@@ -17,18 +17,58 @@ import { DeviceDistributionChart } from '@/components/security/device-distributi
 import { ExportToCsvButton } from '@/components/ui/export-to-csv';
 import { Skeleton } from "@/components/ui/skeleton";
 import { GlobalAccessMap } from '@/components/security/global-access-map';
-import { Separator } from '@/components/ui/separator';
-import { getEventDetails } from '@/lib/security-log-utils';
+import { parseUserAgent } from '@/lib/security-log-utils';
+
+const aggregateStatsFromLogs = (logs: SecurityLog[]): SecurityStats => {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    let successfulLogins24h = 0;
+    let failedLogins24h = 0;
+    let roleChanges24h = 0;
+    const browserCounts: Record<string, number> = {};
+    const osCounts: Record<string, number> = {};
+    const ipCounts: Record<string, { count: number, country: string | null }> = {};
+
+    logs.forEach(log => {
+        const logDate = new Date(log.createdAt);
+        if (logDate >= twentyFourHoursAgo) {
+            if (log.event === 'SUCCESSFUL_LOGIN') successfulLogins24h++;
+            if (log.event === 'FAILED_LOGIN_ATTEMPT') failedLogins24h++;
+            if (log.event === 'USER_ROLE_CHANGED') roleChanges24h++;
+        }
+
+        const { browser, os } = parseUserAgent(log.userAgent);
+        browserCounts[browser] = (browserCounts[browser] || 0) + 1;
+        osCounts[os] = (osCounts[os] || 0) + 1;
+
+        if (log.ipAddress) {
+            if (!ipCounts[log.ipAddress]) {
+                ipCounts[log.ipAddress] = { count: 0, country: log.country };
+            }
+            ipCounts[log.ipAddress].count++;
+        }
+    });
+    
+    const toSortedArray = (counts: Record<string, number>) => Object.entries(counts).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
+    const topIps = Object.entries(ipCounts).map(([ip, data]) => ({ ipAddress: ip, ...data, _count: { ipAddress: data.count } })).sort((a, b) => b.count - a.count).slice(0, 5);
+
+    return {
+        successfulLogins24h,
+        failedLogins24h,
+        roleChanges24h,
+        browsers: toSortedArray(browserCounts),
+        os: toSortedArray(osCounts),
+        topIps: topIps as any,
+    };
+};
+
 
 export default function SecurityAuditPage() {
     const { setPageTitle } = useTitle();
     const { user } = useAuth();
-    const [logs, setLogs] = useState<SecurityLog[]>([]);
+    const [allLogs, setAllLogs] = useState<SecurityLog[]>([]);
     const [stats, setStats] = useState<SecurityStats | null>(null);
-    const [isLoadingLogs, setIsLoadingLogs] = useState(true);
-    const [isStatsLoading, setIsStatsLoading] = useState(true);
-    const [logError, setLogError] = useState<string | null>(null);
-    const [statsError, setStatsError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [selectedLog, setSelectedLog] = useState<SecurityLog | null>(null);
     
     const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({ from: subDays(new Date(), 6), to: new Date() });
@@ -37,52 +77,43 @@ export default function SecurityAuditPage() {
         setPageTitle('Auditoría de Seguridad');
     }, [setPageTitle]);
 
-    const fetchLogs = useCallback(async () => {
-        if (user?.role !== 'ADMINISTRATOR') return;
-        setIsLoadingLogs(true);
-        setLogError(null);
+    const fetchData = useCallback(async () => {
+        if (user?.role !== 'ADMINISTRATOR') {
+             setIsLoading(false);
+             setError("Acceso denegado.");
+             return;
+        };
+        setIsLoading(true);
+        setError(null);
         try {
             const params = new URLSearchParams();
-            if (dateRange.from) params.set('startDate', startOfDay(dateRange.from).toISOString());
+             if (dateRange.from) params.set('startDate', startOfDay(dateRange.from).toISOString());
             if (dateRange.to) params.set('endDate', startOfDay(dateRange.to).toISOString());
             
             const response = await fetch(`/api/security/logs?all=true&${params.toString()}`);
-            if (!response.ok) throw new Error('No se pudieron cargar los registros.');
+            if (!response.ok) throw new Error('No se pudieron cargar los registros de seguridad.');
             const data = await response.json();
-            setLogs(data.logs || []);
+            const logsData = data.logs || [];
+            setAllLogs(logsData);
+
+            const calculatedStats = aggregateStatsFromLogs(logsData);
+            setStats(calculatedStats);
         } catch (err) {
-            setLogError(err instanceof Error ? err.message : 'Error desconocido');
+            setError(err instanceof Error ? err.message : 'Error desconocido');
         } finally {
-            setIsLoadingLogs(false);
+            setIsLoading(false);
         }
     }, [user, dateRange]);
-
-    const fetchStats = useCallback(async () => {
-        if (user?.role !== 'ADMINISTRATOR') return;
-        setIsStatsLoading(true);
-        setStatsError(null);
-        try {
-             const response = await fetch('/api/security/stats');
-             if (!response.ok) throw new Error('No se pudieron cargar las estadísticas.');
-             const data = await response.json();
-             setStats(data);
-        } catch(err) {
-            setStatsError(err instanceof Error ? err.message : 'Error desconocido');
-        } finally {
-            setIsStatsLoading(false);
-        }
-    }, [user]);
     
     useEffect(() => {
-        fetchLogs();
-        fetchStats();
-    }, [fetchLogs, fetchStats]);
+        fetchData();
+    }, [fetchData]);
     
     const criticalEvents = useMemo(() => {
-        return logs
+        return allLogs
             .filter(log => log.event === 'FAILED_LOGIN_ATTEMPT' || log.event === 'USER_ROLE_CHANGED')
             .slice(0, 5);
-    }, [logs]);
+    }, [allLogs]);
 
     return (
         <>
@@ -91,7 +122,7 @@ export default function SecurityAuditPage() {
                     <p className="text-muted-foreground">Monitoriza la actividad, los accesos y los eventos de seguridad de la plataforma.</p>
                 </div>
                  <div className="flex items-center gap-2">
-                    <ExportToCsvButton data={logs} filename={`seguridad_${new Date().toISOString().split('T')[0]}`} />
+                    <ExportToCsvButton data={allLogs} filename={`seguridad_${new Date().toISOString().split('T')[0]}`} />
                     <DateRangePicker date={{ from: dateRange.from, to: dateRange.to }} onDateChange={setDateRange} />
                 </div>
             </div>
@@ -102,12 +133,12 @@ export default function SecurityAuditPage() {
                     <Card id="security-log-timeline" className="bg-card/80 backdrop-blur-lg">
                         <CardHeader>
                             <CardTitle>Registro de Eventos</CardTitle>
-                            <CardDescription>Actividad reciente en la plataforma.</CardDescription>
+                            <CardDescription>Actividad en el rango de fechas seleccionado.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {isLoadingLogs ? <div className="h-96 flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div> :
-                             logError ? <div className="h-96 flex flex-col items-center justify-center text-destructive"><AlertTriangle className="h-6 w-6 mb-2"/>{logError}</div> :
-                             logs.length > 0 ? <SecurityLogTimeline logs={logs} onLogClick={setSelectedLog} /> :
+                            {isLoading ? <div className="h-96 flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div> :
+                             error ? <div className="h-96 flex flex-col items-center justify-center text-destructive"><AlertTriangle className="h-6 w-6 mb-2"/>{error}</div> :
+                             allLogs.length > 0 ? <SecurityLogTimeline logs={allLogs} onLogClick={setSelectedLog} /> :
                              <div className="h-48 flex flex-col items-center justify-center text-muted-foreground"><p>No hay eventos para el rango de fechas seleccionado.</p></div>
                             }
                         </CardContent>
@@ -120,13 +151,15 @@ export default function SecurityAuditPage() {
                             <CardTitle>Mapa de Accesos Global</CardTitle>
                         </CardHeader>
                          <CardContent className="p-0 flex-grow flex items-center justify-center">
-                            <GlobalAccessMap accessPoints={logs} />
+                            {isLoading ? <div className="h-full flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div> :
+                             <GlobalAccessMap accessPoints={allLogs} />
+                            }
                         </CardContent>
                     </Card>
                     <Card className="bg-card/80 backdrop-blur-lg">
                        <CardHeader><CardTitle>Top IPs por Actividad</CardTitle></CardHeader>
                        <CardContent>
-                           {isStatsLoading ? (
+                           {isLoading ? (
                                <div className="space-y-2 p-4"><Skeleton className="h-6 w-full" /><Skeleton className="h-6 w-full" /><Skeleton className="h-6 w-full" /></div>
                            ) : stats && stats.topIps && stats.topIps.length > 0 ? (
                                <div className="space-y-3">
@@ -152,47 +185,18 @@ export default function SecurityAuditPage() {
                             <CardTitle className="text-base">Estadísticas (Últimas 24h)</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            {isStatsLoading ? (
+                            {isLoading ? (
                                 <div className="space-y-2"><Skeleton className="h-20" /><Skeleton className="h-20" /><Skeleton className="h-20" /></div>
-                            ) : statsError ? (
-                                <div className="text-destructive text-sm text-center p-4 bg-destructive/10 rounded-md">No se pudieron cargar las estadísticas.</div>
                             ) : stats ? (
                                 <>
                                     <MetricCard id="successful-logins" title="Inicios Exitosos" value={stats.successfulLogins24h || 0} icon={CheckCircle} />
                                     <MetricCard id="failed-logins" title="Intentos Fallidos" value={stats.failedLogins24h || 0} icon={XCircle} />
                                     <MetricCard id="role-changes" title="Cambios de Rol" value={stats.roleChanges24h || 0} icon={UserCog} />
                                 </>
-                            ): null}
+                            ): <div className="text-muted-foreground text-sm text-center p-4">Cargando...</div>}
                         </CardContent>
                     </Card>
-                    <DeviceDistributionChart browserData={stats?.browsers} osData={stats?.os} />
-                     <Card id="critical-events" className="bg-card/80 backdrop-blur-lg">
-                        <CardHeader>
-                            <CardTitle className="text-base flex items-center gap-2">
-                                <AlertTriangle className="h-4 w-4 text-destructive"/> Eventos Críticos Recientes
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {criticalEvents.length > 0 ? (
-                                <div className="space-y-3">
-                                    {criticalEvents.map(log => {
-                                        const eventUI = getEventDetails(log.event, log.details);
-                                        return (
-                                            <div key={log.id} className="flex items-center gap-3 text-sm">
-                                                 <div className="p-1.5 bg-muted rounded-full">{React.cloneElement(eventUI.icon, { className: "h-4 w-4"})}</div>
-                                                 <div>
-                                                    <p className="font-semibold">{log.user?.name || log.emailAttempt}</p>
-                                                    <p className="text-xs text-muted-foreground">{eventUI.label}</p>
-                                                </div>
-                                            </div>
-                                        )
-                                    })}
-                                </div>
-                            ) : (
-                                <p className="text-xs text-center text-muted-foreground py-4">No hay eventos críticos recientes.</p>
-                            )}
-                        </CardContent>
-                    </Card>
+                    <DeviceDistributionChart browserData={stats?.browsers} osData={stats?.os} isLoading={isLoading} />
                 </aside>
             </div>
             {selectedLog && <SecurityLogDetailSheet log={selectedLog} isOpen={!!selectedLog} onClose={() => setSelectedLog(null)} />}
