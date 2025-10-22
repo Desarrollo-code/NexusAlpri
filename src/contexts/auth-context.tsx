@@ -6,8 +6,6 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback,
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
-import { AppLayoutClient } from '@/components/layout/app-layout-client';
-import { PublicLayoutClient } from '@/components/layout/public-layout-client';
 
 interface AuthContextType {
   user: User | null;
@@ -55,28 +53,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const settingsData = settingsRes.ok ? await settingsRes.json() : DEFAULT_SETTINGS;
         setSettings(settingsData);
         
-        let finalTheme = 'light';
         if (userRes.ok) {
           const userData = await userRes.json();
-          const fetchedUser = userData.user;
-          setUser(fetchedUser);
-          if (fetchedUser?.theme) {
-            finalTheme = fetchedUser.theme;
-          }
+          setUser(userData.user);
         } else {
           setUser(null);
         }
-        setTheme(finalTheme);
         
     } catch (error) {
         console.error("[AuthContext] Fallo al obtener los datos de la sesión:", error);
         setUser(null);
         setSettings(DEFAULT_SETTINGS);
-        setTheme('light');
     } finally {
         setIsLoading(false);
     }
-  }, [setTheme]);
+  }, []);
 
   useEffect(() => {
     fetchSessionData();
@@ -84,11 +75,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = useCallback((userData: User) => {
     setUser(userData);
-    setTheme(userData.theme || 'light');
     const params = new URLSearchParams(window.location.search);
     const redirectedFrom = params.get('redirectedFrom');
     router.replace(redirectedFrom || '/dashboard');
-  }, [router, setTheme]);
+  }, [router]);
 
   const logout = useCallback(async () => {
     try {
@@ -97,7 +87,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Fallo al llamar a la API de logout", error);
     } finally {
       setUser(null);
-      setTheme('light');
+      // Forzar tema claro al cerrar sesión
+      setTheme('light'); 
       router.push('/sign-in');
     }
   }, [router, setTheme]);
@@ -105,9 +96,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const updateUser = useCallback((updatedData: Partial<User>) => {
     setUser(prevUser => {
       if (!prevUser) return null;
+      // Si el tema cambia, lo aplicamos
+      if (updatedData.theme && updatedData.theme !== prevUser.theme) {
+          setTheme(updatedData.theme);
+      }
       return { ...prevUser, ...updatedData };
     });
-  }, []);
+  }, [setTheme]);
 
   const updateSettings = useCallback((updatedData: Partial<PlatformSettings>) => {
     setSettings(prevSettings => {

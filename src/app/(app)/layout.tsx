@@ -9,16 +9,28 @@ import { Sidebar, SidebarContent, SidebarFooter, useSidebar, SidebarProvider } f
 import { TopBar } from '@/components/layout/top-bar';
 import { useAuth } from '@/contexts/auth-context';
 import { TourGuide } from '@/components/tour/tour-guide';
-import { useTour } from '@/contexts/tour-context';
-import AppWatermark from '@/components/layout/app-watermark';
+import { TourProvider, useTour } from '@/contexts/tour-context';
+import { AppWatermark } from '@/components/layout/app-watermark';
 import { SidebarHeader } from '@/components/layout/sidebar-header';
 import { Toaster } from '@/components/ui/toaster';
+import { TitleProvider } from '@/contexts/title-context';
+import { useTheme } from 'next-themes';
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const { isMobile, isCollapsed } = useSidebar();
   const { isTourActive, steps, currentStepIndex, nextStep, stopTour } = useTour();
-  const { settings, logout } = useAuth();
+  const { settings, logout, user } = useAuth();
   const { toast } = useToast();
+  const { setTheme } = useTheme();
+
+  // Aplicar el tema del usuario al montar el layout privado
+  React.useEffect(() => {
+    if (user?.theme) {
+      setTheme(user.theme);
+    } else {
+      setTheme('light'); // O el tema por defecto para usuarios sin preferencia
+    }
+  }, [user, setTheme]);
 
   const handleIdleLogout = React.useCallback(() => {
     logout();
@@ -65,7 +77,11 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
-      <AppLayoutContent>{children}</AppLayoutContent>
+      <TitleProvider>
+          <TourProvider>
+              <AppLayoutContent>{children}</AppLayoutContent>
+          </TourProvider>
+      </TitleProvider>
     </SidebarProvider>
   );
 }
