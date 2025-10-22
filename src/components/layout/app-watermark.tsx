@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/auth-context";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
-export default function AppWatermark() {
+export function AppWatermark() {
     const { settings, isLoading } = useAuth();
     
     // Don't render anything until we know if there is a watermark or not
