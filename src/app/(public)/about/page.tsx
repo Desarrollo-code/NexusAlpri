@@ -1,4 +1,3 @@
-
 // src/app/(public)/about/page.tsx
 'use client'; 
 
@@ -27,7 +26,7 @@ export default function AboutPage() {
                <div className="mx-auto aspect-video overflow-hidden rounded-xl w-full relative shadow-lg order-first lg:order-last">
                 <Image
                   src={aboutImageUrl}
-                  alt="Nuestra Misión"
+                  alt="Una ilustración de un cerebro del que florecen ideas y se convierten en un árbol de conocimiento, representando el desarrollo del talento."
                   fill
                   quality={100}
                   className="object-cover"
@@ -39,10 +38,10 @@ export default function AboutPage() {
                   Nuestra Visión
                 </div>
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl font-headline text-slate-900">
-                  Una ilustración de un cerebro del que florecen ideas y se convierten en un árbol de conocimiento, representando el desarrollo del talento.
+                  Potenciar el Talento, Impulsar el Futuro
                 </h1>
                 <p className="max-w-[600px] text-slate-900/70 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  NexusAlpri es más que una plataforma; es nuestro compromiso con el crecimiento. Nuestra misión es empoderar a cada colaborador con el conocimiento para innovar, la confianza para liderar y las habilidades para construir juntos el próximo capítulo de nuestro éxito.
+                  En NexusAlpri, creemos que el activo más valioso de cualquier organización es su gente. Nuestra misión es empoderar a cada colaborador con el conocimiento para innovar, la confianza para liderar y las habilidades para construir juntos el próximo capítulo de nuestro éxito.
                 </p>
               </div>
             </div>

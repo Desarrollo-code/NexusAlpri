@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -13,11 +12,11 @@ export default function AuthFormContainer({ children }: { children: React.ReactN
     const authImageUrl = settings?.authImageUrl || "https://placehold.co/800x1200/1e232c/ffffff?text=NexusAlpri&font=sans";
 
     return (
-        <div className="rounded-2xl shadow-2xl overflow-hidden w-full max-w-4xl mx-auto md:grid md:grid-cols-2 bg-white">
+        <div className="rounded-2xl shadow-2xl overflow-hidden w-full max-w-4xl mx-auto md:grid md:grid-cols-2 bg-card">
             <div className="hidden md:block relative min-h-[480px]">
                 <Image 
                     src={authImageUrl} 
-                    alt="Bienvenida a NexusAlpri" 
+                    alt="Una persona concentrada en un entorno de aprendizaje minimalista y futurista, interactuando con una interfaz de luz." 
                     fill 
                     className="object-cover"
                     data-ai-hint="futuristic learning environment"

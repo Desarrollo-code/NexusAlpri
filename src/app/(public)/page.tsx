@@ -1,4 +1,3 @@
-
 // src/app/(public)/page.tsx
 'use client'; 
 
@@ -64,10 +63,10 @@ export default function LandingPage() {
               <div className="flex flex-col justify-center space-y-4 text-left">
                 <div className="space-y-4">
                   <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline text-slate-900">
-                    Nuestro Ecosistema de Crecimiento
+                    Tu Ecosistema de Crecimiento y Conocimiento
                   </h1>
                   <p className="max-w-[600px] text-slate-900/70 md:text-xl">
-                    Una ilustración abstracta de nodos de conocimiento interconectados, simbolizando el crecimiento y la colaboración.
+                    Una plataforma integral diseñada para potenciar el talento, centralizar la formación y construir una cultura de aprendizaje continuo en tu organización.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
@@ -86,7 +85,7 @@ export default function LandingPage() {
                <div className="mx-auto aspect-square overflow-hidden rounded-xl w-full relative">
                 <Image
                   src={landingImageUrl}
-                  alt="Hero"
+                  alt="Una ilustración abstracta de nodos de conocimiento interconectados, simbolizando el crecimiento y la colaboración."
                   fill
                   className="object-cover"
                   data-ai-hint="abstract knowledge network"
@@ -132,10 +131,10 @@ export default function LandingPage() {
                      <div className="mx-auto aspect-video overflow-hidden rounded-xl w-full relative shadow-lg">
                         <Image
                             src={benefitsImageUrl}
-                            alt="Beneficios"
+                            alt="Un equipo diverso teniendo un 'momento eureka' frente a un tablero, celebrando una solución."
                             fill
                             className="object-cover"
-                            data-ai-hint="Un equipo diverso teniendo un 'momento eureka' frente a un tablero, celebrando una solución."
+                            data-ai-hint="team eureka moment"
                             quality={100}
                         />
                      </div>
