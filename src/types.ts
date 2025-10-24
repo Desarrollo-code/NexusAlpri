@@ -118,7 +118,7 @@ export type CoursePrerequisiteInfo = {
   title: string;
 } | null;
 
-export interface Course extends Omit<Prisma.Course, 'instructor' | 'prerequisite' | 'isMandatory'> {
+export interface Course extends Omit<Prisma.CourseGetPayload<{}>, 'instructor' | 'prerequisite' | 'isMandatory'> {
   instructor: {
       id: string;
       name: string;
@@ -171,14 +171,14 @@ export interface UserNote {
     updatedAt: string;
 }
 
-export type CourseAssignment = Prisma.CourseAssignment;
+export type CourseAssignment = Prisma.CourseAssignmentGetPayload<{}>;
 
 
 // --- RESOURCES ---
 export type ResourceType = 'FOLDER' | 'DOCUMENT' | 'GUIDE' | 'MANUAL' | 'POLICY' | 'VIDEO' | 'EXTERNAL_LINK' | 'OTHER' | 'DOCUMENTO_EDITABLE';
 export type ResourceStatus = 'ACTIVE' | 'ARCHIVED';
 
-export interface EnterpriseResource extends Omit<Prisma.EnterpriseResource, 'tags' | 'status'> {
+export interface EnterpriseResource extends Omit<Prisma.EnterpriseResourceGetPayload<{}>, 'tags' | 'status'> {
     tags: string[];
     uploaderName: string;
     hasPin: boolean;
@@ -208,7 +208,7 @@ export interface Announcement {
     audience: UserRole[] | 'ALL' | string;
     priority?: 'Normal' | 'Urgente';
     isPinned: boolean;
-    attachments: Prisma.AnnouncementAttachment[];
+    attachments: Prisma.AnnouncementAttachmentGetPayload<{}>[];
     reads: { id: string; name: string | null; avatar?: string | null; }[];
     reactions: Reaction[];
     _count: {
@@ -328,7 +328,7 @@ export type UserAchievement = Prisma.UserAchievementGetPayload<{
 export { type AchievementSlug } from '@prisma/client';
 
 // --- MOTIVATIONAL MESSAGES ---
-export type MotivationalMessage = Prisma.MotivationalMessage;
+export type MotivationalMessage = Prisma.MotivationalMessageGetPayload<{}>;
 export { type MotivationalMessageTriggerType } from '@prisma/client';
 
 
@@ -340,11 +340,11 @@ export interface FormFieldOption {
   points: number;
 }
 
-export type FormField = Omit<Prisma.FormField, 'options'> & {
+export type FormField = Omit<Prisma.FormFieldGetPayload<{}>, 'options'> & {
   options: FormFieldOption[];
 };
 
-export type AppForm = Prisma.Form & {
+export type AppForm = Prisma.FormGetPayload<{}> & {
     fields: FormField[];
     _count: {
         responses: number;
@@ -359,6 +359,6 @@ export type AppForm = Prisma.Form & {
 export { type ChatAttachment } from '@prisma/client';
 
 // --- PROCESSES ---
-export type Process = Prisma.Process;
+export type Process = Prisma.ProcessGetPayload<{}>;
 
 export { type FormStatus, type FormFieldType, type AnnouncementAttachment, type RecurrenceType } from '@prisma/client';

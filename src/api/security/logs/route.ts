@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { SecurityLogEvent } from '@/types';
+import { startOfDay, endOfDay } from 'date-fns';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,24 +11,32 @@ export async function GET(req: NextRequest) {
     const session = await getCurrentUser();
 
     if (!session || session.role !== 'ADMINISTRATOR') {
-        return NextResponse.json({ message: 'Acceso no autorizado. Se requieren permisos de administrador.' }, { status: 403 });
+        return NextResponse.json({ message: 'Acceso no autorizado.' }, { status: 403 });
     }
     
     const { searchParams } = new URL(req.url);
-    const page = parseInt(searchParams.get('page') || '1', 10);
-    const pageSize = parseInt(searchParams.get('pageSize') || '20', 10);
-    const eventType = searchParams.get('event') as SecurityLogEvent | null;
-    const getAll = searchParams.get('all') === 'true';
-
-    const skip = (page - 1) * pageSize;
+    const eventType = searchParams.get('event') as SecurityLogEvent | 'ALL' | null;
+    const startDateParam = searchParams.get('startDate');
+    const endDateParam = searchParams.get('endDate');
 
     let whereClause: any = {};
-    if (eventType) {
+    if (eventType && eventType !== 'ALL') {
         whereClause.event = eventType;
     }
 
+    if (startDateParam && endDateParam) {
+        try {
+            whereClause.createdAt = {
+                gte: startOfDay(new Date(startDateParam)),
+                lte: endOfDay(new Date(endDateParam)),
+            };
+        } catch (e) {
+            // Ignore invalid date params
+        }
+    }
+
     try {
-        const findOptions = {
+        const logs = await prisma.securityLog.findMany({
             where: whereClause,
             orderBy: {
                 createdAt: 'desc',
@@ -42,15 +51,8 @@ export async function GET(req: NextRequest) {
                     },
                 },
             },
-        };
-        
-        const [logs, totalLogs] = await prisma.$transaction([
-            prisma.securityLog.findMany({
-                ...findOptions,
-                ...(!getAll && { skip, take: pageSize }),
-            }),
-            prisma.securityLog.count({ where: whereClause })
-        ]);
+            take: 500, // Limit to the most recent 500 logs for performance
+        });
 
         // Enriquecer con datos de geolocalización (simulado para demostración)
         const logsWithGeo = logs.map(log => {
@@ -71,7 +73,7 @@ export async function GET(req: NextRequest) {
             };
         });
 
-        return NextResponse.json({ logs: logsWithGeo, totalLogs });
+        return NextResponse.json({ logs: logsWithGeo });
     } catch (error) {
         console.error('[SECURITY_LOGS_GET_ERROR]', error);
         return NextResponse.json({ message: 'Error al obtener los registros de seguridad' }, { status: 500 });
