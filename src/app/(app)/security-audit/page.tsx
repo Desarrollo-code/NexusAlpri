@@ -24,6 +24,9 @@ import { TopIpsCard } from '@/components/security/top-ips-card';
 import { GaugeChart } from '@/components/ui/gauge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getEventDetails } from '@/lib/security-log-utils';
+import { SmartPagination } from '@/components/ui/pagination';
+
+const PAGE_SIZE = 12;
 
 const ALL_EVENTS: { value: AppSecurityLog['event'] | 'ALL', label: string }[] = [
     { value: 'ALL', label: 'Todos los Eventos' },
@@ -46,11 +49,13 @@ function SecurityAuditPageComponent() {
 
     const [logs, setLogs] = useState<AppSecurityLog[]>([]);
     const [stats, setStats] = useState<Partial<SecurityStats>>({});
+    const [totalLogs, setTotalLogs] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedLog, setSelectedLog] = useState<AppSecurityLog | null>(null);
 
     const activeFilter = searchParams.get('event') || 'ALL';
+    const currentPage = Number(searchParams.get('page')) || 1;
     const [dateRange, setDateRange] = useState<DateRange | undefined>({
         from: startOfDay(subDays(new Date(), 6)),
         to: endOfDay(new Date()),
@@ -61,14 +66,14 @@ function SecurityAuditPageComponent() {
         startTour('securityAudit', securityAuditTour);
     }, [setPageTitle, startTour]);
 
-    const createQueryString = useCallback((params: Record<string, string | null>) => {
+    const createQueryString = useCallback((params: Record<string, string | number | null>) => {
         const currentParams = new URLSearchParams(searchParams.toString());
         for (const key in params) {
             const value = params[key];
-            if (value === null) {
+            if (value === null || value === '' || value === 'ALL') {
                 currentParams.delete(key);
             } else {
-                currentParams.set(key, value);
+                currentParams.set(key, String(value));
             }
         }
         return currentParams.toString();
@@ -82,6 +87,8 @@ function SecurityAuditPageComponent() {
             if (dateRange?.from) params.set('startDate', dateRange.from.toISOString());
             if (dateRange?.to) params.set('endDate', dateRange.to.toISOString());
             if (activeFilter && activeFilter !== 'ALL') params.set('event', activeFilter);
+            params.set('page', String(currentPage));
+            params.set('pageSize', String(PAGE_SIZE));
             
             const response = await fetch(`/api/security/logs?${params.toString()}`);
             
@@ -94,6 +101,8 @@ function SecurityAuditPageComponent() {
             
             setLogs(data.logs || []);
             setStats(data.stats || {});
+            setTotalLogs(data.totalLogs || 0);
+
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Unknown error fetching data';
             setError(errorMessage);
@@ -101,7 +110,7 @@ function SecurityAuditPageComponent() {
         } finally {
             setIsLoading(false);
         }
-    }, [toast, dateRange, activeFilter]);
+    }, [toast, dateRange, activeFilter, currentPage]);
     
     useEffect(() => {
         if (currentUser?.role !== 'ADMINISTRATOR') {
@@ -112,23 +121,32 @@ function SecurityAuditPageComponent() {
     }, [currentUser, router, fetchData]);
 
     const handleFilterChange = (key: 'event' | 'date', value: string | DateRange | undefined | null) => {
-        let newQuery;
+        let paramsToUpdate: Record<string, string | number | null> = { page: 1 };
+        
         if (key === 'date') {
             const range = value as DateRange;
-            newQuery = createQueryString({
-                startDate: range?.from?.toISOString() ?? null,
-                endDate: range?.to?.toISOString() ?? null,
-            });
-             setDateRange(range);
+            setDateRange(range);
+            paramsToUpdate['startDate'] = range?.from?.toISOString() ?? null;
+            paramsToUpdate['endDate'] = range?.to?.toISOString() ?? null;
         } else {
-            newQuery = createQueryString({ event: value as string });
+            paramsToUpdate['event'] = value as string;
         }
+        
+        const newQuery = createQueryString(paramsToUpdate);
         router.push(`${pathname}?${newQuery}`);
     };
+    
+    const handlePageChange = (page: number) => {
+        const newQuery = createQueryString({ page });
+        router.push(`${pathname}?${newQuery}`);
+    }
+
 
     if (currentUser?.role !== 'ADMINISTRATOR') {
         return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
     }
+
+    const totalPages = Math.ceil(totalLogs / PAGE_SIZE);
     
     return (
         <div className="space-y-8">
@@ -173,6 +191,11 @@ function SecurityAuditPageComponent() {
                             : logs.length === 0 ? <p className="text-center text-muted-foreground py-8">No hay registros para los filtros seleccionados.</p>
                             : <SecurityLogTimeline logs={logs} onLogClick={setSelectedLog} />}
                         </CardContent>
+                         {totalPages > 1 && (
+                            <CardFooter>
+                                <SmartPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+                            </CardFooter>
+                         )}
                     </Card>
                 </div>
                 

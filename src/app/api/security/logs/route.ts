@@ -39,6 +39,10 @@ export async function GET(req: NextRequest) {
     const eventType = searchParams.get('event') as SecurityLogEvent | 'ALL' | null;
     const startDateParam = searchParams.get('startDate');
     const endDateParam = searchParams.get('endDate');
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const pageSize = parseInt(searchParams.get('pageSize') || '12', 10);
+
+    const skip = (page - 1) * pageSize;
 
     let whereClause: any = {};
     if (eventType && eventType !== 'ALL') {
@@ -58,6 +62,7 @@ export async function GET(req: NextRequest) {
     try {
         const [
             logs, 
+            totalLogs,
             successfulLogins,
             failedLogins,
             roleChanges,
@@ -71,8 +76,10 @@ export async function GET(req: NextRequest) {
                         select: { id: true, name: true, avatar: true, email: true },
                     },
                 },
-                take: 500,
+                skip,
+                take: pageSize,
             }),
+            prisma.securityLog.count({ where: whereClause }),
             prisma.securityLog.count({ where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: startDate, lte: endDate } } }),
             prisma.securityLog.count({ where: { event: 'FAILED_LOGIN_ATTEMPT', createdAt: { gte: startDate, lte: endDate } } }),
             prisma.securityLog.count({ where: { event: 'USER_ROLE_CHANGED', createdAt: { gte: startDate, lte: endDate } } }),
@@ -114,7 +121,7 @@ export async function GET(req: NextRequest) {
             securityScore,
         };
 
-        return NextResponse.json({ logs, stats });
+        return NextResponse.json({ logs, stats, totalLogs });
 
     } catch (error) {
         console.error('[SECURITY_LOGS_GET_ERROR]', error);
