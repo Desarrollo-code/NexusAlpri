@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { SecurityLogEvent, SecurityStats } from '@/types';
 import { startOfDay, endOfDay, subDays, isValid } from 'date-fns';
-import parseUserAgent from '@/lib/security-log-utils';
+import { parseUserAgent } from '@/lib/security-log-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,10 +48,12 @@ export async function GET(req: NextRequest) {
     const endDate = endDateParam && isValid(new Date(endDateParam)) ? endOfDay(new Date(endDateParam)) : endOfDay(new Date());
     const startDate = startDateParam && isValid(new Date(startDateParam)) ? startOfDay(new Date(startDateParam)) : startOfDay(subDays(endDate, 6));
 
-    whereClause.createdAt = {
-        gte: startDate,
-        lte: endDate,
-    };
+    if (isValid(startDate) && isValid(endDate)) {
+        whereClause.createdAt = {
+            gte: startDate,
+            lte: endDate,
+        };
+    }
 
     try {
         const [

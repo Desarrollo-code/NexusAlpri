@@ -85,7 +85,7 @@ export const getEventDetails = (event: SecurityLogEvent, details?: string | null
     }
 };
 
-const parseUserAgent = (userAgent: string | null | undefined): { browser: string; os: string } => {
+export const parseUserAgent = (userAgent: string | null | undefined): { browser: string; os: string } => {
     if (!userAgent) return { browser: 'Desconocido', os: 'Desconocido' };
     
     let browser = 'Desconocido';
@@ -106,5 +106,3 @@ const parseUserAgent = (userAgent: string | null | undefined): { browser: string
 
     return { browser, os };
 };
-
-export default parseUserAgent;
