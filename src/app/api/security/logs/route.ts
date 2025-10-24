@@ -54,26 +54,7 @@ export async function GET(req: NextRequest) {
             take: 500, // Limit to the most recent 500 logs for performance
         });
 
-        // Enriquecer con datos de geolocalización (simulado para demostración)
-        const logsWithGeo = logs.map(log => {
-            let lat = null;
-            let lng = null;
-            if (log.ipAddress) {
-                // Simple hash para generar coordenadas consistentes pero aleatorias
-                const ipParts = log.ipAddress.split('.').map(part => parseInt(part, 10));
-                if (ipParts.length === 4) {
-                    lat = (ipParts[0] * ipParts[2]) % 180 - 90 + (Math.random() - 0.5) * 2;
-                    lng = (ipParts[1] * ipParts[3]) % 360 - 180 + (Math.random() - 0.5) * 2;
-                }
-            }
-            return {
-                ...log,
-                lat,
-                lng,
-            };
-        });
-
-        return NextResponse.json({ logs: logsWithGeo });
+        return NextResponse.json({ logs });
     } catch (error) {
         console.error('[SECURITY_LOGS_GET_ERROR]', error);
         return NextResponse.json({ message: 'Error al obtener los registros de seguridad' }, { status: 500 });

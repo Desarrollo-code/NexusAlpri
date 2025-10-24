@@ -17,10 +17,10 @@ import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { type DateRange } from 'react-day-picker';
 import { SecurityLogTimeline } from '@/components/security/security-log-timeline';
 import { SecurityLogDetailSheet } from '@/components/security/security-log-detail-sheet';
-import { GlobalAccessMap } from '@/components/security/global-access-map';
 import { MetricCard } from '@/components/security/metric-card';
 import { DeviceDistributionChart } from '@/components/security/device-distribution-chart';
 import { Card, CardContent } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 
 const ALL_EVENTS: { value: SecurityLogEvent | 'ALL', label: string }[] = [
     { value: 'ALL', label: 'Todos los Eventos' },
@@ -168,24 +168,23 @@ function SecurityAuditPageComponent() {
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                <div className="xl:col-span-2">
-                   <GlobalAccessMap accessPoints={logs} />
+                <Card className="xl:col-span-2">
+                    <CardHeader>
+                        <CardTitle>Línea de Tiempo de Eventos</CardTitle>
+                        <CardDescription>Eventos de seguridad en el período seleccionado. Haz clic en un evento para ver detalles.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {isLoading ? <div className="text-center py-8"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>
+                        : error ? <div className="text-center py-8 text-destructive">{error}</div>
+                        : logs.length === 0 ? <p className="text-center text-muted-foreground py-8">No hay registros para los filtros seleccionados.</p>
+                        : <SecurityLogTimeline logs={logs} onLogClick={setSelectedLog} />}
+                    </CardContent>
+                </Card>
+                <div className="xl:col-span-1">
+                     <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
                 </div>
-                <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
             </div>
             
-            <Card>
-                <CardHeader>
-                    <CardTitle>Línea de Tiempo de Eventos</CardTitle>
-                    <CardDescription>Eventos de seguridad en el período seleccionado. Haz clic en un evento para ver detalles.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {isLoading ? <div className="text-center py-8"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>
-                     : error ? <div className="text-center py-8 text-destructive">{error}</div>
-                     : logs.length === 0 ? <p className="text-center text-muted-foreground py-8">No hay registros para los filtros seleccionados.</p>
-                     : <SecurityLogTimeline logs={logs} onLogClick={setSelectedLog} />}
-                </CardContent>
-            </Card>
 
             {selectedLog && <SecurityLogDetailSheet log={selectedLog} isOpen={!!selectedLog} onClose={() => setSelectedLog(null)} />}
         </div>
