@@ -79,22 +79,17 @@ function SecurityAuditPageComponent() {
             if (dateRange?.to) params.set('endDate', dateRange.to.toISOString());
             if (activeFilter && activeFilter !== 'ALL') params.set('event', activeFilter);
             
-            const [logsRes, statsRes] = await Promise.all([
-                fetch(`/api/security/logs?${params.toString()}`),
-                fetch(`/api/security/stats?${params.toString()}`)
-            ]);
-
-            if (!logsRes.ok || !statsRes.ok) {
-                 const errorLogs = !logsRes.ok ? await logsRes.json() : null;
-                 const errorStats = !statsRes.ok ? await statsRes.json() : null;
-                 throw new Error(errorLogs?.message || errorStats?.message || "Failed to fetch security data");
+            const response = await fetch(`/api/security/logs?${params.toString()}`);
+            
+            if (!response.ok) {
+                 const errorData = await response.json();
+                 throw new Error(errorData.message || "Failed to fetch security data");
             }
             
-            const logsData = await logsRes.json();
-            const statsData = await statsRes.json();
+            const data = await response.json();
             
-            setLogs(logsData.logs || []);
-            setStats(statsData || {});
+            setLogs(data.logs || []);
+            setStats(data.stats || {});
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Unknown error fetching data');
             toast({ title: 'Error', description: err instanceof Error ? err.message : 'Could not load security data.', variant: 'destructive' });
