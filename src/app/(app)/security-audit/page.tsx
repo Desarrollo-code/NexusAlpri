@@ -1,3 +1,4 @@
+
 // src/app/(app)/security-audit/page.tsx
 'use client';
 
@@ -173,7 +174,14 @@ function SecurityAuditPageComponent() {
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                {/* Columna Izquierda */}
                 <div className="lg:col-span-1 space-y-8 lg:sticky lg:top-24">
+                     <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
+                     <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
+                </div>
+                
+                {/* Columna Central */}
+                <div className="lg:col-span-1 space-y-8">
                      <Card>
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-primary"/> Salud de Seguridad</CardTitle>
@@ -208,13 +216,14 @@ function SecurityAuditPageComponent() {
                     </Card>
                 </div>
                 
-                <div className="lg:col-span-2 space-y-8">
+                {/* Columna Derecha */}
+                <div className="lg:col-span-1 space-y-8">
                      <Card>
                         <CardHeader>
                              <div className="flex justify-between items-center">
                                  <div>
                                      <CardTitle>Línea de Tiempo de Eventos</CardTitle>
-                                     <CardDescription>Eventos en el periodo seleccionado. Haz clic para ver detalles.</CardDescription>
+                                     <CardDescription>Eventos en el periodo seleccionado.</CardDescription>
                                  </div>
                                   <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
                                     <Button variant={viewMode === 'timeline' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('timeline')}><List className="h-4 w-4"/></Button>
@@ -242,10 +251,6 @@ function SecurityAuditPageComponent() {
                             </CardFooter>
                          )}
                     </Card>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                       <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
-                       <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
-                    </div>
                 </div>
             </div>
             
@@ -261,4 +266,3 @@ export default function SecurityAuditPageWrapper() {
         </Suspense>
     );
 }
-```
