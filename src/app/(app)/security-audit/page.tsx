@@ -1,11 +1,10 @@
-
 // src/app/(app)/security-audit/page.tsx
 'use client';
 
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, AlertTriangle, UserCog, HelpCircle, Filter, CheckCircle, Shield, LineChart, Percent } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, SecurityStats } from '@/types';
 import { useToast } from '@/hooks/use-toast';
@@ -24,7 +23,7 @@ import { TopIpsCard } from '@/components/security/top-ips-card';
 import { GaugeChart } from '@/components/ui/gauge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SmartPagination } from '@/components/ui/pagination';
-import { AreaChart, Area, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { AreaChart, Area, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import { es } from 'date-fns/locale';
 import { MetricCard } from '@/components/security/metric-card';
@@ -174,49 +173,6 @@ function SecurityAuditPageComponent() {
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                {/* Columna Izquierda */}
-                <div className="lg:col-span-1 space-y-8 lg:sticky lg:top-24">
-                     <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
-                     <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
-                </div>
-                
-                {/* Columna Central */}
-                <div className="lg:col-span-1 space-y-8">
-                     <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-primary"/> Salud de Seguridad</CardTitle>
-                        </CardHeader>
-                        <CardContent className="flex flex-col items-center justify-center">
-                            <GaugeChart value={stats.securityScore || 0}/>
-                            <div className="mt-4 grid grid-cols-3 gap-2 w-full">
-                                <MetricCard id="successful-logins-card" title="Exitosos" value={stats.successfulLogins || 0} icon={CheckCircle} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')}/>
-                                <MetricCard id="failed-logins-card" title="Fallidos" value={stats.failedLogins || 0} icon={AlertTriangle} onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')}/>
-                                <MetricCard id="2fa-adoption-card" title="Adopción 2FA" value={stats.twoFactorAdoptionRate || 0} icon={Percent} suffix="%"/>
-                            </div>
-                        </CardContent>
-                     </Card>
-                     <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base flex items-center gap-2"><LineChart className="h-4 w-4 text-primary"/> Tendencia de Salud</CardTitle>
-                        </CardHeader>
-                        <CardContent className="h-48">
-                           <ChartContainer config={{ score: { label: 'Puntuación', color: 'hsl(var(--primary))' } }}>
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={stats.securityScoreTrend} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                                        <defs><linearGradient id="trend-gradient" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/><stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/></linearGradient></defs>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                        <XAxis dataKey="date" tickFormatter={(str) => format(new Date(str), 'd MMM', {locale: es})} fontSize={12} tickLine={false} axisLine={false}/>
-                                        <YAxis domain={[0, 100]} unit="%" width={40} tickLine={false} axisLine={false}/>
-                                        <ChartTooltipContent formatter={(value) => `${(value as number).toFixed(1)}%`} labelFormatter={(label) => format(new Date(label), "d 'de' MMMM", { locale: es })}/>
-                                        <Area type="monotone" dataKey="score" stroke="hsl(var(--primary))" fill="url(#trend-gradient)" strokeWidth={2}/>
-                                    </AreaChart>
-                                </ResponsiveContainer>
-                           </ChartContainer>
-                        </CardContent>
-                    </Card>
-                </div>
-                
-                {/* Columna Derecha */}
                 <div className="lg:col-span-1 space-y-8">
                      <Card>
                         <CardHeader>
@@ -252,6 +208,46 @@ function SecurityAuditPageComponent() {
                          )}
                     </Card>
                 </div>
+                
+                <div className="lg:col-span-1 space-y-8">
+                     <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-primary"/> Salud de Seguridad</CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col items-center justify-center">
+                            <GaugeChart value={stats.securityScore || 0}/>
+                            <div className="mt-4 grid grid-cols-3 gap-2 w-full">
+                                <MetricCard id="successful-logins-card" title="Exitosos" value={stats.successfulLogins || 0} icon={CheckCircle} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')}/>
+                                <MetricCard id="failed-logins-card" title="Fallidos" value={stats.failedLogins || 0} icon={AlertTriangle} onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')}/>
+                                <MetricCard id="2fa-adoption-card" title="Adopción 2FA" value={stats.twoFactorAdoptionRate || 0} icon={Percent} suffix="%"/>
+                            </div>
+                        </CardContent>
+                     </Card>
+                     <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2"><LineChart className="h-4 w-4 text-primary"/> Tendencia de Salud</CardTitle>
+                        </CardHeader>
+                        <CardContent className="h-48">
+                           <ChartContainer config={{ score: { label: 'Puntuación', color: 'hsl(var(--primary))' } }}>
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={stats.securityScoreTrend} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                                        <defs><linearGradient id="trend-gradient" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/><stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/></linearGradient></defs>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                        <XAxis dataKey="date" tickFormatter={(str) => format(new Date(str), 'd MMM', {locale: es})} fontSize={12} tickLine={false} axisLine={false}/>
+                                        <YAxis domain={[0, 100]} unit="%" width={40} tickLine={false} axisLine={false}/>
+                                        <ChartTooltipContent formatter={(value) => `${(value as number).toFixed(1)}%`} labelFormatter={(label) => format(new Date(label), "d 'de' MMMM", { locale: es })}/>
+                                        <Area type="monotone" dataKey="score" stroke="hsl(var(--primary))" fill="url(#trend-gradient)" strokeWidth={2}/>
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                           </ChartContainer>
+                        </CardContent>
+                    </Card>
+                </div>
+                
+                <div className="lg:col-span-1 space-y-8">
+                     <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
+                     <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
+                </div>
             </div>
             
             {selectedLog && <SecurityLogDetailSheet log={selectedLog} isOpen={!!selectedLog} onClose={() => setSelectedLog(null)} />}
@@ -266,3 +262,5 @@ export default function SecurityAuditPageWrapper() {
         </Suspense>
     );
 }
+
+    
