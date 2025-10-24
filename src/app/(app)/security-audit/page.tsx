@@ -91,8 +91,9 @@ function SecurityAuditPageComponent() {
             setLogs(data.logs || []);
             setStats(data.stats || {});
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Unknown error fetching data');
-            toast({ title: 'Error', description: err instanceof Error ? err.message : 'Could not load security data.', variant: 'destructive' });
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error fetching data';
+            setError(errorMessage);
+            toast({ title: 'Error', description: errorMessage, variant: 'destructive' });
         } finally {
             setIsLoading(false);
         }
@@ -162,7 +163,13 @@ function SecurityAuditPageComponent() {
                     </CardHeader>
                     <CardContent>
                         {isLoading ? <div className="text-center py-8"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>
-                        : error ? <div className="text-center py-8 text-destructive">{error}</div>
+                        : error ? (
+                            <div className="text-center py-8 text-destructive flex flex-col items-center gap-2">
+                                <AlertTriangle className="h-6 w-6"/>
+                                <p className="font-semibold">{error}</p>
+                                <Button variant="outline" size="sm" onClick={fetchData}>Reintentar</Button>
+                            </div>
+                        )
                         : logs.length === 0 ? <p className="text-center text-muted-foreground py-8">No hay registros para los filtros seleccionados.</p>
                         : <SecurityLogTimeline logs={logs} onLogClick={setSelectedLog} />}
                     </CardContent>
