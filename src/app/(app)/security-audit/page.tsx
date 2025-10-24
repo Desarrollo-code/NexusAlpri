@@ -23,10 +23,12 @@ import { TopIpsCard } from '@/components/security/top-ips-card';
 import { GaugeChart } from '@/components/ui/gauge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SmartPagination } from '@/components/ui/pagination';
-import { AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import { es } from 'date-fns/locale';
 import { MetricCard } from '@/components/security/metric-card';
+import { SecurityLogTable } from '@/components/security/security-log-table';
+import { List, Grid } from 'lucide-react';
 
 const PAGE_SIZE = 8;
 
@@ -55,6 +57,7 @@ function SecurityAuditPageComponent() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedLog, setSelectedLog] = useState<AppSecurityLog | null>(null);
+    const [viewMode, setViewMode] = useState<'timeline' | 'table'>('timeline');
 
     const activeFilter = searchParams.get('event') || 'ALL';
     const currentPage = Number(searchParams.get('page')) || 1;
@@ -170,44 +173,21 @@ function SecurityAuditPageComponent() {
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                {/* Columna Izquierda */}
-                <div className="lg:col-span-1 space-y-8">
+                <div className="lg:col-span-1 space-y-8 lg:sticky lg:top-24">
                      <Card>
                         <CardHeader>
-                            <CardTitle>Línea de Tiempo de Eventos</CardTitle>
-                            <CardDescription>Eventos en el periodo seleccionado. Haz clic para ver detalles.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            {isLoading ? <div className="text-center py-8"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>
-                            : error ? (
-                                <div className="text-center py-8 text-destructive flex flex-col items-center gap-2">
-                                    <AlertTriangle className="h-6 w-6"/>
-                                    <p className="font-semibold">{error}</p>
-                                    <Button variant="outline" size="sm" onClick={fetchData}>Reintentar</Button>
-                                </div>
-                            )
-                            : logs.length === 0 ? <p className="text-center text-muted-foreground py-8">No hay registros para los filtros seleccionados.</p>
-                            : <SecurityLogTimeline logs={logs} onLogClick={setSelectedLog} />}
-                        </CardContent>
-                         {totalPages > 1 && (
-                            <CardFooter>
-                                <SmartPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
-                            </CardFooter>
-                         )}
-                    </Card>
-                </div>
-                
-                {/* Columna Central */}
-                <div className="lg:col-span-1 space-y-8">
-                     <Card>
-                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-primary"/> Salud de Seguridad</CardTitle>
-                         </CardHeader>
-                         <CardContent className="flex flex-col items-center justify-center">
+                        </CardHeader>
+                        <CardContent className="flex flex-col items-center justify-center">
                             <GaugeChart value={stats.securityScore || 0}/>
-                         </CardContent>
+                            <div className="mt-4 grid grid-cols-3 gap-2 w-full">
+                                <MetricCard id="successful-logins-card" title="Exitosos" value={stats.successfulLogins || 0} icon={CheckCircle} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')}/>
+                                <MetricCard id="failed-logins-card" title="Fallidos" value={stats.failedLogins || 0} icon={AlertTriangle} onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')}/>
+                                <MetricCard id="2fa-adoption-card" title="Adopción 2FA" value={stats.twoFactorAdoptionRate || 0} icon={Percent} suffix="%"/>
+                            </div>
+                        </CardContent>
                      </Card>
-                      <Card>
+                     <Card>
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2"><LineChart className="h-4 w-4 text-primary"/> Tendencia de Salud</CardTitle>
                         </CardHeader>
@@ -226,17 +206,46 @@ function SecurityAuditPageComponent() {
                            </ChartContainer>
                         </CardContent>
                     </Card>
-                    <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
                 </div>
-
-                {/* Columna Derecha */}
-                <div className="lg:col-span-1 space-y-8">
-                    <div className="grid grid-cols-1 gap-4">
-                        <MetricCard id="successful-logins-card" title="Inicios Exitosos" value={stats.successfulLogins || 0} icon={CheckCircle} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')}/>
-                        <MetricCard id="failed-logins-card" title="Intentos Fallidos" value={stats.failedLogins || 0} icon={AlertTriangle} onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')}/>
-                        <MetricCard id="2fa-adoption-card" title="Adopción 2FA" value={stats.twoFactorAdoptionRate || 0} icon={Percent} suffix="%"/>
+                
+                <div className="lg:col-span-2 space-y-8">
+                     <Card>
+                        <CardHeader>
+                             <div className="flex justify-between items-center">
+                                 <div>
+                                     <CardTitle>Línea de Tiempo de Eventos</CardTitle>
+                                     <CardDescription>Eventos en el periodo seleccionado. Haz clic para ver detalles.</CardDescription>
+                                 </div>
+                                  <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
+                                    <Button variant={viewMode === 'timeline' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('timeline')}><List className="h-4 w-4"/></Button>
+                                    <Button variant={viewMode === 'table' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('table')}><Grid className="h-4 w-4"/></Button>
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            {isLoading ? <div className="text-center py-8"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>
+                            : error ? (
+                                <div className="text-center py-8 text-destructive flex flex-col items-center gap-2">
+                                    <AlertTriangle className="h-6 w-6"/>
+                                    <p className="font-semibold">{error}</p>
+                                    <Button variant="outline" size="sm" onClick={fetchData}>Reintentar</Button>
+                                </div>
+                            )
+                            : logs.length === 0 ? <p className="text-center text-muted-foreground py-8">No hay registros para los filtros seleccionados.</p>
+                            : viewMode === 'timeline' ? <SecurityLogTimeline logs={logs} onLogClick={setSelectedLog} />
+                            : <SecurityLogTable logs={logs} onRowClick={setSelectedLog} />
+                            }
+                        </CardContent>
+                         {totalPages > 1 && (
+                            <CardFooter>
+                                <SmartPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+                            </CardFooter>
+                         )}
+                    </Card>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                       <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
+                       <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
                     </div>
-                    <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
                 </div>
             </div>
             
@@ -252,3 +261,4 @@ export default function SecurityAuditPageWrapper() {
         </Suspense>
     );
 }
+```
