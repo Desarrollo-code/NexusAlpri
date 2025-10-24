@@ -37,7 +37,7 @@ import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { format, parseISO, startOfDay, subDays } from 'date-fns';
+import { format, parseISO, startOfDay, subDays, isValid } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useTitle } from '@/contexts/title-context';
 import { Identicon } from '@/components/ui/identicon';
@@ -51,13 +51,16 @@ import { Calendar } from '@/components/ui/calendar';
 import { MetricCard } from '@/components/analytics/metric-card';
 
 
-const formatDateTick = (tick: string) => {
-    try {
-        const date = parseISO(tick);
-        return format(date, "d MMM", { locale: es });
-    } catch (e) {
-        return tick;
-    }
+const formatDateTick = (tick: string): string => {
+  const date = parseISO(tick);
+  if (!isValid(date)) return tick;
+
+  // Si es el primer día del mes, muestra el nombre del mes.
+  if (date.getDate() === 1) {
+    return format(date, "d MMM", { locale: es });
+  }
+  // Para otros días, solo muestra el número.
+  return format(date, "d", { locale: es });
 };
 
 const formatDateTooltip = (dateString: string) => {
@@ -371,16 +374,17 @@ function AdminAnalyticsPage() {
                      <CardDescription>Actividad en el rango de fechas seleccionado.</CardDescription>
                 </CardHeader>
                 <CardContent className="h-80 pr-4">
-                     <ChartContainer config={{ newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-2))" }, newEnrollments: { label: "Inscripciones", color: "hsl(var(--chart-3))" }}} className="w-full h-full">
+                     <ChartContainer config={{ newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-2))" }, newUsers: { label: "Nuevos Usuarios", color: "hsl(var(--chart-1))" }, newEnrollments: { label: "Inscripciones", color: "hsl(var(--chart-3))" }}} className="w-full h-full">
                         <ResponsiveContainer>
                            <ComposedChart data={stats?.userRegistrationTrend || []} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                <XAxis dataKey="date" tickLine={false} axisLine={true} tickMargin={10} tickFormatter={formatDateTick} interval={isMobile ? 6 : 3} />
+                                <XAxis dataKey="date" tickLine={false} axisLine={true} tickMargin={10} tickFormatter={formatDateTick} interval={isMobile ? 'preserveEnd' : 'preserveStartEnd'} />
                                 <YAxis allowDecimals={false} tickLine={false} axisLine={true} tickMargin={10} width={30}/>
                                 <ChartTooltip cursor={{ fill: 'hsl(var(--muted))', radius: 4 }} content={<ChartTooltipContent indicator="dot" labelFormatter={formatDateTooltip} />} />
                                 <Legend />
                                 <Bar dataKey="newCourses" name="Nuevos Cursos" fill="var(--color-newCourses)" radius={4} />
-                                <Line type="monotone" dataKey="newEnrollments" name="Inscripciones" stroke="var(--color-newEnrollments)" strokeWidth={2} dot={false} />
+                                <Line type="monotone" dataKey="newUsers" name="Nuevos Usuarios" stroke="var(--color-newUsers)" strokeWidth={2} dot={false} />
+                                <Area type="monotone" dataKey="newEnrollments" name="Inscripciones" fill="var(--color-newEnrollments)" stroke="var(--color-newEnrollments)" strokeWidth={2} fillOpacity={0.3} dot={false}/>
                            </ComposedChart>
                         </ResponsiveContainer>
                     </ChartContainer>

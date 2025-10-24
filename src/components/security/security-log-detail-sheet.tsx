@@ -42,8 +42,10 @@ export const SecurityLogDetailSheet = ({ log, isOpen, onClose }: { log: Security
                     <DetailRow label="ID del Evento" value={log.id} />
                     <DetailRow label="Usuario" value={log.user?.name || log.emailAttempt} />
                     <DetailRow label="Descripción" value={eventUI.details} />
+                    <Separator className="my-2"/>
                     <DetailRow label="Dirección IP" value={log.ipAddress} />
                     <DetailRow label="Ubicación" value={log.city && log.country ? `${log.city}, ${log.country}` : (log.country || 'Desconocida')} />
+                    <Separator className="my-2"/>
                     <DetailRow label="Navegador" value={browser} />
                     <DetailRow label="Sistema Operativo" value={os} />
                     <DetailRow label="User Agent" value={log.userAgent} />

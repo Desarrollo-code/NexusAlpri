@@ -1,8 +1,8 @@
-// src/api/security/stats/route.ts
+// src/app/api/security/stats/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
-import { subDays, startOfDay } from 'date-fns';
+import { subDays } from 'date-fns';
 import type { SecurityStats } from '@/types';
 import { parseUserAgent } from '@/lib/security-log-utils';
 
@@ -36,13 +36,14 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const twentyFourHoursAgo = subDays(new Date(), 1);
         
         const [
             successfulLogins24h,
             failedLogins24h,
             roleChanges24h,
             allLogsForDeviceStats,
+            topIpsFromDB,
         ] = await Promise.all([
             prisma.securityLog.count({ where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: twentyFourHoursAgo } } }),
             prisma.securityLog.count({ where: { event: 'FAILED_LOGIN_ATTEMPT', createdAt: { gte: twentyFourHoursAgo } } }),
@@ -50,6 +51,13 @@ export async function GET(req: NextRequest) {
             prisma.securityLog.findMany({ 
                 select: { userAgent: true },
             }),
+            prisma.securityLog.groupBy({
+                by: ['ipAddress', 'country'],
+                where: { ipAddress: { not: null }},
+                _count: { ipAddress: true },
+                orderBy: { _count: { ipAddress: 'desc' } },
+                take: 5,
+            })
         ]);
         
         const { browsers, os } = aggregateByUserAgent(allLogsForDeviceStats || []);
@@ -60,7 +68,7 @@ export async function GET(req: NextRequest) {
             roleChanges24h,
             browsers,
             os,
-            topIps: [],
+            topIps: topIpsFromDB,
         };
 
         return NextResponse.json(stats);

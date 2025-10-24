@@ -1,4 +1,4 @@
-// src/app/(app)/profile/page.tsx
+// src/components/profile/page.tsx
 'use client';
 
 import { useAuth } from '@/contexts/auth-context';
@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Camera, User, KeyRound, Shield, Eye, EyeOff, Save, CheckCircle, Award, Star, HelpCircle, Trophy, Palette } from 'lucide-react';
+import { Loader2, Camera, User, KeyRound, Shield, Eye, EyeOff, Save, CheckCircle, Award, Star, HelpCircle, Trophy, Palette, Briefcase } from 'lucide-react';
 import React, { useState, ChangeEvent, FormEvent, useEffect, useCallback, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { PasswordStrengthIndicator } from '@/components/password-strength-indicator';
@@ -20,7 +20,7 @@ import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress as UploadProgress } from '@/components/ui/progress';
 import { useTour } from '@/contexts/tour-context';
 import { profileTour } from '@/lib/tour-steps';
-import type { UserAchievement } from '@/types';
+import type { UserAchievement, User as AppUser } from '@/types';
 import { Progress } from '@/components/ui/progress';
 import Image from 'next/image';
 import { VerifiedBadge } from '@/components/ui/verified-badge';
@@ -51,10 +51,14 @@ const calculateLevel = (xp: number) => {
 
 
 // --- Components defined outside of the main component to prevent re-creation on render ---
-const InfoCard = ({ user, updateUser }: { user: any, updateUser: (data: any) => void }) => {
+const InfoCard = ({ user, updateUser }: { user: AppUser, updateUser: (data: Partial<AppUser>) => void }) => {
     const [name, setName] = useState(user?.name || '');
     const [isSavingInfo, setIsSavingInfo] = useState(false);
     const { toast } = useToast();
+
+    useEffect(() => {
+        if(user?.name) setName(user.name);
+    }, [user?.name]);
 
     const handleInfoSubmit = async (e: FormEvent) => {
         e.preventDefault();
@@ -86,7 +90,7 @@ const InfoCard = ({ user, updateUser }: { user: any, updateUser: (data: any) => 
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="name">Nombre</Label>
-                        <Input id="name" value={name} onChange={e => setName(e.target.value)} disabled={isSavingInfo} />
+                        <Input id="name" value={name} onChange={e => setName(e.target.value)} disabled={isSavingInfo} autoComplete="name" />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
@@ -105,7 +109,7 @@ const InfoCard = ({ user, updateUser }: { user: any, updateUser: (data: any) => 
 };
 
 const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setConfirmPassword, currentPassword, setCurrentPassword }: 
-{ user: any, newPassword: any, setNewPassword: any, confirmPassword: any, setConfirmPassword: any, currentPassword: any, setCurrentPassword: any }) => {
+{ user: AppUser, newPassword: any, setNewPassword: any, confirmPassword: any, setConfirmPassword: any, currentPassword: any, setCurrentPassword: any }) => {
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -148,7 +152,7 @@ const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setC
                     <div className="space-y-2">
                         <Label htmlFor="current-password">Contraseña Actual</Label>
                         <div className="relative">
-                            <Input id="current-password" type={showCurrentPassword ? "text" : "password"} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required disabled={isSavingPassword} />
+                            <Input id="current-password" type={showCurrentPassword ? "text" : "password"} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required disabled={isSavingPassword} autoComplete="current-password" />
                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowCurrentPassword(!showCurrentPassword)}>
                                 {showCurrentPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
                             </Button>
@@ -157,7 +161,7 @@ const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setC
                     <div className="space-y-2">
                         <Label htmlFor="new-password">Nueva Contraseña</Label>
                         <div className="relative">
-                             <Input id="new-password" type={showNewPassword ? "text" : "password"} value={newPassword} onChange={e => setNewPassword(e.target.value)} required disabled={isSavingPassword}/>
+                             <Input id="new-password" type={showNewPassword ? "text" : "password"} value={newPassword} onChange={e => setNewPassword(e.target.value)} required disabled={isSavingPassword} autoComplete="new-password"/>
                              <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowNewPassword(!showNewPassword)}>
                                 {showNewPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
                             </Button>
@@ -167,7 +171,7 @@ const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setC
                     <div className="space-y-2">
                         <Label htmlFor="confirm-password">Confirmar Nueva Contraseña</Label>
                          <div className="relative">
-                            <Input id="confirm-password" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required disabled={isSavingPassword}/>
+                            <Input id="confirm-password" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required disabled={isSavingPassword} autoComplete="new-password"/>
                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
                                 {showConfirmPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
                             </Button>
@@ -185,7 +189,7 @@ const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setC
     );
 };
 
-const TwoFactorCard = ({ user, updateUser }: { user: any, updateUser: (data: any) => void }) => {
+const TwoFactorCard = ({ user, updateUser }: { user: AppUser, updateUser: (data: Partial<AppUser>) => void }) => {
     const [qrCode, setQrCode] = useState<string | null>(null);
     const [verificationCode, setVerificationCode] = useState('');
     const [isActivating2FA, setIsActivating2FA] = useState(false);
@@ -305,8 +309,12 @@ const TwoFactorCard = ({ user, updateUser }: { user: any, updateUser: (data: any
     );
 };
 
-const ProfileCard = ({ user, onAvatarChange, isUploading, uploadProgress }: { user: any, onAvatarChange: (e: any) => void, isUploading: boolean, uploadProgress: number }) => {
+const ProfileCard = ({ user, onAvatarChange, isUploading, uploadProgress }: { user: AppUser, onAvatarChange: (e: ChangeEvent<HTMLInputElement>) => void, isUploading: boolean, uploadProgress: number }) => {
     const { level, currentXPInLevel, xpForNextLevel, progressPercentage } = useMemo(() => calculateLevel(user?.xp || 0), [user?.xp]);
+    const { user: currentUser } = useAuth();
+    
+    const canSeeProcess = user.role !== 'STUDENT' || currentUser?.role === 'ADMINISTRATOR';
+
     return (
      <Card className="profile-card" id="profile-card-display">
         <div className="card__img">
@@ -330,6 +338,11 @@ const ProfileCard = ({ user, onAvatarChange, isUploading, uploadProgress }: { us
             <CardDescription className="card__subtitle">
                 {user.email}
             </CardDescription>
+            {canSeeProcess && (user as any).process && (
+                <div className="mt-2 flex justify-center">
+                    <Badge variant="secondary" className="gap-1.5 text-xs"><Briefcase className="h-3 w-3"/> {(user as any).process.name}</Badge>
+                </div>
+            )}
              <div className="mt-6">
                 <div className="flex justify-between items-end mb-1">
                     <p className="font-semibold text-primary">Nivel {level}</p>
@@ -354,50 +367,55 @@ const ProfileCard = ({ user, onAvatarChange, isUploading, uploadProgress }: { us
     </Card>
 )};
 
-const ThemeSelectorCard = () => {
+const ThemeSelectorCard = ({ className }: { className?: string }) => {
     const { theme, setTheme } = useTheme();
     const { user, updateUser } = useAuth();
-  
-    const handleThemeChange = async (newTheme: string) => {
-        if (!user) {
-          setTheme(newTheme);
-          return;
-        }
-        setTheme(newTheme);
-        updateUser({ theme: newTheme });
 
-        try {
-          await fetch(`/api/users/${user.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ theme: newTheme }),
-          });
-        } catch (error) {
-          console.error('Error saving theme preference:', error);
+    const handleThemeChange = async (newTheme: string) => {
+        setTheme(newTheme);
+        if (user) {
+            updateUser({ theme: newTheme });
+            try {
+                await fetch(`/api/users/${user.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ theme: newTheme }),
+                });
+            } catch (error) {
+                console.error('Error saving theme preference:', error);
+            }
         }
     };
-  
+
     return (
-      <Card>
+      <Card className={cn(className)}>
         <CardHeader>
           <CardTitle>Tema de la Interfaz</CardTitle>
           <CardDescription>Elige tu paleta de colores preferida.</CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {AVAILABLE_THEMES.map((t) => (
-            <div key={t.value} onClick={() => handleThemeChange(t.value)} className="cursor-pointer group">
-              <div
-                className={cn(
-                  'rounded-lg p-2 border-2 transition-all',
-                  theme === t.value ? 'border-primary ring-2 ring-primary/50' : 'border-border group-hover:border-primary/50'
-                )}
-              >
-                <div className={cn('h-16 w-full rounded-md flex items-center justify-center text-sm font-semibold', t.previewClass)}>
-                  <span className={cn('px-2 py-1 rounded-md', ['dark', 'terminal', 'sunset', 'neon', 'dracula', 'lavender', 'solarized-dark', 'imperial-gold'].includes(t.value) ? 'text-white bg-black/20' : 'text-black bg-white/20')}>{t.label}</span>
-                </div>
-              </div>
+        <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {AVAILABLE_THEMES.map((t) => (
+                <TooltipProvider key={t.value} delayDuration={100}>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                             <div onClick={() => handleThemeChange(t.value)} className="cursor-pointer group flex flex-col items-center gap-2">
+                                <div
+                                    className={cn(
+                                        'h-16 w-full rounded-lg flex items-center justify-center border-2 transition-all',
+                                        theme === t.value ? 'border-primary ring-2 ring-primary/50' : 'border-border group-hover:border-primary/70'
+                                    )}
+                                >
+                                    <div className={cn('h-14 w-full mx-1 rounded-md', t.previewClass)} />
+                                </div>
+                                <p className="text-xs font-medium text-muted-foreground">{t.label}</p>
+                            </div>
+                        </TooltipTrigger>
+                        <TooltipContent><p>{t.label}</p></TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+              ))}
             </div>
-          ))}
         </CardContent>
       </Card>
     );

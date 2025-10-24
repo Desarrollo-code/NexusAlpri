@@ -68,7 +68,7 @@ const ChartSection = ({ title, data }: { title: string, data?: { name: string, c
 
 export const DeviceDistributionChart = ({ browserData, osData, isLoading }: { browserData?: any[], osData?: any[], isLoading: boolean }) => {
     return (
-        <Card>
+        <Card className="bg-card/80 backdrop-blur-lg">
             <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                     <Monitor className="h-4 w-4 text-primary" />
