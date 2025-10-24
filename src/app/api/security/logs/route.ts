@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     }
     
     const { searchParams } = new URL(req.url);
-    const eventType = searchParams.get('event') as SecurityLogEvent | null;
+    const eventType = searchParams.get('event') as SecurityLogEvent | 'ALL' | null;
     const startDateParam = searchParams.get('startDate');
     const endDateParam = searchParams.get('endDate');
 

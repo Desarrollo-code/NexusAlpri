@@ -106,57 +106,65 @@ export const GlobalAccessMap: React.FC<GlobalAccessMapProps> = ({ accessPoints }
     }
     
     return (
-        <div ref={containerRef} className="relative w-full h-full flex items-center justify-center overflow-hidden">
-            <GlobeGl
-                ref={globeEl}
-                globeImageUrl="//unpkg.com/three-globe/example/img/earth-day.jpg" // <-- Mapa diurno
-                bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
-                backgroundColor="rgba(0,0,0,0)"
-                
-                // Propiedades de los Puntos de Acceso
-                pointsData={pointsData}
-                pointAltitude={0.02} // Ligeramente más elevados
-                pointRadius={0.5}   // Un poco más grandes
-                pointColor={(point: any) => point.success ? 'rgba(52, 211, 153, 0.9)' : 'rgba(239, 68, 68, 0.9)'}
-                onPointHover={handlePointHover}
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-primary" />
+                    Mapa de Accesos Global
+                </CardTitle>
+            </CardHeader>
+            <CardContent ref={containerRef} className="relative w-full h-[360px] flex items-center justify-center overflow-hidden">
+                <GlobeGl
+                    ref={globeEl}
+                    globeImageUrl="//unpkg.com/three-globe/example/img/earth-day.jpg" // <-- Mapa diurno
+                    bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
+                    backgroundColor="rgba(0,0,0,0)"
+                    
+                    // Propiedades de los Puntos de Acceso
+                    pointsData={pointsData}
+                    pointAltitude={0.02} // Ligeramente más elevados
+                    pointRadius={0.5}   // Un poco más grandes
+                    pointColor={(point: any) => point.success ? 'rgba(52, 211, 153, 0.9)' : 'rgba(239, 68, 68, 0.9)'}
+                    onPointHover={handlePointHover}
 
-                // Propiedades de los Arcos Animados
-                arcsData={arcsData}
-                arcColor={'color'}
-                arcDashLength={0.4}
-                arcDashGap={0.6}
-                arcDashAnimateTime={2500} // Velocidad de la animación del arco
-                
-                width={dimensions.width}
-                height={dimensions.height}
-            />
+                    // Propiedades de los Arcos Animados
+                    arcsData={arcsData}
+                    arcColor={'color'}
+                    arcDashLength={0.4}
+                    arcDashGap={0.6}
+                    arcDashAnimateTime={2500} // Velocidad de la animación del arco
+                    
+                    width={dimensions.width}
+                    height={dimensions.height}
+                />
 
-             <div className="absolute bottom-2 right-2 flex flex-col gap-2">
-                <Button size="icon" variant="secondary" onClick={() => handleZoom(0.8)}>
-                    <ZoomIn className="h-4 w-4" />
-                </Button>
-                <Button size="icon" variant="secondary" onClick={() => handleZoom(1.2)}>
-                    <ZoomOut className="h-4 w-4" />
-                </Button>
-            </div>
-
-            {hoveredPoint && (
-                <div className="absolute top-2 left-2 pointer-events-none z-10">
-                    <Card className="bg-background/80 backdrop-blur-sm max-w-sm">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                               {hoveredPoint.success ? <CheckCircle className="h-6 w-6 text-green-500" /> : <XCircle className="h-6 w-6 text-red-500" />}
-                               <span>{hoveredPoint.success ? 'Acceso Exitoso' : 'Fallo de Seguridad'}</span>
-                            </CardTitle>
-                            <CardDescription>{hoveredPoint.country} - {hoveredPoint.ip_address}</CardDescription>
-                        </CardHeader>
-                        <CardContent className="text-sm space-y-1">
-                             <p><strong>Usuario:</strong> {hoveredPoint.user}</p>
-                             <p><strong>Hora:</strong> {format(new Date(hoveredPoint.timestamp), 'PPP p', { locale: es })}</p>
-                        </CardContent>
-                    </Card>
+                 <div className="absolute bottom-2 right-2 flex flex-col gap-2">
+                    <Button size="icon" variant="secondary" onClick={() => handleZoom(0.8)}>
+                        <ZoomIn className="h-4 w-4" />
+                    </Button>
+                    <Button size="icon" variant="secondary" onClick={() => handleZoom(1.2)}>
+                        <ZoomOut className="h-4 w-4" />
+                    </Button>
                 </div>
-            )}
-        </div>
+
+                {hoveredPoint && (
+                    <div className="absolute top-2 left-2 pointer-events-none z-10">
+                        <Card className="bg-background/80 backdrop-blur-sm max-w-sm">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                   {hoveredPoint.success ? <CheckCircle className="h-6 w-6 text-green-500" /> : <XCircle className="h-6 w-6 text-red-500" />}
+                                   <span>{hoveredPoint.success ? 'Acceso Exitoso' : 'Fallo de Seguridad'}</span>
+                                </CardTitle>
+                                <CardDescription>{hoveredPoint.country} - {hoveredPoint.ip_address}</CardDescription>
+                            </CardHeader>
+                            <CardContent className="text-sm space-y-1">
+                                 <p><strong>Usuario:</strong> {hoveredPoint.user}</p>
+                                 <p><strong>Hora:</strong> {format(new Date(hoveredPoint.timestamp), 'PPP p', { locale: es })}</p>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
     );
 };

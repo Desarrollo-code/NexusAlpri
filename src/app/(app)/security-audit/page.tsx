@@ -82,9 +82,9 @@ export default function SecurityAuditPage() {
     }, [fetchData]);
     
     const metricCards = useMemo(() => [
-        { id: 'successful-logins', title: 'Inicios Exitosos', value: stats?.successfulLogins || 0, icon: CheckCircle, event: 'SUCCESSFUL_LOGIN' },
-        { id: 'failed-logins', title: 'Intentos Fallidos', value: stats?.failedLogins || 0, icon: XCircle, event: 'FAILED_LOGIN_ATTEMPT' },
-        { id: 'role-changes', title: 'Cambios de Rol', value: stats?.roleChanges || 0, icon: UserCog, event: 'USER_ROLE_CHANGED' },
+        { id: 'successful-logins', title: 'Inicios Exitosos', value: stats?.successfulLogins ?? 0, icon: CheckCircle, event: 'SUCCESSFUL_LOGIN' },
+        { id: 'failed-logins', title: 'Intentos Fallidos', value: stats?.failedLogins ?? 0, icon: XCircle, event: 'FAILED_LOGIN_ATTEMPT' },
+        { id: 'role-changes', title: 'Cambios de Rol', value: stats?.roleChanges ?? 0, icon: UserCog, event: 'USER_ROLE_CHANGED' },
     ], [stats]);
 
     return (

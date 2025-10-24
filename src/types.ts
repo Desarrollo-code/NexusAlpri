@@ -284,12 +284,11 @@ export type SecurityLog = Prisma.SecurityLogGetPayload<{
 };
 
 export type SecurityStats = {
-    successfulLogins24h: number;
-    failedLogins24h: number;
-    roleChanges24h: number;
+    successfulLogins: number;
+    failedLogins: number;
+    roleChanges: number;
     browsers: { name: string, count: number }[];
     os: { name: string, count: number }[];
-    topIps: { ipAddress: string; country: string | null; _count: { ipAddress: number } }[];
 };
 
 
