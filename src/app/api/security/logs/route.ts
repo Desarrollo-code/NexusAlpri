@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { SecurityLogEvent, SecurityStats } from '@/types';
-import { startOfDay, endOfDay, subDays } from 'date-fns';
+import { startOfDay, endOfDay, subDays, isValid } from 'date-fns';
 import { parseUserAgent } from '@/lib/security-log-utils';
 
 export const dynamic = 'force-dynamic';
@@ -13,9 +13,11 @@ const aggregateByUserAgent = (logs: { userAgent: string | null }[]) => {
     const osCounts: Record<string, number> = {};
 
     logs.forEach(log => {
-        const { browser, os } = parseUserAgent(log.userAgent);
-        browserCounts[browser] = (browserCounts[browser] || 0) + 1;
-        osCounts[os] = (osCounts[os] || 0) + 1;
+        if (log.userAgent) { // Solo procesar si userAgent no es nulo
+            const { browser, os } = parseUserAgent(log.userAgent);
+            browserCounts[browser] = (browserCounts[browser] || 0) + 1;
+            osCounts[os] = (osCounts[os] || 0) + 1;
+        }
     });
     
     const toSortedArray = (counts: Record<string, number>) => Object.entries(counts)
@@ -45,27 +47,21 @@ export async function GET(req: NextRequest) {
         whereClause.event = eventType;
     }
 
-    if (startDateParam && endDateParam) {
-        try {
-            whereClause.createdAt = {
-                gte: startOfDay(new Date(startDateParam)),
-                lte: endOfDay(new Date(endDateParam)),
-            };
-        } catch (e) {
-            // Ignore invalid date params
-        }
-    }
+    const endDate = endDateParam && isValid(new Date(endDateParam)) ? endOfDay(new Date(endDateParam)) : endOfDay(new Date());
+    const startDate = startDateParam && isValid(new Date(startDateParam)) ? startOfDay(new Date(startDateParam)) : startOfDay(subDays(endDate, 6));
+
+    whereClause.createdAt = {
+        gte: startDate,
+        lte: endDate,
+    };
 
     try {
-        const twentyFourHoursAgo = subDays(new Date(), 1);
-
         const [
             logs, 
-            successfulLogins24h,
-            failedLogins24h,
-            roleChanges24h,
+            successfulLogins,
+            failedLogins,
+            roleChanges,
             allLogsForDeviceStats,
-            topIps,
         ] = await Promise.all([
             prisma.securityLog.findMany({
                 where: whereClause,
@@ -77,36 +73,23 @@ export async function GET(req: NextRequest) {
                 },
                 take: 500,
             }),
-            prisma.securityLog.count({ where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: twentyFourHoursAgo } } }),
-            prisma.securityLog.count({ where: { event: 'FAILED_LOGIN_ATTEMPT', createdAt: { gte: twentyFourHoursAgo } } }),
-            prisma.securityLog.count({ where: { event: 'USER_ROLE_CHANGED', createdAt: { gte: twentyFourHoursAgo } } }),
+            prisma.securityLog.count({ where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: startDate, lte: endDate } } }),
+            prisma.securityLog.count({ where: { event: 'FAILED_LOGIN_ATTEMPT', createdAt: { gte: startDate, lte: endDate } } }),
+            prisma.securityLog.count({ where: { event: 'USER_ROLE_CHANGED', createdAt: { gte: startDate, lte: endDate } } }),
             prisma.securityLog.findMany({ 
+                where: { createdAt: { gte: startDate, lte: endDate } },
                 select: { userAgent: true },
-            }),
-            prisma.securityLog.groupBy({
-                by: ['ipAddress', 'country'],
-                where: { ipAddress: { not: null } },
-                _count: {
-                    ipAddress: true,
-                },
-                orderBy: {
-                    _count: {
-                        ipAddress: 'desc',
-                    },
-                },
-                take: 5,
             }),
         ]);
 
         const { browsers, os } = aggregateByUserAgent(allLogsForDeviceStats || []);
         
         const stats: SecurityStats = {
-            successfulLogins: successfulLogins24h || 0,
-            failedLogins: failedLogins24h || 0,
-            roleChanges: roleChanges24h || 0,
-            browsers: browsers || [],
-            os: os || [],
-            topIps: topIps || [],
+            successfulLogins,
+            failedLogins,
+            roleChanges,
+            browsers,
+            os,
         };
 
         return NextResponse.json({ logs, stats });
