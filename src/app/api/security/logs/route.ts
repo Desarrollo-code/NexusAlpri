@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { SecurityLogEvent, SecurityStats } from '@/types';
-import { startOfDay, endOfDay, subDays, isValid } from 'date-fns';
+import { startOfDay, endOfDay, subDays, isValid, eachDayOfInterval, format } from 'date-fns';
 import { parseUserAgent } from '@/lib/security-log-utils';
 
 export const dynamic = 'force-dynamic';
@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
     const startDateParam = searchParams.get('startDate');
     const endDateParam = searchParams.get('endDate');
     const page = parseInt(searchParams.get('page') || '1', 10);
-    const pageSize = parseInt(searchParams.get('pageSize') || '12', 10);
+    const pageSize = 8; // Forzado a 8
 
     const skip = (page - 1) * pageSize;
 
@@ -63,10 +63,9 @@ export async function GET(req: NextRequest) {
         const [
             logs, 
             totalLogs,
-            successfulLogins,
-            failedLogins,
-            roleChanges,
             allLogsInPeriod,
+            totalActiveUsers,
+            usersWith2FA,
         ] = await Promise.all([
             prisma.securityLog.findMany({
                 where: whereClause,
@@ -80,14 +79,17 @@ export async function GET(req: NextRequest) {
                 take: pageSize,
             }),
             prisma.securityLog.count({ where: whereClause }),
-            prisma.securityLog.count({ where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: startDate, lte: endDate } } }),
-            prisma.securityLog.count({ where: { event: 'FAILED_LOGIN_ATTEMPT', createdAt: { gte: startDate, lte: endDate } } }),
-            prisma.securityLog.count({ where: { event: 'USER_ROLE_CHANGED', createdAt: { gte: startDate, lte: endDate } } }),
             prisma.securityLog.findMany({ 
                 where: { createdAt: { gte: startDate, lte: endDate } },
-                select: { userAgent: true, ipAddress: true, country: true },
+                select: { userAgent: true, ipAddress: true, country: true, event: true, createdAt: true },
             }),
+            prisma.user.count({ where: { isActive: true } }),
+            prisma.user.count({ where: { isActive: true, isTwoFactorEnabled: true } }),
         ]);
+
+        const successfulLogins = allLogsInPeriod.filter(l => l.event === 'SUCCESSFUL_LOGIN').length;
+        const failedLogins = allLogsInPeriod.filter(l => l.event === 'FAILED_LOGIN_ATTEMPT').length;
+        const roleChanges = allLogsInPeriod.filter(l => l.event === 'USER_ROLE_CHANGED').length;
 
         const { browsers, os } = aggregateByUserAgent(allLogsInPeriod || []);
 
@@ -106,10 +108,36 @@ export async function GET(req: NextRequest) {
             .slice(0, 5)
             .map(([ip, data]) => ({ ip, ...data }));
             
-        // Calculate Security Score
+        // --- Calculate Security Score and Trend ---
         const totalLogins = successfulLogins + failedLogins;
         const securityScore = totalLogins > 0 ? (successfulLogins / totalLogins) * 100 : 100;
+        
+        const trendMap = new Map<string, { success: number, fail: number }>();
+        const intervalDays = eachDayOfInterval({ start: startDate, end: endDate });
 
+        intervalDays.forEach(day => {
+            trendMap.set(format(day, 'yyyy-MM-dd'), { success: 0, fail: 0 });
+        });
+
+        allLogsInPeriod.forEach(log => {
+            const dayKey = format(log.createdAt, 'yyyy-MM-dd');
+            const dayData = trendMap.get(dayKey);
+            if (dayData) {
+                if (log.event === 'SUCCESSFUL_LOGIN') dayData.success++;
+                if (log.event === 'FAILED_LOGIN_ATTEMPT') dayData.fail++;
+            }
+        });
+
+        const securityScoreTrend = Array.from(trendMap.entries()).map(([date, counts]) => {
+            const dailyTotal = counts.success + counts.fail;
+            return {
+                date,
+                score: dailyTotal > 0 ? (counts.success / dailyTotal) * 100 : 100,
+            };
+        });
+        
+        // Calculate 2FA Adoption
+        const twoFactorAdoptionRate = totalActiveUsers > 0 ? (usersWith2FA / totalActiveUsers) * 100 : 0;
         
         const stats: SecurityStats = {
             successfulLogins,
@@ -119,6 +147,8 @@ export async function GET(req: NextRequest) {
             os,
             topIps,
             securityScore,
+            securityScoreTrend,
+            twoFactorAdoptionRate,
         };
 
         return NextResponse.json({ logs, stats, totalLogs });

@@ -1,4 +1,3 @@
-
 // src/types.ts
 import type { Prisma, User as PrismaUser } from '@prisma/client';
 
@@ -292,6 +291,8 @@ export type SecurityStats = {
     os: { name: string, count: number }[];
     topIps: { ip: string, count: number, country: string }[];
     securityScore: number;
+    securityScoreTrend: { date: string, score: number }[];
+    twoFactorAdoptionRate: number;
 };
 
 

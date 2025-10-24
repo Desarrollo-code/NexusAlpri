@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Loader2, AlertTriangle, UserCog, HelpCircle, Filter, CheckCircle, Globe } from 'lucide-react';
+import { Loader2, AlertTriangle, UserCog, HelpCircle, Filter, CheckCircle, Globe, Shield, LineChart, Percent } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, SecurityStats } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ import { useTitle } from '@/contexts/title-context';
 import { useTour } from '@/contexts/tour-context';
 import { securityAuditTour } from '@/lib/tour-steps';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { subDays, startOfDay, endOfDay, isValid } from 'date-fns';
+import { subDays, startOfDay, endOfDay, isValid, format } from 'date-fns';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import type { DateRange } from 'react-day-picker';
 import { SecurityLogTimeline } from '@/components/security/security-log-timeline';
@@ -26,7 +26,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { getEventDetails } from '@/lib/security-log-utils';
 import { SmartPagination } from '@/components/ui/pagination';
 import { useAnimatedCounter } from '@/hooks/use-animated-counter';
-
+import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { ChartTooltipContent } from '@/components/ui/chart';
+import { es } from 'date-fns/locale';
 
 const PAGE_SIZE = 8;
 
@@ -90,7 +92,6 @@ function SecurityAuditPageComponent() {
             if (dateRange?.to) params.set('endDate', dateRange.to.toISOString());
             if (activeFilter && activeFilter !== 'ALL') params.set('event', activeFilter);
             params.set('page', String(currentPage));
-            params.set('pageSize', String(PAGE_SIZE));
             
             const response = await fetch(`/api/security/logs?${params.toString()}`);
             
@@ -128,8 +129,6 @@ function SecurityAuditPageComponent() {
         if (key === 'date') {
             const range = value as DateRange;
             setDateRange(range);
-            paramsToUpdate['startDate'] = range?.from?.toISOString() ?? null;
-            paramsToUpdate['endDate'] = range?.to?.toISOString() ?? null;
         } else {
             paramsToUpdate['event'] = value as string;
         }
@@ -149,7 +148,6 @@ function SecurityAuditPageComponent() {
     }
 
     const totalPages = Math.ceil(totalLogs / PAGE_SIZE);
-    const animatedScore = useAnimatedCounter(stats.securityScore || 0);
     
     return (
         <div className="space-y-8">
@@ -176,7 +174,7 @@ function SecurityAuditPageComponent() {
             
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
                 <div className="xl:col-span-1 space-y-8">
-                     <Card>
+                    <Card>
                         <CardHeader>
                             <CardTitle>Línea de Tiempo de Eventos</CardTitle>
                             <CardDescription>Eventos de seguridad en el periodo seleccionado. Haz clic para ver detalles.</CardDescription>
@@ -199,35 +197,40 @@ function SecurityAuditPageComponent() {
                             </CardFooter>
                          )}
                     </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2"><LineChart className="h-4 w-4 text-primary"/> Tendencia de Salud de Seguridad</CardTitle>
+                        </CardHeader>
+                        <CardContent className="h-48 pr-4">
+                            {isLoading ? <Skeleton className="h-full w-full"/> : (
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={stats.securityScoreTrend}>
+                                        <defs><linearGradient id="trend-gradient" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/><stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/></linearGradient></defs>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                        <XAxis dataKey="date" tickFormatter={(str) => format(new Date(str), 'd MMM', {locale: es})} fontSize={12} tickLine={false} axisLine={false}/>
+                                        <YAxis domain={[0, 100]} unit="%" width={40} tickLine={false} axisLine={false}/>
+                                        <Tooltip content={<ChartTooltipContent formatter={(value) => `${(value as number).toFixed(1)}%`} labelFormatter={(label) => format(new Date(label), "d 'de' MMMM", { locale: es })}/>}/>
+                                        <Area type="monotone" dataKey="score" stroke="hsl(var(--primary))" fill="url(#trend-gradient)" strokeWidth={2}/>
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            )}
+                        </CardContent>
+                    </Card>
                 </div>
                 
                 <div className="xl:col-span-1 space-y-8">
                      <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
-                     <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base flex items-center gap-2">Indicador de "Salud de Seguridad"</CardTitle>
-                        </CardHeader>
-                         <CardContent className="flex flex-col items-center justify-center pt-2">
-                           {isLoading ? <Skeleton className="h-24 w-48"/> : (
-                                <>
-                                    <GaugeChart value={stats.securityScore || 0} size="xl" />
-                                    <div className="text-center -mt-4">
-                                        <p className="text-5xl font-bold text-foreground">{animatedScore}%</p>
-                                        <p className="text-sm text-muted-foreground">Índice de Confianza</p>
-                                    </div>
-                                </>
-                           )}
-                        </CardContent>
-                     </Card>
+                     <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
                 </div>
 
                 <div className="xl:col-span-1 space-y-8">
-                    <div id="security-stats-cards" className="space-y-4">
+                     <div id="security-stats-cards" className="space-y-4">
+                        <MetricCard id="security-score-card" title="Salud de Seguridad" value={isLoading ? 0 : (stats.securityScore || 0)} suffix="%" icon={Shield}/>
+                        <MetricCard id="2fa-adoption-card" title="Adopción 2FA" value={isLoading ? 0 : (stats.twoFactorAdoptionRate || 0)} suffix="%" icon={Percent}/>
                         <MetricCard id="successful-logins-card" title="Inicios de Sesión Exitosos" value={isLoading ? 0 : (stats.successfulLogins || 0)} icon={CheckCircle} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')} />
                         <MetricCard id="failed-logins-card" title="Intentos Fallidos" value={isLoading ? 0 : (stats.failedLogins || 0)} icon={AlertTriangle} onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')} />
                         <MetricCard id="role-changes-card" title="Cambios de Rol" value={isLoading ? 0 : (stats.roleChanges || 0)} icon={UserCog} onClick={() => handleFilterChange('event', 'USER_ROLE_CHANGED')} />
                     </div>
-                    <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
                 </div>
             </div>
             
