@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { SecurityLogEvent, SecurityStats } from '@/types';
 import { startOfDay, endOfDay, subDays, isValid } from 'date-fns';
-import { parseUserAgent } from '@/lib/security-log-utils';
+import parseUserAgent from '@/lib/security-log-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,11 +13,9 @@ const aggregateByUserAgent = (logs: { userAgent: string | null }[]) => {
     const osCounts: Record<string, number> = {};
 
     logs.forEach(log => {
-        if (log.userAgent) { // Solo procesar si userAgent no es nulo
-            const { browser, os } = parseUserAgent(log.userAgent);
-            browserCounts[browser] = (browserCounts[browser] || 0) + 1;
-            osCounts[os] = (osCounts[os] || 0) + 1;
-        }
+        const { browser, os } = parseUserAgent(log.userAgent);
+        browserCounts[browser] = (browserCounts[browser] || 0) + 1;
+        osCounts[os] = (osCounts[os] || 0) + 1;
     });
     
     const toSortedArray = (counts: Record<string, number>) => Object.entries(counts)
