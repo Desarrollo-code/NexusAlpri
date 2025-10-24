@@ -26,6 +26,7 @@ import { SmartPagination } from '@/components/ui/pagination';
 import { useAnimatedCounter } from '@/hooks/use-animated-counter';
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { es } from 'date-fns/locale';
+import { MetricCard } from '@/components/security/metric-card';
 
 const PAGE_SIZE = 8;
 
@@ -89,6 +90,7 @@ function SecurityAuditPageComponent() {
             if (dateRange?.to) params.set('endDate', dateRange.to.toISOString());
             if (activeFilter && activeFilter !== 'ALL') params.set('event', activeFilter);
             params.set('page', String(currentPage));
+            params.set('pageSize', String(PAGE_SIZE));
             
             const response = await fetch(`/api/security/logs?${params.toString()}`);
             
@@ -138,14 +140,12 @@ function SecurityAuditPageComponent() {
         router.push(`${pathname}?${newQuery}`);
     }
 
-
     if (currentUser?.role !== 'ADMINISTRATOR') {
         return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
     }
 
     const totalPages = Math.ceil(totalLogs / PAGE_SIZE);
-    const animatedSecurityScore = useAnimatedCounter(stats.securityScore || 0, 0, 1000);
-    
+
     return (
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -170,11 +170,12 @@ function SecurityAuditPageComponent() {
             </div>
             
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
-                 <div className="xl:col-span-2 space-y-8">
+                 {/* Columna Izquierda: Línea de tiempo */}
+                <div className="xl:col-span-1 space-y-8">
                      <Card>
                         <CardHeader>
                             <CardTitle>Línea de Tiempo de Eventos</CardTitle>
-                            <CardDescription>Eventos de seguridad en el periodo seleccionado. Haz clic para ver detalles.</CardDescription>
+                            <CardDescription>Eventos en el periodo seleccionado. Haz clic para ver detalles.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             {isLoading ? <div className="text-center py-8"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>
@@ -194,9 +195,21 @@ function SecurityAuditPageComponent() {
                             </CardFooter>
                          )}
                     </Card>
+                </div>
+                
+                 {/* Columna Central: Medidor y Top IPs */}
+                <div className="xl:col-span-1 space-y-8">
+                     <Card>
+                         <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-primary"/> Salud de Seguridad</CardTitle>
+                         </CardHeader>
+                         <CardContent className="flex flex-col items-center justify-center">
+                            <GaugeChart value={stats.securityScore || 0}/>
+                         </CardContent>
+                     </Card>
                      <Card>
                         <CardHeader>
-                            <CardTitle className="text-base flex items-center gap-2"><LineChart className="h-4 w-4 text-primary"/> Tendencia de Salud de Seguridad</CardTitle>
+                            <CardTitle className="text-base flex items-center gap-2"><LineChart className="h-4 w-4 text-primary"/> Tendencia de Salud</CardTitle>
                         </CardHeader>
                         <CardContent className="h-48 pr-4">
                             {isLoading ? <Skeleton className="h-full w-full"/> : (
@@ -214,23 +227,14 @@ function SecurityAuditPageComponent() {
                         </CardContent>
                     </Card>
                 </div>
-                
+
+                {/* Columna Derecha: Métricas y Desglose */}
                 <div className="xl:col-span-1 space-y-8">
-                     <Card>
-                         <CardHeader>
-                            <CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-primary"/> Salud de Seguridad</CardTitle>
-                         </CardHeader>
-                         <CardContent className="flex flex-col items-center justify-center">
-                            <GaugeChart value={stats.securityScore || 0}/>
-                            <p className="text-4xl font-bold -mt-8">{animatedSecurityScore}%</p>
-                            <p className="text-sm text-muted-foreground">Basado en inicios de sesión exitosos vs fallidos.</p>
-                         </CardContent>
-                     </Card>
                     <div className="grid grid-cols-2 gap-4">
-                        <Card id="successful-logins-card" className="col-span-1" onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')}><CardHeader><CardTitle className="text-sm font-medium">Inicios Exitosos</CardTitle><CheckCircle className="h-4 w-4 text-muted-foreground"/></CardHeader><CardContent><div className="text-2xl font-bold">{stats.successfulLogins}</div></CardContent></Card>
-                        <Card id="failed-logins-card" className="col-span-1" onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')}><CardHeader><CardTitle className="text-sm font-medium">Intentos Fallidos</CardTitle><AlertTriangle className="h-4 w-4 text-muted-foreground"/></CardHeader><CardContent><div className="text-2xl font-bold">{stats.failedLogins}</div></CardContent></Card>
+                        <MetricCard id="successful-logins-card" title="Inicios Exitosos" value={stats.successfulLogins || 0} icon={CheckCircle} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')}/>
+                        <MetricCard id="failed-logins-card" title="Intentos Fallidos" value={stats.failedLogins || 0} icon={AlertTriangle} onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')}/>
+                        <MetricCard id="2fa-adoption-card" title="Adopción 2FA" value={stats.twoFactorAdoptionRate || 0} icon={Percent}/>
                     </div>
-                    <Card id="2fa-adoption-card"><CardHeader><CardTitle className="text-sm font-medium">Adopción 2FA</CardTitle><Percent className="h-4 w-4 text-muted-foreground"/></CardHeader><CardContent><div className="text-2xl font-bold">{stats.twoFactorAdoptionRate?.toFixed(1)}%</div></CardContent></Card>
                     <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
                     <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
                 </div>
