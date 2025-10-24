@@ -1,9 +1,10 @@
 // src/app/(app)/security-audit/page.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback, Suspense, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Loader2, AlertTriangle, UserCog, HelpCircle, Filter, CheckCircle } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, SecurityStats, SecurityLogEvent } from '@/types';
 import { useToast } from '@/hooks/use-toast';
@@ -19,9 +20,6 @@ import { SecurityLogTimeline } from '@/components/security/security-log-timeline
 import { SecurityLogDetailSheet } from '@/components/security/security-log-detail-sheet';
 import { MetricCard } from '@/components/security/metric-card';
 import { DeviceDistributionChart } from '@/components/security/device-distribution-chart';
-import { Card, CardContent } from '@/components/ui/card';
-
-
 
 const ALL_EVENTS: { value: SecurityLogEvent | 'ALL', label: string }[] = [
     { value: 'ALL', label: 'Todos los Eventos' },
@@ -127,14 +125,6 @@ function SecurityAuditPageComponent() {
         }
         router.push(`${pathname}?${newQuery}`);
     };
-    
-    const activeFiltersCount = useMemo(() => {
-        let count = 0;
-        if (dateRange?.from || dateRange?.to) count++;
-        if (activeFilter !== 'ALL') count++;
-        return count;
-    }, [dateRange, activeFilter]);
-
 
     if (currentUser?.role !== 'ADMINISTRATOR') {
         return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
