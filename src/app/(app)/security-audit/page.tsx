@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Loader2, AlertTriangle, UserCog, HelpCircle, Filter, CheckCircle, Globe } from 'lucide-react';
+import { Loader2, AlertTriangle, UserCog, HelpCircle, Filter, CheckCircle, Globe, ShieldAlert } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, SecurityStats } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
