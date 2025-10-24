@@ -2,22 +2,24 @@
 'use client';
 import React from 'react';
 import type { SecurityLog } from '@/types';
-import { getEventDetails, parseUserAgent } from '@/lib/security-log-utils';
+import { getEventDetails } from '@/lib/security-log-utils';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Monitor, Smartphone, Globe } from 'lucide-react';
+import { Monitor, Smartphone, Globe, ShieldCheck, ShieldX, KeyRound, UserCog, ShieldAlert } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
+const iconMap = {
+  ShieldCheck, ShieldX, KeyRound, UserCog, ShieldAlert
+};
+
 const TimelineItem = ({ log, onLogClick, isLast }: { log: SecurityLog, onLogClick: (log: SecurityLog) => void, isLast: boolean }) => {
     const eventUI = getEventDetails(log.event, log.details);
-    const { browser, os } = parseUserAgent(log.userAgent);
-    const isMobileDevice = os === 'Android' || os === 'iOS';
-    const hasGeo = log.country || log.city;
+    const IconComponent = iconMap[eventUI.iconName] || ShieldAlert;
 
     return (
         <motion.div
@@ -38,7 +40,7 @@ const TimelineItem = ({ log, onLogClick, isLast }: { log: SecurityLog, onLogClic
                         "h-6 w-6 rounded-full flex items-center justify-center",
                         eventUI.variant === 'destructive' ? 'bg-destructive' : 'bg-primary'
                      )}>
-                         {React.cloneElement(eventUI.icon, { className: "h-4 w-4 text-primary-foreground"})}
+                         <IconComponent className="h-4 w-4 text-primary-foreground"/>
                      </div>
                      {!isLast && <div className="absolute top-full left-1/2 w-0.5 h-full bg-border -translate-x-1/2 mt-1" />}
                 </div>
@@ -59,18 +61,6 @@ const TimelineItem = ({ log, onLogClick, isLast }: { log: SecurityLog, onLogClic
                              <p className="font-semibold text-sm truncate">{log.user?.name || log.emailAttempt}</p>
                          </div>
                          <Badge variant={eventUI.variant} className="whitespace-nowrap">{eventUI.label}</Badge>
-                    </div>
-                    <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground pl-9">
-                        <div className="flex items-center gap-1.5">
-                            {isMobileDevice ? <Smartphone className="h-3.5 w-3.5"/> : <Monitor className="h-3.5 w-3.5"/>}
-                            <span className="truncate">{browser}, {os}</span>
-                        </div>
-                        {hasGeo && (
-                            <div className="flex items-center gap-1.5">
-                                <Globe className="h-3.5 w-3.5"/>
-                                <span className="truncate">{log.ipAddress} - {log.city}, {log.country}</span>
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>

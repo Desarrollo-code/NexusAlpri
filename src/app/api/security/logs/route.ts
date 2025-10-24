@@ -1,4 +1,3 @@
-
 // src/app/api/security/logs/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -14,14 +13,9 @@ const aggregateByUserAgent = (logs: { userAgent: string | null }[]) => {
     const osCounts: Record<string, number> = {};
 
     logs.forEach(log => {
-        if (log.userAgent) {
-            const parsed = parseUserAgent(log.userAgent);
-            browserCounts[parsed.browser] = (browserCounts[parsed.browser] || 0) + 1;
-            osCounts[parsed.os] = (osCounts[parsed.os] || 0) + 1;
-        } else {
-            browserCounts['Desconocido'] = (browserCounts['Desconocido'] || 0) + 1;
-            osCounts['Desconocido'] = (osCounts['Desconocido'] || 0) + 1;
-        }
+        const { browser, os } = parseUserAgent(log.userAgent);
+        browserCounts[browser] = (browserCounts[browser] || 0) + 1;
+        osCounts[os] = (osCounts[os] || 0) + 1;
     });
     
     const toSortedArray = (counts: Record<string, number>) => Object.entries(counts)
@@ -90,7 +84,7 @@ export async function GET(req: NextRequest) {
 
         const { browsers, os } = aggregateByUserAgent(allLogsInPeriod || []);
 
-        const ipCounts = allLogsInPeriod.reduce((acc, log) => {
+        const ipCounts = (allLogsInPeriod || []).reduce((acc, log) => {
             if (log.ipAddress) {
                 acc[log.ipAddress] = {
                     count: (acc[log.ipAddress]?.count || 0) + 1,

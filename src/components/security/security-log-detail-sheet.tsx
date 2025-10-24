@@ -8,7 +8,12 @@ import type { SecurityLog } from "@/types";
 import { format } from "date-fns";
 import { es } from 'date-fns/locale';
 import { Button } from "../ui/button";
-import { X } from "lucide-react";
+import { X, ShieldCheck, ShieldX, KeyRound, UserCog, ShieldAlert } from "lucide-react";
+import React from 'react';
+
+const iconMap = {
+  ShieldCheck, ShieldX, KeyRound, UserCog, ShieldAlert
+};
 
 const DetailRow = ({ label, value }: { label: string, value: string | null | undefined }) => (
     <div className="grid grid-cols-3 gap-4 py-3 border-b">
@@ -22,13 +27,17 @@ export const SecurityLogDetailSheet = ({ log, isOpen, onClose }: { log: Security
     
     const eventUI = getEventDetails(log.event, log.details);
     const { browser, os } = parseUserAgent(log.userAgent);
+    const IconComponent = iconMap[eventUI.iconName] || ShieldAlert;
 
     return (
         <Sheet open={isOpen} onOpenChange={onClose}>
             <SheetContent className="w-full sm:max-w-md">
                  <SheetHeader className="text-left pr-12">
                     <div className="flex items-center gap-4 mb-2">
-                        <Badge variant={eventUI.variant} className="px-3 py-1 text-sm">{eventUI.label}</Badge>
+                        <Badge variant={eventUI.variant} className="px-3 py-1 text-sm flex items-center gap-1.5">
+                            <IconComponent className="h-4 w-4" />
+                            {eventUI.label}
+                        </Badge>
                         <SheetTitle className="text-xl">Detalle del Evento</SheetTitle>
                     </div>
                     <SheetDescription>

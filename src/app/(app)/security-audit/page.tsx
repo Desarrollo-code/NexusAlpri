@@ -1,4 +1,3 @@
-
 // src/app/(app)/security-audit/page.tsx
 'use client';
 
@@ -155,7 +154,7 @@ function SecurityAuditPageComponent() {
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 <div className="lg:col-span-2 order-2 lg:order-1 space-y-8">
-                    <div id="security-stats-cards" className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                     <div id="security-stats-cards" className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                         <MetricCard id="successful-logins-card" title="Inicios de Sesión" value={isLoading ? 0 : (stats.successfulLogins || 0)} icon={CheckCircle} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')} />
                         <MetricCard id="failed-logins-card" title="Intentos Fallidos" value={isLoading ? 0 : (stats.failedLogins || 0)} icon={AlertTriangle} onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')} />
                         <MetricCard id="role-changes-card" title="Cambios de Rol" value={isLoading ? 0 : (stats.roleChanges || 0)} icon={UserCog} onClick={() => handleFilterChange('event', 'USER_ROLE_CHANGED')} />
@@ -167,6 +166,8 @@ function SecurityAuditPageComponent() {
                         </Card>
                     </div>
 
+                     <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
+                    
                      <Card>
                         <CardHeader>
                             <CardTitle>Línea de Tiempo de Eventos</CardTitle>
@@ -189,7 +190,6 @@ function SecurityAuditPageComponent() {
                 
                 <div className="lg:col-span-1 order-1 lg:order-2 space-y-8 lg:sticky lg:top-24">
                      <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
-                     <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
                 </div>
             </div>
             
