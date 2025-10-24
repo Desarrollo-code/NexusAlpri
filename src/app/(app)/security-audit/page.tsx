@@ -18,16 +18,13 @@ import { DateRangePicker } from '@/components/ui/date-range-picker';
 import type { DateRange } from 'react-day-picker';
 import { SecurityLogTimeline } from '@/components/security/security-log-timeline';
 import { SecurityLogDetailSheet } from '@/components/security/security-log-detail-sheet';
-import { MetricCard } from '@/components/security/metric-card';
 import { DeviceDistributionChart } from '@/components/security/device-distribution-chart';
 import { TopIpsCard } from '@/components/security/top-ips-card';
 import { GaugeChart } from '@/components/ui/gauge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getEventDetails } from '@/lib/security-log-utils';
 import { SmartPagination } from '@/components/ui/pagination';
 import { useAnimatedCounter } from '@/hooks/use-animated-counter';
-import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
-import { ChartTooltipContent } from '@/components/ui/chart';
+import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { es } from 'date-fns/locale';
 
 const PAGE_SIZE = 8;
@@ -127,8 +124,7 @@ function SecurityAuditPageComponent() {
         let paramsToUpdate: Record<string, string | number | null> = { page: 1 };
         
         if (key === 'date') {
-            const range = value as DateRange;
-            setDateRange(range);
+            setDateRange(value as DateRange);
         } else {
             paramsToUpdate['event'] = value as string;
         }
@@ -148,6 +144,7 @@ function SecurityAuditPageComponent() {
     }
 
     const totalPages = Math.ceil(totalLogs / PAGE_SIZE);
+    const animatedSecurityScore = useAnimatedCounter(stats.securityScore || 0, 0, 1000);
     
     return (
         <div className="space-y-8">
@@ -197,12 +194,36 @@ function SecurityAuditPageComponent() {
                             </CardFooter>
                          )}
                     </Card>
-                    <Card>
+                </div>
+                
+                <div className="xl:col-span-1 space-y-8">
+                     <Card>
+                         <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-primary"/> Salud de Seguridad</CardTitle>
+                         </CardHeader>
+                         <CardContent className="flex flex-col items-center justify-center">
+                            <GaugeChart value={stats.securityScore || 0}/>
+                            <p className="text-4xl font-bold -mt-8">{animatedSecurityScore}%</p>
+                            <p className="text-sm text-muted-foreground">Basado en inicios de sesión exitosos vs fallidos.</p>
+                         </CardContent>
+                     </Card>
+                     <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
+                </div>
+
+                <div className="xl:col-span-1 space-y-8">
+                    <div className="grid grid-cols-2 gap-4">
+                        <Card id="successful-logins-card" className="col-span-1" onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')}><CardHeader><CardTitle className="text-sm font-medium">Inicios Exitosos</CardTitle><CheckCircle className="h-4 w-4 text-muted-foreground"/></CardHeader><CardContent><div className="text-2xl font-bold">{stats.successfulLogins}</div></CardContent></Card>
+                        <Card id="failed-logins-card" className="col-span-1" onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')}><CardHeader><CardTitle className="text-sm font-medium">Intentos Fallidos</CardTitle><AlertTriangle className="h-4 w-4 text-muted-foreground"/></CardHeader><CardContent><div className="text-2xl font-bold">{stats.failedLogins}</div></CardContent></Card>
+                    </div>
+                    <Card id="2fa-adoption-card"><CardHeader><CardTitle className="text-sm font-medium">Adopción 2FA</CardTitle><Percent className="h-4 w-4 text-muted-foreground"/></CardHeader><CardContent><div className="text-2xl font-bold">{stats.twoFactorAdoptionRate?.toFixed(1)}%</div></CardContent></Card>
+                    <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
+                     <Card>
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2"><LineChart className="h-4 w-4 text-primary"/> Tendencia de Salud de Seguridad</CardTitle>
                         </CardHeader>
                         <CardContent className="h-48 pr-4">
                             {isLoading ? <Skeleton className="h-full w-full"/> : (
+                                <ChartContainer config={{ score: { label: 'Puntuación', color: 'hsl(var(--primary))' } }}>
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={stats.securityScoreTrend}>
                                         <defs><linearGradient id="trend-gradient" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/><stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/></linearGradient></defs>
@@ -213,24 +234,10 @@ function SecurityAuditPageComponent() {
                                         <Area type="monotone" dataKey="score" stroke="hsl(var(--primary))" fill="url(#trend-gradient)" strokeWidth={2}/>
                                     </AreaChart>
                                 </ResponsiveContainer>
+                                </ChartContainer>
                             )}
                         </CardContent>
                     </Card>
-                </div>
-                
-                <div className="xl:col-span-1 space-y-8">
-                     <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
-                     <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
-                </div>
-
-                <div className="xl:col-span-1 space-y-8">
-                     <div id="security-stats-cards" className="space-y-4">
-                        <MetricCard id="security-score-card" title="Salud de Seguridad" value={isLoading ? 0 : (stats.securityScore || 0)} suffix="%" icon={Shield}/>
-                        <MetricCard id="2fa-adoption-card" title="Adopción 2FA" value={isLoading ? 0 : (stats.twoFactorAdoptionRate || 0)} suffix="%" icon={Percent}/>
-                        <MetricCard id="successful-logins-card" title="Inicios de Sesión Exitosos" value={isLoading ? 0 : (stats.successfulLogins || 0)} icon={CheckCircle} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')} />
-                        <MetricCard id="failed-logins-card" title="Intentos Fallidos" value={isLoading ? 0 : (stats.failedLogins || 0)} icon={AlertTriangle} onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')} />
-                        <MetricCard id="role-changes-card" title="Cambios de Rol" value={isLoading ? 0 : (stats.roleChanges || 0)} icon={UserCog} onClick={() => handleFilterChange('event', 'USER_ROLE_CHANGED')} />
-                    </div>
                 </div>
             </div>
             
