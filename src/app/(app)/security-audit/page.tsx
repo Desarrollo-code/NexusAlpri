@@ -19,6 +19,9 @@ import { SecurityLogTimeline } from '@/components/security/security-log-timeline
 import { SecurityLogDetailSheet } from '@/components/security/security-log-detail-sheet';
 import { MetricCard } from '@/components/security/metric-card';
 import { DeviceDistributionChart } from '@/components/security/device-distribution-chart';
+import { Card, CardContent } from '@/components/ui/card';
+
+
 
 const ALL_EVENTS: { value: SecurityLogEvent | 'ALL', label: string }[] = [
     { value: 'ALL', label: 'Todos los Eventos' },
