@@ -2,10 +2,14 @@
 'use client';
 
 import type { SecurityLogEvent, UserRole } from '@/types';
-import { ShieldCheck, ShieldX, KeyRound, UserCog, ShieldAlert, Monitor, Globe } from 'lucide-react';
+import { ShieldCheck, ShieldX, KeyRound, UserCog, ShieldAlert, Monitor, Globe, Smartphone, HelpCircle } from 'lucide-react';
 import React from 'react';
 import type { VariantProps } from "class-variance-authority";
 import type { BadgeProps } from '@/components/ui/badge';
+import { IconBrandWindows } from '@/components/icons/icon-brand-windows';
+import { IconBrandLinux } from '@/components/icons/icon-brand-linux';
+import { Apple, Chrome } from 'lucide-react';
+
 
 type BadgeVariant = BadgeProps['variant'];
 
@@ -88,10 +92,10 @@ export const parseUserAgent = (userAgent: string | null | undefined): { browser:
     let os = 'Desconocido';
 
     // OS detection
-    if (userAgent.includes('Windows NT 10.0')) os = 'Windows 11/10';
-    else if (userAgent.includes('Windows NT 6.3')) os = 'Windows 8.1';
-    else if (userAgent.includes('Windows NT 6.2')) os = 'Windows 8';
-    else if (userAgent.includes('Windows NT 6.1')) os = 'Windows 7';
+    if (userAgent.includes('Windows NT 10.0')) os = 'Windows';
+    else if (userAgent.includes('Windows NT 6.3')) os = 'Windows';
+    else if (userAgent.includes('Windows NT 6.2')) os = 'Windows';
+    else if (userAgent.includes('Windows NT 6.1')) os = 'Windows';
     else if (userAgent.includes('Mac OS X')) os = 'macOS';
     else if (userAgent.includes('Linux')) os = 'Linux';
     else if (userAgent.includes('Android')) os = 'Android';
@@ -101,7 +105,7 @@ export const parseUserAgent = (userAgent: string | null | undefined): { browser:
     if (userAgent.includes('Edg/')) browser = 'Edge';
     else if (userAgent.includes('Chrome/')) browser = 'Chrome';
     else if (userAgent.includes('Firefox/')) browser = 'Firefox';
-    else if (userAgent.includes('Safari/')) browser = 'Safari';
+    else if (userAgent.includes('Safari/') && !userAgent.includes('Chrome/')) browser = 'Safari';
 
     return { browser, os };
 };

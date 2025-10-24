@@ -13,14 +13,9 @@ const aggregateByUserAgent = (logs: { userAgent: string | null }[]) => {
     const osCounts: Record<string, number> = {};
 
     logs.forEach(log => {
-        // Asegurarnos de que el userAgent no es nulo antes de pasarlo
-        if (log.userAgent) {
-            const { browser, os } = parseUserAgent(log.userAgent);
-            browserCounts[browser] = (browserCounts[browser] || 0) + 1;
-            osCounts[os] = (osCounts[os] || 0) + 1;
-        } else {
-            // Contabilizar los desconocidos si es necesario
-        }
+        const { browser, os } = parseUserAgent(log.userAgent);
+        browserCounts[browser] = (browserCounts[browser] || 0) + 1;
+        osCounts[os] = (osCounts[os] || 0) + 1;
     });
     
     const toSortedArray = (counts: Record<string, number>) => Object.entries(counts)
@@ -106,12 +101,12 @@ export async function GET(req: NextRequest) {
         const { browsers, os } = aggregateByUserAgent(allLogsForDeviceStats || []);
         
         const stats: SecurityStats = {
-            successfulLogins: successfulLogins24h,
-            failedLogins: failedLogins24h,
-            roleChanges: roleChanges24h,
-            browsers,
-            os,
-            topIps,
+            successfulLogins: successfulLogins24h || 0,
+            failedLogins: failedLogins24h || 0,
+            roleChanges: roleChanges24h || 0,
+            browsers: browsers || [],
+            os: os || [],
+            topIps: topIps || [],
         };
 
         return NextResponse.json({ logs, stats });
