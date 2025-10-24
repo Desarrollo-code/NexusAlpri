@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { SecurityLogEvent, SecurityStats } from '@/types';
-import { startOfDay, endOfDay } from 'date-fns';
+import { startOfDay, endOfDay, subDays } from 'date-fns';
 import { parseUserAgent } from '@/lib/security-log-utils';
 
 export const dynamic = 'force-dynamic';
@@ -19,9 +19,7 @@ const aggregateByUserAgent = (logs: { userAgent: string | null }[]) => {
             browserCounts[browser] = (browserCounts[browser] || 0) + 1;
             osCounts[os] = (osCounts[os] || 0) + 1;
         } else {
-            // Contabilizar los desconocidos
-            browserCounts['Desconocido'] = (browserCounts['Desconocido'] || 0) + 1;
-            osCounts['Desconocido'] = (osCounts['Desconocido'] || 0) + 1;
+            // Contabilizar los desconocidos si es necesario
         }
     });
     
@@ -64,37 +62,56 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-        const [logs, successfulLogins, failedLogins, roleChanges] = await Promise.all([
+        const twentyFourHoursAgo = subDays(new Date(), 1);
+
+        const [
+            logs, 
+            successfulLogins24h,
+            failedLogins24h,
+            roleChanges24h,
+            allLogsForDeviceStats,
+            topIps,
+        ] = await Promise.all([
             prisma.securityLog.findMany({
                 where: whereClause,
-                orderBy: {
-                    createdAt: 'desc',
-                },
+                orderBy: { createdAt: 'desc' },
                 include: {
                     user: {
-                        select: {
-                            id: true,
-                            name: true,
-                            avatar: true,
-                            email: true,
-                        },
+                        select: { id: true, name: true, avatar: true, email: true },
                     },
                 },
-                take: 500, // Limit to the most recent 500 logs for performance
+                take: 500,
             }),
-            prisma.securityLog.count({ where: { event: 'SUCCESSFUL_LOGIN', ...whereClause } }),
-            prisma.securityLog.count({ where: { event: 'FAILED_LOGIN_ATTEMPT', ...whereClause } }),
-            prisma.securityLog.count({ where: { event: 'USER_ROLE_CHANGED', ...whereClause } }),
+            prisma.securityLog.count({ where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: twentyFourHoursAgo } } }),
+            prisma.securityLog.count({ where: { event: 'FAILED_LOGIN_ATTEMPT', createdAt: { gte: twentyFourHoursAgo } } }),
+            prisma.securityLog.count({ where: { event: 'USER_ROLE_CHANGED', createdAt: { gte: twentyFourHoursAgo } } }),
+            prisma.securityLog.findMany({ 
+                select: { userAgent: true },
+            }),
+            prisma.securityLog.groupBy({
+                by: ['ipAddress', 'country'],
+                where: { ipAddress: { not: null } },
+                _count: {
+                    ipAddress: true,
+                },
+                orderBy: {
+                    _count: {
+                        ipAddress: 'desc',
+                    },
+                },
+                take: 5,
+            }),
         ]);
 
-        const { browsers, os } = aggregateByUserAgent(logs || []);
+        const { browsers, os } = aggregateByUserAgent(allLogsForDeviceStats || []);
         
-        const stats: Partial<SecurityStats> = {
-            successfulLogins,
-            failedLogins,
-            roleChanges,
+        const stats: SecurityStats = {
+            successfulLogins: successfulLogins24h,
+            failedLogins: failedLogins24h,
+            roleChanges: roleChanges24h,
             browsers,
             os,
+            topIps,
         };
 
         return NextResponse.json({ logs, stats });
