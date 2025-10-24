@@ -1,3 +1,4 @@
+
 // src/app/(app)/security-audit/page.tsx
 'use client';
 
@@ -5,7 +6,7 @@ import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Loader2, AlertTriangle, UserCog, HelpCircle, Filter, CheckCircle, Globe, Shield, LineChart, Percent } from 'lucide-react';
+import { Loader2, AlertTriangle, UserCog, HelpCircle, Filter, CheckCircle, Shield, LineChart, Percent } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, SecurityStats } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -23,7 +24,8 @@ import { TopIpsCard } from '@/components/security/top-ips-card';
 import { GaugeChart } from '@/components/ui/gauge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SmartPagination } from '@/components/ui/pagination';
-import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ChartContainer, ChartTooltipContent } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
+import { ResponsiveContainer } from 'recharts';
 import { es } from 'date-fns/locale';
 import { MetricCard } from '@/components/security/metric-card';
 
@@ -169,7 +171,6 @@ function SecurityAuditPageComponent() {
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                 {/* Columna Izquierda: Línea de tiempo */}
                 <div className="lg:col-span-1 space-y-8">
                      <Card>
                         <CardHeader>
@@ -196,7 +197,6 @@ function SecurityAuditPageComponent() {
                     </Card>
                 </div>
                 
-                 {/* Columna Central: Indicadores y Top IPs */}
                 <div className="lg:col-span-1 space-y-8">
                      <Card>
                          <CardHeader>
@@ -211,7 +211,7 @@ function SecurityAuditPageComponent() {
                             <CardTitle className="text-base flex items-center gap-2"><LineChart className="h-4 w-4 text-primary"/> Tendencia de Salud</CardTitle>
                         </CardHeader>
                         <CardContent className="h-48">
-                           <ChartContainer config={{ score: { label: 'Puntuación', color: 'hsl(var(--primary))' } }}>
+                          <ChartContainer config={{ score: { label: 'Puntuación', color: 'hsl(var(--primary))' } }}>
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={stats.securityScoreTrend} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                                         <defs><linearGradient id="trend-gradient" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/><stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/></linearGradient></defs>
@@ -228,7 +228,6 @@ function SecurityAuditPageComponent() {
                     <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
                 </div>
 
-                {/* Columna Derecha: Métricas y Desglose */}
                 <div className="lg:col-span-1 space-y-8">
                     <div className="grid grid-cols-1 gap-4">
                         <MetricCard id="successful-logins-card" title="Inicios Exitosos" value={stats.successfulLogins || 0} icon={CheckCircle} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')}/>
