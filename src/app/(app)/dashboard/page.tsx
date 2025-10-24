@@ -336,7 +336,7 @@ function StudentDashboard({ stats, announcements, myCourses, assignedCourses }: 
                   ))}
                 </div>
               ) : (
-                <p className="pt-6 text-center text-muted-foreground text-sm">No hay anuncios recientes.</p>
+                <p className="text-sm text-center text-muted-foreground">No hay anuncios recientes.</p>
               )}
             </CardContent>
           </Card>

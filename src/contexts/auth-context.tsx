@@ -45,18 +45,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchSessionData = useCallback(async () => {
     try {
-        const [settingsRes, userRes] = await Promise.all([
-            fetch('/api/settings', { cache: 'no-store' }),
-            fetch('/api/auth/me', { cache: 'no-store' }),
-        ]);
-
+        const settingsRes = await fetch('/api/settings', { cache: 'no-store' });
         const settingsData = settingsRes.ok ? await settingsRes.json() : DEFAULT_SETTINGS;
         setSettings(settingsData);
         
+        // Fetch user data only after settings are loaded
+        const userRes = await fetch('/api/auth/me', { cache: 'no-store' });
         if (userRes.ok) {
           const userData = await userRes.json();
           setUser(userData.user);
         } else {
+          // It's normal for this to fail for unauthenticated users
           setUser(null);
         }
         
@@ -87,7 +86,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Fallo al llamar a la API de logout", error);
     } finally {
       setUser(null);
-      // Forzar tema claro al cerrar sesión
       setTheme('light'); 
       router.push('/sign-in');
     }
@@ -96,7 +94,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const updateUser = useCallback((updatedData: Partial<User>) => {
     setUser(prevUser => {
       if (!prevUser) return null;
-      // Si el tema cambia, lo aplicamos
       if (updatedData.theme && updatedData.theme !== prevUser.theme) {
           setTheme(updatedData.theme);
       }
