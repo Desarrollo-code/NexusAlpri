@@ -4,12 +4,12 @@
 import React, { useState, useEffect, useCallback, Suspense, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { Loader2, AlertTriangle, UserCog, HelpCircle, Filter } from 'lucide-react';
+import { Loader2, AlertTriangle, UserCog, HelpCircle, Filter, CheckCircle } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, SecurityStats, SecurityLogEvent } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { useTitle } from '@/contexts/title-context';
-import { useTour } from '@/components/tour/tour-context';
+import { useTour } from '@/contexts/tour-context';
 import { securityAuditTour } from '@/lib/tour-steps';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { subDays, startOfDay, endOfDay } from 'date-fns';
@@ -19,8 +19,6 @@ import { SecurityLogTimeline } from '@/components/security/security-log-timeline
 import { SecurityLogDetailSheet } from '@/components/security/security-log-detail-sheet';
 import { MetricCard } from '@/components/security/metric-card';
 import { DeviceDistributionChart } from '@/components/security/device-distribution-chart';
-import { Card, CardContent } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 
 const ALL_EVENTS: { value: SecurityLogEvent | 'ALL', label: string }[] = [
     { value: 'ALL', label: 'Todos los Eventos' },
@@ -49,7 +47,7 @@ function SecurityAuditPageComponent() {
 
     const activeFilter = searchParams.get('event') || 'ALL';
     const [dateRange, setDateRange] = useState<DateRange | undefined>({
-        from: startOfDay(subDays(new Date(), 29)),
+        from: startOfDay(subDays(new Date(), 6)),
         to: endOfDay(new Date()),
     });
     
