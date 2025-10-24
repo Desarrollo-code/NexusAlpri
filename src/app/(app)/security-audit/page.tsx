@@ -170,8 +170,8 @@ function SecurityAuditPageComponent() {
             </div>
             
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
-                <div className="xl:col-span-1 space-y-8">
-                    <Card>
+                <div className="xl:col-span-2 space-y-8">
+                     <Card>
                         <CardHeader>
                             <CardTitle>Línea de Tiempo de Eventos</CardTitle>
                             <CardDescription>Eventos de seguridad en el periodo seleccionado. Haz clic para ver detalles.</CardDescription>
@@ -194,29 +194,6 @@ function SecurityAuditPageComponent() {
                             </CardFooter>
                          )}
                     </Card>
-                </div>
-                
-                <div className="xl:col-span-1 space-y-8">
-                     <Card>
-                         <CardHeader>
-                            <CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-primary"/> Salud de Seguridad</CardTitle>
-                         </CardHeader>
-                         <CardContent className="flex flex-col items-center justify-center">
-                            <GaugeChart value={stats.securityScore || 0}/>
-                            <p className="text-4xl font-bold -mt-8">{animatedSecurityScore}%</p>
-                            <p className="text-sm text-muted-foreground">Basado en inicios de sesión exitosos vs fallidos.</p>
-                         </CardContent>
-                     </Card>
-                     <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
-                </div>
-
-                <div className="xl:col-span-1 space-y-8">
-                    <div className="grid grid-cols-2 gap-4">
-                        <Card id="successful-logins-card" className="col-span-1" onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')}><CardHeader><CardTitle className="text-sm font-medium">Inicios Exitosos</CardTitle><CheckCircle className="h-4 w-4 text-muted-foreground"/></CardHeader><CardContent><div className="text-2xl font-bold">{stats.successfulLogins}</div></CardContent></Card>
-                        <Card id="failed-logins-card" className="col-span-1" onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')}><CardHeader><CardTitle className="text-sm font-medium">Intentos Fallidos</CardTitle><AlertTriangle className="h-4 w-4 text-muted-foreground"/></CardHeader><CardContent><div className="text-2xl font-bold">{stats.failedLogins}</div></CardContent></Card>
-                    </div>
-                    <Card id="2fa-adoption-card"><CardHeader><CardTitle className="text-sm font-medium">Adopción 2FA</CardTitle><Percent className="h-4 w-4 text-muted-foreground"/></CardHeader><CardContent><div className="text-2xl font-bold">{stats.twoFactorAdoptionRate?.toFixed(1)}%</div></CardContent></Card>
-                    <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
                      <Card>
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2"><LineChart className="h-4 w-4 text-primary"/> Tendencia de Salud de Seguridad</CardTitle>
@@ -238,6 +215,26 @@ function SecurityAuditPageComponent() {
                             )}
                         </CardContent>
                     </Card>
+                </div>
+                
+                <div className="xl:col-span-1 space-y-8">
+                     <Card>
+                         <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-primary"/> Salud de Seguridad</CardTitle>
+                         </CardHeader>
+                         <CardContent className="flex flex-col items-center justify-center">
+                            <GaugeChart value={stats.securityScore || 0}/>
+                            <p className="text-4xl font-bold -mt-8">{animatedSecurityScore}%</p>
+                            <p className="text-sm text-muted-foreground">Basado en inicios de sesión exitosos vs fallidos.</p>
+                         </CardContent>
+                     </Card>
+                    <div className="grid grid-cols-2 gap-4">
+                        <Card id="successful-logins-card" className="col-span-1" onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')}><CardHeader><CardTitle className="text-sm font-medium">Inicios Exitosos</CardTitle><CheckCircle className="h-4 w-4 text-muted-foreground"/></CardHeader><CardContent><div className="text-2xl font-bold">{stats.successfulLogins}</div></CardContent></Card>
+                        <Card id="failed-logins-card" className="col-span-1" onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')}><CardHeader><CardTitle className="text-sm font-medium">Intentos Fallidos</CardTitle><AlertTriangle className="h-4 w-4 text-muted-foreground"/></CardHeader><CardContent><div className="text-2xl font-bold">{stats.failedLogins}</div></CardContent></Card>
+                    </div>
+                    <Card id="2fa-adoption-card"><CardHeader><CardTitle className="text-sm font-medium">Adopción 2FA</CardTitle><Percent className="h-4 w-4 text-muted-foreground"/></CardHeader><CardContent><div className="text-2xl font-bold">{stats.twoFactorAdoptionRate?.toFixed(1)}%</div></CardContent></Card>
+                    <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
+                    <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
                 </div>
             </div>
             

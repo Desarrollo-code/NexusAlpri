@@ -316,6 +316,7 @@ const ChartLegendContent = React.forwardRef<
 )
 ChartLegendContent.displayName = "ChartLegend"
 
+// Helper to extract item config from a payload.
 function getPayloadConfigFromPayload(
   config: ChartConfig,
   payload: unknown,
@@ -369,6 +370,7 @@ const XAxis = RechartsPrimitive.XAxis;
 const YAxis = RechartsPrimitive.YAxis;
 const Legend = RechartsPrimitive.Legend;
 const Area = RechartsPrimitive.Area;
+const ResponsiveContainer = RechartsPrimitive.ResponsiveContainer;
 
 
 export {
@@ -393,4 +395,5 @@ export {
   XAxis,
   YAxis,
   Legend,
+  ResponsiveContainer
 }
