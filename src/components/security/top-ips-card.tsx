@@ -1,4 +1,3 @@
-
 // src/components/security/top-ips-card.tsx
 'use client';
 import React from 'react';
