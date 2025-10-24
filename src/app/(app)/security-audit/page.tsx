@@ -7,7 +7,7 @@ import { Loader2, AlertTriangle, CheckCircle, XCircle, UserCog, Filter, HelpCirc
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import type { SecurityLog, SecurityStats, SecurityLogEvent } from '@/types';
 import { Button } from '@/components/ui/button';
-import { startOfDay, subDays } from 'date-fns';
+import { startOfDay, subDays, endOfDay } from 'date-fns';
 import { SecurityLogDetailSheet } from '@/components/security/security-log-detail-sheet';
 import { SecurityLogTimeline } from '@/components/security/security-log-timeline';
 import { DeviceDistributionChart } from '@/components/security/device-distribution-chart';
