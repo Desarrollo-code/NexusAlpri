@@ -1,31 +1,26 @@
 // src/app/(app)/security-audit/page.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, Suspense, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, Monitor, Globe, HelpCircle, AlertTriangle, UserCog } from 'lucide-react';
-import type { SecurityLog as AppSecurityLog, User as AppUser, SecurityLogEvent } from '@/types';
+import { Loader2, AlertTriangle, UserCog, HelpCircle, Filter } from 'lucide-react';
+import type { SecurityLog as AppSecurityLog, SecurityStats, SecurityLogEvent } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import Link from 'next/link';
-import { getEventDetails, parseUserAgent } from '@/lib/security-log-utils';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { useTitle } from '@/contexts/title-context';
-import { SmartPagination } from '@/components/ui/pagination';
-import { Identicon } from '@/components/ui/identicon';
+import { useTour } from '@/components/tour/tour-context';
+import { securityAuditTour } from '@/lib/tour-steps';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-interface SecurityLogWithUser extends AppSecurityLog {
-    user: Pick<AppUser, 'id' | 'name' | 'avatar'> | null;
-}
-
-const PAGE_SIZE = 20;
+import { subDays, startOfDay, endOfDay } from 'date-fns';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
+import { type DateRange } from 'react-day-picker';
+import { SecurityLogTimeline } from '@/components/security/security-log-timeline';
+import { SecurityLogDetailSheet } from '@/components/security/security-log-detail-sheet';
+import { GlobalAccessMap } from '@/components/security/global-access-map';
+import { MetricCard } from '@/components/security/metric-card';
+import { DeviceDistributionChart } from '@/components/security/device-distribution-chart';
+import { Card, CardContent } from '@/components/ui/card';
 
 const ALL_EVENTS: { value: SecurityLogEvent | 'ALL', label: string }[] = [
     { value: 'ALL', label: 'Todos los Eventos' },
@@ -44,46 +39,71 @@ function SecurityAuditPageComponent() {
     const searchParams = useSearchParams();
     const { toast } = useToast();
     const { setPageTitle } = useTitle();
+    const { startTour, forceStartTour } = useTour();
 
-    const [logs, setLogs] = useState<SecurityLogWithUser[]>([]);
-    const [totalLogs, setTotalLogs] = useState(0);
+    const [logs, setLogs] = useState<AppSecurityLog[]>([]);
+    const [stats, setStats] = useState<Partial<SecurityStats>>({});
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    
-    const activeFilter = searchParams.get('event') || 'ALL';
-    const currentPage = Number(searchParams.get('page')) || 1;
-    const totalPages = Math.ceil(totalLogs / PAGE_SIZE);
+    const [selectedLog, setSelectedLog] = useState<AppSecurityLog | null>(null);
 
+    const activeFilter = searchParams.get('event') || 'ALL';
+    const [dateRange, setDateRange] = useState<DateRange | undefined>({
+        from: startOfDay(subDays(new Date(), 29)),
+        to: endOfDay(new Date()),
+    });
+    
     useEffect(() => {
         setPageTitle('Auditoría de Seguridad');
-    }, [setPageTitle]);
+        startTour('securityAudit', securityAuditTour);
+    }, [setPageTitle, startTour]);
+
+    const createQueryString = useCallback((params: Record<string, string | null>) => {
+        const currentParams = new URLSearchParams(searchParams.toString());
+        for (const key in params) {
+            const value = params[key];
+            if (value === null) {
+                currentParams.delete(key);
+            } else {
+                currentParams.set(key, value);
+            }
+        }
+        return currentParams.toString();
+    }, [searchParams]);
 
     const fetchData = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         try {
-            const params = new URLSearchParams({
-                page: String(currentPage),
-                pageSize: String(PAGE_SIZE),
-                ...(activeFilter !== 'ALL' && { event: activeFilter })
-            });
+            const params = new URLSearchParams();
+            if (dateRange?.from) params.set('startDate', dateRange.from.toISOString());
+            if (dateRange?.to) params.set('endDate', dateRange.to.toISOString());
+            if (activeFilter && activeFilter !== 'ALL') params.set('event', activeFilter);
+            
+            const [logsRes, statsRes] = await Promise.all([
+                fetch(`/api/security/logs?${params.toString()}`),
+                fetch(`/api/security/stats?${params.toString()}`)
+            ]);
 
-            const logsResponse = await fetch(`/api/security/logs?${params.toString()}`);
+            if (!logsRes.ok || !statsRes.ok) {
+                 const errorLogs = !logsRes.ok ? await logsRes.json() : null;
+                 const errorStats = !statsRes.ok ? await statsRes.json() : null;
+                 throw new Error(errorLogs?.message || errorStats?.message || "Failed to fetch security data");
+            }
             
-            if (!logsResponse.ok) throw new Error((await logsResponse.json()).message || 'Failed to fetch security logs');
+            const logsData = await logsRes.json();
+            const statsData = await statsRes.json();
             
-            const logsData = await logsResponse.json();
             setLogs(logsData.logs || []);
-            setTotalLogs(logsData.totalLogs || 0);
-
+            setStats(statsData || {});
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Unknown error fetching data');
             toast({ title: 'Error', description: err instanceof Error ? err.message : 'Could not load security data.', variant: 'destructive' });
         } finally {
             setIsLoading(false);
         }
-    }, [toast, currentPage, activeFilter]);
-
+    }, [toast, dateRange, activeFilter]);
+    
     useEffect(() => {
         if (currentUser?.role !== 'ADMINISTRATOR') {
             router.push('/dashboard');
@@ -91,23 +111,29 @@ function SecurityAuditPageComponent() {
         }
         fetchData();
     }, [currentUser, router, fetchData]);
-    
-    const createQueryString = useCallback((paramsToUpdate: Record<string, string | number | null>) => {
-        const params = new URLSearchParams(searchParams.toString());
-        Object.entries(paramsToUpdate).forEach(([name, value]) => {
-            if (value === null || value === '' || (name === 'event' && value === 'ALL')) params.delete(name);
-            else params.set(name, String(value));
-        });
-        return params.toString();
-    }, [searchParams]);
 
-    const handleFilterChange = (newEvent: string) => {
-        router.push(`${pathname}?${createQueryString({ event: newEvent, page: 1 })}`);
-    }
-
-    const handlePageChange = (page: number) => {
-        router.push(`${pathname}?${createQueryString({ page })}`);
+    const handleFilterChange = (key: 'event' | 'date', value: string | DateRange | undefined | null) => {
+        let newQuery;
+        if (key === 'date') {
+            const range = value as DateRange;
+            newQuery = createQueryString({
+                startDate: range?.from?.toISOString() ?? null,
+                endDate: range?.to?.toISOString() ?? null,
+            });
+             setDateRange(range);
+        } else {
+            newQuery = createQueryString({ event: value as string });
+        }
+        router.push(`${pathname}?${newQuery}`);
     };
+    
+    const activeFiltersCount = useMemo(() => {
+        let count = 0;
+        if (dateRange?.from || dateRange?.to) count++;
+        if (activeFilter !== 'ALL') count++;
+        return count;
+    }, [dateRange, activeFilter]);
+
 
     if (currentUser?.role !== 'ADMINISTRATOR') {
         return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
@@ -117,87 +143,59 @@ function SecurityAuditPageComponent() {
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="space-y-1">
-                    <h1 className="text-2xl font-bold">Auditoría de Seguridad</h1>
-                    <p className="text-muted-foreground">Revisa los eventos de seguridad importantes de la plataforma.</p>
+                    <p className="text-muted-foreground">Analiza la actividad de seguridad de tu plataforma.</p>
+                </div>
+                 <div className="flex items-center gap-2">
+                    <DateRangePicker date={dateRange} onDateChange={(range) => handleFilterChange('date', range)} />
+                     <Select value={activeFilter} onValueChange={(v) => handleFilterChange('event', v)}>
+                        <SelectTrigger className="w-full sm:w-[220px]">
+                            <SelectValue placeholder="Filtrar por evento"/>
+                        </SelectTrigger>
+                        <SelectContent>
+                            {ALL_EVENTS.map(event => (<SelectItem key={event.value} value={event.value}>{event.label}</SelectItem>))}
+                        </SelectContent>
+                    </Select>
+                    <Button variant="outline" size="sm" onClick={() => forceStartTour('securityAudit', securityAuditTour)}>
+                        <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+                    </Button>
                 </div>
             </div>
             
-            <TooltipProvider>
-                <Card id="security-log-table">
-                    <CardHeader>
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                            <div>
-                                <CardTitle>Registro de Eventos</CardTitle>
-                                {!isLoading && <CardDescription>Mostrando {logs.length} de {totalLogs} registros.</CardDescription>}
-                            </div>
-                            <div id="security-event-filter">
-                                <Select value={activeFilter} onValueChange={handleFilterChange}>
-                                    <SelectTrigger className="w-full sm:w-[250px]"><SelectValue /></SelectTrigger>
-                                    <SelectContent>
-                                        {ALL_EVENTS.map(event => (<SelectItem key={event.value} value={event.value}>{event.label}</SelectItem>))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        {(isLoading && logs.length === 0) ? <div className="text-center py-8"><Loader2 className="h-8 w-8 animate-spin mx-auto" /></div> : 
-                            error ? <div className="text-center py-8 text-destructive">{error}</div> : 
-                            logs.length === 0 ? <p className="text-center text-muted-foreground py-8">No hay registros para el filtro seleccionado.</p> : (
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="w-[200px]">Evento</TableHead>
-                                            <TableHead>Detalles</TableHead>
-                                            <TableHead>Usuario Afectado</TableHead>
-                                            <TableHead>Dispositivo</TableHead>
-                                            <TableHead>Ubicación</TableHead>
-                                            <TableHead className="text-right">Fecha y Hora</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {logs.map((log) => {
-                                            const eventDetails = getEventDetails(log.event as SecurityLogEvent, log.details);
-                                            const { browser, os } = parseUserAgent(log.userAgent);
-                                            return (
-                                                <TableRow key={log.id}>
-                                                    <TableCell><div className="flex items-center gap-2">{eventDetails.icon}<Badge variant={eventDetails.variant}>{eventDetails.label}</Badge></div></TableCell>
-                                                    <TableCell className="text-xs text-muted-foreground">{eventDetails.details}</TableCell>
-                                                    <TableCell>
-                                                        {log.user ? (
-                                                            <div className="flex items-center gap-2">
-                                                                <Avatar className="h-8 w-8"><AvatarImage src={log.user.avatar || undefined} /><AvatarFallback><Identicon userId={log.user.id} /></AvatarFallback></Avatar>
-                                                                <span className="font-medium">{log.user.name}</span>
-                                                            </div>
-                                                        ) : <div className="flex items-center gap-2 text-muted-foreground"><div className="h-8 w-8 flex items-center justify-center rounded-full bg-muted"><UserCog className="h-4 w-4"/></div><span className="text-xs font-mono">{log.emailAttempt || 'Desconocido'}</span></div>}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Tooltip>
-                                                            <TooltipTrigger><div className="flex items-center gap-2 text-xs"><Monitor className="h-4 w-4 text-muted-foreground"/> {browser} en {os}</div></TooltipTrigger>
-                                                            <TooltipContent className="max-w-xs break-words"><p>{log.userAgent}</p></TooltipContent>
-                                                        </Tooltip>
-                                                    </TableCell>
-                                                    <TableCell><div className="flex items-center gap-2 text-xs"><Globe className="h-4 w-4 text-muted-foreground"/>{log.city && log.country ? `${log.city}, ${log.country}` : (log.ipAddress || 'Desconocida')}</div></TableCell>
-                                                    <TableCell className="text-right text-xs text-muted-foreground">{new Date(log.createdAt).toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'medium', timeStyle: 'short' })}</TableCell>
-                                                </TableRow>
-                                            );
-                                        })}
-                                    </TableBody>
-                                </Table>
-                            )}
-                    </CardContent>
-                    {totalPages > 1 && (<CardFooter><SmartPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} /></CardFooter>)}
-                </Card>
-            </TooltipProvider>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="security-stats-cards">
+                 <MetricCard id="successful-logins-card" title="Inicios de Sesión Exitosos" value={stats.successfulLogins || 0} icon={CheckCircle} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')} />
+                 <MetricCard id="failed-logins-card" title="Intentos Fallidos" value={stats.failedLogins || 0} icon={AlertTriangle} onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')} />
+                 <MetricCard id="role-changes-card" title="Cambios de Rol" value={stats.roleChanges || 0} icon={UserCog} onClick={() => handleFilterChange('event', 'USER_ROLE_CHANGED')} />
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <div className="xl:col-span-2">
+                   <GlobalAccessMap accessPoints={logs} />
+                </div>
+                <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
+            </div>
+            
+            <Card>
+                <CardHeader>
+                    <CardTitle>Línea de Tiempo de Eventos</CardTitle>
+                    <CardDescription>Eventos de seguridad en el período seleccionado. Haz clic en un evento para ver detalles.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {isLoading ? <div className="text-center py-8"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>
+                     : error ? <div className="text-center py-8 text-destructive">{error}</div>
+                     : logs.length === 0 ? <p className="text-center text-muted-foreground py-8">No hay registros para los filtros seleccionados.</p>
+                     : <SecurityLogTimeline logs={logs} onLogClick={setSelectedLog} />}
+                </CardContent>
+            </Card>
+
+            {selectedLog && <SecurityLogDetailSheet log={selectedLog} isOpen={!!selectedLog} onClose={() => setSelectedLog(null)} />}
         </div>
     );
 }
 
-
-export default function SecurityAuditPage() {
+export default function SecurityAuditPageWrapper() {
     return (
-        <Suspense fallback={<div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin"/></div>}>
+        <Suspense fallback={<div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
             <SecurityAuditPageComponent />
         </Suspense>
-    )
+    );
 }
