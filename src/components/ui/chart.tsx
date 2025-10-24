@@ -355,24 +355,6 @@ function getPayloadConfigFromPayload(
     : config[key as keyof typeof config]
 }
 
-const BarChart = RechartsPrimitive.BarChart
-const Bar = RechartsPrimitive.Bar
-const Cell = RechartsPrimitive.Cell
-const AreaChart = RechartsPrimitive.AreaChart
-const PieChart = RechartsPrimitive.PieChart
-const Pie = RechartsPrimitive.Pie
-const ComposedChart = RechartsPrimitive.ComposedChart
-const Line = RechartsPrimitive.Line
-const Sector = RechartsPrimitive.Sector;
-const Label = RechartsPrimitive.Label;
-const CartesianGrid = RechartsPrimitive.CartesianGrid;
-const XAxis = RechartsPrimitive.XAxis;
-const YAxis = RechartsPrimitive.YAxis;
-const Legend = RechartsPrimitive.Legend;
-const Area = RechartsPrimitive.Area;
-const ResponsiveContainer = RechartsPrimitive.ResponsiveContainer;
-
-
 export {
   ChartContainer,
   ChartTooltip,
@@ -380,20 +362,22 @@ export {
   ChartLegend,
   ChartLegendContent,
   ChartStyle,
-  BarChart,
-  Bar,
-  Cell,
-  AreaChart,
-  Area,
-  PieChart,
-  Pie,
-  ComposedChart,
-  Line,
-  Sector,
-  Label,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  Legend,
-  ResponsiveContainer
 }
+
+// Re-export primitives from Recharts for convenience
+export const BarChart = RechartsPrimitive.BarChart
+export const Bar = RechartsPrimitive.Bar
+export const Cell = RechartsPrimitive.Cell
+export const AreaChart = RechartsPrimitive.AreaChart
+export const Area = RechartsPrimitive.Area
+export const PieChart = RechartsPrimitive.PieChart
+export const Pie = RechartsPrimitive.Pie
+export const ComposedChart = RechartsPrimitive.ComposedChart
+export const Line = RechartsPrimitive.Line
+export const Sector = RechartsPrimitive.Sector
+export const Label = RechartsPrimitive.Label
+export const CartesianGrid = RechartsPrimitive.CartesianGrid
+export const XAxis = RechartsPrimitive.XAxis
+export const YAxis = RechartsPrimitive.YAxis
+export const Legend = RechartsPrimitive.Legend
+export const ResponsiveContainer = RechartsPrimitive.ResponsiveContainer

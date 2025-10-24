@@ -24,7 +24,7 @@ import { GaugeChart } from '@/components/ui/gauge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SmartPagination } from '@/components/ui/pagination';
 import { useAnimatedCounter } from '@/hooks/use-animated-counter';
-import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
+import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { es } from 'date-fns/locale';
 
 const PAGE_SIZE = 8;
@@ -170,7 +170,7 @@ function SecurityAuditPageComponent() {
             </div>
             
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
-                <div className="xl:col-span-2 space-y-8">
+                 <div className="xl:col-span-2 space-y-8">
                      <Card>
                         <CardHeader>
                             <CardTitle>Línea de Tiempo de Eventos</CardTitle>
@@ -201,16 +201,14 @@ function SecurityAuditPageComponent() {
                         <CardContent className="h-48 pr-4">
                             {isLoading ? <Skeleton className="h-full w-full"/> : (
                                 <ChartContainer config={{ score: { label: 'Puntuación', color: 'hsl(var(--primary))' } }}>
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={stats.securityScoreTrend}>
+                                    <AreaChart data={stats.securityScoreTrend} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                                         <defs><linearGradient id="trend-gradient" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/><stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/></linearGradient></defs>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                         <XAxis dataKey="date" tickFormatter={(str) => format(new Date(str), 'd MMM', {locale: es})} fontSize={12} tickLine={false} axisLine={false}/>
                                         <YAxis domain={[0, 100]} unit="%" width={40} tickLine={false} axisLine={false}/>
-                                        <Tooltip content={<ChartTooltipContent formatter={(value) => `${(value as number).toFixed(1)}%`} labelFormatter={(label) => format(new Date(label), "d 'de' MMMM", { locale: es })}/>}/>
+                                        <ChartTooltipContent formatter={(value) => `${(value as number).toFixed(1)}%`} labelFormatter={(label) => format(new Date(label), "d 'de' MMMM", { locale: es })}/>
                                         <Area type="monotone" dataKey="score" stroke="hsl(var(--primary))" fill="url(#trend-gradient)" strokeWidth={2}/>
                                     </AreaChart>
-                                </ResponsiveContainer>
                                 </ChartContainer>
                             )}
                         </CardContent>
