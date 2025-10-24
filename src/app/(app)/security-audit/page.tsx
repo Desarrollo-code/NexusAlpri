@@ -28,7 +28,7 @@ import { SmartPagination } from '@/components/ui/pagination';
 import { useAnimatedCounter } from '@/hooks/use-animated-counter';
 
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 8;
 
 const ALL_EVENTS: { value: AppSecurityLog['event'] | 'ALL', label: string }[] = [
     { value: 'ALL', label: 'Todos los Eventos' },
@@ -161,7 +161,7 @@ function SecurityAuditPageComponent() {
                  <div className="flex items-center gap-2">
                     <DateRangePicker date={dateRange} onDateChange={(range) => handleFilterChange('date', range)} />
                      <Select value={activeFilter} onValueChange={(v) => handleFilterChange('event', v)}>
-                        <SelectTrigger className="w-full sm:w-[220px]">
+                        <SelectTrigger className="w-full sm:w-[220px]" id="security-event-filter">
                             <SelectValue placeholder="Filtrar por evento"/>
                         </SelectTrigger>
                         <SelectContent>
