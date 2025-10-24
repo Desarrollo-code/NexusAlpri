@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 
 const gaugeVariants = cva('text-foreground', {
   variants: {
@@ -12,7 +12,7 @@ const gaugeVariants = cva('text-foreground', {
       sm: 'h-16 w-32 text-xs',
       md: 'h-24 w-48 text-base',
       lg: 'h-32 w-64 text-lg',
-      xl: 'h-40 w-80 text-xl', // New size
+      xl: 'h-40 w-80 text-xl',
     },
   },
   defaultVariants: {
@@ -52,7 +52,15 @@ const GaugeChart = React.forwardRef<SVGSVGElement, GaugeChartProps>(
     };
 
     const backgroundArc = describeArc(cx, cy, radius, -180, 0);
-    const valueArc = describeArc(cx, cy, radius, -180, -180 + clampedValue);
+    const valueArc = describeArc(cx, cy, radius, -180, angle);
+    
+    const count = useMotionValue(0);
+    const rounded = useTransform(count, latest => Math.round(latest));
+
+    React.useEffect(() => {
+        const animation = animate(count, clampedValue, { duration: 1.5, ease: "easeInOut" });
+        return animation.stop;
+    }, [clampedValue, count]);
 
     return (
       <div className="relative" style={{ width: chartWidth, height: chartHeight + strokeWidth }}>
@@ -76,15 +84,15 @@ const GaugeChart = React.forwardRef<SVGSVGElement, GaugeChartProps>(
           {/* Background Arc */}
           <path d={backgroundArc} fill="none" stroke="hsl(var(--muted))" strokeWidth={strokeWidth} />
           
-          {/* Value Arc */}
+          {/* Value Arc - This was incorrect, now it uses the `valueArc` path */}
           <motion.path
-             d={backgroundArc} // Draw the full arc path
+             d={valueArc}
              fill="none"
              stroke="url(#gauge-gradient)"
              strokeWidth={strokeWidth}
              strokeLinecap="round"
              initial={{ pathLength: 0 }}
-             animate={{ pathLength: clampedValue / 100 }}
+             animate={{ pathLength: 1 }}
              transition={{ duration: 1.5, ease: "easeInOut" }}
           />
 
@@ -99,6 +107,20 @@ const GaugeChart = React.forwardRef<SVGSVGElement, GaugeChartProps>(
               <circle cx={cx} cy={cy} r={6} fill="hsl(var(--foreground))" />
            </motion.g>
         </svg>
+
+        {/* Percentage Text */}
+        <motion.div 
+            className="absolute inset-0 flex items-center justify-center top-[-10%]"
+            style={{
+                fontSize: chartWidth / 5.5,
+                lineHeight: 1,
+            }}
+        >
+            <motion.span className="font-bold tabular-nums">
+                {rounded}
+            </motion.span>
+            <span className="font-semibold text-muted-foreground" style={{ fontSize: chartWidth / 10 }}>%</span>
+        </motion.div>
       </div>
     );
   }
