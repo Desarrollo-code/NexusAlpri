@@ -1,3 +1,4 @@
+
 // src/types.ts
 import type { Prisma, User as PrismaUser } from '@prisma/client';
 
@@ -289,6 +290,8 @@ export type SecurityStats = {
     roleChanges: number;
     browsers: { name: string, count: number }[];
     os: { name: string, count: number }[];
+    topIps: { ip: string, count: number, country: string }[];
+    securityScore: number;
 };
 
 

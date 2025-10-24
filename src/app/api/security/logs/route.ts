@@ -1,3 +1,4 @@
+
 // src/app/api/security/logs/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -13,9 +14,14 @@ const aggregateByUserAgent = (logs: { userAgent: string | null }[]) => {
     const osCounts: Record<string, number> = {};
 
     logs.forEach(log => {
-        const parsed = parseUserAgent(log.userAgent);
-        browserCounts[parsed.browser] = (browserCounts[parsed.browser] || 0) + 1;
-        osCounts[parsed.os] = (osCounts[parsed.os] || 0) + 1;
+        if (log.userAgent) {
+            const parsed = parseUserAgent(log.userAgent);
+            browserCounts[parsed.browser] = (browserCounts[parsed.browser] || 0) + 1;
+            osCounts[parsed.os] = (osCounts[parsed.os] || 0) + 1;
+        } else {
+            browserCounts['Desconocido'] = (browserCounts['Desconocido'] || 0) + 1;
+            osCounts['Desconocido'] = (osCounts['Desconocido'] || 0) + 1;
+        }
     });
     
     const toSortedArray = (counts: Record<string, number>) => Object.entries(counts)
@@ -61,7 +67,7 @@ export async function GET(req: NextRequest) {
             successfulLogins,
             failedLogins,
             roleChanges,
-            allLogsForDeviceStats,
+            allLogsInPeriod,
         ] = await Promise.all([
             prisma.securityLog.findMany({
                 where: whereClause,
@@ -78,11 +84,31 @@ export async function GET(req: NextRequest) {
             prisma.securityLog.count({ where: { event: 'USER_ROLE_CHANGED', createdAt: { gte: startDate, lte: endDate } } }),
             prisma.securityLog.findMany({ 
                 where: { createdAt: { gte: startDate, lte: endDate } },
-                select: { userAgent: true },
+                select: { userAgent: true, ipAddress: true, country: true },
             }),
         ]);
 
-        const { browsers, os } = aggregateByUserAgent(allLogsForDeviceStats || []);
+        const { browsers, os } = aggregateByUserAgent(allLogsInPeriod || []);
+
+        const ipCounts = allLogsInPeriod.reduce((acc, log) => {
+            if (log.ipAddress) {
+                acc[log.ipAddress] = {
+                    count: (acc[log.ipAddress]?.count || 0) + 1,
+                    country: log.country || 'Desconocido',
+                };
+            }
+            return acc;
+        }, {} as Record<string, {count: number, country: string}>);
+
+        const topIps = Object.entries(ipCounts)
+            .sort(([, a], [, b]) => b.count - a.count)
+            .slice(0, 5)
+            .map(([ip, data]) => ({ ip, ...data }));
+            
+        // Calculate Security Score
+        const totalLogins = successfulLogins + failedLogins;
+        const securityScore = totalLogins > 0 ? (successfulLogins / totalLogins) * 100 : 100;
+
         
         const stats: SecurityStats = {
             successfulLogins,
@@ -90,6 +116,8 @@ export async function GET(req: NextRequest) {
             roleChanges,
             browsers,
             os,
+            topIps,
+            securityScore,
         };
 
         return NextResponse.json({ logs, stats });
