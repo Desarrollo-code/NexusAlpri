@@ -47,7 +47,7 @@ const TimelineItem = ({ log, onLogClick, isLast }: { log: SecurityLog, onLogClic
             </div>
 
             {/* Card Content */}
-            <div className="w-full pb-6 pt-1">
+            <div className="w-full pt-1">
                 <div 
                     onClick={() => onLogClick(log)} 
                     className="p-2.5 rounded-lg border bg-card hover:bg-muted/50 cursor-pointer shadow-sm hover:shadow-md transition-all"
