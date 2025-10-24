@@ -15,7 +15,7 @@ import { securityAuditTour } from '@/lib/tour-steps';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { subDays, startOfDay, endOfDay } from 'date-fns';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
-import { type DateRange } from 'react-day-picker';
+import type { DateRange } from 'react-day-picker';
 import { SecurityLogTimeline } from '@/components/security/security-log-timeline';
 import { SecurityLogDetailSheet } from '@/components/security/security-log-detail-sheet';
 import { MetricCard } from '@/components/security/metric-card';
@@ -134,6 +134,7 @@ function SecurityAuditPageComponent() {
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="space-y-1">
+                    <h1 className="text-2xl font-semibold">Auditoría de Seguridad</h1>
                     <p className="text-muted-foreground">Analiza la actividad de seguridad de tu plataforma.</p>
                 </div>
                  <div className="flex items-center gap-2">

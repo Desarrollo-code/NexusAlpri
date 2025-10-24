@@ -8,7 +8,9 @@ import { format, isToday, isYesterday } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Identicon } from '@/components/ui/identicon';
 import type { SecurityLog } from "@/types";
-import { Monitor, Smartphone } from "lucide-react";
+import { Monitor, Smartphone, Globe } from "lucide-react";
+import React from 'react';
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -33,7 +35,7 @@ export const SecurityLogTable = ({ logs, onRowClick }: { logs: SecurityLog[], on
                 </TableHeader>
                 <TableBody>
                     {logs.map(log => {
-                        const eventUI = getEventDetails(log.event, log.details);
+                        const eventUI = getEventDetails(log.event as any, log.details);
                         const { browser, os } = parseUserAgent(log.userAgent);
                         const isMobileDevice = os === 'Android' || os === 'iOS';
 
@@ -56,10 +58,19 @@ export const SecurityLogTable = ({ logs, onRowClick }: { logs: SecurityLog[], on
                                     </Badge>
                                 </TableCell>
                                  <TableCell className="hidden md:table-cell">
-                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                        {isMobileDevice ? <Smartphone className="h-3.5 w-3.5"/> : <Monitor className="h-3.5 w-3.5"/>}
-                                        <span>{browser}, {os}</span>
-                                    </div>
+                                    <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger>
+                                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                                {isMobileDevice ? <Smartphone className="h-3.5 w-3.5"/> : <Monitor className="h-3.5 w-3.5"/>}
+                                                <span>{browser}, {os}</span>
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent className="max-w-xs break-words">
+                                            <p>{log.userAgent}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                    </TooltipProvider>
                                 </TableCell>
                                  <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">
                                     <div>{log.ipAddress}</div>
