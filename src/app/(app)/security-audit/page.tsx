@@ -23,6 +23,7 @@ import { MetricCard } from '@/components/security/metric-card';
 import { DeviceDistributionChart } from '@/components/security/device-distribution-chart';
 import { TopIpsCard } from '@/components/security/top-ips-card';
 import { GaugeChart } from '@/components/ui/gauge';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const ALL_EVENTS: { value: AppSecurityLog['event'] | 'ALL', label: string }[] = [
     { value: 'ALL', label: 'Todos los Eventos' },
@@ -152,10 +153,21 @@ function SecurityAuditPageComponent() {
                 </div>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Columna Izquierda: Timeline */}
-                <div className="lg:col-span-1">
-                    <Card className="h-full">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                <div className="lg:col-span-2 order-2 lg:order-1 space-y-8">
+                    <div id="security-stats-cards" className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                        <MetricCard id="successful-logins-card" title="Inicios de Sesión" value={isLoading ? 0 : (stats.successfulLogins || 0)} icon={CheckCircle} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')} />
+                        <MetricCard id="failed-logins-card" title="Intentos Fallidos" value={isLoading ? 0 : (stats.failedLogins || 0)} icon={AlertTriangle} onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')} />
+                        <MetricCard id="role-changes-card" title="Cambios de Rol" value={isLoading ? 0 : (stats.roleChanges || 0)} icon={UserCog} onClick={() => handleFilterChange('event', 'USER_ROLE_CHANGED')} />
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1"><CardTitle className="text-xs font-medium text-muted-foreground">Salud de Seguridad</CardTitle><ShieldAlert className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                            <CardContent className="flex items-center justify-center pt-2">
+                               {isLoading ? <Skeleton className="h-12 w-24"/> : <GaugeChart value={stats.securityScore || 0} size="sm" />}
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                     <Card>
                         <CardHeader>
                             <CardTitle>Línea de Tiempo de Eventos</CardTitle>
                             <CardDescription>Eventos de seguridad en el periodo seleccionado. Haz clic para ver detalles.</CardDescription>
@@ -174,28 +186,10 @@ function SecurityAuditPageComponent() {
                         </CardContent>
                     </Card>
                 </div>
-
-                {/* Columna Central: Nuevos Indicadores */}
-                <div className="lg:col-span-1 space-y-8">
-                    <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base flex items-center gap-2">Indicador de "Salud de Seguridad"</CardTitle>
-                        </CardHeader>
-                        <CardContent className="flex items-center justify-center">
-                            {isLoading ? <Skeleton className="h-32 w-full"/> : <GaugeChart value={stats.securityScore || 0} />}
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* Columna Derecha: Estadísticas y Gráficos */}
-                <div className="lg:col-span-1 space-y-8">
-                    <div id="security-stats-cards" className="space-y-4">
-                        <MetricCard id="successful-logins-card" title="Inicios de Sesión Exitosos" value={stats.successfulLogins || 0} icon={CheckCircle} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')} />
-                        <MetricCard id="failed-logins-card" title="Intentos Fallidos" value={stats.failedLogins || 0} icon={AlertTriangle} onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')} />
-                        <MetricCard id="role-changes-card" title="Cambios de Rol" value={stats.roleChanges || 0} icon={UserCog} onClick={() => handleFilterChange('event', 'USER_ROLE_CHANGED')} />
-                    </div>
-                    <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
+                
+                <div className="lg:col-span-1 order-1 lg:order-2 space-y-8 lg:sticky lg:top-24">
+                     <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
+                     <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
                 </div>
             </div>
             
