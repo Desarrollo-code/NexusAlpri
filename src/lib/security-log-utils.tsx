@@ -1,15 +1,9 @@
 // src/lib/security-log-utils.tsx
-'use client';
-
 import type { SecurityLogEvent, UserRole } from '@/types';
-import { ShieldCheck, ShieldX, KeyRound, UserCog, ShieldAlert, Monitor, Globe, Smartphone, HelpCircle } from 'lucide-react';
+import { ShieldCheck, ShieldX, KeyRound, UserCog, ShieldAlert } from 'lucide-react';
 import React from 'react';
 import type { VariantProps } from "class-variance-authority";
 import type { BadgeProps } from '@/components/ui/badge';
-import { IconBrandWindows } from '@/components/icons/icon-brand-windows';
-import { IconBrandLinux } from '@/components/icons/icon-brand-linux';
-import { Apple, Chrome } from 'lucide-react';
-
 
 type BadgeVariant = BadgeProps['variant'];
 
