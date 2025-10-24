@@ -25,6 +25,8 @@ import { GaugeChart } from '@/components/ui/gauge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getEventDetails } from '@/lib/security-log-utils';
 import { SmartPagination } from '@/components/ui/pagination';
+import { useAnimatedCounter } from '@/hooks/use-animated-counter';
+
 
 const PAGE_SIZE = 12;
 
@@ -147,6 +149,7 @@ function SecurityAuditPageComponent() {
     }
 
     const totalPages = Math.ceil(totalLogs / PAGE_SIZE);
+    const animatedScore = useAnimatedCounter(stats.securityScore || 0);
     
     return (
         <div className="space-y-8">
@@ -172,7 +175,6 @@ function SecurityAuditPageComponent() {
             </div>
             
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
-                {/* Columna Izquierda */}
                 <div className="xl:col-span-1 space-y-8">
                      <Card>
                         <CardHeader>
@@ -199,20 +201,26 @@ function SecurityAuditPageComponent() {
                     </Card>
                 </div>
                 
-                {/* Columna Central */}
                 <div className="xl:col-span-1 space-y-8">
                      <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
                      <Card>
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2">Indicador de "Salud de Seguridad"</CardTitle>
                         </CardHeader>
-                         <CardContent className="flex items-center justify-center pt-2">
-                           {isLoading ? <Skeleton className="h-24 w-48"/> : <GaugeChart value={stats.securityScore || 0} size="lg" />}
+                         <CardContent className="flex flex-col items-center justify-center pt-2">
+                           {isLoading ? <Skeleton className="h-24 w-48"/> : (
+                                <>
+                                    <GaugeChart value={stats.securityScore || 0} size="xl" />
+                                    <div className="text-center -mt-4">
+                                        <p className="text-5xl font-bold text-foreground">{animatedScore}%</p>
+                                        <p className="text-sm text-muted-foreground">Índice de Confianza</p>
+                                    </div>
+                                </>
+                           )}
                         </CardContent>
                      </Card>
                 </div>
 
-                {/* Columna Derecha */}
                 <div className="xl:col-span-1 space-y-8">
                     <div id="security-stats-cards" className="space-y-4">
                         <MetricCard id="successful-logins-card" title="Inicios de Sesión Exitosos" value={isLoading ? 0 : (stats.successfulLogins || 0)} icon={CheckCircle} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')} />

@@ -22,11 +22,16 @@ export const useAnimatedCounter = (end: number, start = 0, duration = 1500): str
       if (!startTime) startTime = timestamp;
       const progress = timestamp - startTime;
       
-      const newCount = Math.min(endValue, start + (endValue - start) * (progress / duration));
+      const easedProgress = Math.min(1, progress / duration);
+      const easeOutQuint = 1 - Math.pow(1 - easedProgress, 5);
+      
+      const newCount = start + (endValue - start) * easeOutQuint;
       setCount(newCount);
 
       if (progress < duration) {
         animationFrameId = requestAnimationFrame(animateCount);
+      } else {
+        setCount(endValue);
       }
     };
     
@@ -35,6 +40,5 @@ export const useAnimatedCounter = (end: number, start = 0, duration = 1500): str
     return () => cancelAnimationFrame(animationFrameId);
   }, [endValue, start, duration]);
 
-  // Use Math.round to avoid showing decimal places during animation
   return Math.round(count).toLocaleString();
 };
