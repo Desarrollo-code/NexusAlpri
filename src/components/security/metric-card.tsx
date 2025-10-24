@@ -15,7 +15,7 @@ interface MetricCardProps {
     suffix?: string;
 }
 
-export const MetricCard = React.forwardRef<HTMLDivElement, MetricCardProps>(
+const MetricCard = React.forwardRef<HTMLDivElement, MetricCardProps>(
     ({ id, title, value, icon: Icon, onClick, description, suffix }, ref) => {
     const animatedValue = useAnimatedCounter(value, 0, 1000);
     
@@ -42,3 +42,5 @@ export const MetricCard = React.forwardRef<HTMLDivElement, MetricCardProps>(
 });
 
 MetricCard.displayName = "MetricCard";
+
+export { MetricCard };

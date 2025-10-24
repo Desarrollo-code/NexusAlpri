@@ -6,7 +6,7 @@ import { getEventDetails } from '@/lib/security-log-utils';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Monitor, Smartphone, Globe, ShieldCheck, ShieldX, KeyRound, UserCog, ShieldAlert } from 'lucide-react';
+import { ShieldCheck, ShieldX, KeyRound, UserCog, ShieldAlert } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
 import { Badge } from '@/components/ui/badge';
@@ -28,7 +28,7 @@ const TimelineItem = ({ log, onLogClick, isLast }: { log: SecurityLog, onLogClic
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="flex items-start gap-3"
+            className="flex items-start gap-3 pb-4"
         >
             {/* Time and Line */}
             <div className="flex flex-col items-center">

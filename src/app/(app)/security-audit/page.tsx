@@ -1,4 +1,3 @@
-
 // src/app/(app)/security-audit/page.tsx
 'use client';
 
@@ -24,8 +23,8 @@ import { TopIpsCard } from '@/components/security/top-ips-card';
 import { GaugeChart } from '@/components/ui/gauge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SmartPagination } from '@/components/ui/pagination';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
-import { ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import { es } from 'date-fns/locale';
 import { MetricCard } from '@/components/security/metric-card';
 
@@ -171,6 +170,7 @@ function SecurityAuditPageComponent() {
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                {/* Columna Izquierda */}
                 <div className="lg:col-span-1 space-y-8">
                      <Card>
                         <CardHeader>
@@ -197,6 +197,7 @@ function SecurityAuditPageComponent() {
                     </Card>
                 </div>
                 
+                {/* Columna Central */}
                 <div className="lg:col-span-1 space-y-8">
                      <Card>
                          <CardHeader>
@@ -211,7 +212,7 @@ function SecurityAuditPageComponent() {
                             <CardTitle className="text-base flex items-center gap-2"><LineChart className="h-4 w-4 text-primary"/> Tendencia de Salud</CardTitle>
                         </CardHeader>
                         <CardContent className="h-48">
-                          <ChartContainer config={{ score: { label: 'Puntuación', color: 'hsl(var(--primary))' } }}>
+                           <ChartContainer config={{ score: { label: 'Puntuación', color: 'hsl(var(--primary))' } }}>
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={stats.securityScoreTrend} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                                         <defs><linearGradient id="trend-gradient" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/><stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/></linearGradient></defs>
@@ -228,6 +229,7 @@ function SecurityAuditPageComponent() {
                     <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
                 </div>
 
+                {/* Columna Derecha */}
                 <div className="lg:col-span-1 space-y-8">
                     <div className="grid grid-cols-1 gap-4">
                         <MetricCard id="successful-logins-card" title="Inicios Exitosos" value={stats.successfulLogins || 0} icon={CheckCircle} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')}/>

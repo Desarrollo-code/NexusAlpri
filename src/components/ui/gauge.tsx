@@ -4,7 +4,8 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { useAnimatedCounter } from '@/hooks/use-animated-counter';
 
 const gaugeVariants = cva('text-foreground', {
   variants: {
@@ -31,6 +32,8 @@ const GaugeChart = React.forwardRef<SVGSVGElement, GaugeChartProps>(
     const sizeMap = { sm: {w: 192, h: 96}, md: {w: 256, h: 128}, lg: {w: 320, h: 160}, xl: {w: 384, h: 192} };
     const { w: chartWidth, h: chartHeight } = sizeMap[size || 'lg'];
     
+    const animatedValue = useAnimatedCounter(clampedValue, 0, 1000);
+
     const cx = chartWidth / 2;
     const cy = chartHeight;
     const radius = chartWidth / 2 - strokeWidth / 2;
@@ -56,8 +59,8 @@ const GaugeChart = React.forwardRef<SVGSVGElement, GaugeChartProps>(
     const ticks = Array.from({ length: 11 }, (_, i) => {
         const tickValue = i * 10;
         const tickAngle = valueToAngle(tickValue);
-        const startRadius = radius - strokeWidth / 2 + 2;
-        const endRadius = radius + strokeWidth / 2 - 2;
+        const startRadius = radius - strokeWidth / 2;
+        const endRadius = radius + strokeWidth / 2;
         const labelRadius = radius + strokeWidth / 2 + 10;
 
         const startPoint = {
@@ -73,7 +76,7 @@ const GaugeChart = React.forwardRef<SVGSVGElement, GaugeChartProps>(
             y: cy + labelRadius * Math.sin(tickAngle * Math.PI / 180)
         };
         
-        const isMajorTick = tickValue % 20 === 0 || tickValue === 10 || tickValue === 30 || tickValue === 50 || tickValue === 70 || tickValue === 90;
+        const isMajorTick = tickValue % 20 === 0;
 
         return {
             x1: startPoint.x, y1: startPoint.y,
@@ -90,16 +93,16 @@ const GaugeChart = React.forwardRef<SVGSVGElement, GaugeChartProps>(
         <svg
           ref={ref}
           width={chartWidth}
-          height={chartHeight + strokeWidth + 20}
-          viewBox={`0 -20 ${chartWidth} ${chartHeight + strokeWidth + 20}`}
+          height={chartHeight + strokeWidth}
+          viewBox={`0 -5 ${chartWidth} ${chartHeight + strokeWidth + 5}`}
           className={cn(className)}
           {...props}
         >
           <defs>
              <linearGradient id="gauge-gradient-colors" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#22c55e" /> {/* green */}
-                <stop offset="50%" stopColor="#f59e0b" /> {/* yellow */}
-                <stop offset="100%" stopColor="#ef4444" /> {/* red */}
+                <stop offset="0%" stopColor="#ef4444" />
+                <stop offset="50%" stopColor="#f59e0b" />
+                <stop offset="100%" stopColor="#22c55e" />
              </linearGradient>
           </defs>
 
@@ -118,25 +121,20 @@ const GaugeChart = React.forwardRef<SVGSVGElement, GaugeChartProps>(
            {/* Ticks and Labels */}
            {ticks.map((tick, i) => (
                <g key={i}>
-                   <line x1={tick.x1} y1={tick.y1} x2={tick.x2} y2={tick.y2} stroke="hsl(var(--background))" strokeWidth={1.5} />
+                   <line x1={tick.x1} y1={tick.y1} x2={tick.x2} y2={tick.y2} stroke="hsl(var(--background))" strokeWidth={2} />
                    {tick.isMajor && (
-                      <text x={tick.lx} y={tick.ly} textAnchor="middle" dy=".3em" fill="hsl(var(--muted-foreground))" fontSize={12} fontWeight="bold">
+                      <text x={tick.lx} y={tick.ly} textAnchor="middle" dy=".3em" fill="hsl(var(--muted-foreground))" fontSize={10} fontWeight="bold">
                         {tick.value}
                       </text>
                    )}
                </g>
            ))}
-
-           {/* Needle */}
-           <motion.g
-             initial={{ rotate: -90 }}
-             animate={{ rotate: angle - 90 }}
-             transition={{ type: "spring", stiffness: 100, damping: 15, delay: 0.2 }}
-             transform-origin={`${cx}px ${cy}px`}
-           >
-              <path d={`M ${cx - 5} ${cy} L ${cx} ${cy - radius - 5} L ${cx + 5} ${cy} Z`} fill="hsl(var(--foreground))" />
-              <circle cx={cx} cy={cy} r={8} fill="hsl(var(--foreground))" stroke="hsl(var(--muted))" strokeWidth="3"/>
-           </motion.g>
+            <text x={cx} y={cy - 10} textAnchor="middle" className="text-4xl font-bold fill-foreground">
+                {animatedValue}%
+            </text>
+            <text x={cx} y={cy + 10} textAnchor="middle" className="text-sm font-medium fill-muted-foreground">
+                Índice de Salud
+            </text>
         </svg>
       </div>
     );
