@@ -24,7 +24,7 @@ import { GaugeChart } from '@/components/ui/gauge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SmartPagination } from '@/components/ui/pagination';
 import { useAnimatedCounter } from '@/hooks/use-animated-counter';
-import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
+import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ChartContainer, ChartTooltipContent } from 'recharts';
 import { es } from 'date-fns/locale';
 import { MetricCard } from '@/components/security/metric-card';
 
@@ -211,7 +211,7 @@ function SecurityAuditPageComponent() {
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2"><LineChart className="h-4 w-4 text-primary"/> Tendencia de Salud</CardTitle>
                         </CardHeader>
-                        <CardContent className="h-48 pr-4">
+                        <CardContent className="h-48">
                             {isLoading ? <Skeleton className="h-full w-full"/> : (
                                 <ChartContainer config={{ score: { label: 'Puntuación', color: 'hsl(var(--primary))' } }}>
                                     <AreaChart data={stats.securityScoreTrend} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
