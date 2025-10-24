@@ -55,7 +55,7 @@ const ChartSection = ({ title, data }: { title: string, data?: { name: string, c
     const total = data.reduce((acc, item) => acc + item.count, 0);
 
     return (
-        <div className="w-1/2 flex-grow">
+        <div className="flex-1 min-w-0">
             <h4 className="font-medium text-sm mb-2">{title}</h4>
             <div className="space-y-2">
                 {data.map(item => (
@@ -75,18 +75,20 @@ export const DeviceDistributionChart = ({ browserData, osData, isLoading }: { br
                     Distribución de Dispositivos
                 </CardTitle>
             </CardHeader>
-            <CardContent className="flex gap-4">
+            <CardContent className="flex flex-col sm:flex-row gap-4">
                 {isLoading ? (
                     <>
-                        <div className="w-1/2 space-y-2"><Skeleton className="h-4 w-20 mb-2"/><Skeleton className="h-6"/><Skeleton className="h-6"/></div>
-                        <Separator orientation="vertical" className="h-auto"/>
-                        <div className="w-1/2 space-y-2"><Skeleton className="h-4 w-20 mb-2"/><Skeleton className="h-6"/><Skeleton className="h-6"/></div>
+                        <div className="flex-1 space-y-2"><Skeleton className="h-4 w-20 mb-2"/><Skeleton className="h-6"/><Skeleton className="h-6"/></div>
+                        <Separator orientation="vertical" className="h-auto hidden sm:block"/>
+                        <Separator orientation="horizontal" className="w-full sm:hidden"/>
+                        <div className="flex-1 space-y-2"><Skeleton className="h-4 w-20 mb-2"/><Skeleton className="h-6"/><Skeleton className="h-6"/></div>
                     </>
                 ) : (
                     <>
                         <ChartSection title="Navegadores" data={browserData} />
-                        <Separator orientation="vertical" className="h-auto" />
-                        <ChartSection title="Sistemas" data={osData} />
+                        <Separator orientation="vertical" className="h-auto mx-4 hidden sm:block" />
+                        <Separator orientation="horizontal" className="w-full my-4 sm:hidden"/>
+                        <ChartSection title="Sistemas Operativos" data={osData} />
                     </>
                 )}
             </CardContent>

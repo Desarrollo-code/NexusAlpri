@@ -13,7 +13,7 @@ import { useTitle } from '@/contexts/title-context';
 import { useTour } from '@/contexts/tour-context';
 import { securityAuditTour } from '@/lib/tour-steps';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { subDays, startOfDay, endOfDay } from 'date-fns';
+import { subDays, startOfDay, endOfDay, isValid } from 'date-fns';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import type { DateRange } from 'react-day-picker';
 import { SecurityLogTimeline } from '@/components/security/security-log-timeline';
@@ -155,31 +155,27 @@ function SecurityAuditPageComponent() {
                  <MetricCard id="role-changes-card" title="Cambios de Rol" value={stats.roleChanges || 0} icon={UserCog} onClick={() => handleFilterChange('event', 'USER_ROLE_CHANGED')} />
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                <Card className="xl:col-span-2">
-                    <CardHeader>
-                        <CardTitle>Línea de Tiempo de Eventos</CardTitle>
-                        <CardDescription>Eventos de seguridad en el período seleccionado. Haz clic en un evento para ver detalles.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        {isLoading ? <div className="text-center py-8"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>
-                        : error ? (
-                            <div className="text-center py-8 text-destructive flex flex-col items-center gap-2">
-                                <AlertTriangle className="h-6 w-6"/>
-                                <p className="font-semibold">{error}</p>
-                                <Button variant="outline" size="sm" onClick={fetchData}>Reintentar</Button>
-                            </div>
-                        )
-                        : logs.length === 0 ? <p className="text-center text-muted-foreground py-8">No hay registros para los filtros seleccionados.</p>
-                        : <SecurityLogTimeline logs={logs} onLogClick={setSelectedLog} />}
-                    </CardContent>
-                </Card>
-                <div className="xl:col-span-1">
-                     <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
-                </div>
-            </div>
+            <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
             
-
+            <Card>
+                <CardHeader>
+                    <CardTitle>Línea de Tiempo de Eventos</CardTitle>
+                    <CardDescription>Eventos de seguridad en el período seleccionado. Haz clic en un evento para ver detalles.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {isLoading ? <div className="text-center py-8"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>
+                    : error ? (
+                        <div className="text-center py-8 text-destructive flex flex-col items-center gap-2">
+                            <AlertTriangle className="h-6 w-6"/>
+                            <p className="font-semibold">{error}</p>
+                            <Button variant="outline" size="sm" onClick={fetchData}>Reintentar</Button>
+                        </div>
+                    )
+                    : logs.length === 0 ? <p className="text-center text-muted-foreground py-8">No hay registros para los filtros seleccionados.</p>
+                    : <SecurityLogTimeline logs={logs} onLogClick={setSelectedLog} />}
+                </CardContent>
+            </Card>
+            
             {selectedLog && <SecurityLogDetailSheet log={selectedLog} isOpen={!!selectedLog} onClose={() => setSelectedLog(null)} />}
         </div>
     );
