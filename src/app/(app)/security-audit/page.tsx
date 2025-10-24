@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Loader2, AlertTriangle, UserCog, HelpCircle, Filter, CheckCircle, Shield, LineChart, Percent } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, SecurityStats } from '@/types';
 import { useToast } from '@/hooks/use-toast';
@@ -174,43 +174,7 @@ function SecurityAuditPageComponent() {
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 <div className="lg:col-span-1 space-y-8">
-                     <Card>
-                        <CardHeader>
-                             <div className="flex justify-between items-center">
-                                 <div>
-                                     <CardTitle>Línea de Tiempo de Eventos</CardTitle>
-                                     <CardDescription>Eventos en el periodo seleccionado.</CardDescription>
-                                 </div>
-                                  <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
-                                    <Button variant={viewMode === 'timeline' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('timeline')}><List className="h-4 w-4"/></Button>
-                                    <Button variant={viewMode === 'table' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('table')}><Grid className="h-4 w-4"/></Button>
-                                </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            {isLoading ? <div className="text-center py-8"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>
-                            : error ? (
-                                <div className="text-center py-8 text-destructive flex flex-col items-center gap-2">
-                                    <AlertTriangle className="h-6 w-6"/>
-                                    <p className="font-semibold">{error}</p>
-                                    <Button variant="outline" size="sm" onClick={fetchData}>Reintentar</Button>
-                                </div>
-                            )
-                            : logs.length === 0 ? <p className="text-center text-muted-foreground py-8">No hay registros para los filtros seleccionados.</p>
-                            : viewMode === 'timeline' ? <SecurityLogTimeline logs={logs} onLogClick={setSelectedLog} />
-                            : <SecurityLogTable logs={logs} onRowClick={setSelectedLog} />
-                            }
-                        </CardContent>
-                         {totalPages > 1 && (
-                            <CardFooter>
-                                <SmartPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
-                            </CardFooter>
-                         )}
-                    </Card>
-                </div>
-                
-                <div className="lg:col-span-1 space-y-8">
-                     <Card>
+                    <Card>
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-primary"/> Salud de Seguridad</CardTitle>
                         </CardHeader>
@@ -244,9 +208,44 @@ function SecurityAuditPageComponent() {
                     </Card>
                 </div>
                 
-                <div className="lg:col-span-1 space-y-8">
-                     <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
-                     <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
+                 <div className="lg:col-span-2 space-y-8">
+                     <Card>
+                        <CardHeader>
+                             <div className="flex justify-between items-center">
+                                 <div>
+                                     <CardTitle>Línea de Tiempo de Eventos</CardTitle>
+                                     <CardDescription>Eventos en el periodo seleccionado.</CardDescription>
+                                 </div>
+                                  <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
+                                    <Button variant={viewMode === 'timeline' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('timeline')}><List className="h-4 w-4"/></Button>
+                                    <Button variant={viewMode === 'table' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('table')}><Grid className="h-4 w-4"/></Button>
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            {isLoading ? <div className="text-center py-8"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>
+                            : error ? (
+                                <div className="text-center py-8 text-destructive flex flex-col items-center gap-2">
+                                    <AlertTriangle className="h-6 w-6"/>
+                                    <p className="font-semibold">{error}</p>
+                                    <Button variant="outline" size="sm" onClick={fetchData}>Reintentar</Button>
+                                </div>
+                            )
+                            : logs.length === 0 ? <p className="text-center text-muted-foreground py-8">No hay registros para los filtros seleccionados.</p>
+                            : viewMode === 'timeline' ? <SecurityLogTimeline logs={logs} onLogClick={setSelectedLog} />
+                            : <SecurityLogTable logs={logs} onRowClick={setSelectedLog} />
+                            }
+                        </CardContent>
+                         {totalPages > 1 && (
+                            <CardFooter>
+                                <SmartPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+                            </CardFooter>
+                         )}
+                    </Card>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
+                        <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
+                    </div>
                 </div>
             </div>
             
@@ -262,5 +261,3 @@ export default function SecurityAuditPageWrapper() {
         </Suspense>
     );
 }
-
-    
