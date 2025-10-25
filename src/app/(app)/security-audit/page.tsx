@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, AlertTriangle, UserCog, HelpCircle, Filter, CheckCircle, Shield, LineChart, Percent } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, SecurityStats } from '@/types';
 import { useToast } from '@/hooks/use-toast';
@@ -30,7 +30,7 @@ import { MetricCard } from '@/components/security/metric-card';
 import { SecurityLogTable } from '@/components/security/security-log-table';
 import { List, Grid } from 'lucide-react';
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 15;
 
 const ALL_EVENTS: { value: AppSecurityLog['event'] | 'ALL', label: string }[] = [
     { value: 'ALL', label: 'Todos los Eventos' },
@@ -57,8 +57,7 @@ function SecurityAuditPageComponent() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedLog, setSelectedLog] = useState<AppSecurityLog | null>(null);
-    const [viewMode, setViewMode] = useState<'timeline' | 'table'>('timeline');
-
+    
     const activeFilter = searchParams.get('event') || 'ALL';
     const currentPage = Number(searchParams.get('page')) || 1;
     const [dateRange, setDateRange] = useState<DateRange | undefined>({
@@ -173,7 +172,7 @@ function SecurityAuditPageComponent() {
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                <div className="lg:col-span-2 space-y-8">
+                <div className="lg:col-span-1 space-y-8">
                      <Card>
                         <CardHeader>
                              <div className="flex justify-between items-center">
@@ -181,10 +180,6 @@ function SecurityAuditPageComponent() {
                                      <CardTitle>Línea de Tiempo de Eventos</CardTitle>
                                      <CardDescription>Eventos en el periodo seleccionado.</CardDescription>
                                  </div>
-                                  <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
-                                    <Button variant={viewMode === 'timeline' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('timeline')}><List className="h-4 w-4"/></Button>
-                                    <Button variant={viewMode === 'table' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('table')}><Grid className="h-4 w-4"/></Button>
-                                </div>
                             </div>
                         </CardHeader>
                         <CardContent>
@@ -197,8 +192,7 @@ function SecurityAuditPageComponent() {
                                 </div>
                             )
                             : logs.length === 0 ? <p className="text-center text-muted-foreground py-8">No hay registros para los filtros seleccionados.</p>
-                            : viewMode === 'timeline' ? <SecurityLogTimeline logs={logs} onLogClick={setSelectedLog} />
-                            : <SecurityLogTable logs={logs} onRowClick={setSelectedLog} />
+                            : <SecurityLogTimeline logs={logs} onLogClick={setSelectedLog} />
                             }
                         </CardContent>
                          {totalPages > 1 && (
@@ -207,10 +201,11 @@ function SecurityAuditPageComponent() {
                             </CardFooter>
                          )}
                     </Card>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
-                        <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
-                    </div>
+                </div>
+
+                <div className="lg:col-span-1 space-y-8">
+                   <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
+                   <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
                 </div>
 
                 <div className="lg:col-span-1 space-y-8 lg:sticky lg:top-24">
@@ -220,7 +215,7 @@ function SecurityAuditPageComponent() {
                         </CardHeader>
                         <CardContent className="flex flex-col items-center justify-center">
                             <GaugeChart value={stats.securityScore || 0}/>
-                            <div className="mt-4 grid grid-cols-3 gap-2 w-full">
+                             <div className="mt-4 grid grid-cols-3 gap-2 w-full">
                                 <MetricCard id="successful-logins-card" title="Exitosos" value={stats.successfulLogins || 0} icon={CheckCircle} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')}/>
                                 <MetricCard id="failed-logins-card" title="Fallidos" value={stats.failedLogins || 0} icon={AlertTriangle} onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')}/>
                                 <MetricCard id="2fa-adoption-card" title="Adopción 2FA" value={stats.twoFactorAdoptionRate || 0} icon={Percent} suffix="%"/>
@@ -231,7 +226,7 @@ function SecurityAuditPageComponent() {
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2"><LineChart className="h-4 w-4 text-primary"/> Tendencia de Salud</CardTitle>
                         </CardHeader>
-                        <CardContent className="h-48 -ml-4 px-2">
+                        <CardContent className="h-48 px-2 -ml-4">
                            <ChartContainer config={{ score: { label: 'Puntuación', color: 'hsl(var(--primary))' } }}>
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={stats.securityScoreTrend} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
