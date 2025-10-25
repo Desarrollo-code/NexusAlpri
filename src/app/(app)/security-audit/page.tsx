@@ -23,8 +23,6 @@ import { TopIpsCard } from '@/components/security/top-ips-card';
 import { GaugeChart } from '@/components/ui/gauge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SmartPagination } from '@/components/ui/pagination';
-import { CartesianGrid, XAxis, YAxis, ResponsiveContainer } from 'recharts';
-import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import { es } from 'date-fns/locale';
 import { MetricCard } from '@/components/security/metric-card';
 
