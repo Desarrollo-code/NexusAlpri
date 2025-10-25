@@ -23,7 +23,7 @@ import { TopIpsCard } from '@/components/security/top-ips-card';
 import { GaugeChart } from '@/components/ui/gauge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SmartPagination } from '@/components/ui/pagination';
-import { AreaChart, Area, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import { es } from 'date-fns/locale';
 import { MetricCard } from '@/components/security/metric-card';
@@ -191,7 +191,7 @@ function SecurityAuditPageComponent() {
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2"><LineChart className="h-4 w-4 text-primary"/> Tendencia de Salud</CardTitle>
                         </CardHeader>
-                        <CardContent className="h-48">
+                        <CardContent className="h-48 px-0">
                            <ChartContainer config={{ score: { label: 'Puntuación', color: 'hsl(var(--primary))' } }}>
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={stats.securityScoreTrend} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
@@ -199,7 +199,7 @@ function SecurityAuditPageComponent() {
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                         <XAxis dataKey="date" tickFormatter={(str) => format(new Date(str), 'd MMM', {locale: es})} fontSize={12} tickLine={false} axisLine={false}/>
                                         <YAxis domain={[0, 100]} unit="%" width={40} tickLine={false} axisLine={false}/>
-                                        <ChartTooltipContent formatter={(value) => `${(value as number).toFixed(1)}%`} labelFormatter={(label) => format(new Date(label), "d 'de' MMMM", { locale: es })}/>
+                                        <RechartsTooltip content={<ChartTooltipContent formatter={(value) => `${(value as number).toFixed(1)}%`} labelFormatter={(label) => format(new Date(label), "d 'de' MMMM", { locale: es })}/>} />
                                         <Area type="monotone" dataKey="score" stroke="hsl(var(--primary))" fill="url(#trend-gradient)" strokeWidth={2}/>
                                     </AreaChart>
                                 </ResponsiveContainer>

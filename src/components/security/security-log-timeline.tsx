@@ -2,7 +2,7 @@
 'use client';
 import React from 'react';
 import type { SecurityLog } from '@/types';
-import { getEventDetails } from '@/lib/security-log-utils';
+import { getEventDetails, parseUserAgent } from '@/lib/security-log-utils';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -70,7 +70,7 @@ const TimelineItem = ({ log, onLogClick, isLast }: { log: SecurityLog, onLogClic
 
 export const SecurityLogTimeline = ({ logs, onLogClick }: { logs: SecurityLog[], onLogClick: (log: SecurityLog) => void }) => {
     return (
-        <ScrollArea className="h-[70vh] pr-4">
+        <ScrollArea className="max-h-[70vh] min-h-[300px] pr-4">
             <div className="relative">
                 <AnimatePresence>
                     {logs.map((log, index) => (
