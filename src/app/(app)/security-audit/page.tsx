@@ -222,7 +222,7 @@ function SecurityAuditPageComponent() {
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2"><LineChart className="h-4 w-4 text-primary"/> Tendencia de Salud</CardTitle>
                         </CardHeader>
-                        <CardContent className="h-48 p-4">
+                        <CardContent className="h-60 p-4">
                            <ChartContainer config={{ score: { label: 'Puntuación', color: 'hsl(var(--primary))' } }}>
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={stats.securityScoreTrend} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
