@@ -108,36 +108,9 @@ export async function GET(req: NextRequest) {
             .slice(0, 5)
             .map(([ip, data]) => ({ ip, ...data }));
             
-        // --- Calculate Security Score and Trend ---
+        // --- Calculate Security Score ---
         const totalLogins = successfulLogins + failedLogins;
         const securityScore = totalLogins > 0 ? (successfulLogins / totalLogins) * 100 : 100;
-        
-        const trendMap = new Map<string, { success: number, fail: number }>();
-        const intervalDays = eachDayOfInterval({ start: startDate, end: endDate });
-
-        intervalDays.forEach(day => {
-            trendMap.set(format(day, 'yyyy-MM-dd'), { success: 0, fail: 0 });
-        });
-
-        allLogsInPeriod.forEach(log => {
-            // FIX: Add validation to ensure log.createdAt is a valid date before formatting
-            if (log.createdAt && isValid(new Date(log.createdAt))) {
-                const dayKey = format(new Date(log.createdAt), 'yyyy-MM-dd');
-                const dayData = trendMap.get(dayKey);
-                if (dayData) {
-                    if (log.event === 'SUCCESSFUL_LOGIN') dayData.success++;
-                    if (log.event === 'FAILED_LOGIN_ATTEMPT') dayData.fail++;
-                }
-            }
-        });
-
-        const securityScoreTrend = Array.from(trendMap.entries()).map(([date, counts]) => {
-            const dailyTotal = counts.success + counts.fail;
-            return {
-                date,
-                score: dailyTotal > 0 ? (counts.success / dailyTotal) * 100 : 100,
-            };
-        });
         
         // Calculate 2FA Adoption
         const twoFactorAdoptionRate = totalActiveUsers > 0 ? (usersWith2FA / totalActiveUsers) * 100 : 0;
@@ -150,7 +123,6 @@ export async function GET(req: NextRequest) {
             os,
             topIps,
             securityScore,
-            securityScoreTrend,
             twoFactorAdoptionRate,
         };
 
