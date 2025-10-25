@@ -169,9 +169,8 @@ function SecurityAuditPageComponent() {
                 </div>
             </div>
             
-             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                {/* Columna Izquierda: Línea de Tiempo */}
-                <div className="lg:col-span-1">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                <div className="lg:col-span-1 space-y-8">
                     <Card className="h-full">
                         <CardHeader>
                              <div className="flex justify-between items-center">
@@ -201,12 +200,12 @@ function SecurityAuditPageComponent() {
                          )}
                     </Card>
                 </div>
-                 {/* Columna Central: Dispositivos y IPs */}
+                 
                 <div className="lg:col-span-1 space-y-8">
                    <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
                    <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
                 </div>
-                {/* Columna Derecha: Salud y Tendencia */}
+                
                 <div className="lg:col-span-1 space-y-8 lg:sticky lg:top-24">
                     <Card>
                         <CardHeader>
@@ -225,7 +224,7 @@ function SecurityAuditPageComponent() {
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2"><LineChart className="h-4 w-4 text-primary"/> Tendencia de Salud</CardTitle>
                         </CardHeader>
-                        <CardContent className="h-48 p-2 pr-6">
+                        <CardContent className="h-40 px-2 pr-6">
                            <ChartContainer config={{ score: { label: 'Puntuación', color: 'hsl(var(--primary))' } }}>
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={stats.securityScoreTrend}>
