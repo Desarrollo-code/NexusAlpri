@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Loader2, AlertTriangle, UserCog, HelpCircle, Filter, CheckCircle, Shield, LineChart, Percent } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, SecurityStats } from '@/types';
 import { useToast } from '@/hooks/use-toast';
@@ -171,9 +171,10 @@ function SecurityAuditPageComponent() {
                 </div>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                <div className="lg:col-span-1 space-y-8">
-                     <Card>
+             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                {/* Columna Izquierda: Línea de Tiempo */}
+                <div className="lg:col-span-1">
+                    <Card>
                         <CardHeader>
                              <div className="flex justify-between items-center">
                                  <div>
@@ -203,11 +204,13 @@ function SecurityAuditPageComponent() {
                     </Card>
                 </div>
 
+                {/* Columna Central: Dispositivos y IPs */}
                 <div className="lg:col-span-1 space-y-8">
                    <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
                    <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
                 </div>
 
+                {/* Columna Derecha: Salud y Tendencia */}
                 <div className="lg:col-span-1 space-y-8 lg:sticky lg:top-24">
                     <Card>
                         <CardHeader>
