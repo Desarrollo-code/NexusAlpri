@@ -169,8 +169,8 @@ function SecurityAuditPageComponent() {
                 </div>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                <div className="lg:col-span-1 space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+                <div className="lg:col-span-2 space-y-8">
                     <Card className="h-full">
                         <CardHeader>
                              <div className="flex justify-between items-center">
@@ -206,7 +206,7 @@ function SecurityAuditPageComponent() {
                    <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
                 </div>
                 
-                <div className="lg:col-span-1 space-y-8 lg:sticky lg:top-24">
+                <div className="lg:col-span-2 space-y-8 lg:sticky lg:top-24">
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-primary"/> Salud de Seguridad</CardTitle>
@@ -224,10 +224,10 @@ function SecurityAuditPageComponent() {
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2"><LineChart className="h-4 w-4 text-primary"/> Tendencia de Salud</CardTitle>
                         </CardHeader>
-                        <CardContent className="h-40 px-2 pr-6">
+                        <CardContent className="h-48 p-4">
                            <ChartContainer config={{ score: { label: 'Puntuación', color: 'hsl(var(--primary))' } }}>
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={stats.securityScoreTrend}>
+                                    <AreaChart data={stats.securityScoreTrend} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                                         <defs><linearGradient id="trend-gradient" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.6}/><stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/></linearGradient></defs>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                         <XAxis dataKey="date" tickFormatter={(str) => format(new Date(str), 'd MMM', {locale: es})} fontSize={12} tickLine={false} axisLine={false}/>
