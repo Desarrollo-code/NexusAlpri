@@ -169,8 +169,8 @@ function SecurityAuditPageComponent() {
                 </div>
             </div>
             
-             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                <div className="lg:col-span-1 space-y-8">
+             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+                <div className="lg:col-span-2 space-y-8">
                      <Card className="h-full">
                         <CardHeader>
                              <div className="flex justify-between items-center">
@@ -200,11 +200,9 @@ function SecurityAuditPageComponent() {
                          )}
                     </Card>
                 </div>
-                <div className="lg:col-span-1 space-y-8">
+                <div className="lg:col-span-2 space-y-8">
                    <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
                    <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
-                </div>
-                <div className="lg:col-span-1 space-y-8 lg:sticky lg:top-24">
                    <Card>
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-primary"/> Salud de Seguridad</CardTitle>
@@ -222,7 +220,7 @@ function SecurityAuditPageComponent() {
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2"><LineChart className="h-4 w-4 text-primary"/> Tendencia de Salud</CardTitle>
                         </CardHeader>
-                        <CardContent className="h-70 p-4">
+                        <CardContent className="h-48 px-2">
                            <ChartContainer config={{ score: { label: 'Puntuación', color: 'hsl(var(--primary))' } }}>
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={stats.securityScoreTrend} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
@@ -230,7 +228,7 @@ function SecurityAuditPageComponent() {
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                         <XAxis dataKey="date" tickFormatter={(str) => format(new Date(str), 'd MMM', {locale: es})} fontSize={12} tickLine={false} axisLine={false}/>
                                         <YAxis domain={[0, 100]} unit="%" width={40} tickLine={false} axisLine={false}/>
-                                        <RechartsTooltip content={<ChartTooltipContent formatter={(value) => `${(value as number).toFixed(1)}%`} labelFormatter={(label) => format(new Date(label), "d 'de' MMMM", { locale: es })}/>} />
+                                        <RechartsTooltip content={<ChartTooltipContent formatter={(value) => `${(value as number).toFixed(1)}%`} labelFormatter={(label) => isValid(new Date(label)) ? format(new Date(label), "d 'de' MMMM", { locale: es }) : label}/>} />
                                         <Area type="monotone" dataKey="score" stroke="hsl(var(--primary))" fill="url(#trend-gradient)" strokeWidth={2}/>
                                     </AreaChart>
                                 </ResponsiveContainer>
