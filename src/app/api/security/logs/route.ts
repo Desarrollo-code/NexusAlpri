@@ -120,11 +120,14 @@ export async function GET(req: NextRequest) {
         });
 
         allLogsInPeriod.forEach(log => {
-            const dayKey = format(log.createdAt, 'yyyy-MM-dd');
-            const dayData = trendMap.get(dayKey);
-            if (dayData) {
-                if (log.event === 'SUCCESSFUL_LOGIN') dayData.success++;
-                if (log.event === 'FAILED_LOGIN_ATTEMPT') dayData.fail++;
+            // FIX: Add validation to ensure log.createdAt is a valid date before formatting
+            if (log.createdAt && isValid(new Date(log.createdAt))) {
+                const dayKey = format(new Date(log.createdAt), 'yyyy-MM-dd');
+                const dayData = trendMap.get(dayKey);
+                if (dayData) {
+                    if (log.event === 'SUCCESSFUL_LOGIN') dayData.success++;
+                    if (log.event === 'FAILED_LOGIN_ATTEMPT') dayData.fail++;
+                }
             }
         });
 
