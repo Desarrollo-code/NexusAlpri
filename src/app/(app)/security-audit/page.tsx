@@ -27,10 +27,8 @@ import { AreaChart, Area, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Tool
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import { es } from 'date-fns/locale';
 import { MetricCard } from '@/components/security/metric-card';
-import { SecurityLogTable } from '@/components/security/security-log-table';
-import { List, Grid } from 'lucide-react';
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 8;
 
 const ALL_EVENTS: { value: AppSecurityLog['event'] | 'ALL', label: string }[] = [
     { value: 'ALL', label: 'Todos los Eventos' },
@@ -229,10 +227,10 @@ function SecurityAuditPageComponent() {
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2"><LineChart className="h-4 w-4 text-primary"/> Tendencia de Salud</CardTitle>
                         </CardHeader>
-                        <CardContent className="h-48 px-2 -ml-4">
+                        <CardContent className="h-48 px-0">
                            <ChartContainer config={{ score: { label: 'Puntuación', color: 'hsl(var(--primary))' } }}>
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={stats.securityScoreTrend} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                                    <AreaChart data={stats.securityScoreTrend} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
                                         <defs><linearGradient id="trend-gradient" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/><stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/></linearGradient></defs>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                         <XAxis dataKey="date" tickFormatter={(str) => format(new Date(str), 'd MMM', {locale: es})} fontSize={12} tickLine={false} axisLine={false}/>
