@@ -44,18 +44,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { setTheme } = useTheme();
 
   const fetchSessionData = useCallback(async () => {
+    setIsLoading(true); // Asegurarse de que el estado de carga es verdadero al inicio
     try {
         const settingsRes = await fetch('/api/settings', { cache: 'no-store' });
         const settingsData = settingsRes.ok ? await settingsRes.json() : DEFAULT_SETTINGS;
         setSettings(settingsData);
         
-        // Fetch user data only after settings are loaded
         const userRes = await fetch('/api/auth/me', { cache: 'no-store' });
         if (userRes.ok) {
           const userData = await userRes.json();
           setUser(userData.user);
         } else {
-          // It's normal for this to fail for unauthenticated users
+          // Si el fetch del usuario falla (ej. 401), nos aseguramos de que el usuario sea null.
           setUser(null);
         }
         
@@ -64,6 +64,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(null);
         setSettings(DEFAULT_SETTINGS);
     } finally {
+        // Este es el cambio clave: setIsLoading(false) se llama en el finally
+        // para garantizar que la carga termine incluso si la API de usuario falla.
         setIsLoading(false);
     }
   }, []);
