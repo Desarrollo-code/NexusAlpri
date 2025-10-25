@@ -25,6 +25,10 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'img.youtube.com',
+      },
+      {
+        protocol: 'https',
         hostname: 'izefimwyuayfvektsstg.supabase.co',
         pathname: '/storage/v1/object/public/avatars/**',
       },
