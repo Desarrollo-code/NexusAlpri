@@ -52,13 +52,17 @@ export async function GET(req: NextRequest) {
       },
     });
     
+    // SAFE MAPPING to prevent server errors on null content
     const safeConversations = conversations.map(c => {
         const lastMessage = c.messages[0];
         let lastMessageText = 'Conversación iniciada';
-        if (lastMessage?.content) {
-            lastMessageText = lastMessage.content;
-        } else if (lastMessage?.attachments?.length > 0) {
-            lastMessageText = `Adjunto: ${lastMessage.attachments[0].name}`;
+        
+        if (lastMessage) {
+            if (lastMessage.content) {
+                lastMessageText = lastMessage.content;
+            } else if (lastMessage.attachments?.length > 0) {
+                lastMessageText = `Adjunto: ${lastMessage.attachments[0].name}`;
+            }
         }
 
         return {
@@ -116,6 +120,7 @@ export async function POST(req: NextRequest) {
     }
 
     // --- Message sending logic ---
+    // 1. Create the message base
     const newMessage = await prisma.message.create({
       data: {
         content: content || null,
@@ -124,6 +129,7 @@ export async function POST(req: NextRequest) {
       },
     });
     
+    // 2. If there are attachments, create them separately
     if (attachments && attachments.length > 0) {
         await prisma.chatAttachment.createMany({
             data: attachments.map((att: any) => ({
@@ -136,7 +142,7 @@ export async function POST(req: NextRequest) {
         });
     }
 
-    // Update `updatedAt` so the conversation appears at the top of the list
+    // 3. Update conversation's timestamp and fetch the final message with all data
     const [finalMessage, _] = await prisma.$transaction([
         prisma.message.findUnique({
             where: { id: newMessage.id },
