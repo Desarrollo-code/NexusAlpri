@@ -17,8 +17,8 @@ const iconMap: Record<string, React.ElementType> = {
     'Windows': IconBrandWindows,
     'macOS': Apple,
     'Linux': IconBrandLinux,
-    'Android': Smartphone, // Corregido
-    'iOS': Smartphone,     // Corregido
+    'Android': Smartphone,
+    'iOS': Smartphone,
     'Desconocido': HelpCircle,
 };
 

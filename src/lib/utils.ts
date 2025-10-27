@@ -90,3 +90,25 @@ export const getProcessColors = (id: string) => {
         }
     };
 };
+
+export const parseUserAgent = (userAgent: string | null | undefined): { browser: string; os: string } => {
+    if (!userAgent) return { browser: 'Desconocido', os: 'Desconocido' };
+    
+    let browser = 'Desconocido';
+    let os = 'Desconocido';
+
+    // OS detection
+    if (userAgent.includes('Windows')) os = 'Windows';
+    else if (userAgent.includes('Macintosh') || userAgent.includes('Mac OS')) os = 'macOS';
+    else if (userAgent.includes('Linux')) os = 'Linux';
+    else if (userAgent.includes('Android')) os = 'Android';
+    else if (userAgent.includes('iPhone') || userAgent.includes('iPad')) os = 'iOS';
+
+    // Browser detection
+    if (userAgent.includes('Edg/')) browser = 'Edge';
+    else if (userAgent.includes('Chrome/') && !userAgent.includes('Edg/')) browser = 'Chrome';
+    else if (userAgent.includes('Firefox/')) browser = 'Firefox';
+    else if (userAgent.includes('Safari/') && !userAgent.includes('Chrome/')) browser = 'Safari';
+
+    return { browser, os };
+};
