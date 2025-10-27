@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
         AND: [
           { participants: { some: { id: session.id } } },
           { participants: { some: { id: recipientId } } },
-          { isGroup: false } // ESTA ES LA CORRECCIÓN
+          { isGroup: false } // ESTA ES LA CORRECCIÓN CLAVE
         ]
       },
     });
