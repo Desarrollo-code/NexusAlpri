@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
     }
 
     // --- Message sending logic ---
-    const [finalMessage, _] = await prisma.$transaction([
+    const [newMessage, _] = await prisma.$transaction([
         prisma.message.create({
             data: {
               content: content || null,
@@ -149,11 +149,11 @@ export async function POST(req: NextRequest) {
 
 
     // Send real-time notification to the recipient
-    if (supabaseAdmin && finalMessage) {
+    if (supabaseAdmin && newMessage) {
         const channelName = `user:${recipientId}`;
         const broadcastPayload = {
             event: 'chat_message',
-            payload: finalMessage,
+            payload: newMessage,
         };
 
         const { error } = await supabaseAdmin.from('RealtimeMessage').insert({
@@ -167,7 +167,7 @@ export async function POST(req: NextRequest) {
         }
     }
 
-    return NextResponse.json(finalMessage, { status: 201 });
+    return NextResponse.json(newMessage, { status: 201 });
 
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
