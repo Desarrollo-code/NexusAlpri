@@ -18,6 +18,7 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'placehold.co',
+        pathname: '/**',
       },
       {
         protocol: 'https',
