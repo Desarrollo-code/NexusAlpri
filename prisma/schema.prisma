@@ -732,6 +732,7 @@ model Message {
   createdAt DateTime  @default(now())
   content   String    @db.Text
   isRead    Boolean   @default(false)
+  new              Boolean         @default(true)
   
   authorId String
   author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
