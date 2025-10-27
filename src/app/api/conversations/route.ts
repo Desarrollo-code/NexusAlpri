@@ -41,6 +41,9 @@ export async function GET(req: NextRequest) {
           orderBy: {
             createdAt: 'desc',
           },
+          include: {
+            attachments: true, // Incluir adjuntos del último mensaje
+          },
           take: 1, // Get only the last message for the preview
         },
       },
@@ -64,23 +67,23 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { recipientId, content } = await req.json();
+    const { recipientId, content, attachments } = await req.json();
 
-    if (!recipientId || !content) {
-      return NextResponse.json({ message: 'Recipient ID y contenido son requeridos.' }, { status: 400 });
+    if (!recipientId || (!content?.trim() && (!attachments || attachments.length === 0))) {
+      return NextResponse.json({ message: 'Se requiere destinatario y contenido o al menos un adjunto.' }, { status: 400 });
     }
 
     if (recipientId === session.id) {
          return NextResponse.json({ message: 'No puedes enviarte un mensaje a ti mismo.' }, { status: 400 });
     }
 
-    // Find if a conversation already exists between the two users
+    // Find if a 1-on-1 conversation already exists between the two users
     let conversation = await prisma.conversation.findFirst({
       where: {
         AND: [
           { participants: { some: { id: session.id } } },
           { participants: { some: { id: recipientId } } },
-          { isGroup: false }
+          { participants: { count: 2 } } // Ensure it's a 1-on-1 chat
         ]
       },
     });
@@ -96,18 +99,34 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Prepare a safe author object for the real-time payload
+    const authorPayload = {
+      id: session.id,
+      name: session.name,
+      avatar: session.avatar,
+    };
+
     // Create the new message and update the conversation's updatedAt timestamp
     const [newMessage] = await prisma.$transaction([
       prisma.message.create({
         data: {
-          content,
+          content: content || null,
           authorId: session.id,
           conversationId: conversation.id,
+          attachments: attachments && attachments.length > 0 ? {
+            create: attachments.map((att: any) => ({
+              name: att.name,
+              url: att.url,
+              type: att.type,
+              size: att.size,
+            }))
+          } : undefined
         },
         include: {
             author: {
                 select: { id: true, name: true, avatar: true }
-            }
+            },
+            attachments: true,
         }
       }),
       prisma.conversation.update({
@@ -115,19 +134,31 @@ export async function POST(req: NextRequest) {
           data: { updatedAt: new Date() }
       })
     ]);
+    
+    const finalMessageForBroadcast = {
+      ...newMessage,
+      author: authorPayload // Use the safe payload
+    };
+
 
     // Send real-time notification to the recipient
     if (supabaseAdmin) {
         const channelName = `user:${recipientId}`;
-        const payload = {
+        const broadcastPayload = {
             event: 'chat_message',
-            payload: newMessage,
+            payload: finalMessageForBroadcast,
         };
-        await supabaseAdmin.from('RealtimeMessage').insert({
+
+        const { error } = await supabaseAdmin.from('RealtimeMessage').insert({
             channel: channelName,
-            event: payload.event,
-            payload: payload.payload,
+            event: broadcastPayload.event,
+            payload: broadcastPayload.payload,
         });
+
+        if (error) {
+            console.error("Supabase broadcast error:", error);
+            // Non-blocking error, we don't want to fail the request if broadcast fails
+        }
     }
 
     return NextResponse.json(newMessage, { status: 201 });
