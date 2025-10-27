@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
         AND: [
           { participants: { some: { id: session.id } } },
           { participants: { some: { id: recipientId } } },
-          { participants: { count: 2 } } // Correct way to find a 1-on-1 chat
+          { isGroup: false } // ESTA ES LA CORRECCIÓN
         ]
       },
     });
@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
           participants: {
             connect: [{ id: session.id }, { id: recipientId }],
           },
-          isGroup: false,
+          isGroup: false, // Aseguramos que se marque como no grupal
         },
       });
     }
