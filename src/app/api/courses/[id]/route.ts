@@ -1,3 +1,4 @@
+
 // src/app/api/courses/[id]/route.ts
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
@@ -168,6 +169,17 @@ export async function PUT(
           }
         }
       }
+
+      // Log security event
+       await tx.securityLog.create({
+        data: {
+          event: 'COURSE_UPDATED',
+          ipAddress: req.ip || req.headers.get('x-forwarded-for'),
+          userId: session.id,
+          details: `Curso "${courseData.title}" actualizado.`,
+          userAgent: req.headers.get('user-agent'),
+        }
+      });
     }, {
       maxWait: 20000,
       timeout: 40000,
@@ -207,6 +219,9 @@ export async function DELETE(
   }
 
   try {
+    const courseToDelete = await prisma.course.findUnique({ where: { id: courseId } });
+    if (!courseToDelete) return new NextResponse(null, { status: 204 });
+
     await prisma.$transaction([
         prisma.notification.deleteMany({
             where: {
@@ -216,7 +231,16 @@ export async function DELETE(
                 ]
             }
         }),
-        prisma.course.delete({ where: { id: courseId } })
+        prisma.course.delete({ where: { id: courseId } }),
+        prisma.securityLog.create({
+            data: {
+              event: 'COURSE_DELETED',
+              ipAddress: req.ip || req.headers.get('x-forwarded-for'),
+              userId: session.id,
+              details: `Curso "${courseToDelete.title}" eliminado.`,
+              userAgent: req.headers.get('user-agent'),
+            }
+        })
     ]);
     return new NextResponse(null, { status: 204 });
   } catch (error) {
@@ -224,3 +248,4 @@ export async function DELETE(
     return NextResponse.json({ message: "Error al eliminar el curso" }, { status: 500 });
   }
 }
+

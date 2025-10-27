@@ -1,8 +1,10 @@
+
 // src/app/api/courses/[id]/status/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import type { CourseStatus } from '@/types';
 import prisma from '@/lib/prisma';
+import { checkFirstCoursePublished } from '@/lib/gamification';
 
 export const dynamic = 'force-dynamic';
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
@@ -39,9 +41,25 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
             data: dataToUpdate,
         });
         
+        // --- Security Log ---
+        await prisma.securityLog.create({
+            data: {
+              event: 'COURSE_UPDATED',
+              ipAddress: req.ip || req.headers.get('x-forwarded-for'),
+              userId: session.id,
+              details: `Estado del curso "${updatedCourse.title}" cambiado a ${status}.`,
+              userAgent: req.headers.get('user-agent'),
+            }
+        });
+
+        // Gamification check for instructor publishing first course
+        if (status === 'PUBLISHED') {
+            await checkFirstCoursePublished(updatedCourse.instructorId);
+        }
+
         if (status === 'PUBLISHED' && courseToUpdate.status !== 'PUBLISHED') {
             const allUsers = await prisma.user.findMany({ 
-              where: { id: { not: session.id } }, // Exclude the user who triggered the action
+              where: { id: { not: session.id } }, 
               select: { id: true } 
             });
             
