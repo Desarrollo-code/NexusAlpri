@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Send, ArrowLeft, Search, UserPlus, Info, MessageSquare, Paperclip, XCircle } from 'lucide-react';
+import { Loader2, Send, ArrowLeft, Search, UserPlus, Info, MessageSquare, Paperclip, XCircle, FileText } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -424,7 +424,7 @@ export function ChatClient() {
                                         {localPreviews.map(p => (
                                             <div key={p.id} className="relative aspect-square border rounded-md overflow-hidden bg-muted/50">
                                                 {p.file.type.startsWith('image/') && <Image src={p.previewUrl} alt={p.file.name} fill className="object-contain p-1" />}
-                                                {!p.file.type.startsWith('image/') && <div className="flex flex-col items-center justify-center h-full text-center p-1"><FileIcon className="h-6 w-6 text-muted-foreground"/><p className="text-xs text-muted-foreground truncate w-full">{p.file.name}</p></div>}
+                                                {!p.file.type.startsWith('image/') && <div className="flex flex-col items-center justify-center h-full text-center p-1"><FileText className="h-6 w-6 text-muted-foreground"/><p className="text-xs text-muted-foreground truncate w-full">{p.file.name}</p></div>}
                                                 <div className={cn("absolute inset-0 bg-black/40 flex items-center justify-center p-1 transition-opacity", p.uploadProgress === 100 ? "opacity-0 hover:opacity-100" : "")}>
                                                     {p.uploadProgress > 0 && p.uploadProgress < 100 && !p.error && <Progress value={p.uploadProgress} className="h-1 w-10/12"/>}
                                                     {p.error && <AlertTriangle className="h-6 w-6 text-destructive"/>}
