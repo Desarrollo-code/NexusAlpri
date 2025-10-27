@@ -23,7 +23,7 @@ import { TopIpsCard } from '@/components/security/top-ips-card';
 import { GaugeChart } from '@/components/ui/gauge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SmartPagination } from '@/components/ui/pagination';
-import { MetricCard } from '@/components/security/metric-card';
+import { MetricCard } from '@/components/analytics/metric-card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
@@ -293,10 +293,10 @@ function SecurityAuditPageComponent() {
                         <CardContent className="flex flex-col items-center justify-center">
                             {isLoading ? <Skeleton className="h-48 w-full"/> : <GaugeChart value={stats.securityScore || 0}/>}
                              <div className="mt-4 grid grid-cols-2 gap-2 w-full">
-                                <MetricCard id="successful-logins-card" title="Exitosos" value={stats.successfulLogins || 0} icon={CheckCircle} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')}/>
-                                <MetricCard id="failed-logins-card" title="Fallidos" value={stats.failedLogins || 0} icon={AlertTriangle} onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')}/>
-                                <MetricCard id="content-mods-card" title="Modif. Contenido" value={stats.courseModifications || 0} icon={BookMarked} onClick={() => handleFilterChange('event', 'COURSE_MODIFICATIONS')}/>
-                                <MetricCard id="2fa-adoption-card" title="Adopción 2FA" value={stats.twoFactorAdoptionRate || 0} icon={Percent} suffix="%"/>
+                                <MetricCard id="successful-logins-card" title="Exitosos" value={stats.successfulLogins || 0} icon={CheckCircle} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')} gradient="bg-gradient-green" />
+                                <MetricCard id="failed-logins-card" title="Fallidos" value={stats.failedLogins || 0} icon={AlertTriangle} onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')} gradient="bg-gradient-orange" />
+                                <MetricCard id="content-mods-card" title="Modif. Contenido" value={stats.courseModifications || 0} icon={BookMarked} onClick={() => handleFilterChange('event', 'COURSE_MODIFICATIONS')} gradient="bg-gradient-blue" />
+                                <MetricCard id="2fa-adoption-card" title="Adopción 2FA" value={stats.twoFactorAdoptionRate || 0} icon={Percent} suffix="%" gradient="bg-gradient-purple" />
                             </div>
                         </CardContent>
                     </Card>

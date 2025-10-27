@@ -1,5 +1,6 @@
 // src/components/security/metric-card.tsx
-'use client';
+// This file is obsolete. The new metric card is located at /src/components/analytics/metric-card.tsx
+// This file can be deleted.
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { useAnimatedCounter } from "@/hooks/use-animated-counter"
@@ -17,7 +18,7 @@ interface MetricCardProps {
 
 const MetricCard = React.forwardRef<HTMLDivElement, MetricCardProps>(
     ({ id, title, value, icon: Icon, onClick, description, suffix }, ref) => {
-    const animatedValue = useAnimatedCounter(value, 0, 1000);
+    const animatedValue = useAnimatedCounter(value || 0);
     
     return (
         <Card 
