@@ -40,5 +40,6 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api/auth|_next/static|_next/image|favicon.ico|uploads|certificates|.*\\..*).*)'],
+  // Excluir todas las rutas de _next (imágenes, estáticos, etc.), archivos con extensión (p.ej. .png), y la ruta de la API de autenticación.
+  matcher: ['/((?!api/auth|_next/.*|.*\\..*).*)'],
 };
