@@ -46,7 +46,11 @@ export async function GET(req: NextRequest) {
 
     let whereClause: any = {};
     if (eventType && eventType !== 'ALL') {
-        whereClause.event = eventType;
+        if (eventType === 'COURSE_MODIFICATIONS') {
+            whereClause.event = { in: ['COURSE_CREATED', 'COURSE_UPDATED', 'COURSE_DELETED'] };
+        } else {
+            whereClause.event = eventType;
+        }
     }
 
     const endDate = endDateParam && isValid(new Date(endDateParam)) ? endOfDay(new Date(endDateParam)) : endOfDay(new Date());
@@ -117,6 +121,8 @@ export async function GET(req: NextRequest) {
         const successfulLogins = allLogsInPeriod.filter(l => l.event === 'SUCCESSFUL_LOGIN').length;
         const failedLogins = allLogsInPeriod.filter(l => l.event === 'FAILED_LOGIN_ATTEMPT').length;
         const roleChanges = allLogsInPeriod.filter(l => l.event === 'USER_ROLE_CHANGED').length;
+        const courseModifications = allLogsInPeriod.filter(l => ['COURSE_CREATED', 'COURSE_UPDATED', 'COURSE_DELETED'].includes(l.event)).length;
+
 
         const { browsers, os } = aggregateByUserAgent(allLogsInPeriod || []);
 
@@ -146,6 +152,7 @@ export async function GET(req: NextRequest) {
             successfulLogins,
             failedLogins,
             roleChanges,
+            courseModifications,
             browsers,
             os,
             topIps,

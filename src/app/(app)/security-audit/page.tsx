@@ -5,8 +5,8 @@ import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Loader2, AlertTriangle, UserCog, HelpCircle, Filter, CheckCircle, Shield, LineChart, Percent, Users, UserX } from 'lucide-react';
-import type { SecurityLog as AppSecurityLog, SecurityStats, User } from '@/types';
+import { Loader2, AlertTriangle, UserCog, HelpCircle, Filter, CheckCircle, Shield, BookMarked, Percent, Users, UserX } from 'lucide-react';
+import type { SecurityLog as AppSecurityLog, SecurityStats, User, SecurityLogEvent } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { useTitle } from '@/contexts/title-context';
@@ -42,18 +42,16 @@ import { cn } from '@/lib/utils';
 
 const PAGE_SIZE = 8;
 
-const ALL_EVENTS: { value: AppSecurityLog['event'] | 'ALL', label: string }[] = [
+const ALL_EVENTS: { value: SecurityLogEvent | 'ALL' | 'COURSE_MODIFICATIONS', label: string }[] = [
     { value: 'ALL', label: 'Todos los Eventos' },
     { value: 'SUCCESSFUL_LOGIN', label: 'Inicios de Sesión Exitosos' },
     { value: 'FAILED_LOGIN_ATTEMPT', label: 'Inicios de Sesión Fallidos' },
     { value: 'PASSWORD_CHANGE_SUCCESS', label: 'Cambios de Contraseña' },
+    { value: 'USER_ROLE_CHANGED', label: 'Cambios de Rol' },
+    { value: 'COURSE_MODIFICATIONS', label: 'Modificaciones de Cursos' },
+    { value: 'USER_SUSPENDED', label: 'Usuarios Suspendidos' },
     { value: 'TWO_FACTOR_ENABLED', label: 'Activaciones de 2FA' },
     { value: 'TWO_FACTOR_DISABLED', label: 'Desactivaciones de 2FA' },
-    { value: 'USER_ROLE_CHANGED', label: 'Cambios de Rol' },
-    { value: 'COURSE_CREATED', label: 'Cursos Creados' },
-    { value: 'COURSE_UPDATED', label: 'Cursos Modificados' },
-    { value: 'COURSE_DELETED', label: 'Cursos Eliminados' },
-    { value: 'USER_SUSPENDED', label: 'Usuarios Suspendidos' },
 ];
 
 function AtRiskUsersCard({ users, onSuspend, isLoading }: { users: any[], onSuspend: (user: any) => void, isLoading: boolean }) {
@@ -261,7 +259,7 @@ function SecurityAuditPageComponent() {
                 <div className="lg:col-span-2 space-y-8">
                    <Card>
                         <CardHeader>
-                            <CardTitle className="text-base flex items-center gap-2"><LineChart/> Línea de Tiempo de Eventos</CardTitle>
+                            <CardTitle className="text-base flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-primary animate-pulse"/>Línea de Tiempo de Eventos</CardTitle>
                             <CardDescription className="text-xs">Es como la cámara de seguridad. Registra cada vez que alguien entra, sale o realiza una acción importante.</CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -297,9 +295,10 @@ function SecurityAuditPageComponent() {
                         </CardHeader>
                         <CardContent className="flex flex-col items-center justify-center">
                             {isLoading ? <Skeleton className="h-48 w-full"/> : <GaugeChart value={stats.securityScore || 0}/>}
-                             <div className="mt-4 grid grid-cols-3 gap-2 w-full">
+                             <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-2 w-full">
                                 <MetricCard id="successful-logins-card" title="Exitosos" value={stats.successfulLogins || 0} icon={CheckCircle} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')}/>
                                 <MetricCard id="failed-logins-card" title="Fallidos" value={stats.failedLogins || 0} icon={AlertTriangle} onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')}/>
+                                <MetricCard id="content-mods-card" title="Modificaciones Contenido" value={stats.courseModifications || 0} icon={BookMarked} onClick={() => handleFilterChange('event', 'COURSE_MODIFICATIONS')}/>
                                 <MetricCard id="2fa-adoption-card" title="Adopción 2FA" value={stats.twoFactorAdoptionRate || 0} icon={Percent} suffix="%"/>
                             </div>
                         </CardContent>

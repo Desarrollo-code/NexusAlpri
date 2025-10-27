@@ -292,6 +292,7 @@ export type SecurityStats = {
     successfulLogins: number;
     failedLogins: number;
     roleChanges: number;
+    courseModifications: number;
     browsers: { name: string, count: number }[];
     os: { name: string, count: number }[];
     topIps: { ip: string, count: number, country: string }[];
