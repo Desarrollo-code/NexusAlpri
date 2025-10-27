@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Loader2, AlertTriangle, UserCog, HelpCircle, Filter, CheckCircle, Shield, LineChart, Percent, Users, UserX } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, SecurityStats, User } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { useTitle } from '@/contexts/title-context';
 import { useTour } from '@/contexts/tour-context';
 import { securityAuditTour } from '@/lib/tour-steps';
