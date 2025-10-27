@@ -64,7 +64,14 @@ const ConversationList = ({ conversations, onSelect, activeConversationId }: {
                 if (!otherParticipant) return null;
                 
                 const lastMessage = c.messages[0];
-                const lastMessageText = lastMessage?.content || 'Conversación iniciada';
+                let lastMessageText = 'Conversación iniciada';
+                if (lastMessage) {
+                    if (lastMessage.content) {
+                      lastMessageText = lastMessage.content;
+                    } else if (lastMessage.attachments?.length > 0) {
+                      lastMessageText = `Adjunto: ${lastMessage.attachments[0].name}`;
+                    }
+                }
 
                 return (
                     <button

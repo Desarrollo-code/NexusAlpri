@@ -150,10 +150,22 @@ export async function POST(req: NextRequest) {
 
     // Send real-time notification to the recipient
     if (supabaseAdmin && newMessage) {
+        // Prepare a safe payload for broadcasting, excluding sensitive or complex objects
+        const authorPayload = {
+            id: newMessage.author.id,
+            name: newMessage.author.name,
+            avatar: newMessage.author.avatar,
+        };
+
+        const finalMessageForBroadcast = {
+            ...newMessage,
+            author: authorPayload // Use the safe payload
+        };
+        
         const channelName = `user:${recipientId}`;
         const broadcastPayload = {
             event: 'chat_message',
-            payload: newMessage,
+            payload: finalMessageForBroadcast,
         };
 
         const { error } = await supabaseAdmin.from('RealtimeMessage').insert({
