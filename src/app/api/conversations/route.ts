@@ -1,3 +1,4 @@
+// src/app/api/conversations/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -96,7 +97,6 @@ export async function POST(req: NextRequest) {
     }
 
     // Find if a 1-on-1 conversation already exists between the two users
-    // NOTE: The 'isGroup: false' condition correctly replaces the problematic 'count: 2' filter.
     let conversation = await prisma.conversation.findFirst({
       where: {
         AND: [
@@ -121,15 +121,12 @@ export async function POST(req: NextRequest) {
 
     // --- Message sending logic ---
     // 1. Create the message base
-    // NOTE: The previous error "The column `new` does not exist" is likely caused by 
-    // an external Prisma Middleware. We explicitly use 'isRead: false' (the correct field)
-    // and assume the default will apply, but add 'isRead' for clarity and future robustness.
     const newMessage = await prisma.message.create({
       data: {
         content: content || null,
         authorId: session.id,
         conversationId: conversation.id,
-        isRead: false, // Ensure a new message is marked as unread (if default wasn't enough)
+        isRead: false,
       },
     });
     
