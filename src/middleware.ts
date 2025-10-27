@@ -11,7 +11,6 @@ export function middleware(request: NextRequest) {
   const sessionCookie = request.cookies.get('session');
 
   const isProtectedRoute = PROTECTED_ROUTE_PREFIXES.some(prefix => pathname.startsWith(prefix));
-  const isProtectedApiRoute = PROTECTED_API_PREFIXES.some(prefix => pathname.startsWith(prefix));
   const isAuthRoute = AUTH_ROUTE_PREFIXES.some(prefix => pathname.startsWith(prefix));
 
   // REGLA 1: Usuario con sesión intentando acceder a una ruta de autenticación
@@ -20,16 +19,7 @@ export function middleware(request: NextRequest) {
   }
 
   // REGLA 2: Usuario SIN sesión intentando acceder a una ruta protegida
-  if (!sessionCookie && (isProtectedRoute || isProtectedApiRoute)) {
-    // Si la petición es a una API, devolvemos un error 401 en JSON en lugar de redirigir.
-    if (pathname.startsWith('/api/')) {
-        return new NextResponse(
-            JSON.stringify({ success: false, message: 'Autenticación requerida' }),
-            { status: 401, headers: { 'Content-Type': 'application/json' } }
-        );
-    }
-    
-    // Si es una página, redirigimos al login.
+  if (!sessionCookie && isProtectedRoute) {
     const signInUrl = new URL('/sign-in', request.url);
     signInUrl.searchParams.set('redirectedFrom', pathname);
     return NextResponse.redirect(signInUrl);
@@ -40,6 +30,7 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Excluir todas las rutas de _next (imágenes, estáticos, etc.), archivos con extensión (p.ej. .png), y la ruta de la API de autenticación.
-  matcher: ['/((?!api/auth|_next/.*|.*\\..*).*)'],
+  // El middleware solo se ejecutará en las rutas de la aplicación y de la API,
+  // excluyendo las rutas de Next.js (_next), los archivos estáticos y las rutas de autenticación de la API.
+  matcher: ['/((?!api/auth|_next/static|_next/image|favicon.ico).*)'],
 };
