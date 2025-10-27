@@ -88,10 +88,10 @@ export async function POST(req: NextRequest) {
 
     const dataFromClient: Partial<AppPlatformSettings> = await req.json();
     
-    const safeParseInt = (value: any): number | null => {
-        if (value === null || value === undefined || value === '') return null;
+    const safeParseInt = (value: any, defaultValue: number): number => {
+        if (value === null || value === undefined || value === '') return defaultValue;
         const num = Number(value);
-        return isNaN(num) ? null : num;
+        return isNaN(num) ? defaultValue : num;
     };
     
     const dataToSave = {
@@ -100,13 +100,13 @@ export async function POST(req: NextRequest) {
       enableEmailNotifications: dataFromClient.enableEmailNotifications,
       emailWhitelist: dataFromClient.emailWhitelist,
       resourceCategories: Array.isArray(dataFromClient.resourceCategories) ? dataFromClient.resourceCategories.join(',') : dataFromClient.resourceCategories,
-      passwordMinLength: safeParseInt(dataFromClient.passwordMinLength) ?? 8,
+      passwordMinLength: safeParseInt(dataFromClient.passwordMinLength, 8),
       passwordRequireUppercase: dataFromClient.passwordRequireUppercase,
       passwordRequireLowercase: dataFromClient.passwordRequireLowercase,
       passwordRequireNumber: dataFromClient.passwordRequireNumber,
       passwordRequireSpecialChar: dataFromClient.passwordRequireSpecialChar,
       enableIdleTimeout: dataFromClient.enableIdleTimeout,
-      idleTimeoutMinutes: safeParseInt(dataFromClient.idleTimeoutMinutes) ?? 20,
+      idleTimeoutMinutes: safeParseInt(dataFromClient.idleTimeoutMinutes, 20),
       require2faForAdmins: dataFromClient.require2faForAdmins,
       primaryColor: dataFromClient.primaryColor,
       secondaryColor: dataFromClient.secondaryColor,
