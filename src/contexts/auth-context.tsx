@@ -44,23 +44,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { setTheme } = useTheme();
 
   const fetchSessionData = useCallback(async () => {
-    // No establecer isLoading(true) aquí para evitar parpadeos en recargas rápidas
     try {
-        const settingsPromise = fetch('/api/settings', { cache: 'no-store' });
-        const userPromise = fetch('/api/auth/me', { cache: 'no-store' });
+        const [settingsRes, userRes] = await Promise.all([
+            fetch('/api/settings', { cache: 'no-store' }),
+            fetch('/api/auth/me', { cache: 'no-store' })
+        ]);
 
-        const [settingsRes, userRes] = await Promise.all([settingsPromise, userPromise]);
-
-        const settingsData = settingsRes.ok ? await settingsRes.json() : DEFAULT_SETTINGS;
-        setSettings(settingsData);
-        
-        if (userRes.ok) {
-          const userData = await userRes.json();
-          setUser(userData.user);
+        if (settingsRes.ok) {
+            setSettings(await settingsRes.json());
         } else {
-          setUser(null);
+            setSettings(DEFAULT_SETTINGS);
         }
         
+        if (userRes.ok) {
+            const userData = await userRes.json();
+            setUser(userData.user);
+        } else {
+            setUser(null);
+        }
     } catch (error) {
         console.error("[AuthContext] Fallo al obtener los datos de la sesión:", error);
         setUser(null);
