@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { subDays, startOfDay } from 'date-fns';
 import type { SecurityStats } from '@/types';
-import { parseUserAgent } from '@/lib/security-log-utils';
+import { parseUserAgent } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 

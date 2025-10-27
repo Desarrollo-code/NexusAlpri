@@ -3,13 +3,14 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetClose } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { getEventDetails, parseUserAgent } from "@/lib/security-log-utils";
+import { getEventDetails } from "@/lib/security-log-utils";
 import type { SecurityLog } from "@/types";
 import { format } from "date-fns";
 import { es } from 'date-fns/locale';
 import { Button } from "../ui/button";
 import { X, ShieldCheck, ShieldX, KeyRound, UserCog, ShieldAlert, BookMarked } from "lucide-react";
 import React from 'react';
+import { parseUserAgent } from "@/lib/utils";
 
 const iconMap = {
   ShieldCheck, ShieldX, KeyRound, UserCog, ShieldAlert, BookMarked
