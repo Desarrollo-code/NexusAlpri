@@ -1,7 +1,7 @@
 // src/app/(public)/layout.tsx
 'use client';
 
-import React, { useEffect, Suspense } from 'react';
+import React, { useEffect } from 'react';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
 import { PublicTopBar } from '@/components/layout/public-top-bar';
@@ -13,7 +13,7 @@ import { ColorfulLoader } from '@/components/ui/colorful-loader';
 import { AppWatermark } from '@/components/layout/app-watermark';
 
 
-function PublicLayoutContent({ children }: { children: React.ReactNode }) {
+export default function PublicLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading, settings } = useAuth();
   const { setTheme } = useTheme();
 
@@ -59,17 +59,5 @@ function PublicLayoutContent({ children }: { children: React.ReactNode }) {
         <AppWatermark />
       </div>
     </div>
-  );
-}
-
-export default function PublicLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <Suspense fallback={<div className="flex items-center justify-center h-screen"><ColorfulLoader /></div>}>
-        <PublicLayoutContent>{children}</PublicLayoutContent>
-    </Suspense>
   );
 }
