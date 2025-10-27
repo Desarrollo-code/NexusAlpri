@@ -25,6 +25,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { SmartPagination } from '@/components/ui/pagination';
 import { es } from 'date-fns/locale';
 import { MetricCard } from '@/components/security/metric-card';
+import { InfoMascotCard } from '@/components/security/info-mascot-card';
+
 
 const PAGE_SIZE = 8;
 
@@ -88,7 +90,6 @@ function SecurityAuditPageComponent() {
             if (dateRange?.to) params.set('endDate', dateRange.to.toISOString());
             if (activeFilter && activeFilter !== 'ALL') params.set('event', activeFilter);
             params.set('page', String(currentPage));
-            params.set('pageSize', String(PAGE_SIZE));
             
             const response = await fetch(`/api/security/logs?${params.toString()}`);
             
@@ -168,34 +169,10 @@ function SecurityAuditPageComponent() {
             </div>
             
              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                <div className="lg:col-span-1 space-y-8 lg:sticky lg:top-24">
+                <div className="lg:col-span-1 space-y-8">
                    <Card>
                         <CardHeader>
-                            <CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-primary"/> Salud de Seguridad</CardTitle>
-                        </CardHeader>
-                        <CardContent className="flex flex-col items-center justify-center">
-                            <GaugeChart value={stats.securityScore || 0}/>
-                             <div className="mt-4 grid grid-cols-3 gap-2 w-full">
-                                <MetricCard id="successful-logins-card" title="Exitosos" value={stats.successfulLogins || 0} icon={CheckCircle} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')}/>
-                                <MetricCard id="failed-logins-card" title="Fallidos" value={stats.failedLogins || 0} icon={AlertTriangle} onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')}/>
-                                <MetricCard id="2fa-adoption-card" title="Adopción 2FA" value={stats.twoFactorAdoptionRate || 0} icon={Percent} suffix="%"/>
-                            </div>
-                        </CardContent>
-                     </Card>
-                </div>
-                <div className="lg:col-span-1 space-y-8">
-                   <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
-                   <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
-                </div>
-                 <div className="lg:col-span-1">
-                     <Card className="h-full">
-                        <CardHeader>
-                             <div className="flex justify-between items-center">
-                                 <div>
-                                     <CardTitle>Línea de Tiempo de Eventos</CardTitle>
-                                     <CardDescription>Eventos en el periodo seleccionado.</CardDescription>
-                                 </div>
-                            </div>
+                            <CardTitle className="text-base flex items-center gap-2">Línea de Tiempo de Eventos</CardTitle>
                         </CardHeader>
                         <CardContent>
                             {isLoading ? <div className="text-center py-8"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>
@@ -216,6 +193,26 @@ function SecurityAuditPageComponent() {
                             </CardFooter>
                          )}
                     </Card>
+                </div>
+                <div className="lg:col-span-1 space-y-8">
+                   <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
+                   <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
+                </div>
+                 <div className="lg:col-span-1 space-y-8">
+                     <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-primary"/> Salud de Seguridad</CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col items-center justify-center">
+                            <GaugeChart value={stats.securityScore || 0}/>
+                             <div className="mt-4 grid grid-cols-3 gap-2 w-full">
+                                <MetricCard id="successful-logins-card" title="Exitosos" value={stats.successfulLogins || 0} icon={CheckCircle} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')}/>
+                                <MetricCard id="failed-logins-card" title="Fallidos" value={stats.failedLogins || 0} icon={AlertTriangle} onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')}/>
+                                <MetricCard id="2fa-adoption-card" title="Adopción 2FA" value={stats.twoFactorAdoptionRate || 0} icon={Percent} suffix="%"/>
+                            </div>
+                        </CardContent>
+                     </Card>
+                     <InfoMascotCard />
                 </div>
             </div>
             

@@ -35,6 +35,7 @@ const DEFAULT_DB_SETTINGS = {
   benefitsImageUrl: null,
   announcementsImageUrl: null,
   publicPagesBgUrl: null,
+  securityMascotUrl: null,
   fontHeadline: 'Space Grotesk',
   fontBody: 'Inter'
 };
@@ -121,6 +122,7 @@ export async function POST(req: NextRequest) {
       benefitsImageUrl: dataFromClient.benefitsImageUrl,
       announcementsImageUrl: dataFromClient.announcementsImageUrl,
       publicPagesBgUrl: dataFromClient.publicPagesBgUrl,
+      securityMascotUrl: dataFromClient.securityMascotUrl,
       fontHeadline: dataFromClient.fontHeadline,
       fontBody: dataFromClient.fontBody,
     };
