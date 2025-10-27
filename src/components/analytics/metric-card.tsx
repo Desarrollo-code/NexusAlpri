@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import React from "react";
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 
-export const MetricCard = ({ title, value, icon: Icon, description, suffix = '', gradient, color, trendData, dataKey, id }: { 
+export const MetricCard = ({ title, value, icon: Icon, description, suffix = '', gradient, color, trendData, dataKey, id, onClick }: { 
     title: string; 
     value: number; 
     icon: React.ElementType; 
@@ -16,18 +16,23 @@ export const MetricCard = ({ title, value, icon: Icon, description, suffix = '',
     color?: string;
     trendData?: any[];
     dataKey?: string;
-    id?: string 
+    id?: string;
+    onClick?: () => void;
 }) => {
     const animatedValue = useAnimatedCounter(value);
     return (
-        <Card id={id} className={cn("relative overflow-hidden text-white card-border-animated", gradient)}>
+        <Card id={id} onClick={onClick} className={cn(
+            "relative overflow-hidden text-white card-border-animated", 
+            gradient,
+            onClick && "cursor-pointer"
+        )}>
             <div className="absolute inset-0 bg-black/10"></div>
-             <CardHeader className="relative flex flex-row items-start justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-white/90">{title}</CardTitle>
-                <Icon className="h-5 w-5 text-white/90" />
+             <CardHeader className="relative flex flex-row items-center justify-between space-y-0 p-3 pb-0">
+                <CardTitle className="text-xs font-medium text-white/90">{title}</CardTitle>
+                <Icon className="h-4 w-4 text-white/90" />
             </CardHeader>
-            <CardContent className="relative">
-                <div className="text-3xl font-bold text-white">{animatedValue}{suffix}</div>
+            <CardContent className="relative p-3">
+                <div className="text-2xl font-bold text-white">{animatedValue}{suffix}</div>
                 {description && <p className="text-xs text-white/80">{description}</p>}
                 {trendData && trendData.length > 0 && (
                      <div className="absolute bottom-[-28px] right-0 left-0 h-20 opacity-30">
