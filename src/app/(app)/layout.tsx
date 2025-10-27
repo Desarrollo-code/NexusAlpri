@@ -55,7 +55,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         )}>
           <TopBar />
           <main className="relative flex-1 overflow-y-auto" style={{ transform: 'translateZ(0)' }}>
-            <div className="relative z-10 p-4 md:p-6 lg:p-8">
+            <div className="relative z-10 p-4 md:p-5 lg:p-6">
               {children}
             </div>
           </main>
