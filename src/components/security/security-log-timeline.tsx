@@ -6,15 +6,15 @@ import { getEventDetails } from '@/lib/security-log-utils';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ShieldCheck, ShieldX, KeyRound, UserCog, ShieldAlert } from 'lucide-react';
+import { ShieldCheck, ShieldX, KeyRound, UserCog, ShieldAlert, BookMarked } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-const iconMap = {
-  ShieldCheck, ShieldX, KeyRound, UserCog, ShieldAlert
+const iconMap: Record<string, React.ElementType> = {
+  ShieldCheck, ShieldX, KeyRound, UserCog, ShieldAlert, BookMarked
 };
 
 const TimelineItem = ({ log, onLogClick, isLast }: { log: SecurityLog, onLogClick: (log: SecurityLog) => void, isLast: boolean }) => {

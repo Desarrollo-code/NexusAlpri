@@ -272,7 +272,11 @@ export type SecurityLogEvent =
     | 'PASSWORD_CHANGE_SUCCESS'
     | 'TWO_FACTOR_ENABLED'
     | 'TWO_FACTOR_DISABLED'
-    | 'USER_ROLE_CHANGED';
+    | 'USER_ROLE_CHANGED'
+    | 'COURSE_CREATED'
+    | 'COURSE_UPDATED'
+    | 'COURSE_DELETED'
+    | 'USER_SUSPENDED';
 
 export type SecurityLog = Prisma.SecurityLogGetPayload<{
     include: { user: { select: { id: true, name: true, avatar: true, email: true } } }
@@ -293,6 +297,7 @@ export type SecurityStats = {
     topIps: { ip: string, count: number, country: string }[];
     securityScore: number;
     twoFactorAdoptionRate: number;
+    atRiskUsers: { userId: string, name: string | null, email: string, avatar: string | null, failedAttempts: number }[];
 };
 
 

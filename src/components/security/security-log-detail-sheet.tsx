@@ -8,11 +8,11 @@ import type { SecurityLog } from "@/types";
 import { format } from "date-fns";
 import { es } from 'date-fns/locale';
 import { Button } from "../ui/button";
-import { X, ShieldCheck, ShieldX, KeyRound, UserCog, ShieldAlert } from "lucide-react";
+import { X, ShieldCheck, ShieldX, KeyRound, UserCog, ShieldAlert, BookMarked } from "lucide-react";
 import React from 'react';
 
 const iconMap = {
-  ShieldCheck, ShieldX, KeyRound, UserCog, ShieldAlert
+  ShieldCheck, ShieldX, KeyRound, UserCog, ShieldAlert, BookMarked
 };
 
 const DetailRow = ({ label, value }: { label: string, value: string | null | undefined }) => (

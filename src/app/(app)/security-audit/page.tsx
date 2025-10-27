@@ -5,8 +5,8 @@ import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Loader2, AlertTriangle, UserCog, HelpCircle, Filter, CheckCircle, Shield, LineChart, Percent } from 'lucide-react';
-import type { SecurityLog as AppSecurityLog, SecurityStats } from '@/types';
+import { Loader2, AlertTriangle, UserCog, HelpCircle, Filter, CheckCircle, Shield, LineChart, Percent, Users, UserX } from 'lucide-react';
+import type { SecurityLog as AppSecurityLog, SecurityStats, User } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { useTitle } from '@/contexts/title-context';
@@ -25,6 +25,20 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { SmartPagination } from '@/components/ui/pagination';
 import { es } from 'date-fns/locale';
 import { MetricCard } from '@/components/security/metric-card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Identicon } from '@/components/ui/identicon';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { cn } from '@/lib/utils';
 
 
 const PAGE_SIZE = 8;
@@ -37,7 +51,61 @@ const ALL_EVENTS: { value: AppSecurityLog['event'] | 'ALL', label: string }[] = 
     { value: 'TWO_FACTOR_ENABLED', label: 'Activaciones de 2FA' },
     { value: 'TWO_FACTOR_DISABLED', label: 'Desactivaciones de 2FA' },
     { value: 'USER_ROLE_CHANGED', label: 'Cambios de Rol' },
+    { value: 'COURSE_CREATED', label: 'Cursos Creados' },
+    { value: 'COURSE_UPDATED', label: 'Cursos Modificados' },
+    { value: 'COURSE_DELETED', label: 'Cursos Eliminados' },
+    { value: 'USER_SUSPENDED', label: 'Usuarios Suspendidos' },
 ];
+
+function AtRiskUsersCard({ users, onSuspend, isLoading }: { users: any[], onSuspend: (user: any) => void, isLoading: boolean }) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">Usuarios en Riesgo</CardTitle>
+                <CardDescription className="text-xs">
+                    Usuarios con más de 5 intentos fallidos de inicio de sesión en las últimas 24 horas.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                 {isLoading ? (
+                    <div className="space-y-2">
+                        {[...Array(2)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+                    </div>
+                ) : users.length > 0 ? (
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Usuario</TableHead>
+                                <TableHead className="text-center">Intentos</TableHead>
+                                <TableHead className="text-right">Acción</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {users.map((user) => (
+                                <TableRow key={user.userId}>
+                                    <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            <Avatar className="h-8 w-8"><AvatarImage src={user.avatar || undefined} /><AvatarFallback><Identicon userId={user.userId} /></AvatarFallback></Avatar>
+                                            <span className="font-medium text-sm truncate">{user.name || user.email}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-center font-bold text-destructive">{user.failedAttempts}</TableCell>
+                                    <TableCell className="text-right">
+                                        <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => onSuspend(user)}>
+                                            <UserX className="h-4 w-4" />
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                ) : (
+                    <p className="text-sm text-center text-muted-foreground py-4">No hay usuarios en riesgo actualmente.</p>
+                )}
+            </CardContent>
+        </Card>
+    )
+}
 
 function SecurityAuditPageComponent() {
     const { user: currentUser } = useAuth();
@@ -54,6 +122,8 @@ function SecurityAuditPageComponent() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedLog, setSelectedLog] = useState<AppSecurityLog | null>(null);
+    const [userToSuspend, setUserToSuspend] = useState<any>(null);
+    const [isSuspending, setIsSuspending] = useState(false);
     
     const activeFilter = searchParams.get('event') || 'ALL';
     const currentPage = Number(searchParams.get('page')) || 1;
@@ -138,6 +208,27 @@ function SecurityAuditPageComponent() {
         router.push(`${pathname}?${newQuery}`);
     }
 
+    const handleSuspendUser = async () => {
+        if (!userToSuspend) return;
+        setIsSuspending(true);
+        try {
+            const res = await fetch(`/api/users/${userToSuspend.userId}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isActive: false })
+            });
+            if (!res.ok) throw new Error((await res.json()).message || 'No se pudo suspender al usuario.');
+            
+            toast({ title: "Usuario Suspendido", description: `${userToSuspend.name || userToSuspend.email} ha sido suspendido.`});
+            fetchData(); // Refresh data
+        } catch(err) {
+             toast({ title: "Error", description: (err as Error).message, variant: "destructive" });
+        } finally {
+            setIsSuspending(false);
+            setUserToSuspend(null);
+        }
+    }
+
     if (currentUser?.role !== 'ADMINISTRATOR') {
         return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
     }
@@ -169,10 +260,28 @@ function SecurityAuditPageComponent() {
             
              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 <div className="lg:col-span-1 space-y-8">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-primary"/> Salud de Seguridad</CardTitle>
+                            <CardDescription className="text-xs">Un "termómetro" que mide qué tan seguros son los inicios de sesión. Un puntaje alto es bueno.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex flex-col items-center justify-center">
+                            <GaugeChart value={stats.securityScore || 0}/>
+                             <div className="mt-4 grid grid-cols-3 gap-2 w-full">
+                                <MetricCard id="successful-logins-card" title="Exitosos" value={stats.successfulLogins || 0} icon={CheckCircle} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')}/>
+                                <MetricCard id="failed-logins-card" title="Fallidos" value={stats.failedLogins || 0} icon={AlertTriangle} onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')}/>
+                                <MetricCard id="2fa-adoption-card" title="Adopción 2FA" value={stats.twoFactorAdoptionRate || 0} icon={Percent} suffix="%"/>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <AtRiskUsersCard users={stats.atRiskUsers || []} onSuspend={setUserToSuspend} isLoading={isLoading} />
+                </div>
+
+                <div className="lg:col-span-2 space-y-8">
                    <Card>
                         <CardHeader>
-                            <CardTitle className="text-base flex items-center gap-2">Línea de Tiempo de Eventos</CardTitle>
-                            <CardDescription className="text-xs">Es como la cámara de seguridad. Registra cada vez que alguien intenta entrar o realiza una acción importante.</CardDescription>
+                            <CardTitle className="text-base flex items-center gap-2"><LineChart/> Línea de Tiempo de Eventos</CardTitle>
+                            <CardDescription className="text-xs">Es como la cámara de seguridad. Registra cada vez que alguien entra, sale o realiza una acción importante.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             {isLoading ? <div className="text-center py-8"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>
@@ -194,36 +303,26 @@ function SecurityAuditPageComponent() {
                          )}
                     </Card>
                 </div>
-                <div className="lg:col-span-1 space-y-8">
-                   <DeviceDistributionChart 
-                        browserData={stats.browsers} 
-                        osData={stats.os} 
-                        isLoading={isLoading} 
-                    />
-                   <TopIpsCard 
-                        topIps={stats.topIps || []} 
-                        isLoading={isLoading} 
-                    />
-                </div>
-                 <div className="lg:col-span-1 space-y-8">
-                     <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-primary"/> Salud de Seguridad</CardTitle>
-                            <CardDescription className="text-xs">Un "termómetro" que mide qué tan seguros son los inicios de sesión. Un puntaje alto es bueno.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="flex flex-col items-center justify-center">
-                            <GaugeChart value={stats.securityScore || 0}/>
-                             <div className="mt-4 grid grid-cols-3 gap-2 w-full">
-                                <MetricCard id="successful-logins-card" title="Exitosos" value={stats.successfulLogins || 0} icon={CheckCircle} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')}/>
-                                <MetricCard id="failed-logins-card" title="Fallidos" value={stats.failedLogins || 0} icon={AlertTriangle} onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')}/>
-                                <MetricCard id="2fa-adoption-card" title="Adopción 2FA" value={stats.twoFactorAdoptionRate || 0} icon={Percent} suffix="%"/>
-                            </div>
-                        </CardContent>
-                     </Card>
-                </div>
             </div>
             
             {selectedLog && <SecurityLogDetailSheet log={selectedLog} isOpen={!!selectedLog} onClose={() => setSelectedLog(null)} />}
+            
+            <AlertDialog open={!!userToSuspend} onOpenChange={setUserToSuspend}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Confirmar Suspensión?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Esto inactivará la cuenta del usuario <strong>{userToSuspend?.name || userToSuspend?.email}</strong>. El usuario no podrá iniciar sesión hasta que un administrador reactive su cuenta manualmente.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isSuspending}>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleSuspendUser} disabled={isSuspending} className={cn(buttonVariants({ variant: 'destructive' }))}>
+                            {isSuspending && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}Suspender Usuario
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
