@@ -816,3 +816,16 @@ model Process {
   children  Process[] @relation("ProcessHierarchy")
   users User[]
 }
+
+enum SecurityLogEvent {
+  SUCCESSFUL_LOGIN
+  FAILED_LOGIN_ATTEMPT
+  PASSWORD_CHANGE_SUCCESS
+  TWO_FACTOR_ENABLED
+  TWO_FACTOR_DISABLED
+  USER_ROLE_CHANGED
+  COURSE_CREATED          // <--- Añadido
+  COURSE_UPDATED          // <--- Añadido
+  COURSE_DELETED          // <--- Añadido
+  USER_SUSPENDED          // <--- Añadido
+}
