@@ -44,6 +44,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
             avatar: true,
           },
         },
+        attachments: true, // Incluir adjuntos
       },
       orderBy: {
         createdAt: 'asc',
