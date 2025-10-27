@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
         AND: [
           { participants: { some: { id: session.id } } },
           { participants: { some: { id: recipientId } } },
-          { isGroup: false } // ESTA ES LA CORRECCIÓN
+          { participants: { count: 2 } } // Correct way to find a 1-on-1 chat
         ]
       },
     });
@@ -110,21 +110,17 @@ export async function POST(req: NextRequest) {
           participants: {
             connect: [{ id: session.id }, { id: recipientId }],
           },
-          isGroup: false, // Asegurar que se marque como no grupal
+          isGroup: false,
         },
       });
     }
 
-    // --- Lógica de envío de mensaje refactorizada ---
+    // --- Message sending logic ---
     const newMessage = await prisma.message.create({
       data: {
         content: content || null,
         authorId: session.id,
         conversationId: conversation.id,
-      },
-      include: {
-        author: { select: { id: true, name: true, avatar: true } },
-        attachments: true,
       },
     });
     
@@ -140,7 +136,7 @@ export async function POST(req: NextRequest) {
         });
     }
 
-    // Actualizar `updatedAt` para que la conversación suba en la lista
+    // Update `updatedAt` so the conversation appears at the top of the list
     const [finalMessage, _] = await prisma.$transaction([
         prisma.message.findUnique({
             where: { id: newMessage.id },
