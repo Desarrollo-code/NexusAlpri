@@ -44,29 +44,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { setTheme } = useTheme();
 
   const fetchSessionData = useCallback(async () => {
+    setIsLoading(true);
     try {
-        const [settingsRes, userRes] = await Promise.all([
+        const [settingsRes, userRes] = await Promise.allSettled([
             fetch('/api/settings', { cache: 'no-store' }),
             fetch('/api/auth/me', { cache: 'no-store' })
         ]);
 
-        if (settingsRes.ok) {
-            setSettings(await settingsRes.json());
+        if (settingsRes.status === 'fulfilled' && settingsRes.value.ok) {
+            setSettings(await settingsRes.value.json());
         } else {
+            console.warn("[AuthContext] No se pudo cargar la configuración, usando valores por defecto.");
             setSettings(DEFAULT_SETTINGS);
         }
         
-        if (userRes.ok) {
-            const userData = await userRes.json();
+        if (userRes.status === 'fulfilled' && userRes.value.ok) {
+            const userData = await userRes.value.json();
             setUser(userData.user);
         } else {
+            // Esto es crucial: si la petición de usuario falla (ej. 401), nos aseguramos de que el usuario es null.
             setUser(null);
         }
     } catch (error) {
-        console.error("[AuthContext] Fallo al obtener los datos de la sesión:", error);
+        console.error("[AuthContext] Excepción al obtener los datos de la sesión:", error);
         setUser(null);
         setSettings(DEFAULT_SETTINGS);
     } finally {
+        // Esta es la corrección clave: asegurar que el estado de carga siempre se desactive.
         setIsLoading(false);
     }
   }, []);
