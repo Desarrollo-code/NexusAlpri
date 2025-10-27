@@ -32,6 +32,7 @@ export default function AboutPage() {
                   quality={100}
                   className="object-cover w-full h-full"
                   data-ai-hint="visionary strategy whiteboard"
+                  priority
                 />
               </div>
               <div className="space-y-4 text-left order-last lg:order-first">

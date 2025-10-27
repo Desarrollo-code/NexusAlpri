@@ -18,6 +18,7 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'placehold.co',
+        pathname: '/**',
       },
       {
         protocol: 'https',
@@ -51,6 +52,9 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'izefimwyuayfvektsstg.supabase.co',
         pathname: '/storage/v1/object/public/resource_library/**',
+      },
+      {
+        protocol: 'https'
       },
       {
         protocol: 'https',
