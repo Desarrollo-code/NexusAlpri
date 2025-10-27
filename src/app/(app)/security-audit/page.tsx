@@ -40,7 +40,7 @@ import {
 import { cn } from '@/lib/utils';
 
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 10;
 
 const ALL_EVENTS: { value: SecurityLogEvent | 'ALL' | 'COURSE_MODIFICATIONS', label: string }[] = [
     { value: 'ALL', label: 'Todos los Eventos' },
@@ -256,8 +256,9 @@ function SecurityAuditPageComponent() {
             </div>
             
              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                <div className="lg:col-span-2 space-y-8">
-                   <Card>
+                {/* Columna Izquierda */}
+                <div className="lg:col-span-1 space-y-8">
+                    <Card>
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-primary animate-pulse"/>Línea de Tiempo de Eventos</CardTitle>
                             <CardDescription className="text-xs">Es como la cámara de seguridad. Registra cada vez que alguien entra, sale o realiza una acción importante.</CardDescription>
@@ -281,29 +282,31 @@ function SecurityAuditPageComponent() {
                             </CardFooter>
                          )}
                     </Card>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                       <DeviceDistributionChart browserData={stats?.browsers} osData={stats?.os} isLoading={isLoading}/>
-                       <TopIpsCard topIps={stats?.topIps || []} isLoading={isLoading}/>
-                    </div>
                 </div>
-
-                <div className="lg:col-span-1 space-y-8 lg:sticky lg:top-24">
-                     <Card>
+                 {/* Columna Central */}
+                <div className="lg:col-span-1 space-y-8">
+                    <Card>
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-primary"/> Salud de Seguridad</CardTitle>
-                            <CardDescription className="text-xs">Un "termómetro" que mide qué tan seguros son los inicios de sesión. Un puntaje alto es bueno.</CardDescription>
+                             <CardDescription className="text-xs">Un "termómetro" que mide qué tan seguros son los inicios de sesión. Un puntaje alto es bueno.</CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-col items-center justify-center">
                             {isLoading ? <Skeleton className="h-48 w-full"/> : <GaugeChart value={stats.securityScore || 0}/>}
-                             <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-2 w-full">
+                             <div className="mt-4 grid grid-cols-2 gap-2 w-full">
                                 <MetricCard id="successful-logins-card" title="Exitosos" value={stats.successfulLogins || 0} icon={CheckCircle} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')}/>
                                 <MetricCard id="failed-logins-card" title="Fallidos" value={stats.failedLogins || 0} icon={AlertTriangle} onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')}/>
-                                <MetricCard id="content-mods-card" title="Modificaciones Contenido" value={stats.courseModifications || 0} icon={BookMarked} onClick={() => handleFilterChange('event', 'COURSE_MODIFICATIONS')}/>
+                                <MetricCard id="content-mods-card" title="Modif. Contenido" value={stats.courseModifications || 0} icon={BookMarked} onClick={() => handleFilterChange('event', 'COURSE_MODIFICATIONS')}/>
                                 <MetricCard id="2fa-adoption-card" title="Adopción 2FA" value={stats.twoFactorAdoptionRate || 0} icon={Percent} suffix="%"/>
                             </div>
                         </CardContent>
                     </Card>
                     <AtRiskUsersCard users={stats.atRiskUsers || []} onSuspend={setUserToSuspend} isLoading={isLoading} />
+                </div>
+                
+                 {/* Columna Derecha */}
+                <div className="lg:col-span-1 space-y-8">
+                    <DeviceDistributionChart browserData={stats?.browsers} osData={stats?.os} isLoading={isLoading}/>
+                    <TopIpsCard topIps={stats?.topIps || []} isLoading={isLoading}/>
                 </div>
             </div>
             
