@@ -120,33 +120,22 @@ export async function POST(req: NextRequest) {
     }
 
     // --- Message sending logic ---
-    // 1. Create the message base
-    const newMessage = await prisma.message.create({
-      data: {
-        content: content || null,
-        authorId: session.id,
-        conversationId: conversation.id,
-        isRead: false,
-      },
-    });
-    
-    // 2. If there are attachments, create them separately
-    if (attachments && attachments.length > 0) {
-        await prisma.chatAttachment.createMany({
-            data: attachments.map((att: any) => ({
-                messageId: newMessage.id,
-                name: att.name,
-                url: att.url,
-                type: att.type,
-                size: att.size,
-            })),
-        });
-    }
-
-    // 3. Update conversation's timestamp and fetch the final message with all data
     const [finalMessage, _] = await prisma.$transaction([
-        prisma.message.findUnique({
-            where: { id: newMessage.id },
+        prisma.message.create({
+            data: {
+              content: content || null,
+              authorId: session.id,
+              conversationId: conversation.id,
+              isRead: false,
+              attachments: attachments && attachments.length > 0 ? {
+                create: attachments.map((att: any) => ({
+                    name: att.name,
+                    url: att.url,
+                    type: att.type,
+                    size: att.size,
+                }))
+              } : undefined
+            },
             include: {
                 author: { select: { id: true, name: true, avatar: true } },
                 attachments: true,
