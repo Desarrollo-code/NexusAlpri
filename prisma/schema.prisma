@@ -368,6 +368,7 @@ model PlatformSettings {
   benefitsImageUrl           String?
   announcementsImageUrl      String?
   publicPagesBgUrl           String?
+  securityMascotUrl          String?
   updatedAt                  DateTime @updatedAt
 
   @@map("platform_settings")
