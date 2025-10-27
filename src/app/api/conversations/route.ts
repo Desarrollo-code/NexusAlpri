@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
         AND: [
           { participants: { some: { id: session.id } } },
           { participants: { some: { id: recipientId } } },
-          { isGroup: false } // ESTA ES LA CORRECCIÓN CLAVE
+          { isGroup: false }
         ]
       },
     });
@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
           participants: {
             connect: [{ id: session.id }, { id: recipientId }],
           },
-          isGroup: false, // Aseguramos que se marque como no grupal
+          isGroup: false,
         },
       });
     }
