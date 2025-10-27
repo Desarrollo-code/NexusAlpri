@@ -2,7 +2,7 @@
 'use client';
 import React from 'react';
 import type { SecurityLog } from '@/types';
-import { getEventDetails, parseUserAgent } from '@/lib/security-log-utils';
+import { getEventDetails } from '@/lib/security-log-utils';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
