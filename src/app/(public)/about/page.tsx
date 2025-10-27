@@ -27,9 +27,10 @@ export default function AboutPage() {
                 <Image
                   src={aboutImageUrl}
                   alt="Una ilustración de un cerebro del que florecen ideas y se convierten en un árbol de conocimiento, representando el desarrollo del talento."
-                  fill
+                  width={600}
+                  height={400}
                   quality={100}
-                  className="object-cover"
+                  className="object-cover w-full h-full"
                   data-ai-hint="visionary strategy whiteboard"
                 />
               </div>

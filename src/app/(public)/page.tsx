@@ -86,8 +86,9 @@ export default function LandingPage() {
                 <Image
                   src={landingImageUrl}
                   alt="Una ilustración abstracta de nodos de conocimiento interconectados, simbolizando el crecimiento y la colaboración."
-                  fill
-                  className="object-cover"
+                  width={600}
+                  height={600}
+                  className="object-cover w-full h-full"
                   data-ai-hint="abstract knowledge network"
                   quality={100}
                   priority
@@ -132,8 +133,9 @@ export default function LandingPage() {
                         <Image
                             src={benefitsImageUrl}
                             alt="Un equipo diverso teniendo un 'momento eureka' frente a un tablero, celebrando una solución."
-                            fill
-                            className="object-cover"
+                            width={600}
+                            height={400}
+                            className="object-cover w-full h-full"
                             data-ai-hint="team eureka moment"
                             quality={100}
                         />
