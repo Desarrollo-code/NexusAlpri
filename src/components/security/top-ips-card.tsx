@@ -1,7 +1,7 @@
 // src/components/security/top-ips-card.tsx
 'use client';
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Globe, MoreVertical } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -15,6 +15,9 @@ export const TopIpsCard = ({ topIps, isLoading }: TopIpsCardProps) => {
         <Card>
             <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">Top IPs por Actividad</CardTitle>
+                <CardDescription className="text-xs">
+                    Una "IP" es como la dirección de internet. Vigilar esto ayuda a detectar accesos desde ubicaciones extrañas.
+                </CardDescription>
             </CardHeader>
             <CardContent>
                  <div className="space-y-3">

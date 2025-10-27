@@ -25,7 +25,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { SmartPagination } from '@/components/ui/pagination';
 import { es } from 'date-fns/locale';
 import { MetricCard } from '@/components/security/metric-card';
-import { InfoMascotCard } from '@/components/security/info-mascot-card';
 
 
 const PAGE_SIZE = 8;
@@ -173,6 +172,7 @@ function SecurityAuditPageComponent() {
                    <Card>
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2">Línea de Tiempo de Eventos</CardTitle>
+                            <CardDescription className="text-xs">Es como la cámara de seguridad. Registra cada vez que alguien intenta entrar o realiza una acción importante.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             {isLoading ? <div className="text-center py-8"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>
@@ -195,13 +195,21 @@ function SecurityAuditPageComponent() {
                     </Card>
                 </div>
                 <div className="lg:col-span-1 space-y-8">
-                   <DeviceDistributionChart browserData={stats.browsers} osData={stats.os} isLoading={isLoading} />
-                   <TopIpsCard topIps={stats.topIps || []} isLoading={isLoading} />
+                   <DeviceDistributionChart 
+                        browserData={stats.browsers} 
+                        osData={stats.os} 
+                        isLoading={isLoading} 
+                    />
+                   <TopIpsCard 
+                        topIps={stats.topIps || []} 
+                        isLoading={isLoading} 
+                    />
                 </div>
                  <div className="lg:col-span-1 space-y-8">
                      <Card>
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-primary"/> Salud de Seguridad</CardTitle>
+                            <CardDescription className="text-xs">Un "termómetro" que mide qué tan seguros son los inicios de sesión. Un puntaje alto es bueno.</CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-col items-center justify-center">
                             <GaugeChart value={stats.securityScore || 0}/>
@@ -212,7 +220,6 @@ function SecurityAuditPageComponent() {
                             </div>
                         </CardContent>
                      </Card>
-                     <InfoMascotCard />
                 </div>
             </div>
             

@@ -1,7 +1,7 @@
 // src/components/security/device-distribution-chart.tsx
 'use client';
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Monitor, Chrome, Apple, HelpCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
@@ -74,6 +74,9 @@ export const DeviceDistributionChart = ({ browserData, osData, isLoading }: { br
                     <Monitor className="h-4 w-4 text-primary" />
                     Distribución de Dispositivos
                 </CardTitle>
+                <CardDescription className="text-xs">
+                    Muestra desde qué tipo de "aparatos" (celulares, computadores) y navegadores se conectan los usuarios.
+                </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col sm:flex-row gap-4">
                 {isLoading ? (
