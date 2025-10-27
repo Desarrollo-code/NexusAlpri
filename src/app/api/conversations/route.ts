@@ -51,8 +51,23 @@ export async function GET(req: NextRequest) {
         updatedAt: 'desc',
       },
     });
+    
+    const safeConversations = conversations.map(c => {
+        const lastMessage = c.messages[0];
+        let lastMessageText = 'Conversación iniciada';
+        if (lastMessage?.content) {
+            lastMessageText = lastMessage.content;
+        } else if (lastMessage?.attachments?.length > 0) {
+            lastMessageText = `Adjunto: ${lastMessage.attachments[0].name}`;
+        }
 
-    return NextResponse.json(conversations);
+        return {
+            ...c,
+            messages: lastMessage ? [{ ...lastMessage, content: lastMessageText }] : [],
+        }
+    });
+
+    return NextResponse.json(safeConversations);
   } catch (error) {
     console.error(`[CONVERSATIONS_GET_ERROR]`, error);
     return NextResponse.json({ message: 'Error al obtener las conversaciones.' }, { status: 500 });
@@ -77,13 +92,13 @@ export async function POST(req: NextRequest) {
          return NextResponse.json({ message: 'No puedes enviarte un mensaje a ti mismo.' }, { status: 400 });
     }
 
-    // Find if a conversation already exists between the two users
+    // Find if a 1-on-1 conversation already exists between the two users
     let conversation = await prisma.conversation.findFirst({
       where: {
         AND: [
           { participants: { some: { id: session.id } } },
           { participants: { some: { id: recipientId } } },
-          { participants: { count: 2 } } // Ensure it's a 1-on-1 chat
+          { isGroup: false } // ESTA ES LA CORRECCIÓN
         ]
       },
     });
@@ -95,58 +110,58 @@ export async function POST(req: NextRequest) {
           participants: {
             connect: [{ id: session.id }, { id: recipientId }],
           },
+          isGroup: false, // Asegurar que se marque como no grupal
         },
       });
     }
 
-    // Prepare a safe author object for the real-time payload
-    const authorPayload = {
-      id: session.id,
-      name: session.name,
-      avatar: session.avatar,
-    };
-
-    // Create the new message and update the conversation's updatedAt timestamp
-    const [newMessage] = await prisma.$transaction([
-      prisma.message.create({
-        data: {
-          content: content || null,
-          authorId: session.id,
-          conversationId: conversation.id,
-          attachments: attachments && attachments.length > 0 ? {
-            create: attachments.map((att: any) => ({
-              name: att.name,
-              url: att.url,
-              type: att.type,
-              size: att.size,
-            }))
-          } : undefined
-        },
-        include: {
-            author: {
-                select: { id: true, name: true, avatar: true }
-            },
-            attachments: true,
-        }
-      }),
-      prisma.conversation.update({
-          where: { id: conversation.id },
-          data: { updatedAt: new Date() }
-      })
-    ]);
+    // --- Lógica de envío de mensaje refactorizada ---
+    const newMessage = await prisma.message.create({
+      data: {
+        content: content || null,
+        authorId: session.id,
+        conversationId: conversation.id,
+      },
+      include: {
+        author: { select: { id: true, name: true, avatar: true } },
+        attachments: true,
+      },
+    });
     
-    const finalMessageForBroadcast = {
-      ...newMessage,
-      author: authorPayload // Use the safe payload
-    };
+    if (attachments && attachments.length > 0) {
+        await prisma.chatAttachment.createMany({
+            data: attachments.map((att: any) => ({
+                messageId: newMessage.id,
+                name: att.name,
+                url: att.url,
+                type: att.type,
+                size: att.size,
+            })),
+        });
+    }
+
+    // Actualizar `updatedAt` para que la conversación suba en la lista
+    const [finalMessage, _] = await prisma.$transaction([
+        prisma.message.findUnique({
+            where: { id: newMessage.id },
+            include: {
+                author: { select: { id: true, name: true, avatar: true } },
+                attachments: true,
+            }
+        }),
+        prisma.conversation.update({
+            where: { id: conversation.id },
+            data: { updatedAt: new Date() }
+        })
+    ]);
 
 
     // Send real-time notification to the recipient
-    if (supabaseAdmin) {
+    if (supabaseAdmin && finalMessage) {
         const channelName = `user:${recipientId}`;
         const broadcastPayload = {
             event: 'chat_message',
-            payload: finalMessageForBroadcast,
+            payload: finalMessage,
         };
 
         const { error } = await supabaseAdmin.from('RealtimeMessage').insert({
@@ -157,11 +172,10 @@ export async function POST(req: NextRequest) {
 
         if (error) {
             console.error("Supabase broadcast error:", error);
-            // Non-blocking error, we don't want to fail the request if broadcast fails
         }
     }
 
-    return NextResponse.json(newMessage, { status: 201 });
+    return NextResponse.json(finalMessage, { status: 201 });
 
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
