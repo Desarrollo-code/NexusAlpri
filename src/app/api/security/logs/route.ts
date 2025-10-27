@@ -66,6 +66,7 @@ export async function GET(req: NextRequest) {
             allLogsInPeriod,
             totalActiveUsers,
             usersWith2FA,
+            atRiskUsersRaw
         ] = await Promise.all([
             prisma.securityLog.findMany({
                 where: whereClause,
@@ -85,7 +86,33 @@ export async function GET(req: NextRequest) {
             }),
             prisma.user.count({ where: { isActive: true } }),
             prisma.user.count({ where: { isActive: true, isTwoFactorEnabled: true } }),
+            prisma.securityLog.groupBy({
+                by: ['emailAttempt'],
+                where: {
+                    event: 'FAILED_LOGIN_ATTEMPT',
+                    createdAt: { gte: subDays(new Date(), 1) },
+                    emailAttempt: { not: null },
+                },
+                _count: { event: true },
+                having: { event: { _count: { gt: 5 } } },
+            }),
         ]);
+
+        const atRiskEmails = atRiskUsersRaw.map(u => u.emailAttempt!);
+        const atRiskUsers = await prisma.user.findMany({
+            where: { email: { in: atRiskEmails } },
+            select: { id: true, name: true, email: true, avatar: true }
+        });
+        const atRiskUsersWithCount = atRiskUsers.map(user => {
+            const rawData = atRiskUsersRaw.find(r => r.emailAttempt === user.email);
+            return {
+                userId: user.id,
+                name: user.name,
+                email: user.email,
+                avatar: user.avatar,
+                failedAttempts: rawData?._count.event || 0,
+            }
+        });
 
         const successfulLogins = allLogsInPeriod.filter(l => l.event === 'SUCCESSFUL_LOGIN').length;
         const failedLogins = allLogsInPeriod.filter(l => l.event === 'FAILED_LOGIN_ATTEMPT').length;
@@ -124,6 +151,7 @@ export async function GET(req: NextRequest) {
             topIps,
             securityScore,
             twoFactorAdoptionRate,
+            atRiskUsers: atRiskUsersWithCount,
         };
 
         return NextResponse.json({ logs, stats, totalLogs });
