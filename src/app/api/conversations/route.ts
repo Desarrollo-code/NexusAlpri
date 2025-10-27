@@ -52,7 +52,6 @@ export async function GET(req: NextRequest) {
       },
     });
     
-    // SAFE MAPPING to prevent server errors on null content
     const safeConversations = conversations.map(c => {
         const lastMessage = c.messages[0];
         let lastMessageText = 'Conversación iniciada';
