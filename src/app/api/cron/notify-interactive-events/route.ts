@@ -1,8 +1,7 @@
-
 // src/app/api/cron/notify-interactive-events/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { addDays, startOfDay, endOfDay } from 'date-fns';
+import { startOfDay, endOfDay } from 'date-fns';
 import { expandRecurringEvents } from '@/lib/calendar-utils';
 import type { CalendarEvent, UserRole } from '@/types';
 
@@ -11,7 +10,7 @@ export const dynamic = 'force-dynamic';
 /**
  * Endpoint de CRON para notificar sobre eventos interactivos del día.
  * Se debe proteger con un CRON_SECRET en las variables de entorno.
- * Vercel Cron Job: /api/cron/notify-interactive-events?cron_secret=...
+ * Vercel Cron Job: /api/cron/check-expirations?cron_secret=...
  */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

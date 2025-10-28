@@ -128,27 +128,28 @@ function AdminDashboard({ stats, logs, announcements, onParticipationChange }: {
         </div>
         
         {stats.interactiveEventsToday && stats.interactiveEventsToday.length > 0 && (
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 {stats.interactiveEventsToday.map(event => (
-                    <Card key={event.id} className={cn("relative overflow-hidden text-white flex flex-col justify-between", event.color ? `bg-event-${event.color}` : 'bg-primary')}>
-                         <CardHeader>
-                            <CardTitle>{event.title}</CardTitle>
-                            <CardDescription className="text-white/80">{event.description}</CardDescription>
-                         </CardHeader>
-                         <CardFooter>
-                              {event.hasParticipated ? (
-                                <Button disabled variant="secondary" className="w-full bg-white/30 hover:bg-white/40">
-                                    <CheckCircle className="mr-2 h-4 w-4"/> ¡Completado!
-                                </Button>
-                              ) : (
-                                <Button onClick={() => handleParticipate(event)} variant="secondary" className="w-full bg-white/30 hover:bg-white/40">
-                                  <Check className="mr-2 h-4 w-4"/> ¡Hecho!
-                                </Button>
-                              )}
-                         </CardFooter>
-                    </Card>
-                 ))}
-             </div>
+            <Card className="bg-gradient-to-tr from-green-500 to-teal-500 text-white shadow-2xl">
+                 <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                         <div className="p-3 bg-white/20 rounded-full">
+                            <CheckCircle className="h-8 w-8"/>
+                         </div>
+                         <div>
+                            <CardTitle className="text-xl">{stats.interactiveEventsToday[0].title}</CardTitle>
+                            <p className="text-white/80 text-sm">Confirma tu participación para ganar puntos.</p>
+                         </div>
+                    </div>
+                    {stats.interactiveEventsToday[0].hasParticipated ? (
+                        <Button disabled variant="secondary" className="w-full md:w-auto bg-white/30 hover:bg-white/40">
+                            <CheckCircle className="mr-2 h-4 w-4"/> ¡Completado!
+                        </Button>
+                    ) : (
+                        <Button onClick={() => handleParticipate(stats.interactiveEventsToday![0])} variant="secondary" className="w-full md:w-auto bg-white/30 hover:bg-white/40">
+                          <Check className="mr-2 h-4 w-4"/> ¡Hecho!
+                        </Button>
+                    )}
+                 </CardContent>
+            </Card>
         )}
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
