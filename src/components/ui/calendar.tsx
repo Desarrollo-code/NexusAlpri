@@ -81,7 +81,10 @@ function Calendar({
            const dayKey = format(date, 'yyyy-MM-dd');
            const hasEvent = eventsByDay.has(dayKey);
            return (
-             <div className={cn("relative w-full h-full flex items-center justify-center", hasEvent && !isSameDay(date, props.selected as Date) && "bg-primary/10 rounded-md")}>
+             <div className={cn(
+               "relative w-full h-full flex items-center justify-center", 
+               hasEvent && !isSameDay(date, props.selected as Date) && "bg-primary/10 rounded-md"
+             )}>
                 {date.getDate()}
              </div>
            );

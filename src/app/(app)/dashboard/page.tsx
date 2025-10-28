@@ -31,7 +31,8 @@ import {
   UserRound,
   FilePlus2 as CourseIcon,
   LineChart,
-  Hand
+  Hand,
+  Layers,
 } from 'lucide-react';
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import type { AdminDashboardStats, EnrolledCourse, Course as AppCourseType, Announcement as AnnouncementType, CalendarEvent, UserRole } from '@/types';
@@ -52,6 +53,8 @@ import { ComposedChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ChartToolti
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { MetricCard } from '@/components/analytics/metric-card';
 import { useToast } from '@/hooks/use-toast';
+import type { DateRange } from 'react-day-picker';
+
 
 // --- TYPE DEFINITIONS & MAPPERS ---
 interface DashboardData {
@@ -64,7 +67,9 @@ interface DashboardData {
     allCalendarEvents?: CalendarEvent[];
     assignedCourses?: AppCourseType[];
     interactiveEventsToday?: (CalendarEvent & { hasParticipated?: boolean })[];
+    securityLogs?: any[]; // Re-added securityLogs type
 }
+
 
 const formatDateTick = (tick: string): string => {
   const date = parseISO(tick);
@@ -84,6 +89,7 @@ const formatDateTooltip = (dateString: string) => {
 
 const MiniCalendar = ({ events }: { events: CalendarEvent[] }) => {
     const [date, setDate] = React.useState<Date | undefined>(new Date());
+    const { toast } = useToast();
 
     const eventsByDay = React.useMemo(() => {
         const map = new Map<string, CalendarEvent[]>();
@@ -95,14 +101,14 @@ const MiniCalendar = ({ events }: { events: CalendarEvent[] }) => {
         });
         return map;
     }, [events]);
-
+    
     return (
       <Card className="h-full">
         <CardHeader><CardTitle className="text-lg">Calendario</CardTitle></CardHeader>
         <CardContent className="p-2 sm:p-4">
           <Calendar
             mode="single" selected={date} onSelect={setDate}
-            className="rounded-md" locale={es} events={events}
+            className="rounded-md" locale={es}
             components={{
               DayContent: ({ date }) => {
                 const dayKey = format(date, 'yyyy-MM-dd');
@@ -277,7 +283,7 @@ function AdminDashboard({ data, onParticipate }: { data: DashboardData, onPartic
              {data.interactiveEventsToday && data.interactiveEventsToday.length > 0 && <Separator/>}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-8 gap-4 mt-4">
                 <MetricCard title="Total Usuarios" value={stats?.totalUsers || 0} icon={UsersRound} gradient="bg-gradient-blue" />
-                <MetricCard title="Total Cursos" value={stats?.totalCourses || 0} icon={Library} gradient="bg-gradient-green"/>
+                <MetricCard title="Total Cursos" value={stats?.totalCourses || 0} icon={Layers} gradient="bg-gradient-green"/>
                 <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={GraduationCap} gradient="bg-gradient-purple" />
                 <MetricCard title="Cursos Publicados" value={stats?.totalPublishedCourses || 0} icon={BookOpenCheck} gradient="bg-gradient-orange" />
                 <MetricCard title="Recursos" value={stats?.totalResources || 0} icon={Folder} gradient="bg-gradient-pink" />
@@ -348,6 +354,7 @@ export default function DashboardPage() {
   const fetchDashboardData = useCallback(async () => {
     if (!user) return;
     
+    console.log('[Dashboard Log] Empezando a obtener datos del dashboard...');
     setIsLoading(true);
     setError(null);
     
@@ -362,10 +369,14 @@ export default function DashboardPage() {
             throw new Error(errorData.message || `Error al obtener datos del dashboard`);
         }
         const dashboardData = await res.json();
+        console.log('[Dashboard Log] Datos recibidos de la API:', dashboardData);
         setData(dashboardData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al obtener los datos del dashboard');
+      const errorMessage = err instanceof Error ? err.message : 'Error al obtener los datos del dashboard';
+      console.error('[Dashboard Log] Error en fetch:', errorMessage);
+      setError(errorMessage);
     } finally {
+      console.log('[Dashboard Log] Proceso de obtención de datos finalizado.');
       setIsLoading(false);
     }
   }, [user, dateRange]);
@@ -389,17 +400,22 @@ export default function DashboardPage() {
   useEffect(() => {
     setPageTitle('Panel Principal');
     if (!user) return;
-    if (user.role === 'ADMINISTRATOR') startTour('adminDashboard', adminDashboardTour);
-    if (user.role === 'INSTRUCTOR') startTour('instructorDashboard', instructorDashboardTour);
-    if (user.role === 'STUDENT') startTour('studentDashboard', studentDashboardTour);
+    
+    const tourKey = user.role === 'ADMINISTRATOR' ? 'adminDashboard' : (user.role === 'INSTRUCTOR' ? 'instructorDashboard' : 'studentDashboard');
+    const tourSteps = user.role === 'ADMINISTRATOR' ? adminDashboardTour : (user.role === 'INSTRUCTOR' ? instructorDashboardTour : studentDashboardTour);
+    
+    console.log(`[Dashboard Log] Iniciando tour para rol: ${user.role}`);
+    startTour(tourKey, tourSteps);
   }, [setPageTitle, startTour, user]);
 
 
   useEffect(() => {
+    console.log('[Dashboard Log] Hook de efecto principal disparado.');
     fetchDashboardData();
   }, [fetchDashboardData]);
 
   if (isLoading || !data) {
+    console.log(`[Dashboard Log] Mostrando estado de carga. isLoading: ${isLoading}, data: ${!!data}`);
     return (
       <div className="space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -423,9 +439,15 @@ export default function DashboardPage() {
 
   const renderContentForRole = () => {
     switch (user?.role) {
-      case 'ADMINISTRATOR': return <AdminDashboard data={data} onParticipate={handleParticipate} />;
-      case 'INSTRUCTOR': return <InstructorDashboard data={data} />;
-      case 'STUDENT': return <StudentDashboard data={data} onParticipate={handleParticipate} />;
+      case 'ADMINISTRATOR':
+        console.log('[Dashboard Log] Renderizando AdminDashboard.');
+        return <AdminDashboard data={data} onParticipate={handleParticipate} />;
+      case 'INSTRUCTOR':
+        console.log('[Dashboard Log] Renderizando InstructorDashboard.');
+        return <InstructorDashboard data={data} />;
+      case 'STUDENT':
+        console.log('[Dashboard Log] Renderizando StudentDashboard.');
+        return <StudentDashboard data={data} onParticipate={handleParticipate} />;
       default: return <p>Rol de usuario no reconocido.</p>;
     }
   };
