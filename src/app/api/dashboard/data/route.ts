@@ -110,9 +110,9 @@ async function getAdminDashboardData(session: PrismaUser, sharedData: any) {
                 progressPercentage: true,
             },
             where: {
-                progressPercentage: {
-                    not: null, // Correct way to filter out nulls
-                },
+                NOT: {
+                    progressPercentage: null
+                }
             },
         }),
     ]);
