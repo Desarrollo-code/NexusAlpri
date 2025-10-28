@@ -30,11 +30,9 @@ import { CourseCard } from '@/components/course-card';
 import { useTitle } from '@/contexts/title-context';
 import { adminDashboardTour, studentDashboardTour, instructorDashboardTour } from '@/lib/tour-steps';
 import { useTour } from '@/contexts/tour-context';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { es } from 'date-fns/locale';
 import { format, isSameDay, startOfDay, endOfDay, subDays, isValid, parseISO } from 'date-fns';
-import { getEventColorClass, cn } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { ComposedChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, Legend, ResponsiveContainer, Area, Line } from 'recharts';
@@ -43,6 +41,7 @@ import { MetricCard } from '@/components/analytics/metric-card';
 import { useToast } from '@/hooks/use-toast';
 import type { DateRange } from 'react-day-picker';
 import { AlertTriangle, Loader2 } from 'lucide-react';
+import { SecurityLogTimeline } from '@/components/security/security-log-timeline';
 
 
 interface DashboardData {
@@ -77,6 +76,7 @@ const formatDateTooltip = (dateString: string) => {
 
 const MiniCalendar = ({ events, currentDate, onDateSelect }: { events: CalendarEvent[], currentDate: Date, onDateSelect: (date: Date) => void }) => {
     const { toast } = useToast();
+    console.log(`[Dashboard Log] MiniCalendar renderizando con ${events.length} eventos.`);
 
     const eventsByDay = React.useMemo(() => {
         const map = new Map<string, CalendarEvent[]>();
@@ -105,7 +105,7 @@ const MiniCalendar = ({ events, currentDate, onDateSelect }: { events: CalendarE
                     {dayEvents && (
                       <div className="absolute bottom-1 flex gap-0.5">
                         {dayEvents.slice(0, 3).map(event => (
-                          <div key={event.id} className={cn('h-1.5 w-1.5 rounded-full', getEventColorClass(event.color))} />
+                          <div key={event.id} className={cn('h-1.5 w-1.5 rounded-full')} style={{backgroundColor: event.color || 'hsl(var(--primary))'}} />
                         ))}
                       </div>
                     )}
@@ -121,12 +121,17 @@ const MiniCalendar = ({ events, currentDate, onDateSelect }: { events: CalendarE
 
 const AnnouncementsList = ({ announcements }: { announcements: AnnouncementType[] }) => (
     <Card className="h-full">
-      <CardHeader><CardTitle className="text-lg">Anuncios Recientes</CardTitle></CardHeader>
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center gap-2">
+            <Megaphone className="h-5 w-5 text-primary"/>
+            Anuncios Recientes
+        </CardTitle>
+      </CardHeader>
       <CardContent className="space-y-3">
         {announcements.length > 0 ? announcements.map(ann => (
           <Link href="/messages" key={ann.id} className="block group">
             <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-              <div className={cn("w-1 h-10 rounded-full", getEventColorClass(ann.color || 'blue'))} />
+              <div className="w-1.5 h-10 rounded-full shrink-0" style={{backgroundColor: ann.color || 'hsl(var(--primary))'}}/>
               <div className="overflow-hidden">
                 <p className="font-semibold text-sm truncate group-hover:text-primary">{ann.title}</p>
                 <p className="text-xs text-muted-foreground truncate">{ann.author?.name || 'Sistema'}</p>
@@ -135,6 +140,11 @@ const AnnouncementsList = ({ announcements }: { announcements: AnnouncementType[
           </Link>
         )) : <p className="text-center text-sm text-muted-foreground py-4">No hay anuncios recientes.</p>}
       </CardContent>
+      <CardFooter>
+        <Button variant="outline" size="sm" asChild className="w-full">
+            <Link href="/messages">Ver Todos los Anuncios</Link>
+        </Button>
+      </CardFooter>
     </Card>
 );
 
@@ -142,7 +152,6 @@ const InteractiveEventsWidget = ({ events, onParticipate }: { events: (CalendarE
     if (!events || events.length === 0) return null;
     return (
         <div className="space-y-4">
-            <h2 className="text-xl font-semibold">¡Acciones del Día!</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {events.map(event => (
                 <Card key={event.id} className="bg-gradient-to-br from-green-500 to-teal-500 text-white shadow-lg">
@@ -167,7 +176,7 @@ const InteractiveEventsWidget = ({ events, onParticipate }: { events: (CalendarE
 const UpcomingEvents = ({ events }: { events: CalendarEvent[] }) => (
     <Card>
         <CardHeader>
-             <CardTitle className="text-lg">Próximos Eventos</CardTitle>
+             <CardTitle className="text-lg flex items-center gap-2"><CalendarIcon className="h-5 w-5 text-primary"/>Próximos Eventos</CardTitle>
         </CardHeader>
         <CardContent>
             {events.length > 0 ? (
@@ -175,7 +184,7 @@ const UpcomingEvents = ({ events }: { events: CalendarEvent[] }) => (
                     {events.map(event => (
                         <Link href="/calendar" key={event.id} className="block group">
                            <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                              <div className={cn("w-1 h-full rounded-full", getEventColorClass(event.color || 'blue'))} />
+                              <div className="w-1.5 h-full rounded-full" style={{backgroundColor: event.color || 'hsl(var(--primary))'}} />
                               <div className="overflow-hidden">
                                 <p className="font-semibold text-sm truncate group-hover:text-primary">{event.title}</p>
                                 <p className="text-xs text-muted-foreground">{format(new Date(event.start), "d MMM, p", {locale: es})}</p>
@@ -192,10 +201,15 @@ const UpcomingEvents = ({ events }: { events: CalendarEvent[] }) => (
                 </div>
             )}
         </CardContent>
+         <CardFooter>
+            <Button variant="outline" size="sm" asChild className="w-full">
+                <Link href="/calendar">Ver Calendario Completo</Link>
+            </Button>
+        </CardFooter>
     </Card>
 );
 
-const RecentlyAccessed = ({ courses, assignedCourses }: { courses: AppCourseType[], assignedCourses: AppCourseType[] }) => (
+const RecentlyAccessed = ({ courses, assignedCourses }: { courses: EnrolledCourse[], assignedCourses: AppCourseType[] }) => (
     <div>
         {assignedCourses.length > 0 && (
             <div className="mb-8">
@@ -208,7 +222,7 @@ const RecentlyAccessed = ({ courses, assignedCourses }: { courses: AppCourseType
         <h2 className="text-xl font-semibold mb-4">Continuar Aprendiendo</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {courses.length > 0 ? (
-                courses.map((course, index) => <CourseCard key={course.id} course={course} userRole="STUDENT" priority={index < 3}/>)
+                courses.map((course, index) => <CourseCard key={course.id} course={course as AppCourseType} userRole="STUDENT" priority={index < 3}/>)
             ) : (
                  <Card className="col-span-full flex flex-col items-center justify-center p-8 text-center border-dashed"><GraduationCap className="h-10 w-10 text-muted-foreground mb-2" /><h3 className="font-semibold">Empieza tu viaje de aprendizaje</h3><p className="text-sm text-muted-foreground mb-4">No estás inscrito en ningún curso todavía.</p><Button asChild><Link href="/courses">Explorar Catálogo</Link></Button></Card>
             )}
@@ -223,12 +237,20 @@ function StudentDashboard({ data, onParticipate }: { data: DashboardData, onPart
         <div className="space-y-8">
             <InteractiveEventsWidget events={data.interactiveEventsToday || []} onParticipate={onParticipate} />
             {data.interactiveEventsToday && data.interactiveEventsToday.length > 0 && <Separator/>}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-1"><MiniCalendar events={data.allCalendarEvents || []} currentDate={selectedDate} onDateSelect={setSelectedDate} /></div>
-                <div className="lg:col-span-2"><UpcomingEvents events={data.allCalendarEvents?.filter(e => isSameDay(new Date(e.start), selectedDate)).slice(0,3) || []} /></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                 <MetricCard title="Cursos Inscritos" value={data.studentStats?.enrolled || 0} icon={GraduationCap} gradient="bg-gradient-blue" />
+                 <MetricCard title="Cursos Completados" value={data.studentStats?.completed || 0} icon={BookOpenCheck} gradient="bg-gradient-green" />
             </div>
             <Separator />
-            <RecentlyAccessed courses={data.myDashboardCourses || []} assignedCourses={data.assignedCourses || []} />
+             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                 <div className="lg:col-span-2 space-y-8">
+                    <RecentlyAccessed courses={data.myDashboardCourses || []} assignedCourses={data.assignedCourses || []} />
+                 </div>
+                 <div className="lg:col-span-1 space-y-6">
+                    <UpcomingEvents events={data.upcomingEvents || []} />
+                    <AnnouncementsList announcements={data.recentAnnouncements || []} />
+                 </div>
+             </div>
         </div>
     );
 }
@@ -237,15 +259,32 @@ function InstructorDashboard({ data }: { data: DashboardData }) {
     const [selectedDate, setSelectedDate] = useState(new Date());
      return (
         <div className="space-y-8">
-             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-1"><MiniCalendar events={data.allCalendarEvents || []} currentDate={selectedDate} onDateSelect={setSelectedDate} /></div>
-                <div className="lg:col-span-2"><UpcomingEvents events={data.allCalendarEvents?.filter(e => isSameDay(new Date(e.start), selectedDate)).slice(0,3) || []} /></div>
-            </div>
-             <Separator />
-             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                 <Card><CardHeader><CardTitle>Cursos Creados</CardTitle></CardHeader><CardContent><p className="text-3xl font-bold">{data.instructorStats?.taught || 0}</p></CardContent></Card>
-                 <Card><CardHeader><CardTitle>Total Estudiantes</CardTitle></CardHeader><CardContent><p className="text-3xl font-bold">{data.instructorStats?.students || 0}</p></CardContent></Card>
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                 <MetricCard title="Cursos Creados" value={data.instructorStats?.taught || 0} icon={Layers} gradient="bg-gradient-blue" />
+                 <MetricCard title="Total Estudiantes" value={data.instructorStats?.students || 0} icon={UsersRound} gradient="bg-gradient-green" />
              </div>
+            <Separator />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Accesos Rápidos</CardTitle>
+                        </CardHeader>
+                         <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <Button asChild variant="outline" className="h-14 justify-start p-4 text-left">
+                                <Link href="/manage-courses"><Layers className="mr-3 h-5 w-5 text-primary"/><div><p className="font-semibold">Gestionar Cursos</p><p className="text-xs text-muted-foreground">Editar y crear contenido</p></div></Link>
+                            </Button>
+                             <Button asChild variant="outline" className="h-14 justify-start p-4 text-left">
+                                <Link href="/enrollments"><UsersRound className="mr-3 h-5 w-5 text-primary"/><div><p className="font-semibold">Ver Inscritos</p><p className="text-xs text-muted-foreground">Seguimiento de alumnos</p></div></Link>
+                            </Button>
+                         </CardContent>
+                    </Card>
+                    <AnnouncementsList announcements={data.recentAnnouncements || []} />
+                </div>
+                 <div className="lg:col-span-1 space-y-6">
+                    <UpcomingEvents events={data.upcomingEvents || []} />
+                </div>
+            </div>
         </div>
     );
 }
@@ -257,46 +296,55 @@ function AdminDashboard({ data, onParticipate }: { data: DashboardData, onPartic
     return (
         <div className="space-y-8">
             <InteractiveEventsWidget events={data.interactiveEventsToday || []} onParticipate={onParticipate} />
-            {data.interactiveEventsToday && data.interactiveEventsToday.length > 0 && <Separator/>}
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 mt-4">
-                <MetricCard title="Total Usuarios" value={stats?.totalUsers || 0} icon={UsersRound} gradient="bg-gradient-blue" />
-                <MetricCard title="Total Cursos" value={stats?.totalCourses || 0} icon={Layers} gradient="bg-gradient-green"/>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+                <MetricCard title="Usuarios" value={stats?.totalUsers || 0} icon={UsersRound} gradient="bg-gradient-blue" />
+                <MetricCard title="Cursos" value={stats?.totalCourses || 0} icon={Layers} gradient="bg-gradient-green"/>
                 <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={GraduationCap} gradient="bg-gradient-purple" />
                 <MetricCard title="Finalización" value={stats?.averageCompletionRate || 0} icon={BadgePercent} suffix="%" description="Promedio" gradient="bg-gradient-orange" />
             </div>
              <Separator />
-            <Card>
-                <CardHeader>
-                    <CardTitle>Actividad Reciente en la Plataforma</CardTitle>
-                    <CardDescription>Evolución de usuarios, cursos e inscripciones en el periodo seleccionado.</CardDescription>
-                </CardHeader>
-                <CardContent className="h-80 pr-4 -ml-4">
-                     <ChartContainer config={{ newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-2))" }, newUsers: { label: "Nuevos Usuarios", color: "hsl(var(--chart-1))" }, newEnrollments: { label: "Inscripciones", color: "hsl(var(--chart-3))" }}} className="w-full h-full">
-                        <ResponsiveContainer>
-                           <ComposedChart data={stats?.userRegistrationTrend || []} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                <XAxis dataKey="date" tickLine={false} axisLine={true} tickMargin={10} tickFormatter={formatDateTick} interval={'preserveStartEnd'} />
-                                <YAxis allowDecimals={false} tickLine={false} axisLine={true} tickMargin={10} width={30}/>
-                                <ChartTooltip cursor={{ fill: 'hsl(var(--muted))', radius: 4 }} content={<ChartTooltipContent indicator="dot" labelFormatter={formatDateTooltip} />} />
-                                <Legend />
-                                <Bar dataKey="newCourses" name="Nuevos Cursos" fill="var(--color-newCourses)" radius={4} />
-                                <Line type="monotone" dataKey="newUsers" name="Nuevos Usuarios" stroke="var(--color-newUsers)" strokeWidth={2} dot={false} />
-                                <Area type="monotone" dataKey="newEnrollments" name="Inscripciones" fill="var(--color-newEnrollments)" stroke="var(--color-newEnrollments)" strokeWidth={2} fillOpacity={0.3} dot={false}/>
-                           </ComposedChart>
-                        </ResponsiveContainer>
-                    </ChartContainer>
-                </CardContent>
-            </Card>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-1 space-y-6">
-                    <MiniCalendar events={data.allCalendarEvents || []} currentDate={selectedDate} onDateSelect={setSelectedDate} />
-                    <UpcomingEvents events={data.allCalendarEvents?.filter(e => isSameDay(new Date(e.start), selectedDate)).slice(0,3) || []} />
-                </div>
-                <div className="lg:col-span-2">
-                     <AnnouncementsList announcements={data.recentAnnouncements || []} />
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                <Card className="lg:col-span-3">
+                    <CardHeader>
+                        <CardTitle>Actividad Reciente en la Plataforma</CardTitle>
+                        <CardDescription>Evolución de usuarios, cursos e inscripciones en el periodo seleccionado.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="h-80 pr-4 -ml-4">
+                         <ChartContainer config={{ newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-2))" }, newUsers: { label: "Nuevos Usuarios", color: "hsl(var(--chart-1))" }, newEnrollments: { label: "Inscripciones", color: "hsl(var(--chart-3))" }}} className="w-full h-full">
+                            <ResponsiveContainer>
+                               <ComposedChart data={stats?.userRegistrationTrend || []} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                    <XAxis dataKey="date" tickLine={false} axisLine={true} tickMargin={10} tickFormatter={formatDateTick} interval={'preserveStartEnd'} />
+                                    <YAxis allowDecimals={false} tickLine={false} axisLine={true} tickMargin={10} width={30}/>
+                                    <ChartTooltip cursor={{ fill: 'hsl(var(--muted))', radius: 4 }} content={<ChartTooltipContent indicator="dot" labelFormatter={formatDateTooltip} />} />
+                                    <Legend />
+                                    <Bar dataKey="newCourses" name="Nuevos Cursos" fill="var(--color-newCourses)" radius={4} />
+                                    <Line type="monotone" dataKey="newUsers" name="Nuevos Usuarios" stroke="var(--color-newUsers)" strokeWidth={2} dot={false} />
+                                    <Area type="monotone" dataKey="newEnrollments" name="Inscripciones" fill="var(--color-newEnrollments)" stroke="var(--color-newEnrollments)" strokeWidth={2} fillOpacity={0.3} dot={false}/>
+                               </ComposedChart>
+                            </ResponsiveContainer>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
+                <div className="lg:col-span-2 space-y-6">
+                    <UpcomingEvents events={data.upcomingEvents || []} />
                 </div>
             </div>
+             <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                 <div className="lg:col-span-3">
+                    <AnnouncementsList announcements={data.recentAnnouncements || []} />
+                 </div>
+                  <div className="lg:col-span-2">
+                    <Card>
+                        <CardHeader><CardTitle className="text-lg">Registro de Seguridad</CardTitle></CardHeader>
+                        <CardContent><SecurityLogTimeline logs={data.securityLogs || []} onLogClick={() => {}} /></CardContent>
+                         <CardFooter>
+                            <Button variant="outline" size="sm" asChild className="w-full"><Link href="/security-audit">Ver Auditoría Completa</Link></Button>
+                        </CardFooter>
+                    </Card>
+                 </div>
+             </div>
         </div>
     );
 }

@@ -79,13 +79,17 @@ function Calendar({
         IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
         DayContent: ({ date }) => {
            const dayKey = format(date, 'yyyy-MM-dd');
-           const hasEvent = eventsByDay.has(dayKey);
+           const dayEvents = eventsByDay.get(dayKey);
            return (
-             <div className={cn(
-               "relative w-full h-full flex items-center justify-center", 
-               hasEvent && !isSameDay(date, props.selected as Date) && "bg-primary/10 rounded-md"
-             )}>
-                {date.getDate()}
+             <div className="relative w-full h-full flex items-center justify-center">
+                <span className="z-10">{format(date, 'd')}</span>
+                {dayEvents && (
+                  <div className="absolute bottom-1 flex gap-0.5">
+                    {dayEvents.slice(0, 3).map(event => (
+                      <div key={event.id} className={cn('h-1.5 w-1.5 rounded-full')} style={{backgroundColor: event.color || 'hsl(var(--primary))'}} />
+                    ))}
+                  </div>
+                )}
              </div>
            );
         }

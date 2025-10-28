@@ -2,7 +2,7 @@
 import prisma from '@/lib/prisma';
 import { NextResponse, type NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import type { UserRole, CourseStatus, AdminDashboardStats, EnrolledCourse, Course, Announcement, CalendarEvent } from '@/types';
+import type { UserRole, CourseStatus, AdminDashboardStats, EnrolledCourse, Course as AppCourseType, Announcement as AnnouncementType, CalendarEvent } from '@/types';
 import type { User as PrismaUser, Course as PrismaCourse } from '@prisma/client';
 import { subDays, startOfDay, endOfDay, isValid, format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addMonths } from 'date-fns';
 import { mapApiCourseToAppCourse } from '@/lib/course-utils';
@@ -24,11 +24,11 @@ async function getAdminDashboardData(session: PrismaUser, startDate?: Date, endD
     const activityEndDate = endDate || new Date();
     const activityStartDate = startDate || subDays(activityEndDate, 29);
 
-    const dateFilter = startDate ? { createdAt: { gte: startDate, lte: activityEndDate } } : undefined;
     const dateFilterRegistered = startDate ? { registeredDate: { gte: startDate, lte: activityEndDate } } : undefined;
     const dateFilterEnrolled = startDate ? { enrolledAt: { gte: startDate, lte: activityEndDate } } : undefined;
     const dateFilterUpload = startDate ? { uploadDate: { gte: startDate, lte: activityEndDate } } : undefined;
     const dateFilterAnnouncement = startDate ? { date: { gte: startDate, lte: activityEndDate } } : undefined;
+    const dateFilterCourse = startDate ? { createdAt: { gte: startDate, lte: activityEndDate } } : undefined;
 
     // --- Transaction to fetch most stats in one go ---
     const [
@@ -40,14 +40,14 @@ async function getAdminDashboardData(session: PrismaUser, startDate?: Date, endD
         progressAggregates
     ] = await prisma.$transaction([
         prisma.user.count({ where: dateFilterRegistered }),
-        prisma.course.count({ where: dateFilter }),
-        prisma.course.count({ where: { status: 'PUBLISHED', ...dateFilter } }),
+        prisma.course.count({ where: dateFilterCourse }),
+        prisma.course.count({ where: { status: 'PUBLISHED', ...dateFilterCourse } }),
         prisma.enrollment.count({ where: dateFilterEnrolled }),
         prisma.enterpriseResource.count({ where: dateFilterUpload }),
         prisma.announcement.count({ where: dateFilterAnnouncement }),
-        prisma.form.count({ where: dateFilter }),
+        prisma.form.count({ where: dateFilterCourse }), // Assuming forms are created around the same time as other content
         prisma.user.groupBy({ by: ['role'], _count: { role: true }, where: dateFilterRegistered }),
-        prisma.course.groupBy({ by: ['status'], _count: { status: true }, where: dateFilter }),
+        prisma.course.groupBy({ by: ['status'], _count: { status: true }, where: dateFilterCourse }),
         prisma.enrollment.count({ where: { enrolledAt: { gte: subDays(new Date(), 7) } } }),
         prisma.securityLog.groupBy({ by: ['userId'], where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: subDays(new Date(), 7) } } }),
         prisma.courseProgress.aggregate({
@@ -55,9 +55,9 @@ async function getAdminDashboardData(session: PrismaUser, startDate?: Date, endD
             _count: { progressPercentage: true }
         }),
     ]);
-
+    
     const recentLogins = recentLoginsCount.length;
-    const averageCompletionRate = progressAggregates._count.progressPercentage > 0
+    const averageCompletionRate = progressAggregates._count.progressPercentage && progressAggregates._count.progressPercentage > 0
         ? (progressAggregates._sum.progressPercentage! / progressAggregates._count.progressPercentage)
         : 0;
 
@@ -65,7 +65,7 @@ async function getAdminDashboardData(session: PrismaUser, startDate?: Date, endD
     const [
         newCoursesTrend, newEnrollmentsTrend, newUsersTrend,
         coursesWithProgress, instructorsWithCourseCounts, studentsWithData,
-        recentAnnouncements, securityLogs, baseInteractiveEvents
+        securityLogs, baseInteractiveEvents
     ] = await Promise.all([
         safeQuery(prisma.course.groupBy({ by: ['createdAt'], _count: { _all: true }, where: { createdAt: { gte: activityStartDate, lte: activityEndDate } }, orderBy: { createdAt: 'asc' } }), [], 'newCoursesTrend'),
         safeQuery(prisma.enrollment.groupBy({ by: ['enrolledAt'], _count: { _all: true }, where: { enrolledAt: { gte: activityStartDate, lte: activityEndDate } }, orderBy: { enrolledAt: 'asc' } }), [], 'newEnrollmentsTrend'),
@@ -73,7 +73,6 @@ async function getAdminDashboardData(session: PrismaUser, startDate?: Date, endD
         safeQuery(prisma.course.findMany({ where: { status: 'PUBLISHED' }, include: { _count: { select: { enrollments: true } }, enrollments: { select: { progress: { select: { progressPercentage: true } } } } } }), [], 'coursesWithProgress'),
         safeQuery(prisma.user.findMany({ where: { role: 'INSTRUCTOR' }, include: { _count: { select: { courses: true } } } }), [], 'instructorsWithCourseCounts'),
         safeQuery(prisma.user.findMany({ where: { role: 'STUDENT' }, include: { _count: { select: { enrollments: true, courseProgress: { where: { progressPercentage: 100 } } } } } }), [], 'studentsWithData'),
-        safeQuery(prisma.announcement.findMany({ take: 2, orderBy: { date: 'desc' }, include: { author: { select: { id: true, name: true, avatar: true, role: true } }, attachments: true, reactions: { select: { userId: true, reaction: true, user: { select: { id: true, name: true, avatar: true } } } }, _count: { select: { reads: true, reactions: true } } } }), [], 'recentAnnouncements'),
         safeQuery(prisma.securityLog.findMany({ take: 5, orderBy: { createdAt: 'desc' }, include: { user: { select: { id: true, name: true, avatar: true } } } }), [], 'securityLogs'),
         safeQuery(prisma.calendarEvent.findMany({ where: { isInteractive: true } }), [], 'baseInteractiveEvents')
     ]);
@@ -115,14 +114,14 @@ async function getAdminDashboardData(session: PrismaUser, startDate?: Date, endD
         interactiveEventsToday,
     };
     
-    return { adminStats, recentAnnouncements, securityLogs };
+    return { adminStats, securityLogs };
 }
 
 
 async function getSharedDashboardData(session: PrismaUser) {
     const today = new Date();
-    const rangeStart = startOfWeek(startOfMonth(today));
-    const rangeEnd = endOfWeek(endOfMonth(addMonths(today, 1)));
+    const rangeStart = startOfWeek(startOfMonth(today), { weekStartsOn: 1 });
+    const rangeEnd = endOfWeek(endOfMonth(addMonths(today, 1)), { weekStartsOn: 1 });
     
     let eventWhereClause: any = {};
     if (session.role !== 'ADMINISTRATOR') {
@@ -160,15 +159,26 @@ async function getSharedDashboardData(session: PrismaUser) {
 }
 
 
-async function getStudentDashboardData(session: PrismaUser, sharedData: any) {
-    const [enrolledData] = await Promise.all([
+async function getStudentDashboardData(session: PrismaUser) {
+    const [enrolledData, assignedCoursesData, studentStats] = await Promise.all([
         safeQuery(prisma.enrollment.findMany({
             where: { userId: session.id },
             include: { course: { include: { instructor: { select: { name: true, id: true, avatar: true } }, _count: { select: { modules: true } }, prerequisite: true } }, progress: true },
             orderBy: { progress: { lastActivity: 'desc' } },
             take: 4,
         }), [], 'enrolledData'),
+        safeQuery(prisma.courseAssignment.findMany({
+            where: { userId: session.id, course: { enrollments: { none: { userId: session.id } } } },
+            include: { course: { include: { instructor: { select: { id: true, name: true, avatar: true } }, _count: { select: { modules: true } } } } },
+            orderBy: { assignedAt: 'desc' }, take: 2,
+        }), [], 'assignedCoursesData'),
+         prisma.$transaction([
+            prisma.enrollment.count({ where: { userId: session.id } }),
+            prisma.courseProgress.count({ where: { userId: session.id, progressPercentage: 100 } })
+        ]),
     ]);
+
+    const [totalEnrollments, completedCount] = studentStats;
 
     const mappedCourses: EnrolledCourse[] = enrolledData.map(item => ({
         ...mapApiCourseToAppCourse(item.course as any),
@@ -176,15 +186,18 @@ async function getStudentDashboardData(session: PrismaUser, sharedData: any) {
         isEnrolled: true,
         progressPercentage: item.progress?.progressPercentage || 0,
     }));
+    
+    const mappedAssignedCourses: AppCourseType[] = assignedCoursesData.map(assignment => mapApiCourseToAppCourse(assignment.course as any));
 
     return {
-        ...sharedData,
+        studentStats: { enrolled: totalEnrollments, completed: completedCount },
         myDashboardCourses: mappedCourses,
+        assignedCourses: mappedAssignedCourses,
     };
 }
 
 
-async function getInstructorDashboardData(session: PrismaUser, sharedData: any) {
+async function getInstructorDashboardData(session: PrismaUser) {
     const [totalTaughtCourses, totalStudents] = await Promise.all([
         safeQuery(prisma.course.count({ where: { instructorId: session.id } }), 0, 'totalTaughtCourses'),
         safeQuery(prisma.enrollment.count({
@@ -193,7 +206,6 @@ async function getInstructorDashboardData(session: PrismaUser, sharedData: any) 
     ]);
 
     return {
-        ...sharedData,
         instructorStats: { taught: totalTaughtCourses, students: totalStudents },
     };
 }
@@ -221,10 +233,10 @@ export async function GET(req: NextRequest) {
                 data = await getAdminDashboardData(session, startDate, endDate);
                 break;
             case 'INSTRUCTOR':
-                data = await getInstructorDashboardData(session, sharedData);
+                data = await getInstructorDashboardData(session);
                 break;
             case 'STUDENT':
-                data = await getStudentDashboardData(session, sharedData);
+                data = await getStudentDashboardData(session);
                 break;
             default:
                 return NextResponse.json({ message: 'Rol de usuario no reconocido' }, { status: 400 });
