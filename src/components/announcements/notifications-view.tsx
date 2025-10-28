@@ -44,17 +44,15 @@ const NotificationItem = ({ notif, onDismiss }: { notif: AppNotification, onDism
         <div className={cn("flex items-start gap-4 p-4 border-b", !notif.read && "bg-primary/5")}>
             <Icon className={cn("h-6 w-6 mt-1 flex-shrink-0", color)} />
             <div className="flex-grow space-y-2">
-                <div className="flex justify-between items-start">
-                    <div>
-                        <p className={cn("font-bold text-base leading-tight", !notif.read && "text-foreground")}>
-                           {mainTitle}
-                           {achievementName && <span className="font-semibold text-lg ml-2">{achievementName}</span>}
-                        </p>
-                    </div>
+                <div className="flex justify-between items-start gap-4">
+                    <p className={cn("font-bold text-base leading-tight", !notif.read && "text-foreground")}>
+                       {mainTitle}
+                       {achievementName && <span className="font-semibold text-lg ml-1">{achievementName}</span>}
+                    </p>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground whitespace-nowrap">
                         <Clock className="h-3 w-3" />
                         <span>{formattedDate}</span>
-                         <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => onDismiss(notif.id)}>
+                         <Button variant="ghost" size="icon" className="h-6 w-6 -mr-2" onClick={() => onDismiss(notif.id)}>
                             <X className="h-4 w-4" />
                          </Button>
                     </div>
