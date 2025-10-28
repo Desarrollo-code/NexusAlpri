@@ -1,12 +1,12 @@
 // src/app/(app)/messages/page.tsx
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense } from 'react';
 import { useTitle } from '@/contexts/title-context';
 import { ChatClient } from '@/components/messages/chat-client';
-import { Card } from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
 
-export default function MessagesPage() {
+function MessagesPageComponent() {
   const { setPageTitle } = useTitle();
 
   useEffect(() => {
@@ -14,8 +14,16 @@ export default function MessagesPage() {
   }, [setPageTitle]);
 
   return (
-    <div className="h-[calc(100vh-8rem)]">
+    <div className="h-[calc(100vh-6rem)]">
         <ChatClient />
     </div>
   );
+}
+
+export default function MessagesPage() {
+    return (
+        <Suspense fallback={<div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
+            <MessagesPageComponent />
+        </Suspense>
+    )
 }
