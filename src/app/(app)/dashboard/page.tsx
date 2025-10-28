@@ -45,13 +45,16 @@ interface DashboardData {
     recentAnnouncements: AnnouncementType[];
     myDashboardCourses?: EnrolledCourse[];
     upcomingEvents?: CalendarEvent[];
+    allCalendarEvents?: CalendarEvent[];
 }
 
 const MiniCalendar = ({ events }: { events: CalendarEvent[] }) => {
+    console.log('[Dashboard Log] MiniCalendar renderizando con', events?.length || 0, 'eventos.');
     const [date, setDate] = React.useState<Date | undefined>(new Date());
 
     const eventsByDay = React.useMemo(() => {
         const map = new Map<string, CalendarEvent[]>();
+        if (!events) return map;
         events.forEach(event => {
             const dayKey = format(new Date(event.start), 'yyyy-MM-dd');
             if (!map.has(dayKey)) {
@@ -128,7 +131,7 @@ const MiniCalendar = ({ events }: { events: CalendarEvent[] }) => {
 const AnnouncementsList = ({ announcements }: { announcements: AnnouncementType[] }) => (
     <Card className="h-full">
       <CardHeader>
-        <CardTitle className="text-lg">Anuncios</CardTitle>
+        <CardTitle className="text-lg">Anuncios Recientes</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {announcements.length > 0 ? announcements.map(ann => (
@@ -201,11 +204,12 @@ const RecentlyAccessed = ({ courses }: { courses: AppCourseType[] }) => (
 
 
 function StudentDashboard({ data }: { data: DashboardData }) {
+    console.log('[Dashboard Log] Renderizando StudentDashboard.');
     return (
         <div className="space-y-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-1">
-                    <MiniCalendar events={data.upcomingEvents || []} />
+                    <MiniCalendar events={data.allCalendarEvents || []} />
                 </div>
                 <div className="lg:col-span-2">
                     <AnnouncementsList announcements={data.recentAnnouncements || []} />
@@ -220,11 +224,12 @@ function StudentDashboard({ data }: { data: DashboardData }) {
 }
 
 function InstructorDashboard({ data }: { data: DashboardData }) {
+     console.log('[Dashboard Log] Renderizando InstructorDashboard.');
      return (
         <div className="space-y-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-1">
-                    <MiniCalendar events={data.upcomingEvents || []} />
+                    <MiniCalendar events={data.allCalendarEvents || []} />
                 </div>
                 <div className="lg:col-span-2">
                     <AnnouncementsList announcements={data.recentAnnouncements || []} />
@@ -242,12 +247,13 @@ function InstructorDashboard({ data }: { data: DashboardData }) {
 }
 
 function AdminDashboard({ data }: { data: DashboardData }) {
+    console.log('[Dashboard Log] Renderizando AdminDashboard.');
     const stats = data.adminStats;
     return (
         <div className="space-y-8">
              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-1">
-                    <MiniCalendar events={data.upcomingEvents || []} />
+                    <MiniCalendar events={data.allCalendarEvents || []} />
                 </div>
                 <div className="lg:col-span-2">
                     <AnnouncementsList announcements={data.recentAnnouncements || []} />
@@ -277,40 +283,52 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setPageTitle('Panel Principal');
-    if (user?.role === 'ADMINISTRATOR') startTour('adminDashboard', adminDashboardTour);
-    if (user?.role === 'INSTRUCTOR') startTour('instructorDashboard', instructorDashboardTour);
-    if (user?.role === 'STUDENT') startTour('studentDashboard', studentDashboardTour);
-  }, [setPageTitle, startTour, user?.role]);
+    if (!user) return;
+    console.log(`[Dashboard Log] Iniciando tour para rol: ${user.role}`);
+    if (user.role === 'ADMINISTRATOR') startTour('adminDashboard', adminDashboardTour);
+    if (user.role === 'INSTRUCTOR') startTour('instructorDashboard', instructorDashboardTour);
+    if (user.role === 'STUDENT') startTour('studentDashboard', studentDashboardTour);
+  }, [setPageTitle, startTour, user]);
   
   const handleShowTour = () => {
-    if (user?.role === 'ADMINISTRATOR') forceStartTour('adminDashboard', adminDashboardTour);
-    if (user?.role === 'INSTRUCTOR') forceStartTour('instructorDashboard', instructorDashboardTour);
-    if (user?.role === 'STUDENT') forceStartTour('studentDashboard', studentDashboardTour);
+    if (!user) return;
+    if (user.role === 'ADMINISTRATOR') forceStartTour('adminDashboard', adminDashboardTour);
+    if (user.role === 'INSTRUCTOR') forceStartTour('instructorDashboard', instructorDashboardTour);
+    if (user.role === 'STUDENT') forceStartTour('studentDashboard', studentDashboardTour);
   }
 
   const fetchDashboardData = useCallback(async () => {
     if (!user) return;
     
+    console.log('[Dashboard Log] Empezando a obtener datos del dashboard...');
     setIsLoading(true);
     setError(null);
     
     try {
         const res = await fetch('/api/dashboard/data', { cache: 'no-store' });
-        if (!res.ok) throw new Error(`Error al obtener datos del dashboard`);
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({ message: `Error ${res.status}` }));
+            throw new Error(errorData.message || `Error al obtener datos del dashboard`);
+        }
         const dashboardData = await res.json();
+        console.log('[Dashboard Log] Datos recibidos de la API:', dashboardData);
         setData(dashboardData);
     } catch (err) {
+      console.error('[Dashboard Log] Error capturado en fetchDashboardData:', err);
       setError(err instanceof Error ? err.message : 'Error al obtener los datos del dashboard');
     } finally {
+      console.log('[Dashboard Log] Proceso de obtención de datos finalizado.');
       setIsLoading(false);
     }
   }, [user]);
 
   useEffect(() => {
+    console.log('[Dashboard Log] Hook de efecto principal disparado.');
     fetchDashboardData();
   }, [fetchDashboardData]);
 
   if (isLoading || !data) {
+    console.log(`[Dashboard Log] Mostrando estado de carga. isLoading: ${isLoading}, data: ${!!data}`);
     return (
       <div className="space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -324,6 +342,7 @@ export default function DashboardPage() {
   }
   
   if (error) {
+    console.log(`[Dashboard Log] Mostrando estado de error: ${error}`);
     return (
         <div className="flex flex-col items-center justify-center py-12 text-destructive">
             <AlertTriangle className="h-8 w-8 mb-2" />
@@ -339,7 +358,9 @@ export default function DashboardPage() {
       case 'ADMINISTRATOR': return <AdminDashboard data={data} />;
       case 'INSTRUCTOR': return <InstructorDashboard data={data} />;
       case 'STUDENT': return <StudentDashboard data={data} />;
-      default: return <p>Rol de usuario no reconocido.</p>;
+      default: 
+        console.warn(`[Dashboard Log] Rol de usuario no reconocido: ${user?.role}`);
+        return <p>Rol de usuario no reconocido.</p>;
     }
   };
   
