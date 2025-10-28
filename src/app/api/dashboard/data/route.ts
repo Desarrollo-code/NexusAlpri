@@ -1,3 +1,4 @@
+
 // src/app/api/dashboard/data/route.ts
 import prisma from '@/lib/prisma';
 import { NextResponse, type NextRequest } from 'next/server';
@@ -94,28 +95,30 @@ async function getInstructorDashboardData(session: PrismaUser, sharedData: any) 
 
 
 async function getAdminDashboardData(session: PrismaUser, sharedData: any) {
-     const [totalUsers, totalCourses, totalEnrollments, recentLogins, averageCompletionResult] = await Promise.all([
+     const [totalUsers, totalCourses, totalEnrollments, recentLoginGroups, averageCompletionResult] = await Promise.all([
         prisma.user.count(),
         prisma.course.count(),
         prisma.enrollment.count(),
-        prisma.securityLog.count({
+        prisma.securityLog.groupBy({
+            by: ['userId'],
             where: {
                 event: "SUCCESSFUL_LOGIN",
                 createdAt: { gte: subDays(new Date(), 7) }
-            },
-            distinct: ['userId']
+            }
         }),
         prisma.courseProgress.aggregate({
             _avg: {
                 progressPercentage: true,
             },
             where: {
-                NOT: {
-                    progressPercentage: null
-                }
+                progressPercentage: {
+                    not: null,
+                },
             },
         }),
     ]);
+    
+    const recentLogins = recentLoginGroups.length;
     
     return {
         ...sharedData,
