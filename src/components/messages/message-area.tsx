@@ -52,7 +52,7 @@ export const MessageArea = ({ messages, currentUser, otherParticipant }: {
     }, [messages]);
 
     return (
-        <ScrollArea className="flex-1" ref={scrollRef}>
+        <ScrollArea className="flex-1" viewportRef={scrollRef}>
             <div className="p-4 space-y-6">
                 {messages.map((msg, index) => {
                     const isCurrentUser = msg.authorId === currentUser.id;

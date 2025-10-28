@@ -1,12 +1,12 @@
 // src/components/messages/chat-client.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, MessageSquare, Bell, Megaphone, UserPlus, Info } from 'lucide-react';
 import { Button } from '../ui/button';
-import { Card } from '../ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import type { User, Attachment, Announcement as AnnouncementType, Conversation as AppConversation, Notification as AppNotification } from '@/types';
 import { ConversationList } from './conversation-list';
 import { useRealtime } from '@/hooks/use-realtime';
@@ -20,6 +20,8 @@ import { AnnouncementViewer } from './announcement-viewer';
 import { AnnouncementsView } from '../announcements/announcements-view';
 import { NotificationsView } from '../announcements/notifications-view';
 import { NewConversationModal } from './new-conversation-modal';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 
 type ActiveListView = 'chats' | 'announcements' | 'notifications';
 
@@ -46,12 +48,10 @@ export function ChatClient({ newChatUserId }: ChatClientProps) {
     const handleRealtimeMessage = useCallback((payload: any) => {
         const isForActiveConvo = payload.conversationId === activeConversation?.id;
 
-        // Si es para la conversación activa, actualizamos los mensajes en tiempo real
         if (isForActiveConvo) {
             setMessages(prev => [...prev, payload]);
         }
         
-        // Actualizamos la lista de conversaciones para que suba y muestre el último mensaje
         setConversations(prev => {
             const convoIndex = prev.findIndex(c => c.id === payload.conversationId);
             if (convoIndex > -1) {
@@ -59,7 +59,6 @@ export function ChatClient({ newChatUserId }: ChatClientProps) {
                 const restConvos = prev.filter(c => c.id !== payload.conversationId);
                 return [updatedConvo, ...restConvos];
             }
-            // Si la conversación es nueva, refrescamos la lista completa.
             fetchConversations();
             return prev;
         });
@@ -89,7 +88,7 @@ export function ChatClient({ newChatUserId }: ChatClientProps) {
     
     const handleSelectConversation = useCallback(async (convo: AppConversation) => {
       setActiveConversation(convo);
-      setActiveAnnouncement(null); // Deseleccionar anuncio si hay uno
+      setActiveAnnouncement(null);
       setIsLoadingMessages(true);
       try {
         if(convo.id.startsWith('temp-')) {
@@ -169,19 +168,32 @@ export function ChatClient({ newChatUserId }: ChatClientProps) {
       }
     };
     
-    const renderListView = () => {
-        switch(activeListView) {
-            case 'chats': return <ConversationList conversations={conversations} onSelect={handleSelectConversation} activeConversationId={activeConversation?.id || null} isLoading={isLoadingConversations} onNewChat={() => setIsNewConvoModalOpen(true)}/>;
-            case 'announcements': return <AnnouncementsView onSelectAnnouncement={setActiveAnnouncement} />;
-            case 'notifications': return <NotificationsView />;
-            default: return null;
-        }
-    }
+    const renderListView = () => (
+        <Tabs defaultValue="chats" className="flex flex-col h-full">
+            <CardHeader>
+                <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="chats"><MessageSquare className="h-4 w-4 mr-2"/>Chats</TabsTrigger>
+                    <TabsTrigger value="announcements"><Megaphone className="h-4 w-4 mr-2"/>Anuncios</TabsTrigger>
+                    <TabsTrigger value="notifications"><Bell className="h-4 w-4 mr-2"/>Alertas</TabsTrigger>
+                </TabsList>
+            </CardHeader>
+            <TabsContent value="chats" className="p-0 m-0 flex-1 min-h-0">
+                <ConversationList conversations={conversations} onSelect={handleSelectConversation} activeConversationId={activeConversation?.id || null} isLoading={isLoadingConversations} onNewChat={() => setIsNewConvoModalOpen(true)}/>
+            </TabsContent>
+            <TabsContent value="announcements" className="p-0 m-0 flex-1 min-h-0">
+                <AnnouncementsView onSelectAnnouncement={setActiveAnnouncement} />
+            </TabsContent>
+            <TabsContent value="notifications" className="p-0 m-0 flex-1 min-h-0">
+                <NotificationsView />
+            </TabsContent>
+        </Tabs>
+    );
+
     
     const renderMainView = () => {
         if (activeConversation) {
              return (
-                  <>
+                  <div className="flex flex-col h-full bg-background">
                       <header className="p-3 border-b flex items-center gap-3 h-16 shrink-0">
                           {isMobile && <Button variant="ghost" size="icon" onClick={() => setActiveConversation(null)}><Info/></Button>}
                           <Avatar className="h-9 w-9 border">
@@ -190,15 +202,17 @@ export function ChatClient({ newChatUserId }: ChatClientProps) {
                           </Avatar>
                           <h3 className="font-semibold">{activeConversation.participants[0]?.name}</h3>
                       </header>
-                      {isLoadingMessages ? (
-                        <div className="flex h-full items-center justify-center"><Loader2 className="h-6 w-6 animate-spin"/></div>
-                      ) : (
-                        <MessageArea messages={messages} currentUser={user} otherParticipant={activeConversation.participants[0]} />
-                      )}
+                      <div className="flex-1 min-h-0">
+                          {isLoadingMessages ? (
+                            <div className="flex h-full items-center justify-center"><Loader2 className="h-6 w-6 animate-spin"/></div>
+                          ) : (
+                            <MessageArea messages={messages} currentUser={user} otherParticipant={activeConversation.participants[0]} />
+                          )}
+                      </div>
                       <div className="p-4 border-t bg-muted/30">
                           <MessageInput onSendMessage={handleSendMessage} />
                       </div>
-                  </>
+                  </div>
               )
         }
         if (activeAnnouncement) {
@@ -218,19 +232,10 @@ export function ChatClient({ newChatUserId }: ChatClientProps) {
     }
 
     return (
-      <div className="flex h-full">
-        {/* Icon Bar */}
-        <nav className="w-16 bg-muted/30 border-r flex flex-col items-center justify-between py-4">
-            <div className="space-y-2">
-                <Button variant={activeListView === 'chats' ? 'secondary': 'ghost'} size="icon" onClick={() => setActiveListView('chats')}><MessageSquare/></Button>
-                <Button variant={activeListView === 'announcements' ? 'secondary': 'ghost'} size="icon" onClick={() => setActiveListView('announcements')}><Megaphone/></Button>
-                <Button variant={activeListView === 'notifications' ? 'secondary': 'ghost'} size="icon" onClick={() => setActiveListView('notifications')}><Bell/></Button>
-            </div>
-        </nav>
-        
+      <Card className="h-full w-full rounded-none md:rounded-lg flex overflow-hidden border-0 md:border">
         {/* List Panel */}
         <aside className={cn(
-          "w-full md:w-80 lg:w-96 flex-shrink-0 border-r flex flex-col transition-transform duration-300 ease-in-out bg-card",
+          "w-full md:w-80 lg:w-96 flex-shrink-0 border-r flex-col transition-transform duration-300 ease-in-out bg-card",
           isMobile && (activeConversation || activeAnnouncement) ? "hidden" : "flex",
         )}>
             {renderListView()}
@@ -253,6 +258,6 @@ export function ChatClient({ newChatUserId }: ChatClientProps) {
                 handleStartNewConversation(participant);
             }}
         />
-      </div>
+      </Card>
     );
 }
