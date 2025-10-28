@@ -1,6 +1,6 @@
 // src/components/calendar/event-editor-modal.tsx
 'use client';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -79,12 +79,13 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
     const [userSearch, setUserSearch] = useState('');
     const [formRecurrence, setFormRecurrence] = useState<RecurrenceType>('NONE');
     const [formRecurrenceEndDate, setFormRecurrenceEndDate] = useState<Date | undefined>(undefined);
-    const [formIsInteractive, setFormIsInteractive] = useState(false); // <-- NUEVO
+    const [formIsInteractive, setFormIsInteractive] = useState(false);
 
     const [allUsers, setAllUsers] = useState<AppUser[]>([]);
     const [isEditMode, setIsEditMode] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [eventToDelete, setEventToDelete] = useState<CalendarEvent | null>(null);
+    const [showParticipantsModal, setShowParticipantsModal] = useState(false);
 
     const canEditSelectedEvent = useMemo(() => {
         if (!user || !event) return false;
@@ -117,7 +118,7 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
             setFormAttachments(event.attachments || []);
             setFormRecurrence(event.recurrence || 'NONE');
             setFormRecurrenceEndDate(event.recurrenceEndDate ? new Date(event.recurrenceEndDate) : undefined);
-            setFormIsInteractive(event.isInteractive || false); // <-- NUEVO
+            setFormIsInteractive(event.isInteractive || false);
             setIsEditMode(false);
         } else { // Creating new event
             const targetDate = selectedDate || new Date();
@@ -135,7 +136,7 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
             setFormAttachments([]);
             setFormRecurrence('NONE');
             setFormRecurrenceEndDate(undefined);
-            setFormIsInteractive(false); // <-- NUEVO
+            setFormIsInteractive(false);
             setIsEditMode(true);
         }
 
@@ -163,7 +164,7 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
             color: formColor, attachments: formAttachments,
             recurrence: formRecurrence,
             recurrenceEndDate: formRecurrence !== 'NONE' ? formRecurrenceEndDate?.toISOString() : null,
-            isInteractive: formIsInteractive, // <-- NUEVO
+            isInteractive: formIsInteractive,
         };
 
         const endpoint = event ? `/api/events/${event.id}` : '/api/events';
@@ -375,6 +376,7 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
                         </div>
                         {event && canEditSelectedEvent && !isEditMode && (
                             <div className="flex items-center gap-2">
+                                {event.isInteractive && <Button variant="secondary" size="sm" onClick={() => setShowParticipantsModal(true)}>Ver Participantes</Button>}
                                 <Button variant="destructive" size="icon" onClick={() => setEventToDelete(event)}><Trash2 className="h-4 w-4" /></Button>
                                 <Button variant="outline" size="icon" onClick={() => setIsEditMode(true)}><Edit className="h-4 w-4" /></Button>
                             </div>
@@ -402,6 +404,107 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
             <AlertDialog open={!!eventToDelete} onOpenChange={(isOpen) => !isOpen && setEventToDelete(null)}>
                 <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle><AlertDialogDescription>Se eliminará el evento "<strong>{eventToDelete?.title}</strong>".</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:space-x-0"><AlertDialogCancel disabled={isSaving}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDeleteEvent} disabled={isSaving} className={cn(buttonVariants({ variant: "destructive" }))}>{isSaving && <Loader2 className="mr-2 animate-spin" />}Sí, eliminar</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
             </AlertDialog>
+            
+            {event && <ParticipantsModal isOpen={showParticipantsModal} onClose={() => setShowParticipantsModal(false)} event={event} />}
         </>
     )
+}
+
+const ParticipantsModal = ({ isOpen, onClose, event }: { isOpen: boolean, onClose: () => void, event: CalendarEvent }) => {
+    const [participants, setParticipants] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        if (isOpen && event) {
+            setIsLoading(true);
+            fetch(`/api/events/participations?eventId=${event.parentId || event.id}&occurrenceDate=${new Date(event.start).toISOString()}`)
+                .then(res => res.json())
+                .then(data => setParticipants(data))
+                .catch(() => toast({ title: "Error", description: "No se pudo cargar la lista de participantes.", variant: "destructive"}))
+                .finally(() => setIsLoading(false));
+        }
+    }, [isOpen, event]);
+    
+    return (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Participantes de "{event.title}"</DialogTitle>
+                    <DialogDescription>
+                        Usuarios que confirmaron su participación el {format(new Date(event.start), "d 'de' MMMM", {locale: es})}.
+                    </DialogDescription>
+                </DialogHeader>
+                 <ScrollArea className="max-h-80">
+                    {isLoading ? <div className="flex justify-center p-8"><Loader2 className="animate-spin"/></div> :
+                     participants.length > 0 ? (
+                        <div className="space-y-3 p-1">
+                          {participants.map(p => (
+                             <div key={p.id} className="flex items-center gap-3">
+                                 <Avatar className="h-9 w-9"><AvatarImage src={p.user.avatar || ''}/><AvatarFallback><Identicon userId={p.userId}/></AvatarFallback></Avatar>
+                                 <p className="font-medium">{p.user.name}</p>
+                             </div>
+                          ))}
+                        </div>
+                     ) : (
+                         <p className="text-center text-sm text-muted-foreground p-8">Nadie ha confirmado su participación todavía.</p>
+                     )}
+                 </ScrollArea>
+            </DialogContent>
+        </Dialog>
+    )
+}
+```
+  </change>
+  <change>
+    <file>/src/app/api/events/participations/route.ts</file>
+    <content><![CDATA[// src/app/api/events/participations/route.ts
+import { NextResponse, NextRequest } from 'next/server';
+import prisma from '@/lib/prisma';
+import { getCurrentUser } from '@/lib/auth';
+import { startOfDay } from 'date-fns';
+
+export const dynamic = 'force-dynamic';
+
+export async function GET(req: NextRequest) {
+    const session = await getCurrentUser();
+    if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
+        return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
+    }
+
+    try {
+        const { searchParams } = new URL(req.url);
+        const eventId = searchParams.get('eventId');
+        const occurrenceDateString = searchParams.get('occurrenceDate');
+
+        if (!eventId || !occurrenceDateString) {
+            return NextResponse.json({ message: 'eventId y occurrenceDate son requeridos' }, { status: 400 });
+        }
+
+        const occurrenceDate = startOfDay(new Date(occurrenceDateString));
+
+        const participations = await prisma.eventParticipation.findMany({
+            where: {
+                eventId: eventId,
+                occurrenceDate: occurrenceDate,
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        avatar: true,
+                    },
+                },
+            },
+            orderBy: {
+                createdAt: 'asc',
+            },
+        });
+
+        return NextResponse.json(participations);
+
+    } catch (error) {
+        console.error('[EVENT_PARTICIPATIONS_GET_ERROR]', error);
+        return NextResponse.json({ message: 'Error al obtener la lista de participantes' }, { status: 500 });
+    }
 }
