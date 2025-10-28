@@ -42,7 +42,7 @@ export const ConversationList = ({ conversations, onSelect, activeConversationId
 }) => {
     return (
         <>
-            <div className="p-2 border-b flex items-center justify-end h-16">
+            <div className="p-2 border-b flex items-center justify-end">
                  <Button variant="ghost" size="icon" onClick={onNewChat} className="h-8 w-8">
                     <UserPlus className="h-4 w-4"/>
                 </Button>
