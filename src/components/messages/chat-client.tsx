@@ -19,6 +19,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Identicon } from '../ui/identicon';
 import { AnnouncementViewer } from './announcement-viewer';
+import { Separator } from '../ui/separator';
+import { AnnouncementsView } from '../announcements/announcements-view';
 
 interface ChatClientProps {
   newChatUserId?: string | null;
@@ -154,12 +156,20 @@ export function ChatClient({ newChatUserId }: ChatClientProps) {
               isMobile && activeConversation ? "-translate-x-full" : "translate-x-0",
               !isMobile && "md:translate-x-0"
           )}>
-              <ConversationList
-                  conversations={conversations}
-                  onSelect={handleSelectConversation}
-                  activeConversationId={activeConversation?.id || null}
-                  isLoading={isLoadingConversations}
-              />
+               <div className="flex-grow flex flex-col min-h-0">
+                  <div className="p-4 border-b">
+                     <h2 className="text-lg font-semibold">Mensajes</h2>
+                  </div>
+                  <ConversationList
+                      conversations={conversations}
+                      onSelect={handleSelectConversation}
+                      activeConversationId={activeConversation?.id || null}
+                      isLoading={isLoadingConversations}
+                  />
+               </div>
+               <div className="flex-shrink-0 h-1/3 min-h-[200px] border-t flex flex-col">
+                  <AnnouncementsView />
+               </div>
           </aside>
 
           <main className={cn(
