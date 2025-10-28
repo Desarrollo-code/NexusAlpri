@@ -106,10 +106,10 @@ async function getAdminDashboardData(session: PrismaUser, sharedData: any) {
             _avg: {
                 progressPercentage: true,
             },
-            where: {
-                progressPercentage: {
-                    not: null,
-                },
+            where: { 
+                NOT: {
+                    progressPercentage: null
+                }
             },
         }),
     ]);
