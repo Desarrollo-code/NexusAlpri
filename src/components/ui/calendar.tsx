@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import { DayPicker, useDayPicker, useNavigation, type DateFormatter, type DayContentRenderer } from "react-day-picker"
+import { DayPicker } from "react-day-picker"
 import { format, isSameDay } from "date-fns"
 import { es } from 'date-fns/locale';
 
