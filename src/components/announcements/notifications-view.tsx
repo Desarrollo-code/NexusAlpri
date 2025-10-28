@@ -133,10 +133,10 @@ export function NotificationsView() {
     return (
       <>
         <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-base">Notificaciones</CardTitle>
+            <CardTitle className="text-base">Notificaciones Personales</CardTitle>
              <Button variant="ghost" size="sm" onClick={handleMarkAllRead} disabled={unreadCount === 0}>
                 <Check className="mr-2 h-4 w-4"/>
-                Marcar todas como leídas
+                Marcar leídas
              </Button>
         </CardHeader>
         <CardContent className="p-0 flex-1 min-h-0">

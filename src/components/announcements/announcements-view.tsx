@@ -93,7 +93,7 @@ export function AnnouncementsView({ onSelectAnnouncement }: AnnouncementsViewPro
   return (
     <>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-base">Anuncios</CardTitle>
+        <CardTitle className="text-base">Anuncios Globales</CardTitle>
         <Button variant="outline" size="sm" onClick={() => setIsCreatorOpen(true)}>Crear</Button>
       </CardHeader>
       <CardContent className="p-0 flex-1 min-h-0">
