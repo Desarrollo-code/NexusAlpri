@@ -365,10 +365,12 @@ export type AppForm = Prisma.FormGetPayload<{}> & {
     sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
 };
 
-// --- CHAT ---
-// types related to chat are removed
-
 // --- PROCESSES ---
-export type Process = Prisma.ProcessGetPayload<{}>;
+export type Process = Prisma.ProcessGetPayload<{
+    include: {
+        children: true,
+        users: true
+    }
+}>;
 
-export { type FormStatus, type FormFieldType, type AnnouncementAttachment, type RecurrenceType } from '@prisma/client';
+export { type FormStatus, type FormFieldType, type AnnouncementAttachment, type RecurrenceType, type ChatAttachment } from '@prisma/client';

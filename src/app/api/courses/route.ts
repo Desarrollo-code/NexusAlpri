@@ -1,4 +1,3 @@
-
 // src/app/api/courses/route.ts
 import { NextResponse, NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
@@ -83,13 +82,6 @@ export async function GET(req: NextRequest) {
           },
         },
       }),
-      // Si estamos en la vista de catálogo, obtener el progreso del usuario actual en los prerrequisitos
-      ...(!manageView && userId && {
-          userProgress: {
-              where: { userId },
-              select: { completedAt: true }
-          }
-      })
     };
 
     const coursesFromDb = await prisma.course.findMany({
@@ -169,17 +161,6 @@ export async function POST(req: NextRequest) {
         prerequisiteId: prerequisiteId || null,
       },
       include: { instructor: true },
-    });
-
-    // --- Security Log ---
-    await prisma.securityLog.create({
-        data: {
-            event: 'COURSE_CREATED',
-            ipAddress: req.ip || req.headers.get('x-forwarded-for'),
-            userId: session.id,
-            details: `Curso "${newCourse.title}" creado.`,
-            userAgent: req.headers.get('user-agent'),
-        }
     });
 
     return NextResponse.json(newCourse, { status: 201 });

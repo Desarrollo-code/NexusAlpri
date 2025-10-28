@@ -15,19 +15,41 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-        const { courseId, userId, enroll } = await req.json(); // enroll is a boolean for future use, assuming true for now
+        const { courseId, userId } = await req.json();
         const finalUserId = userId || session.id;
 
         if (!courseId) {
             return NextResponse.json({ message: 'courseId es requerido.' }, { status: 400 });
         }
-        
-        // Admins can enroll anyone. Instructors can enroll anyone in their own courses.
-        if (userId && userId !== session.id) {
-            const course = await prisma.course.findUnique({ where: { id: courseId }, select: { instructorId: true } });
-            const isAdmin = session.role === 'ADMINISTRATOR';
-            const isCourseInstructor = session.role === 'INSTRUCTOR' && course?.instructorId === session.id;
 
+        const courseToEnroll = await prisma.course.findUnique({
+            where: { id: courseId },
+            select: { instructorId: true, prerequisiteId: true }
+        });
+
+        if (!courseToEnroll) {
+            return NextResponse.json({ message: 'Curso no encontrado.' }, { status: 404 });
+        }
+        
+        // --- LÓGICA DE PRERREQUISITOS ---
+        if (courseToEnroll.prerequisiteId) {
+            const prerequisiteProgress = await prisma.courseProgress.findFirst({
+                where: {
+                    userId: finalUserId,
+                    courseId: courseToEnroll.prerequisiteId,
+                    completedAt: { not: null } // El curso debe estar completado
+                }
+            });
+
+            if (!prerequisiteProgress) {
+                return NextResponse.json({ message: 'Debes completar el curso prerrequisito antes de inscribirte a este.' }, { status: 403 });
+            }
+        }
+        // --- FIN LÓGICA DE PRERREQUISITOS ---
+        
+        if (userId && userId !== session.id) {
+            const isAdmin = session.role === 'ADMINISTRATOR';
+            const isCourseInstructor = session.role === 'INSTRUCTOR' && courseToEnroll?.instructorId === session.id;
             if (!isAdmin && !isCourseInstructor) {
                 return NextResponse.json({ message: 'No tienes permiso para inscribir a este usuario.' }, { status: 403 });
             }
@@ -56,10 +78,8 @@ export async function POST(req: NextRequest) {
             },
         });
 
-        // --- Gamification Logic ---
         await addXp(finalUserId, XP_CONFIG.ENROLL_COURSE);
         await checkAndAwardFirstEnrollment(finalUserId);
-        // --------------------------
 
         return NextResponse.json({ message: 'Inscripción exitosa' }, { status: 201 });
 
