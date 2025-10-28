@@ -4,13 +4,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import type { Announcement as AnnouncementType } from '@/types'; 
 import { Megaphone, Loader2 } from 'lucide-react';
-import { AnnouncementCard } from './announcement-card';
 import { CardHeader, CardTitle, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { AnnouncementCreator } from './announcement-creator';
 import { ScrollArea } from '../ui/scroll-area';
+import { AnnouncementCard } from './announcement-card'; // Usaremos una tarjeta más simple
+import Link from 'next/link';
 
-export function AnnouncementsView({ onSelect, selectedId }: { onSelect: (announcement: AnnouncementType) => void, selectedId: string | null }) {
+export function AnnouncementsView() {
   const [announcements, setAnnouncements] = useState<AnnouncementType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreatorOpen, setIsCreatorOpen] = useState(false);
@@ -37,7 +38,7 @@ export function AnnouncementsView({ onSelect, selectedId }: { onSelect: (announc
     <>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-base">Anuncios Globales</CardTitle>
-        <Button size="sm" variant="outline" onClick={() => setIsCreatorOpen(true)}>Crear</Button>
+        <Button variant="outline" size="sm" onClick={() => setIsCreatorOpen(true)}>Crear</Button>
       </CardHeader>
       <CardContent className="p-0 flex-1 min-h-0">
         <ScrollArea className="h-full">
@@ -50,13 +51,11 @@ export function AnnouncementsView({ onSelect, selectedId }: { onSelect: (announc
                   <p>No hay anuncios</p>
               </div>
             ) : (
-               <div className="space-y-1">
+               <div className="space-y-3">
                  {announcements.map((announcement: AnnouncementType) => (
                     <AnnouncementCard 
                         key={announcement.id}
                         announcement={announcement}
-                        onSelect={() => onSelect(announcement)}
-                        isSelected={selectedId === announcement.id}
                     />
                  ))}
                </div>

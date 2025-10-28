@@ -1,101 +1,65 @@
 // src/app/(app)/announcements/page.tsx
 'use client';
 
-import React, { useEffect, Suspense, useState } from 'react';
+import React, { useEffect, Suspense, useState, useCallback } from 'react';
 import { useTitle } from '@/contexts/title-context';
 import { ChatClient } from '@/components/messages/chat-client';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MessageSquare } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { NotificationsView } from '@/components/announcements/notifications-view';
 import { AnnouncementsView } from '@/components/announcements/announcements-view';
 import type { Announcement as AnnouncementType, Conversation as AppConversation } from '@/types';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { cn } from '@/lib/utils';
-import { AnimatePresence, motion } from 'framer-motion';
 
 function CommunicationsPageComponent() {
   const { setPageTitle } = useTitle();
-  const [activeItem, setActiveItem] = useState<any | null>(null);
-  const isMobile = useIsMobile();
+  const [activeConversation, setActiveConversation] = useState<AppConversation | null>(null);
 
   useEffect(() => {
     setPageTitle('Centro de Comunicaciones');
   }, [setPageTitle]);
   
-  const handleSelect = (item: AppConversation | AnnouncementType, type: 'conversation' | 'announcement') => {
-      setActiveItem({ type, data: item });
-  }
-
-  const sidebarVariants = {
-    open: { x: 0 },
-    closed: { x: "-100%" },
-  }
-  
-  const contentVariants = {
-    open: { display: "block" },
-    closed: { display: "none" },
-  }
-
-  // En móvil, la vista de chat ocupa toda la pantalla
-  if (isMobile) {
-      return (
-          <div className="relative h-[calc(100vh-6rem)] overflow-hidden">
-               <motion.div
-                    variants={sidebarVariants}
-                    initial="open"
-                    animate={activeItem ? "closed" : "open"}
-                    transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
-                    className="absolute inset-0 w-full h-full"
-                >
-                  <div className="h-full flex flex-col gap-4 p-2">
-                    <Card className="flex-1 flex flex-col">
-                        <NotificationsView />
-                    </Card>
-                    <Card className="flex-1 flex flex-col">
-                        <AnnouncementsView onSelect={(item) => handleSelect(item, 'announcement')} selectedId={activeItem?.type === 'announcement' ? activeItem.data.id : null}/>
-                    </Card>
-                  </div>
-              </motion.div>
-              <AnimatePresence>
-              {activeItem && (
-                  <motion.div
-                      key="chat-content"
-                      initial={{ x: "100%" }}
-                      animate={{ x: 0 }}
-                      exit={{ x: "100%" }}
-                      transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
-                      className="absolute inset-0 w-full h-full bg-background"
-                  >
-                      <ChatClient 
-                          activeItem={activeItem} 
-                          onBack={() => setActiveItem(null)} 
-                          onSelectConversation={(c) => handleSelect(c, 'conversation')}
-                      />
-                  </motion.div>
-              )}
-              </AnimatePresence>
-          </div>
-      )
-  }
+  const handleSelectConversation = useCallback((conversation: AppConversation) => {
+      setActiveConversation(conversation);
+  }, []);
 
   return (
-      <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] xl:grid-cols-[420px_1fr] gap-6 h-[calc(100vh-8rem)]">
-          {/* Columna Izquierda */}
-          <div className="flex flex-col gap-6 h-full">
+      <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] lg:grid-cols-[320px_1fr_300px] gap-6 h-[calc(100vh-8rem)]">
+          {/* Columna Izquierda (Chats) - Oculta en móvil si hay una conversación activa */}
+          <div className="hidden md:flex flex-col h-full">
+              <ChatClient 
+                  onSelectConversation={handleSelectConversation}
+                  activeConversationId={activeConversation?.id || null}
+              />
+          </div>
+          
+          {/* Columna Central (Área de Mensajes) */}
+          <div className="h-full">
+              {activeConversation ? (
+                   <div className="flex flex-col h-full bg-card rounded-lg border">
+                       {/* Aquí iría el MessageArea, por ahora simulado */}
+                        <div className="p-4 border-b">
+                            <h3 className="font-semibold">{activeConversation.participants[0]?.name}</h3>
+                        </div>
+                        <div className="flex-1 p-4">Historial de chat para {activeConversation.participants[0]?.name}</div>
+                        <div className="p-4 border-t">Campo de texto</div>
+                   </div>
+              ) : (
+                  <div className="hidden md:flex flex-col h-full items-center justify-center text-muted-foreground bg-card rounded-lg border p-8 text-center">
+                      <MessageSquare className="h-16 w-16 mb-4"/>
+                      <h3 className="text-lg font-semibold">Selecciona una conversación</h3>
+                      <p className="text-sm">O inicia una nueva para empezar a chatear.</p>
+                  </div>
+              )}
+          </div>
+          
+          {/* Columna Derecha (Notificaciones y Anuncios) */}
+          <div className="hidden lg:flex flex-col gap-6 h-full">
               <Card className="flex-1 flex flex-col min-h-0">
                   <NotificationsView />
               </Card>
               <Card className="flex-1 flex flex-col min-h-0">
-                  <AnnouncementsView onSelect={(item) => handleSelect(item, 'announcement')} selectedId={activeItem?.type === 'announcement' ? activeItem.data.id : null} />
+                  <AnnouncementsView />
               </Card>
-          </div>
-          {/* Columna Derecha */}
-          <div className="h-full">
-              <ChatClient 
-                  activeItem={activeItem}
-                  onSelectConversation={(c) => handleSelect(c, 'conversation')}
-                  onBack={() => setActiveItem(null)}
-              />
           </div>
       </div>
   );

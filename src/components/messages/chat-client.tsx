@@ -11,8 +11,6 @@ import { User, Attachment, Announcement as AnnouncementType } from '@/types';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../ui/command';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 import { ConversationList } from './conversation-list';
-import { MessageArea } from './message-area';
-import { AnnouncementViewer } from './announcement-viewer';
 import { useRealtime } from '@/hooks/use-realtime';
 import { ScrollArea } from '../ui/scroll-area';
 
@@ -23,28 +21,17 @@ type Conversation = {
   updatedAt: string;
 };
 
-export interface LocalAttachmentPreview {
-    id: string;
-    file: File;
-    previewUrl: string;
-    finalUrl?: string;
-    uploadProgress: number;
-    error?: string;
-}
-
 interface ChatClientProps {
-    activeItem: { type: 'conversation' | 'announcement', data: any } | null;
-    onBack: () => void;
     onSelectConversation: (c: Conversation) => void;
+    activeConversationId: string | null;
 }
 
-export function ChatClient({ activeItem, onBack, onSelectConversation }: ChatClientProps) {
+export function ChatClient({ onSelectConversation, activeConversationId }: ChatClientProps) {
     const { user, isLoading: isAuthLoading } = useAuth();
     const { toast } = useToast();
 
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [isLoadingConversations, setIsLoadingConversations] = useState(true);
-    const [messages, setMessages] = useState<any[]>([]);
     const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false);
     const [usersForNewChat, setUsersForNewChat] = useState<User[]>([]);
 
@@ -62,31 +49,14 @@ export function ChatClient({ activeItem, onBack, onSelectConversation }: ChatCli
         }
     }, [toast]);
     
-    const handleNewMessage = useCallback((payload: any) => {
-        if (activeItem?.type === 'conversation' && payload.conversationId === activeItem.data.id) {
-            setMessages(prevMessages => [...prevMessages, payload]);
-        }
-        fetchConversations();
-    }, [activeItem, fetchConversations]);
-
-    useRealtime(user ? `user:${user.id}` : null, handleNewMessage);
+    // El hook de realtime ahora solo se preocupa de refrescar la lista
+    useRealtime(user ? `user:${user.id}` : null, fetchConversations);
     
     useEffect(() => {
         if (!isAuthLoading && user) {
             fetchConversations();
         }
     }, [user, isAuthLoading, fetchConversations]);
-    
-    useEffect(() => {
-        if (activeItem?.type === 'conversation' && !activeItem.data.id.startsWith('temp-')) {
-            fetch(`/api/conversations/${activeItem.data.id}`)
-                .then(res => res.json())
-                .then(data => setMessages(Array.isArray(data) ? data : []))
-                .catch(() => toast({ title: 'Error', description: 'No se pudieron cargar los mensajes.', variant: 'destructive'}));
-        } else if (activeItem?.type === 'conversation' && activeItem.data.id.startsWith('temp-')) {
-            setMessages([]);
-        }
-    }, [activeItem, toast]);
     
     const handleStartNewChat = (recipient: User) => {
         setIsNewChatModalOpen(false);
@@ -116,20 +86,27 @@ export function ChatClient({ activeItem, onBack, onSelectConversation }: ChatCli
 
     return (
         <>
-            {activeItem?.type === 'conversation' && activeItem.data.participants[0] ? (
-                <MessageArea 
-                    conversation={activeItem.data} 
-                    messages={messages}
-                    setMessages={setMessages}
-                    onNewMessage={fetchConversations}
-                />
-            ) : activeItem?.type === 'announcement' ? (
-                 <AnnouncementViewer announcement={activeItem.data} onBack={onBack} />
-            ) : (
-                <div className="hidden md:flex flex-col h-full items-center justify-center text-muted-foreground p-8 text-center bg-muted/30">
-                    <MessageSquare className="h-16 w-16 mb-4"/><h3 className="text-lg font-semibold">Selecciona una conversación</h3><p className="text-sm">O inicia una nueva para empezar a chatear.</p>
-                </div>
-            )}
+            <Card className="flex flex-col h-full overflow-hidden">
+                <CardHeader className="flex-row items-center justify-between">
+                    <CardTitle className="text-lg font-semibold">Mensajes</CardTitle>
+                    <Button variant="ghost" size="icon" onClick={() => setIsNewChatModalOpen(true)}>
+                        <UserPlus className="h-5 w-5" />
+                    </Button>
+                </CardHeader>
+                <CardContent className="p-0 flex-1 min-h-0">
+                    <ScrollArea className="h-full">
+                       {isLoadingConversations ? (
+                            <div className="flex h-full items-center justify-center"><Loader2 className="h-6 w-6 animate-spin"/></div>
+                       ) : (
+                            <ConversationList
+                                conversations={conversations}
+                                onSelect={onSelectConversation}
+                                activeConversationId={activeConversationId}
+                            />
+                       )}
+                    </ScrollArea>
+                </CardContent>
+            </Card>
             
             <Dialog open={isNewChatModalOpen} onOpenChange={setIsNewChatModalOpen}>
                 <DialogContent>
