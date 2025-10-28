@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -24,6 +23,7 @@ function Calendar({
 }: CalendarProps) {
   const eventsByDay = React.useMemo(() => {
     const map = new Map<string, CalendarEvent[]>();
+    if (!events) return map;
     events.forEach(event => {
         const dayKey = format(new Date(event.start), 'yyyy-MM-dd');
         if (!map.has(dayKey)) {
