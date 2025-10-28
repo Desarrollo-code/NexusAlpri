@@ -3,6 +3,7 @@ import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { startOfDay } from 'date-fns';
+import { addXp, XP_CONFIG } from '@/lib/gamification';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
         const occurrenceDate = startOfDay(new Date(occurrenceDateString));
 
         // Usamos upsert para evitar crear entradas duplicadas
-        await prisma.eventParticipation.upsert({
+        const participation = await prisma.eventParticipation.upsert({
             where: {
                 userId_eventId_occurrenceDate: {
                     userId: session.id,
@@ -36,6 +37,12 @@ export async function POST(req: NextRequest) {
                 userId: session.id,
                 eventId: eventId,
                 occurrenceDate: occurrenceDate,
+            },
+            // Incluimos `select` para saber si se creó un nuevo registro
+            select: {
+              id: true,
+              createdAt: true,
+              updatedAt: true,
             }
         });
         
@@ -50,6 +57,14 @@ export async function POST(req: NextRequest) {
                 read: true,
             }
         });
+        
+        // --- Gamification ---
+        // Solo otorgar puntos si la participación fue recién creada
+        const isNewParticipation = participation.createdAt.getTime() === participation.updatedAt.getTime();
+        if (isNewParticipation) {
+            await addXp(session.id, XP_CONFIG.COMPLETE_LESSON); // Reutilizamos los puntos de completar una lección
+        }
+        // --------------------
 
         return NextResponse.json({ message: 'Participación confirmada' }, { status: 201 });
 
