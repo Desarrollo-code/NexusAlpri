@@ -112,3 +112,14 @@ export const parseUserAgent = (userAgent: string | null | undefined): { browser:
 
     return { browser, os };
 };
+
+
+export const getEventColorClass = (color?: string): string => {
+  const colorMap: Record<string, string> = {
+    blue: 'bg-event-blue',
+    green: 'bg-event-green',
+    red: 'bg-event-red',
+    orange: 'bg-event-orange',
+  };
+  return colorMap[color as string] || 'bg-primary';
+};
