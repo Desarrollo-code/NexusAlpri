@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { getIconForFileType } from '@/lib/resource-utils';
 import type { Attachment } from '@/types';
+import { ScrollArea } from '../ui/scroll-area';
 
 type Participant = { id: string; name: string | null; avatar: string | null };
 type Message = {
@@ -51,45 +52,47 @@ export const MessageArea = ({ messages, currentUser, otherParticipant }: {
     }, [messages]);
 
     return (
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-6">
-            {messages.map((msg, index) => {
-                const isCurrentUser = msg.authorId === currentUser.id;
-                const prevMsg = messages[index - 1];
-                const showAvatar = !isCurrentUser && (!prevMsg || prevMsg.authorId !== msg.authorId);
+        <ScrollArea className="flex-1" ref={scrollRef}>
+            <div className="p-4 space-y-6">
+                {messages.map((msg, index) => {
+                    const isCurrentUser = msg.authorId === currentUser.id;
+                    const prevMsg = messages[index - 1];
+                    const showAvatar = !isCurrentUser && (!prevMsg || prevMsg.authorId !== msg.authorId);
 
-                return (
-                    <div key={msg.id} className={cn("flex gap-3", isCurrentUser ? "justify-end" : "justify-start")}>
-                        {!isCurrentUser && (
-                             <div className="w-9 h-9 flex-shrink-0 self-end">
-                                {showAvatar && (
-                                    <Avatar className="h-9 w-9 border">
-                                        <AvatarImage src={otherParticipant?.avatar || undefined} />
-                                        <AvatarFallback><Identicon userId={otherParticipant?.id || ''} /></AvatarFallback>
-                                    </Avatar>
+                    return (
+                        <div key={msg.id} className={cn("flex gap-3", isCurrentUser ? "justify-end" : "justify-start")}>
+                            {!isCurrentUser && (
+                                <div className="w-9 h-9 flex-shrink-0 self-end">
+                                    {showAvatar && (
+                                        <Avatar className="h-9 w-9 border">
+                                            <AvatarImage src={otherParticipant?.avatar || undefined} />
+                                            <AvatarFallback><Identicon userId={otherParticipant?.id || ''} /></AvatarFallback>
+                                        </Avatar>
+                                    )}
+                                </div>
+                            )}
+                            <div className="flex flex-col gap-1.5 max-w-xs md:max-w-md">
+                            {msg.attachments && msg.attachments.length > 0 && (
+                                    <div className={cn("space-y-2", isCurrentUser ? "items-end" : "items-start")}>
+                                        {msg.attachments.map(att => <AttachmentPreview key={att.id} attachment={att} />)}
+                                    </div>
                                 )}
+                                {msg.content && (
+                                    <div className={cn(
+                                        "p-3 rounded-2xl",
+                                        isCurrentUser ? "bg-primary text-primary-foreground rounded-br-none" : "bg-muted rounded-bl-none"
+                                    )}>
+                                        <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                                    </div>
+                                )}
+                                <p className={cn("text-[10px] text-muted-foreground", isCurrentUser ? "text-right" : "text-left")}>
+                                    {format(parseISO(msg.createdAt), 'p', { locale: es })}
+                                </p>
                             </div>
-                        )}
-                        <div className="flex flex-col gap-1.5 max-w-xs md:max-w-md">
-                           {msg.attachments && msg.attachments.length > 0 && (
-                                <div className={cn("space-y-2", isCurrentUser ? "items-end" : "items-start")}>
-                                    {msg.attachments.map(att => <AttachmentPreview key={att.id} attachment={att} />)}
-                                </div>
-                            )}
-                            {msg.content && (
-                                <div className={cn(
-                                    "p-3 rounded-2xl",
-                                    isCurrentUser ? "bg-primary text-primary-foreground rounded-br-none" : "bg-muted rounded-bl-none"
-                                )}>
-                                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                                </div>
-                            )}
-                            <p className={cn("text-[10px] text-muted-foreground", isCurrentUser ? "text-right" : "text-left")}>
-                                {format(parseISO(msg.createdAt), 'p', { locale: es })}
-                            </p>
                         </div>
-                    </div>
-                )
-            })}
-        </div>
+                    )
+                })}
+            </div>
+        </ScrollArea>
     )
 };

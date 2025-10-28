@@ -6,9 +6,9 @@ import type { Announcement as AnnouncementType } from '@/types';
 import { Megaphone, Loader2 } from 'lucide-react';
 import { AnnouncementCard } from './announcement-card';
 import { CardHeader, CardTitle, CardContent } from '../ui/card';
-import { ScrollArea } from '../ui/scroll-area';
 import { Button } from '../ui/button';
 import { AnnouncementCreator } from './announcement-creator';
+import { ScrollArea } from '../ui/scroll-area';
 
 export function AnnouncementsView({ onSelect, selectedId }: { onSelect: (announcement: AnnouncementType) => void, selectedId: string | null }) {
   const [announcements, setAnnouncements] = useState<AnnouncementType[]>([]);
