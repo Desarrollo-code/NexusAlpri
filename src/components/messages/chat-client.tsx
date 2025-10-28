@@ -474,6 +474,6 @@ export function ChatClient() {
                     </Command>
                 </DialogContent>
             </Dialog>
-        </div>
+        </Card>
     );
 }
