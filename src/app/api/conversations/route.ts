@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
         if (lastMessage.content) {
           lastMessageText = lastMessage.content;
         } else if (lastMessage.attachments?.length > 0) {
-          lastMessageText = `Adjunto: ${lastMessage.attachments[0].name}`;
+          lastMessageText = `Envió un adjunto`;
         }
       }
 

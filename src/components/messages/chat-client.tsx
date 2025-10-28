@@ -1,39 +1,63 @@
 // src/components/messages/chat-client.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, UserPlus, Info, MessageSquare } from 'lucide-react';
+import { Loader2, UserPlus, Info, MessageSquare, Menu, ArrowLeft } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
-import { User, Attachment, Announcement as AnnouncementType } from '@/types';
+import type { User, Attachment, Announcement as AnnouncementType, Conversation as AppConversation } from '@/types';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../ui/command';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 import { ConversationList } from './conversation-list';
 import { useRealtime } from '@/hooks/use-realtime';
-import { ScrollArea } from '../ui/scroll-area';
-
-type Conversation = {
-  id: string;
-  participants: any[];
-  messages: any[];
-  updatedAt: string;
-};
+import { MessageArea } from './message-area';
+import { MessageInput } from './message-input';
+import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Identicon } from '../ui/identicon';
+import { AnnouncementViewer } from './announcement-viewer';
 
 interface ChatClientProps {
-    onSelectConversation: (c: Conversation) => void;
-    activeConversationId: string | null;
+  newChatUserId?: string | null;
 }
 
-export function ChatClient({ onSelectConversation, activeConversationId }: ChatClientProps) {
+export function ChatClient({ newChatUserId }: ChatClientProps) {
     const { user, isLoading: isAuthLoading } = useAuth();
     const { toast } = useToast();
+    const isMobile = useIsMobile();
 
-    const [conversations, setConversations] = useState<Conversation[]>([]);
+    const [conversations, setConversations] = useState<AppConversation[]>([]);
     const [isLoadingConversations, setIsLoadingConversations] = useState(true);
-    const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false);
-    const [usersForNewChat, setUsersForNewChat] = useState<User[]>([]);
+    const [activeConversation, setActiveConversation] = useState<AppConversation | null>(null);
+    const [messages, setMessages] = useState<any[]>([]);
+    const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+    
+    // Función para manejar el evento de tiempo real
+    const handleRealtimeMessage = useCallback((payload: any) => {
+        // Verificar si el mensaje pertenece a la conversación activa
+        if (payload.conversationId === activeConversation?.id) {
+            setMessages(prev => [...prev, payload]);
+        }
+        
+        // Actualizar la lista de conversaciones para mostrar el último mensaje
+        setConversations(prev => {
+            const convoIndex = prev.findIndex(c => c.id === payload.conversationId);
+            if (convoIndex > -1) {
+                const updatedConvo = { ...prev[convoIndex], messages: [payload], updatedAt: payload.createdAt };
+                const restConvos = prev.filter(c => c.id !== payload.conversationId);
+                return [updatedConvo, ...restConvos];
+            }
+            // Si la conversación no está en la lista, la recargamos
+            fetchConversations();
+            return prev;
+        });
+
+    }, [activeConversation?.id]);
+    
+    useRealtime(user ? `user:${user.id}` : null, handleRealtimeMessage);
 
     const fetchConversations = useCallback(async () => {
         setIsLoadingConversations(true);
@@ -49,86 +73,140 @@ export function ChatClient({ onSelectConversation, activeConversationId }: ChatC
         }
     }, [toast]);
     
-    // El hook de realtime ahora solo se preocupa de refrescar la lista
-    useRealtime(user ? `user:${user.id}` : null, fetchConversations);
-    
     useEffect(() => {
         if (!isAuthLoading && user) {
             fetchConversations();
         }
     }, [user, isAuthLoading, fetchConversations]);
-    
-    const handleStartNewChat = (recipient: User) => {
-        setIsNewChatModalOpen(false);
-        const existingConvo = conversations.find(c => c.participants.some(p => p.id === recipient.id));
-        if (existingConvo) {
-            onSelectConversation(existingConvo);
-        } else {
-            const tempConvo: Conversation = {
-                id: `temp-${recipient.id}`, participants: [{...recipient}], messages: [], updatedAt: new Date().toISOString()
-            };
-            setConversations(prev => [tempConvo, ...prev]);
-            onSelectConversation(tempConvo);
+
+    const handleSelectConversation = useCallback(async (convo: AppConversation) => {
+      setActiveConversation(convo);
+      setIsLoadingMessages(true);
+      try {
+        if(convo.id.startsWith('temp-')) {
+          setMessages([]);
+          return;
         }
+        const res = await fetch(`/api/conversations/${convo.id}`);
+        if (!res.ok) throw new Error('No se pudieron cargar los mensajes.');
+        const data = await res.json();
+        setMessages(data);
+      } catch (err) {
+        toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+      } finally {
+        setIsLoadingMessages(false);
+      }
+    }, [toast]);
+    
+     useEffect(() => {
+        if (newChatUserId && conversations.length > 0) {
+            const existingConvo = conversations.find(c => c.participants.some(p => p.id === newChatUserId));
+            if (existingConvo) {
+                handleSelectConversation(existingConvo);
+            }
+        }
+    }, [newChatUserId, conversations, handleSelectConversation]);
+
+    const handleSendMessage = async (content: string, attachments: any[]) => {
+      if (!activeConversation || !user) return;
+
+      const recipientId = activeConversation.participants[0]?.id;
+      if (!recipientId) return;
+
+      const tempMessageId = `temp-${Date.now()}`;
+      const newMessage = {
+          id: tempMessageId,
+          content,
+          authorId: user.id,
+          author: { id: user.id, name: user.name, avatar: user.avatar },
+          createdAt: new Date().toISOString(),
+          attachments
+      };
+      setMessages(prev => [...prev, newMessage]);
+
+      try {
+        const response = await fetch('/api/conversations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ recipientId, content, attachments }),
+        });
+        const savedMessage = await response.json();
+        if (!response.ok) throw new Error(savedMessage.message);
+        
+        // Replace temp message with real one from server
+        setMessages(prev => prev.map(m => m.id === tempMessageId ? savedMessage : m));
+        
+        // Si era una conversación temporal, la actualizamos con el ID real
+        if(activeConversation.id.startsWith('temp-')) {
+            await fetchConversations();
+            setActiveConversation(prev => prev ? {...prev, id: savedMessage.conversationId} : null);
+        }
+
+      } catch (error) {
+        toast({ title: "Error al enviar", description: (error as Error).message, variant: 'destructive' });
+        setMessages(prev => prev.filter(m => m.id !== tempMessageId)); // Remove failed message
+      }
     };
 
-    useEffect(() => {
-        if(isNewChatModalOpen) {
-            fetch('/api/users/list')
-                .then(res => res.json())
-                .then(data => setUsersForNewChat(data.users || []));
-        }
-    }, [isNewChatModalOpen]);
 
     if (isAuthLoading) {
         return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
     }
 
     return (
-        <>
-            <Card className="flex flex-col h-full overflow-hidden">
-                <CardHeader className="flex-row items-center justify-between">
-                    <CardTitle className="text-lg font-semibold">Mensajes</CardTitle>
-                    <Button variant="ghost" size="icon" onClick={() => setIsNewChatModalOpen(true)}>
-                        <UserPlus className="h-5 w-5" />
-                    </Button>
-                </CardHeader>
-                <CardContent className="p-0 flex-1 min-h-0">
-                    <ScrollArea className="h-full">
-                       {isLoadingConversations ? (
-                            <div className="flex h-full items-center justify-center"><Loader2 className="h-6 w-6 animate-spin"/></div>
-                       ) : (
-                            <ConversationList
-                                conversations={conversations}
-                                onSelect={onSelectConversation}
-                                activeConversationId={activeConversationId}
-                            />
-                       )}
-                    </ScrollArea>
-                </CardContent>
-            </Card>
-            
-            <Dialog open={isNewChatModalOpen} onOpenChange={setIsNewChatModalOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Iniciar Nueva Conversación</DialogTitle>
-                        <DialogDescription>Selecciona un usuario para comenzar a chatear.</DialogDescription>
-                    </DialogHeader>
-                    <Command className="rounded-lg border shadow-md">
-                        <CommandInput placeholder="Buscar usuario..." />
-                        <CommandList>
-                            <CommandEmpty>No se encontraron usuarios.</CommandEmpty>
-                            <CommandGroup>
-                                {usersForNewChat.map(u => (
-                                    <CommandItem key={u.id} onSelect={() => handleStartNewChat(u)}>
-                                        {u.name}
-                                    </CommandItem>
-                                ))}
-                            </CommandGroup>
-                        </CommandList>
-                    </Command>
-                </DialogContent>
-            </Dialog>
-        </>
+      <Card className="flex h-full overflow-hidden">
+          {/* ----- BARRA LATERAL (Conversaciones y Anuncios) ----- */}
+          <aside className={cn(
+              "w-full md:w-80 lg:w-96 flex-shrink-0 border-r flex flex-col transition-transform duration-300 ease-in-out",
+              isMobile && activeConversation ? "-translate-x-full" : "translate-x-0",
+              !isMobile && "md:translate-x-0"
+          )}>
+              <ConversationList
+                  conversations={conversations}
+                  onSelect={handleSelectConversation}
+                  activeConversationId={activeConversation?.id || null}
+                  isLoading={isLoadingConversations}
+              />
+          </aside>
+
+          {/* ----- ÁREA PRINCIPAL (Chat o Bienvenida) ----- */}
+          <main className={cn(
+              "flex-1 flex flex-col transition-transform duration-300 ease-in-out",
+              isMobile && "absolute inset-0 bg-card",
+              isMobile && !activeConversation ? "translate-x-full" : "translate-x-0"
+          )}>
+              {activeConversation ? (
+                  <>
+                      {/* --- Encabezado del Chat --- */}
+                      <header className="p-3 border-b flex items-center gap-3 h-16 shrink-0">
+                          {isMobile && <Button variant="ghost" size="icon" onClick={() => setActiveConversation(null)}><ArrowLeft/></Button>}
+                          <Avatar className="h-9 w-9 border">
+                              <AvatarImage src={activeConversation.participants[0]?.avatar || undefined} />
+                              <AvatarFallback><Identicon userId={activeConversation.participants[0]?.id || ''} /></AvatarFallback>
+                          </Avatar>
+                          <h3 className="font-semibold">{activeConversation.participants[0]?.name}</h3>
+                      </header>
+                      
+                      {/* --- Área de Mensajes --- */}
+                      {isLoadingMessages ? (
+                        <div className="flex h-full items-center justify-center"><Loader2 className="h-6 w-6 animate-spin"/></div>
+                      ) : (
+                        <MessageArea messages={messages} currentUser={user} otherParticipant={activeConversation.participants[0]} />
+                      )}
+                      
+                      {/* --- Input de Mensaje --- */}
+                      <div className="p-4 border-t bg-muted/30">
+                          <MessageInput onSendMessage={handleSendMessage} />
+                      </div>
+                  </>
+              ) : (
+                  <div className="hidden md:flex flex-col h-full items-center justify-center text-muted-foreground bg-card p-8 text-center">
+                      <MessageSquare className="h-16 w-16 mb-4"/>
+                      <h3 className="text-lg font-semibold">Selecciona una conversación</h3>
+                      <p className="text-sm">O inicia una nueva para empezar a chatear.</p>
+                  </div>
+              )}
+          </main>
+      </Card>
     );
 }

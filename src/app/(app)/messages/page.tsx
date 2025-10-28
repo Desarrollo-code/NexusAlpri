@@ -1,41 +1,33 @@
 // src/app/(app)/messages/page.tsx
 'use client';
 
-import React, { useEffect, Suspense, useState } from 'react';
+import React, { useEffect, Suspense, useState, useCallback } from 'react';
 import { useTitle } from '@/contexts/title-context';
 import { ChatClient } from '@/components/messages/chat-client';
 import { Loader2 } from 'lucide-react';
 import type { Conversation as AppConversation, Announcement as AnnouncementType } from '@/types';
+import { useSearchParams } from 'next/navigation';
 
 function MessagesPageComponent() {
   const { setPageTitle } = useTitle();
-  const [activeItem, setActiveItem] = useState<any | null>(null);
+  const searchParams = useSearchParams();
+  const newChatUserId = searchParams.get('new');
 
   useEffect(() => {
-    setPageTitle('Mensajería Directa');
+    setPageTitle('Centro de Comunicaciones');
   }, [setPageTitle]);
-
-  const handleSelectConversation = (c: AppConversation) => {
-    setActiveItem({ type: 'conversation', data: c });
-  };
-  
-  const handleSelectAnnouncement = (a: AnnouncementType) => {
-    setActiveItem({ type: 'announcement', data: a });
-  };
 
   return (
     <div className="h-[calc(100vh-8rem)]">
-        <ChatClient 
-          activeItem={activeItem}
-          onSelectConversation={handleSelectConversation}
-          onBack={() => setActiveItem(null)}
-        />
+      {/* El ChatClient ahora maneja toda la lógica y la UI de la página */}
+      <ChatClient newChatUserId={newChatUserId} />
     </div>
   );
 }
 
 export default function MessagesPage() {
     return (
+        // Suspense es crucial aquí para manejar los parámetros de búsqueda del lado del cliente
         <Suspense fallback={<div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
             <MessagesPageComponent />
         </Suspense>
