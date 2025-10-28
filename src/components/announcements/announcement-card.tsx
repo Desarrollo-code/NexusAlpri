@@ -205,54 +205,47 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
   
   return (
     <>
-    <Card ref={cardRef} className="card-border-animated w-full bg-card overflow-hidden">
-      <CardHeader className="p-4 flex flex-row items-start gap-4 space-y-0">
-         <Avatar className="h-10 w-10">
-          <AvatarImage src={announcement.author?.avatar || undefined} />
-          <AvatarFallback><Identicon userId={announcement.author?.id || ''} /></AvatarFallback>
-        </Avatar>
-        <div className="w-full">
-           <div className="flex items-center justify-between">
-             <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 text-sm">
-                <span className="font-bold text-foreground flex items-center gap-1.5">
-                    {announcement.author?.name || 'Sistema'}
-                    {announcement.author?.role === 'ADMINISTRATOR' && <VerifiedBadge role="ADMINISTRATOR" />}
-                    {announcement.isPinned && <Pin className="h-3.5 w-3.5 text-blue-500 fill-current" />}
-                </span>
-                <span className="text-muted-foreground text-xs sm:text-sm">{timeSince(announcement.date)}</span>
-             </div>
-              {canModify && (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7"><MoreVertical className="h-4 w-4"/></Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                         <DropdownMenuItem onSelect={() => onTogglePin?.(announcement)}>
-                            {announcement.isPinned ? <PinOff className="mr-2 h-4 w-4" /> : <Pin className="mr-2 h-4 w-4" />}
-                            {announcement.isPinned ? 'Desfijar' : 'Fijar Anuncio'}
-                         </DropdownMenuItem>
-                         <DropdownMenuItem onSelect={() => onEdit?.(announcement)}>
-                            <Edit className="mr-2 h-4 w-4"/>Editar
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => onDelete?.(announcement.id)} className="text-destructive focus:bg-destructive/10">
-                            <Trash2 className="mr-2 h-4 w-4"/>Eliminar
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-             )}
-          </div>
-          {announcement.title && (
-              <div className="bg-primary/90 text-primary-foreground px-4 py-2 -ml-2 rounded-lg mt-2">
-                <CardTitle className="text-lg font-semibold">{announcement.title}</CardTitle>
-              </div>
-          )}
+    <Card ref={cardRef} className="w-full bg-card overflow-hidden">
+        <div className="p-4 flex flex-row items-start gap-3 space-y-0 border-b">
+            <Avatar className="h-10 w-10 border">
+                <AvatarImage src={announcement.author?.avatar || undefined} />
+                <AvatarFallback><Identicon userId={announcement.author?.id || ''} /></AvatarFallback>
+            </Avatar>
+            <div className="w-full overflow-hidden">
+                <div className="flex items-start justify-between">
+                    <div className="flex-grow">
+                        <div className="flex items-center gap-1.5 text-sm">
+                            <span className="font-bold text-foreground">{announcement.author?.name || 'Sistema'}</span>
+                            {announcement.author?.role === 'ADMINISTRATOR' && <VerifiedBadge role="ADMINISTRATOR" />}
+                        </div>
+                         <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+                            {announcement.isPinned && <Pin className="h-3 w-3 text-blue-500" />}
+                            <span>{timeSince(announcement.date)}</span>
+                        </div>
+                    </div>
+                    {canModify && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0"><MoreVertical className="h-4 w-4"/></Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onSelect={() => onTogglePin?.(announcement)}>
+                                    {announcement.isPinned ? <PinOff className="mr-2 h-4 w-4" /> : <Pin className="mr-2 h-4 w-4" />}
+                                    {announcement.isPinned ? 'Desfijar' : 'Fijar'}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => onEdit?.(announcement)}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => onDelete?.(announcement.id)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
+                </div>
+            </div>
         </div>
-      </CardHeader>
       
-      <CardContent className="px-4 pb-3 pt-0 pl-16">
-        <div className="pl-2 space-y-3">
-            {announcement.content && (
+        <CardContent className="p-4 space-y-3">
+             {announcement.title && <CardTitle className="text-lg font-bold">{announcement.title}</CardTitle>}
+             {announcement.content && (
                 <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: announcement.content }} />
             )}
               {imageAttachments.length > 0 && (
@@ -267,13 +260,12 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
                  </div>
               )}
               {fileAttachments.length > 0 && (
-                <div className="mt-3 space-y-2">
+                <div className="pt-2 space-y-2">
                     {fileAttachments.map(att => { const FileTypeIcon = getIconForFileType(att.type); return ( <a key={att.id} href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-2 rounded-md bg-muted/50 hover:bg-muted transition-colors border"><FileTypeIcon className="h-5 w-5 text-primary shrink-0"/> <span className="text-sm font-medium truncate flex-grow">{att.name}</span></a> )})}
                 </div>
               )}
-        </div>
-      </CardContent>
-      <CardFooter className={cn("p-4 pt-0 flex items-center justify-between pl-16")}>
+        </CardContent>
+      <CardFooter className="p-4 pt-2 flex items-center justify-between">
            <div className="flex items-center text-muted-foreground -ml-2">
             <Popover>
                 <PopoverTrigger asChild>

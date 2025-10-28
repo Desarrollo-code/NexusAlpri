@@ -24,6 +24,7 @@ import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '../ui/progress';
 import { getIconForFileType } from '@/lib/resource-utils';
 import Image from 'next/image';
+import { Card } from '../ui/card';
 
 // Tipos
 type Participant = { id: string; name: string | null; avatar: string | null };
@@ -82,7 +83,7 @@ const ConversationList = ({ conversations, onSelect, activeConversationId }: {
                             activeConversationId === c.id ? "bg-primary/10" : "hover:bg-muted"
                         )}
                     >
-                        <Avatar className="h-11 w-11">
+                        <Avatar className="h-11 w-11 border">
                             <AvatarImage src={otherParticipant.avatar || undefined} />
                             <AvatarFallback><Identicon userId={otherParticipant.id} /></AvatarFallback>
                         </Avatar>
@@ -138,7 +139,7 @@ const MessageArea = ({ messages, currentUser, otherParticipant }: {
                 return (
                     <div key={msg.id} className={cn("flex gap-3", isCurrentUser ? "justify-end" : "justify-start")}>
                         {!isCurrentUser && (
-                             <Avatar className="h-8 w-8 self-end">
+                             <Avatar className="h-8 w-8 self-end border">
                                 <AvatarImage src={otherParticipant?.avatar || undefined} />
                                 <AvatarFallback><Identicon userId={otherParticipant?.id || ''} /></AvatarFallback>
                             </Avatar>
@@ -393,10 +394,10 @@ export function ChatClient() {
     }
 
     return (
-        <div className="flex h-full bg-card border rounded-lg overflow-hidden">
+        <Card className="flex h-full overflow-hidden">
             <aside className={cn("w-full md:w-80 lg:w-96 flex-shrink-0 border-r flex flex-col transition-transform duration-300 md:translate-x-0", activeConversation ? "-translate-x-full" : "translate-x-0")}>
                 <div className="p-4 border-b flex items-center justify-between">
-                    <h2 className="text-xl font-semibold">Mensajes</h2>
+                    <h2 className="text-lg font-semibold">Mensajes</h2>
                     <Button size="icon" variant="ghost" onClick={() => setIsNewChatModalOpen(true)}><UserPlus className="h-5 w-5" /></Button>
                 </div>
                 {isLoading ? <div className="flex items-center justify-center h-full"><Loader2 className="h-6 w-6 animate-spin"/></div> 
@@ -414,7 +415,7 @@ export function ChatClient() {
                     <>
                         <div className="p-3 border-b flex items-center gap-3 h-16">
                             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setActiveConversation(null)}><ArrowLeft/></Button>
-                            <Avatar className="h-9 w-9"><AvatarImage src={otherParticipant.avatar || undefined} /><AvatarFallback><Identicon userId={otherParticipant.id} /></AvatarFallback></Avatar>
+                            <Avatar className="h-9 w-9 border"><AvatarImage src={otherParticipant.avatar || undefined} /><AvatarFallback><Identicon userId={otherParticipant.id} /></AvatarFallback></Avatar>
                             <h3 className="font-semibold">{otherParticipant.name}</h3>
                         </div>
                         <MessageArea messages={messages} currentUser={user} otherParticipant={otherParticipant}/>
@@ -464,7 +465,7 @@ export function ChatClient() {
                         <CommandGroup>
                            {usersForNewChat.map((u) => (
                             <CommandItem key={u.id} onSelect={() => handleStartNewChat(u)} className="flex items-center gap-3">
-                                 <Avatar className="h-8 w-8"><AvatarImage src={u.avatar || undefined} /><AvatarFallback><Identicon userId={u.id}/></AvatarFallback></Avatar>
+                                 <Avatar className="h-8 w-8 border"><AvatarImage src={u.avatar || undefined} /><AvatarFallback><Identicon userId={u.id}/></AvatarFallback></Avatar>
                                 <span>{u.name}</span>
                             </CommandItem>
                           ))}

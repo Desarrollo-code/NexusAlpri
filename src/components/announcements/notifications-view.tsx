@@ -34,13 +34,13 @@ const timeSince = (dateString: string): string => {
 const NotificationItem = ({ notif }: { notif: AppNotification }) => (
     <Link href={notif.link || '#'}>
         <div className={cn(
-            "block p-3 transition-colors rounded-lg",
+            "block p-3 transition-colors rounded-lg space-y-1",
             !notif.read ? "bg-primary/5 hover:bg-primary/10" : "hover:bg-muted"
         )}>
             <div className="flex items-start gap-3">
                 {!notif.read && <div className="mt-1.5 h-2 w-2 rounded-full bg-primary flex-shrink-0" />}
                 <div className="flex-grow">
-                    <p className={cn("font-semibold text-sm", !notif.read && "text-primary")}>{notif.title}</p>
+                    <p className={cn("font-semibold text-sm leading-tight", !notif.read && "text-primary")}>{notif.title}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">{notif.description}</p>
                     <p className="text-xs text-muted-foreground/80 mt-1">{timeSince(notif.date)}</p>
                 </div>
@@ -86,12 +86,11 @@ export function NotificationsView() {
     return (
         <div className="h-full flex flex-col">
             <CardHeader className="flex-shrink-0">
-                <CardTitle>Notificaciones</CardTitle>
-                <CardDescription className="text-xs">Alertas y actualizaciones personales.</CardDescription>
+                <CardTitle className="text-lg">Notificaciones</CardTitle>
             </CardHeader>
             <div className="flex-grow min-h-0">
                 <ScrollArea className="h-full">
-                    <div className="p-2">
+                    <div className="px-2 pb-2">
                         {isLoading ? (
                             <div className="text-center py-8"><Loader2 className="h-6 w-6 animate-spin mx-auto" /></div>
                         ) : error ? (
