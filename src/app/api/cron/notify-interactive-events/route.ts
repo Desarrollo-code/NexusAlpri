@@ -1,4 +1,5 @@
-{// src/app/api/cron/notify-interactive-events/route.ts
+
+// src/app/api/cron/notify-interactive-events/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { addDays, startOfDay, endOfDay } from 'date-fns';
