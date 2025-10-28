@@ -14,6 +14,7 @@ import { ConversationList } from './conversation-list';
 import { MessageArea } from './message-area';
 import { AnnouncementViewer } from './announcement-viewer';
 import { useRealtime } from '@/hooks/use-realtime';
+import { ScrollArea } from '../ui/scroll-area';
 
 type Conversation = {
   id: string;
@@ -114,42 +115,43 @@ export function ChatClient({ activeItem, onBack, onSelectConversation }: ChatCli
     }
 
     return (
-        <Card className="flex h-full overflow-hidden shadow-none border-0 md:border md:rounded-xl">
-            {/* Sidebar de Chats */}
-            <aside className="w-full md:w-80 lg:w-96 flex-shrink-0 border-r flex-col md:flex">
-                 <div className="p-4 border-b flex items-center justify-between">
-                    <h2 className="text-lg font-semibold">Mensajes</h2>
-                    <Button size="icon" variant="ghost" onClick={() => setIsNewChatModalOpen(true)}><UserPlus className="h-5 w-5" /></Button>
+        <>
+            {activeItem?.type === 'conversation' && activeItem.data.participants[0] ? (
+                <MessageArea 
+                    conversation={activeItem.data} 
+                    messages={messages}
+                    setMessages={setMessages}
+                    onNewMessage={fetchConversations}
+                />
+            ) : activeItem?.type === 'announcement' ? (
+                 <AnnouncementViewer announcement={activeItem.data} onBack={onBack} />
+            ) : (
+                <div className="hidden md:flex flex-col h-full items-center justify-center text-muted-foreground p-8 text-center bg-muted/30">
+                    <MessageSquare className="h-16 w-16 mb-4"/><h3 className="text-lg font-semibold">Selecciona una conversación</h3><p className="text-sm">O inicia una nueva para empezar a chatear.</p>
                 </div>
-                <ScrollArea className="flex-1">
-                    <div className="p-2">
-                        {isLoadingConversations ? <div className="flex items-center justify-center p-4"><Loader2 className="h-6 w-6 animate-spin"/></div> 
-                        : conversations.length > 0 ? <ConversationList conversations={conversations} onSelect={onSelectConversation} activeConversationId={activeItem?.type === 'conversation' ? activeItem.data.id : null} />
-                        : <p className="text-xs text-center text-muted-foreground p-4">No hay conversaciones.</p>}
-                    </div>
-                </ScrollArea>
-            </aside>
-            {/* Area de Contenido */}
-            <main className="flex-1 flex flex-col">
-                {activeItem?.type === 'conversation' && activeItem.data.participants[0] ? (
-                    <MessageArea 
-                        conversation={activeItem.data} 
-                        messages={messages}
-                        setMessages={setMessages}
-                        onNewMessage={fetchConversations}
-                    />
-                ) : activeItem?.type === 'announcement' ? (
-                     <AnnouncementViewer announcement={activeItem.data} onBack={onBack} />
-                ) : (
-                    <div className="hidden md:flex flex-col h-full items-center justify-center text-muted-foreground p-8 text-center bg-muted/30">
-                        <MessageSquare className="h-16 w-16 mb-4"/><h3 className="text-lg font-semibold">Selecciona una conversación</h3><p className="text-sm">O inicia una nueva para empezar a chatear.</p>
-                    </div>
-                )}
-            </main>
+            )}
             
             <Dialog open={isNewChatModalOpen} onOpenChange={setIsNewChatModalOpen}>
-                 {/* Contenido del modal para nuevo chat */}
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Iniciar Nueva Conversación</DialogTitle>
+                        <DialogDescription>Selecciona un usuario para comenzar a chatear.</DialogDescription>
+                    </DialogHeader>
+                    <Command className="rounded-lg border shadow-md">
+                        <CommandInput placeholder="Buscar usuario..." />
+                        <CommandList>
+                            <CommandEmpty>No se encontraron usuarios.</CommandEmpty>
+                            <CommandGroup>
+                                {usersForNewChat.map(u => (
+                                    <CommandItem key={u.id} onSelect={() => handleStartNewChat(u)}>
+                                        {u.name}
+                                    </CommandItem>
+                                ))}
+                            </CommandGroup>
+                        </CommandList>
+                    </Command>
+                </DialogContent>
             </Dialog>
-        </Card>
+        </>
     );
 }
