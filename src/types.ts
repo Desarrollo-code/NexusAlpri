@@ -200,6 +200,14 @@ export interface Reaction {
     };
 }
 
+export interface Attachment {
+    id?: string;
+    name: string;
+    url: string;
+    type: string;
+    size: number;
+}
+
 export interface Announcement {
     id: string;
     title: string;
@@ -209,7 +217,7 @@ export interface Announcement {
     audience: UserRole[] | 'ALL' | string;
     priority?: 'Normal' | 'Urgente';
     isPinned: boolean;
-    attachments: Prisma.AnnouncementAttachmentGetPayload<{}>[];
+    attachments: Attachment[];
     reads: { id: string; name: string | null; avatar?: string | null; }[];
     reactions: Reaction[];
     _count: {
@@ -235,14 +243,6 @@ export interface Notification {
 
 // --- CALENDAR ---
 export type EventAudienceType = 'ALL' | UserRole | 'SPECIFIC';
-
-export interface Attachment {
-    id?: string;
-    name: string;
-    url: string;
-    type: string;
-    size: number;
-}
 
 export interface CalendarEvent {
     id: string;
@@ -366,7 +366,7 @@ export type AppForm = Prisma.FormGetPayload<{}> & {
 };
 
 // --- CHAT ---
-export { type ChatAttachment } from '@prisma/client';
+// types related to chat are removed
 
 // --- PROCESSES ---
 export type Process = Prisma.ProcessGetPayload<{}>;

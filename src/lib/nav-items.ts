@@ -34,13 +34,6 @@ const NAVIGATION_ITEMS: NavItem[] = [
     path: '/dashboard',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
   },
-  {
-    id: 'messages',
-    label: 'Mensajes',
-    icon: MessageSquare,
-    path: '/messages',
-    roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
-  },
   
   // --- Competition Section ---
   {
@@ -157,7 +150,7 @@ const NAVIGATION_ITEMS: NavItem[] = [
       },
       {
         id: 'users',
-        label: 'Usuarios',
+        label: 'Control Central',
         icon: UsersRound,
         path: '/users',
         roles: ['ADMINISTRATOR']
