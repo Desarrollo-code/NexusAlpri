@@ -64,6 +64,7 @@ interface DashboardData {
 
 
 const formatDateTick = (tick: string): string => {
+  console.log('[Dashboard Log] Formatting tick:', tick);
   const date = parseISO(tick);
   if (!isValid(date)) return tick;
   if (date.getDate() === 1) return format(date, "d MMM", { locale: es });
@@ -71,6 +72,7 @@ const formatDateTick = (tick: string): string => {
 };
 
 const formatDateTooltip = (dateString: string) => {
+    console.log('[Dashboard Log] Formatting tooltip date:', dateString);
     try {
         const date = parseISO(dateString);
         return format(date, "EEEE, d 'de' MMMM", { locale: es });
@@ -80,6 +82,7 @@ const formatDateTooltip = (dateString: string) => {
 };
 
 const MiniCalendar = ({ events, currentDate, onDateSelect }: { events: CalendarEvent[], currentDate: Date, onDateSelect: (date: Date) => void }) => {
+    console.log('[Dashboard Log] MiniCalendar renderizando con', events.length, 'eventos.');
     return (
       <Card className="h-full">
         <CardContent className="p-1">
@@ -255,69 +258,65 @@ function InstructorDashboard({ data }: { data: DashboardData }) {
     );
 }
 
-function AdminDashboard({ data, onParticipate, settings }: { data: DashboardData, onParticipate: (eventId: string, occurrenceDate: string) => void, settings: any }) {
+function AdminDashboard({ data, onParticipate }: { data: DashboardData, onParticipate: (eventId: string, occurrenceDate: string) => void }) {
     const stats = data.adminStats;
     const [selectedDate, setSelectedDate] = useState(new Date());
     
+    console.log('[Dashboard Log] Renderizando AdminDashboard.');
+
     return (
         <div className="space-y-6">
             <InteractiveEventsWidget events={data.interactiveEventsToday || []} onParticipate={onParticipate} />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <MetricCard title="Usuarios" value={stats?.totalUsers || 0} icon={UsersRound} gradient="bg-gradient-blue" />
                 <MetricCard title="Cursos" value={stats?.totalCourses || 0} icon={Layers} gradient="bg-gradient-green"/>
                 <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={GraduationCap} gradient="bg-gradient-purple" />
+                <MetricCard title="Recursos" value={stats?.totalResources || 0} icon={Folder} gradient="bg-gradient-orange" />
             </div>
             
-             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <Card className="lg:col-span-2">
-                    <CardHeader>
-                        <CardTitle>Tendencia de Actividad</CardTitle>
-                        <CardDescription>Actividad en los últimos 30 días.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="h-80 pr-4 -ml-4">
-                         <ChartContainer config={{ newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-2))" }, newUsers: { label: "Nuevos Usuarios", color: "hsl(var(--chart-1))" }, newEnrollments: { label: "Inscripciones", color: "hsl(var(--chart-3))" }}} className="w-full h-full">
-                            <ResponsiveContainer>
-                               <ComposedChart data={stats?.userRegistrationTrend || []} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                    <XAxis dataKey="date" tickLine={false} axisLine={true} tickMargin={10} tickFormatter={formatDateTick} interval={'preserveStartEnd'} />
-                                    <YAxis allowDecimals={false} tickLine={false} axisLine={true} tickMargin={10} width={30}/>
-                                    <ChartTooltip cursor={{ fill: 'hsl(var(--muted))', radius: 4 }} content={<ChartTooltipContent indicator="dot" labelFormatter={formatDateTooltip} />} />
-                                    <Legend />
-                                    <Bar dataKey="newUsers" name="Usuarios" fill="var(--color-newUsers)" radius={4} />
-                                    <Line type="monotone" dataKey="newCourses" name="Cursos" stroke="var(--color-newCourses)" strokeWidth={2} dot={false} />
-                                    <Area type="monotone" dataKey="newEnrollments" name="Inscripciones" fill="var(--color-newEnrollments)" stroke="var(--color-newEnrollments)" strokeWidth={2} fillOpacity={0.3} dot={false}/>
-                               </ComposedChart>
-                            </ResponsiveContainer>
-                        </ChartContainer>
-                    </CardContent>
-                </Card>
+             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                <div className="lg:col-span-2 space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Tendencia de Actividad</CardTitle>
+                            <CardDescription>Actividad en los últimos 30 días.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="h-80 pr-4 -ml-4">
+                             <ChartContainer config={{ newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-2))" }, newUsers: { label: "Nuevos Usuarios", color: "hsl(var(--chart-1))" }, newEnrollments: { label: "Inscripciones", color: "hsl(var(--chart-3))" }}} className="w-full h-full">
+                                <ResponsiveContainer>
+                                   <ComposedChart data={stats?.userRegistrationTrend || []} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                        <XAxis dataKey="date" tickLine={false} axisLine={true} tickMargin={10} tickFormatter={formatDateTick} interval={'preserveStartEnd'} />
+                                        <YAxis allowDecimals={false} tickLine={false} axisLine={true} tickMargin={10} width={30}/>
+                                        <ChartTooltip cursor={{ fill: 'hsl(var(--muted))', radius: 4 }} content={<ChartTooltipContent indicator="dot" labelFormatter={formatDateTooltip} />} />
+                                        <Legend />
+                                        <Bar dataKey="newUsers" name="Usuarios" fill="var(--color-newUsers)" radius={4} />
+                                        <Line type="monotone" dataKey="newCourses" name="Cursos" stroke="var(--color-newCourses)" strokeWidth={2} dot={false} />
+                                        <Area type="monotone" dataKey="newEnrollments" name="Inscripciones" fill="var(--color-newEnrollments)" stroke="var(--color-newEnrollments)" strokeWidth={2} fillOpacity={0.3} dot={false}/>
+                                   </ComposedChart>
+                                </ResponsiveContainer>
+                            </ChartContainer>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader><CardTitle className="text-base">Accesos Rápidos</CardTitle></CardHeader>
+                        <CardContent className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                            <Button asChild variant="outline"><Link href="/manage-courses"><Layers className="mr-2 h-4 w-4"/>Cursos</Link></Button>
+                            <Button asChild variant="outline"><Link href="/users"><UsersRound className="mr-2 h-4 w-4"/>Usuarios</Link></Button>
+                            <Button asChild variant="outline"><Link href="/settings"><Settings className="mr-2 h-4 w-4"/>Ajustes</Link></Button>
+                            <Button asChild variant="outline"><Link href="/analytics"><LineChart className="mr-2 h-4 w-4"/>Analíticas</Link></Button>
+                        </CardContent>
+                    </Card>
+                </div>
                 <div className="lg:col-span-1 space-y-6">
                     <MiniCalendar events={data.allCalendarEvents || []} currentDate={selectedDate} onDateSelect={setSelectedDate} />
                     <AnnouncementsList announcements={data.recentAnnouncements || []} />
-                </div>
-            </div>
-             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                 <div className="lg:col-span-2 space-y-6">
-                    <Card>
-                        <CardHeader><CardTitle className="text-base">Accesos Rápidos</CardTitle></CardHeader>
-                         <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <Button asChild variant="outline"><Link href="/manage-courses"><Layers className="mr-2 h-4 w-4"/>Gestionar Cursos</Link></Button>
-                            <Button asChild variant="outline"><Link href="/users"><UsersRound className="mr-2 h-4 w-4"/>Gestionar Usuarios</Link></Button>
-                            <Button asChild variant="outline"><Link href="/settings"><Settings className="mr-2 h-4 w-4"/>Configuración</Link></Button>
-                            <Button asChild variant="outline"><Link href="/analytics"><LineChart className="mr-2 h-4 w-4"/>Analíticas</Link></Button>
-                         </CardContent>
-                    </Card>
-                 </div>
-                  <div className="lg:col-span-1">
                     <Card>
                         <CardHeader><CardTitle className="text-base">Última Actividad de Seguridad</CardTitle></CardHeader>
-                        <CardContent><SecurityLogTimeline logs={data.securityLogs || []} onLogClick={() => {}} /></CardContent>
-                         <CardFooter>
-                            <Button variant="outline" size="sm" asChild className="w-full"><Link href="/security-audit">Ver Auditoría Completa</Link></Button>
-                        </CardFooter>
+                        <CardContent><SecurityLogTimeline logs={data.securityLogs || []} onLogClick={() => router.push('/security-audit')} /></CardContent>
                     </Card>
-                 </div>
-             </div>
+                </div>
+            </div>
         </div>
     );
 }
@@ -325,47 +324,54 @@ function AdminDashboard({ data, onParticipate, settings }: { data: DashboardData
 export default function DashboardPage() {
   const { user, settings } = useAuth();
   const { setPageTitle } = useTitle();
-  const { startTour, forceStartTour } = useTour();
+  const { startTour } = useTour();
   const [data, setData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: startOfDay(subDays(new Date(), 29)),
-    to: endOfDay(new Date()),
-  });
-
-  const handleShowTour = () => {
-    if (!user) return;
-    if (user.role === 'ADMINISTRATOR') forceStartTour('adminDashboard', adminDashboardTour);
-    if (user.role === 'INSTRUCTOR') forceStartTour('instructorDashboard', instructorDashboardTour);
-    if (user.role === 'STUDENT') forceStartTour('studentDashboard', studentDashboardTour);
-  }
-
   const fetchDashboardData = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+        console.log("[Dashboard Log] No hay usuario, no se obtienen datos.");
+        setIsLoading(false);
+        return;
+    }
+    console.log("[Dashboard Log] Empezando a obtener datos del dashboard...");
     setIsLoading(true);
     setError(null);
     try {
-        const params = new URLSearchParams();
-        if (dateRange?.from) params.set('startDate', dateRange.from.toISOString());
-        if (dateRange?.to) params.set('endDate', dateRange.to.toISOString());
-
-        const res = await fetch(`/api/dashboard/data?${params.toString()}`, { cache: 'no-store' });
+        const res = await fetch(`/api/dashboard/data`, { cache: 'no-store' });
         if (!res.ok) {
             const errorData = await res.json().catch(() => ({ message: `Error ${res.status}` }));
             throw new Error(errorData.message || `Error al obtener datos del dashboard`);
         }
         const dashboardData = await res.json();
+        console.log("[Dashboard Log] Datos recibidos de la API:", dashboardData);
         setData(dashboardData);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al obtener los datos del dashboard';
+      console.error("[Dashboard Log] Error:", errorMessage);
       setError(errorMessage);
     } finally {
+      console.log("[Dashboard Log] Proceso de obtención de datos finalizado.");
       setIsLoading(false);
     }
-  }, [user, dateRange]);
+  }, [user]);
+
+  useEffect(() => {
+      console.log("[Dashboard Log] Hook de efecto principal disparado.");
+      fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  useEffect(() => {
+    setPageTitle('Panel Principal');
+    if (!user) return;
+    
+    console.log(`[Dashboard Log] Iniciando tour para rol: ${user.role}`);
+    const tourKey = user.role === 'ADMINISTRATOR' ? 'adminDashboard' : (user.role === 'INSTRUCTOR' ? 'instructorDashboard' : 'studentDashboard');
+    const tourSteps = user.role === 'ADMINISTRATOR' ? adminDashboardTour : (user.role === 'INSTRUCTOR' ? instructorDashboardTour : studentDashboardTour);
+    startTour(tourKey, tourSteps);
+  }, [setPageTitle, startTour, user]);
   
   const handleParticipate = async (eventId: string, occurrenceDate: string) => {
       try {
@@ -376,71 +382,37 @@ export default function DashboardPage() {
           });
           if (!res.ok) throw new Error((await res.json()).message || 'No se pudo registrar la participación.');
           toast({ title: "¡Participación Registrada!", description: "Has ganado puntos de experiencia. ¡Bien hecho!" });
-          setData(prev => {
-              if (!prev || !prev.adminStats?.interactiveEventsToday) return prev;
-              return {
-                  ...prev,
-                  adminStats: {
-                      ...prev.adminStats,
-                      interactiveEventsToday: prev.adminStats.interactiveEventsToday.map(e => 
-                          (e.id === eventId || e.parentId === eventId) ? { ...e, hasParticipated: true } : e
-                      )
-                  }
-              };
-          });
+          fetchDashboardData(); // Recargar datos para actualizar estado
       } catch (err) {
           toast({ title: "Error", description: (err as Error).message, variant: "destructive" });
       }
   };
 
-  useEffect(() => {
-    setPageTitle('Panel Principal');
-    if (!user) return;
-    
-    const tourKey = user.role === 'ADMINISTRATOR' ? 'adminDashboard' : (user.role === 'INSTRUCTOR' ? 'instructorDashboard' : 'studentDashboard');
-    const tourSteps = user.role === 'ADMINISTRATOR' ? adminDashboardTour : (user.role === 'INSTRUCTOR' ? instructorDashboardTour : studentDashboardTour);
-    startTour(tourKey, tourSteps);
-  }, [setPageTitle, startTour, user]);
-
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData]);
-
-  if (isLoading || !data) {
-    return (
-      <div className="space-y-8">
-        <Skeleton className="h-24 w-full" />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
-                <Skeleton className="h-80 w-full"/>
-                <Skeleton className="h-48 w-full"/>
-            </div>
-            <div className="space-y-6">
-                 <Skeleton className="h-72 w-full"/>
-                 <Skeleton className="h-56 w-full"/>
-            </div>
-        </div>
-      </div>
-    );
-  }
-  
-  if (error) {
-    return (
-        <div className="flex flex-col items-center justify-center py-12 text-destructive">
-            <AlertTriangle className="h-8 w-8 mb-2" /><p className="font-semibold">Error al Cargar Dashboard</p><p className="text-sm">{error}</p>
-            <Button onClick={fetchDashboardData} variant="outline" className="mt-4">Reintentar</Button>
-        </div>
-    )
-  }
-
   const renderContentForRole = () => {
+    if (!user) return <p>Inicia sesión para ver tu panel.</p>;
+    
+    if (isLoading || !data) {
+        console.log("[Dashboard Log] Mostrando estado de carga. isLoading:", isLoading, "data:", !!data);
+        return (
+          <div className="space-y-8">
+            <Skeleton className="h-24 w-full" />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 space-y-6"><Skeleton className="h-80 w-full"/><Skeleton className="h-48 w-full"/></div>
+                <div className="space-y-6"><Skeleton className="h-72 w-full"/><Skeleton className="h-56 w-full"/></div>
+            </div>
+          </div>
+        );
+    }
+    
     switch (user?.role) {
       case 'ADMINISTRATOR':
-        return <AdminDashboard data={data} onParticipate={handleParticipate} settings={settings} />;
+        console.log("[Dashboard Log] Renderizando AdminDashboard.");
+        return <AdminDashboard data={data} onParticipate={handleParticipate} />;
       case 'INSTRUCTOR':
+        console.log("[Dashboard Log] Renderizando InstructorDashboard.");
         return <InstructorDashboard data={data} />;
       case 'STUDENT':
+        console.log("[Dashboard Log] Renderizando StudentDashboard.");
         return <StudentDashboard data={data} onParticipate={handleParticipate} />;
       default: return <p>Rol de usuario no reconocido.</p>;
     }
@@ -448,7 +420,7 @@ export default function DashboardPage() {
   
   return (
     <div className="space-y-8">
-       <div className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-green-400 to-teal-600 text-white shadow-lg">
+       <div className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary via-blue-500 to-indigo-600 text-white shadow-lg">
             <div className="absolute inset-0 bg-black/10"></div>
             <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="space-y-1">
