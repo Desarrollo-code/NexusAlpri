@@ -122,8 +122,8 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
                                             <Badge 
                                                 className="text-xs"
                                                 style={{
-                                                    backgroundColor: colors.raw.light,
-                                                    color: colors.raw.dark,
+                                                    backgroundColor: processColors.raw.light,
+                                                    color: processColors.raw.dark,
                                                 }}
                                             >
                                                 {user.process.name}
@@ -198,8 +198,8 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
                                     <Badge 
                                         className="text-xs"
                                         style={{
-                                            backgroundColor: colors.raw.light,
-                                            color: colors.raw.dark,
+                                            backgroundColor: processColors.raw.light,
+                                            color: processColors.raw.dark,
                                         }}
                                     >
                                         {user.process.name}
