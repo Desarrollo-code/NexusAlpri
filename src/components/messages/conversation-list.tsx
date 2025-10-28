@@ -42,10 +42,12 @@ export const ConversationList = ({ conversations, onSelect, activeConversationId
 }) => {
     return (
         <>
-            <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-base">Conversaciones</CardTitle>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onNewChat}><UserPlus className="h-4 w-4"/></Button>
-            </CardHeader>
+            <div className="p-2 border-b flex items-center justify-end h-16">
+                 <Button variant="ghost" size="sm" onClick={onNewChat} className="h-8">
+                    <UserPlus className="h-4 w-4 mr-2"/>
+                    Nuevo Chat
+                </Button>
+            </div>
              <CardContent className="p-0 flex-1 min-h-0">
                 <ScrollArea className="h-full">
                     <div className="p-2">

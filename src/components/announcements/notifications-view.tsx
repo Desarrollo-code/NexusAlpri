@@ -132,13 +132,12 @@ export function NotificationsView() {
 
     return (
       <>
-        <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-base">Notificaciones Personales</CardTitle>
-             <Button variant="ghost" size="sm" onClick={handleMarkAllRead} disabled={unreadCount === 0}>
+        <div className="p-2 border-b flex items-center justify-end h-16">
+            <Button variant="ghost" size="sm" onClick={handleMarkAllRead} disabled={unreadCount === 0}>
                 <Check className="mr-2 h-4 w-4"/>
-                Marcar leídas
+                Marcar todas como leídas
              </Button>
-        </CardHeader>
+        </div>
         <CardContent className="p-0 flex-1 min-h-0">
             <ScrollArea className="h-full">
               <div>
