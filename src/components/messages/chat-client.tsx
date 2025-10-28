@@ -355,16 +355,9 @@ export function ChatClient() {
             setMessages(prev => [...prev, sentMessage]);
 
             if (activeConversation?.id.startsWith('temp-')) {
-                // If it was a temporary conversation, fetch all again to get the real one
-                await fetchConversations();
-                setActiveConversation(prev => {
-                    if (prev?.id.startsWith('temp-')) {
-                        // We need to find the new conversation from the updated list
-                        // This logic might need refinement based on how `fetchConversations` updates state
-                        return null; // Or find and set the new one
-                    }
-                    return prev;
-                });
+                // Si era una conversación temporal, la reemplazamos con la real.
+                setConversations(prev => prev.map(c => c.id === activeConversation.id ? { ...c, id: sentMessage.conversationId, messages: [sentMessage] } : c));
+                setActiveConversation(prev => prev ? { ...prev, id: sentMessage.conversationId, messages: [sentMessage] } : null);
             } else {
                  setConversations(prev => {
                     const convoIndex = prev.findIndex(c => c.id === sentMessage.conversationId);
@@ -395,18 +388,19 @@ export function ChatClient() {
 
     const otherParticipant = activeConversation?.participants[0] || null;
 
-    if (isLoading) {
+    if (isAuthLoading) {
         return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
     }
 
     return (
-        <div className="flex h-[calc(100vh-8rem)] bg-card border rounded-lg overflow-hidden">
+        <div className="flex h-full bg-card border rounded-lg overflow-hidden">
             <aside className={cn("w-full md:w-80 lg:w-96 flex-shrink-0 border-r flex flex-col transition-transform duration-300 md:translate-x-0", activeConversation ? "-translate-x-full" : "translate-x-0")}>
                 <div className="p-4 border-b flex items-center justify-between">
-                    <h2 className="text-xl font-semibold">Conversaciones</h2>
+                    <h2 className="text-xl font-semibold">Mensajes</h2>
                     <Button size="icon" variant="ghost" onClick={() => setIsNewChatModalOpen(true)}><UserPlus className="h-5 w-5" /></Button>
                 </div>
-                {conversations.length > 0 ? (
+                {isLoading ? <div className="flex items-center justify-center h-full"><Loader2 className="h-6 w-6 animate-spin"/></div> 
+                : conversations.length > 0 ? (
                     <ConversationList conversations={conversations} onSelect={setActiveConversation} activeConversationId={activeConversation?.id || null} />
                 ) : (
                      <div className="p-4 text-center text-sm text-muted-foreground h-full flex flex-col items-center justify-center">
