@@ -7,36 +7,24 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { 
   ArrowRight,
-  BookOpen, 
-  Users, 
-  Megaphone, 
-  Loader2, 
-  AlertTriangle, 
   BookOpenCheck, 
   GraduationCap,
   UsersRound,
-  Activity,
-  UserPlus,
+  FileText,
+  BadgePercent,
+  Hand,
+  Layers,
   HelpCircle,
   Calendar as CalendarIcon,
   Bell,
   Trophy,
   Folder,
-  FileText,
-  BadgePercent,
-  TrendingUp,
-  TrendingDown,
-  Award,
-  UserCheck,
-  UserRound,
-  FilePlus2 as CourseIcon,
+  Megaphone,
   LineChart,
-  Hand,
-  Layers,
 } from 'lucide-react';
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import type { AdminDashboardStats, EnrolledCourse, Course as AppCourseType, Announcement as AnnouncementType, CalendarEvent, UserRole } from '@/types';
-import type { User as PrismaUser, Course as PrismaCourse } from '@prisma/client';
+import type { User as PrismaUser } from '@prisma/client';
 import { Skeleton } from "@/components/ui/skeleton";
 import { CourseCard } from '@/components/course-card';
 import { useTitle } from '@/contexts/title-context';
@@ -54,9 +42,9 @@ import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { MetricCard } from '@/components/analytics/metric-card';
 import { useToast } from '@/hooks/use-toast';
 import type { DateRange } from 'react-day-picker';
+import { AlertTriangle, Loader2 } from 'lucide-react';
 
 
-// --- TYPE DEFINITIONS & MAPPERS ---
 interface DashboardData {
     adminStats?: AdminDashboardStats;
     studentStats?: { enrolled: number; completed: number };
@@ -67,7 +55,7 @@ interface DashboardData {
     allCalendarEvents?: CalendarEvent[];
     assignedCourses?: AppCourseType[];
     interactiveEventsToday?: (CalendarEvent & { hasParticipated?: boolean })[];
-    securityLogs?: any[]; // Re-added securityLogs type
+    securityLogs?: any[];
 }
 
 
@@ -87,8 +75,7 @@ const formatDateTooltip = (dateString: string) => {
     }
 };
 
-const MiniCalendar = ({ events }: { events: CalendarEvent[] }) => {
-    const [date, setDate] = React.useState<Date | undefined>(new Date());
+const MiniCalendar = ({ events, currentDate, onDateSelect }: { events: CalendarEvent[], currentDate: Date, onDateSelect: (date: Date) => void }) => {
     const { toast } = useToast();
 
     const eventsByDay = React.useMemo(() => {
@@ -104,16 +91,15 @@ const MiniCalendar = ({ events }: { events: CalendarEvent[] }) => {
     
     return (
       <Card className="h-full">
-        <CardHeader><CardTitle className="text-lg">Calendario</CardTitle></CardHeader>
         <CardContent className="p-2 sm:p-4">
           <Calendar
-            mode="single" selected={date} onSelect={setDate}
+            mode="single" selected={currentDate} onSelect={(day) => day && onDateSelect(day)}
             className="rounded-md" locale={es}
             components={{
               DayContent: ({ date }) => {
                 const dayKey = format(date, 'yyyy-MM-dd');
                 const dayEvents = eventsByDay.get(dayKey);
-                const content = (
+                return (
                   <div className="relative w-full h-full flex items-center justify-center">
                     <span className="z-10">{format(date, 'd')}</span>
                     {dayEvents && (
@@ -125,26 +111,6 @@ const MiniCalendar = ({ events }: { events: CalendarEvent[] }) => {
                     )}
                   </div>
                 );
-                if (dayEvents) {
-                    return (
-                        <Popover>
-                            <PopoverTrigger asChild>{content}</PopoverTrigger>
-                            <PopoverContent className="w-64 p-2 space-y-2">
-                                <p className="font-bold text-sm">{format(date, "EEEE, d 'de' MMMM", {locale: es})}</p>
-                                {dayEvents.map(event => (
-                                    <div key={event.id} className="text-xs flex items-start gap-2">
-                                        <div className={cn("w-2 h-2 rounded-full mt-1 shrink-0", getEventColorClass(event.color))} />
-                                        <div>
-                                          <p className="font-semibold">{event.title}</p>
-                                          {!event.allDay && <p className="text-muted-foreground">{format(new Date(event.start), 'p', {locale: es})}</p>}
-                                        </div>
-                                    </div>
-                                ))}
-                            </PopoverContent>
-                        </Popover>
-                    )
-                }
-                return content;
               }
             }}
           />
@@ -152,7 +118,6 @@ const MiniCalendar = ({ events }: { events: CalendarEvent[] }) => {
       </Card>
     );
 };
-
 
 const AnnouncementsList = ({ announcements }: { announcements: AnnouncementType[] }) => (
     <Card className="h-full">
@@ -200,22 +165,34 @@ const InteractiveEventsWidget = ({ events, onParticipate }: { events: (CalendarE
 }
 
 const UpcomingEvents = ({ events }: { events: CalendarEvent[] }) => (
-    <div>
-        <h2 className="text-xl font-semibold mb-4">Próximos Eventos</h2>
-        {events.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {events.map(event => (
-                    <Card key={event.id} className="hover:border-primary/50 transition-colors">
-                        <Link href="/calendar">
-                            <CardContent className="p-4"><p className="text-xs font-semibold text-primary">{format(new Date(event.start), "d MMM, p", {locale: es})}</p><h3 className="font-semibold mt-1 truncate">{event.title}</h3><p className="text-sm text-muted-foreground truncate mt-0.5">{event.description}</p></CardContent>
+    <Card>
+        <CardHeader>
+             <CardTitle className="text-lg">Próximos Eventos</CardTitle>
+        </CardHeader>
+        <CardContent>
+            {events.length > 0 ? (
+                <div className="space-y-3">
+                    {events.map(event => (
+                        <Link href="/calendar" key={event.id} className="block group">
+                           <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                              <div className={cn("w-1 h-full rounded-full", getEventColorClass(event.color || 'blue'))} />
+                              <div className="overflow-hidden">
+                                <p className="font-semibold text-sm truncate group-hover:text-primary">{event.title}</p>
+                                <p className="text-xs text-muted-foreground">{format(new Date(event.start), "d MMM, p", {locale: es})}</p>
+                              </div>
+                           </div>
                         </Link>
-                    </Card>
-                ))}
-            </div>
-        ) : (
-            <Card className="flex flex-col items-center justify-center p-8 text-center border-dashed"><CalendarIcon className="h-10 w-10 text-muted-foreground mb-2" /><h3 className="font-semibold">Sin eventos próximos</h3><p className="text-sm text-muted-foreground">Tu calendario está despejado por ahora.</p></Card>
-        )}
-    </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="flex flex-col items-center justify-center p-8 text-center border-dashed rounded-lg">
+                    <CalendarIcon className="h-10 w-10 text-muted-foreground mb-2" />
+                    <h3 className="font-semibold">Sin eventos próximos</h3>
+                    <p className="text-sm text-muted-foreground">Tu calendario está despejado por ahora.</p>
+                </div>
+            )}
+        </CardContent>
+    </Card>
 );
 
 const RecentlyAccessed = ({ courses, assignedCourses }: { courses: AppCourseType[], assignedCourses: AppCourseType[] }) => (
@@ -233,7 +210,7 @@ const RecentlyAccessed = ({ courses, assignedCourses }: { courses: AppCourseType
             {courses.length > 0 ? (
                 courses.map((course, index) => <CourseCard key={course.id} course={course} userRole="STUDENT" priority={index < 3}/>)
             ) : (
-                 <Card className="col-span-full flex flex-col items-center justify-center p-8 text-center border-dashed"><BookOpen className="h-10 w-10 text-muted-foreground mb-2" /><h3 className="font-semibold">Empieza tu viaje de aprendizaje</h3><p className="text-sm text-muted-foreground mb-4">No estás inscrito en ningún curso todavía.</p><Button asChild><Link href="/courses">Explorar Catálogo</Link></Button></Card>
+                 <Card className="col-span-full flex flex-col items-center justify-center p-8 text-center border-dashed"><GraduationCap className="h-10 w-10 text-muted-foreground mb-2" /><h3 className="font-semibold">Empieza tu viaje de aprendizaje</h3><p className="text-sm text-muted-foreground mb-4">No estás inscrito en ningún curso todavía.</p><Button asChild><Link href="/courses">Explorar Catálogo</Link></Button></Card>
             )}
         </div>
     </div>
@@ -241,16 +218,15 @@ const RecentlyAccessed = ({ courses, assignedCourses }: { courses: AppCourseType
 
 
 function StudentDashboard({ data, onParticipate }: { data: DashboardData, onParticipate: (eventId: string, occurrenceDate: string) => void }) {
+    const [selectedDate, setSelectedDate] = useState(new Date());
     return (
         <div className="space-y-8">
             <InteractiveEventsWidget events={data.interactiveEventsToday || []} onParticipate={onParticipate} />
             {data.interactiveEventsToday && data.interactiveEventsToday.length > 0 && <Separator/>}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-1"><MiniCalendar events={data.allCalendarEvents || []} /></div>
-                <div className="lg:col-span-2"><AnnouncementsList announcements={data.recentAnnouncements || []} /></div>
+                <div className="lg:col-span-1"><MiniCalendar events={data.allCalendarEvents || []} currentDate={selectedDate} onDateSelect={setSelectedDate} /></div>
+                <div className="lg:col-span-2"><UpcomingEvents events={data.allCalendarEvents?.filter(e => isSameDay(new Date(e.start), selectedDate)).slice(0,3) || []} /></div>
             </div>
-            <Separator />
-            <UpcomingEvents events={data.upcomingEvents?.slice(0, 3) || []} />
             <Separator />
             <RecentlyAccessed courses={data.myDashboardCourses || []} assignedCourses={data.assignedCourses || []} />
         </div>
@@ -258,38 +234,36 @@ function StudentDashboard({ data, onParticipate }: { data: DashboardData, onPart
 }
 
 function InstructorDashboard({ data }: { data: DashboardData }) {
+    const [selectedDate, setSelectedDate] = useState(new Date());
      return (
         <div className="space-y-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-1"><MiniCalendar events={data.allCalendarEvents || []} /></div>
-                <div className="lg:col-span-2"><AnnouncementsList announcements={data.recentAnnouncements || []} /></div>
+             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-1"><MiniCalendar events={data.allCalendarEvents || []} currentDate={selectedDate} onDateSelect={setSelectedDate} /></div>
+                <div className="lg:col-span-2"><UpcomingEvents events={data.allCalendarEvents?.filter(e => isSameDay(new Date(e.start), selectedDate)).slice(0,3) || []} /></div>
             </div>
              <Separator />
              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                  <Card><CardHeader><CardTitle>Cursos Creados</CardTitle></CardHeader><CardContent><p className="text-3xl font-bold">{data.instructorStats?.taught || 0}</p></CardContent></Card>
                  <Card><CardHeader><CardTitle>Total Estudiantes</CardTitle></CardHeader><CardContent><p className="text-3xl font-bold">{data.instructorStats?.students || 0}</p></CardContent></Card>
              </div>
-             <Separator />
-            <UpcomingEvents events={data.upcomingEvents?.slice(0, 3) || []} />
         </div>
     );
 }
 
 function AdminDashboard({ data, onParticipate }: { data: DashboardData, onParticipate: (eventId: string, occurrenceDate: string) => void }) {
     const stats = data.adminStats;
+    const [selectedDate, setSelectedDate] = useState(new Date());
+
     return (
         <div className="space-y-8">
             <InteractiveEventsWidget events={data.interactiveEventsToday || []} onParticipate={onParticipate} />
-             {data.interactiveEventsToday && data.interactiveEventsToday.length > 0 && <Separator/>}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-8 gap-4 mt-4">
+            {data.interactiveEventsToday && data.interactiveEventsToday.length > 0 && <Separator/>}
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 mt-4">
                 <MetricCard title="Total Usuarios" value={stats?.totalUsers || 0} icon={UsersRound} gradient="bg-gradient-blue" />
                 <MetricCard title="Total Cursos" value={stats?.totalCourses || 0} icon={Layers} gradient="bg-gradient-green"/>
                 <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={GraduationCap} gradient="bg-gradient-purple" />
-                <MetricCard title="Cursos Publicados" value={stats?.totalPublishedCourses || 0} icon={BookOpenCheck} gradient="bg-gradient-orange" />
-                <MetricCard title="Recursos" value={stats?.totalResources || 0} icon={Folder} gradient="bg-gradient-pink" />
-                <MetricCard title="Anuncios" value={stats?.totalAnnouncements || 0} icon={Megaphone} gradient="bg-gradient-blue" />
-                <MetricCard title="Formularios" value={stats?.totalForms || 0} icon={FileText} gradient="bg-gradient-green" />
-                <MetricCard title="Finalización" value={stats?.averageCompletionRate || 0} icon={BadgePercent} suffix="%" description="Promedio" gradient="bg-gradient-purple" />
+                <MetricCard title="Finalización" value={stats?.averageCompletionRate || 0} icon={BadgePercent} suffix="%" description="Promedio" gradient="bg-gradient-orange" />
             </div>
              <Separator />
             <Card>
@@ -314,24 +288,21 @@ function AdminDashboard({ data, onParticipate }: { data: DashboardData, onPartic
                     </ChartContainer>
                 </CardContent>
             </Card>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <AnnouncementsList announcements={data.recentAnnouncements || []} />
-                 <Card>
-                    <CardHeader><CardTitle>Registros de Seguridad Recientes</CardTitle></CardHeader>
-                    <CardContent>
-                        {data.securityLogs && data.securityLogs.length > 0 ? (
-                             <ul className="space-y-2">{data.securityLogs.map(log => (<li key={log.id} className="text-sm text-muted-foreground">{log.details} por <strong>{log.user?.name || 'Sistema'}</strong></li>))}</ul>
-                        ) : <p className="text-sm text-center text-muted-foreground py-4">No hay registros de seguridad recientes.</p>}
-                    </CardContent>
-                    <CardFooter><Button variant="outline" asChild><Link href="/security-audit">Ver todos los registros</Link></Button></CardFooter>
-                 </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-1 space-y-6">
+                    <MiniCalendar events={data.allCalendarEvents || []} currentDate={selectedDate} onDateSelect={setSelectedDate} />
+                    <UpcomingEvents events={data.allCalendarEvents?.filter(e => isSameDay(new Date(e.start), selectedDate)).slice(0,3) || []} />
+                </div>
+                <div className="lg:col-span-2">
+                     <AnnouncementsList announcements={data.recentAnnouncements || []} />
+                </div>
             </div>
         </div>
     );
 }
 
 export default function DashboardPage() {
-  const { user, settings } = useAuth();
+  const { user } = useAuth();
   const { setPageTitle } = useTitle();
   const { startTour, forceStartTour } = useTour();
   const [data, setData] = useState<DashboardData | null>(null);
@@ -353,11 +324,9 @@ export default function DashboardPage() {
 
   const fetchDashboardData = useCallback(async () => {
     if (!user) return;
-    
     console.log('[Dashboard Log] Empezando a obtener datos del dashboard...');
     setIsLoading(true);
     setError(null);
-    
     try {
         const params = new URLSearchParams();
         if (dateRange?.from) params.set('startDate', dateRange.from.toISOString());
@@ -390,7 +359,7 @@ export default function DashboardPage() {
           });
           if (!res.ok) throw new Error((await res.json()).message || 'No se pudo registrar la participación.');
           toast({ title: "¡Participación Registrada!", description: "Has ganado puntos de experiencia. ¡Bien hecho!" });
-          setData(prev => prev ? ({ ...prev, interactiveEventsToday: prev.interactiveEventsToday?.map(e => e.id === eventId || e.parentId === eventId ? { ...e, hasParticipated: true } : e) }) : null);
+          setData(prev => prev ? ({ ...prev, adminStats: { ...prev.adminStats!, interactiveEventsToday: prev.adminStats!.interactiveEventsToday?.map(e => e.id === eventId || e.parentId === eventId ? { ...e, hasParticipated: true } : e) } }) : null);
       } catch (err) {
           toast({ title: "Error", description: (err as Error).message, variant: "destructive" });
       }
@@ -418,12 +387,17 @@ export default function DashboardPage() {
     console.log(`[Dashboard Log] Mostrando estado de carga. isLoading: ${isLoading}, data: ${!!data}`);
     return (
       <div className="space-y-8">
+        <Skeleton className="h-24 w-full" />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Skeleton className="lg:col-span-1 h-96" />
-            <Skeleton className="lg:col-span-2 h-96" />
+            <div className="lg:col-span-2 space-y-6">
+                <Skeleton className="h-80 w-full"/>
+                <Skeleton className="h-48 w-full"/>
+            </div>
+            <div className="space-y-6">
+                 <Skeleton className="h-72 w-full"/>
+                 <Skeleton className="h-56 w-full"/>
+            </div>
         </div>
-        <Skeleton className="h-32 w-full"/>
-         <Skeleton className="h-48 w-full"/>
       </div>
     );
   }
@@ -454,15 +428,20 @@ export default function DashboardPage() {
   
   return (
     <div className="space-y-8">
-       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="space-y-1">
-                <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Hola, {user?.name}! <span className="text-2xl animate-wave">👋</span></h1>
-                <p className="text-muted-foreground">Bienvenido de nuevo a tu plataforma de aprendizaje.</p>
+       <div className="relative p-8 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg">
+            <div className="absolute inset-0 bg-black/20"></div>
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="space-y-1">
+                    <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Hola, {user?.name}! <span className="text-2xl animate-wave">👋</span></h1>
+                    <p className="text-primary-foreground/80">Bienvenido de nuevo a tu centro de aprendizaje y gestión.</p>
+                </div>
+                 <div className="flex items-center gap-2">
+                   {user?.role === 'ADMINISTRATOR' && <DateRangePicker date={dateRange} onDateChange={setDateRange}/>}
+                    <Button variant="outline" size="sm" onClick={handleShowTour} className="bg-white/20 border-white/30 text-white hover:bg-white/30">
+                        <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+                    </Button>
+                 </div>
             </div>
-             <div className="flex items-center gap-2">
-               {user?.role === 'ADMINISTRATOR' && <DateRangePicker date={dateRange} onDateChange={setDateRange}/>}
-                <Button variant="outline" size="sm" onClick={handleShowTour}><HelpCircle className="mr-2 h-4 w-4" /> Ver Guía</Button>
-             </div>
         </div>
       
       {renderContentForRole()}
