@@ -1,11 +1,10 @@
 // src/app/(app)/messages/page.tsx
 'use client';
 
-import React, { useEffect, Suspense, useState, useCallback } from 'react';
+import React, { useEffect, Suspense } from 'react';
 import { useTitle } from '@/contexts/title-context';
 import { ChatClient } from '@/components/messages/chat-client';
 import { Loader2 } from 'lucide-react';
-import type { Conversation as AppConversation, Announcement as AnnouncementType } from '@/types';
 import { useSearchParams } from 'next/navigation';
 
 function MessagesPageComponent() {
@@ -18,7 +17,7 @@ function MessagesPageComponent() {
   }, [setPageTitle]);
 
   return (
-    <div className="h-[calc(100vh-8rem)]">
+    <div className="h-[calc(100vh-5.1rem)]">
       <ChatClient newChatUserId={newChatUserId} />
     </div>
   );

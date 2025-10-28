@@ -16,8 +16,11 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '../ui/button';
 
+interface AnnouncementsViewProps {
+    onSelectAnnouncement: (announcement: AnnouncementType) => void;
+}
 
-export function AnnouncementsView() {
+export function AnnouncementsView({ onSelectAnnouncement }: AnnouncementsViewProps) {
   const [announcements, setAnnouncements] = useState<AnnouncementType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreatorOpen, setIsCreatorOpen] = useState(false);
@@ -87,11 +90,10 @@ export function AnnouncementsView() {
     }
   };
 
-
   return (
     <>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-base">Anuncios Globales</CardTitle>
+        <CardTitle className="text-base">Anuncios</CardTitle>
         <Button variant="outline" size="sm" onClick={() => setIsCreatorOpen(true)}>Crear</Button>
       </CardHeader>
       <CardContent className="p-0 flex-1 min-h-0">

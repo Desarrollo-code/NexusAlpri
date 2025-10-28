@@ -92,8 +92,8 @@ const NAVIGATION_ITEMS: NavItem[] = [
       {
         id: 'communications',
         label: 'Comunicaciones',
-        icon: Megaphone,
-        path: '/announcements',
+        icon: MessageSquare, // Changed Icon
+        path: '/messages', // Changed Path
         roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
       },
       {
