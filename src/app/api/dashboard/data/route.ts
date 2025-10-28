@@ -94,25 +94,25 @@ async function getInstructorDashboardData(session: PrismaUser, sharedData: any) 
 
 
 async function getAdminDashboardData(session: PrismaUser, sharedData: any) {
-     const [totalUsers, totalCourses, totalEnrollments, recentLoginsAgg, averageCompletionResult] = await Promise.all([
+     const [totalUsers, totalCourses, totalEnrollments, recentLogins, averageCompletionResult] = await Promise.all([
         prisma.user.count(),
         prisma.course.count(),
         prisma.enrollment.count(),
-         prisma.securityLog.groupBy({
-            by: ['userId'],
+        prisma.securityLog.count({
             where: {
                 event: "SUCCESSFUL_LOGIN",
                 createdAt: { gte: subDays(new Date(), 7) }
             },
+            distinct: ['userId']
         }),
         prisma.courseProgress.aggregate({
             _avg: {
                 progressPercentage: true,
             },
             where: {
-                NOT: {
-                    progressPercentage: null
-                }
+                progressPercentage: {
+                    not: null, // Correct way to filter out nulls
+                },
             },
         }),
     ]);
@@ -123,7 +123,7 @@ async function getAdminDashboardData(session: PrismaUser, sharedData: any) {
             totalUsers,
             totalCourses,
             totalEnrollments,
-            recentLogins: recentLoginsAgg.length, // Correct way to count distinct users
+            recentLogins,
             averageCompletionRate: averageCompletionResult._avg.progressPercentage
         }
     };
