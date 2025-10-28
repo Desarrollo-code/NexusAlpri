@@ -206,7 +206,7 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
   return (
     <>
     <Card ref={cardRef} className="w-full bg-card overflow-hidden">
-        <div className="p-4 flex flex-row items-start gap-3 space-y-0 border-b">
+        <div className="p-3 flex flex-row items-start gap-3 space-y-0">
             <Avatar className="h-10 w-10 border">
                 <AvatarImage src={announcement.author?.avatar || undefined} />
                 <AvatarFallback><Identicon userId={announcement.author?.id || ''} /></AvatarFallback>
@@ -240,13 +240,17 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
                         </DropdownMenu>
                     )}
                 </div>
+                 {announcement.title && (
+                    <div className="bg-primary/90 text-primary-foreground px-3 py-1.5 rounded-lg mt-2 inline-block">
+                       <p className="text-sm font-semibold">{announcement.title}</p>
+                    </div>
+                 )}
             </div>
         </div>
       
-        <CardContent className="p-4 space-y-3">
-             {announcement.title && <CardTitle className="text-lg font-bold">{announcement.title}</CardTitle>}
+        <CardContent className="px-4 pb-3 pt-2 pl-16 space-y-3">
              {announcement.content && (
-                <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: announcement.content }} />
+                <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90" dangerouslySetInnerHTML={{ __html: announcement.content }} />
             )}
               {imageAttachments.length > 0 && (
                  <div className={cn("grid gap-1 rounded-lg overflow-hidden border", imageAttachments.length > 1 ? "grid-cols-2" : "grid-cols-1")}>
@@ -265,7 +269,7 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
                 </div>
               )}
         </CardContent>
-      <CardFooter className="p-4 pt-2 flex items-center justify-between">
+      <CardFooter className="p-3 pt-1 flex items-center justify-between pl-16">
            <div className="flex items-center text-muted-foreground -ml-2">
             <Popover>
                 <PopoverTrigger asChild>
