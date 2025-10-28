@@ -24,7 +24,6 @@ import {
 } from 'lucide-react';
 import React, { useEffect, useState, useCallback } from 'react';
 import type { AdminDashboardStats, EnrolledCourse, Course as AppCourseType, Announcement as AnnouncementType, CalendarEvent, UserRole } from '@/types';
-import { AnnouncementCard } from '@/components/announcements/announcement-card';
 import { Skeleton } from "@/components/ui/skeleton";
 import { CourseCard } from '@/components/course-card';
 import { useTitle } from '@/contexts/title-context';
@@ -34,7 +33,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { es } from 'date-fns/locale';
 import { format, isSameDay } from 'date-fns';
-import { getEventColorClass } from '@/lib/utils';
+import { getEventColorClass, cn } from '@/lib/utils'; // <-- IMPORTACIÓN AÑADIDA
 import { Separator } from '@/components/ui/separator';
 
 // --- TYPE DEFINITIONS & MAPPERS ---
