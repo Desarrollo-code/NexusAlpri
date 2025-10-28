@@ -10,7 +10,7 @@ import { ScrollArea } from '../ui/scroll-area';
 import { Skeleton } from '../ui/skeleton';
 import { Button } from '../ui/button';
 import { UserPlus } from 'lucide-react';
-import { CardHeader, CardTitle, CardContent } from '../ui/card';
+import { CardContent } from '../ui/card';
 
 
 type Participant = { id: string; name: string | null; avatar: string | null };
@@ -43,9 +43,8 @@ export const ConversationList = ({ conversations, onSelect, activeConversationId
     return (
         <>
             <div className="p-2 border-b flex items-center justify-end h-16">
-                 <Button variant="ghost" size="sm" onClick={onNewChat} className="h-8">
-                    <UserPlus className="h-4 w-4 mr-2"/>
-                    Nuevo Chat
+                 <Button variant="ghost" size="icon" onClick={onNewChat} className="h-8 w-8">
+                    <UserPlus className="h-4 w-4"/>
                 </Button>
             </div>
              <CardContent className="p-0 flex-1 min-h-0">
