@@ -26,6 +26,9 @@ const getNotificationDetails = (notification: AppNotification) => {
     if (notification.title.includes('Asignado')) {
         return { icon: UserPlus, color: 'text-green-500' };
     }
+     if (notification.title.includes('Pausa Activa')) {
+        return { icon: Clock, color: 'text-green-500' };
+    }
     return { icon: BellRing, color: 'text-muted-foreground' };
 };
 
@@ -33,7 +36,6 @@ const NotificationItem = ({ notif, onDismiss }: { notif: AppNotification, onDism
     const { icon: Icon, color } = getNotificationDetails(notif);
     const formattedDate = format(new Date(notif.date), "d MMM yyyy 'a las' hh:mm a", { locale: es });
     
-    // Extraer el nombre del logro del título
     const achievementNameMatch = notif.title.match(/Logro Desbloqueado: (.*)!/);
     const mainTitle = achievementNameMatch ? "¡Logro Desbloqueado!" : notif.title;
     const achievementName = achievementNameMatch ? `${achievementNameMatch[1]}!` : '';
@@ -44,10 +46,10 @@ const NotificationItem = ({ notif, onDismiss }: { notif: AppNotification, onDism
             <div className="flex-grow space-y-2">
                 <div className="flex justify-between items-start">
                     <div>
-                        <p className={cn("font-bold text-base", !notif.read && "text-foreground")}>
-                            {mainTitle}
+                        <p className={cn("font-bold text-base leading-tight", !notif.read && "text-foreground")}>
+                           {mainTitle}
+                           {achievementName && <span className="font-semibold text-lg ml-2">{achievementName}</span>}
                         </p>
-                        {achievementName && <p className="font-semibold text-lg -mt-1">{achievementName}</p>}
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground whitespace-nowrap">
                         <Clock className="h-3 w-3" />
