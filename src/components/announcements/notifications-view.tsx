@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
-import { CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { CardHeader, CardTitle, CardContent } from '../ui/card';
 import { BellRing, Loader2, UserPlus, Award, MessageSquare, X, Check, Clock } from 'lucide-react';
 import type { Notification as AppNotification } from '@/types';
 import { cn } from '@/lib/utils';
@@ -17,13 +17,13 @@ import { Separator } from '../ui/separator';
 
 const getNotificationDetails = (notification: AppNotification) => {
     // This can be expanded with more notification types
-    if (notification.title.includes('Logro Desbloqueado')) {
+    if (notification.title.includes('Logro')) {
         return { icon: Award, color: 'text-amber-500' };
     }
-    if (notification.title.includes('Nuevo Anuncio')) {
+    if (notification.title.includes('Anuncio')) {
         return { icon: MessageSquare, color: 'text-blue-500' };
     }
-    if (notification.title.includes('Curso Obligatorio')) {
+    if (notification.title.includes('Asignado')) {
         return { icon: UserPlus, color: 'text-green-500' };
     }
     return { icon: BellRing, color: 'text-muted-foreground' };
@@ -32,28 +32,41 @@ const getNotificationDetails = (notification: AppNotification) => {
 const NotificationItem = ({ notif, onDismiss }: { notif: AppNotification, onDismiss: (id: string) => void }) => {
     const { icon: Icon, color } = getNotificationDetails(notif);
     const formattedDate = format(new Date(notif.date), "d MMM yyyy 'a las' hh:mm a", { locale: es });
+    
+    // Extraer el nombre del logro del título
+    const achievementNameMatch = notif.title.match(/Logro Desbloqueado: (.*)!/);
+    const mainTitle = achievementNameMatch ? "¡Logro Desbloqueado!" : notif.title;
+    const achievementName = achievementNameMatch ? `${achievementNameMatch[1]}!` : '';
 
     return (
         <div className={cn("flex items-start gap-4 p-4 border-b", !notif.read && "bg-primary/5")}>
-             <Link href={notif.link || '#'} className="flex items-start gap-4 flex-grow">
-                <Icon className={cn("h-5 w-5 mt-1 flex-shrink-0", color)} />
-                <div className="flex-grow">
-                    <p className={cn("font-semibold", !notif.read && "text-foreground")}>
-                        {notif.title}
-                    </p>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                        {notif.description}
-                    </p>
+            <Icon className={cn("h-6 w-6 mt-1 flex-shrink-0", color)} />
+            <div className="flex-grow space-y-2">
+                <div className="flex justify-between items-start">
+                    <div>
+                        <p className={cn("font-bold text-base", !notif.read && "text-foreground")}>
+                            {mainTitle}
+                        </p>
+                        {achievementName && <p className="font-semibold text-lg -mt-1">{achievementName}</p>}
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground whitespace-nowrap">
+                        <Clock className="h-3 w-3" />
+                        <span>{formattedDate}</span>
+                         <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => onDismiss(notif.id)}>
+                            <X className="h-4 w-4" />
+                         </Button>
+                    </div>
                 </div>
-             </Link>
-             <div className="flex flex-col items-end text-right flex-shrink-0">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground whitespace-nowrap">
-                    <Clock className="h-3 w-3" />
-                    <span>{formattedDate}</span>
-                </div>
-                 <Button variant="ghost" size="icon" className="h-7 w-7 mt-1" onClick={() => onDismiss(notif.id)}>
-                    <X className="h-4 w-4" />
-                 </Button>
+                 <p className="text-sm text-muted-foreground line-clamp-2">
+                    {notif.description}
+                </p>
+                 {notif.link && (
+                    <div className="pt-1">
+                        <Button asChild variant="default" size="sm">
+                            <Link href={notif.link}>Ver detalles</Link>
+                        </Button>
+                    </div>
+                 )}
             </div>
         </div>
     );
