@@ -35,14 +35,11 @@ export function ChatClient({ newChatUserId }: ChatClientProps) {
     const [messages, setMessages] = useState<any[]>([]);
     const [isLoadingMessages, setIsLoadingMessages] = useState(false);
     
-    // Función para manejar el evento de tiempo real
     const handleRealtimeMessage = useCallback((payload: any) => {
-        // Verificar si el mensaje pertenece a la conversación activa
         if (payload.conversationId === activeConversation?.id) {
             setMessages(prev => [...prev, payload]);
         }
         
-        // Actualizar la lista de conversaciones para mostrar el último mensaje
         setConversations(prev => {
             const convoIndex = prev.findIndex(c => c.id === payload.conversationId);
             if (convoIndex > -1) {
@@ -50,7 +47,6 @@ export function ChatClient({ newChatUserId }: ChatClientProps) {
                 const restConvos = prev.filter(c => c.id !== payload.conversationId);
                 return [updatedConvo, ...restConvos];
             }
-            // Si la conversación no está en la lista, la recargamos
             fetchConversations();
             return prev;
         });
@@ -133,10 +129,8 @@ export function ChatClient({ newChatUserId }: ChatClientProps) {
         const savedMessage = await response.json();
         if (!response.ok) throw new Error(savedMessage.message);
         
-        // Replace temp message with real one from server
         setMessages(prev => prev.map(m => m.id === tempMessageId ? savedMessage : m));
         
-        // Si era una conversación temporal, la actualizamos con el ID real
         if(activeConversation.id.startsWith('temp-')) {
             await fetchConversations();
             setActiveConversation(prev => prev ? {...prev, id: savedMessage.conversationId} : null);
@@ -144,7 +138,7 @@ export function ChatClient({ newChatUserId }: ChatClientProps) {
 
       } catch (error) {
         toast({ title: "Error al enviar", description: (error as Error).message, variant: 'destructive' });
-        setMessages(prev => prev.filter(m => m.id !== tempMessageId)); // Remove failed message
+        setMessages(prev => prev.filter(m => m.id !== tempMessageId));
       }
     };
 
@@ -155,7 +149,6 @@ export function ChatClient({ newChatUserId }: ChatClientProps) {
 
     return (
       <Card className="flex h-full overflow-hidden">
-          {/* ----- BARRA LATERAL (Conversaciones y Anuncios) ----- */}
           <aside className={cn(
               "w-full md:w-80 lg:w-96 flex-shrink-0 border-r flex flex-col transition-transform duration-300 ease-in-out",
               isMobile && activeConversation ? "-translate-x-full" : "translate-x-0",
@@ -169,7 +162,6 @@ export function ChatClient({ newChatUserId }: ChatClientProps) {
               />
           </aside>
 
-          {/* ----- ÁREA PRINCIPAL (Chat o Bienvenida) ----- */}
           <main className={cn(
               "flex-1 flex flex-col transition-transform duration-300 ease-in-out",
               isMobile && "absolute inset-0 bg-card",
@@ -177,7 +169,6 @@ export function ChatClient({ newChatUserId }: ChatClientProps) {
           )}>
               {activeConversation ? (
                   <>
-                      {/* --- Encabezado del Chat --- */}
                       <header className="p-3 border-b flex items-center gap-3 h-16 shrink-0">
                           {isMobile && <Button variant="ghost" size="icon" onClick={() => setActiveConversation(null)}><ArrowLeft/></Button>}
                           <Avatar className="h-9 w-9 border">
@@ -187,14 +178,12 @@ export function ChatClient({ newChatUserId }: ChatClientProps) {
                           <h3 className="font-semibold">{activeConversation.participants[0]?.name}</h3>
                       </header>
                       
-                      {/* --- Área de Mensajes --- */}
                       {isLoadingMessages ? (
                         <div className="flex h-full items-center justify-center"><Loader2 className="h-6 w-6 animate-spin"/></div>
                       ) : (
                         <MessageArea messages={messages} currentUser={user} otherParticipant={activeConversation.participants[0]} />
                       )}
                       
-                      {/* --- Input de Mensaje --- */}
                       <div className="p-4 border-t bg-muted/30">
                           <MessageInput onSendMessage={handleSendMessage} />
                       </div>

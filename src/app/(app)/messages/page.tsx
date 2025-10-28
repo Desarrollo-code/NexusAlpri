@@ -19,7 +19,6 @@ function MessagesPageComponent() {
 
   return (
     <div className="h-[calc(100vh-8rem)]">
-      {/* El ChatClient ahora maneja toda la lógica y la UI de la página */}
       <ChatClient newChatUserId={newChatUserId} />
     </div>
   );
@@ -27,7 +26,6 @@ function MessagesPageComponent() {
 
 export default function MessagesPage() {
     return (
-        // Suspense es crucial aquí para manejar los parámetros de búsqueda del lado del cliente
         <Suspense fallback={<div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
             <MessagesPageComponent />
         </Suspense>
