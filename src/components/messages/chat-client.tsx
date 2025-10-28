@@ -89,10 +89,10 @@ const ConversationList = ({ conversations, onSelect, activeConversationId }: {
                         </Avatar>
                         <div className="flex-grow overflow-hidden">
                             <div className="flex justify-between items-center">
-                                <p className="font-semibold truncate">{otherParticipant.name}</p>
+                                <p className="font-semibold truncate text-sm">{otherParticipant.name}</p>
                                 {lastMessage && <p className="text-xs text-muted-foreground shrink-0 ml-2">{format(parseISO(lastMessage.createdAt), 'p', { locale: es })}</p>}
                             </div>
-                            {lastMessage && <p className="text-sm text-muted-foreground truncate">{lastMessageText}</p>}
+                            {lastMessage && <p className="text-xs text-muted-foreground truncate">{lastMessageText}</p>}
                         </div>
                     </button>
                 )
@@ -416,7 +416,7 @@ export function ChatClient() {
                         <div className="p-3 border-b flex items-center gap-3 h-16">
                             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setActiveConversation(null)}><ArrowLeft/></Button>
                             <Avatar className="h-9 w-9 border"><AvatarImage src={otherParticipant.avatar || undefined} /><AvatarFallback><Identicon userId={otherParticipant.id} /></AvatarFallback></Avatar>
-                            <h3 className="font-semibold">{otherParticipant.name}</h3>
+                            <h3 className="font-semibold text-sm">{otherParticipant.name}</h3>
                         </div>
                         <MessageArea messages={messages} currentUser={user} otherParticipant={otherParticipant}/>
                         <div className="p-4 border-t bg-background">

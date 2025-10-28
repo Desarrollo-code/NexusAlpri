@@ -215,7 +215,7 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
                 <div className="flex items-start justify-between">
                     <div className="flex-grow">
                         <div className="flex items-center gap-1.5 text-sm">
-                            <span className="font-bold text-foreground">{announcement.author?.name || 'Sistema'}</span>
+                            <span className="font-semibold text-foreground">{announcement.author?.name || 'Sistema'}</span>
                             {announcement.author?.role === 'ADMINISTRATOR' && <VerifiedBadge role="ADMINISTRATOR" />}
                         </div>
                          <div className="text-xs text-muted-foreground flex items-center gap-1.5">
@@ -241,8 +241,8 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
                     )}
                 </div>
                  {announcement.title && (
-                    <div className="bg-primary/90 text-primary-foreground px-3 py-1.5 rounded-lg mt-2 inline-block">
-                       <p className="text-sm font-semibold">{announcement.title}</p>
+                    <div className="bg-primary/10 text-primary-foreground px-3 py-1.5 rounded-lg mt-2 inline-block">
+                       <p className="text-sm font-semibold text-primary">{announcement.title}</p>
                     </div>
                  )}
             </div>

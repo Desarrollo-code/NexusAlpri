@@ -1,7 +1,7 @@
 // src/app/(app)/announcements/page.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
@@ -45,18 +45,15 @@ function CommunicationsPageComponent() {
       </header>
 
       <main className="grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-5 gap-6 flex-grow min-h-0">
-        {/* Notificaciones */}
-        <Card className="hidden lg:block lg:col-span-1 xl:col-span-1 flex-col overflow-hidden">
+        <Card className="hidden lg:flex lg:col-span-1 xl:col-span-1 flex-col overflow-hidden">
           <NotificationsView />
         </Card>
 
-        {/* Mensajes */}
         <div className="lg:col-span-3 xl:col-span-3 h-full min-h-0">
           <ChatClient />
         </div>
 
-        {/* Anuncios */}
-        <Card className="hidden xl:block xl:col-span-1 flex-col overflow-y-auto thin-scrollbar">
+        <Card className="hidden xl:flex xl:col-span-1 flex-col overflow-hidden">
            <div className="p-4 border-b">
               <h3 className="text-lg font-semibold">Anuncios Globales</h3>
            </div>

@@ -40,7 +40,7 @@ const NotificationItem = ({ notif }: { notif: AppNotification }) => (
             <div className="flex items-start gap-3">
                 {!notif.read && <div className="mt-1.5 h-2 w-2 rounded-full bg-primary flex-shrink-0" />}
                 <div className="flex-grow">
-                    <p className={cn("font-semibold text-sm leading-tight", !notif.read && "text-primary")}>{notif.title}</p>
+                    <p className={cn("font-semibold text-sm leading-tight", !notif.read && "text-foreground")}>{notif.title}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">{notif.description}</p>
                     <p className="text-xs text-muted-foreground/80 mt-1">{timeSince(notif.date)}</p>
                 </div>
