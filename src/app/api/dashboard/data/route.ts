@@ -98,10 +98,10 @@ async function getAdminDashboardData(session: PrismaUser, sharedData: any) {
         prisma.user.count(),
         prisma.course.count(),
         prisma.enrollment.count(),
-        prisma.securityLog.count({ where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: subDays(new Date(), 7) } }, distinct: ['userId'] }),
+        prisma.securityLog.count({ where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: subDays(new Date(), 7) } } }),
         prisma.courseProgress.aggregate({
             _avg: { progressPercentage: true },
-            where: { progressPercentage: { not: null } }
+            where: { progressPercentage: { notIn: [null] } }
         }),
     ]);
     
