@@ -1,6 +1,6 @@
 // src/components/dashboard/admin-dashboard.tsx
 'use client';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, BookOpenCheck, GraduationCap, Percent, PlusCircle, BarChart3, Settings, ShieldAlert, Monitor, Database } from "lucide-react";
 import type { AdminDashboardStats, SecurityLog } from '@/types';
@@ -9,24 +9,8 @@ import Link from "next/link";
 import { InteractiveEventsWidget } from "./interactive-events-widget";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { MetricCard } from "../analytics/metric-card";
 
-interface AdminDashboardProps {
-  adminStats: AdminDashboardStats;
-  securityLogs: SecurityLog[];
-  onParticipate: (eventId: string, occurrenceDate: Date) => void;
-}
-
-const StatCard = ({ title, value, icon: Icon, unit = '' }: { title: string, value: number, icon: React.ElementType, unit?: string }) => (
-    <Card className="bg-card/50">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-            <Icon className="h-4 w-4 text-primary" />
-        </CardHeader>
-        <CardContent>
-            <div className="text-2xl font-bold">{value.toLocaleString()}{unit}</div>
-        </CardContent>
-    </Card>
-);
 
 const HealthStatusWidget = () => {
     const [healthStatus, setHealthStatus] = useState({ api: 'checking', db: 'checking' });
@@ -79,7 +63,11 @@ const HealthStatusWidget = () => {
     );
 }
 
-export function AdminDashboard({ adminStats, securityLogs, onParticipate }: AdminDashboardProps) {
+export function AdminDashboard({ adminStats, securityLogs, onParticipate }: {
+  adminStats: AdminDashboardStats;
+  securityLogs: SecurityLog[];
+  onParticipate: (eventId: string, occurrenceDate: Date) => void;
+}) {
   if (!adminStats) return null;
 
   return (
@@ -91,10 +79,10 @@ export function AdminDashboard({ adminStats, securityLogs, onParticipate }: Admi
         
         {/* Métricas Principales */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4" id="admin-stats-cards">
-            <StatCard title="Usuarios Totales" value={adminStats.totalUsers} icon={Users} />
-            <StatCard title="Cursos Publicados" value={adminStats.totalPublishedCourses} icon={BookOpenCheck} />
-            <StatCard title="Inscripciones Totales" value={adminStats.totalEnrollments} icon={GraduationCap} />
-            <StatCard title="Finalización Promedio" value={Math.round(adminStats.averageCompletionRate)} icon={Percent} unit="%" />
+            <MetricCard title="Usuarios Totales" value={adminStats.totalUsers} icon={Users} gradient="bg-gradient-blue" />
+            <MetricCard title="Cursos Publicados" value={adminStats.totalPublishedCourses} icon={BookOpenCheck} gradient="bg-gradient-green" />
+            <MetricCard title="Inscripciones Totales" value={adminStats.totalEnrollments} icon={GraduationCap} gradient="bg-gradient-purple" />
+            <MetricCard title="Finalización Promedio" value={Math.round(adminStats.averageCompletionRate)} icon={Percent} unit="%" gradient="bg-gradient-pink" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
@@ -108,6 +96,11 @@ export function AdminDashboard({ adminStats, securityLogs, onParticipate }: Admi
                     <CardContent>
                         <SecurityLogTimeline logs={securityLogs} onLogClick={() => {}} />
                     </CardContent>
+                    <CardFooter>
+                         <Button variant="outline" asChild size="sm">
+                            <Link href="/security-audit">Ver auditoría completa</Link>
+                        </Button>
+                    </CardFooter>
                 </Card>
             </div>
 
