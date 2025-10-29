@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from '@/lib/utils';
 import { AtRiskUsersCard } from '@/components/security/at-risk-users-card';
+import { VisitorsByCountryCard } from '@/components/security/visitors-by-country-card';
 
 
 const PAGE_SIZE = 10;
@@ -258,6 +259,7 @@ function SecurityAuditPageComponent() {
                 <div className="lg:col-span-1 space-y-8">
                     <DeviceDistributionChart browserData={stats?.browsers} osData={stats?.os} isLoading={isLoading}/>
                     <TopIpsCard topIps={stats?.topIps || []} isLoading={isLoading}/>
+                    <VisitorsByCountryCard topCountries={stats?.topCountries || []} isLoading={isLoading} />
                 </div>
             </div>
             

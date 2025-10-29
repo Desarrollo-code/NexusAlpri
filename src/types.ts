@@ -296,6 +296,7 @@ export type SecurityStats = {
     browsers: { name: string, count: number }[];
     os: { name: string, count: number }[];
     topIps: { ip: string, count: number, country: string }[];
+    topCountries: { name: string, count: number }[];
     securityScore: number;
     twoFactorAdoptionRate: number;
     atRiskUsers: { userId: string, name: string | null, email: string, avatar: string | null, failedAttempts: number }[];
