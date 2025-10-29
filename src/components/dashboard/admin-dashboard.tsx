@@ -108,7 +108,7 @@ export function AdminDashboard({ adminStats, securityLogs }: {
             <p className="text-muted-foreground">Una vista general y accionable del estado de tu plataforma.</p>
         </div>
         
-         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="admin-stats-cards">
+         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" id="admin-stats-cards">
             <MetricCard title="Usuarios Totales" value={adminStats.totalUsers} icon={Users} gradient="bg-gradient-blue" />
             <MetricCard title="Cursos Publicados" value={adminStats.totalPublishedCourses} icon={BookOpenCheck} gradient="bg-gradient-green" />
             <MetricCard title="Inscripciones Totales" value={adminStats.totalEnrollments} icon={GraduationCap} gradient="bg-gradient-purple" />
