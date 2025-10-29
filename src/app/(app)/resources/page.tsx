@@ -16,13 +16,14 @@ import { ResourceListItem } from '@/components/resources/resource-list-item';
 import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { DndContext, type DragEndEvent, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { useDroppable } from '@dnd-kit/core';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
-import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
-import { Label } from '../ui/label';
-import { Separator } from '../ui/separator';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 
 const Sidebar = ({ stats, totalSize, totalFiles, user }: { stats: any[], totalSize: number, totalFiles: number, user: any }) => {
     // This component remains unchanged from the previous implementation
@@ -131,18 +132,18 @@ export default function ResourcesPage() {
   return (
     <DndContext onDragEnd={handleDragEnd} sensors={useSensors(useSensor(MouseSensor), useSensor(TouchSensor))}>
     <div className="space-y-6">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-             <RadioGroup 
+       <div className="flex items-center justify-between flex-wrap gap-4">
+            <RadioGroup 
                 value={activeTab} 
                 onValueChange={(v) => setActiveTab(v as ResourceStatus)} 
-                className="flex items-center p-1 bg-muted rounded-full"
+                className="flex items-center p-1 bg-green-100 dark:bg-green-900/30 rounded-full"
             >
                 <RadioGroupItem value="ACTIVE" id="status-active" className="sr-only" />
                 <Label 
                     htmlFor="status-active" 
                     className={cn(
                         "px-4 py-1.5 rounded-full text-sm font-semibold cursor-pointer transition-colors",
-                        activeTab === 'ACTIVE' ? 'bg-green-200 text-green-800 shadow-sm' : 'text-muted-foreground'
+                        activeTab === 'ACTIVE' ? 'bg-white text-green-800 shadow-sm' : 'text-green-700/80'
                     )}
                 >
                    Activo
@@ -152,7 +153,7 @@ export default function ResourcesPage() {
                     htmlFor="status-archived" 
                     className={cn(
                         "px-4 py-1.5 rounded-full text-sm font-semibold cursor-pointer transition-colors",
-                        activeTab === 'ARCHIVED' ? 'bg-green-200 text-green-800 shadow-sm' : 'text-muted-foreground'
+                        activeTab === 'ARCHIVED' ? 'bg-white text-green-800 shadow-sm' : 'text-green-700/80'
                     )}
                 >
                     Archivado
