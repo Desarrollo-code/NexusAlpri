@@ -6,12 +6,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { 
-  BookOpenCheck, 
-  GraduationCap,
   UsersRound,
   Layers,
   HelpCircle,
-  Calendar as CalendarIcon,
   Megaphone,
   LineChart,
   Settings,
@@ -22,7 +19,9 @@ import {
   Trophy,
   Activity,
   Mail,
-  Database
+  Database,
+  BookOpenCheck, 
+  GraduationCap
 } from 'lucide-react';
 import React, { useEffect, useState, useCallback } from 'react';
 import type { AdminDashboardStats, EnrolledCourse, Course as AppCourseType, Announcement as AnnouncementType, CalendarEvent, UserRole, SecurityLog } from '@/types';
@@ -31,19 +30,13 @@ import { CourseCard } from '@/components/course-card';
 import { useTitle } from '@/contexts/title-context';
 import { adminDashboardTour, studentDashboardTour, instructorDashboardTour } from '@/lib/tour-steps';
 import { useTour } from '@/contexts/tour-context';
-import { format, startOfDay, endOfDay, subDays } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { MetricCard } from '@/components/analytics/metric-card';
 import { useToast } from '@/hooks/use-toast';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import { SecurityLogTimeline } from '@/components/security/security-log-timeline';
-import Image from 'next/image';
-import { expandRecurringEvents } from '@/lib/calendar-utils';
-import { Calendar } from '@/components/ui/calendar';
 import { useRouter } from 'next/navigation';
 import { CourseCarousel } from '@/components/course-carousel';
-import { AtRiskUsersCard } from '@/components/security/at-risk-users-card';
 import { Progress } from '@/components/ui/progress';
 
 // --- TYPE DEFINITIONS ---
@@ -58,22 +51,10 @@ interface DashboardData {
     interactiveEventsToday?: (CalendarEvent & { hasParticipated?: boolean })[];
     securityLogs?: SecurityLog[];
     systemHealth?: { api: boolean; db: boolean; mail: boolean };
-    atRiskUsers?: any[];
 }
 
 
 // --- WIDGETS REUTILIZABLES ---
-const AnnouncementsList = ({ announcements }: { announcements?: AnnouncementType[] }) => (
-    <Card className="h-full">
-        <CardHeader><CardTitle className="text-base flex items-center gap-2"><Megaphone className="h-4 w-4 text-primary"/>Anuncios Recientes</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-            {(announcements && announcements.length > 0) ? announcements.map(ann => (
-                <Link href="/messages" key={ann.id} className="block group"><div className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"><div className="w-1.5 h-10 rounded-full shrink-0 bg-primary/70"/><div className="overflow-hidden"><p className="font-semibold text-sm truncate group-hover:text-primary">{ann.title}</p><p className="text-xs text-muted-foreground truncate">{ann.author?.name || 'Sistema'}</p></div></div></Link>
-            )) : <p className="text-center text-sm text-muted-foreground py-4">No hay anuncios recientes.</p>}
-        </CardContent>
-    </Card>
-);
-
 const InteractiveEventsWidget = ({ events, onParticipate }: { events: (CalendarEvent & { hasParticipated?: boolean })[], onParticipate: (eventId: string, occurrenceDate: string) => void }) => {
     if (!events || events.length === 0) return null;
     return (
@@ -89,7 +70,7 @@ const InteractiveEventsWidget = ({ events, onParticipate }: { events: (CalendarE
 
 // --- DASHBOARDS POR ROL ---
 
-function StudentDashboard({ data, onEnrollmentChange }: { data: DashboardData, onEnrollmentChange: (courseId: string, status: boolean) => void }) {
+function StudentDashboard({ data, onEnrollmentChange, onParticipate }: { data: DashboardData, onEnrollmentChange: (courseId: string, status: boolean) => void, onParticipate: (eventId: string, occurrenceDate: string) => void }) {
     const { user } = useAuth();
     
     // Gamification Level Calculation
@@ -105,6 +86,7 @@ function StudentDashboard({ data, onEnrollmentChange }: { data: DashboardData, o
 
     return (
         <div className="space-y-8">
+            <InteractiveEventsWidget events={data.interactiveEventsToday || []} onParticipate={onParticipate} />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 <div className="lg:col-span-2 space-y-8">
                     {data.assignedCourses && data.assignedCourses.length > 0 && (
@@ -114,9 +96,7 @@ function StudentDashboard({ data, onEnrollmentChange }: { data: DashboardData, o
                                 <CardDescription>Estos cursos han sido asignados para tu desarrollo. ¡Complétalos para seguir creciendo!</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {data.assignedCourses.map((course, index) => <CourseCard key={course.id} course={course} userRole="STUDENT" priority={index < 2} onEnrollmentChange={onEnrollmentChange} />)}
-                                </div>
+                                <CourseCarousel courses={data.assignedCourses} userRole="STUDENT" onEnrollmentChange={onEnrollmentChange} />
                             </CardContent>
                         </Card>
                     )}
@@ -124,9 +104,7 @@ function StudentDashboard({ data, onEnrollmentChange }: { data: DashboardData, o
                     <section>
                          <h2 className="text-xl font-semibold mb-4">Continuar Aprendiendo</h2>
                           {data.myDashboardCourses && data.myDashboardCourses.length > 0 ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                                {data.myDashboardCourses.map((course, index) => <CourseCard key={course.id} course={course as AppCourseType} userRole="STUDENT" priority={index < 3} onEnrollmentChange={onEnrollmentChange}/>)}
-                            </div>
+                            <CourseCarousel courses={data.myDashboardCourses} userRole="STUDENT" onEnrollmentChange={onEnrollmentChange}/>
                         ) : (
                             <Card className="col-span-full flex flex-col items-center justify-center p-8 text-center border-dashed"><GraduationCap className="h-10 w-10 text-muted-foreground mb-2" /><h3 className="font-semibold">Empieza tu viaje de aprendizaje</h3><p className="text-sm text-muted-foreground mb-4">No estás inscrito en ningún curso todavía.</p><Button asChild><Link href="/courses">Explorar Catálogo</Link></Button></Card>
                         )}
@@ -142,7 +120,6 @@ function StudentDashboard({ data, onEnrollmentChange }: { data: DashboardData, o
                             <p className="text-xs text-muted-foreground mt-1">{user?.xp || 0} XP</p>
                         </CardContent>
                     </Card>
-                    <AnnouncementsList announcements={data.recentAnnouncements} />
                 </div>
             </div>
         </div>
@@ -166,7 +143,6 @@ function InstructorDashboard({ data }: { data: DashboardData }) {
                             <Button asChild variant="outline" className="h-16 justify-start p-4 text-left"><Link href="/enrollments"><UsersRound className="mr-3 h-5 w-5 text-primary"/><div><p className="font-semibold">Ver Inscritos</p><p className="text-xs text-muted-foreground">Seguimiento de alumnos</p></div></Link></Button>
                          </CardContent>
                     </Card>
-                    <AnnouncementsList announcements={data.recentAnnouncements} />
                 </div>
                 <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
                      <Card>
@@ -184,7 +160,7 @@ function AdminDashboard({ data, onParticipate }: { data: DashboardData, onPartic
     return (
         <div className="space-y-8">
              <InteractiveEventsWidget events={data.interactiveEventsToday || []} onParticipate={onParticipate} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <MetricCard title="Usuarios Totales" value={stats?.totalUsers || 0} icon={UsersRound} gradient="bg-gradient-blue" />
                 <MetricCard title="Cursos Totales" value={stats?.totalCourses || 0} icon={Layers} gradient="bg-gradient-green" />
                 <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={GraduationCap} gradient="bg-gradient-purple" />
