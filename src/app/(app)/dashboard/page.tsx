@@ -1,4 +1,3 @@
-
 // src/app/(app)/dashboard/page.tsx
 'use client';
 
@@ -7,27 +6,21 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { 
-  ArrowRight,
   BookOpenCheck, 
   GraduationCap,
   UsersRound,
-  FileText,
-  BadgePercent,
-  Hand,
   Layers,
   HelpCircle,
   Calendar as CalendarIcon,
-  Bell,
-  Trophy,
-  Folder,
   Megaphone,
   LineChart,
   Settings,
   ShieldAlert,
   Users,
-  BookMarked
+  BookMarked,
+  Hand
 } from 'lucide-react';
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import type { AdminDashboardStats, EnrolledCourse, Course as AppCourseType, Announcement as AnnouncementType, CalendarEvent, UserRole, SecurityLog } from '@/types';
 import type { User as PrismaUser } from '@prisma/client';
 import { Skeleton } from "@/components/ui/skeleton";
@@ -35,13 +28,10 @@ import { CourseCard } from '@/components/course-card';
 import { useTitle } from '@/contexts/title-context';
 import { adminDashboardTour, studentDashboardTour, instructorDashboardTour } from '@/lib/tour-steps';
 import { useTour } from '@/contexts/tour-context';
+import { format, startOfDay, endOfDay, subDays } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { format, isSameDay, startOfDay, endOfDay, subDays, isValid, parseISO, addMonths, startOfWeek, endOfWeek } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { Separator } from '@/components/ui/separator';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
-import { ComposedChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, Legend, ResponsiveContainer, Area, Line, PieChart, Pie, Cell, Sector } from 'recharts';
-import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { MetricCard } from '@/components/analytics/metric-card';
 import { useToast } from '@/hooks/use-toast';
 import type { DateRange } from 'react-day-picker';
@@ -51,9 +41,6 @@ import Image from 'next/image';
 import { expandRecurringEvents } from '@/lib/calendar-utils';
 import { Calendar } from '@/components/ui/calendar';
 import { useRouter } from 'next/navigation';
-import { DonutChart } from '@/components/analytics/donut-chart';
-import { AtRiskUsersCard } from '@/components/security/at-risk-users-card';
-import { DeviceDistributionChart } from '@/components/security/device-distribution-chart';
 
 // --- TYPE DEFINITIONS ---
 interface DashboardData {
@@ -62,47 +49,13 @@ interface DashboardData {
     instructorStats?: { taught: number; students: number };
     recentAnnouncements: AnnouncementType[];
     myDashboardCourses?: EnrolledCourse[];
-    upcomingEvents?: CalendarEvent[];
     allCalendarEvents?: CalendarEvent[];
     assignedCourses?: AppCourseType[];
     interactiveEventsToday?: (CalendarEvent & { hasParticipated?: boolean })[];
     securityLogs?: SecurityLog[];
 }
 
-
-// --- UTILITY & HELPER FUNCTIONS ---
-const formatDateTick = (tick: string): string => {
-  const date = parseISO(tick);
-  if (!isValid(date)) return tick;
-  if (date.getDate() === 1) return format(date, "d MMM", { locale: es });
-  return format(date, "d", { locale: es });
-};
-
-const formatDateTooltip = (dateString: string) => {
-    try {
-        const date = parseISO(dateString);
-        return format(date, "EEEE, d 'de' MMMM", { locale: es });
-    } catch (e) {
-        return dateString;
-    }
-};
-
-const userRolesChartConfig = {
-    count: { label: "Usuarios" },
-    STUDENT: { label: "Estudiantes", color: "hsl(var(--chart-1))" },
-    INSTRUCTOR: { label: "Instructores", color: "hsl(var(--chart-2))" },
-    ADMINISTRATOR: { label: "Administradores", color: "hsl(var(--chart-3))" },
-};
-
-const courseStatusChartConfig = {
-    count: { label: "Cursos" },
-    DRAFT: { label: "Borrador", color: "hsl(var(--chart-4))" },
-    PUBLISHED: { label: "Publicado", color: "hsl(var(--chart-1))" },
-    ARCHIVED: { label: "Archivado", color: "hsl(var(--chart-5))" },
-};
-
-
-// --- REUSABLE WIDGETS ---
+// --- WIDGETS REUTILIZABLES ---
 
 const MiniCalendar = ({ events, currentDate, onDateSelect }: { events: CalendarEvent[], currentDate: Date, onDateSelect: (date: Date) => void }) => (
     <Card className="h-full">
@@ -136,11 +89,7 @@ const InteractiveEventsWidget = ({ events, onParticipate }: { events: (CalendarE
     );
 };
 
-const UpcomingEvents = ({ events }: { events: CalendarEvent[] }) => (
-    <Card><CardHeader><CardTitle className="text-base flex items-center gap-2"><CalendarIcon className="h-4 w-4 text-primary"/>Próximos Eventos</CardTitle></CardHeader><CardContent>{events.length > 0 ? (<div className="space-y-3">{events.map(event => (<Link href="/calendar" key={event.id} className="block group"><div className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"><div className="w-1.5 h-full rounded-full bg-primary" /><div className="overflow-hidden"><p className="font-semibold text-sm truncate group-hover:text-primary">{event.title}</p><p className="text-xs text-muted-foreground">{format(new Date(event.start), "d MMM, p", {locale: es})}</p></div></div></Link>))}</div>) : (<div className="flex flex-col items-center justify-center p-4 text-center"><p className="text-sm text-muted-foreground">No hay eventos próximos.</p></div>)}</CardContent></Card>
-);
-
-const RecentlyAccessed = ({ courses, assignedCourses, onEnrollmentChange }: { courses: EnrolledCourse[], assignedCourses: AppCourseType[], onEnrollmentChange: (courseId: string, status: boolean) => void }) => (
+const RecentlyAccessedCourses = ({ courses, assignedCourses, onEnrollmentChange }: { courses: EnrolledCourse[], assignedCourses: AppCourseType[], onEnrollmentChange: (courseId: string, status: boolean) => void }) => (
     <div>
         {assignedCourses.length > 0 && (
             <div className="mb-8">
@@ -162,7 +111,7 @@ const RecentlyAccessed = ({ courses, assignedCourses, onEnrollmentChange }: { co
 );
 
 
-// --- ROLE-SPECIFIC DASHBOARDS ---
+// --- DASHBOARDS POR ROL ---
 
 function StudentDashboard({ data, onParticipate, onEnrollmentChange }: { data: DashboardData, onParticipate: (eventId: string, occurrenceDate: string) => void, onEnrollmentChange: (courseId: string, status: boolean) => void }) {
     const [selectedDate, setSelectedDate] = useState(new Date());
@@ -175,11 +124,10 @@ function StudentDashboard({ data, onParticipate, onEnrollmentChange }: { data: D
             </div>
              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                  <div className="lg:col-span-2 space-y-8">
-                    <RecentlyAccessed courses={data.myDashboardCourses || []} assignedCourses={data.assignedCourses || []} onEnrollmentChange={onEnrollmentChange} />
+                    <RecentlyAccessedCourses courses={data.myDashboardCourses || []} assignedCourses={data.assignedCourses || []} onEnrollmentChange={onEnrollmentChange} />
                  </div>
                  <div className="lg:col-span-1 space-y-6">
                     <MiniCalendar events={data.allCalendarEvents || []} currentDate={selectedDate} onDateSelect={setSelectedDate} />
-                    <UpcomingEvents events={data.upcomingEvents || []} />
                     <AnnouncementsList announcements={data.recentAnnouncements || []} />
                  </div>
              </div>
@@ -189,7 +137,6 @@ function StudentDashboard({ data, onParticipate, onEnrollmentChange }: { data: D
 
 function InstructorDashboard({ data }: { data: DashboardData }) {
     const [selectedDate, setSelectedDate] = useState(new Date());
-    const router = useRouter();
     return (
         <div className="space-y-8">
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -209,35 +156,15 @@ function InstructorDashboard({ data }: { data: DashboardData }) {
                 </div>
                  <div className="lg:col-span-1 space-y-6">
                     <MiniCalendar events={data.allCalendarEvents || []} currentDate={selectedDate} onDateSelect={setSelectedDate} />
-                    <UpcomingEvents events={data.upcomingEvents || []} />
                 </div>
             </div>
         </div>
     );
 }
 
-function AdminDashboard({ data, onParticipate, onSuspendUser }: { data: DashboardData, onParticipate: (eventId: string, occurrenceDate: string) => void, onSuspendUser: (user: any) => void }) {
+function AdminDashboard({ data, onParticipate }: { data: DashboardData, onParticipate: (eventId: string, occurrenceDate: string) => void }) {
     const stats = data.adminStats;
     const router = useRouter();
-    
-    const userRolesChartData = useMemo(() => {
-        if (!stats?.usersByRole) return [];
-        return ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'].map(role => ({
-            role: role,
-            label: userRolesChartConfig[role as 'STUDENT' | 'INSTRUCTOR' | 'ADMINISTRATOR']?.label || role,
-            count: stats.usersByRole.find(item => item.role === role)?.count || 0,
-            fill: userRolesChartConfig[role as 'STUDENT' | 'INSTRUCTOR' | 'ADMINISTRATOR']?.color || 'hsl(var(--muted))'
-        })).filter(item => item.count > 0);
-    }, [stats?.usersByRole]);
-    const courseStatusChartData = useMemo(() => {
-        if (!stats?.coursesByStatus) return [];
-        return ['DRAFT', 'PUBLISHED', 'ARCHIVED'].map(status => ({
-            status: status,
-            label: courseStatusChartConfig[status as 'DRAFT' | 'PUBLISHED' | 'ARCHIVED']?.label || status,
-            count: stats.coursesByStatus.find(item => item.status === status)?.count || 0,
-            fill: courseStatusChartConfig[status as 'DRAFT' | 'PUBLISHED' | 'ARCHIVED']?.color || 'hsl(var(--muted))'
-        })).filter(item => item.count > 0);
-    }, [stats?.coursesByStatus]);
 
     return (
         <div className="space-y-6">
@@ -246,42 +173,18 @@ function AdminDashboard({ data, onParticipate, onSuspendUser }: { data: Dashboar
                 <MetricCard title="Usuarios Totales" value={stats?.totalUsers || 0} icon={UsersRound} gradient="bg-gradient-blue" trendData={stats?.userRegistrationTrend || []} dataKey="newUsers"/>
                 <MetricCard title="Cursos Totales" value={stats?.totalCourses || 0} icon={Layers} gradient="bg-gradient-green" trendData={stats?.userRegistrationTrend || []} dataKey="newCourses"/>
                 <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={GraduationCap} gradient="bg-gradient-purple" trendData={stats?.userRegistrationTrend || []} dataKey="newEnrollments"/>
-                <MetricCard title="Finalización" value={stats?.averageCompletionRate || 0} icon={BadgePercent} suffix="%" description="Promedio" gradient="bg-gradient-orange" />
+                <MetricCard title="Finalización" value={stats?.averageCompletionRate || 0} icon={BookOpenCheck} suffix="%" description="Promedio" gradient="bg-gradient-orange" />
             </div>
             
-             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
-                <Card className="lg:col-span-2 xl:col-span-2">
-                    <CardHeader>
-                        <CardTitle>Tendencia de Actividad</CardTitle>
-                        <CardDescription>Actividad en el rango de fechas seleccionado.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="h-80 pr-4 -ml-4">
-                        <ChartContainer config={{ newCourses: { label: "Cursos", color: "hsl(var(--chart-2))" }, newUsers: { label: "Usuarios", color: "hsl(var(--chart-1))" }, newEnrollments: { label: "Inscripciones", color: "hsl(var(--chart-3))" }}} className="w-full h-full">
-                            <ResponsiveContainer>
-                                <ComposedChart data={stats?.userRegistrationTrend || []} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                    <XAxis dataKey="date" tickLine={false} axisLine={true} tickMargin={10} tickFormatter={formatDateTick} interval={'preserveStartEnd'} />
-                                    <YAxis allowDecimals={false} tickLine={false} axisLine={true} tickMargin={10} width={30}/>
-                                    <ChartTooltip cursor={{ fill: 'hsl(var(--muted))', radius: 4 }} content={<ChartTooltipContent indicator="dot" labelFormatter={formatDateTooltip} />} />
-                                    <Legend />
-                                    <Bar dataKey="newUsers" name="Usuarios" fill="var(--color-newUsers)" radius={4} />
-                                    <Area type="monotone" dataKey="newEnrollments" name="Inscripciones" fill="var(--color-newEnrollments)" stroke="var(--color-newEnrollments)" strokeWidth={2} fillOpacity={0.3} dot={false}/>
-                                </ComposedChart>
-                            </ResponsiveContainer>
-                        </ChartContainer>
-                    </CardContent>
-                </Card>
-                <div className="space-y-6">
-                    <DonutChart title="Distribución de Roles" data={userRolesChartData} config={userRolesChartConfig} />
-                    <DonutChart title="Estado de Cursos" data={courseStatusChartData} config={courseStatusChartConfig} />
+             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                <div className="lg:col-span-2 space-y-6">
+                     <Card>
+                        <CardHeader><CardTitle className="text-base">Actividad de Seguridad Reciente</CardTitle></CardHeader>
+                        <CardContent><SecurityLogTimeline logs={data.securityLogs || []} onLogClick={() => router.push('/security-audit')} /></CardContent>
+                    </Card>
+                     <AnnouncementsList announcements={data.recentAnnouncements || []} />
                 </div>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-                <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <DeviceDistributionChart browserData={stats?.browsers} osData={stats?.os} isLoading={false}/>
-                    <AtRiskUsersCard users={stats?.atRiskUsers || []} onSuspend={onSuspendUser} isLoading={false} />
-                </div>
-                 <div className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-1 space-y-6">
                     <Card>
                         <CardHeader><CardTitle className="text-base">Accesos Rápidos</CardTitle></CardHeader>
                         <CardContent className="grid grid-cols-2 gap-2">
@@ -291,22 +194,17 @@ function AdminDashboard({ data, onParticipate, onSuspendUser }: { data: Dashboar
                             <Button asChild variant="outline"><Link href="/analytics"><LineChart className="mr-2 h-4 w-4"/>Analíticas</Link></Button>
                         </CardContent>
                     </Card>
-                    <Card>
-                        <CardHeader><CardTitle className="text-base">Actividad de Seguridad Reciente</CardTitle></CardHeader>
-                        <CardContent><SecurityLogTimeline logs={data.securityLogs || []} onLogClick={() => router.push('/security-audit')} /></CardContent>
-                    </Card>
-                    <AnnouncementsList announcements={data.recentAnnouncements || []} />
+                    <MiniCalendar events={data.allCalendarEvents || []} currentDate={new Date()} onDateSelect={() => {}} />
                 </div>
             </div>
         </div>
     );
 }
 
-// --- MAIN PAGE COMPONENT ---
+// --- COMPONENTE PRINCIPAL DE LA PÁGINA ---
 export default function DashboardPage() {
   const { user, settings } = useAuth();
   const { setPageTitle } = useTitle();
-  const router = useRouter();
   const { startTour } = useTour();
   const [data, setData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -357,17 +255,15 @@ export default function DashboardPage() {
       }
   };
 
-  const handleSuspendUser = (userToSuspend: any) => {
-    // Implementar la lógica o modal de suspensión aquí si es necesario
-    console.log("Suspender usuario:", userToSuspend);
-    toast({ title: "Acción requerida", description: `Considera suspender al usuario ${userToSuspend.name} desde la página de auditoría.`})
+  const handleEnrollmentChange = () => {
+      fetchDashboardData();
   }
 
   const renderContentForRole = () => {
     if (!user || !data) return null;
-    const commonProps = { data, onParticipate: handleParticipate, onEnrollmentChange: fetchDashboardData };
+    const commonProps = { data, onParticipate, onEnrollmentChange: handleEnrollmentChange };
     switch (user?.role) {
-      case 'ADMINISTRATOR': return <AdminDashboard data={data} onParticipate={handleParticipate} onSuspendUser={handleSuspendUser} />;
+      case 'ADMINISTRATOR': return <AdminDashboard {...commonProps} />;
       case 'INSTRUCTOR': return <InstructorDashboard {...commonProps} />;
       case 'STUDENT': return <StudentDashboard {...commonProps} />;
       default: return <p>Rol de usuario no reconocido.</p>;
@@ -386,9 +282,6 @@ export default function DashboardPage() {
                 {user?.role === 'ADMINISTRATOR' && (
                     <DateRangePicker date={dateRange} onDateChange={setDateRange} />
                 )}
-                 <div className="flex-shrink-0 w-32 h-32 hidden md:block">
-                     {settings?.securityMascotUrl && <Image src={settings.securityMascotUrl} alt="Mascota" width={128} height={128} data-ai-hint="friendly mascot" />}
-                 </div>
             </div>
         </div>
       
