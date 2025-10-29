@@ -22,10 +22,12 @@ import {
   Megaphone,
   LineChart,
   Settings,
-  ShieldAlert
+  ShieldAlert,
+  Users,
+  BookMarked
 } from 'lucide-react';
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import type { AdminDashboardStats, EnrolledCourse, Course as AppCourseType, Announcement as AnnouncementType, CalendarEvent, UserRole } from '@/types';
+import type { AdminDashboardStats, EnrolledCourse, Course as AppCourseType, Announcement as AnnouncementType, CalendarEvent, UserRole, SecurityLog } from '@/types';
 import type { User as PrismaUser } from '@prisma/client';
 import { Skeleton } from "@/components/ui/skeleton";
 import { CourseCard } from '@/components/course-card';
@@ -48,8 +50,10 @@ import Image from 'next/image';
 import { expandRecurringEvents } from '@/lib/calendar-utils';
 import { Calendar } from '@/components/ui/calendar';
 import { useRouter } from 'next/navigation';
+import { DonutChart } from '@/components/analytics/donut-chart';
+import { AnimatedGlobe } from '@/components/analytics/animated-globe';
 
-
+// --- TYPE DEFINITIONS ---
 interface DashboardData {
     adminStats?: AdminDashboardStats;
     studentStats?: { enrolled: number; completed: number };
@@ -60,10 +64,11 @@ interface DashboardData {
     allCalendarEvents?: CalendarEvent[];
     assignedCourses?: AppCourseType[];
     interactiveEventsToday?: (CalendarEvent & { hasParticipated?: boolean })[];
-    securityLogs?: any[];
+    securityLogs?: SecurityLog[];
 }
 
 
+// --- UTILITY & HELPER FUNCTIONS ---
 const formatDateTick = (tick: string): string => {
   const date = parseISO(tick);
   if (!isValid(date)) return tick;
@@ -80,52 +85,39 @@ const formatDateTooltip = (dateString: string) => {
     }
 };
 
-const MiniCalendar = ({ events, currentDate, onDateSelect }: { events: CalendarEvent[], currentDate: Date, onDateSelect: (date: Date) => void }) => {
-    return (
-      <Card className="h-full">
-        <CardContent className="p-1">
-          <Calendar
-            mode="single" selected={currentDate} onSelect={(day) => day && onDateSelect(day)}
-            className="rounded-md" locale={es}
-            classNames={{
-                month: "space-y-2",
-                caption_label: "text-sm font-medium",
-                nav_button: "h-7 w-7",
-                table: "w-full border-collapse",
-                head_cell: "w-8 text-muted-foreground rounded-md text-[0.8rem]",
-                row: "flex w-full mt-1",
-                cell: "h-8 w-8 text-center text-sm p-0 relative",
-                day: "h-8 w-8 p-0",
-                day_today: "bg-accent/50 text-accent-foreground rounded-full",
-                day_selected: "bg-primary text-primary-foreground rounded-full hover:bg-primary hover:text-primary-foreground",
-            }}
-            events={events}
-          />
-        </CardContent>
-      </Card>
-    );
+const userRolesChartConfig = {
+    count: { label: "Usuarios" },
+    STUDENT: { label: "Estudiantes", color: "hsl(var(--chart-1))" },
+    INSTRUCTOR: { label: "Instructores", color: "hsl(var(--chart-2))" },
+    ADMINISTRATOR: { label: "Administradores", color: "hsl(var(--chart-3))" },
 };
+
+const courseStatusChartConfig = {
+    count: { label: "Cursos" },
+    DRAFT: { label: "Borrador", color: "hsl(var(--chart-4))" },
+    PUBLISHED: { label: "Publicado", color: "hsl(var(--chart-1))" },
+    ARCHIVED: { label: "Archivado", color: "hsl(var(--chart-5))" },
+};
+
+
+// --- REUSABLE WIDGETS ---
+
+const MiniCalendar = ({ events, currentDate, onDateSelect }: { events: CalendarEvent[], currentDate: Date, onDateSelect: (date: Date) => void }) => (
+    <Card className="h-full">
+        <CardContent className="p-1">
+            <Calendar mode="single" selected={currentDate} onSelect={(day) => day && onDateSelect(day)} className="rounded-md" locale={es} events={events} />
+        </CardContent>
+    </Card>
+);
 
 const AnnouncementsList = ({ announcements }: { announcements: AnnouncementType[] }) => (
     <Card className="h-full">
-      <CardHeader>
-        <CardTitle className="text-base flex items-center gap-2">
-            <Megaphone className="h-4 w-4 text-primary"/>Anuncios Recientes
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {announcements.length > 0 ? announcements.map(ann => (
-          <Link href="/messages" key={ann.id} className="block group">
-            <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-              <div className="w-1.5 h-10 rounded-full shrink-0 bg-primary"/>
-              <div className="overflow-hidden">
-                <p className="font-semibold text-sm truncate group-hover:text-primary">{ann.title}</p>
-                <p className="text-xs text-muted-foreground truncate">{ann.author?.name || 'Sistema'}</p>
-              </div>
-            </div>
-          </Link>
-        )) : <p className="text-center text-sm text-muted-foreground py-4">No hay anuncios recientes.</p>}
-      </CardContent>
+        <CardHeader><CardTitle className="text-base flex items-center gap-2"><Megaphone className="h-4 w-4 text-primary"/>Anuncios Recientes</CardTitle></CardHeader>
+        <CardContent className="space-y-3">
+            {announcements.length > 0 ? announcements.map(ann => (
+                <Link href="/messages" key={ann.id} className="block group"><div className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"><div className="w-1.5 h-10 rounded-full shrink-0 bg-primary/70"/><div className="overflow-hidden"><p className="font-semibold text-sm truncate group-hover:text-primary">{ann.title}</p><p className="text-xs text-muted-foreground truncate">{ann.author?.name || 'Sistema'}</p></div></div></Link>
+            )) : <p className="text-center text-sm text-muted-foreground py-4">No hay anuncios recientes.</p>}
+        </CardContent>
     </Card>
 );
 
@@ -135,52 +127,15 @@ const InteractiveEventsWidget = ({ events, onParticipate }: { events: (CalendarE
         <div className="space-y-4">
             {events.map(event => (
                 <Card key={event.id} className="bg-gradient-to-br from-green-500 to-teal-500 text-white shadow-lg">
-                    <CardContent className="p-4 flex items-center justify-between">
-                         <div className="space-y-1">
-                             <CardTitle className="text-base flex items-center gap-2"><Hand/> {event.title}</CardTitle>
-                             <p className="text-sm opacity-90">{event.description || 'Confirma tu participación para ganar puntos.'}</p>
-                         </div>
-                        <Button 
-                            className="bg-white text-green-600 hover:bg-white/90"
-                            onClick={() => onParticipate(event.parentId || event.id, event.start)}
-                            disabled={event.hasParticipated}
-                        >
-                            {event.hasParticipated ? '¡Completado!' : '¡Confirmar!'}
-                        </Button>
-                    </CardContent>
+                    <CardContent className="p-4 flex items-center justify-between"><div className="space-y-1"><CardTitle className="text-base flex items-center gap-2"><Hand/> {event.title}</CardTitle><p className="text-sm opacity-90">{event.description || 'Confirma tu participación para ganar puntos.'}</p></div><Button className="bg-white text-green-600 hover:bg-white/90" onClick={() => onParticipate(event.parentId || event.id, event.start)} disabled={event.hasParticipated}>{event.hasParticipated ? '¡Completado!' : '¡Confirmar!'}</Button></CardContent>
                 </Card>
             ))}
         </div>
-    )
-}
+    );
+};
 
 const UpcomingEvents = ({ events }: { events: CalendarEvent[] }) => (
-    <Card>
-        <CardHeader>
-             <CardTitle className="text-base flex items-center gap-2"><CalendarIcon className="h-4 w-4 text-primary"/>Próximos Eventos</CardTitle>
-        </CardHeader>
-        <CardContent>
-            {events.length > 0 ? (
-                <div className="space-y-3">
-                    {events.map(event => (
-                        <Link href="/calendar" key={event.id} className="block group">
-                           <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                              <div className="w-1.5 h-full rounded-full bg-primary" />
-                              <div className="overflow-hidden">
-                                <p className="font-semibold text-sm truncate group-hover:text-primary">{event.title}</p>
-                                <p className="text-xs text-muted-foreground">{format(new Date(event.start), "d MMM, p", {locale: es})}</p>
-                              </div>
-                           </div>
-                        </Link>
-                    ))}
-                </div>
-            ) : (
-                <div className="flex flex-col items-center justify-center p-4 text-center">
-                    <p className="text-sm text-muted-foreground">No hay eventos próximos.</p>
-                </div>
-            )}
-        </CardContent>
-    </Card>
+    <Card><CardHeader><CardTitle className="text-base flex items-center gap-2"><CalendarIcon className="h-4 w-4 text-primary"/>Próximos Eventos</CardTitle></CardHeader><CardContent>{events.length > 0 ? (<div className="space-y-3">{events.map(event => (<Link href="/calendar" key={event.id} className="block group"><div className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"><div className="w-1.5 h-full rounded-full bg-primary" /><div className="overflow-hidden"><p className="font-semibold text-sm truncate group-hover:text-primary">{event.title}</p><p className="text-xs text-muted-foreground">{format(new Date(event.start), "d MMM, p", {locale: es})}</p></div></div></Link>))}</div>) : (<div className="flex flex-col items-center justify-center p-4 text-center"><p className="text-sm text-muted-foreground">No hay eventos próximos.</p></div>)}</CardContent></Card>
 );
 
 const RecentlyAccessed = ({ courses, assignedCourses, onEnrollmentChange }: { courses: EnrolledCourse[], assignedCourses: AppCourseType[], onEnrollmentChange: (courseId: string, status: boolean) => void }) => (
@@ -204,6 +159,8 @@ const RecentlyAccessed = ({ courses, assignedCourses, onEnrollmentChange }: { co
     </div>
 );
 
+
+// --- ROLE-SPECIFIC DASHBOARDS ---
 
 function StudentDashboard({ data, onParticipate, onEnrollmentChange }: { data: DashboardData, onParticipate: (eventId: string, occurrenceDate: string) => void, onEnrollmentChange: (courseId: string, status: boolean) => void }) {
     const [selectedDate, setSelectedDate] = useState(new Date());
@@ -230,7 +187,8 @@ function StudentDashboard({ data, onParticipate, onEnrollmentChange }: { data: D
 
 function InstructorDashboard({ data }: { data: DashboardData }) {
     const [selectedDate, setSelectedDate] = useState(new Date());
-     return (
+    const router = useRouter();
+    return (
         <div className="space-y-8">
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                  <MetricCard title="Cursos Creados" value={data.instructorStats?.taught || 0} icon={Layers} gradient="bg-gradient-blue" />
@@ -258,20 +216,37 @@ function InstructorDashboard({ data }: { data: DashboardData }) {
 
 function AdminDashboard({ data, onParticipate }: { data: DashboardData, onParticipate: (eventId: string, occurrenceDate: string) => void }) {
     const stats = data.adminStats;
-    const [selectedDate, setSelectedDate] = useState(new Date());
     const router = useRouter();
+    const userRolesChartData = useMemo(() => {
+        if (!stats?.usersByRole) return [];
+        return ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'].map(role => ({
+            role: role,
+            label: userRolesChartConfig[role as 'STUDENT' | 'INSTRUCTOR' | 'ADMINISTRATOR']?.label || role,
+            count: stats.usersByRole.find(item => item.role === role)?.count || 0,
+            fill: userRolesChartConfig[role as 'STUDENT' | 'INSTRUCTOR' | 'ADMINISTRATOR']?.color || 'hsl(var(--muted))'
+        })).filter(item => item.count > 0);
+    }, [stats?.usersByRole]);
+    const courseStatusChartData = useMemo(() => {
+        if (!stats?.coursesByStatus) return [];
+        return ['DRAFT', 'PUBLISHED', 'ARCHIVED'].map(status => ({
+            status: status,
+            label: courseStatusChartConfig[status as 'DRAFT' | 'PUBLISHED' | 'ARCHIVED']?.label || status,
+            count: stats.coursesByStatus.find(item => item.status === status)?.count || 0,
+            fill: courseStatusChartConfig[status as 'DRAFT' | 'PUBLISHED' | 'ARCHIVED']?.color || 'hsl(var(--muted))'
+        })).filter(item => item.count > 0);
+    }, [stats?.coursesByStatus]);
 
     return (
         <div className="space-y-6">
             <InteractiveEventsWidget events={data.interactiveEventsToday || []} onParticipate={onParticipate} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <MetricCard title="Usuarios" value={stats?.totalUsers || 0} icon={UsersRound} gradient="bg-gradient-blue" />
                 <MetricCard title="Cursos" value={stats?.totalCourses || 0} icon={Layers} gradient="bg-gradient-green"/>
                 <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={GraduationCap} gradient="bg-gradient-purple" />
-                <MetricCard title="Recursos" value={stats?.totalResources || 0} icon={Folder} gradient="bg-gradient-orange" />
+                <MetricCard title="Finalización" value={stats?.averageCompletionRate || 0} icon={BadgePercent} suffix="%" description="Promedio" gradient="bg-gradient-orange" />
             </div>
             
-             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
+             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
                 <div className="xl:col-span-2 space-y-6">
                     <Card>
                         <CardHeader>
@@ -295,32 +270,39 @@ function AdminDashboard({ data, onParticipate }: { data: DashboardData, onPartic
                             </ChartContainer>
                         </CardContent>
                     </Card>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                       <DonutChart title="Distribución de Roles" data={userRolesChartData} config={userRolesChartConfig}/>
+                       <DonutChart title="Estado de Cursos" data={courseStatusChartData} config={courseStatusChartConfig}/>
+                    </div>
+                </div>
+                <div className="xl:col-span-1 space-y-6">
                     <Card>
                         <CardHeader><CardTitle className="text-base">Accesos Rápidos</CardTitle></CardHeader>
-                        <CardContent className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                            <Button asChild variant="outline"><Link href="/manage-courses"><Layers className="mr-2 h-4 w-4"/>Cursos</Link></Button>
-                            <Button asChild variant="outline"><Link href="/users"><UsersRound className="mr-2 h-4 w-4"/>Usuarios</Link></Button>
+                        <CardContent className="grid grid-cols-2 gap-2">
+                            <Button asChild variant="outline"><Link href="/manage-courses"><BookMarked className="mr-2 h-4 w-4"/>Cursos</Link></Button>
+                            <Button asChild variant="outline"><Link href="/users"><Users className="mr-2 h-4 w-4"/>Usuarios</Link></Button>
                             <Button asChild variant="outline"><Link href="/settings"><Settings className="mr-2 h-4 w-4"/>Ajustes</Link></Button>
                             <Button asChild variant="outline"><Link href="/analytics"><LineChart className="mr-2 h-4 w-4"/>Analíticas</Link></Button>
                         </CardContent>
                     </Card>
-                </div>
-                <div className="xl:col-span-1 space-y-6">
-                    <MiniCalendar events={data.allCalendarEvents || []} currentDate={selectedDate} onDateSelect={setSelectedDate} />
-                    <AnnouncementsList announcements={data.recentAnnouncements || []} />
                     <Card>
                         <CardHeader><CardTitle className="text-base">Última Actividad de Seguridad</CardTitle></CardHeader>
                         <CardContent><SecurityLogTimeline logs={data.securityLogs || []} onLogClick={() => router.push('/security-audit')} /></CardContent>
                     </Card>
+                    <div className="flex items-center justify-center opacity-70">
+                       <AnimatedGlobe />
+                    </div>
                 </div>
             </div>
         </div>
     );
 }
 
+// --- MAIN PAGE COMPONENT ---
 export default function DashboardPage() {
   const { user, settings } = useAuth();
   const { setPageTitle } = useTitle();
+  const router = useRouter();
   const { startTour } = useTour();
   const [data, setData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -328,55 +310,35 @@ export default function DashboardPage() {
   const { toast } = useToast();
   
   const fetchDashboardData = useCallback(async () => {
-    if (!user) {
-        setIsLoading(false);
-        return;
-    }
-    setIsLoading(true);
-    setError(null);
+    if (!user) { setIsLoading(false); return; }
+    setIsLoading(true); setError(null);
     try {
         const res = await fetch(`/api/dashboard/data`, { cache: 'no-store' });
-        if (!res.ok) {
-            const errorData = await res.json().catch(() => ({ message: `Error ${res.status}` }));
-            throw new Error(errorData.message || `Error al obtener datos del dashboard`);
-        }
-        const dashboardData = await res.json();
-        setData(dashboardData);
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).message || `Error al obtener datos`);
+        setData(await res.json());
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al obtener los datos del dashboard';
-      setError(errorMessage);
+      setError(err instanceof Error ? err.message : 'Error al obtener los datos del dashboard');
     } finally {
       setIsLoading(false);
     }
   }, [user]);
 
-  const handleEnrollmentChange = useCallback(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData]);
-
-  useEffect(() => {
-      fetchDashboardData();
-  }, [fetchDashboardData]);
+  useEffect(() => { fetchDashboardData(); }, [fetchDashboardData]);
 
   useEffect(() => {
     setPageTitle('Panel Principal');
     if (!user) return;
-    
-    const tourKey = user.role === 'ADMINISTRATOR' ? 'adminDashboard' : (user.role === 'INSTRUCTOR' ? 'instructorDashboard' : 'studentDashboard');
-    const tourSteps = user.role === 'ADMINISTRATOR' ? adminDashboardTour : (user.role === 'INSTRUCTOR' ? instructorDashboardTour : studentDashboardTour);
-    startTour(tourKey, tourSteps);
+    const tourKeyMap = { ADMINISTRATOR: 'adminDashboard', INSTRUCTOR: 'instructorDashboard', STUDENT: 'studentDashboard' };
+    const tourStepsMap = { ADMINISTRATOR: adminDashboardTour, INSTRUCTOR: instructorDashboardTour, STUDENT: studentDashboardTour };
+    startTour(tourKeyMap[user.role], tourStepsMap[user.role]);
   }, [setPageTitle, startTour, user]);
   
   const handleParticipate = async (eventId: string, occurrenceDate: string) => {
       try {
-          const res = await fetch('/api/events/participate', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ eventId, occurrenceDate }),
-          });
+          const res = await fetch('/api/events/participate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ eventId, occurrenceDate }) });
           if (!res.ok) throw new Error((await res.json()).message || 'No se pudo registrar la participación.');
           toast({ title: "¡Participación Registrada!", description: "Has ganado puntos de experiencia. ¡Bien hecho!" });
-          fetchDashboardData(); // Recargar datos para actualizar estado
+          fetchDashboardData();
       } catch (err) {
           toast({ title: "Error", description: (err as Error).message, variant: "destructive" });
       }
@@ -384,14 +346,11 @@ export default function DashboardPage() {
 
   const renderContentForRole = () => {
     if (!user || !data) return null;
-    
+    const commonProps = { data, onParticipate: handleParticipate, onEnrollmentChange: fetchDashboardData };
     switch (user?.role) {
-      case 'ADMINISTRATOR':
-        return <AdminDashboard data={data} onParticipate={handleParticipate} />;
-      case 'INSTRUCTOR':
-        return <InstructorDashboard data={data} />;
-      case 'STUDENT':
-        return <StudentDashboard data={data} onParticipate={handleParticipate} onEnrollmentChange={handleEnrollmentChange} />;
+      case 'ADMINISTRATOR': return <AdminDashboard {...commonProps} />;
+      case 'INSTRUCTOR': return <InstructorDashboard {...commonProps} />;
+      case 'STUDENT': return <StudentDashboard {...commonProps} />;
       default: return <p>Rol de usuario no reconocido.</p>;
     }
   };
