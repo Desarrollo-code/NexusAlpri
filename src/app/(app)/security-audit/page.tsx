@@ -38,6 +38,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from '@/lib/utils';
+import { AtRiskUsersCard } from '@/components/security/at-risk-users-card';
 
 
 const PAGE_SIZE = 10;
@@ -53,56 +54,6 @@ const ALL_EVENTS: { value: SecurityLogEvent | 'ALL' | 'COURSE_MODIFICATIONS', la
     { value: 'TWO_FACTOR_ENABLED', label: 'Activaciones de 2FA' },
     { value: 'TWO_FACTOR_DISABLED', label: 'Desactivaciones de 2FA' },
 ];
-
-function AtRiskUsersCard({ users, onSuspend, isLoading }: { users: any[], onSuspend: (user: any) => void, isLoading: boolean }) {
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">Usuarios en Riesgo</CardTitle>
-                <CardDescription className="text-xs">
-                    Usuarios con más de 5 intentos fallidos de inicio de sesión en las últimas 24 horas.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                 {isLoading ? (
-                    <div className="space-y-2">
-                        {[...Array(2)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
-                    </div>
-                ) : users.length > 0 ? (
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Usuario</TableHead>
-                                <TableHead className="text-center">Intentos</TableHead>
-                                <TableHead className="text-right">Acción</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {users.map((user) => (
-                                <TableRow key={user.userId}>
-                                    <TableCell>
-                                        <div className="flex items-center gap-2">
-                                            <Avatar className="h-8 w-8"><AvatarImage src={user.avatar || undefined} /><AvatarFallback><Identicon userId={user.userId} /></AvatarFallback></Avatar>
-                                            <span className="font-medium text-sm truncate">{user.name || user.email}</span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-center font-bold text-destructive">{user.failedAttempts}</TableCell>
-                                    <TableCell className="text-right">
-                                        <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => onSuspend(user)}>
-                                            <UserX className="h-4 w-4" />
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                ) : (
-                    <p className="text-sm text-center text-muted-foreground py-4">No hay usuarios en riesgo actualmente.</p>
-                )}
-            </CardContent>
-        </Card>
-    )
-}
 
 function SecurityAuditPageComponent() {
     const { user: currentUser } = useAuth();
@@ -282,6 +233,7 @@ function SecurityAuditPageComponent() {
                             </CardFooter>
                          )}
                     </Card>
+                    <AtRiskUsersCard users={stats.atRiskUsers || []} onSuspend={setUserToSuspend} isLoading={isLoading} />
                 </div>
                  {/* Columna Central */}
                 <div className="lg:col-span-1 space-y-8">
@@ -300,7 +252,6 @@ function SecurityAuditPageComponent() {
                             </div>
                         </CardContent>
                     </Card>
-                    <AtRiskUsersCard users={stats.atRiskUsers || []} onSuspend={setUserToSuspend} isLoading={isLoading} />
                 </div>
                 
                  {/* Columna Derecha */}

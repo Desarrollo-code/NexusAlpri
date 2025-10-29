@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
     }
     
     const { searchParams } = new URL(req.url);
-    const eventType = searchParams.get('event') as SecurityLogEvent | 'ALL' | null;
+    const eventType = searchParams.get('event') as SecurityLogEvent | 'ALL' | 'COURSE_MODIFICATIONS' | null;
     const startDateParam = searchParams.get('startDate');
     const endDateParam = searchParams.get('endDate');
     const page = parseInt(searchParams.get('page') || '1', 10);
@@ -141,11 +141,9 @@ export async function GET(req: NextRequest) {
             .slice(0, 5)
             .map(([ip, data]) => ({ ip, ...data }));
             
-        // --- Calculate Security Score ---
         const totalLogins = successfulLogins + failedLogins;
         const securityScore = totalLogins > 0 ? (successfulLogins / totalLogins) * 100 : 100;
         
-        // Calculate 2FA Adoption
         const twoFactorAdoptionRate = totalActiveUsers > 0 ? (usersWith2FA / totalActiveUsers) * 100 : 0;
         
         const stats: SecurityStats = {

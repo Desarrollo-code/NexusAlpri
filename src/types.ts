@@ -313,6 +313,14 @@ export interface AdminDashboardStats {
     userRegistrationTrend: TrendData[];
     contentActivityTrend: { date: string, newCourses: number, newEnrollments: number }[];
     enrollmentTrend: TrendData[];
+    usersByRole: { role: UserRole; count: number }[];
+    coursesByStatus: { status: CourseStatus; count: number }[];
+    topCoursesByEnrollment: any[];
+    topCoursesByCompletion: any[];
+    lowestCoursesByCompletion: any[];
+    topStudentsByEnrollment: any[];
+    topStudentsByCompletion: any[];
+    topInstructorsByCourses: any[];
 }
 
 // --- TEMPLATES ---
