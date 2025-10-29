@@ -1,4 +1,3 @@
-
 // src/lib/course-utils.ts
 import type { Course as AppCourseType, CourseStatus } from '@/types';
 import type { Course as PrismaCourse } from '@prisma/client';
@@ -10,6 +9,7 @@ interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | '_count' 
   _count?: {
     modules?: number;
     enrollments?: number;
+    lessons?: number;
   };
   status: CourseStatus;
   averageCompletion?: number;
@@ -17,6 +17,8 @@ interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | '_count' 
 
 
 export function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCourseType {
+  const totalLessons = apiCourse.modules?.reduce((acc, mod) => acc + (mod._count?.lessons || 0), 0) || apiCourse._count?.lessons || 0;
+  
   return {
     id: apiCourse.id,
     title: apiCourse.title,
@@ -34,6 +36,7 @@ export function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCours
     instructorId: apiCourse.instructorId || undefined,
     imageUrl: apiCourse.imageUrl || undefined,
     modulesCount: apiCourse._count?.modules ?? 0,
+    lessonsCount: totalLessons,
     enrollmentsCount: apiCourse._count?.enrollments ?? 0,
     averageCompletion: apiCourse.averageCompletion,
     status: apiCourse.status,

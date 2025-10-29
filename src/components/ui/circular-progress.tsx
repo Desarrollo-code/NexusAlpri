@@ -7,10 +7,11 @@ interface CircularProgressProps extends React.SVGProps<SVGSVGElement> {
   size?: number;
   showValue?: boolean;
   valueTextClass?: string;
+  children?: React.ReactNode;
 }
 
 const CircularProgress = React.forwardRef<SVGSVGElement, CircularProgressProps>(
-  ({ value, strokeWidth = 10, size = 120, showValue = true, valueTextClass = "text-2xl font-bold", className, ...props }, ref) => {
+  ({ value, strokeWidth = 10, size = 120, showValue = true, valueTextClass = "text-2xl font-bold", children, className, ...props }, ref) => {
     const radius = (size - strokeWidth) / 2;
     const circumference = 2 * Math.PI * radius;
     // Clamp the value between 0 and 100
@@ -50,13 +51,15 @@ const CircularProgress = React.forwardRef<SVGSVGElement, CircularProgressProps>(
             style={{ transition: 'stroke-dashoffset 0.5s ease-out' }}
           />
         </svg>
-        {showValue && (
-            <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center justify-center">
+          {children ? (
+             children
+          ) : showValue ? (
             <span className={cn('text-foreground', valueTextClass)}>
                 {`${Math.round(clampedValue)}%`}
             </span>
-            </div>
-        )}
+          ) : null}
+        </div>
       </div>
     );
   }

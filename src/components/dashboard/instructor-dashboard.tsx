@@ -1,13 +1,13 @@
 // src/components/dashboard/instructor-dashboard.tsx
 'use client';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, GraduationCap, PlusCircle, BookMarked } from "lucide-react";
+import { Users, GraduationCap, PlusCircle, BookMarked, Layers } from "lucide-react";
 import type { Course as AppCourse, Announcement as AnnouncementType, CalendarEvent } from '@/types';
 import Link from "next/link";
-import { CourseCarousel } from "../course-carousel";
 import { AnnouncementsWidget } from "./announcements-widget";
 import { CalendarWidget } from "./calendar-widget";
+import { CourseProgressCard } from "./course-progress-card";
 
 interface InstructorDashboardProps {
   instructorStats: {
@@ -16,7 +16,7 @@ interface InstructorDashboardProps {
   };
   recentAnnouncements: AnnouncementType[];
   upcomingEvents: CalendarEvent[];
-  taughtCourses: AppCourse[]; // Asegurado que esto se recibe
+  taughtCourses: AppCourse[];
 }
 
 export function InstructorDashboard({ instructorStats, recentAnnouncements, taughtCourses, upcomingEvents }: InstructorDashboardProps) {
@@ -39,27 +39,29 @@ export function InstructorDashboard({ instructorStats, recentAnnouncements, taug
         </Card>
       </div>
 
-      <div>
-        <h2 className="text-2xl font-semibold mb-4">Mis Cursos en Foco</h2>
-        {taughtCourses && taughtCourses.length > 0 ? (
-          <CourseCarousel courses={taughtCourses} userRole="INSTRUCTOR" />
-        ) : (
-          <Card className="text-center py-12 border-dashed">
-            <CardHeader>
-              <CardTitle>Aún no has creado ningún curso</CardTitle>
-              <CardDescription>¡Es hora de compartir tu conocimiento con el mundo!</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button asChild>
-                <Link href="/manage-courses"><PlusCircle className="mr-2 h-4 w-4"/>Crear mi Primer Curso</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-6">
+            <Card>
+                <CardHeader>
+                  <CardTitle>Rendimiento de Cursos</CardTitle>
+                  <CardDescription>Un vistazo rápido al progreso promedio de tus cursos.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {taughtCourses && taughtCourses.length > 0 ? (
+                        taughtCourses.map((course, index) => (
+                           <CourseProgressCard key={course.id} course={course} index={index} />
+                        ))
+                    ) : (
+                         <div className="text-center py-12 border-dashed border-2 rounded-lg">
+                           <h3 className="text-lg font-semibold">Aún no has creado ningún curso</h3>
+                           <p className="text-muted-foreground text-sm mt-1 mb-4">¡Es hora de compartir tu conocimiento!</p>
+                           <Button asChild size="sm">
+                             <Link href="/manage-courses"><PlusCircle className="mr-2 h-4 w-4"/>Crear mi Primer Curso</Link>
+                           </Button>
+                         </div>
+                    )}
+                </CardContent>
+            </Card>
             <AnnouncementsWidget announcements={recentAnnouncements} />
         </div>
         <div className="lg:col-span-1">
