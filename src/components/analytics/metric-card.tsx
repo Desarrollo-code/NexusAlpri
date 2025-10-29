@@ -22,24 +22,24 @@ export const MetricCard = ({ title, value, icon: Icon, description, suffix = '',
             id={id} 
             onClick={onClick} 
             className={cn(
-                "relative text-white p-4 flex items-center justify-between transition-transform duration-300 hover:scale-[1.03]",
+                "relative text-white p-4 flex items-center justify-between transition-transform duration-300 hover:scale-[1.03] rounded-2xl",
                 gradient,
                 onClick && "cursor-pointer"
             )}
         >
             <div className="z-10">
                 <p 
-                    className="text-4xl md:text-5xl font-bold text-white"
-                    style={{ textShadow: '0px 1px 3px rgba(0,0,0,0.2)' }}
+                    className="text-3xl font-bold text-white"
+                    style={{ textShadow: '0px 1px 3px rgba(0,0,0,0.1)' }}
                 >
                     {animatedValue}{suffix}
                 </p>
-                <p className="text-sm font-medium text-white/90 mt-1">{title}</p>
+                <p className="text-sm font-medium text-white/90">{title}</p>
                  {description && <p className="text-xs text-white/80">{description}</p>}
             </div>
             
-            <div className="relative z-10 h-14 w-14 flex items-center justify-center bg-white/20 rounded-full">
-                <Icon className="h-7 w-7 text-white" />
+            <div className="relative z-10 h-12 w-12 flex items-center justify-center bg-white/20 rounded-full">
+                <Icon className="h-6 w-6 text-white" />
             </div>
         </Card>
     );
