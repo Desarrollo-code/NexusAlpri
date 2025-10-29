@@ -32,17 +32,8 @@ export const WorldMap = ({ data }: WorldMapProps) => {
     
     return (
         <svg viewBox="0 0 400 220" className="w-full h-full">
-            {/* Simplified World Map SVG Paths */}
-            <path 
-                d="M1,1 C399,1 399,219 1,219"
-                fill="#FFF"
-                fillOpacity="0.1"
-                stroke="#FFF"
-                strokeOpacity="0.2"
-                strokeWidth="0.5"
-            />
-            {/* Detailed Continents */}
-            <g fill="#FFF" fillOpacity="0.2" stroke="#FFF" strokeOpacity="0.3" strokeWidth="0.2">
+            {/* Detailed World Map SVG Paths */}
+            <g fill="#FFF" fillOpacity="0.1" stroke="#FFF" strokeOpacity="0.2" strokeWidth="0.5">
                 {/* North America */}
                 <path d="M110 28L82 25L37 40L16 80L39 111L72 121L107 104L130 92L134 69L110 28z" />
                 {/* South America */}
