@@ -2,7 +2,7 @@
 'use client';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, CheckCircle, ArrowRight } from "lucide-react";
+import { GraduationCap, CheckCircle, ArrowRight, BookOpen } from "lucide-react";
 import type { EnrolledCourse, Course as AppCourse, Announcement as AnnouncementType, CalendarEvent } from '@/types';
 import Link from "next/link";
 import { CourseCarousel } from "../course-carousel";
@@ -41,6 +41,8 @@ interface StudentDashboardProps {
 export function StudentDashboard({ studentStats, myDashboardCourses, assignedCourses, recentAnnouncements, upcomingEvents, onEnrollmentChange, onParticipate }: StudentDashboardProps) {
   const { user } = useAuth();
   const { level, progressPercentage } = useMemo(() => calculateLevel(user?.xp || 0), [user?.xp]);
+  
+  const hasCourses = (myDashboardCourses && myDashboardCourses.length > 0) || (assignedCourses && assignedCourses.length > 0);
 
   return (
     <div className="space-y-8">
@@ -93,6 +95,24 @@ export function StudentDashboard({ studentStats, myDashboardCourses, assignedCou
               <CourseCarousel courses={myDashboardCourses} userRole="STUDENT" onEnrollmentChange={onEnrollmentChange} />
             </section>
           )}
+
+          {!hasCourses && (
+             <Card className="text-center py-12 border-dashed">
+                <CardHeader>
+                    <BookOpen className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <CardTitle>¡Es hora de empezar a aprender!</CardTitle>
+                    <CardDescription>Parece que aún no te has inscrito a ningún curso. Explora nuestro catálogo para encontrar tu próxima aventura de conocimiento.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button asChild>
+                        <Link href="/courses">
+                            Explorar Catálogo de Cursos
+                        </Link>
+                    </Button>
+                </CardContent>
+            </Card>
+          )}
+
         </div>
 
         {/* Columna Lateral */}
