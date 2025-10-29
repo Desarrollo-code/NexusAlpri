@@ -1,58 +1,92 @@
 // src/components/dashboard/admin-dashboard.tsx
 'use client';
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { TasksCard } from './tasks-card';
-import { StatsCard } from './stats-card';
-import { VisitorsCard } from './visitors-card';
-import { MetricCard } from './metric-card';
-import { DownloadsCard } from './downloads-card';
-import { CalendarCard } from './calendar-card';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Users, BookOpenCheck, GraduationCap, Percent, PlusCircle, BarChart3, Settings, ShieldAlert, Monitor, Mail, Database } from "lucide-react";
 import type { AdminDashboardStats, SecurityLog } from '@/types';
+import { SecurityLogTimeline } from '../security/security-log-timeline';
+import Link from "next/link";
+import { InteractiveEventsWidget } from "./interactive-events-widget";
 
 interface AdminDashboardProps {
   adminStats: AdminDashboardStats;
   securityLogs: SecurityLog[];
+  onParticipate: (eventId: string, occurrenceDate: Date) => void;
 }
 
-export function AdminDashboard({ adminStats, securityLogs }: AdminDashboardProps) {
-  if (!adminStats) {
-    return null;
-  }
-  
-  const {
-    totalUsers,
-    totalCourses,
-    totalEnrollments,
-    userRegistrationTrend,
-    usersByRole
-  } = adminStats;
+const StatCard = ({ title, value, icon: Icon, unit = '' }: { title: string, value: number, icon: React.ElementType, unit?: string }) => (
+    <Card className="bg-card/50">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+            <Icon className="h-4 w-4 text-primary" />
+        </CardHeader>
+        <CardContent>
+            <div className="text-2xl font-bold">{value.toLocaleString()}{unit}</div>
+        </CardContent>
+    </Card>
+);
+
+const HealthStatusWidget = () => (
+    <Card>
+        <CardHeader>
+            <CardTitle className="text-lg">Salud de la Plataforma</CardTitle>
+            <CardDescription>Estado de los servicios críticos.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+            <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-sm"><Monitor className="h-4 w-4"/><span>API</span></div><div className="flex items-center gap-2 text-sm text-green-500 font-semibold"><div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"/>Operacional</div></div>
+            <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-sm"><Database className="h-4 w-4"/><span>Base de Datos</span></div><div className="flex items-center gap-2 text-sm text-green-500 font-semibold"><div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"/>Operacional</div></div>
+            <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-sm"><Mail className="h-4 w-4"/><span>Servicio de Correo</span></div><div className="flex items-center gap-2 text-sm text-green-500 font-semibold"><div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"/>Operacional</div></div>
+        </CardContent>
+    </Card>
+)
+
+export function AdminDashboard({ adminStats, securityLogs, onParticipate }: AdminDashboardProps) {
+  if (!adminStats) return null;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {/* Columna 1 */}
-      <div className="lg:col-span-1 space-y-6">
-        <TasksCard />
-        <MetricCard title="VISITORS TODAY" value={totalUsers} color="bg-red-400" />
-        <MetricCard title="MONTHLY VISITS" value={totalEnrollments} percentage="+10%" color="bg-teal-400" />
-        <DownloadsCard />
-      </div>
-      
-      {/* Columna 2 */}
-      <div className="lg:col-span-3 space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <StatsCard data={userRegistrationTrend} />
-          </div>
-          <div className="lg:col-span-1">
-            <VisitorsCard data={usersByRole} />
-          </div>
+    <div className="space-y-8">
+        <div className="space-y-1">
+            <h1 className="text-3xl font-bold font-headline">Centro de Mando</h1>
+            <p className="text-muted-foreground">Una vista general y accionable del estado de tu plataforma.</p>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <MetricCard title="PAGES VIEWS" value={totalCourses * 15} color="bg-yellow-400" />
-            <MetricCard title="SHARES" value={totalEnrollments * 4} percentage="+05%" color="bg-teal-400" />
+        
+        {/* Métricas Principales */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4" id="admin-stats-cards">
+            <StatCard title="Usuarios Totales" value={adminStats.totalUsers} icon={Users} />
+            <StatCard title="Cursos Publicados" value={adminStats.totalPublishedCourses} icon={BookOpenCheck} />
+            <StatCard title="Inscripciones Totales" value={adminStats.totalEnrollments} icon={GraduationCap} />
+            <StatCard title="Finalización Promedio" value={Math.round(adminStats.averageCompletionRate)} icon={Percent} unit="%" />
         </div>
-        <CalendarCard />
-      </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            {/* Columna Izquierda: Auditoría y Salud */}
+            <div className="lg:col-span-2 space-y-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Auditoría de Seguridad Activa</CardTitle>
+                        <CardDescription>Últimos eventos importantes en la plataforma.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <SecurityLogTimeline logs={securityLogs} onLogClick={() => {}} />
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Columna Derecha: Acciones y Estado */}
+            <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
+                <HealthStatusWidget />
+                <Card>
+                    <CardHeader><CardTitle>Acciones Rápidas</CardTitle></CardHeader>
+                    <CardContent className="grid grid-cols-2 gap-2">
+                        <Button variant="outline" asChild><Link href="/manage-courses"><PlusCircle className="mr-2 h-4 w-4"/>Crear Curso</Link></Button>
+                        <Button variant="outline" asChild><Link href="/users"><Users className="mr-2 h-4 w-4"/>Gestionar Usuarios</Link></Button>
+                        <Button variant="outline" asChild><Link href="/analytics"><BarChart3 className="mr-2 h-4 w-4"/>Ver Analíticas</Link></Button>
+                        <Button variant="outline" asChild><Link href="/settings"><Settings className="mr-2 h-4 w-4"/>Ajustes</Link></Button>
+                    </CardContent>
+                </Card>
+                 <InteractiveEventsWidget events={adminStats.interactiveEventsToday} onParticipate={onParticipate} />
+            </div>
+        </div>
     </div>
   );
 }
