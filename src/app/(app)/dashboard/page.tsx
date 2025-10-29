@@ -52,8 +52,6 @@ import { expandRecurringEvents } from '@/lib/calendar-utils';
 import { Calendar } from '@/components/ui/calendar';
 import { useRouter } from 'next/navigation';
 import { DonutChart } from '@/components/analytics/donut-chart';
-import { AnimatedGlobe } from '@/components/analytics/animated-globe';
-import { GaugeChart } from '@/components/ui/gauge';
 import { AtRiskUsersCard } from '@/components/security/at-risk-users-card';
 import { DeviceDistributionChart } from '@/components/security/device-distribution-chart';
 
@@ -218,9 +216,10 @@ function InstructorDashboard({ data }: { data: DashboardData }) {
     );
 }
 
-function AdminDashboard({ data, onParticipate }: { data: DashboardData, onParticipate: (eventId: string, occurrenceDate: string) => void }) {
+function AdminDashboard({ data, onParticipate, onSuspendUser }: { data: DashboardData, onParticipate: (eventId: string, occurrenceDate: string) => void, onSuspendUser: (user: any) => void }) {
     const stats = data.adminStats;
     const router = useRouter();
+    
     const userRolesChartData = useMemo(() => {
         if (!stats?.usersByRole) return [];
         return ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'].map(role => ({
@@ -250,33 +249,39 @@ function AdminDashboard({ data, onParticipate }: { data: DashboardData, onPartic
                 <MetricCard title="Finalización" value={stats?.averageCompletionRate || 0} icon={BadgePercent} suffix="%" description="Promedio" gradient="bg-gradient-orange" />
             </div>
             
-             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
-                <div className="xl:col-span-2 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <Card className="lg:col-span-2">
-                        <CardHeader>
-                            <CardTitle>Tendencia de Actividad</CardTitle>
-                            <CardDescription>Actividad en el rango de fechas seleccionado.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="h-80 pr-4 -ml-4">
-                            <ChartContainer config={{ newCourses: { label: "Cursos", color: "hsl(var(--chart-2))" }, newUsers: { label: "Usuarios", color: "hsl(var(--chart-1))" }, newEnrollments: { label: "Inscripciones", color: "hsl(var(--chart-3))" }}} className="w-full h-full">
-                                <ResponsiveContainer>
-                                   <ComposedChart data={stats?.userRegistrationTrend || []} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                        <XAxis dataKey="date" tickLine={false} axisLine={true} tickMargin={10} tickFormatter={formatDateTick} interval={'preserveStartEnd'} />
-                                        <YAxis allowDecimals={false} tickLine={false} axisLine={true} tickMargin={10} width={30}/>
-                                        <ChartTooltip cursor={{ fill: 'hsl(var(--muted))', radius: 4 }} content={<ChartTooltipContent indicator="dot" labelFormatter={formatDateTooltip} />} />
-                                        <Legend />
-                                        <Bar dataKey="newUsers" name="Usuarios" fill="var(--color-newUsers)" radius={4} />
-                                        <Area type="monotone" dataKey="newEnrollments" name="Inscripciones" fill="var(--color-newEnrollments)" stroke="var(--color-newEnrollments)" strokeWidth={2} fillOpacity={0.3} dot={false}/>
-                                   </ComposedChart>
-                                </ResponsiveContainer>
-                            </ChartContainer>
-                        </CardContent>
-                    </Card>
-                    <DeviceDistributionChart browserData={stats?.browsers} osData={stats?.os} isLoading={false}/>
-                    <AtRiskUsersCard users={stats?.atRiskUsers || []} onSuspend={() => {}} isLoading={false} />
+             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
+                <Card className="lg:col-span-2 xl:col-span-2">
+                    <CardHeader>
+                        <CardTitle>Tendencia de Actividad</CardTitle>
+                        <CardDescription>Actividad en el rango de fechas seleccionado.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="h-80 pr-4 -ml-4">
+                        <ChartContainer config={{ newCourses: { label: "Cursos", color: "hsl(var(--chart-2))" }, newUsers: { label: "Usuarios", color: "hsl(var(--chart-1))" }, newEnrollments: { label: "Inscripciones", color: "hsl(var(--chart-3))" }}} className="w-full h-full">
+                            <ResponsiveContainer>
+                                <ComposedChart data={stats?.userRegistrationTrend || []} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                    <XAxis dataKey="date" tickLine={false} axisLine={true} tickMargin={10} tickFormatter={formatDateTick} interval={'preserveStartEnd'} />
+                                    <YAxis allowDecimals={false} tickLine={false} axisLine={true} tickMargin={10} width={30}/>
+                                    <ChartTooltip cursor={{ fill: 'hsl(var(--muted))', radius: 4 }} content={<ChartTooltipContent indicator="dot" labelFormatter={formatDateTooltip} />} />
+                                    <Legend />
+                                    <Bar dataKey="newUsers" name="Usuarios" fill="var(--color-newUsers)" radius={4} />
+                                    <Area type="monotone" dataKey="newEnrollments" name="Inscripciones" fill="var(--color-newEnrollments)" stroke="var(--color-newEnrollments)" strokeWidth={2} fillOpacity={0.3} dot={false}/>
+                                </ComposedChart>
+                            </ResponsiveContainer>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
+                <div className="space-y-6">
+                    <DonutChart title="Distribución de Roles" data={userRolesChartData} config={userRolesChartConfig} />
+                    <DonutChart title="Estado de Cursos" data={courseStatusChartData} config={courseStatusChartConfig} />
                 </div>
-                <div className="lg:col-span-1 space-y-6">
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <DeviceDistributionChart browserData={stats?.browsers} osData={stats?.os} isLoading={false}/>
+                    <AtRiskUsersCard users={stats?.atRiskUsers || []} onSuspend={onSuspendUser} isLoading={false} />
+                </div>
+                 <div className="lg:col-span-1 space-y-6">
                     <Card>
                         <CardHeader><CardTitle className="text-base">Accesos Rápidos</CardTitle></CardHeader>
                         <CardContent className="grid grid-cols-2 gap-2">
@@ -352,11 +357,17 @@ export default function DashboardPage() {
       }
   };
 
+  const handleSuspendUser = (userToSuspend: any) => {
+    // Implementar la lógica o modal de suspensión aquí si es necesario
+    console.log("Suspender usuario:", userToSuspend);
+    toast({ title: "Acción requerida", description: `Considera suspender al usuario ${userToSuspend.name} desde la página de auditoría.`})
+  }
+
   const renderContentForRole = () => {
     if (!user || !data) return null;
     const commonProps = { data, onParticipate: handleParticipate, onEnrollmentChange: fetchDashboardData };
     switch (user?.role) {
-      case 'ADMINISTRATOR': return <AdminDashboard {...commonProps} />;
+      case 'ADMINISTRATOR': return <AdminDashboard data={data} onParticipate={handleParticipate} onSuspendUser={handleSuspendUser} />;
       case 'INSTRUCTOR': return <InstructorDashboard {...commonProps} />;
       case 'STUDENT': return <StudentDashboard {...commonProps} />;
       default: return <p>Rol de usuario no reconocido.</p>;
