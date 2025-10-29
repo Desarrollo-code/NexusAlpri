@@ -71,7 +71,7 @@ const HealthStatusWidget = () => {
 
 const formatDateTick = (tick: string): string => {
   const date = parseISO(tick);
-  if (date.getDate() % 5 === 0 || date.getDate() === 1) { 
+  if (date.getDate() % 5 === 0 || date.getDate() === 1) {
     return format(date, "d MMM", { locale: es });
   }
   return format(date, "d", { locale: es });
