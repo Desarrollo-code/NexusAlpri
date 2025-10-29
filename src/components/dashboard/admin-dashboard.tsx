@@ -71,7 +71,10 @@ const HealthStatusWidget = () => {
 
 const formatDateTick = (tick: string): string => {
   const date = parseISO(tick);
-  return format(date, "d");
+  if (date.getDate() === 1 || date.getDate() % 5 === 0) {
+    return format(date, "d MMM", { locale: es });
+  }
+  return format(date, "d", { locale: es });
 };
 
 const chartConfig = {
@@ -117,7 +120,7 @@ export function AdminDashboard({ adminStats, securityLogs }: {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-            <div className="lg:col-span-1 space-y-6">
+            <div className="lg:col-span-1">
                  <Card>
                     <CardHeader>
                         <CardTitle>Tendencia de Actividad</CardTitle>
@@ -139,13 +142,15 @@ export function AdminDashboard({ adminStats, securityLogs }: {
                           </AreaChart>
                         </ChartContainer>
                     </CardContent>
-                     <CardFooter className="justify-center text-sm text-muted-foreground font-medium pt-2">
-                        {getMonthRangeLabel()}
+                     <CardFooter className="justify-center pt-2">
+                        <div className="text-xs font-semibold text-white px-3 py-1 rounded-full bg-gradient-to-r from-primary to-accent shadow-md">
+                            {getMonthRangeLabel()}
+                        </div>
                     </CardFooter>
                 </Card>
             </div>
             
-            <div className="lg:col-span-1 space-y-6">
+            <div className="lg:col-span-1">
                  <Card>
                     <CardHeader>
                         <CardTitle className="text-base">Auditoría de Seguridad Activa</CardTitle>
