@@ -227,7 +227,7 @@ function AdminAnalyticsPage() {
                 </Button>
              </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-8 gap-4 mt-4" id="analytics-metric-cards">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-8 gap-4 mt-4" id="analytics-metric-cards">
             <MetricCard title="Total Usuarios" value={stats?.totalUsers || 0} icon={UsersRound} gradient="bg-gradient-blue" />
             <MetricCard title="Total Cursos" value={stats?.totalCourses || 0} icon={Library} gradient="bg-gradient-green"/>
             <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={GraduationCap} gradient="bg-gradient-purple" />
