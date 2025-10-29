@@ -39,7 +39,7 @@ import { format, isSameDay, startOfDay, endOfDay, subDays, isValid, parseISO, ad
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
-import { ComposedChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, Legend, ResponsiveContainer, Area, Line } from 'recharts';
+import { ComposedChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, Legend, ResponsiveContainer, Area, Line, PieChart, Pie, Cell, Sector } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { MetricCard } from '@/components/analytics/metric-card';
 import { useToast } from '@/hooks/use-toast';
@@ -52,6 +52,9 @@ import { Calendar } from '@/components/ui/calendar';
 import { useRouter } from 'next/navigation';
 import { DonutChart } from '@/components/analytics/donut-chart';
 import { AnimatedGlobe } from '@/components/analytics/animated-globe';
+import { GaugeChart } from '@/components/ui/gauge';
+import { AtRiskUsersCard } from '@/components/security/at-risk-users-card';
+import { DeviceDistributionChart } from '@/components/security/device-distribution-chart';
 
 // --- TYPE DEFINITIONS ---
 interface DashboardData {
@@ -239,23 +242,22 @@ function AdminDashboard({ data, onParticipate }: { data: DashboardData, onPartic
     return (
         <div className="space-y-6">
             <InteractiveEventsWidget events={data.interactiveEventsToday || []} onParticipate={onParticipate} />
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <MetricCard title="Usuarios" value={stats?.totalUsers || 0} icon={UsersRound} gradient="bg-gradient-blue" />
-                <MetricCard title="Cursos" value={stats?.totalCourses || 0} icon={Layers} gradient="bg-gradient-green"/>
-                <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={GraduationCap} gradient="bg-gradient-purple" />
+             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <MetricCard title="Usuarios Totales" value={stats?.totalUsers || 0} icon={UsersRound} gradient="bg-gradient-blue" trendData={stats?.userRegistrationTrend || []} dataKey="newUsers"/>
+                <MetricCard title="Cursos Totales" value={stats?.totalCourses || 0} icon={Layers} gradient="bg-gradient-green" trendData={stats?.userRegistrationTrend || []} dataKey="newCourses"/>
+                <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={GraduationCap} gradient="bg-gradient-purple" trendData={stats?.userRegistrationTrend || []} dataKey="newEnrollments"/>
                 <MetricCard title="Finalización" value={stats?.averageCompletionRate || 0} icon={BadgePercent} suffix="%" description="Promedio" gradient="bg-gradient-orange" />
             </div>
             
              <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
-                <div className="xl:col-span-2 space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                       <Card className="md:col-span-2">
-                         <CardHeader>
+                <div className="xl:col-span-2 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card className="lg:col-span-2">
+                        <CardHeader>
                             <CardTitle>Tendencia de Actividad</CardTitle>
                             <CardDescription>Actividad en el rango de fechas seleccionado.</CardDescription>
-                         </CardHeader>
-                         <CardContent className="h-80 pr-4 -ml-4">
-                             <ChartContainer config={{ newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-2))" }, newUsers: { label: "Nuevos Usuarios", color: "hsl(var(--chart-1))" }, newEnrollments: { label: "Inscripciones", color: "hsl(var(--chart-3))" }}} className="w-full h-full">
+                        </CardHeader>
+                        <CardContent className="h-80 pr-4 -ml-4">
+                            <ChartContainer config={{ newCourses: { label: "Cursos", color: "hsl(var(--chart-2))" }, newUsers: { label: "Usuarios", color: "hsl(var(--chart-1))" }, newEnrollments: { label: "Inscripciones", color: "hsl(var(--chart-3))" }}} className="w-full h-full">
                                 <ResponsiveContainer>
                                    <ComposedChart data={stats?.userRegistrationTrend || []} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -264,20 +266,14 @@ function AdminDashboard({ data, onParticipate }: { data: DashboardData, onPartic
                                         <ChartTooltip cursor={{ fill: 'hsl(var(--muted))', radius: 4 }} content={<ChartTooltipContent indicator="dot" labelFormatter={formatDateTooltip} />} />
                                         <Legend />
                                         <Bar dataKey="newUsers" name="Usuarios" fill="var(--color-newUsers)" radius={4} />
-                                        <Line type="monotone" dataKey="newCourses" name="Cursos" stroke="var(--color-newCourses)" strokeWidth={2} dot={false} />
                                         <Area type="monotone" dataKey="newEnrollments" name="Inscripciones" fill="var(--color-newEnrollments)" stroke="var(--color-newEnrollments)" strokeWidth={2} fillOpacity={0.3} dot={false}/>
                                    </ComposedChart>
                                 </ResponsiveContainer>
                             </ChartContainer>
-                         </CardContent>
-                       </Card>
-                       <div className="space-y-6">
-                           <DonutChart title="Distribución de Roles" data={userRolesChartData} config={userRolesChartConfig}/>
-                       </div>
-                       <div className="space-y-6">
-                          <DonutChart title="Estado de Cursos" data={courseStatusChartData} config={courseStatusChartConfig}/>
-                       </div>
-                    </div>
+                        </CardContent>
+                    </Card>
+                    <DeviceDistributionChart browserData={stats?.browsers} osData={stats?.os} isLoading={false}/>
+                    <AtRiskUsersCard users={stats?.atRiskUsers || []} onSuspend={() => {}} isLoading={false} />
                 </div>
                 <div className="lg:col-span-1 space-y-6">
                     <Card>
@@ -290,7 +286,7 @@ function AdminDashboard({ data, onParticipate }: { data: DashboardData, onPartic
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Última Actividad de Seguridad</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">Actividad de Seguridad Reciente</CardTitle></CardHeader>
                         <CardContent><SecurityLogTimeline logs={data.securityLogs || []} onLogClick={() => router.push('/security-audit')} /></CardContent>
                     </Card>
                     <AnnouncementsList announcements={data.recentAnnouncements || []} />
@@ -311,11 +307,20 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   
+  const [dateRange, setDateRange] = React.useState<DateRange | undefined>({
+      from: startOfDay(subDays(new Date(), 29)),
+      to: endOfDay(new Date()),
+  });
+
   const fetchDashboardData = useCallback(async () => {
     if (!user) { setIsLoading(false); return; }
     setIsLoading(true); setError(null);
     try {
-        const res = await fetch(`/api/dashboard/data`, { cache: 'no-store' });
+        const params = new URLSearchParams();
+        if (dateRange?.from) params.set('startDate', dateRange.from.toISOString());
+        if (dateRange?.to) params.set('endDate', dateRange.to.toISOString());
+
+        const res = await fetch(`/api/dashboard/data?${params.toString()}`, { cache: 'no-store' });
         if (!res.ok) throw new Error((await res.json().catch(() => ({}))).message || `Error al obtener datos`);
         setData(await res.json());
     } catch (err) {
@@ -323,7 +328,7 @@ export default function DashboardPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, dateRange]);
 
   useEffect(() => { fetchDashboardData(); }, [fetchDashboardData]);
 
@@ -366,6 +371,9 @@ export default function DashboardPage() {
                     <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Hola, {user?.name}! <span className="text-2xl animate-wave">👋</span></h1>
                     <p className="text-white/80">Bienvenido de nuevo a tu centro de aprendizaje y gestión.</p>
                 </div>
+                {user?.role === 'ADMINISTRATOR' && (
+                    <DateRangePicker date={dateRange} onDateChange={setDateRange} />
+                )}
                  <div className="flex-shrink-0 w-32 h-32 hidden md:block">
                      {settings?.securityMascotUrl && <Image src={settings.securityMascotUrl} alt="Mascota" width={128} height={128} data-ai-hint="friendly mascot" />}
                  </div>
@@ -386,3 +394,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+```
