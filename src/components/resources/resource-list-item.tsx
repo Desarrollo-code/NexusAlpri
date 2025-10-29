@@ -45,18 +45,17 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
             )}
         >
             <div 
-                className="col-span-6 flex items-center gap-4"
+                className="col-span-6 flex items-center gap-4 cursor-pointer"
+                onClick={onSelect}
             >
                 {canModify && resource.status === 'ACTIVE' && <div {...listeners} {...attributes} className="p-1 cursor-grab touch-none"><GripVertical className="h-4 w-4 text-muted-foreground"/></div>}
                 <div 
-                  className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-muted rounded-lg cursor-pointer"
-                  onClick={onSelect}
+                  className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-muted rounded-lg"
                 >
                     <Icon className="h-5 w-5" />
                 </div>
                  <div 
-                    className="flex-grow overflow-hidden cursor-pointer"
-                    onClick={onSelect}
+                    className="flex-grow overflow-hidden"
                  >
                     <p className="font-semibold truncate text-foreground">{resource.title}</p>
                     <p className="text-xs text-muted-foreground truncate">{resource.description || 'Sin descripción'}</p>

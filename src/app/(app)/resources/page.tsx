@@ -95,6 +95,7 @@ export default function ResourcesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [activeTab, setActiveTab] = useState<ResourceStatus>('ACTIVE');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; title: string }[]>([{ id: null, title: 'Biblioteca' }]);
@@ -176,12 +177,18 @@ export default function ResourcesPage() {
   return (
     <div className="flex flex-col lg:flex-row gap-8">
         <main className="flex-1 space-y-6">
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ResourceStatus)}>
-                <TabsList>
-                    <TabsTrigger value="ACTIVE">Activo</TabsTrigger>
-                    <TabsTrigger value="ARCHIVED">Archivado</TabsTrigger>
-                </TabsList>
-            </Tabs>
+             <div className="flex items-center justify-between">
+                <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ResourceStatus)}>
+                    <TabsList>
+                        <TabsTrigger value="ACTIVE">Activo</TabsTrigger>
+                        <TabsTrigger value="ARCHIVED">Archivado</TabsTrigger>
+                    </TabsList>
+                </Tabs>
+                <div className="hidden md:flex items-center gap-2">
+                    <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" onClick={() => setViewMode('list')}><List className="h-4 w-4"/></Button>
+                    <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" onClick={() => setViewMode('grid')}><Grid className="h-4 w-4"/></Button>
+                </div>
+            </div>
             
             <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -214,31 +221,42 @@ export default function ResourcesPage() {
             <section>
                  <h3 className="text-xl font-bold mb-2">Archivos Recientes</h3>
                  {isLoadingData ? <Skeleton className="h-48 w-full"/> : files.length > 0 ? (
-                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="text-left text-muted-foreground font-medium">
-                                    <th className="p-2">Nombre</th>
-                                    <th className="p-2 hidden md:table-cell">Subido por</th>
-                                    <th className="p-2 hidden lg:table-cell">Última Edición</th>
-                                    <th className="p-2 hidden sm:table-cell">Tamaño</th>
-                                </tr>
-                            </thead>
-                             <tbody>
-                                {files.slice(0, 5).map(file => {
-                                    const Icon = getIconForType(file.type);
-                                    return (
-                                        <tr key={file.id} className="border-b last:border-b-0 hover:bg-muted/50 cursor-pointer" onClick={() => setSelectedResource(file)}>
-                                            <td className="p-2 font-medium flex items-center gap-2"><Icon className="h-4 w-4 shrink-0 text-primary"/> <span className="truncate">{file.title}</span></td>
-                                            <td className="p-2 text-muted-foreground hidden md:table-cell">{file.uploaderName}</td>
-                                            <td className="p-2 text-muted-foreground hidden lg:table-cell">{new Date(file.uploadDate).toLocaleDateString('es-ES', { day:'numeric', month: 'short'})}</td>
-                                            <td className="p-2 text-muted-foreground hidden sm:table-cell">{file.size ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : 'N/A'}</td>
-                                        </tr>
-                                    )
-                                })}
-                             </tbody>
-                        </table>
-                     </div>
+                    viewMode === 'grid' ? (
+                       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {files.map(file => (
+                                <ResourceGridItem
+                                    key={file.id}
+                                    resource={file}
+                                    isFolder={false}
+                                    onSelect={() => setSelectedResource(file)}
+                                    onEdit={() => {}}
+                                    onDelete={() => {}}
+                                    onNavigate={() => {}}
+                                    onRestore={() => {}}
+                                />
+                            ))}
+                       </div>
+                    ) : (
+                         <div className="border rounded-lg">
+                           <div className="grid grid-cols-12 gap-4 p-3 font-semibold text-muted-foreground text-xs border-b">
+                                <div className="col-span-6">Nombre</div>
+                                <div className="col-span-2 hidden md:block">Subido por</div>
+                                <div className="col-span-2 hidden lg:block">Última Edición</div>
+                                <div className="col-span-1 hidden md:block">Acceso</div>
+                                <div className="col-span-full md:col-span-1"></div>
+                           </div>
+                           {files.map(file => (
+                               <ResourceListItem
+                                   key={file.id}
+                                   resource={file}
+                                   onSelect={() => setSelectedResource(file)}
+                                   onEdit={() => {}}
+                                   onDelete={() => {}}
+                                   onRestore={() => {}}
+                               />
+                           ))}
+                         </div>
+                    )
                  ) : <p className="text-sm text-muted-foreground text-center py-8">No hay archivos recientes.</p>}
             </section>
         </main>
