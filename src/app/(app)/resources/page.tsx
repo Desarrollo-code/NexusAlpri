@@ -128,7 +128,7 @@ export default function ResourcesPage() {
   const { setPageTitle } = useTitle();
   const { toast } = useToast();
   
-  const [allApiResources, setAllApiResources = useState<AppResourceType[]>([]);
+  const [allApiResources, setAllApiResources] = useState<AppResourceType[]>([]);
   const [stats, setStats] = useState<{ storageStats: any[], categoryCounts: any, recentFiles: any[]}>({ storageStats: [], categoryCounts: {}, recentFiles: [] });
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -235,7 +235,7 @@ export default function ResourcesPage() {
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
         <div className="lg:col-span-3 space-y-6">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <RadioGroup value={activeTab} onValueChange={(v) => setActiveTab(v as ResourceStatus)} className="flex items-center p-1 bg-green-100 dark:bg-green-900/30 rounded-full">
+                 <RadioGroup value={activeTab} onValueChange={(v) => setActiveTab(v as ResourceStatus)} className="flex items-center p-1 bg-green-100 dark:bg-green-900/30 rounded-full">
                     <Label htmlFor="status-active" className={cn("px-4 py-1.5 rounded-full text-sm font-semibold cursor-pointer transition-colors", activeTab === 'ACTIVE' ? 'bg-white text-green-800 shadow-sm' : 'text-green-700/80')}>Activo</Label>
                     <RadioGroupItem value="ACTIVE" id="status-active" className="sr-only" />
                     <Label htmlFor="status-archived" className={cn("px-4 py-1.5 rounded-full text-sm font-semibold cursor-pointer transition-colors", activeTab === 'ARCHIVED' ? 'bg-white text-green-800 shadow-sm' : 'text-green-700/80')}>Archivado</Label>
