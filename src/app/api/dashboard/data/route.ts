@@ -1,3 +1,4 @@
+
 // src/app/api/dashboard/data/route.ts
 import prisma from '@/lib/prisma';
 import { NextResponse, type NextRequest } from 'next/server';
@@ -24,11 +25,10 @@ async function getAdminDashboardData(session: PrismaUser, startDate?: Date, endD
     const activityEndDate = endDate || new Date();
     const activityStartDate = startDate || subDays(activityEndDate, 29);
 
-    const dateFilterRegistered = startDate ? { registeredDate: { gte: startDate, lte: activityEndDate } } : undefined;
-    const dateFilterEnrolled = startDate ? { enrolledAt: { gte: startDate, lte: activityEndDate } } : undefined;
-    const dateFilterCourse = startDate ? { createdAt: { gte: startDate, lte: activityEndDate } } : undefined;
+    const dateFilterRegistered = startDate ? { registeredDate: { gte: startDate, lte: activityEndDate } } : {};
+    const dateFilterEnrolled = startDate ? { enrolledAt: { gte: startDate, lte: activityEndDate } } : {};
+    const dateFilterCourse = startDate ? { createdAt: { gte: startDate, lte: activityEndDate } } : {};
 
-    // --- Transaction to fetch most stats in one go (CORRECTED) ---
     const [
         totalUsers, totalCourses, totalPublishedCourses, totalEnrollments,
         totalResources, totalAnnouncements, totalForms,
@@ -271,3 +271,4 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ message: 'Error al obtener los datos del panel principal' }, { status: 500 });
     }
 }
+
