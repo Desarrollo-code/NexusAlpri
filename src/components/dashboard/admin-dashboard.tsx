@@ -7,6 +7,8 @@ import type { AdminDashboardStats, SecurityLog } from '@/types';
 import { SecurityLogTimeline } from '../security/security-log-timeline';
 import Link from "next/link";
 import { InteractiveEventsWidget } from "./interactive-events-widget";
+import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 
 interface AdminDashboardProps {
   adminStats: AdminDashboardStats;
@@ -26,19 +28,56 @@ const StatCard = ({ title, value, icon: Icon, unit = '' }: { title: string, valu
     </Card>
 );
 
-const HealthStatusWidget = () => (
-    <Card>
-        <CardHeader>
-            <CardTitle className="text-lg">Salud de la Plataforma</CardTitle>
-            <CardDescription>Estado de los servicios críticos.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-            <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-sm"><Monitor className="h-4 w-4"/><span>API</span></div><div className="flex items-center gap-2 text-sm text-green-500 font-semibold"><div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"/>Operacional</div></div>
-            <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-sm"><Database className="h-4 w-4"/><span>Base de Datos</span></div><div className="flex items-center gap-2 text-sm text-green-500 font-semibold"><div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"/>Operacional</div></div>
-            <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-sm"><Mail className="h-4 w-4"/><span>Servicio de Correo</span></div><div className="flex items-center gap-2 text-sm text-green-500 font-semibold"><div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"/>Operacional</div></div>
-        </CardContent>
-    </Card>
-)
+const HealthStatusWidget = () => {
+    const [healthStatus, setHealthStatus] = useState({ api: 'checking', db: 'checking', email: 'checking' });
+
+    useEffect(() => {
+        const checkHealth = async () => {
+            const apiRes = await fetch('/api/health');
+            const apiData = await apiRes.json();
+            
+            const emailStatus = process.env.NEXT_PUBLIC_RESEND_API_KEY ? 'operational' : 'error';
+            
+            setHealthStatus({
+                api: apiRes.ok ? 'operational' : 'error',
+                db: apiData.db === 'connected' ? 'operational' : 'error',
+                email: emailStatus
+            });
+        };
+        checkHealth();
+    }, []);
+
+    const StatusIndicator = ({ status }: { status: 'checking' | 'operational' | 'error' }) => (
+        <div className="flex items-center gap-2 text-sm font-semibold">
+            <div className={cn("h-2.5 w-2.5 rounded-full", {
+                'bg-yellow-400 animate-pulse': status === 'checking',
+                'bg-green-500': status === 'operational',
+                'bg-red-500': status === 'error',
+            })} />
+            <span className={cn({
+                'text-muted-foreground': status === 'checking',
+                'text-green-600': status === 'operational',
+                'text-destructive': status === 'error',
+            })}>
+                {status === 'checking' ? 'Verificando...' : (status === 'operational' ? 'Operacional' : 'Fallo')}
+            </span>
+        </div>
+    );
+    
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-lg">Salud de la Plataforma</CardTitle>
+                <CardDescription>Estado de los servicios críticos.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-sm"><Monitor className="h-4 w-4"/><span>API</span></div><StatusIndicator status={healthStatus.api as any} /></div>
+                <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-sm"><Database className="h-4 w-4"/><span>Base de Datos</span></div><StatusIndicator status={healthStatus.db as any} /></div>
+                <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-sm"><Mail className="h-4 w-4"/><span>Servicio de Correo</span></div><StatusIndicator status={healthStatus.email as any} /></div>
+            </CardContent>
+        </Card>
+    );
+}
 
 export function AdminDashboard({ adminStats, securityLogs, onParticipate }: AdminDashboardProps) {
   if (!adminStats) return null;
