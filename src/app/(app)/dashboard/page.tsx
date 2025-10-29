@@ -247,12 +247,12 @@ function AdminDashboard({ data, onParticipate }: { data: DashboardData, onPartic
             </div>
             
              <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
-                <div className="xl:col-span-3 space-y-6">
+                <div className="xl:col-span-2 space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                       <Card>
+                       <Card className="md:col-span-2">
                          <CardHeader>
                             <CardTitle>Tendencia de Actividad</CardTitle>
-                            <CardDescription>Actividad en los últimos 30 días.</CardDescription>
+                            <CardDescription>Actividad en el rango de fechas seleccionado.</CardDescription>
                          </CardHeader>
                          <CardContent className="h-80 pr-4 -ml-4">
                              <ChartContainer config={{ newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-2))" }, newUsers: { label: "Nuevos Usuarios", color: "hsl(var(--chart-1))" }, newEnrollments: { label: "Inscripciones", color: "hsl(var(--chart-3))" }}} className="w-full h-full">
@@ -273,25 +273,28 @@ function AdminDashboard({ data, onParticipate }: { data: DashboardData, onPartic
                        </Card>
                        <div className="space-y-6">
                            <DonutChart title="Distribución de Roles" data={userRolesChartData} config={userRolesChartConfig}/>
-                           <DonutChart title="Estado de Cursos" data={courseStatusChartData} config={courseStatusChartConfig}/>
+                       </div>
+                       <div className="space-y-6">
+                          <DonutChart title="Estado de Cursos" data={courseStatusChartData} config={courseStatusChartConfig}/>
                        </div>
                     </div>
                 </div>
-            </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Card>
-                    <CardHeader><CardTitle className="text-base">Accesos Rápidos</CardTitle></CardHeader>
-                    <CardContent className="grid grid-cols-2 gap-2">
-                        <Button asChild variant="outline"><Link href="/manage-courses"><BookMarked className="mr-2 h-4 w-4"/>Cursos</Link></Button>
-                        <Button asChild variant="outline"><Link href="/users"><Users className="mr-2 h-4 w-4"/>Usuarios</Link></Button>
-                        <Button asChild variant="outline"><Link href="/settings"><Settings className="mr-2 h-4 w-4"/>Ajustes</Link></Button>
-                        <Button asChild variant="outline"><Link href="/analytics"><LineChart className="mr-2 h-4 w-4"/>Analíticas</Link></Button>
-                    </CardContent>
-                </Card>
-                <Card className="lg:col-span-2">
-                    <CardHeader><CardTitle className="text-base">Última Actividad de Seguridad</CardTitle></CardHeader>
-                    <CardContent><SecurityLogTimeline logs={data.securityLogs || []} onLogClick={() => router.push('/security-audit')} /></CardContent>
-                </Card>
+                <div className="lg:col-span-1 space-y-6">
+                    <Card>
+                        <CardHeader><CardTitle className="text-base">Accesos Rápidos</CardTitle></CardHeader>
+                        <CardContent className="grid grid-cols-2 gap-2">
+                            <Button asChild variant="outline"><Link href="/manage-courses"><BookMarked className="mr-2 h-4 w-4"/>Cursos</Link></Button>
+                            <Button asChild variant="outline"><Link href="/users"><Users className="mr-2 h-4 w-4"/>Usuarios</Link></Button>
+                            <Button asChild variant="outline"><Link href="/settings"><Settings className="mr-2 h-4 w-4"/>Ajustes</Link></Button>
+                            <Button asChild variant="outline"><Link href="/analytics"><LineChart className="mr-2 h-4 w-4"/>Analíticas</Link></Button>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader><CardTitle className="text-base">Última Actividad de Seguridad</CardTitle></CardHeader>
+                        <CardContent><SecurityLogTimeline logs={data.securityLogs || []} onLogClick={() => router.push('/security-audit')} /></CardContent>
+                    </Card>
+                    <AnnouncementsList announcements={data.recentAnnouncements || []} />
+                </div>
             </div>
         </div>
     );
@@ -383,4 +386,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-```
