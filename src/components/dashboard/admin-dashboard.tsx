@@ -2,7 +2,7 @@
 'use client';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, BookOpenCheck, GraduationCap, Percent, PlusCircle, BarChart3, Settings, ShieldAlert, Monitor, Mail, Database } from "lucide-react";
+import { Users, BookOpenCheck, GraduationCap, Percent, PlusCircle, BarChart3, Settings, ShieldAlert, Monitor, Database } from "lucide-react";
 import type { AdminDashboardStats, SecurityLog } from '@/types';
 import { SecurityLogTimeline } from '../security/security-log-timeline';
 import Link from "next/link";
@@ -29,20 +29,21 @@ const StatCard = ({ title, value, icon: Icon, unit = '' }: { title: string, valu
 );
 
 const HealthStatusWidget = () => {
-    const [healthStatus, setHealthStatus] = useState({ api: 'checking', db: 'checking', email: 'checking' });
+    const [healthStatus, setHealthStatus] = useState({ api: 'checking', db: 'checking' });
 
     useEffect(() => {
         const checkHealth = async () => {
-            const apiRes = await fetch('/api/health');
-            const apiData = await apiRes.json();
-            
-            const emailStatus = process.env.NEXT_PUBLIC_RESEND_API_KEY ? 'operational' : 'error';
-            
-            setHealthStatus({
-                api: apiRes.ok ? 'operational' : 'error',
-                db: apiData.db === 'connected' ? 'operational' : 'error',
-                email: emailStatus
-            });
+            try {
+                const apiRes = await fetch('/api/health');
+                const apiData = await apiRes.json();
+                
+                setHealthStatus({
+                    api: apiRes.ok ? 'operational' : 'error',
+                    db: apiData.db === 'connected' ? 'operational' : 'error',
+                });
+            } catch (error) {
+                setHealthStatus({ api: 'error', db: 'error' });
+            }
         };
         checkHealth();
     }, []);
@@ -73,7 +74,6 @@ const HealthStatusWidget = () => {
             <CardContent className="space-y-4">
                 <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-sm"><Monitor className="h-4 w-4"/><span>API</span></div><StatusIndicator status={healthStatus.api as any} /></div>
                 <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-sm"><Database className="h-4 w-4"/><span>Base de Datos</span></div><StatusIndicator status={healthStatus.db as any} /></div>
-                <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-sm"><Mail className="h-4 w-4"/><span>Servicio de Correo</span></div><StatusIndicator status={healthStatus.email as any} /></div>
             </CardContent>
         </Card>
     );
