@@ -107,13 +107,13 @@ export function AdminDashboard({ adminStats, securityLogs }: {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
             {/* Columna Izquierda */}
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-2">
                  <Card>
                     <CardHeader>
                         <CardTitle>Tendencia de Actividad</CardTitle>
                         <CardDescription>Últimos 15 días</CardDescription>
                     </CardHeader>
-                    <CardContent className="h-72 pr-4">
+                    <CardContent className="h-96 pr-4">
                        <ChartContainer config={chartConfig} className="w-full h-full">
                           <AreaChart data={adminStats.contentActivityTrend} accessibilityLayer margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                             <defs>
@@ -132,9 +132,9 @@ export function AdminDashboard({ adminStats, securityLogs }: {
                 </Card>
             </div>
             
-            {/* Columna Central */}
+            {/* Columna Central (Seguridad) */}
             <div className="lg:col-span-1 space-y-6">
-                <Card>
+                 <Card>
                     <CardHeader>
                         <CardTitle className="text-base">Auditoría de Seguridad Activa</CardTitle>
                         <CardDescription className="text-xs">Últimos eventos importantes.</CardDescription>
@@ -150,7 +150,7 @@ export function AdminDashboard({ adminStats, securityLogs }: {
                 </Card>
             </div>
             
-            {/* Columna Derecha */}
+            {/* Columna Derecha (Acciones y Salud) */}
             <div className="lg:col-span-1 space-y-6">
                 <Card>
                     <CardHeader><CardTitle className="text-base">Acciones Rápidas</CardTitle></CardHeader>
