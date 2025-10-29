@@ -3,11 +3,10 @@
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, BookOpenCheck, GraduationCap, Percent, PlusCircle, BarChart3, Settings, ShieldAlert, Monitor, Database, LineChart, ArrowRight } from "lucide-react";
-import type { AdminDashboardStats, SecurityLog as AppSecurityLog, CalendarEvent } from '@/types';
+import type { AdminDashboardStats, SecurityLog as AppSecurityLog } from '@/types';
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { MetricCard } from "../analytics/metric-card";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ChartConfig, ChartContainer, ChartTooltipContent } from "../ui/chart";
 import { format, parseISO } from "date-fns";
@@ -15,8 +14,7 @@ import { es } from "date-fns/locale";
 import { SecurityLogTimeline } from "../security/security-log-timeline";
 import { SecurityLogDetailSheet } from "../security/security-log-detail-sheet";
 import { useRouter } from 'next/navigation';
-import { InteractiveEventsWidget } from "./interactive-events-widget";
-import { CalendarWidget } from "./calendar-widget";
+import { MetricCard } from "../analytics/metric-card";
 
 
 const HealthStatusWidget = () => {
@@ -84,11 +82,9 @@ const chartConfig = {
   newEnrollments: { label: "Inscripciones", color: "hsl(var(--chart-1))" },
 } satisfies ChartConfig;
 
-export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, onParticipate }: {
+export function AdminDashboard({ adminStats, securityLogs }: {
   adminStats: AdminDashboardStats;
   securityLogs: AppSecurityLog[];
-  upcomingEvents: CalendarEvent[];
-  onParticipate: (eventId: string, occurrenceDate: Date) => void;
 }) {
   const [selectedLog, setSelectedLog] = useState<AppSecurityLog | null>(null);
   const router = useRouter();
@@ -110,6 +106,7 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, onPar
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            {/* Columna Izquierda */}
             <div className="lg:col-span-1">
                  <Card>
                     <CardHeader>
@@ -134,6 +131,8 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, onPar
                     </CardContent>
                 </Card>
             </div>
+            
+            {/* Columna Central */}
             <div className="lg:col-span-1 space-y-6">
                 <Card>
                     <CardHeader>
@@ -149,8 +148,9 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, onPar
                        </Button>
                     </CardFooter>
                 </Card>
-                 <HealthStatusWidget />
             </div>
+            
+            {/* Columna Derecha */}
             <div className="lg:col-span-1 space-y-6">
                 <Card>
                     <CardHeader><CardTitle className="text-base">Acciones Rápidas</CardTitle></CardHeader>
@@ -161,8 +161,7 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, onPar
                         <Button variant="outline" asChild><Link href="/settings"><Settings className="mr-2 h-4 w-4"/>Ajustes</Link></Button>
                     </CardContent>
                 </Card>
-                <InteractiveEventsWidget events={adminStats.interactiveEventsToday} onParticipate={onParticipate} />
-                <CalendarWidget events={upcomingEvents}/>
+                <HealthStatusWidget />
             </div>
         </div>
         
