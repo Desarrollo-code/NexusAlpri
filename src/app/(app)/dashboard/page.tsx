@@ -261,10 +261,10 @@ export default function DashboardPage() {
 
   const renderContentForRole = () => {
     if (!user || !data) return null;
-    const commonProps = { data, onParticipate, onEnrollmentChange: handleEnrollmentChange };
+    const commonProps = { data, onParticipate: handleParticipate, onEnrollmentChange: handleEnrollmentChange };
     switch (user?.role) {
       case 'ADMINISTRATOR': return <AdminDashboard {...commonProps} />;
-      case 'INSTRUCTOR': return <InstructorDashboard {...commonProps} />;
+      case 'INSTRUCTOR': return <InstructorDashboard {...data} />;
       case 'STUDENT': return <StudentDashboard {...commonProps} />;
       default: return <p>Rol de usuario no reconocido.</p>;
     }
