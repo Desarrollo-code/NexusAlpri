@@ -24,9 +24,6 @@ import { GaugeChart } from '@/components/ui/gauge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SmartPagination } from '@/components/ui/pagination';
 import { MetricCard } from '@/components/analytics/metric-card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Identicon } from '@/components/ui/identicon';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -234,7 +231,6 @@ function SecurityAuditPageComponent() {
                             </CardFooter>
                          )}
                     </Card>
-                    <AtRiskUsersCard users={stats.atRiskUsers || []} onSuspend={setUserToSuspend} isLoading={isLoading} />
                 </div>
                  {/* Columna Central */}
                 <div className="lg:col-span-1 space-y-8">
@@ -253,6 +249,7 @@ function SecurityAuditPageComponent() {
                             </div>
                         </CardContent>
                     </Card>
+                    <AtRiskUsersCard users={stats.atRiskUsers || []} onSuspend={setUserToSuspend} isLoading={isLoading} />
                 </div>
                 
                  {/* Columna Derecha */}

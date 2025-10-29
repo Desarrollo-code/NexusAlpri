@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { SecurityLogEvent, SecurityStats } from '@/types';
 import { startOfDay, endOfDay, subDays, isValid, eachDayOfInterval, format } from 'date-fns';
-import { parseUserAgent } from '@/lib/utils'; // Corregido
+import { parseUserAgent } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
     }
     
     const { searchParams } = new URL(req.url);
-    const eventType = searchParams.get('event') as SecurityLogEvent | 'ALL' | null;
+    const eventType = searchParams.get('event') as SecurityLogEvent | 'ALL' | 'COURSE_MODIFICATIONS' | null;
     const startDateParam = searchParams.get('startDate');
     const endDateParam = searchParams.get('endDate');
     const page = parseInt(searchParams.get('page') || '1', 10);
@@ -46,7 +46,11 @@ export async function GET(req: NextRequest) {
 
     let whereClause: any = {};
     if (eventType && eventType !== 'ALL') {
-        whereClause.event = eventType;
+        if (eventType === 'COURSE_MODIFICATIONS') {
+            whereClause.event = { in: ['COURSE_CREATED', 'COURSE_UPDATED', 'COURSE_DELETED'] };
+        } else {
+            whereClause.event = eventType;
+        }
     }
 
     const endDate = endDateParam && isValid(new Date(endDateParam)) ? endOfDay(new Date(endDateParam)) : endOfDay(new Date());
@@ -66,6 +70,7 @@ export async function GET(req: NextRequest) {
             allLogsInPeriod,
             totalActiveUsers,
             usersWith2FA,
+            atRiskUsersRaw
         ] = await Promise.all([
             prisma.securityLog.findMany({
                 where: whereClause,
@@ -85,11 +90,39 @@ export async function GET(req: NextRequest) {
             }),
             prisma.user.count({ where: { isActive: true } }),
             prisma.user.count({ where: { isActive: true, isTwoFactorEnabled: true } }),
+            prisma.securityLog.groupBy({
+                by: ['emailAttempt'],
+                where: {
+                    event: 'FAILED_LOGIN_ATTEMPT',
+                    createdAt: { gte: subDays(new Date(), 1) },
+                    emailAttempt: { not: null },
+                },
+                _count: { event: true },
+                having: { event: { _count: { gt: 5 } } },
+            }),
         ]);
+
+        const atRiskEmails = atRiskUsersRaw.map(u => u.emailAttempt!);
+        const atRiskUsers = await prisma.user.findMany({
+            where: { email: { in: atRiskEmails } },
+            select: { id: true, name: true, email: true, avatar: true }
+        });
+        const atRiskUsersWithCount = atRiskUsers.map(user => {
+            const rawData = atRiskUsersRaw.find(r => r.emailAttempt === user.email);
+            return {
+                userId: user.id,
+                name: user.name,
+                email: user.email,
+                avatar: user.avatar,
+                failedAttempts: rawData?._count.event || 0,
+            }
+        });
 
         const successfulLogins = allLogsInPeriod.filter(l => l.event === 'SUCCESSFUL_LOGIN').length;
         const failedLogins = allLogsInPeriod.filter(l => l.event === 'FAILED_LOGIN_ATTEMPT').length;
         const roleChanges = allLogsInPeriod.filter(l => l.event === 'USER_ROLE_CHANGED').length;
+        const courseModifications = allLogsInPeriod.filter(l => ['COURSE_CREATED', 'COURSE_UPDATED', 'COURSE_DELETED'].includes(l.event)).length;
+
 
         const { browsers, os } = aggregateByUserAgent(allLogsInPeriod || []);
 
@@ -108,22 +141,36 @@ export async function GET(req: NextRequest) {
             .slice(0, 5)
             .map(([ip, data]) => ({ ip, ...data }));
             
-        // --- Calculate Security Score ---
+        const countryCounts = (allLogsInPeriod || []).reduce((acc, log) => {
+            if (log.country) {
+                acc[log.country] = (acc[log.country] || 0) + 1;
+            }
+            return acc;
+        }, {} as Record<string, number>);
+
+        const topCountries = Object.entries(countryCounts)
+            .sort(([, a], [, b]) => b - a)
+            .slice(0, 5)
+            .map(([name, count]) => ({ name, count }));
+
+            
         const totalLogins = successfulLogins + failedLogins;
         const securityScore = totalLogins > 0 ? (successfulLogins / totalLogins) * 100 : 100;
         
-        // Calculate 2FA Adoption
         const twoFactorAdoptionRate = totalActiveUsers > 0 ? (usersWith2FA / totalActiveUsers) * 100 : 0;
         
         const stats: SecurityStats = {
             successfulLogins,
             failedLogins,
             roleChanges,
+            courseModifications,
             browsers,
             os,
             topIps,
+            topCountries,
             securityScore,
             twoFactorAdoptionRate,
+            atRiskUsers: atRiskUsersWithCount,
         };
 
         return NextResponse.json({ logs, stats, totalLogs });
