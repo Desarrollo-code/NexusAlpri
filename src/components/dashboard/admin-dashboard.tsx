@@ -71,10 +71,7 @@ const HealthStatusWidget = () => {
 
 const formatDateTick = (tick: string): string => {
   const date = parseISO(tick);
-  if (date.getDate() % 5 === 0 || date.getDate() === 1) {
-    return format(date, "d MMM", { locale: es });
-  }
-  return format(date, "d", { locale: es });
+  return format(date, "d");
 };
 
 const chartConfig = {
@@ -90,6 +87,20 @@ export function AdminDashboard({ adminStats, securityLogs }: {
   const router = useRouter();
 
   if (!adminStats) return null;
+  
+  const getMonthRangeLabel = () => {
+    if (!adminStats.contentActivityTrend || adminStats.contentActivityTrend.length === 0) return '';
+    const startDate = parseISO(adminStats.contentActivityTrend[0].date);
+    const endDate = parseISO(adminStats.contentActivityTrend[adminStats.contentActivityTrend.length - 1].date);
+
+    const startMonth = format(startDate, 'MMMM', { locale: es });
+    const endMonth = format(endDate, 'MMMM', { locale: es });
+
+    if (startMonth === endMonth) {
+        return `Corresponde al mes de ${startMonth}`;
+    }
+    return `Periodo: ${startMonth} - ${endMonth}`;
+  }
 
   return (
     <div className="space-y-8">
@@ -106,8 +117,7 @@ export function AdminDashboard({ adminStats, securityLogs }: {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-            {/* Columna Izquierda */}
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 space-y-6">
                  <Card>
                     <CardHeader>
                         <CardTitle>Tendencia de Actividad</CardTitle>
@@ -129,10 +139,12 @@ export function AdminDashboard({ adminStats, securityLogs }: {
                           </AreaChart>
                         </ChartContainer>
                     </CardContent>
+                     <CardFooter className="justify-center text-sm text-muted-foreground font-medium pt-2">
+                        {getMonthRangeLabel()}
+                    </CardFooter>
                 </Card>
             </div>
             
-            {/* Columna Central */}
             <div className="lg:col-span-1 space-y-6">
                  <Card>
                     <CardHeader>
@@ -150,7 +162,6 @@ export function AdminDashboard({ adminStats, securityLogs }: {
                 </Card>
             </div>
             
-            {/* Columna Derecha */}
             <div className="lg:col-span-1 space-y-6">
                 <Card>
                     <CardHeader><CardTitle className="text-base">Acciones Rápidas</CardTitle></CardHeader>
