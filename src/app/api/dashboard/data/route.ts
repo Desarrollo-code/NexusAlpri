@@ -1,4 +1,3 @@
-
 // src/app/api/dashboard/data/route.ts
 import prisma from '@/lib/prisma';
 import { NextResponse, type NextRequest } from 'next/server';
@@ -26,8 +25,6 @@ async function getAdminDashboardData(session: PrismaUser, startDate?: Date, endD
     const activityStartDate = startDate || subDays(activityEndDate, 29);
 
     const dateFilterRegistered = startDate ? { registeredDate: { gte: startDate, lte: activityEndDate } } : {};
-    const dateFilterEnrolled = startDate ? { enrolledAt: { gte: startDate, lte: activityEndDate } } : {};
-    const dateFilterCourse = startDate ? { createdAt: { gte: startDate, lte: activityEndDate } } : {};
 
     const [
         totalUsers, totalCourses, totalPublishedCourses, totalEnrollments,
@@ -37,9 +34,9 @@ async function getAdminDashboardData(session: PrismaUser, startDate?: Date, endD
         topStudentsByEnrollment, topStudentsByCompletion, topInstructorsByCourses
     ] = await prisma.$transaction([
         prisma.user.count({ where: dateFilterRegistered }),
-        prisma.course.count({ where: dateFilterCourse }),
-        prisma.course.count({ where: { status: 'PUBLISHED', ...dateFilterCourse } }),
-        prisma.enrollment.count({ where: dateFilterEnrolled }),
+        prisma.course.count(),
+        prisma.course.count({ where: { status: 'PUBLISHED' } }),
+        prisma.enrollment.count(),
         prisma.enterpriseResource.count(),
         prisma.announcement.count(),
         prisma.form.count(),
@@ -271,4 +268,3 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ message: 'Error al obtener los datos del panel principal' }, { status: 500 });
     }
 }
-
