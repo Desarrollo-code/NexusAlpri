@@ -64,6 +64,17 @@ export function StudentDashboard({ studentStats, myDashboardCourses, assignedCou
               </div>
           </Card>
           
+           <div className="grid grid-cols-2 gap-4">
+              <Card>
+                  <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Cursos Inscritos</CardTitle><GraduationCap className="h-4 w-4 text-primary"/></CardHeader>
+                  <CardContent><div className="text-2xl font-bold">{studentStats?.enrolled || 0}</div></CardContent>
+              </Card>
+              <Card>
+                  <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Cursos Completados</CardTitle><CheckCircle className="h-4 w-4 text-primary"/></CardHeader>
+                  <CardContent><div className="text-2xl font-bold">{studentStats?.completed || 0}</div></CardContent>
+              </Card>
+           </div>
+          
           <InteractiveEventsWidget events={studentStats.interactiveEventsToday} onParticipate={onParticipate} />
           
           {assignedCourses && assignedCourses.length > 0 && (

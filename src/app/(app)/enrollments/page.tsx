@@ -438,7 +438,7 @@ function EnrollmentsPageComponent() {
                 <div className="flex items-center justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
             ) : selectedCourseInfo ? (
                 <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="enrollments-stats-cards">
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4" id="enrollments-stats-cards">
                        <StatCard icon={UsersRound} title="Total Inscritos" value={selectedCourseInfo._count.enrollments} />
                        <StatCard icon={Percent} title="Finalización Promedio" value={selectedCourseInfo.avgProgress || 0} unit="%" />
                        <StatCard icon={CheckCircle} title="Nota Quizzes Promedio" value={selectedCourseInfo.avgQuizScore || 0} unit="%" />

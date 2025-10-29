@@ -28,7 +28,7 @@ export function InstructorDashboard({ instructorStats, recentAnnouncements, taug
           <p className="text-muted-foreground">Tu espacio para crear, gestionar y ver el impacto de tu contenido.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Cursos Creados</CardTitle><GraduationCap className="h-4 w-4 text-primary"/></CardHeader>
             <CardContent><div className="text-2xl font-bold">{instructorStats?.taught || 0}</div></CardContent>
