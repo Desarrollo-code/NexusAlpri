@@ -20,8 +20,10 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { useDebounce } from '@/hooks/use-debounce';
-import { Skeleton } from '../ui/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useAnimatedCounter } from '@/hooks/use-animated-counter';
+import { getIconForType } from '@/lib/resource-utils';
+import { Input } from '@/components/ui/input';
 
 interface StorageStat {
   type: string;
