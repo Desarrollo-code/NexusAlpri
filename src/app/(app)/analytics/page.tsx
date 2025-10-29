@@ -52,9 +52,7 @@ import { DonutChart } from '@/components/analytics/donut-chart';
 const formatDateTick = (tick: string): string => {
   const date = parseISO(tick);
   if (!isValid(date)) return tick;
-  if (date.getDate() === 1) {
-    return format(date, "d MMM", { locale: es });
-  }
+  // Muestra solo el número del día.
   return format(date, "d", { locale: es });
 };
 
@@ -257,9 +255,9 @@ function AdminAnalyticsPage() {
                                 <YAxis allowDecimals={false} tickLine={false} axisLine={true} tickMargin={10} width={30}/>
                                 <ChartTooltip cursor={{ fill: 'hsl(var(--muted))', radius: 4 }} content={<ChartTooltipContent indicator="dot" labelFormatter={formatDateTooltip} />} />
                                 <Legend />
-                                <Bar dataKey="newUsers" name="Usuarios" fill="var(--color-newUsers)" radius={4} />
-                                <Line type="monotone" dataKey="newCourses" name="Cursos" stroke="var(--color-newCourses)" strokeWidth={2} dot={false} />
-                                <Area type="monotone" dataKey="newEnrollments" name="Inscripciones" fill="var(--color-newEnrollments)" stroke="var(--color-newEnrollments)" strokeWidth={2} fillOpacity={0.3} dot={false}/>
+                                <Bar dataKey="count" name="Usuarios" fill="var(--color-newUsers)" radius={4} data={stats?.userRegistrationTrend || []} />
+                                <Line type="monotone" dataKey="newCourses" name="Cursos" stroke="var(--color-newCourses)" strokeWidth={2} dot={false} data={stats?.contentActivityTrend || []}/>
+                                <Area type="monotone" dataKey="newEnrollments" name="Inscripciones" fill="var(--color-newEnrollments)" stroke="var(--color-newEnrollments)" strokeWidth={2} fillOpacity={0.3} dot={false} data={stats?.contentActivityTrend || []}/>
                            </ComposedChart>
                         </ResponsiveContainer>
                     </ChartContainer>

@@ -7,7 +7,7 @@ import type { AdminDashboardStats, SecurityLog as AppSecurityLog } from '@/types
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, ComposedChart, Bar, Legend } from "recharts";
 import { ChartConfig, ChartContainer, ChartTooltipContent } from "../ui/chart";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
@@ -71,15 +71,13 @@ const HealthStatusWidget = () => {
 
 const formatDateTick = (tick: string): string => {
   const date = parseISO(tick);
-  if (date.getDate() === 1) { // Show month for the first day of a month
-    return format(date, "d MMM", { locale: es });
-  }
+  // Muestra solo el número del día.
   return format(date, "d", { locale: es });
 };
 
 const chartConfig = {
-  newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-2))" },
-  newEnrollments: { label: "Inscripciones", color: "hsl(var(--chart-1))" },
+  newUsers: { label: "Nuevos Usuarios", color: "hsl(var(--chart-1))" },
+  newEnrollments: { label: "Inscripciones", color: "hsl(var(--chart-3))" },
 } satisfies ChartConfig;
 
 export function AdminDashboard({ adminStats, securityLogs }: {
@@ -92,8 +90,8 @@ export function AdminDashboard({ adminStats, securityLogs }: {
   if (!adminStats) return null;
   
   const getMonthRangeLabel = () => {
-    if (!adminStats.contentActivityTrend || adminStats.contentActivityTrend.length === 0) return '';
-    const startDate = parseISO(adminStats.contentActivityTrend[0].date);
+    if (!adminStats.userRegistrationTrend || adminStats.userRegistrationTrend.length === 0) return '';
+    const startDate = parseISO(adminStats.userRegistrationTrend[0].date);
     const endMonth = format(new Date(), 'MMMM', { locale: es });
     const startMonth = format(startDate, 'MMMM', { locale: es});
     
@@ -118,38 +116,31 @@ export function AdminDashboard({ adminStats, securityLogs }: {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-2">
                  <Card>
                     <CardHeader>
-                        <CardTitle>Tendencia de Actividad</CardTitle>
-                        <CardDescription>Últimos 15 días</CardDescription>
+                        <CardTitle>Tendencia de Actividad de Usuarios</CardTitle>
+                        <CardDescription>Nuevos usuarios e inscripciones en los últimos 15 días.</CardDescription>
                     </CardHeader>
                     <CardContent className="h-80 pr-4">
                        <ChartContainer config={chartConfig} className="w-full h-full">
-                          <AreaChart data={adminStats.contentActivityTrend} accessibilityLayer margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                            <defs>
-                                <linearGradient id="colorCourses" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="var(--color-newCourses)" stopOpacity={0.8}/><stop offset="95%" stopColor="var(--color-newCourses)" stopOpacity={0}/></linearGradient>
-                                <linearGradient id="colorEnrollments" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="var(--color-newEnrollments)" stopOpacity={0.8}/><stop offset="95%" stopColor="var(--color-newEnrollments)" stopOpacity={0}/></linearGradient>
-                            </defs>
+                          <ComposedChart data={adminStats.userRegistrationTrend} accessibilityLayer margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false}/>
                             <XAxis dataKey="date" tickFormatter={formatDateTick} fontSize={12} tickMargin={5} interval={4} />
-                            <YAxis allowDecimals={false} width={30} fontSize={12}/>
+                            <YAxis yAxisId="left" allowDecimals={false} width={30} fontSize={12}/>
+                            <YAxis yAxisId="right" orientation="right" allowDecimals={false} width={30} fontSize={12} />
                             <Tooltip content={<ChartTooltipContent indicator="dot" />} />
-                            <Area type="monotone" dataKey="newCourses" stroke="var(--color-newCourses)" strokeWidth={2} fillOpacity={0.4} fill="url(#colorCourses)" name="Nuevos Cursos" />
-                            <Area type="monotone" dataKey="newEnrollments" stroke="var(--color-newEnrollments)" strokeWidth={2} fillOpacity={0.4} fill="url(#colorEnrollments)" name="Inscripciones" />
-                          </AreaChart>
+                            <Legend />
+                            <Bar yAxisId="left" dataKey="count" fill="var(--color-newUsers)" radius={4} name="Nuevos Usuarios" />
+                            <Line yAxisId="right" type="monotone" dataKey="newEnrollments" stroke="var(--color-newEnrollments)" strokeWidth={2} name="Inscripciones" data={adminStats.contentActivityTrend} />
+                          </ComposedChart>
                         </ChartContainer>
                     </CardContent>
-                    <CardFooter className="justify-center pt-2">
-                        <div className="text-xs font-semibold text-white px-3 py-1 rounded-full bg-gradient-to-r from-primary to-accent shadow-md">
-                           {getMonthRangeLabel()}
-                        </div>
-                    </CardFooter>
                 </Card>
             </div>
             
-            <div className="lg:col-span-1">
-                 <Card>
+            <div className="lg:col-span-1 space-y-6">
+                <Card>
                     <CardHeader>
                         <CardTitle className="text-base">Auditoría de Seguridad Activa</CardTitle>
                         <CardDescription className="text-xs">Últimos eventos importantes.</CardDescription>
@@ -163,9 +154,6 @@ export function AdminDashboard({ adminStats, securityLogs }: {
                        </Button>
                     </CardFooter>
                 </Card>
-            </div>
-            
-            <div className="lg:col-span-1 space-y-6">
                 <Card>
                     <CardHeader><CardTitle className="text-base">Acciones Rápidas</CardTitle></CardHeader>
                     <CardContent className="grid grid-cols-2 gap-2">
