@@ -303,13 +303,16 @@ export type SecurityStats = {
 
 
 // --- ANALYTICS ---
+type TrendData = { date: string, count: number };
 export interface AdminDashboardStats {
     totalUsers: number;
     totalCourses: number;
     totalPublishedCourses: number;
     totalEnrollments: number;
     averageCompletionRate: number;
+    userRegistrationTrend: TrendData[];
     contentActivityTrend: { date: string, newCourses: number, newEnrollments: number }[];
+    enrollmentTrend: TrendData[];
 }
 
 // --- TEMPLATES ---

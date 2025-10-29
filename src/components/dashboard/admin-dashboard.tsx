@@ -1,5 +1,3 @@
-
-      
 // src/components/dashboard/admin-dashboard.tsx
 'use client';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
@@ -50,7 +48,7 @@ const HealthStatusWidget = () => {
             })} />
             <span className={cn({
                 'text-muted-foreground': status === 'checking',
-                'text-green-600': status === 'operational',
+                'text-green-600 dark:text-green-400': status === 'operational',
                 'text-destructive': status === 'error',
             })}>
                 {status === 'checking' ? 'Verificando...' : (status === 'operational' ? 'Operacional' : 'Fallo')}
@@ -73,6 +71,9 @@ const HealthStatusWidget = () => {
 
 const formatDateTick = (tick: string): string => {
   const date = parseISO(tick);
+  if (date.getDate() === 1) { // Show month for the first day of a month
+    return format(date, "d MMM", { locale: es });
+  }
   return format(date, "d", { locale: es });
 };
 
@@ -94,7 +95,12 @@ export function AdminDashboard({ adminStats, securityLogs }: {
     if (!adminStats.contentActivityTrend || adminStats.contentActivityTrend.length === 0) return '';
     const startDate = parseISO(adminStats.contentActivityTrend[0].date);
     const endMonth = format(new Date(), 'MMMM', { locale: es });
-    return `Corresponde al mes de ${endMonth}`;
+    const startMonth = format(startDate, 'MMMM', { locale: es});
+    
+    if (startMonth === endMonth) {
+        return `Corresponde a ${startMonth.charAt(0).toUpperCase() + startMonth.slice(1)}`;
+    }
+    return `Actividad de ${startMonth} a ${endMonth}`;
   }
 
   return (
@@ -107,7 +113,7 @@ export function AdminDashboard({ adminStats, securityLogs }: {
          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="admin-stats-cards">
             <MetricCard title="Usuarios Totales" value={adminStats.totalUsers} icon={Users} gradient="bg-gradient-blue" trendData={adminStats.userRegistrationTrend} dataKey="count"/>
             <MetricCard title="Cursos Publicados" value={adminStats.totalPublishedCourses} icon={BookOpenCheck} gradient="bg-gradient-green" trendData={adminStats.contentActivityTrend} dataKey="newCourses" />
-            <MetricCard title="Inscripciones Totales" value={adminStats.totalEnrollments} icon={GraduationCap} gradient="bg-gradient-purple" trendData={adminStats.contentActivityTrend} dataKey="newEnrollments" />
+            <MetricCard title="Inscripciones Totales" value={adminStats.totalEnrollments} icon={GraduationCap} gradient="bg-gradient-purple" trendData={adminStats.enrollmentTrend} dataKey="count"/>
             <MetricCard title="Finalización Promedio" value={Math.round(adminStats.averageCompletionRate)} icon={Percent} suffix="%" gradient="bg-gradient-pink" />
         </div>
 
@@ -126,7 +132,7 @@ export function AdminDashboard({ adminStats, securityLogs }: {
                                 <linearGradient id="colorEnrollments" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="var(--color-newEnrollments)" stopOpacity={0.8}/><stop offset="95%" stopColor="var(--color-newEnrollments)" stopOpacity={0}/></linearGradient>
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" vertical={false}/>
-                            <XAxis dataKey="date" tickFormatter={formatDateTick} fontSize={12} tickMargin={5} />
+                            <XAxis dataKey="date" tickFormatter={formatDateTick} fontSize={12} tickMargin={5} interval={4} />
                             <YAxis allowDecimals={false} width={30} fontSize={12}/>
                             <Tooltip content={<ChartTooltipContent indicator="dot" />} />
                             <Area type="monotone" dataKey="newCourses" stroke="var(--color-newCourses)" strokeWidth={2} fillOpacity={0.4} fill="url(#colorCourses)" name="Nuevos Cursos" />
@@ -134,9 +140,9 @@ export function AdminDashboard({ adminStats, securityLogs }: {
                           </AreaChart>
                         </ChartContainer>
                     </CardContent>
-                     <CardFooter className="justify-center pt-2">
+                    <CardFooter className="justify-center pt-2">
                         <div className="text-xs font-semibold text-white px-3 py-1 rounded-full bg-gradient-to-r from-primary to-accent shadow-md">
-                            {getMonthRangeLabel()}
+                           {getMonthRangeLabel()}
                         </div>
                     </CardFooter>
                 </Card>
@@ -177,5 +183,3 @@ export function AdminDashboard({ adminStats, securityLogs }: {
     </div>
   );
 }
-
-    

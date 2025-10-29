@@ -26,8 +26,6 @@ async function getAdminDashboardData(session: PrismaUser, startDate?: Date, endD
 
     const dateFilterRegistered = startDate ? { registeredDate: { gte: startDate, lte: activityEndDate } } : undefined;
     const dateFilterEnrolled = startDate ? { enrolledAt: { gte: startDate, lte: activityEndDate } } : undefined;
-    const dateFilterUpload = startDate ? { uploadDate: { gte: startDate, lte: activityEndDate } } : undefined;
-    const dateFilterAnnouncement = startDate ? { date: { gte: startDate, lte: activityEndDate } } : undefined;
     const dateFilterCourse = startDate ? { createdAt: { gte: startDate, lte: activityEndDate } } : undefined;
 
     // --- Transaction to fetch most stats in one go ---
@@ -41,7 +39,10 @@ async function getAdminDashboardData(session: PrismaUser, startDate?: Date, endD
         prisma.enrollment.count({ where: dateFilterEnrolled }),
         prisma.courseProgress.aggregate({
             _sum: { progressPercentage: true },
-            _count: { progressPercentage: true }
+            _count: { progressPercentage: true },
+            where: {
+                progressPercentage: { not: null }
+            }
         }),
     ]);
     
@@ -49,29 +50,34 @@ async function getAdminDashboardData(session: PrismaUser, startDate?: Date, endD
         ? (progressAggregates._sum.progressPercentage! / progressAggregates._count.progressPercentage)
         : 0;
 
-    // --- Separate queries for more complex data ---
+    // --- Separate queries for trend data ---
     const trendStartDate = subDays(new Date(), 14); // Last 15 days
     const [
-        newCoursesTrend, newEnrollmentsTrend,
+        newUsersTrendRaw, newCoursesTrendRaw, newEnrollmentsTrendRaw,
     ] = await Promise.all([
+        safeQuery(prisma.user.groupBy({ by: ['registeredDate'], _count: { _all: true }, where: { registeredDate: { gte: trendStartDate } }, orderBy: { registeredDate: 'asc' } }), [], 'newUsersTrend'),
         safeQuery(prisma.course.groupBy({ by: ['createdAt'], _count: { _all: true }, where: { createdAt: { gte: trendStartDate } }, orderBy: { createdAt: 'asc' } }), [], 'newCoursesTrend'),
         safeQuery(prisma.enrollment.groupBy({ by: ['enrolledAt'], _count: { _all: true }, where: { enrolledAt: { gte: trendStartDate } }, orderBy: { enrolledAt: 'asc' } }), [], 'newEnrollmentsTrend'),
     ]);
-
-    const activityMap = new Map<string, { newCourses: number, newEnrollments: number }>();
+    
+    const trendMap = new Map<string, { date: string, users: number, courses: number, enrollments: number }>();
     for (let d = new Date(trendStartDate); d <= new Date(); d.setDate(d.getDate() + 1)) {
-        activityMap.set(format(d, 'yyyy-MM-dd'), { newCourses: 0, newEnrollments: 0 });
+        const dateKey = format(d, 'yyyy-MM-dd');
+        trendMap.set(dateKey, { date: dateKey, users: 0, courses: 0, enrollments: 0 });
     }
-    newCoursesTrend.forEach(item => { const date = format(item.createdAt, 'yyyy-MM-dd'); if (activityMap.has(date)) activityMap.get(date)!.newCourses += item._count._all; });
-    newEnrollmentsTrend.forEach(item => { const date = format(item.enrolledAt, 'yyyy-MM-dd'); if (activityMap.has(date)) activityMap.get(date)!.newEnrollments += item._count._all; });
+
+    newUsersTrendRaw.forEach(item => { if(item.registeredDate){ const date = format(item.registeredDate, 'yyyy-MM-dd'); if (trendMap.has(date)) trendMap.get(date)!.users += item._count._all; }});
+    newCoursesTrendRaw.forEach(item => { const date = format(item.createdAt, 'yyyy-MM-dd'); if (trendMap.has(date)) trendMap.get(date)!.courses += item._count._all; });
+    newEnrollmentsTrendRaw.forEach(item => { const date = format(item.enrolledAt, 'yyyy-MM-dd'); if (trendMap.has(date)) trendMap.get(date)!.enrollments += item._count._all; });
     
-    const contentActivityTrend = Array.from(activityMap.entries()).map(([date, counts]) => ({ date, ...counts }));
-    
+    const fullTrendData = Array.from(trendMap.values());
 
     const adminStats: AdminDashboardStats = {
         totalUsers, totalCourses, totalPublishedCourses, totalEnrollments,
         averageCompletionRate,
-        contentActivityTrend,
+        userRegistrationTrend: fullTrendData.map(d => ({ date: d.date, count: d.users })),
+        contentActivityTrend: fullTrendData.map(d => ({ date: d.date, newCourses: d.courses, newEnrollments: d.enrollments })),
+        enrollmentTrend: fullTrendData.map(d => ({ date: d.date, count: d.enrollments }))
     };
     
     return { adminStats };
