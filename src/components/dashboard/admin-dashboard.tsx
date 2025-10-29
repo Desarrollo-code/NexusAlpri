@@ -108,7 +108,7 @@ export function AdminDashboard({ adminStats, securityLogs }: {
             <p className="text-muted-foreground">Una vista general y accionable del estado de tu plataforma.</p>
         </div>
         
-         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4" id="admin-stats-cards">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4" id="admin-stats-cards">
             <MetricCard title="Usuarios Totales" value={adminStats.totalUsers} icon={Users} gradient="bg-gradient-blue" />
             <MetricCard title="Cursos Publicados" value={adminStats.totalPublishedCourses} icon={BookOpenCheck} gradient="bg-gradient-green" />
             <MetricCard title="Inscripciones Totales" value={adminStats.totalEnrollments} icon={GraduationCap} gradient="bg-gradient-purple" />
@@ -116,35 +116,35 @@ export function AdminDashboard({ adminStats, securityLogs }: {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-1">
                  <Card>
                     <CardHeader>
                         <CardTitle>Tendencia de Actividad</CardTitle>
-                        <CardDescription>Nuevos usuarios e inscripciones en los últimos 15 días.</CardDescription>
+                        <CardDescription>Últimos 15 días</CardDescription>
                     </CardHeader>
                     <CardContent className="h-80 pr-4">
                        <ChartContainer config={chartConfig} className="w-full h-full">
                           <ComposedChart data={adminStats.userRegistrationTrend} accessibilityLayer margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false}/>
-                            <XAxis dataKey="date" tickFormatter={formatDateTick} fontSize={12} tickMargin={5} interval={0} />
+                            <XAxis dataKey="date" tickFormatter={formatDateTick} fontSize={12} tickMargin={5} interval={4} />
                             <YAxis yAxisId="left" allowDecimals={false} width={30} fontSize={12}/>
                             <YAxis yAxisId="right" orientation="right" allowDecimals={false} width={30} fontSize={12} />
                             <Tooltip content={<ChartTooltipContent indicator="dot" />} />
                             <Legend />
-                            <Bar yAxisId="left" dataKey="count" fill="var(--color-newUsers)" radius={4} name="Nuevos Usuarios" />
+                            <Bar yAxisId="left" dataKey="count" fill="var(--color-newUsers)" radius={4} name="Usuarios" />
                             <Line yAxisId="right" type="monotone" dataKey="newEnrollments" stroke="var(--color-newEnrollments)" strokeWidth={2} name="Inscripciones" data={adminStats.contentActivityTrend} />
                           </ComposedChart>
                         </ChartContainer>
                     </CardContent>
                      <CardFooter className="justify-center">
-                       <div className="text-sm font-semibold text-green-600 bg-green-100 px-3 py-1 rounded-full">
+                       <div className="text-sm font-semibold text-green-600 bg-green-100 dark:bg-green-900/30 px-3 py-1 rounded-full">
                            {getMonthRangeLabel()}
                        </div>
                     </CardFooter>
                 </Card>
             </div>
             
-            <div className="lg:col-span-1 space-y-6">
+            <div className="lg:col-span-1">
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-base">Auditoría de Seguridad Activa</CardTitle>
