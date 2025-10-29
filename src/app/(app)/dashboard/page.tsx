@@ -44,15 +44,16 @@ import { Calendar } from '@/components/ui/calendar';
 import { useRouter } from 'next/navigation';
 import { CourseCarousel } from '@/components/course-carousel';
 import { AtRiskUsersCard } from '@/components/security/at-risk-users-card';
+import { Progress } from '@/components/ui/progress';
 
 // --- TYPE DEFINITIONS ---
 interface DashboardData {
     adminStats?: AdminDashboardStats;
     studentStats?: { enrolled: number; completed: number };
     instructorStats?: { taught: number; students: number };
-    recentAnnouncements?: AnnouncementType[];
     myDashboardCourses?: EnrolledCourse[];
-    allCalendarEvents?: CalendarEvent[];
+    upcomingEvents?: CalendarEvent[];
+    recentAnnouncements?: AnnouncementType[];
     assignedCourses?: AppCourseType[];
     interactiveEventsToday?: (CalendarEvent & { hasParticipated?: boolean })[];
     securityLogs?: SecurityLog[];
@@ -62,20 +63,11 @@ interface DashboardData {
 
 
 // --- WIDGETS REUTILIZABLES ---
-
-const MiniCalendar = ({ events, currentDate, onDateSelect }: { events: CalendarEvent[], currentDate: Date, onDateSelect: (date: Date) => void }) => (
-    <Card className="h-full">
-        <CardContent className="p-1">
-            <Calendar mode="single" selected={currentDate} onSelect={(day) => day && onDateSelect(day)} className="rounded-md" locale={es} events={events} />
-        </CardContent>
-    </Card>
-);
-
-const AnnouncementsList = ({ announcements }: { announcements: AnnouncementType[] }) => (
+const AnnouncementsList = ({ announcements }: { announcements?: AnnouncementType[] }) => (
     <Card className="h-full">
         <CardHeader><CardTitle className="text-base flex items-center gap-2"><Megaphone className="h-4 w-4 text-primary"/>Anuncios Recientes</CardTitle></CardHeader>
         <CardContent className="space-y-3">
-            {announcements.length > 0 ? announcements.map(ann => (
+            {(announcements && announcements.length > 0) ? announcements.map(ann => (
                 <Link href="/messages" key={ann.id} className="block group"><div className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"><div className="w-1.5 h-10 rounded-full shrink-0 bg-primary/70"/><div className="overflow-hidden"><p className="font-semibold text-sm truncate group-hover:text-primary">{ann.title}</p><p className="text-xs text-muted-foreground truncate">{ann.author?.name || 'Sistema'}</p></div></div></Link>
             )) : <p className="text-center text-sm text-muted-foreground py-4">No hay anuncios recientes.</p>}
         </CardContent>
@@ -97,24 +89,15 @@ const InteractiveEventsWidget = ({ events, onParticipate }: { events: (CalendarE
 
 // --- DASHBOARDS POR ROL ---
 
-function StudentDashboard({ data, onEnrollmentChange, onParticipate }: { data: DashboardData, onEnrollmentChange: (courseId: string, status: boolean) => void, onParticipate: (eventId: string, occurrenceDate: string) => void }) {
-    const [selectedDate, setSelectedDate] = useState(new Date());
+function StudentDashboard({ data, onEnrollmentChange }: { data: DashboardData, onEnrollmentChange: (courseId: string, status: boolean) => void }) {
     const { user } = useAuth();
     
     // Gamification Level Calculation
     const calculateLevel = (xp: number) => {
-        const baseXP = 250;
-        const exponent = 1.5;
-        let level = 1;
-        let requiredXP = baseXP;
-        while (xp >= requiredXP) {
-            level++;
-            xp -= requiredXP;
-            requiredXP = Math.floor(baseXP * Math.pow(level, exponent));
-        }
+        const baseXP = 250; const exponent = 1.5; let level = 1; let requiredXP = baseXP;
+        while (xp >= requiredXP) { level++; xp -= requiredXP; requiredXP = Math.floor(baseXP * Math.pow(level, exponent)); }
         const xpForNextLevel = Math.floor(baseXP * Math.pow(level, exponent));
         const progressPercentage = Math.max(0, Math.min(100, (xp / xpForNextLevel) * 100));
-
         return { level, progressPercentage };
     };
     
@@ -122,8 +105,6 @@ function StudentDashboard({ data, onEnrollmentChange, onParticipate }: { data: D
 
     return (
         <div className="space-y-8">
-            <InteractiveEventsWidget events={data.interactiveEventsToday || []} onParticipate={onParticipate} />
-
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 <div className="lg:col-span-2 space-y-8">
                     {data.assignedCourses && data.assignedCourses.length > 0 && (
@@ -151,34 +132,24 @@ function StudentDashboard({ data, onEnrollmentChange, onParticipate }: { data: D
                         )}
                     </section>
                 </div>
-
                 <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
                     <Card>
-                        <CardHeader>
-                            <CardTitle>Mi Progreso</CardTitle>
-                        </CardHeader>
+                        <CardHeader><CardTitle>Mi Progreso</CardTitle></CardHeader>
                         <CardContent className="text-center">
-                            <div className="relative inline-block">
-                                <Trophy className="h-16 w-16 text-amber-400" />
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/3 text-lg font-bold text-amber-800">{level}</div>
-                            </div>
+                            <div className="relative inline-block"><Trophy className="h-16 w-16 text-amber-400" /><div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/3 text-lg font-bold text-amber-800">{level}</div></div>
                             <p className="font-bold mt-2">Nivel {level}</p>
                             <Progress value={progressPercentage} className="h-2 mt-2"/>
                             <p className="text-xs text-muted-foreground mt-1">{user?.xp || 0} XP</p>
                         </CardContent>
                     </Card>
-                    <MiniCalendar events={data.allCalendarEvents || []} currentDate={selectedDate} onDateSelect={setSelectedDate} />
-                    <AnnouncementsList announcements={data.recentAnnouncements || []} />
+                    <AnnouncementsList announcements={data.recentAnnouncements} />
                 </div>
             </div>
         </div>
     );
 }
 
-
 function InstructorDashboard({ data }: { data: DashboardData }) {
-    const [selectedDate, setSelectedDate] = useState(new Date());
-
     return (
         <div className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -186,22 +157,22 @@ function InstructorDashboard({ data }: { data: DashboardData }) {
                 <MetricCard title="Estudiantes Totales" value={data.instructorStats?.students || 0} icon={UsersRound} gradient="bg-gradient-green" />
                 <MetricCard title="Cursos Activos" value={0} icon={BookOpenCheck} gradient="bg-gradient-purple" description="Próximamente" />
             </div>
-
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                  <div className="lg:col-span-2 space-y-6">
                      <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base">Accesos Rápidos de Creación</CardTitle>
-                        </CardHeader>
+                        <CardHeader><CardTitle className="text-base">Accesos Rápidos de Creación</CardTitle></CardHeader>
                          <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <Button asChild variant="outline" className="h-16 justify-start p-4 text-left"><Link href="/manage-courses"><Layers className="mr-3 h-5 w-5 text-primary"/><div><p className="font-semibold">Gestionar Cursos</p><p className="text-xs text-muted-foreground">Editar y crear contenido</p></div></Link></Button>
-                             <Button asChild variant="outline" className="h-16 justify-start p-4 text-left"><Link href="/enrollments"><UsersRound className="mr-3 h-5 w-5 text-primary"/><div><p className="font-semibold">Ver Inscritos</p><p className="text-xs text-muted-foreground">Seguimiento de alumnos</p></div></Link></Button>
+                            <Button asChild variant="outline" className="h-16 justify-start p-4 text-left"><Link href="/enrollments"><UsersRound className="mr-3 h-5 w-5 text-primary"/><div><p className="font-semibold">Ver Inscritos</p><p className="text-xs text-muted-foreground">Seguimiento de alumnos</p></div></Link></Button>
                          </CardContent>
                     </Card>
-                    <AnnouncementsList announcements={data.recentAnnouncements || []} />
+                    <AnnouncementsList announcements={data.recentAnnouncements} />
                 </div>
                 <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
-                    <MiniCalendar events={data.allCalendarEvents || []} currentDate={selectedDate} onDateSelect={setSelectedDate} />
+                     <Card>
+                        <CardHeader><CardTitle>Actividad Reciente en Mis Cursos</CardTitle></CardHeader>
+                        <CardContent><p className="text-sm text-muted-foreground text-center py-4">Próximamente...</p></CardContent>
+                    </Card>
                 </div>
             </div>
         </div>
@@ -209,9 +180,7 @@ function InstructorDashboard({ data }: { data: DashboardData }) {
 }
 
 function AdminDashboard({ data, onParticipate }: { data: DashboardData, onParticipate: (eventId: string, occurrenceDate: string) => void }) {
-    const stats = data.adminStats;
-    const router = useRouter();
-
+    const stats = data.adminStats; const router = useRouter();
     return (
         <div className="space-y-8">
              <InteractiveEventsWidget events={data.interactiveEventsToday || []} onParticipate={onParticipate} />
@@ -221,14 +190,12 @@ function AdminDashboard({ data, onParticipate }: { data: DashboardData, onPartic
                 <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={GraduationCap} gradient="bg-gradient-purple" />
                 <MetricCard title="Finalización" value={stats?.averageCompletionRate || 0} icon={BookOpenCheck} suffix="%" description="Promedio" gradient="bg-gradient-orange" />
             </div>
-            
              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 <div className="lg:col-span-2 space-y-6">
-                     <Card>
-                        <CardHeader><CardTitle className="text-base flex items-center gap-2"><Activity className="h-4 w-4 text-primary"/>Actividad Reciente</CardTitle></CardHeader>
+                    <Card>
+                        <CardHeader><CardTitle className="text-base flex items-center gap-2"><Activity className="h-4 w-4 text-primary"/>Actividad de Seguridad Reciente</CardTitle></CardHeader>
                         <CardContent><SecurityLogTimeline logs={data.securityLogs || []} onLogClick={() => router.push('/security-audit')} /></CardContent>
                     </Card>
-                    <AtRiskUsersCard users={data.atRiskUsers || []} onSuspend={() => {}} isLoading={false} />
                 </div>
                 <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
                     <Card>
@@ -282,12 +249,12 @@ export default function DashboardPage() {
   useEffect(() => {
     setPageTitle('Panel Principal');
     if (!user) return;
-    const tourKeyMap = { ADMINISTRATOR: 'adminDashboard', INSTRUCTOR: 'instructorDashboard', STUDENT: 'studentDashboard' };
-    const tourStepsMap = { ADMINISTRATOR: adminDashboardTour, INSTRUCTOR: instructorDashboardTour, STUDENT: studentDashboardTour };
+    const tourKeyMap: Record<UserRole, string> = { ADMINISTRATOR: 'adminDashboard', INSTRUCTOR: 'instructorDashboard', STUDENT: 'studentDashboard' };
+    const tourStepsMap: Record<UserRole, any> = { ADMINISTRATOR: adminDashboardTour, INSTRUCTOR: instructorDashboardTour, STUDENT: studentDashboardTour };
     startTour(tourKeyMap[user.role], tourStepsMap[user.role]);
   }, [setPageTitle, startTour, user]);
   
-  const handleParticipate = async (eventId: string, occurrenceDate: string) => {
+  const handleParticipate = useCallback(async (eventId: string, occurrenceDate: string) => {
       try {
           const res = await fetch('/api/events/participate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ eventId, occurrenceDate }) });
           if (!res.ok) throw new Error((await res.json()).message || 'No se pudo registrar la participación.');
@@ -296,11 +263,9 @@ export default function DashboardPage() {
       } catch (err) {
           toast({ title: "Error", description: (err as Error).message, variant: "destructive" });
       }
-  };
+  }, [fetchDashboardData, toast]);
 
-  const handleEnrollmentChange = () => {
-      fetchDashboardData();
-  }
+  const handleEnrollmentChange = useCallback(() => { fetchDashboardData(); }, [fetchDashboardData]);
 
   const renderContentForRole = () => {
     if (!user || !data) return null;
@@ -337,4 +302,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-```
