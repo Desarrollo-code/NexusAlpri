@@ -10,7 +10,6 @@ import { expandRecurringEvents } from '@/lib/calendar-utils';
 
 export const dynamic = 'force-dynamic';
 
-// Helper function to safely execute a Prisma query and return a fallback on error.
 async function safeQuery<T>(query: Promise<T>, fallback: T, queryName: string): Promise<T> {
     try {
         return await query;
@@ -32,27 +31,27 @@ async function getAdminDashboardData(session: PrismaUser, startDate?: Date, endD
         progressAggregates, usersByRole, coursesByStatus,
         topCoursesByEnrollment, topCoursesByCompletion, lowestCoursesByCompletion,
         topStudentsByEnrollment, topStudentsByCompletion, topInstructorsByCourses
-    ] = await prisma.$transaction([
-        prisma.user.count({ where: dateFilterRegistered }),
-        prisma.course.count(),
-        prisma.course.count({ where: { status: 'PUBLISHED' } }),
-        prisma.enrollment.count(),
-        prisma.enterpriseResource.count(),
-        prisma.announcement.count(),
-        prisma.form.count(),
-        prisma.courseProgress.aggregate({
+    ] = await Promise.all([
+        safeQuery(prisma.user.count({ where: dateFilterRegistered }), 0, 'totalUsers'),
+        safeQuery(prisma.course.count(), 0, 'totalCourses'),
+        safeQuery(prisma.course.count({ where: { status: 'PUBLISHED' } }), 0, 'totalPublishedCourses'),
+        safeQuery(prisma.enrollment.count(), 0, 'totalEnrollments'),
+        safeQuery(prisma.enterpriseResource.count(), 0, 'totalResources'),
+        safeQuery(prisma.announcement.count(), 0, 'totalAnnouncements'),
+        safeQuery(prisma.form.count(), 0, 'totalForms'),
+        safeQuery(prisma.courseProgress.aggregate({
             _sum: { progressPercentage: true },
             _count: { progressPercentage: true },
             where: { progressPercentage: { not: null } }
-        }),
-        prisma.user.groupBy({ by: ['role'], _count: { _all: true } }),
-        prisma.course.groupBy({ by: ['status'], _count: { _all: true } }),
-        prisma.course.findMany({ where: { status: 'PUBLISHED' }, orderBy: { enrollments: { _count: 'desc' } }, take: 5, select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: true } } } }),
-        prisma.course.findMany({ where: { status: 'PUBLISHED', enrollments: { some: {} } }, orderBy: { averageCompletion: 'desc' }, take: 5, select: { id: true, title: true, imageUrl: true, averageCompletion: true } }),
-        prisma.course.findMany({ where: { status: 'PUBLISHED', enrollments: { some: {} } }, orderBy: { averageCompletion: 'asc' }, take: 5, select: { id: true, title: true, imageUrl: true, averageCompletion: true } }),
-        prisma.user.findMany({ where: { role: 'STUDENT', enrollments: { some: {} } }, orderBy: { enrollments: { _count: 'desc' } }, take: 5, select: { id: true, name: true, avatar: true, _count: { select: { enrollments: true } } } }),
-        prisma.user.findMany({ where: { role: 'STUDENT', courseProgress: { some: {} } }, orderBy: { courseProgress: { _count: 'desc' } }, take: 5, select: { id: true, name: true, avatar: true, _count: { select: { courseProgress: true } } } }),
-        prisma.user.findMany({ where: { role: 'INSTRUCTOR', taughtCourses: { some: {} } }, orderBy: { taughtCourses: { _count: 'desc' } }, take: 5, select: { id: true, name: true, avatar: true, _count: { select: { taughtCourses: true } } } })
+        }), { _sum: { progressPercentage: 0 }, _count: { progressPercentage: 0 } }, 'progressAggregates'),
+        safeQuery(prisma.user.groupBy({ by: ['role'], _count: { _all: true } }), [], 'usersByRole'),
+        safeQuery(prisma.course.groupBy({ by: ['status'], _count: { _all: true } }), [], 'coursesByStatus'),
+        safeQuery(prisma.course.findMany({ where: { status: 'PUBLISHED' }, orderBy: { enrollments: { _count: 'desc' } }, take: 5, select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: true } } } }), [], 'topCoursesByEnrollment'),
+        safeQuery(prisma.course.findMany({ where: { status: 'PUBLISHED', enrollments: { some: {} } }, orderBy: { averageCompletion: 'desc' }, take: 5, select: { id: true, title: true, imageUrl: true, averageCompletion: true } }), [], 'topCoursesByCompletion'),
+        safeQuery(prisma.course.findMany({ where: { status: 'PUBLISHED', enrollments: { some: {} } }, orderBy: { averageCompletion: 'asc' }, take: 5, select: { id: true, title: true, imageUrl: true, averageCompletion: true } }), [], 'lowestCoursesByCompletion'),
+        safeQuery(prisma.user.findMany({ where: { role: 'STUDENT', enrollments: { some: {} } }, orderBy: { enrollments: { _count: 'desc' } }, take: 5, select: { id: true, name: true, avatar: true, _count: { select: { enrollments: true } } } }), [], 'topStudentsByEnrollment'),
+        safeQuery(prisma.user.findMany({ where: { role: 'STUDENT', courseProgress: { some: { completedAt: { not: null } } } }, orderBy: { courseProgress: { _count: 'desc' } }, take: 5, select: { id: true, name: true, avatar: true, _count: { select: { courseProgress: true } } } }), [], 'topStudentsByCompletion'),
+        safeQuery(prisma.user.findMany({ where: { role: 'INSTRUCTOR', taughtCourses: { some: {} } }, orderBy: { taughtCourses: { _count: 'desc' } }, take: 5, select: { id: true, name: true, avatar: true, _count: { select: { taughtCourses: true } } } }), [], 'topInstructorsByCourses')
     ]);
     
     const averageCompletionRate = progressAggregates._count.progressPercentage && progressAggregates._count.progressPercentage > 0
@@ -194,7 +193,7 @@ async function getInstructorDashboardData(session: PrismaUser) {
         safeQuery(prisma.course.findMany({
             where: { instructorId: session.id },
             include: { 
-                _count: { select: { modules: true, lessons: true, enrollments: true } }, 
+                _count: { select: { lessons: true } }, 
                 enrollments: { 
                     select: { progress: { select: { progressPercentage: true } } } 
                 } 
