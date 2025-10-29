@@ -2,210 +2,30 @@
 'use client';
 
 import { useAuth } from '@/contexts/auth-context';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { 
-  UsersRound,
-  Layers,
-  HelpCircle,
-  Megaphone,
-  LineChart,
-  Settings,
-  ShieldAlert,
-  Users,
-  BookMarked,
-  Hand,
-  Trophy,
-  Activity,
-  Mail,
-  Database,
-  BookOpenCheck, 
-  GraduationCap
-} from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import React, { useEffect, useState, useCallback } from 'react';
-import type { AdminDashboardStats, EnrolledCourse, Course as AppCourseType, Announcement as AnnouncementType, CalendarEvent, UserRole, SecurityLog } from '@/types';
-import { Skeleton } from "@/components/ui/skeleton";
-import { CourseCard } from '@/components/course-card';
+import type { UserRole } from '@/types';
 import { useTitle } from '@/contexts/title-context';
 import { adminDashboardTour, studentDashboardTour, instructorDashboardTour } from '@/lib/tour-steps';
 import { useTour } from '@/contexts/tour-context';
-import { cn } from '@/lib/utils';
-import { MetricCard } from '@/components/analytics/metric-card';
 import { useToast } from '@/hooks/use-toast';
-import { AlertTriangle, Loader2 } from 'lucide-react';
-import { SecurityLogTimeline } from '@/components/security/security-log-timeline';
-import { useRouter } from 'next/navigation';
-import { CourseCarousel } from '@/components/course-carousel';
-import { Progress } from '@/components/ui/progress';
-
-// --- TYPE DEFINITIONS ---
-interface DashboardData {
-    adminStats?: AdminDashboardStats;
-    studentStats?: { enrolled: number; completed: number };
-    instructorStats?: { taught: number; students: number };
-    myDashboardCourses?: EnrolledCourse[];
-    upcomingEvents?: CalendarEvent[];
-    recentAnnouncements?: AnnouncementType[];
-    assignedCourses?: AppCourseType[];
-    interactiveEventsToday?: (CalendarEvent & { hasParticipated?: boolean })[];
-    securityLogs?: SecurityLog[];
-    systemHealth?: { api: boolean; db: boolean; mail: boolean };
-}
-
-
-// --- WIDGETS REUTILIZABLES ---
-const InteractiveEventsWidget = ({ events, onParticipate }: { events: (CalendarEvent & { hasParticipated?: boolean })[], onParticipate: (eventId: string, occurrenceDate: string) => void }) => {
-    if (!events || events.length === 0) return null;
-    return (
-        <div className="space-y-4">
-            {events.map(event => (
-                <Card key={event.id} className="bg-gradient-to-br from-green-500 to-teal-500 text-white shadow-lg">
-                    <CardContent className="p-4 flex items-center justify-between"><div className="space-y-1"><CardTitle className="text-base flex items-center gap-2"><Hand/> {event.title}</CardTitle><p className="text-sm opacity-90">{event.description || 'Confirma tu participación para ganar puntos.'}</p></div><Button className="bg-white text-green-600 hover:bg-white/90" onClick={() => onParticipate(event.parentId || event.id, event.start)} disabled={event.hasParticipated}>{event.hasParticipated ? '¡Completado!' : '¡Confirmar!'}</Button></CardContent>
-                </Card>
-            ))}
-        </div>
-    );
-};
-
-// --- DASHBOARDS POR ROL ---
-
-function StudentDashboard({ data, onEnrollmentChange, onParticipate }: { data: DashboardData, onEnrollmentChange: (courseId: string, status: boolean) => void, onParticipate: (eventId: string, occurrenceDate: string) => void }) {
-    const { user } = useAuth();
-    
-    // Gamification Level Calculation
-    const calculateLevel = (xp: number) => {
-        const baseXP = 250; const exponent = 1.5; let level = 1; let requiredXP = baseXP;
-        while (xp >= requiredXP) { level++; xp -= requiredXP; requiredXP = Math.floor(baseXP * Math.pow(level, exponent)); }
-        const xpForNextLevel = Math.floor(baseXP * Math.pow(level, exponent));
-        const progressPercentage = Math.max(0, Math.min(100, (xp / xpForNextLevel) * 100));
-        return { level, progressPercentage };
-    };
-    
-    const { level, progressPercentage } = calculateLevel(user?.xp || 0);
-
-    return (
-        <div className="space-y-8">
-            <InteractiveEventsWidget events={data.interactiveEventsToday || []} onParticipate={onParticipate} />
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                <div className="lg:col-span-2 space-y-8">
-                    {data.assignedCourses && data.assignedCourses.length > 0 && (
-                        <Card className="bg-primary/5 border-primary/20">
-                            <CardHeader>
-                                <CardTitle>Cursos Obligatorios Asignados</CardTitle>
-                                <CardDescription>Estos cursos han sido asignados para tu desarrollo. ¡Complétalos para seguir creciendo!</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <CourseCarousel courses={data.assignedCourses} userRole="STUDENT" onEnrollmentChange={onEnrollmentChange} />
-                            </CardContent>
-                        </Card>
-                    )}
-
-                    <section>
-                         <h2 className="text-xl font-semibold mb-4">Continuar Aprendiendo</h2>
-                          {data.myDashboardCourses && data.myDashboardCourses.length > 0 ? (
-                            <CourseCarousel courses={data.myDashboardCourses} userRole="STUDENT" onEnrollmentChange={onEnrollmentChange}/>
-                        ) : (
-                            <Card className="col-span-full flex flex-col items-center justify-center p-8 text-center border-dashed"><GraduationCap className="h-10 w-10 text-muted-foreground mb-2" /><h3 className="font-semibold">Empieza tu viaje de aprendizaje</h3><p className="text-sm text-muted-foreground mb-4">No estás inscrito en ningún curso todavía.</p><Button asChild><Link href="/courses">Explorar Catálogo</Link></Button></Card>
-                        )}
-                    </section>
-                </div>
-                <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
-                    <Card>
-                        <CardHeader><CardTitle>Mi Progreso</CardTitle></CardHeader>
-                        <CardContent className="text-center">
-                            <div className="relative inline-block"><Trophy className="h-16 w-16 text-amber-400" /><div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/3 text-lg font-bold text-amber-800">{level}</div></div>
-                            <p className="font-bold mt-2">Nivel {level}</p>
-                            <Progress value={progressPercentage} className="h-2 mt-2"/>
-                            <p className="text-xs text-muted-foreground mt-1">{user?.xp || 0} XP</p>
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function InstructorDashboard({ data }: { data: DashboardData }) {
-    return (
-        <div className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <MetricCard title="Cursos Creados" value={data.instructorStats?.taught || 0} icon={Layers} gradient="bg-gradient-blue" />
-                <MetricCard title="Estudiantes Totales" value={data.instructorStats?.students || 0} icon={UsersRound} gradient="bg-gradient-green" />
-                <MetricCard title="Cursos Activos" value={0} icon={BookOpenCheck} gradient="bg-gradient-purple" description="Próximamente" />
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                 <div className="lg:col-span-2 space-y-6">
-                     <Card>
-                        <CardHeader><CardTitle className="text-base">Accesos Rápidos de Creación</CardTitle></CardHeader>
-                         <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <Button asChild variant="outline" className="h-16 justify-start p-4 text-left"><Link href="/manage-courses"><Layers className="mr-3 h-5 w-5 text-primary"/><div><p className="font-semibold">Gestionar Cursos</p><p className="text-xs text-muted-foreground">Editar y crear contenido</p></div></Link></Button>
-                            <Button asChild variant="outline" className="h-16 justify-start p-4 text-left"><Link href="/enrollments"><UsersRound className="mr-3 h-5 w-5 text-primary"/><div><p className="font-semibold">Ver Inscritos</p><p className="text-xs text-muted-foreground">Seguimiento de alumnos</p></div></Link></Button>
-                         </CardContent>
-                    </Card>
-                </div>
-                <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
-                     <Card>
-                        <CardHeader><CardTitle>Actividad Reciente en Mis Cursos</CardTitle></CardHeader>
-                        <CardContent><p className="text-sm text-muted-foreground text-center py-4">Próximamente...</p></CardContent>
-                    </Card>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function AdminDashboard({ data, onParticipate }: { data: DashboardData, onParticipate: (eventId: string, occurrenceDate: string) => void }) {
-    const stats = data.adminStats; const router = useRouter();
-    return (
-        <div className="space-y-8">
-             <InteractiveEventsWidget events={data.interactiveEventsToday || []} onParticipate={onParticipate} />
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <MetricCard title="Usuarios Totales" value={stats?.totalUsers || 0} icon={UsersRound} gradient="bg-gradient-blue" />
-                <MetricCard title="Cursos Totales" value={stats?.totalCourses || 0} icon={Layers} gradient="bg-gradient-green" />
-                <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={GraduationCap} gradient="bg-gradient-purple" />
-                <MetricCard title="Finalización" value={stats?.averageCompletionRate || 0} icon={BookOpenCheck} suffix="%" description="Promedio" gradient="bg-gradient-orange" />
-            </div>
-             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                <div className="lg:col-span-2 space-y-6">
-                    <Card>
-                        <CardHeader><CardTitle className="text-base flex items-center gap-2"><Activity className="h-4 w-4 text-primary"/>Actividad de Seguridad Reciente</CardTitle></CardHeader>
-                        <CardContent><SecurityLogTimeline logs={data.securityLogs || []} onLogClick={() => router.push('/security-audit')} /></CardContent>
-                    </Card>
-                </div>
-                <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
-                    <Card>
-                        <CardHeader><CardTitle className="text-base">Estado de la Plataforma</CardTitle></CardHeader>
-                         <CardContent className="space-y-3">
-                            <div className="flex items-center justify-between text-sm"><span className="flex items-center gap-2"><Database className="h-4 w-4"/>Base de Datos</span><span className="flex items-center gap-2 font-semibold"><div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"/>Operacional</span></div>
-                            <div className="flex items-center justify-between text-sm"><span className="flex items-center gap-2"><Mail className="h-4 w-4"/>Servicio de Correo</span><span className="flex items-center gap-2 font-semibold"><div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"/>Operacional</span></div>
-                         </CardContent>
-                    </Card>
-                     <Card>
-                        <CardHeader><CardTitle className="text-base">Accesos Rápidos</CardTitle></CardHeader>
-                        <CardContent className="grid grid-cols-2 gap-2">
-                            <Button asChild variant="outline"><Link href="/manage-courses"><BookMarked className="mr-2 h-4 w-4"/>Cursos</Link></Button>
-                            <Button asChild variant="outline"><Link href="/users"><Users className="mr-2 h-4 w-4"/>Usuarios</Link></Button>
-                            <Button asChild variant="outline"><Link href="/settings"><Settings className="mr-2 h-4 w-4"/>Ajustes</Link></Button>
-                            <Button asChild variant="outline"><Link href="/analytics"><LineChart className="mr-2 h-4 w-4"/>Analíticas</Link></Button>
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
-        </div>
-    );
-}
+import { AdminDashboard } from '@/components/dashboard/admin-dashboard';
+import { InstructorDashboard } from '@/components/dashboard/instructor-dashboard';
+import { StudentDashboard } from '@/components/dashboard/student-dashboard';
 
 // --- COMPONENTE PRINCIPAL DE LA PÁGINA ---
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const { setPageTitle } = useTitle();
   const { startTour } = useTour();
-  const [data, setData] = useState<DashboardData | null>(null);
+  const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-
+  
   const fetchDashboardData = useCallback(async () => {
     if (!user) { setIsLoading(false); return; }
     setIsLoading(true); setError(null);
@@ -229,28 +49,20 @@ export default function DashboardPage() {
     const tourStepsMap: Record<UserRole, any> = { ADMINISTRATOR: adminDashboardTour, INSTRUCTOR: instructorDashboardTour, STUDENT: studentDashboardTour };
     startTour(tourKeyMap[user.role], tourStepsMap[user.role]);
   }, [setPageTitle, startTour, user]);
-  
-  const handleParticipate = useCallback(async (eventId: string, occurrenceDate: string) => {
-      try {
-          const res = await fetch('/api/events/participate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ eventId, occurrenceDate }) });
-          if (!res.ok) throw new Error((await res.json()).message || 'No se pudo registrar la participación.');
-          toast({ title: "¡Participación Registrada!", description: "Has ganado puntos de experiencia. ¡Bien hecho!" });
-          fetchDashboardData();
-      } catch (err) {
-          toast({ title: "Error", description: (err as Error).message, variant: "destructive" });
-      }
-  }, [fetchDashboardData, toast]);
 
   const handleEnrollmentChange = useCallback(() => { fetchDashboardData(); }, [fetchDashboardData]);
-
+  
   const renderContentForRole = () => {
     if (!user || !data) return null;
-    const commonProps = { data, onEnrollmentChange: handleEnrollmentChange, onParticipate: handleParticipate };
-    switch (user?.role) {
-      case 'ADMINISTRATOR': return <AdminDashboard {...commonProps} />;
-      case 'INSTRUCTOR': return <InstructorDashboard data={data} />;
-      case 'STUDENT': return <StudentDashboard {...commonProps} />;
-      default: return <p>Rol de usuario no reconocido.</p>;
+    switch (user.role) {
+      case 'ADMINISTRATOR':
+        return <AdminDashboard adminStats={data.adminStats} securityLogs={data.securityLogs} />;
+      case 'INSTRUCTOR':
+        return <InstructorDashboard instructorStats={data.instructorStats} recentAnnouncements={data.recentAnnouncements} />;
+      case 'STUDENT':
+        return <StudentDashboard studentStats={data.studentStats} myDashboardCourses={data.myDashboardCourses} assignedCourses={data.assignedCourses} recentAnnouncements={data.recentAnnouncements} onEnrollmentChange={handleEnrollmentChange} />;
+      default:
+        return <p>Rol de usuario no reconocido.</p>;
     }
   };
   
@@ -264,16 +76,12 @@ export default function DashboardPage() {
             </div>
         </div>
       
-      {isLoading ? (
-        <div className="space-y-8">
-            <Skeleton className="h-24 w-full" />
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 space-y-6"><Skeleton className="h-80 w-full"/><Skeleton className="h-48 w-full"/></div>
-                <div className="space-y-6"><Skeleton className="h-72 w-full"/><Skeleton className="h-56 w-full"/></div>
-            </div>
+      {isLoading || isAuthLoading ? (
+        <div className="flex justify-center items-center py-16">
+            <Loader2 className="h-8 w-8 animate-spin text-primary"/>
         </div>
       ) : error ? (
-        <div className="text-center py-10"><AlertTriangle className="mx-auto h-8 w-8 text-destructive" /><p className="mt-2 font-semibold text-destructive">{error}</p></div>
+        <Card className="text-center p-8"><p className="text-destructive">{error}</p></Card>
       ) : renderContentForRole()}
     </div>
   );

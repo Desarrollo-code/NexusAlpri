@@ -1,4 +1,4 @@
-
+// src/lib/nav-items.ts
 import type { NavItem, UserRole } from '@/types';
 import {
   LayoutGrid,
@@ -6,23 +6,21 @@ import {
   GraduationCap,
   Notebook,
   Folder,
-  Megaphone,
+  MessageSquare,
   CalendarDays,
   FileText,
   Shield,
   BookMarked,
-  TrendingUp,
-  Sparkles,
-  Award,
   BarChart3,
   UsersRound,
   ShieldAlert,
   Settings, 
-  MessageSquare,
   Library,
   Briefcase,
   Trophy,
   Network,
+  Sparkles,
+  Award,
 } from 'lucide-react';
 
 const NAVIGATION_ITEMS: NavItem[] = [
@@ -92,8 +90,8 @@ const NAVIGATION_ITEMS: NavItem[] = [
       {
         id: 'communications',
         label: 'Comunicaciones',
-        icon: MessageSquare, // Changed Icon
-        path: '/messages', // Changed Path
+        icon: MessageSquare,
+        path: '/messages',
         roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
       },
       {
@@ -130,7 +128,7 @@ const NAVIGATION_ITEMS: NavItem[] = [
       {
         id: 'enrollments',
         label: 'Inscripciones',
-        icon: TrendingUp,
+        icon: UsersRound,
         path: '/enrollments',
         roles: ['ADMINISTRATOR', 'INSTRUCTOR']
       },
@@ -151,7 +149,7 @@ const NAVIGATION_ITEMS: NavItem[] = [
       {
         id: 'users',
         label: 'Control Central',
-        icon: UsersRound,
+        icon: Network,
         path: '/users',
         roles: ['ADMINISTRATOR']
       },
