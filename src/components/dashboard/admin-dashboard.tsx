@@ -2,12 +2,12 @@
 'use client';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, BookOpenCheck, GraduationCap, Percent, PlusCircle, BarChart3, Settings, ShieldAlert, Monitor, Database, LineChart, ArrowRight } from "lucide-react";
+import { Users, BookOpenCheck, GraduationCap, Percent, PlusCircle, BarChart3, Settings, ShieldAlert, Monitor, Database, ArrowRight } from "lucide-react";
 import type { AdminDashboardStats, SecurityLog as AppSecurityLog } from '@/types';
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, ComposedChart, Bar, Legend } from "recharts";
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, ComposedChart, Bar, Legend, Line } from "recharts"; 
 import { ChartConfig, ChartContainer, ChartTooltipContent } from "../ui/chart";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
