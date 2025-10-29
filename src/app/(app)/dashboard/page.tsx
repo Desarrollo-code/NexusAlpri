@@ -72,9 +72,9 @@ export default function DashboardPage() {
     if (!user || !data) return null;
     switch (user.role) {
       case 'ADMINISTRATOR':
-        return <AdminDashboard adminStats={data.adminStats} securityLogs={data.securityLogs} onParticipate={handleParticipate} />;
+        return <AdminDashboard adminStats={data.adminStats} securityLogs={data.securityLogs} />;
       case 'INSTRUCTOR':
-        return <InstructorDashboard instructorStats={data.instructorStats} recentAnnouncements={data.recentAnnouncements} upcomingEvents={data.upcomingEvents} />;
+        return <InstructorDashboard instructorStats={data.instructorStats} recentAnnouncements={data.recentAnnouncements} taughtCourses={data.taughtCourses} upcomingEvents={data.upcomingEvents} />;
       case 'STUDENT':
         return <StudentDashboard studentStats={data.studentStats} myDashboardCourses={data.myDashboardCourses} assignedCourses={data.assignedCourses} recentAnnouncements={data.recentAnnouncements} upcomingEvents={data.upcomingEvents} onEnrollmentChange={handleEnrollmentChange} onParticipate={handleParticipate} />;
       default:

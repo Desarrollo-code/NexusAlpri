@@ -10,6 +10,7 @@ import { expandRecurringEvents } from '@/lib/calendar-utils';
 
 export const dynamic = 'force-dynamic';
 
+// Helper function to safely execute a Prisma query and return a fallback on error.
 async function safeQuery<T>(query: Promise<T>, fallback: T, queryName: string): Promise<T> {
     try {
         return await query;

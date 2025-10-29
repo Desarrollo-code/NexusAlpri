@@ -29,7 +29,7 @@ const calculateLevel = (xp: number) => {
 };
 
 interface StudentDashboardProps {
-  studentStats: { enrolled: number; completed: number; };
+  studentStats: { enrolled: number; completed: number; interactiveEventsToday?: (CalendarEvent & { hasParticipated?: boolean })[] };
   myDashboardCourses: EnrolledCourse[];
   assignedCourses: AppCourse[];
   recentAnnouncements: AnnouncementType[];

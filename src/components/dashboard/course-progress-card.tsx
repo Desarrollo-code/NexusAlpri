@@ -47,7 +47,7 @@ export function CourseProgressCard({ course, index }: CourseProgressCardProps) {
     const Icon = ICONS[index % ICONS.length];
     const colorClass = COLORS[index % COLORS.length];
     
-    const completedLessons = Math.round((course.modulesCount > 0 ? (course.lessonsCount || 0) : 0) * (averageCompletion / 100));
+    const completedLessons = Math.round((course.lessonsCount || 0) * (averageCompletion / 100));
 
     return (
         <Card className="p-4 transition-all duration-300 hover:shadow-lg hover:border-primary/50">
