@@ -2,15 +2,18 @@
 'use client';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, BookOpenCheck, GraduationCap, Percent, PlusCircle, BarChart3, Settings, ShieldAlert, Monitor, Database } from "lucide-react";
-import type { AdminDashboardStats, SecurityLog } from '@/types';
-import { SecurityLogTimeline } from '../security/security-log-timeline';
+import { Users, BookOpenCheck, GraduationCap, Percent, PlusCircle, BarChart3, Settings, ShieldAlert, Monitor, Database, LineChart } from "lucide-react";
+import type { AdminDashboardStats, CalendarEvent } from '@/types';
 import Link from "next/link";
-import { InteractiveEventsWidget } from "./interactive-events-widget";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { MetricCard } from "../analytics/metric-card";
-
+import { CalendarWidget } from "./calendar-widget";
+import { AnnouncementsWidget } from "./announcements-widget";
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { ChartContainer, ChartTooltipContent } from "../ui/chart";
+import { format, parseISO } from "date-fns";
+import { es } from "date-fns/locale";
 
 const HealthStatusWidget = () => {
     const [healthStatus, setHealthStatus] = useState({ api: 'checking', db: 'checking' });
@@ -53,7 +56,6 @@ const HealthStatusWidget = () => {
         <Card>
             <CardHeader>
                 <CardTitle className="text-lg">Salud de la Plataforma</CardTitle>
-                <CardDescription>Estado de los servicios críticos.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-sm"><Monitor className="h-4 w-4"/><span>API</span></div><StatusIndicator status={healthStatus.api as any} /></div>
@@ -63,10 +65,18 @@ const HealthStatusWidget = () => {
     );
 }
 
-export function AdminDashboard({ adminStats, securityLogs, onParticipate }: {
+const formatDateTick = (tick: string): string => {
+  const date = parseISO(tick);
+  if (date.getDate() === 1 || date.getDate() === 15) {
+    return format(date, "d MMM", { locale: es });
+  }
+  return format(date, "d", { locale: es });
+};
+
+export function AdminDashboard({ adminStats, upcomingEvents, recentAnnouncements }: {
   adminStats: AdminDashboardStats;
-  securityLogs: SecurityLog[];
-  onParticipate: (eventId: string, occurrenceDate: Date) => void;
+  upcomingEvents: CalendarEvent[];
+  recentAnnouncements: any[];
 }) {
   if (!adminStats) return null;
 
@@ -82,26 +92,38 @@ export function AdminDashboard({ adminStats, securityLogs, onParticipate }: {
             <MetricCard title="Usuarios Totales" value={adminStats.totalUsers} icon={Users} gradient="bg-gradient-blue" />
             <MetricCard title="Cursos Publicados" value={adminStats.totalPublishedCourses} icon={BookOpenCheck} gradient="bg-gradient-green" />
             <MetricCard title="Inscripciones Totales" value={adminStats.totalEnrollments} icon={GraduationCap} gradient="bg-gradient-purple" />
-            <MetricCard title="Finalización Promedio" value={Math.round(adminStats.averageCompletionRate)} icon={Percent} unit="%" gradient="bg-gradient-pink" />
+            <MetricCard title="Finalización Promedio" value={Math.round(adminStats.averageCompletionRate)} icon={Percent} suffix="%" gradient="bg-gradient-pink" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-            {/* Columna Izquierda: Auditoría y Salud */}
+            {/* Columna Izquierda: Gráficos y Eventos */}
             <div className="lg:col-span-2 space-y-6">
-                <Card>
+                 <Card>
                     <CardHeader>
-                        <CardTitle>Auditoría de Seguridad Activa</CardTitle>
-                        <CardDescription>Últimos eventos importantes en la plataforma.</CardDescription>
+                        <CardTitle>Tendencia de Actividad (Últimos 15 días)</CardTitle>
+                        <CardDescription>Nuevos cursos creados vs. nuevas inscripciones.</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                        <SecurityLogTimeline logs={securityLogs} onLogClick={() => {}} />
+                    <CardContent className="h-72 pr-4">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={adminStats.contentActivityTrend}>
+                                <defs>
+                                    <linearGradient id="colorCourses" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.8}/><stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0}/></linearGradient>
+                                    <linearGradient id="colorEnrollments" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8}/><stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0}/></linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false}/>
+                                <XAxis dataKey="date" tickFormatter={formatDateTick} fontSize={12} tickMargin={5} />
+                                <YAxis allowDecimals={false} width={30} fontSize={12}/>
+                                <Tooltip content={<ChartTooltipContent indicator="dot" />} />
+                                <Area type="monotone" dataKey="newCourses" name="Nuevos Cursos" stroke="hsl(var(--chart-2))" fillOpacity={1} fill="url(#colorCourses)" />
+                                <Area type="monotone" dataKey="newEnrollments" name="Inscripciones" stroke="hsl(var(--chart-1))" fillOpacity={1} fill="url(#colorEnrollments)" />
+                            </AreaChart>
+                        </ResponsiveContainer>
                     </CardContent>
-                    <CardFooter>
-                         <Button variant="outline" asChild size="sm">
-                            <Link href="/security-audit">Ver auditoría completa</Link>
-                        </Button>
-                    </CardFooter>
                 </Card>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <CalendarWidget events={upcomingEvents} />
+                    <AnnouncementsWidget announcements={recentAnnouncements} />
+                </div>
             </div>
 
             {/* Columna Derecha: Acciones y Estado */}
@@ -116,7 +138,6 @@ export function AdminDashboard({ adminStats, securityLogs, onParticipate }: {
                         <Button variant="outline" asChild><Link href="/settings"><Settings className="mr-2 h-4 w-4"/>Ajustes</Link></Button>
                     </CardContent>
                 </Card>
-                 <InteractiveEventsWidget events={adminStats.interactiveEventsToday} onParticipate={onParticipate} />
             </div>
         </div>
     </div>

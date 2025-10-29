@@ -308,21 +308,8 @@ export interface AdminDashboardStats {
     totalCourses: number;
     totalPublishedCourses: number;
     totalEnrollments: number;
-    totalResources: number;
-    totalAnnouncements: number;
-    totalForms: number;
-    usersByRole: { role: UserRole; count: number }[];
-    coursesByStatus: { status: CourseStatus; count: number }[];
-    userRegistrationTrend: { date: string, newCourses: number, newEnrollments: number, newUsers: number }[];
     averageCompletionRate: number;
-    topCoursesByEnrollment: any[];
-    topCoursesByCompletion: any[];
-    lowestCoursesByCompletion: any[];
-    topStudentsByEnrollment: any[];
-    topStudentsByCompletion: any[];
-    topInstructorsByCourses: any[];
-    interactiveEventsToday?: (CalendarEvent & { hasParticipated?: boolean })[];
-    assignedCourses?: Course[];
+    contentActivityTrend: { date: string, newCourses: number, newEnrollments: number }[];
 }
 
 // --- TEMPLATES ---
