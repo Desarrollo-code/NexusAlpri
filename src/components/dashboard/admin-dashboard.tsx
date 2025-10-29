@@ -11,7 +11,7 @@ import { MetricCard } from "../analytics/metric-card";
 import { CalendarWidget } from "./calendar-widget";
 import { AnnouncementsWidget } from "./announcements-widget";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { ChartContainer, ChartTooltipContent } from "../ui/chart";
+import { ChartConfig, ChartContainer, ChartTooltipContent } from "../ui/chart";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -67,11 +67,22 @@ const HealthStatusWidget = () => {
 
 const formatDateTick = (tick: string): string => {
   const date = parseISO(tick);
-  if (date.getDate() === 1 || date.getDate() === 15) {
+  if (date.getDate() === 1 || date.getDate() % 5 === 0) { // Show month for first day or every 5 days
     return format(date, "d MMM", { locale: es });
   }
   return format(date, "d", { locale: es });
 };
+
+const chartConfig = {
+  newCourses: {
+    label: "Nuevos Cursos",
+    color: "hsl(var(--chart-2))",
+  },
+  newEnrollments: {
+    label: "Inscripciones",
+    color: "hsl(var(--chart-1))",
+  },
+} satisfies ChartConfig;
 
 export function AdminDashboard({ adminStats, upcomingEvents, recentAnnouncements }: {
   adminStats: AdminDashboardStats;
@@ -104,20 +115,20 @@ export function AdminDashboard({ adminStats, upcomingEvents, recentAnnouncements
                         <CardDescription>Nuevos cursos creados vs. nuevas inscripciones.</CardDescription>
                     </CardHeader>
                     <CardContent className="h-72 pr-4">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={adminStats.contentActivityTrend}>
-                                <defs>
-                                    <linearGradient id="colorCourses" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.8}/><stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0}/></linearGradient>
-                                    <linearGradient id="colorEnrollments" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8}/><stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0}/></linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false}/>
-                                <XAxis dataKey="date" tickFormatter={formatDateTick} fontSize={12} tickMargin={5} />
-                                <YAxis allowDecimals={false} width={30} fontSize={12}/>
-                                <Tooltip content={<ChartTooltipContent indicator="dot" />} />
-                                <Area type="monotone" dataKey="newCourses" name="Nuevos Cursos" stroke="hsl(var(--chart-2))" fillOpacity={1} fill="url(#colorCourses)" />
-                                <Area type="monotone" dataKey="newEnrollments" name="Inscripciones" stroke="hsl(var(--chart-1))" fillOpacity={1} fill="url(#colorEnrollments)" />
-                            </AreaChart>
-                        </ResponsiveContainer>
+                      <ChartContainer config={chartConfig} className="w-full h-full">
+                        <AreaChart data={adminStats.contentActivityTrend} accessibilityLayer>
+                            <defs>
+                                <linearGradient id="colorCourses" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="var(--color-newCourses)" stopOpacity={0.8}/><stop offset="95%" stopColor="var(--color-newCourses)" stopOpacity={0}/></linearGradient>
+                                <linearGradient id="colorEnrollments" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="var(--color-newEnrollments)" stopOpacity={0.8}/><stop offset="95%" stopColor="var(--color-newEnrollments)" stopOpacity={0}/></linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false}/>
+                            <XAxis dataKey="date" tickFormatter={formatDateTick} fontSize={12} tickMargin={5} />
+                            <YAxis allowDecimals={false} width={30} fontSize={12}/>
+                            <Tooltip content={<ChartTooltipContent indicator="dot" />} />
+                            <Area type="monotone" dataKey="newCourses" stroke="var(--color-newCourses)" fillOpacity={1} fill="url(#colorCourses)" />
+                            <Area type="monotone" dataKey="newEnrollments" stroke="var(--color-newEnrollments)" fillOpacity={1} fill="url(#colorEnrollments)" />
+                        </AreaChart>
+                      </ChartContainer>
                     </CardContent>
                 </Card>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
