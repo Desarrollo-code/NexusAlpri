@@ -71,9 +71,7 @@ const HealthStatusWidget = () => {
 
 const formatDateTick = (tick: string): string => {
   const date = parseISO(tick);
-  if (date.getDate() === 1 || date.getDate() % 5 === 0) {
-    return format(date, "d MMM", { locale: es });
-  }
+  // Siempre devuelve solo el día
   return format(date, "d", { locale: es });
 };
 
@@ -120,6 +118,7 @@ export function AdminDashboard({ adminStats, securityLogs }: {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            {/* Columna Izquierda: Gráfico */}
             <div className="lg:col-span-1">
                  <Card>
                     <CardHeader>
@@ -150,6 +149,7 @@ export function AdminDashboard({ adminStats, securityLogs }: {
                 </Card>
             </div>
             
+             {/* Columna Central: Auditoría */}
             <div className="lg:col-span-1">
                  <Card>
                     <CardHeader>
@@ -167,6 +167,7 @@ export function AdminDashboard({ adminStats, securityLogs }: {
                 </Card>
             </div>
             
+            {/* Columna Derecha: Acciones y Salud */}
             <div className="lg:col-span-1 space-y-6">
                 <Card>
                     <CardHeader><CardTitle className="text-base">Acciones Rápidas</CardTitle></CardHeader>
