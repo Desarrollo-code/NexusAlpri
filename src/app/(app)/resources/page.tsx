@@ -43,7 +43,6 @@ const Sidebar = ({ stats, totalSize, totalFiles, user }: { stats: StorageStat[],
         <aside className="w-full lg:w-80 xl:w-96 flex-shrink-0 space-y-6">
             <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold font-headline">Mi Nube</h2>
-                <Button size="icon" className="rounded-full h-9 w-9"><PlusCircle className="h-5 w-5"/></Button>
             </div>
             
             <p className="text-muted-foreground">Hola {user?.name?.split(' ')[0]}, ¡Bienvenido de nuevo!</p>
@@ -177,14 +176,22 @@ export default function ResourcesPage() {
   return (
     <div className="flex flex-col lg:flex-row gap-8">
         <main className="flex-1 space-y-6">
-             <div className="flex items-center justify-between">
+             <div className="flex items-center justify-between flex-wrap gap-4">
                 <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ResourceStatus)}>
                     <TabsList>
                         <TabsTrigger value="ACTIVE">Activo</TabsTrigger>
                         <TabsTrigger value="ARCHIVED">Archivado</TabsTrigger>
                     </TabsList>
                 </Tabs>
-                <div className="hidden md:flex items-center gap-2">
+                <div className="flex items-center gap-2">
+                     <Button variant="outline" className="bg-slate-800 text-white hover:bg-slate-700 hover:text-white">
+                        <FolderPlus className="mr-2 h-4 w-4"/> Crear Carpeta
+                     </Button>
+                     <Button className="bg-indigo-400 text-indigo-900 hover:bg-indigo-500">
+                        <UploadCloud className="mr-2 h-4 w-4"/> Subir Recurso
+                     </Button>
+                </div>
+                 <div className="hidden md:flex items-center gap-2">
                     <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" onClick={() => setViewMode('list')}><List className="h-4 w-4"/></Button>
                     <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" onClick={() => setViewMode('grid')}><Grid className="h-4 w-4"/></Button>
                 </div>
