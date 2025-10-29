@@ -3,7 +3,7 @@
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, BookOpenCheck, GraduationCap, Percent, PlusCircle, BarChart3, Settings, ShieldAlert, Monitor, Database, LineChart, ArrowRight } from "lucide-react";
-import type { AdminDashboardStats, SecurityLog as AppSecurityLog } from '@/types';
+import type { AdminDashboardStats, SecurityLog as AppSecurityLog, CalendarEvent } from '@/types';
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,9 @@ import { es } from "date-fns/locale";
 import { SecurityLogTimeline } from "../security/security-log-timeline";
 import { SecurityLogDetailSheet } from "../security/security-log-detail-sheet";
 import { useRouter } from 'next/navigation';
+import { InteractiveEventsWidget } from "./interactive-events-widget";
+import { CalendarWidget } from "./calendar-widget";
+
 
 const HealthStatusWidget = () => {
     const [healthStatus, setHealthStatus] = useState({ api: 'checking', db: 'checking' });
@@ -81,9 +84,11 @@ const chartConfig = {
   newEnrollments: { label: "Inscripciones", color: "hsl(var(--chart-1))" },
 } satisfies ChartConfig;
 
-export function AdminDashboard({ adminStats, securityLogs }: {
+export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, onParticipate }: {
   adminStats: AdminDashboardStats;
   securityLogs: AppSecurityLog[];
+  upcomingEvents: CalendarEvent[];
+  onParticipate: (eventId: string, occurrenceDate: Date) => void;
 }) {
   const [selectedLog, setSelectedLog] = useState<AppSecurityLog | null>(null);
   const router = useRouter();
@@ -105,14 +110,14 @@ export function AdminDashboard({ adminStats, securityLogs }: {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-            <div className="lg:col-span-2">
-                <Card>
+            <div className="lg:col-span-1">
+                 <Card>
                     <CardHeader>
-                        <CardTitle>Tendencia de Actividad (Últimos 15 días)</CardTitle>
-                        <CardDescription>Nuevos cursos creados vs. nuevas inscripciones.</CardDescription>
+                        <CardTitle>Tendencia de Actividad</CardTitle>
+                        <CardDescription>Últimos 15 días</CardDescription>
                     </CardHeader>
                     <CardContent className="h-72 pr-4">
-                        <ChartContainer config={chartConfig} className="w-full h-full">
+                       <ChartContainer config={chartConfig} className="w-full h-full">
                           <AreaChart data={adminStats.contentActivityTrend} accessibilityLayer margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                             <defs>
                                 <linearGradient id="colorCourses" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="var(--color-newCourses)" stopOpacity={0.8}/><stop offset="95%" stopColor="var(--color-newCourses)" stopOpacity={0}/></linearGradient>
@@ -122,8 +127,8 @@ export function AdminDashboard({ adminStats, securityLogs }: {
                             <XAxis dataKey="date" tickFormatter={formatDateTick} fontSize={12} tickMargin={5} />
                             <YAxis allowDecimals={false} width={30} fontSize={12}/>
                             <Tooltip content={<ChartTooltipContent indicator="dot" />} />
-                            <Area type="monotone" dataKey="newCourses" stroke="var(--color-newCourses)" strokeWidth={2} fillOpacity={0.4} fill="url(#colorCourses)" />
-                            <Area type="monotone" dataKey="newEnrollments" stroke="var(--color-newEnrollments)" strokeWidth={2} fillOpacity={0.4} fill="url(#colorEnrollments)" />
+                            <Area type="monotone" dataKey="newCourses" stroke="var(--color-newCourses)" strokeWidth={2} fillOpacity={0.4} fill="url(#colorCourses)" name="Nuevos Cursos" />
+                            <Area type="monotone" dataKey="newEnrollments" stroke="var(--color-newEnrollments)" strokeWidth={2} fillOpacity={0.4} fill="url(#colorEnrollments)" name="Inscripciones" />
                           </AreaChart>
                         </ChartContainer>
                     </CardContent>
@@ -145,6 +150,8 @@ export function AdminDashboard({ adminStats, securityLogs }: {
                     </CardFooter>
                 </Card>
                  <HealthStatusWidget />
+            </div>
+            <div className="lg:col-span-1 space-y-6">
                 <Card>
                     <CardHeader><CardTitle className="text-base">Acciones Rápidas</CardTitle></CardHeader>
                     <CardContent className="grid grid-cols-2 gap-2">
@@ -154,6 +161,8 @@ export function AdminDashboard({ adminStats, securityLogs }: {
                         <Button variant="outline" asChild><Link href="/settings"><Settings className="mr-2 h-4 w-4"/>Ajustes</Link></Button>
                     </CardContent>
                 </Card>
+                <InteractiveEventsWidget events={adminStats.interactiveEventsToday} onParticipate={onParticipate} />
+                <CalendarWidget events={upcomingEvents}/>
             </div>
         </div>
         
