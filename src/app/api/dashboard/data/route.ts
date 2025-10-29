@@ -175,7 +175,12 @@ async function getInstructorDashboardData(session: PrismaUser) {
     
     const taughtCourses = await safeQuery(prisma.course.findMany({
         where: { instructorId: session.id },
-        include: { _count: { select: { modules: true, enrollments: true } }, enrollments: { select: { progress: { select: { progressPercentage: true } } } } },
+        include: { 
+            _count: { select: { modules: true, enrollments: true } }, 
+            enrollments: { 
+                select: { progress: { select: { progressPercentage: true } } } 
+            } 
+        },
         orderBy: { createdAt: 'desc' },
         take: 4,
     }), [], 'taughtCourses');
@@ -206,7 +211,9 @@ export async function GET(req: NextRequest) {
         
         switch(session.role) {
             case 'ADMINISTRATOR':
-                data = await getAdminDashboardData(session, startDate, endDate);
+                const adminData = await getAdminDashboardData(session, startDate, endDate);
+                const securityLogs = await safeQuery(prisma.securityLog.findMany({ take: 5, orderBy: { createdAt: 'desc' }, include: { user: { select: { id: true, name: true, avatar: true } } } }), [], 'securityLogs');
+                data = { ...adminData, securityLogs };
                 break;
             case 'INSTRUCTOR':
                 data = await getInstructorDashboardData(session);

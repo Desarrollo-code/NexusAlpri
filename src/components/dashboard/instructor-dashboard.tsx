@@ -16,7 +16,7 @@ interface InstructorDashboardProps {
   };
   recentAnnouncements: AnnouncementType[];
   upcomingEvents: CalendarEvent[];
-  taughtCourses: AppCourse[];
+  taughtCourses: AppCourse[]; // Asegurado que esto se recibe
 }
 
 export function InstructorDashboard({ instructorStats, recentAnnouncements, taughtCourses, upcomingEvents }: InstructorDashboardProps) {
@@ -31,11 +31,11 @@ export function InstructorDashboard({ instructorStats, recentAnnouncements, taug
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Cursos Creados</CardTitle><GraduationCap className="h-4 w-4 text-primary"/></CardHeader>
-            <CardContent><div className="text-2xl font-bold">{instructorStats.taught}</div></CardContent>
+            <CardContent><div className="text-2xl font-bold">{instructorStats?.taught || 0}</div></CardContent>
         </Card>
         <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Estudiantes Totales</CardTitle><Users className="h-4 w-4 text-primary"/></CardHeader>
-            <CardContent><div className="text-2xl font-bold">{instructorStats.students}</div></CardContent>
+            <CardContent><div className="text-2xl font-bold">{instructorStats?.students || 0}</div></CardContent>
         </Card>
       </div>
 
