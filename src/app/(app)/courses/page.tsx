@@ -1,10 +1,11 @@
+// src/app/(app)/courses/page.tsx
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { CourseCard } from '@/components/course-card';
 import { Input } from '@/components/ui/input';
 import type { Course as AppCourseType, EnrolledCourse, CourseStatus, UserRole } from '@/types'; 
-import { PackageX, Loader2, AlertTriangle, Filter } from 'lucide-react'; 
+import { PackageX, Loader2, AlertTriangle, Filter, Search } from 'lucide-react'; 
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
