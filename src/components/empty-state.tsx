@@ -2,6 +2,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
+import { cn } from '@/lib/utils';
 
 interface EmptyStateProps {
   icon: React.ElementType;
@@ -9,6 +10,7 @@ interface EmptyStateProps {
   description: React.ReactNode;
   imageUrl?: string | null;
   actionButton?: React.ReactNode;
+  tab?: string;
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({ icon: Icon, title, description, imageUrl, actionButton }) => {
@@ -16,12 +18,12 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ icon: Icon, title, descr
     <Card className="text-center py-12 md:py-16 border-2 border-dashed flex flex-col items-center justify-center">
       <CardHeader>
         {imageUrl ? (
-          <div className="relative w-48 h-48 mb-4">
+          <div className="relative w-48 h-48 mb-4 mx-auto">
             <Image
               src={imageUrl}
               alt={title}
               fill
-              className="object-contain"
+              className="object-contain rounded-lg"
               data-ai-hint="empty state illustration"
             />
           </div>
