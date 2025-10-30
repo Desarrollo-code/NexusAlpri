@@ -102,28 +102,6 @@ const Sidebar = ({ stats, totalSize, totalFiles, user }: { stats: any[], totalSi
     );
 }
 
-const SummaryCard = ({ title, count, icon: Icon, filterType, className }: { title: string, count: number, icon: React.ElementType, filterType: string, className?: string }) => {
-    const animatedCount = useAnimatedCounter(count || 0);
-
-    return (
-        <Card 
-            className={cn(
-                "p-4 flex items-center gap-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer",
-                className
-            )}
-            onClick={() => { /* Lógica para filtrar */}}
-        >
-            <div className="p-3 rounded-lg bg-black/5 dark:bg-white/10">
-                <Icon className="h-6 w-6" />
-            </div>
-            <div>
-                <p className="font-semibold">{title}</p>
-                <p className="text-sm text-muted-foreground">{animatedCount} archivos</p>
-            </div>
-        </Card>
-    );
-};
-
 
 // --- Main Page Component ---
 export default function ResourcesPage() {
@@ -237,46 +215,33 @@ export default function ResourcesPage() {
     <DndContext onDragEnd={handleDragEnd} sensors={useSensors(useSensor(MouseSensor), useSensor(TouchSensor))}>
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
         <div className="lg:col-span-3 space-y-6">
-            <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input placeholder="Buscar en mi nube..." className="pl-10 h-11 text-base rounded-full shadow-sm bg-card" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-                <Button variant="ghost" size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full"><ListFilter className="h-4 w-4"/></Button>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <RadioGroup value={activeTab} onValueChange={(v) => setActiveTab(v as ResourceStatus)} className="flex items-center p-1 bg-green-100 dark:bg-green-900/30 rounded-full">
-                    <Label htmlFor="status-active" className={cn("px-4 py-1.5 rounded-full text-sm font-semibold cursor-pointer transition-colors", activeTab === 'ACTIVE' ? 'bg-white text-green-800 shadow-sm' : 'text-green-700/80')}>Activo</Label>
-                    <RadioGroupItem value="ACTIVE" id="status-active" className="sr-only" />
-                    <Label htmlFor="status-archived" className={cn("px-4 py-1.5 rounded-full text-sm font-semibold cursor-pointer transition-colors", activeTab === 'ARCHIVED' ? 'bg-white text-green-800 shadow-sm' : 'text-green-700/80')}>Archivado</Label>
-                    <RadioGroupItem value="ARCHIVED" id="status-archived" className="sr-only" />
-                </RadioGroup>
-
-                <div className="flex items-center gap-2">
+            <div className="space-y-4">
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input placeholder="Buscar en mi nube..." className="pl-10 h-11 text-base rounded-full shadow-sm bg-card" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 p-1 rounded-full bg-muted">
+                        <Button variant={activeTab === 'ACTIVE' ? 'secondary' : 'ghost'} size="sm" className="h-7" onClick={() => setActiveTab('ACTIVE')}>Activo</Button>
+                        <Button variant={activeTab === 'ARCHIVED' ? 'secondary' : 'ghost'} size="sm" className="h-7" onClick={() => setActiveTab('ARCHIVED')}>Archivado</Button>
+                    </div>
+                </div>
+                 <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
                      <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                           <Button className="bg-slate-800 text-white hover:bg-slate-700">
+                           <Button className="bg-slate-800 text-white hover:bg-slate-700 w-full sm:w-auto">
                                 <Plus className="mr-2 h-4 w-4"/> Nuevo <ChevronDown className="ml-2 h-4 w-4"/>
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="start">
                             <DropdownMenuItem onSelect={() => setIsFolderCreatorOpen(true)}><FolderIcon className="mr-2 h-4 w-4"/>Nueva Carpeta</DropdownMenuItem>
                             <DropdownMenuItem onSelect={() => setIsUploaderOpen(true)}><UploadCloud className="mr-2 h-4 w-4"/>Subir Archivo</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
-
-                    <Separator orientation="vertical" className="h-6 mx-1" />
 
                     <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
                         <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')}><List className="h-4 w-4"/></Button>
                         <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')}><Grid className="h-4 w-4"/></Button>
                     </div>
                 </div>
-            </div>
-            
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
-               <SummaryCard title="Todas las Imágenes" count={stats.categoryCounts['Images'] || 0} icon={ImageIcon} filterType="Images" className="bg-indigo-100/60 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-200" />
-               <SummaryCard title="Todos los Documentos" count={stats.categoryCounts['Documents'] || 0} icon={FileText} filterType="Documents" className="bg-sky-100/60 text-sky-800 dark:bg-sky-900/30 dark:text-sky-200" />
-               <SummaryCard title="Todos los Videos" count={stats.categoryCounts['Videos'] || 0} icon={Video} filterType="Videos" className="bg-rose-100/60 text-rose-800 dark:bg-rose-900/30 dark:text-rose-200" />
             </div>
 
             <nav aria-label="Breadcrumb">
