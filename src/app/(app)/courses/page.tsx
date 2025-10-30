@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { CourseCard } from '@/components/course-card';
 import { Input } from '@/components/ui/input';
 import type { Course as AppCourseType, EnrolledCourse, CourseStatus, UserRole } from '@/types'; 
-import { Search, PackageX, Loader2, AlertTriangle, Filter } from 'lucide-react'; 
+import { PackageX, Loader2, AlertTriangle, Filter } from 'lucide-react'; 
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -16,6 +16,7 @@ import { CourseCarousel } from '@/components/course-carousel';
 import { useTitle } from '@/contexts/title-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { mapApiCourseToAppCourse } from '@/lib/course-utils';
+import { EmptyState } from '@/components/empty-state';
 
 interface ApiCourse extends Omit<PrismaCourse, 'instructor' | '_count' | 'status'> {
   instructor: { id: string; name: string } | null;
@@ -24,14 +25,6 @@ interface ApiCourse extends Omit<PrismaCourse, 'instructor' | '_count' | 'status
   status: CourseStatus;
   prerequisiteCompleted?: boolean;
 }
-
-const EmptyState = ({ icon: Icon, title, description }: { icon: React.ElementType, title: string, description: string }) => (
-    <div className="text-center py-12">
-        <Icon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-        <h3 className="text-xl font-semibold mb-2">{title}</h3>
-        <p className="text-muted-foreground">{description}</p>
-    </div>
-);
 
 export default function CoursesPage() {
   const { user, settings } = useAuth();
@@ -236,6 +229,7 @@ export default function CoursesPage() {
                 ? 'No hay cursos que coincidan con tu búsqueda o filtro.' 
                 : 'Actualmente no hay cursos publicados que cumplan con los criterios de visualización.'
             }
+            imageUrl={settings?.emptyStateCoursesUrl}
         />
       )}
     </div>

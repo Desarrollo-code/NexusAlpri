@@ -7,10 +7,9 @@ import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useTitle } from '@/contexts/title-context';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Move, Image as ImageIcon, FileText as FileTextIcon, Video } from 'lucide-react';
-import { DecorativeFolder } from '@/components/resources/decorative-folder';
+import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Move } from 'lucide-react';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { ResourceListItem } from '@/components/resources/resource-list-item';
 import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
@@ -24,23 +23,11 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { FolderOpen } from 'lucide-react';
+import { EmptyState } from '@/components/empty-state';
 
-const EmptyState = ({ icon: Icon, title, description }: { icon: React.ElementType, title: string, description: string }) => (
-    <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-lg">
-        <Icon className="mx-auto h-12 w-12 mb-4 text-primary/70" />
-        <h3 className="text-xl font-semibold text-foreground">{title}</h3>
-        <p>{description}</p>
-    </div>
-);
-
-
-const Sidebar = ({}) => {
-    return null; // Sidebar está desactivada temporalmente.
-}
-
-// --- Main Page Component ---
+// --- MAIN PAGE COMPONENT ---
 export default function ResourcesPage() {
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { user, isLoading: isAuthLoading, settings } = useAuth();
   const { setPageTitle } = useTitle();
   const { toast } = useToast();
   
@@ -67,12 +54,12 @@ export default function ResourcesPage() {
     setPageTitle('Mi Nube');
   }, [setPageTitle]);
 
-  const fetchResourcesAndStats = useCallback(async () => {
+  const fetchResources = useCallback(async () => {
     if (isAuthLoading) return;
     setIsLoadingData(true);
     setError(null);
     
-    const params = new URLSearchParams({ status: activeTab, stats: 'true' });
+    const params = new URLSearchParams({ status: activeTab });
     if (currentFolderId) params.append('parentId', currentFolderId);
     if (debouncedSearchTerm) params.append('search', debouncedSearchTerm);
     
@@ -89,8 +76,8 @@ export default function ResourcesPage() {
   }, [isAuthLoading, activeTab, currentFolderId, debouncedSearchTerm]);
 
   useEffect(() => {
-    fetchResourcesAndStats();
-  }, [fetchResourcesAndStats]);
+    fetchResources();
+  }, [fetchResources]);
 
   const folders = useMemo(() => allApiResources.filter(r => r.type === 'FOLDER'), [allApiResources]);
   const files = useMemo(() => allApiResources.filter(r => r.type !== 'FOLDER'), [allApiResources]);
@@ -121,7 +108,7 @@ export default function ResourcesPage() {
             body: JSON.stringify({ parentId: targetFolderId === 'root' ? null : targetFolderId })
         });
         toast({ title: 'Recurso Movido', description: `Se movió "${resourceToMove.title}" correctamente.`});
-        fetchResourcesAndStats();
+        fetchResources();
       } catch(e) {
           toast({ title: 'Error', description: 'No se pudo mover el recurso.', variant: 'destructive'});
       }
@@ -218,6 +205,7 @@ export default function ResourcesPage() {
                                 icon={FolderOpen} 
                                 title="Esta carpeta está vacía"
                                 description="Sube un archivo o crea una nueva carpeta para empezar."
+                                imageUrl={settings?.emptyStateResourcesUrl}
                              />
                         )}
                     </div>

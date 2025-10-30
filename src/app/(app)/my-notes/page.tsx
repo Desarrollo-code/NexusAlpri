@@ -11,6 +11,7 @@ import { StickyNoteCard } from '@/components/sticky-note-card';
 import { useTour } from '@/contexts/tour-context';
 import { myNotesTour } from '@/lib/tour-steps';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/empty-state';
 
 interface NoteWithRelations extends UserNote {
   lesson: {
@@ -37,16 +38,8 @@ interface NotesByCourse {
   }[];
 }
 
-const EmptyState = ({ icon: Icon, title, description }: { icon: React.ElementType, title: string, description: string }) => (
-    <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-lg">
-        <Icon className="mx-auto h-12 w-12 mb-4 text-primary/70" />
-        <h3 className="text-xl font-semibold text-foreground">{title}</h3>
-        <p>{description}</p>
-    </div>
-);
-
 export default function MyNotesPage() {
-  const { user } = useAuth();
+  const { user, settings } = useAuth();
   const { toast } = useToast();
   const { setPageTitle } = useTitle();
   const { startTour, forceStartTour } = useTour();
@@ -160,6 +153,7 @@ export default function MyNotesPage() {
             icon={Notebook} 
             title="Tu tablero de apuntes está vacío" 
             description="Ve a una lección y comienza a escribir para que tus notas aparezcan aquí."
+            imageUrl={settings?.emptyStateMyNotesUrl}
           />
         ) : (
           notesByCourse.map((courseGroup) => (

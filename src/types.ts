@@ -48,6 +48,11 @@ export interface PlatformSettings {
     announcementsImageUrl?: string | null;
     publicPagesBgUrl?: string | null;
     securityMascotUrl?: string | null;
+    emptyStateCoursesUrl?: string | null;
+    emptyStateMyCoursesUrl?: string | null;
+    emptyStateFormsUrl?: string | null;
+    emptyStateMyNotesUrl?: string | null;
+    emptyStateResourcesUrl?: string | null;
 }
 
 // --- NAVIGATION ---
@@ -371,5 +376,25 @@ export type Process = Prisma.ProcessGetPayload<{
         users: true
     }
 }>;
+
+// --- MESSAGES / CHAT ---
+export interface Conversation {
+    id: string;
+    participants: Participant[];
+    messages: Message[];
+    updatedAt: string;
+    isGroup: boolean;
+}
+export interface Participant extends Pick<User, 'id' | 'name' | 'avatar'> {}
+export interface Message {
+    id: string;
+    content: string | null;
+    createdAt: string;
+    authorId: string;
+    author: Participant;
+    attachments: Attachment[];
+    conversationId: string;
+}
+
 
 export { type FormStatus, type FormFieldType, type AnnouncementAttachment, type RecurrenceType, type ChatAttachment } from '@prisma/client';

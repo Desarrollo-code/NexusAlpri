@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Palette, Bell, Shield, List, Tag, Trash2, Loader2, FileWarning, KeyRound, Clock, Save, ImageIcon, Paintbrush, Type, User, UploadCloud, XCircle, Replace, HelpCircle, ImagePlay, Building } from 'lucide-react';
+import { Palette, Bell, Shield, List, Tag, Trash2, Loader2, FileWarning, KeyRound, Clock, Save, ImageIcon, Paintbrush, Type, User, UploadCloud, XCircle, Replace, HelpCircle, ImagePlay, Building, Image as ImageIconComponent } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
@@ -122,7 +122,7 @@ export default function SettingsPageComponent() {
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const [isCheckingCategory, setIsCheckingCategory] = useState(false);
   
-  type ImageField = 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl' | 'announcementsImageUrl' | 'publicPagesBgUrl' | 'securityMascotUrl';
+  type ImageField = 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl' | 'announcementsImageUrl' | 'publicPagesBgUrl' | 'securityMascotUrl' | 'emptyStateCoursesUrl' | 'emptyStateMyCoursesUrl' | 'emptyStateFormsUrl' | 'emptyStateMyNotesUrl' | 'emptyStateResourcesUrl';
 
   const [uploadStates, setUploadStates] = useState<Record<ImageField, { isUploading: boolean, progress: number }>>({
     logoUrl: { isUploading: false, progress: 0 },
@@ -134,6 +134,11 @@ export default function SettingsPageComponent() {
     announcementsImageUrl: { isUploading: false, progress: 0 },
     publicPagesBgUrl: { isUploading: false, progress: 0 },
     securityMascotUrl: { isUploading: false, progress: 0 },
+    emptyStateCoursesUrl: { isUploading: false, progress: 0 },
+    emptyStateMyCoursesUrl: { isUploading: false, progress: 0 },
+    emptyStateFormsUrl: { isUploading: false, progress: 0 },
+    emptyStateMyNotesUrl: { isUploading: false, progress: 0 },
+    emptyStateResourcesUrl: { isUploading: false, progress: 0 },
   });
 
 
@@ -287,6 +292,7 @@ export default function SettingsPageComponent() {
                 <TabsTrigger value="theme">Tema y Estilo</TabsTrigger>
                 <TabsTrigger value="security">Seguridad</TabsTrigger>
                 <TabsTrigger value="general">Generales</TabsTrigger>
+                 <TabsTrigger value="images">Imágenes</TabsTrigger>
             </TabsList>
             
             <TabsContent value="identity" className="mt-6">
@@ -461,6 +467,21 @@ export default function SettingsPageComponent() {
                     </CardContent>
                 </Card>
              </TabsContent>
+              <TabsContent value="images" className="mt-6">
+                <Card className="card-border-animated">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><ImageIconComponent className="h-5 w-5 text-primary"/>Imágenes de Estado Vacío</CardTitle>
+                        <CardDescription>Personaliza las imágenes que se muestran cuando no hay contenido.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <UploadWidget id="empty-courses-upload" label="Catálogo de Cursos Vacío" currentImageUrl={formState.emptyStateCoursesUrl} onFileSelect={(file) => file && handleImageUpload('emptyStateCoursesUrl', file)} onRemove={() => handleRemoveImage('emptyStateCoursesUrl')} disabled={isSaving} isUploading={uploadStates.emptyStateCoursesUrl.isUploading} uploadProgress={uploadStates.emptyStateCoursesUrl.progress} />
+                        <UploadWidget id="empty-mycourses-upload" label="'Mis Cursos' Vacío" currentImageUrl={formState.emptyStateMyCoursesUrl} onFileSelect={(file) => file && handleImageUpload('emptyStateMyCoursesUrl', file)} onRemove={() => handleRemoveImage('emptyStateMyCoursesUrl')} disabled={isSaving} isUploading={uploadStates.emptyStateMyCoursesUrl.isUploading} uploadProgress={uploadStates.emptyStateMyCoursesUrl.progress} />
+                        <UploadWidget id="empty-forms-upload" label="Formularios Vacío" currentImageUrl={formState.emptyStateFormsUrl} onFileSelect={(file) => file && handleImageUpload('emptyStateFormsUrl', file)} onRemove={() => handleRemoveImage('emptyStateFormsUrl')} disabled={isSaving} isUploading={uploadStates.emptyStateFormsUrl.isUploading} uploadProgress={uploadStates.emptyStateFormsUrl.progress} />
+                        <UploadWidget id="empty-mynotes-upload" label="'Mis Apuntes' Vacío" currentImageUrl={formState.emptyStateMyNotesUrl} onFileSelect={(file) => file && handleImageUpload('emptyStateMyNotesUrl', file)} onRemove={() => handleRemoveImage('emptyStateMyNotesUrl')} disabled={isSaving} isUploading={uploadStates.emptyStateMyNotesUrl.isUploading} uploadProgress={uploadStates.emptyStateMyNotesUrl.progress} />
+                        <UploadWidget id="empty-resources-upload" label="Recursos Vacío" currentImageUrl={formState.emptyStateResourcesUrl} onFileSelect={(file) => file && handleImageUpload('emptyStateResourcesUrl', file)} onRemove={() => handleRemoveImage('emptyStateResourcesUrl')} disabled={isSaving} isUploading={uploadStates.emptyStateResourcesUrl.isUploading} uploadProgress={uploadStates.emptyStateResourcesUrl.progress} />
+                    </CardContent>
+                </Card>
+            </TabsContent>
         </Tabs>
 
         <AlertDialog open={!!categoryToDelete} onOpenChange={(isOpen) => { if (!isOpen) setCategoryToDelete(null); }}>

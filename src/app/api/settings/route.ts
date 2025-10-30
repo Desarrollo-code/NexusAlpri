@@ -37,7 +37,12 @@ const DEFAULT_DB_SETTINGS = {
   publicPagesBgUrl: null,
   securityMascotUrl: null,
   fontHeadline: 'Space Grotesk',
-  fontBody: 'Inter'
+  fontBody: 'Inter',
+  emptyStateCoursesUrl: null,
+  emptyStateMyCoursesUrl: null,
+  emptyStateFormsUrl: null,
+  emptyStateMyNotesUrl: null,
+  emptyStateResourcesUrl: null,
 };
 
 const getFallbackSettings = (): AppPlatformSettings => {
@@ -125,6 +130,11 @@ export async function POST(req: NextRequest) {
       securityMascotUrl: dataFromClient.securityMascotUrl,
       fontHeadline: dataFromClient.fontHeadline,
       fontBody: dataFromClient.fontBody,
+      emptyStateCoursesUrl: dataFromClient.emptyStateCoursesUrl,
+      emptyStateMyCoursesUrl: dataFromClient.emptyStateMyCoursesUrl,
+      emptyStateFormsUrl: dataFromClient.emptyStateFormsUrl,
+      emptyStateMyNotesUrl: dataFromClient.emptyStateMyNotesUrl,
+      emptyStateResourcesUrl: dataFromClient.emptyStateResourcesUrl,
     };
     
     const currentSettings = await prisma.platformSettings.findFirst();

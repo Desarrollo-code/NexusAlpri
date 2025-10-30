@@ -42,6 +42,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
+import { EmptyState } from '@/components/empty-state';
 
 const PAGE_SIZE = 9;
 
@@ -244,24 +245,8 @@ const ShareFormModal = ({ form, isOpen, onOpenChange, onShareSuccess }: { form: 
     );
 }
 
-const EmptyState = ({ tab }: { tab: string }) => {
-    let message = "No hay formularios que mostrar en esta sección.";
-    if (tab === 'my-forms') message = "Aún no has creado ningún formulario. ¡Crea el primero!";
-    if (tab === 'shared-with-me') message = "Nadie ha compartido formularios contigo todavía.";
-    if (tab === 'for-student') message = "No hay formularios públicos disponibles en este momento.";
-
-    return (
-        <div className="text-center border-2 border-dashed rounded-lg p-12">
-            <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Sección Vacía</h3>
-            <p className="text-muted-foreground mb-6 max-w-md mx-auto">{message}</p>
-        </div>
-    );
-};
-
-
 function FormsPageComponent() {
-    const { user } = useAuth();
+    const { user, settings } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -455,7 +440,7 @@ function FormsPageComponent() {
                     {isLaunching && <div className="fixed inset-0 bg-background/80 flex items-center justify-center z-50"><Loader2 className="h-8 w-8 animate-spin"/></div>}
                     {isLoading ? <SkeletonGrid /> 
                      : error ? <div className="text-destructive text-center py-10">{error}</div>
-                     : forms.length === 0 ? <EmptyState tab={activeTab} /> 
+                     : forms.length === 0 ? <EmptyState tab={activeTab} title="Sección Vacía" description={activeTab === 'my-forms' ? "Aún no has creado ningún formulario. ¡Crea el primero!" : "No hay formularios que mostrar en esta sección."} icon={FileText} imageUrl={settings?.emptyStateFormsUrl}/> 
                      : <FormList formsList={forms} view="management" />}
                 </div>
             </Tabs>
@@ -473,7 +458,7 @@ function FormsPageComponent() {
            <div className="mt-6">
                  {isLoading ? <SkeletonList /> 
                  : error ? <div className="text-destructive text-center py-10">{error}</div>
-                 : forms.length === 0 ? <EmptyState tab="for-student" /> 
+                 : forms.length === 0 ? <EmptyState title="No hay formularios disponibles" description="Actualmente no hay formularios públicos o compartidos contigo." icon={FileText} imageUrl={settings?.emptyStateFormsUrl}/> 
                  : <FormList formsList={forms} view="student" />}
            </div>
         </>

@@ -1,12 +1,10 @@
-
-
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { CourseCard } from '@/components/course-card';
 import type { EnrolledCourse, UserRole, Course as AppCourseType } from '@/types'; 
-import { GraduationCap, Loader2, AlertTriangle, Info, Search, Filter } from 'lucide-react';
+import { GraduationCap, Loader2, AlertTriangle, Info, Search } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -17,13 +15,12 @@ import { useTitle } from '@/contexts/title-context';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { useDebounce } from '@/hooks/use-debounce';
-import { Separator } from '@/components/ui/separator';
-
+import { EmptyState } from '@/components/empty-state';
 
 type FilterStatus = 'all' | 'in-progress' | 'completed';
 
 export default function MyCoursesPage() {
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { user, isLoading: isAuthLoading, settings } = useAuth();
   const { toast } = useToast();
   const { setPageTitle } = useTitle();
   
@@ -236,18 +233,21 @@ export default function MyCoursesPage() {
                 </section>
             )}
 
-            {inProgressCourses.length === 0 && completedCourses.length === 0 && (
-                <Alert>
-                    <GraduationCap className="h-4 w-4" />
-                    <AlertTitle>No hay cursos que mostrar</AlertTitle>
-                    <AlertDescription>
-                        {myEnrolledCourses.length === 0 
-                        ? <>Parece que no estás inscrito en ningún curso. Visita el <Link href="/courses" className="font-medium text-primary hover:underline">catálogo</Link> para empezar.</>
-                        : 'Ninguno de tus cursos coincide con los filtros seleccionados.'
-                        }
-                    </AlertDescription>
-                </Alert>
-            )}
+            {myEnrolledCourses.length === 0 ? (
+                <EmptyState
+                    icon={GraduationCap}
+                    title="Aún no estás inscrito en ningún curso"
+                    description={<>Visita el <Link href="/courses" className="font-medium text-primary hover:underline">catálogo de cursos</Link> para encontrar tu próxima aventura de aprendizaje.</>}
+                    imageUrl={settings?.emptyStateMyCoursesUrl}
+                />
+            ) : inProgressCourses.length === 0 && completedCourses.length === 0 ? (
+                 <EmptyState
+                    icon={Search}
+                    title="No se encontraron cursos"
+                    description="Ninguno de tus cursos coincide con los filtros de búsqueda actuales."
+                    imageUrl={settings?.emptyStateMyCoursesUrl}
+                />
+            ) : null}
         </div>
       )}
       
