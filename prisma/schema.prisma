@@ -152,8 +152,6 @@ model User {
   conversations Conversation[] @relation("UserConversations")
   messages      Message[]
   resourceVersions ResourceVersion[] @relation("ResourceVersionAuthor")
-  hostedGameSessions GameSession[] @relation("HostedSessions") // 1. Nueva relación para GameSession (Host)
-  gamePlayers        Player[]      @relation("GamePlayers")      // 3. Nueva relación para Player (User)
   processId String?
   process   Process?  @relation(fields: [processId], references: [id])
   @@map("users")
@@ -259,7 +257,7 @@ model AnswerOption {
   question         Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
   questionId       String
   AnswerAttempt    AnswerAttempt[]
-  playerResponses PlayerResponse[] @relation("PlayerResponsesToOption") // <--- ESTO DEBE ESTAR EN AnswerOption
+  
 
 
   @@map("answer_options")
@@ -584,7 +582,6 @@ model Form {
   fields      FormField[]
   responses   FormResponse[]
   sharedWith  User[]         @relation("SharedForms")
-  gameSessions  GameSession[] // 2. Nueva relación para GameSession (Form)
 
   @@map("forms")
 }
@@ -600,7 +597,6 @@ model FormField {
   form        Form          @relation(fields: [formId], references: [id], onDelete: Cascade)
   formId      String
   answers     Answer[]
-  playerResponses PlayerResponse[] @relation("PlayerResponsesToQuestion") // 6. Nueva relación para PlayerResponse (Question)
 
 
   @@map("form_fields")
@@ -768,45 +764,6 @@ model ResourceVersion {
   @@index([authorId])
 }
 
-model GameSession {
-  id        String   @id @default(cuid())
-  pin       String   @unique
-  formId    String
-  form      Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
-  hostId    String
-  host      User     @relation("HostedSessions", fields: [hostId], references: [id])
-  status    String   @default("LOBBY") // LOBBY, IN_PROGRESS, FINISHED
-  createdAt DateTime @default(now())
-  players   Player[]
-}
-
-model Player {
-  id            String   @id @default(cuid())
-  userId        String
-  user          User             @relation("GamePlayers", fields: [userId], references: [id]) // Aquí va el cambio
-  gameSessionId String
-  gameSession   GameSession @relation(fields: [gameSessionId], references: [id], onDelete: Cascade)
-  nickname      String
-  score         Int      @default(0)
-  joinedAt      DateTime @default(now())
-  responses     PlayerResponse[]
-
-  @@unique([userId, gameSessionId])
-}
-
-model PlayerResponse {
-  id         String   @id @default(cuid())
-  playerId       String
-  player         Player          @relation(fields: [playerId], references: [id], onDelete: Cascade)
-  questionId     String
-  question       FormField       @relation("PlayerResponsesToQuestion", fields: [questionId], references: [id], onDelete: Cascade) // Primer cambio
-  optionId       String?
-  option         AnswerOption?   @relation("PlayerResponsesToOption", fields: [optionId], references: [id], onDelete: NoAction, onUpdate: NoAction) // Segundo cambio
-  isCorrect      Boolean
-  scoreAwarded Int
-  responseTimeMs Int
-  createdAt DateTime @default(now())
-}
 
 model ChatAttachment {
   id        String   @id @default(cuid())
