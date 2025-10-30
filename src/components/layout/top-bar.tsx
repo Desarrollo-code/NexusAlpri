@@ -10,7 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Separator } from "../ui/separator";
 import { useAuth } from "@/contexts/auth-context";
 import Link from "next/link";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import type { Notification, NavItem } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useTitle } from "@/contexts/title-context";
@@ -52,10 +52,8 @@ export const TopBar = () => {
         
         const findItem = (items: NavItem[], path: string): NavItem | undefined => {
             for (const item of items) {
-                if (item.path && path.startsWith(item.path) && (item.path !== '/dashboard' || path === '/dashboard')) {
-                     if (path === item.path || path.startsWith(item.path + '/')) {
-                        return item;
-                    }
+                 if (item.path && path.startsWith(item.path) && (item.path !== '/dashboard' || path === '/dashboard')) {
+                    return item;
                 }
                 if (item.children) {
                     const found = findItem(item.children, path);
@@ -63,14 +61,13 @@ export const TopBar = () => {
                 }
             }
         };
+        
         const currentItem = findItem(navItems, pathname);
 
-        // For dynamic routes like /courses/[courseId], use the dynamic pageTitle
-        if (pathname.includes('/courses/') && !pathname.endsWith('/courses')) {
-            return { icon: currentItem?.icon || null, title: pageTitle };
-        }
+        // Para rutas dinámicas, el `pageTitle` del contexto tiene prioridad.
+        const title = pageTitle || currentItem?.label || "NexusAlpri";
 
-        return { icon: currentItem?.icon || null, title: currentItem?.label || pageTitle };
+        return { icon: currentItem?.icon || null, title };
     }, [pathname, user?.role, pageTitle]);
 
 
@@ -121,32 +118,35 @@ export const TopBar = () => {
     return (
         <div className={cn(
             "flex items-center justify-between h-20 px-4 shrink-0 border-b sticky top-0 z-30",
-            "bg-gradient-to-b from-primary to-accent text-primary-foreground backdrop-blur-sm border-border"
+            "bg-card text-card-foreground border-border"
         )}>
             {/* Left side */}
             <div className="flex items-center gap-2 flex-1 min-w-0">
                  {isMobile ? (
-                    <Button onClick={toggleSidebar} variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground hover:bg-black/20 hover:text-primary-foreground">
+                    <Button onClick={toggleSidebar} variant="ghost" size="icon" className="h-8 w-8">
                         <PanelLeft className="h-5 w-5"/>
                         <span className="sr-only">Toggle Menu</span>
                     </Button>
                  ) : showBackButton ? (
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground hover:bg-black/20 hover:text-primary-foreground" onClick={() => router.back()}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => router.back()}>
                         <ArrowLeft className="h-4 w-4"/>
                         <span className="sr-only">Volver</span>
                     </Button>
                  ) : (
                     <div className="w-8"/> // Placeholder to keep alignment
                  )}
-                 <h1 className="text-xl font-semibold truncate text-primary-foreground">{currentPageTitle}</h1>
+                 <h1 className="text-xl font-semibold truncate flex items-center gap-2">
+                    {currentPageIcon && <GradientIcon icon={currentPageIcon} isActive={true} />}
+                    {currentPageTitle}
+                 </h1>
             </div>
 
             {/* Right side */}
             <div className="flex items-center gap-3">
-                 {headerActions && <div className="hidden md:flex items-center gap-2 text-foreground">{headerActions}</div>}
+                 {headerActions && <div className="hidden md:flex items-center gap-2">{headerActions}</div>}
                  <Popover>
                     <PopoverTrigger asChild>
-                        <Button variant="ghost" size="icon" className="relative text-primary-foreground hover:bg-black/20 hover:text-primary-foreground">
+                        <Button variant="ghost" size="icon" className="relative">
                             <Bell className="h-5 w-5"/>
                             {unreadCount > 0 && (
                                 <span className="absolute top-1 right-1 flex h-4 w-4">
@@ -188,11 +188,11 @@ export const TopBar = () => {
                          </div>
                     </PopoverContent>
                  </Popover>
-                <Separator orientation="vertical" className="h-8 bg-primary-foreground/30" />
+                <Separator orientation="vertical" className="h-8" />
                 <UserAvatarDropdown />
             </div>
             {headerActions && isMobile && (
-              <div className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t p-2 flex justify-around gap-2 z-50 text-foreground">
+              <div className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t p-2 flex justify-around gap-2 z-50">
                 {headerActions}
               </div>
             )}

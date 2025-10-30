@@ -68,15 +68,12 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
                 case 'MULTIPLE_CHOICE':
                     const counts = new Map<string, number>();
                     const allOptions = (field.options as any as FormFieldOption[]).map(opt => opt.text) || [];
-
-                    // Initialize all options with 0 count
+                    
                     allOptions.forEach(opt => counts.set(opt, 0));
 
                     fieldAnswers.forEach(ans => {
                         let selectedOptionIds: string[] = [];
                         
-                        // --- FIX START ---
-                        // Handle single choice and multiple choice answers correctly
                         if (field.type === 'SINGLE_CHOICE') {
                              selectedOptionIds.push(ans.value);
                         } else { // MULTIPLE_CHOICE - value is a JSON string of an array
@@ -86,19 +83,17 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
                                     selectedOptionIds.push(...parsed);
                                 }
                             } catch (e) {
-                                // Handles cases where the value is not a valid JSON array string
                                 console.warn(`Could not parse MULTIPLE_CHOICE answer value: ${ans.value}`);
                             }
                         }
-                        // --- FIX END ---
                         
-                         selectedOptionIds.forEach(optId => {
-                            const value = (field.options as any as FormFieldOption[]).find(opt => opt.id === optId)?.text;
-                             if (value && counts.has(value)) {
-                                counts.set(value, counts.get(value)! + 1);
+                        const allOptionsTyped = field.options as unknown as FormFieldOption[];
+                        selectedOptionIds.forEach(optId => {
+                            const selectedOption = allOptionsTyped.find(opt => opt.id === optId);
+                            if (selectedOption && counts.has(selectedOption.text)) {
+                                counts.set(selectedOption.text, counts.get(selectedOption.text)! + 1);
                             }
                         });
-
                     });
                     stats = Array.from(counts.entries()).map(([option, count]) => ({ option, count }));
                     break;

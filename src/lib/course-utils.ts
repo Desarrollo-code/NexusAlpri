@@ -11,6 +11,7 @@ interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | '_count' 
     enrollments?: number;
     lessons?: number;
   };
+  modules?: { _count?: { lessons: number } }[];
   status: CourseStatus;
   averageCompletion?: number;
 }

@@ -64,7 +64,7 @@ export function InstructorDashboard({ instructorStats, recentAnnouncements, taug
             </Card>
             <AnnouncementsWidget announcements={recentAnnouncements} />
         </div>
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-6">
             <CalendarWidget events={upcomingEvents} />
         </div>
       </div>
