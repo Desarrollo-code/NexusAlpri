@@ -21,8 +21,8 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Label } from "@/components/ui/label"
 import { Separator } from '@/components/ui/separator';
 import { useAnimatedCounter } from '@/hooks/use-animated-counter';
 
@@ -107,7 +107,10 @@ const SummaryCard = ({ title, count, icon: Icon, filterType, className }: { titl
 
     return (
         <Card 
-            className={cn("p-4 flex items-center gap-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer", className)}
+            className={cn(
+                "p-4 flex items-center gap-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer",
+                className
+            )}
             onClick={() => { /* Lógica para filtrar */}}
         >
             <div className="p-3 rounded-lg bg-black/5 dark:bg-white/10">
@@ -234,8 +237,14 @@ export default function ResourcesPage() {
     <DndContext onDragEnd={handleDragEnd} sensors={useSensors(useSensor(MouseSensor), useSensor(TouchSensor))}>
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
         <div className="lg:col-span-3 space-y-6">
+            <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input placeholder="Buscar en mi nube..." className="pl-10 h-11 text-base rounded-full shadow-sm bg-card" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                <Button variant="ghost" size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full"><ListFilter className="h-4 w-4"/></Button>
+            </div>
+
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                 <RadioGroup value={activeTab} onValueChange={(v) => setActiveTab(v as ResourceStatus)} className="flex items-center p-1 bg-green-100 dark:bg-green-900/30 rounded-full">
+                <RadioGroup value={activeTab} onValueChange={(v) => setActiveTab(v as ResourceStatus)} className="flex items-center p-1 bg-green-100 dark:bg-green-900/30 rounded-full">
                     <Label htmlFor="status-active" className={cn("px-4 py-1.5 rounded-full text-sm font-semibold cursor-pointer transition-colors", activeTab === 'ACTIVE' ? 'bg-white text-green-800 shadow-sm' : 'text-green-700/80')}>Activo</Label>
                     <RadioGroupItem value="ACTIVE" id="status-active" className="sr-only" />
                     <Label htmlFor="status-archived" className={cn("px-4 py-1.5 rounded-full text-sm font-semibold cursor-pointer transition-colors", activeTab === 'ARCHIVED' ? 'bg-white text-green-800 shadow-sm' : 'text-green-700/80')}>Archivado</Label>
@@ -243,9 +252,9 @@ export default function ResourcesPage() {
                 </RadioGroup>
 
                 <div className="flex items-center gap-2">
-                    <DropdownMenu>
+                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button className="bg-slate-800 text-white hover:bg-slate-700">
+                           <Button className="bg-slate-800 text-white hover:bg-slate-700">
                                 <Plus className="mr-2 h-4 w-4"/> Nuevo <ChevronDown className="ml-2 h-4 w-4"/>
                             </Button>
                         </DropdownMenuTrigger>
@@ -262,12 +271,6 @@ export default function ResourcesPage() {
                         <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')}><Grid className="h-4 w-4"/></Button>
                     </div>
                 </div>
-            </div>
-
-            <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input placeholder="Buscar en mi nube..." className="pl-10 h-11 text-base rounded-full shadow-sm" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-                <Button variant="ghost" size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full"><ListFilter className="h-4 w-4"/></Button>
             </div>
             
             <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
