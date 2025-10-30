@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { useTitle } from '@/contexts/title-context';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Image as ImageIcon, Video, PlusCircle, ChevronRight, FileText } from 'lucide-react';
+import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Move } from 'lucide-react';
 import { DecorativeFolder } from '@/components/resources/decorative-folder';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { ResourceListItem } from '@/components/resources/resource-list-item';
@@ -20,8 +20,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
+import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 
 const Sidebar = ({}) => {
@@ -35,7 +34,6 @@ export default function ResourcesPage() {
   const { toast } = useToast();
   
   const [allApiResources, setAllApiResources] = useState<AppResourceType[]>([]);
-  const [stats, setStats] = useState<{ storageStats: any[], categoryCounts: any, recentFiles: any[]}>({ storageStats: [], categoryCounts: {}, recentFiles: [] });
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -72,11 +70,6 @@ export default function ResourcesPage() {
       if (!response.ok) throw new Error((await response.json()).message || 'Failed to fetch resources');
       const data = await response.json();
       setAllApiResources(data.resources || []);
-      setStats({
-          storageStats: data.storageStats || [],
-          categoryCounts: data.categoryCounts || {},
-          recentFiles: data.recentFiles || [],
-      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido');
     } finally {
@@ -139,21 +132,22 @@ export default function ResourcesPage() {
         <div className="col-span-1 space-y-6">
             <Card className="p-4">
                  <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                    <div className="relative flex-grow w-full md:w-auto">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                        <Input placeholder="Buscar en mi nube..." className="pl-10 h-10 text-base rounded-md" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-                    </div>
+                     <div className="flex-grow w-full md:w-auto">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                            <Input placeholder="Buscar en mi nube..." className="pl-10 h-10 text-base rounded-md" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                        </div>
+                     </div>
                      <div className="flex items-center gap-2">
-                        <RadioGroup value={activeTab} onValueChange={(v) => setActiveTab(v as ResourceStatus)} className="flex items-center gap-1 p-1 rounded-lg bg-green-100 dark:bg-green-900/20">
-                            <RadioGroupItem value="ACTIVE" id="status-active" className="sr-only"/>
-                            <Label htmlFor="status-active" className={cn("px-3 py-1.5 text-sm font-medium cursor-pointer rounded-md", activeTab === 'ACTIVE' && "bg-white shadow")}>Activo</Label>
-                            <RadioGroupItem value="ARCHIVED" id="status-archived" className="sr-only"/>
-                            <Label htmlFor="status-archived" className={cn("px-3 py-1.5 text-sm font-medium cursor-pointer rounded-md", activeTab === 'ARCHIVED' && "bg-white shadow")}>Archivado</Label>
-                        </RadioGroup>
+                        <div className="flex items-center gap-1 p-1 rounded-full bg-green-100 dark:bg-green-900/20">
+                            <Button variant={activeTab === 'ACTIVE' ? 'secondary' : 'ghost'} size="sm" className="h-8 rounded-full" onClick={() => setActiveTab('ACTIVE')}>Activo</Button>
+                            <Button variant={activeTab === 'ARCHIVED' ? 'secondary' : 'ghost'} size="sm" className="h-8 rounded-full" onClick={() => setActiveTab('ARCHIVED')}>Archivado</Button>
+                        </div>
+                        <Separator orientation="vertical" className="h-6" />
                          <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                <Button className="bg-slate-800 text-white hover:bg-slate-700 h-9">
-                                    <PlusCircle className="mr-2 h-4 w-4"/> Nuevo <ChevronDown className="ml-2 h-4 w-4"/>
+                                    + Nuevo <ChevronDown className="ml-2 h-4 w-4"/>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
@@ -161,9 +155,8 @@ export default function ResourcesPage() {
                                 <DropdownMenuItem onSelect={() => setIsUploaderOpen(true)}><UploadCloud className="mr-2 h-4 w-4"/>Subir Archivo</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
-                         <div className="flex items-center gap-1 p-1 rounded-lg bg-gray-200 dark:bg-gray-800">
+                         <div className="flex items-center gap-1 p-1 rounded-full bg-gray-200 dark:bg-gray-800">
                              <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-7 w-7" onClick={() => setViewMode('list')}><List className="h-4 w-4"/></Button>
-                            <Separator orientation="vertical" className="h-4" />
                             <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-7 w-7" onClick={() => setViewMode('grid')}><Grid className="h-4 w-4"/></Button>
                         </div>
                     </div>
@@ -191,7 +184,7 @@ export default function ResourcesPage() {
                         {folders.length > 0 && (
                             <section>
                                 <h3 className="text-lg font-semibold mb-3">Carpetas</h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                                     {folders.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={true} onNavigate={handleNavigateFolder} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={() => {}} onSelect={() => {}}/>)}
                                 </div>
                             </section>
@@ -200,11 +193,11 @@ export default function ResourcesPage() {
                             <section>
                                 <h3 className="text-lg font-semibold mb-3">Archivos Recientes</h3>
                                 {viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                                         {files.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={false} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={() => {}} onNavigate={() => {}} />)}
                                     </div>
                                 ) : (
-                                    <div className="border rounded-lg bg-card">
+                                    <div className="border rounded-lg bg-card divide-y">
                                         {files.map(res => <ResourceListItem key={res.id} resource={res} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={() => {}} />)}
                                     </div>
                                 )}
