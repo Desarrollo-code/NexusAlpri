@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusCircle, FileText, Share2, Users, FilePen, Trash2, Eye, BarChart, MoreVertical, Loader2, AlertTriangle, ShieldAlert, ArrowRight, User as UserIcon, Zap } from 'lucide-react';
+import { PlusCircle, FileText, Share2, Users, FilePen, Trash2, Eye, BarChart, MoreVertical, Loader2, AlertTriangle, ShieldAlert, ArrowRight, User as UserIcon, Zap, PackageX } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
 import type { AppForm, FormStatus, User as AppUser } from '@/types';
@@ -244,6 +244,22 @@ const ShareFormModal = ({ form, isOpen, onOpenChange, onShareSuccess }: { form: 
     );
 }
 
+const EmptyState = ({ tab }: { tab: string }) => {
+    let message = "No hay formularios que mostrar en esta sección.";
+    if (tab === 'my-forms') message = "Aún no has creado ningún formulario. ¡Crea el primero!";
+    if (tab === 'shared-with-me') message = "Nadie ha compartido formularios contigo todavía.";
+    if (tab === 'for-student') message = "No hay formularios públicos disponibles en este momento.";
+
+    return (
+        <div className="text-center border-2 border-dashed rounded-lg p-12">
+            <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-xl font-semibold mb-2">Sección Vacía</h3>
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto">{message}</p>
+        </div>
+    );
+};
+
+
 function FormsPageComponent() {
     const { user } = useAuth();
     const router = useRouter();
@@ -356,7 +372,7 @@ function FormsPageComponent() {
         setIsDeleting(true);
         try {
             const res = await fetch(`/api/forms/${formToDelete.id}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error((await res.json()).message || 'No se pudo eliminar el formulario.');
+            if (res.status !== 204) throw new Error((await res.json()).message || 'No se pudo eliminar el formulario.');
             toast({ title: '¡Eliminado!', description: 'El formulario ha sido eliminado correctamente.' });
             fetchForms(); // Refrescar la lista
         } catch (err) {
@@ -414,21 +430,6 @@ function FormsPageComponent() {
          </div>
     );
 
-    const EmptyState = ({ tab }: { tab: string }) => {
-      let message = "No hay formularios que mostrar en esta sección.";
-      if (tab === 'my-forms') message = "Aún no has creado ningún formulario. ¡Crea el primero!";
-      if (tab === 'shared-with-me') message = "Nadie ha compartido formularios contigo todavía.";
-      if (tab === 'for-student') message = "No hay formularios públicos disponibles en este momento.";
-
-      return (
-        <div className="text-center border-2 border-dashed rounded-lg p-12">
-            <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Sección Vacía</h3>
-            <p className="text-muted-foreground mb-6 max-w-md mx-auto">{message}</p>
-        </div>
-      )
-    };
-    
     // Management View for Admins/Instructors
     const ManagementView = () => (
         <>

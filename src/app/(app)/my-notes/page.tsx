@@ -37,6 +37,14 @@ interface NotesByCourse {
   }[];
 }
 
+const EmptyState = ({ icon: Icon, title, description }: { icon: React.ElementType, title: string, description: string }) => (
+    <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-lg">
+        <Icon className="mx-auto h-12 w-12 mb-4 text-primary/70" />
+        <h3 className="text-xl font-semibold text-foreground">{title}</h3>
+        <p>{description}</p>
+    </div>
+);
+
 export default function MyNotesPage() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -148,11 +156,11 @@ export default function MyNotesPage() {
             <p>Error al cargar: {error}</p>
           </div>
         ) : notesByCourse.length === 0 ? (
-          <div className="text-center py-16 text-muted-foreground bg-muted/30 border border-dashed rounded-lg">
-            <Notebook className="mx-auto h-12 w-12 mb-4 text-primary/70" />
-            <h3 className="text-xl font-semibold text-foreground">Tu tablero de apuntes está vacío</h3>
-            <p>Ve a una lección y comienza a escribir para que tus notas aparezcan aquí.</p>
-          </div>
+          <EmptyState 
+            icon={Notebook} 
+            title="Tu tablero de apuntes está vacío" 
+            description="Ve a una lección y comienza a escribir para que tus notas aparezcan aquí."
+          />
         ) : (
           notesByCourse.map((courseGroup) => (
             <div key={courseGroup.courseId}>

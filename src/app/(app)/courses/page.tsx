@@ -25,6 +25,14 @@ interface ApiCourse extends Omit<PrismaCourse, 'instructor' | '_count' | 'status
   prerequisiteCompleted?: boolean;
 }
 
+const EmptyState = ({ icon: Icon, title, description }: { icon: React.ElementType, title: string, description: string }) => (
+    <div className="text-center py-12">
+        <Icon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+        <h3 className="text-xl font-semibold mb-2">{title}</h3>
+        <p className="text-muted-foreground">{description}</p>
+    </div>
+);
+
 export default function CoursesPage() {
   const { user, settings } = useAuth();
   const { toast } = useToast();
@@ -220,16 +228,15 @@ export default function CoursesPage() {
             ))}
           </div>
       ) : (
-        <div className="text-center py-12">
-          <PackageX className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-xl font-semibold mb-2">Ningún curso disponible</h3>
-          <p className="text-muted-foreground">
-            {searchTerm || activeCategory !== 'all'
-              ? 'No hay cursos que coincidan con tu búsqueda o filtro.' 
-              : 'Actualmente no hay cursos publicados que cumplan con los criterios de visualización.'
+        <EmptyState
+            icon={PackageX}
+            title="Ningún curso disponible"
+            description={
+                searchTerm || activeCategory !== 'all'
+                ? 'No hay cursos que coincidan con tu búsqueda o filtro.' 
+                : 'Actualmente no hay cursos publicados que cumplan con los criterios de visualización.'
             }
-          </p>
-        </div>
+        />
       )}
     </div>
   );
