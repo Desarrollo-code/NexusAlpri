@@ -369,6 +369,16 @@ model PlatformSettings {
   announcementsImageUrl      String?
   publicPagesBgUrl           String?
   securityMascotUrl          String?
+  emptyStateCoursesUrl      String?
+  emptyStateMyCoursesUrl    String?
+  emptyStateFormsUrl        String?
+  emptyStateMyNotesUrl      String?
+  emptyStateResourcesUrl    String?
+  emptyStateCertificatesUrl String?
+  emptyStateMotivationsUrl  String?
+  emptyStateUsersUrl        String?
+  emptyStateLeaderboardUrl  String?
+
   updatedAt                  DateTime @updatedAt
 
   @@map("platform_settings")
