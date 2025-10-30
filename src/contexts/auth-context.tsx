@@ -62,7 +62,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const userData = await userRes.value.json();
             setUser(userData.user);
         } else {
-            // Esto es crucial: si la petición de usuario falla (ej. 401), nos aseguramos de que el usuario es null.
             setUser(null);
         }
     } catch (error) {
@@ -70,7 +69,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(null);
         setSettings(DEFAULT_SETTINGS);
     } finally {
-        // Esta es la corrección clave: asegurar que el estado de carga siempre se desactive.
         setIsLoading(false);
     }
   }, []);
@@ -87,16 +85,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     router.replace(redirectedFrom || '/dashboard');
   }, [router]);
 
-  const logout = useCallback(async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-    } catch (error) {
-      console.error("Fallo al llamar a la API de logout", error);
-    } finally {
-      setUser(null);
-      setTheme('light'); 
-      router.push('/sign-in');
-    }
+  const logout = useCallback(() => {
+    // Fire and forget the API call
+    fetch('/api/auth/logout', { method: 'POST' }).catch(err => console.error("Fallo al llamar a la API de logout en segundo plano:", err));
+    
+    // Perform immediate client-side changes
+    setUser(null);
+    setTheme('light'); 
+    router.push('/sign-in');
   }, [router, setTheme]);
   
   const updateUser = useCallback((updatedData: Partial<User>) => {
