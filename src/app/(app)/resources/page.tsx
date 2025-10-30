@@ -57,46 +57,27 @@ const Sidebar = ({ stats, totalSize, totalFiles, user }: { stats: any[], totalSi
         <aside className="hidden lg:block lg:col-span-1 space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-lg">Hola, {user?.name.split(' ')[0]}!</CardTitle>
+                    <CardTitle className="text-lg">Archivos Recientes</CardTitle>
                 </CardHeader>
-                <CardContent>
-                    <p className="text-sm text-muted-foreground">Bienvenido a tu nube personal.</p>
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-lg">Almacenamiento</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                     <div className="w-full flex justify-center">
-                        {/* A simple placeholder for a donut chart */}
-                         <div className="relative h-32 w-32">
-                           <svg viewBox="0 0 36 36" className="h-full w-full">
-                             <path className="text-muted/30" stroke="currentColor" strokeWidth="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                             <path className="text-primary" stroke="currentColor" strokeWidth="3" strokeDasharray={`${storagePercentage}, 100`} fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                           </svg>
-                           <div className="absolute inset-0 flex flex-col items-center justify-center">
-                               <span className="text-2xl font-bold">{Math.round(storagePercentage)}%</span>
-                               <span className="text-xs text-muted-foreground">usado</span>
-                           </div>
-                         </div>
-                     </div>
-                     <p className="text-center text-sm text-muted-foreground">{totalStorageFormatted} de 5 GB</p>
-                    <Separator/>
-                    <div className="space-y-3">
-                        {stats.map(stat => {
-                            const Icon = getIconForType(stat.type);
-                            return (
-                                <div key={stat.type} className="flex items-center text-sm">
-                                    <Icon className="h-4 w-4 mr-2 text-muted-foreground" />
-                                    <span className="flex-grow">{stat.type}</span>
-                                    <span className="font-semibold">{formatBytes(stat.size)}</span>
+                 <CardContent>
+                    {stats.length > 0 ? (
+                        <div className="space-y-3">
+                            {stats.map((file, index) => (
+                                <div key={index} className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
+                                        {React.createElement(getIconForType(file.type), { className: "h-5 w-5 text-muted-foreground" })}
+                                    </div>
+                                    <div className="flex-grow min-w-0">
+                                        <p className="text-sm font-medium truncate">{file.title}</p>
+                                        <p className="text-xs text-muted-foreground">Subido por {file.uploaderName}</p>
+                                    </div>
                                 </div>
-                            )
-                        })}
-                    </div>
-                </CardContent>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-sm text-muted-foreground text-center">No hay archivos recientes.</p>
+                    )}
+                 </CardContent>
             </Card>
         </aside>
     );
@@ -217,30 +198,36 @@ export default function ResourcesPage() {
         <div className="lg:col-span-3 space-y-6">
             <div className="space-y-4">
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input placeholder="Buscar en mi nube..." className="pl-10 h-11 text-base rounded-full shadow-sm bg-card" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 p-1 rounded-full bg-muted">
-                        <Button variant={activeTab === 'ACTIVE' ? 'secondary' : 'ghost'} size="sm" className="h-7" onClick={() => setActiveTab('ACTIVE')}>Activo</Button>
-                        <Button variant={activeTab === 'ARCHIVED' ? 'secondary' : 'ghost'} size="sm" className="h-7" onClick={() => setActiveTab('ARCHIVED')}>Archivado</Button>
-                    </div>
-                </div>
-                 <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
-                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                           <Button className="bg-slate-800 text-white hover:bg-slate-700 w-full sm:w-auto">
-                                <Plus className="mr-2 h-4 w-4"/> Nuevo <ChevronDown className="ml-2 h-4 w-4"/>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start">
-                            <DropdownMenuItem onSelect={() => setIsFolderCreatorOpen(true)}><FolderIcon className="mr-2 h-4 w-4"/>Nueva Carpeta</DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => setIsUploaderOpen(true)}><UploadCloud className="mr-2 h-4 w-4"/>Subir Archivo</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
-                        <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')}><List className="h-4 w-4"/></Button>
-                        <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')}><Grid className="h-4 w-4"/></Button>
-                    </div>
+                     <div className="flex items-center justify-between gap-4 p-2 rounded-lg bg-card border">
+                         <div className="relative flex-grow">
+                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                             <Input placeholder="Buscar en mi nube..." className="pl-10 h-10 text-base rounded-md border-0 focus-visible:ring-0 focus-visible:ring-offset-0" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                         </div>
+                         <div className="flex items-center gap-2">
+                             <RadioGroup value={activeTab} onValueChange={(v) => setActiveTab(v as ResourceStatus)} className="flex items-center gap-1 p-1 rounded-lg bg-green-100 dark:bg-green-900/20">
+                                 <RadioGroupItem value="ACTIVE" id="status-active" className="sr-only"/>
+                                 <Label htmlFor="status-active" className={cn("px-3 py-1.5 text-sm font-medium cursor-pointer rounded-md", activeTab === 'ACTIVE' && "bg-white shadow")}>Activo</Label>
+                                 <RadioGroupItem value="ARCHIVED" id="status-archived" className="sr-only"/>
+                                 <Label htmlFor="status-archived" className={cn("px-3 py-1.5 text-sm font-medium cursor-pointer rounded-md", activeTab === 'ARCHIVED' && "bg-white shadow")}>Archivado</Label>
+                             </RadioGroup>
+                             <Separator orientation="vertical" className="h-6 mx-1"/>
+                             <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                   <Button className="bg-slate-800 text-white hover:bg-slate-700 h-9">
+                                        <PlusCircle className="mr-2 h-4 w-4"/> Nuevo <ChevronDown className="ml-2 h-4 w-4"/>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onSelect={() => setIsFolderCreatorOpen(true)}><FolderIcon className="mr-2 h-4 w-4"/>Nueva Carpeta</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => setIsUploaderOpen(true)}><UploadCloud className="mr-2 h-4 w-4"/>Subir Archivo</DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <div className="flex items-center gap-1 p-1 rounded-lg bg-gray-200 dark:bg-gray-800">
+                                <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-7 w-7" onClick={() => setViewMode('list')}><List className="h-4 w-4"/></Button>
+                                <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-7 w-7" onClick={() => setViewMode('grid')}><Grid className="h-4 w-4"/></Button>
+                            </div>
+                         </div>
+                     </div>
                 </div>
             </div>
 
@@ -299,7 +286,7 @@ export default function ResourcesPage() {
                 onNavigate={(dir) => { /* Logic to navigate between files */ }}
             />
         </div>
-        <Sidebar stats={stats.storageStats} totalSize={totalStorage} totalFiles={totalFiles} user={user}/>
+        <Sidebar stats={stats.recentFiles} totalSize={totalStorage} totalFiles={totalFiles} user={user}/>
     </div>
     </DndContext>
   );
