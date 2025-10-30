@@ -132,3 +132,5 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
         return NextResponse.json({ message: 'Error al inactivar el usuario' }, { status: 500 });
     }
 }
+
+    

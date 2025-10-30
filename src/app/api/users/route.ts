@@ -160,3 +160,5 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: 'Error al crear el usuario' }, { status: 500 });
     }
 }
+
+    

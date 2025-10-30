@@ -55,7 +55,7 @@ const getStatusDetails = (status: FormStatus) => {
     }
 };
 
-const FormCard = ({ form, onAction, onLaunchGame }: { form: AppForm, onAction: (action: 'edit' | 'delete' | 'share' | 'results', form: AppForm) => void, onLaunchGame: (formId: string) => void }) => {
+const FormCard = ({ form, onAction }: { form: AppForm, onAction: (action: 'edit' | 'delete' | 'share' | 'results', form: AppForm) => void }) => {
     const statusDetails = getStatusDetails(form.status);
     
     return (
@@ -81,8 +81,6 @@ const FormCard = ({ form, onAction, onLaunchGame }: { form: AppForm, onAction: (
                            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 -mr-2"><MoreVertical className="h-4 w-4"/></Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            {form.isQuiz && <DropdownMenuItem onClick={() => onLaunchGame(form.id)}><Zap className="mr-2 h-4 w-4 text-primary"/>Iniciar Quizz-IT</DropdownMenuItem>}
-                            {form.isQuiz && <DropdownMenuSeparator />}
                             <DropdownMenuItem onClick={() => onAction('edit', form)}><FilePen className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => onAction('results', form)}><BarChart className="mr-2 h-4 w-4"/>Resultados</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => onAction('share', form)}><Share2 className="mr-2 h-4 w-4"/>Compartir</DropdownMenuItem>
@@ -262,7 +260,6 @@ function FormsPageComponent() {
     const [formToDelete, setFormToDelete] = useState<AppForm | null>(null);
     const [formToShare, setFormToShare] = useState<AppForm | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
-    const [isLaunching, setIsLaunching] = useState(false);
     
     const activeTab = searchParams.get('tab') || (user?.role === 'STUDENT' ? 'for-student' : 'my-forms');
     const currentPage = Number(searchParams.get('page')) || 1;
@@ -334,24 +331,6 @@ function FormsPageComponent() {
        }
     };
     
-    const handleLaunchGame = async (formId: string) => {
-        setIsLaunching(true);
-        try {
-            const res = await fetch('/api/quizz-it/create', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ formId }),
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || 'No se pudo iniciar el juego.');
-            router.push(`/quizz-it/host/${data.id}`);
-        } catch (err) {
-            toast({ title: 'Error', description: err instanceof Error ? err.message : 'Error desconocido', variant: 'destructive' });
-        } finally {
-            setIsLaunching(false);
-        }
-    };
-
     const handleDeleteForm = async () => {
         if (!formToDelete) return;
         setIsDeleting(true);
@@ -373,7 +352,7 @@ function FormsPageComponent() {
         if (view === 'management') {
             return (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {formsList.map(form => <FormCard key={form.id} form={form} onAction={handleFormAction} onLaunchGame={handleLaunchGame} />)}
+                    {formsList.map(form => <FormCard key={form.id} form={form} onAction={handleFormAction} />)}
                 </div>
             );
         }
@@ -437,7 +416,6 @@ function FormsPageComponent() {
                     {user?.role === 'ADMINISTRATOR' && <TabsTrigger value="all">Todos</TabsTrigger>}
                 </TabsList>
                 <div className="mt-6">
-                    {isLaunching && <div className="fixed inset-0 bg-background/80 flex items-center justify-center z-50"><Loader2 className="h-8 w-8 animate-spin"/></div>}
                     {isLoading ? <SkeletonGrid /> 
                      : error ? <div className="text-destructive text-center py-10">{error}</div>
                      : forms.length === 0 ? <EmptyState tab={activeTab} title="Sección Vacía" description={activeTab === 'my-forms' ? "Aún no has creado ningún formulario. ¡Crea el primero!" : "No hay formularios que mostrar en esta sección."} icon={FileText} imageUrl={settings?.emptyStateFormsUrl}/> 
