@@ -28,7 +28,7 @@ const config: Config = {
     },
     extend: {
       backgroundImage: {
-        'primary-gradient': 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)))',
+        'primary-gradient': 'linear-gradient(to bottom, hsl(var(--primary)), hsl(var(--accent) / 0.8))',
         'gradient-blue': 'linear-gradient(to right bottom, hsl(var(--chart-1)), hsl(var(--chart-1)/0.8))',
         'gradient-green': 'linear-gradient(to right bottom, hsl(var(--chart-2)), hsl(var(--chart-2)/0.8))',
         'gradient-purple': 'linear-gradient(to right bottom, hsl(var(--chart-5)), hsl(var(--chart-5)/0.8))',
