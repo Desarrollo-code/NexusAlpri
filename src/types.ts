@@ -53,6 +53,10 @@ export interface PlatformSettings {
     emptyStateFormsUrl?: string | null;
     emptyStateMyNotesUrl?: string | null;
     emptyStateResourcesUrl?: string | null;
+    emptyStateCertificatesUrl?: string | null;
+    emptyStateMotivationsUrl?: string | null;
+    emptyStateUsersUrl?: string | null;
+    emptyStateLeaderboardUrl?: string | null;
 }
 
 // --- NAVIGATION ---

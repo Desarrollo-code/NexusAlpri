@@ -43,6 +43,10 @@ const DEFAULT_DB_SETTINGS = {
   emptyStateFormsUrl: null,
   emptyStateMyNotesUrl: null,
   emptyStateResourcesUrl: null,
+  emptyStateCertificatesUrl: null,
+  emptyStateMotivationsUrl: null,
+  emptyStateUsersUrl: null,
+  emptyStateLeaderboardUrl: null,
 };
 
 const getFallbackSettings = (): AppPlatformSettings => {
@@ -135,6 +139,10 @@ export async function POST(req: NextRequest) {
       emptyStateFormsUrl: dataFromClient.emptyStateFormsUrl,
       emptyStateMyNotesUrl: dataFromClient.emptyStateMyNotesUrl,
       emptyStateResourcesUrl: dataFromClient.emptyStateResourcesUrl,
+      emptyStateCertificatesUrl: dataFromClient.emptyStateCertificatesUrl,
+      emptyStateMotivationsUrl: dataFromClient.emptyStateMotivationsUrl,
+      emptyStateUsersUrl: dataFromClient.emptyStateUsersUrl,
+      emptyStateLeaderboardUrl: dataFromClient.emptyStateLeaderboardUrl,
     };
     
     const currentSettings = await prisma.platformSettings.findFirst();

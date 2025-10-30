@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from '@/lib/utils';
 import { getMotivationalTriggerLabel } from '@/lib/utils';
+import { EmptyState } from '../empty-state';
 
 const MotivationCard = ({ message, onEdit, onDelete }: { message: MotivationalMessage & { triggerCourse?: { title: string } | null }, onEdit: (m: MotivationalMessage) => void, onDelete: (m: MotivationalMessage) => void }) => {
     return (
@@ -52,7 +53,7 @@ const MotivationCard = ({ message, onEdit, onDelete }: { message: MotivationalMe
 }
 
 export function MotivationalMessagesManager() {
-    const { user } = useAuth();
+    const { user, settings } = useAuth();
     const { toast } = useToast();
     const [messages, setMessages] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -75,7 +76,6 @@ export function MotivationalMessagesManager() {
             }
             const data = await response.json();
             
-            // Garantiza que `messages` siempre sea un array.
             setMessages(Array.isArray(data) ? data : []);
             
         } catch (err) {
@@ -153,23 +153,22 @@ export function MotivationalMessagesManager() {
                     ))}
                 </div>
             ) : (
-                <Card className="text-center py-16 border-dashed">
-                    <CardHeader>
-                        <Sparkles className="mx-auto h-12 w-12 text-muted-foreground" />
-                        <CardTitle>Sin Mensajes de Motivación</CardTitle>
-                        <CardDescription>Aún no has creado ningún mensaje. ¡Crea el primero para celebrar los logros de tus estudiantes!</CardDescription>
-                    </CardHeader>
-                    <CardContent>
+                <EmptyState
+                    icon={Sparkles}
+                    title="Sin Mensajes de Motivación"
+                    description="Aún no has creado ningún mensaje. ¡Crea el primero para celebrar los logros de tus estudiantes!"
+                    imageUrl={settings?.emptyStateMotivationsUrl}
+                    actionButton={
                          <Button onClick={() => handleOpenEditor()}>
                             <PlusCircle className="mr-2 h-4 w-4" />
                             Crear Mi Primer Mensaje
                         </Button>
-                    </CardContent>
-                </Card>
+                    }
+                />
             )}
 
             {isEditorOpen && (
-                <MotivationEditorModal
+                <MotivationEditorModal 
                     isOpen={isEditorOpen}
                     onClose={() => setIsEditorOpen(false)}
                     message={editingMessage}

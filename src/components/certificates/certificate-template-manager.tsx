@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Loader2, AlertTriangle, PlusCircle, Award, Edit, Trash2, Eye } from 'lucide-react';
 import Image from 'next/image';
 import type { CertificateTemplate } from '@prisma/client';
@@ -23,6 +23,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from '@/lib/utils';
+import { EmptyState } from '../empty-state';
 
 const TemplateCard = ({ template, onEdit, onDelete, onPreview }: { template: CertificateTemplate, onEdit: (t: CertificateTemplate) => void, onDelete: (t: CertificateTemplate) => void, onPreview: (t: CertificateTemplate) => void }) => {
     return (
@@ -45,7 +46,7 @@ const TemplateCard = ({ template, onEdit, onDelete, onPreview }: { template: Cer
 }
 
 export function CertificateTemplateManager() {
-    const { user } = useAuth();
+    const { user, settings } = useAuth();
     const { toast } = useToast();
     const [templates, setTemplates] = useState<CertificateTemplate[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -142,19 +143,18 @@ export function CertificateTemplateManager() {
                     ))}
                 </div>
             ) : (
-                <Card className="text-center py-16 border-dashed">
-                    <CardHeader>
-                        <Award className="mx-auto h-12 w-12 text-muted-foreground" />
-                        <CardTitle>Sin Plantillas de Certificados</CardTitle>
-                        <CardDescription>Aún no has creado ninguna plantilla. ¡Crea la primera para empezar a reconocer los logros de tus estudiantes!</CardDescription>
-                    </CardHeader>
-                    <CardContent>
+                 <EmptyState
+                    icon={Award}
+                    title="Sin Plantillas de Certificados"
+                    description="Aún no has creado ninguna plantilla. ¡Crea la primera para empezar a reconocer los logros de tus estudiantes!"
+                    imageUrl={settings?.emptyStateCertificatesUrl}
+                    actionButton={
                          <Button onClick={() => handleOpenEditor()}>
                             <PlusCircle className="mr-2 h-4 w-4" />
                             Crear Mi Primera Plantilla
                         </Button>
-                    </CardContent>
-                </Card>
+                    }
+                />
             )}
 
             <CertificateEditorModal 
@@ -170,7 +170,7 @@ export function CertificateTemplateManager() {
                 </DialogContent>
             </Dialog>
 
-            <AlertDialog open={!!deletingTemplate} onOpenChange={(open) => !open && setDeletingTemplate(null)}>
+             <AlertDialog open={!!deletingTemplate} onOpenChange={(open) => !open && setDeletingTemplate(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>

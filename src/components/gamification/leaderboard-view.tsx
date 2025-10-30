@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
+import { EmptyState } from '../empty-state';
 
 interface RankedUser {
   rank: number;
@@ -77,7 +78,7 @@ const PodiumCard = ({ user, rank }: { user: RankedUser, rank: number }) => {
 }
 
 export function LeaderboardView() {
-  const { user } = useAuth();
+  const { user, settings } = useAuth();
   const { toast } = useToast();
 
   const [leaderboard, setLeaderboard] = useState<RankedUser[]>([]);
@@ -137,6 +138,17 @@ export function LeaderboardView() {
         <Button onClick={fetchLeaderboard} className="mt-4">Reintentar</Button>
       </div>
     );
+  }
+  
+  if (leaderboard.length === 0) {
+    return (
+        <EmptyState 
+            icon={Trophy}
+            title="El ranking está vacío"
+            description="Aún no hay usuarios con puntos. ¡Anima a tu equipo a participar en los cursos para empezar la competición!"
+            imageUrl={settings?.emptyStateLeaderboardUrl}
+        />
+    )
   }
 
   return (
