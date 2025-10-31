@@ -493,9 +493,9 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             const imageBlock = allBlocks[index + 1];
             return (
                 <div key={textBlock.id + '-' + imageBlock.id} className="flex flex-col md:flex-row gap-8 my-4 items-center">
-                    <div className="flex-[2] prose dark:prose-invert prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: textBlock.content || '' }} />
-                    <div className="flex-1 relative cursor-pointer min-w-0 min-h-[150px]" onClick={() => setImageToView(imageBlock.content)}>
-                        <Image src={imageBlock.content!} alt="Visual support" fill className="object-contain rounded-lg" quality={100} data-ai-hint="lesson visual aid" />
+                    <div className="md:w-[65%] md:flex-shrink-0 prose dark:prose-invert prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: textBlock.content || '' }} />
+                    <div className="md:w-[35%] md:flex-shrink-0 relative w-full aspect-video items-stretch" onClick={() => setImageToView(imageBlock.content)}>
+                        <Image src={imageBlock.content!} alt="Visual support" fill className="object-contain rounded-lg cursor-pointer" quality={100} data-ai-hint="lesson visual aid" />
                     </div>
                 </div>
             );
