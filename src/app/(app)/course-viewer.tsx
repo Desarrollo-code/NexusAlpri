@@ -65,7 +65,7 @@ const DocxPreviewer = ({ url }: { url: string }) => {
 
     if (isLoading) return <div className="p-4 text-center"><Loader2 className="animate-spin" /></div>;
     if (error) return <div className="p-4 text-center text-destructive">{error}</div>;
-    return <div className="prose prose-sm dark:prose-invert max-w-none my-4 p-3 border rounded-md bg-card" dangerouslySetInnerHTML={{ __html: html || '' }} />;
+    return <div className="prose prose-sm dark:prose-invert max-w-none my-4 p-3 border rounded-lg bg-card" dangerouslySetInnerHTML={{ __html: html || '' }} />;
 };
 
 // --- Note Taking Component ---
@@ -492,9 +492,9 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             const textBlock = block;
             const imageBlock = allBlocks[index + 1];
             return (
-                 <div key={textBlock.id + '-' + imageBlock.id} className="md:flex md:gap-8 md:items-stretch my-4">
-                    <div className="md:w-[65%] md:flex-shrink-0 prose dark:prose-invert prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: textBlock.content || '' }} />
-                    <div className="md:w-[35%] md:flex-shrink-0 flex flex-col items-center justify-center mt-4 md:mt-0">
+                 <div key={textBlock.id + '-' + imageBlock.id} className="md:flex md:gap-8 items-stretch my-4">
+                    <div className="prose dark:prose-invert prose-sm max-w-none md:w-[65%] md:flex-shrink-0" dangerouslySetInnerHTML={{ __html: textBlock.content || '' }} />
+                    <div className="md:w-[35%] md:flex-shrink-0 flex flex-col self-center mt-4 md:mt-0">
                         <div className="relative w-full h-full cursor-pointer" onClick={() => setImageToView(imageBlock.content)}>
                            <Image src={imageBlock.content!} alt="Visual support" fill className="object-contain rounded-lg" priority quality={100} data-ai-hint="lesson visual aid" />
                        </div>
@@ -505,7 +505,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
 
         const isImagePrecededByText = block.type === 'FILE' && allBlocks[index - 1]?.type === 'TEXT' && /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
         if (isImagePrecededByText) {
-            return null;
+            return null; // Don't render this image block separately, it's handled with the text block.
         }
 
         if (block.type === 'VIDEO') return <VideoPlayer key={block.id} videoUrl={url} lessonTitle={selectedLesson?.title} onVideoEnd={handleVideoEnd} />;
@@ -515,7 +515,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             const isExternalUrl = /^(https?:\/\/)/.test(url.trim());
             if (isExternalUrl) {
                 return (
-                    <div key={block.id} className="my-4 p-4 border rounded-md bg-card hover:bg-muted/50 transition-colors">
+                    <div key={block.id} className="my-4 p-4 border rounded-lg bg-card hover:bg-muted/50 transition-colors">
                         <a href={url.trim()} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-primary font-semibold group">
                             <ExternalLink className="h-5 w-5 text-primary/70 group-hover:text-primary transition-colors"/>
                             <span className="group-hover:underline underline-offset-4">{url.trim()}</span>
@@ -523,7 +523,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                     </div>
                 );
             }
-            return <div key={block.id} className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card" dangerouslySetInnerHTML={{ __html: url }} />;
+            return <div key={block.id} className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-lg bg-card" dangerouslySetInnerHTML={{ __html: url }} />;
         }
         
         if (block.type === 'FILE') {
@@ -537,9 +537,9 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url.toLowerCase());
             if (isImage) {
                 return (
-                     <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md flex justify-center group relative cursor-pointer" onClick={() => setImageToView(url)}>
-                        <div className="relative w-full max-w-4xl p-2" style={{aspectRatio: '16/9'}}>
-                            <Image src={url} alt={`Preview: ${selectedLesson?.title}`} fill className="object-contain p-2" priority quality={100} data-ai-hint="lesson file" />
+                     <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-lg flex justify-center group relative cursor-pointer" onClick={() => setImageToView(url)}>
+                        <div className="relative aspect-video w-full max-w-4xl p-2">
+                            <Image src={url} alt={`Preview: ${selectedLesson?.title}`} fill className="object-contain p-2 rounded-lg" priority quality={100} data-ai-hint="lesson file" />
                         </div>
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                             <Expand className="h-12 w-12 text-white"/>
@@ -549,7 +549,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             }
 
             return (
-                <div key={block.id} className="my-4 p-4 bg-muted/50 rounded-md text-center">
+                <div key={block.id} className="my-4 p-4 bg-muted/50 rounded-lg text-center">
                     <p className="text-sm text-muted-foreground mb-2">Este recurso es un archivo descargable:</p>
                     <Button asChild size="sm">
                         <Link href={url} target="_blank" rel="noopener noreferrer" download>
@@ -739,7 +739,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         "flex-1 flex flex-col min-w-0 transition-[margin-right] duration-300 ease-in-out",
         isNotesPanelOpen && !isMobile && "mr-[28rem]"
       )}>
-          <main className="flex-1 overflow-y-auto thin-scrollbar">
+          <main className="flex-1 overflow-y-auto thin-scrollbar self-stretch">
               <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8">
                   <div className="border rounded-lg p-4 md:p-6 lg:p-8">
                     {renderLessonContent()}
