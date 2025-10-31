@@ -51,7 +51,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
     const [localQuiz, setLocalQuiz] = useState<AppQuiz>(quiz);
     const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
 
-    const [isUploading, setIsUploading] = useState(isUploading);
+    const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
 
     useEffect(() => {
@@ -156,6 +156,8 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
             label: q.text
         }))
     }
+    
+    const isFlipCard = localQuiz.template === 'flip_card';
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -216,18 +218,18 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                          </div>
                     </div>
                      {/* Panel Central de Edición y Vista Previa */}
-                    <div className="md:col-span-2 flex flex-col bg-muted/30">
+                    <div className="md:col-span-2 flex flex-col">
                         {activeQuestion ? (
                             <div className="flex-1 flex flex-col p-4 gap-4 min-h-0">
                                 <Textarea value={activeQuestion.text} onChange={(e) => handleQuestionChange('text', e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-xl text-center font-bold h-auto resize-none bg-background flex-shrink-0" rows={2}/>
                                 
                                 <div className="flex-grow min-h-0 flex items-center justify-center bg-card shadow-inner rounded-lg p-2">
                                     <div className="w-full max-w-lg mx-auto">
-                                      <QuizGameView form={quizPreviewForm} isEditorPreview={true} />
+                                      <QuizGameView form={quizPreviewForm} isEditorPreview={true} activeQuestionIndex={activeQuestionIndex}/>
                                     </div>
                                 </div>
                                  
-                                <ScrollArea className="flex-shrink-0 max-h-96">
+                                <ScrollArea className="flex-shrink-0 max-h-80">
                                 <div className="space-y-3 p-1">
                                     <div className="w-full">
                                         {isUploading ? (
@@ -245,17 +247,25 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                             <UploadArea onFileSelect={handleImageUpload} inputId={`img-upload-${activeQuestion.id}`} />
                                         )}
                                     </div>
-                                      <div className="grid grid-cols-2 gap-2">
-                                        {activeQuestion.options.map((opt, index) => (
+                                     {isFlipCard ? (
+                                        <Alert variant="default" className="text-xs">
+                                          <Info className="h-4 w-4"/>
+                                          <AlertDescription>
+                                            Para tarjetas giratorias, solo necesitas escribir la respuesta correcta. El estudiante evaluará si la conocía o no.
+                                          </AlertDescription>
+                                        </Alert>
+                                     ) : null}
+                                      <div className={cn("grid gap-2", isFlipCard ? "grid-cols-1" : "grid-cols-2")}>
+                                        {activeQuestion.options.slice(0, isFlipCard ? 1 : 4).map((opt, index) => (
                                             <div key={opt.id} className={cn("flex items-center p-2 rounded-md shadow-sm border text-foreground", optionColors[index % optionColors.length], opt.isCorrect ? 'ring-2 ring-offset-2 ring-offset-background ring-green-500' : '')}>
                                                 <div className="h-10 w-10 flex-shrink-0 flex items-center justify-center">
                                                     <svg viewBox="0 0 24 24" className="h-8 w-8 fill-current text-white">{React.createElement(optionShapes[index % optionShapes.length])}</svg>
                                                 </div>
-                                                <Input value={opt.text} onChange={(e) => handleOptionChange(index, e.target.value)} placeholder={`Opción ${index + 1}`} className="bg-transparent border-0 border-b-2 rounded-none text-white placeholder:text-white/70 focus-visible:ring-0 focus-visible:border-white"/>
-                                                <Button variant="ghost" size="icon" onClick={() => handleSetCorrect(opt.id)} className="text-white hover:bg-white/20 hover:text-white">
+                                                <Input value={opt.text} onChange={(e) => handleOptionChange(index, e.target.value)} placeholder={isFlipCard ? 'Respuesta correcta' : `Opción ${index + 1}`} className="bg-transparent border-0 border-b-2 rounded-none text-white placeholder:text-white/70 focus-visible:ring-0 focus-visible:border-white"/>
+                                                {!isFlipCard && <Button variant="ghost" size="icon" onClick={() => handleSetCorrect(opt.id)} className="text-white hover:bg-white/20 hover:text-white">
                                                     <Check className={cn("h-6 w-6", opt.isCorrect ? "opacity-100" : "opacity-40")}/>
-                                                </Button>
-                                                 {localQuiz.questions[activeQuestionIndex].options.length > 1 &&
+                                                </Button>}
+                                                 {localQuiz.questions[activeQuestionIndex].options.length > 1 && !isFlipCard &&
                                                 <Button variant="ghost" size="icon" onClick={() => deleteOption(index)} className="text-white hover:bg-white/20 hover:text-white">
                                                     <X className="h-4 w-4"/>
                                                 </Button>
@@ -263,7 +273,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                             </div>
                                         ))}
                                     </div>
-                                    {localQuiz.questions[activeQuestionIndex].options.length < 4 && (
+                                    {localQuiz.questions[activeQuestionIndex].options.length < 4 && !isFlipCard && (
                                         <Button variant="outline" size="sm" onClick={addOption} className="mt-2 self-start">
                                             + Añadir opción
                                         </Button>

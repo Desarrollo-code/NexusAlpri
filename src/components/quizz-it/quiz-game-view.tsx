@@ -1,3 +1,4 @@
+
 // src/components/quizz-it/quiz-game-view.tsx
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
@@ -12,15 +13,18 @@ import { FlipCardTemplate } from './templates/flip-card-template';
 interface QuizGameViewProps {
   form: AppForm;
   isEditorPreview?: boolean;
+  activeQuestionIndex?: number;
 }
 
-export function QuizGameView({ form, isEditorPreview = false }: QuizGameViewProps) {
+export function QuizGameView({ form, isEditorPreview = false, activeQuestionIndex: controlledIndex }: QuizGameViewProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [gameState, setGameState] = useState<'playing' | 'finished'>('playing');
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [internalQuestionIndex, setInternalQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [answers, setAnswers] = useState<any[]>([]);
+
+  const currentQuestionIndex = controlledIndex ?? internalQuestionIndex;
 
   const questions: AppQuestion[] = (form.fields || []).filter(f => f.type === 'SINGLE_CHOICE' || f.type === 'MULTIPLE_CHOICE').map(f => ({
       ...f,
@@ -31,12 +35,13 @@ export function QuizGameView({ form, isEditorPreview = false }: QuizGameViewProp
 
   const handleAnswerSubmit = useCallback((isCorrect: boolean, answerData: any) => {
     if (isEditorPreview) {
-        // En modo preview, solo mostramos el feedback y no avanzamos.
          setTimeout(() => {
-            if (currentQuestionIndex < questions.length - 1) {
-              setCurrentQuestionIndex(prev => prev + 1);
-            } else {
-              setGameState('finished');
+            if (controlledIndex === undefined) { // Solo auto-avanza si no es controlado externamente
+              if (currentQuestionIndex < questions.length - 1) {
+                setInternalQuestionIndex(prev => prev + 1);
+              } else {
+                setGameState('finished');
+              }
             }
          }, 2000);
          return;
@@ -49,12 +54,12 @@ export function QuizGameView({ form, isEditorPreview = false }: QuizGameViewProp
 
     setTimeout(() => {
       if (currentQuestionIndex < questions.length - 1) {
-        setCurrentQuestionIndex(prev => prev + 1);
+        setInternalQuestionIndex(prev => prev + 1);
       } else {
         setGameState('finished');
       }
     }, 2000);
-  }, [currentQuestionIndex, questions.length, currentQuestion?.id, isEditorPreview]);
+  }, [currentQuestionIndex, questions.length, currentQuestion?.id, isEditorPreview, controlledIndex]);
   
   const handleTimeUp = useCallback(() => {
     handleAnswerSubmit(false, { answer: null, timedOut: true });
@@ -91,10 +96,15 @@ export function QuizGameView({ form, isEditorPreview = false }: QuizGameViewProp
   
   const handleRestart = () => {
     setGameState('playing');
-    setCurrentQuestionIndex(0);
+    setInternalQuestionIndex(0);
     setScore(0);
     setAnswers([]);
   }
+  
+   if (isEditorPreview) {
+      return renderQuestionTemplate();
+  }
+
 
   return (
     <div className="flex flex-col items-center justify-center p-4 rounded-lg">
