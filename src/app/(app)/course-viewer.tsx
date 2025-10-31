@@ -492,10 +492,12 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             const textBlock = block;
             const imageBlock = allBlocks[index + 1];
             return (
-                <div key={textBlock.id + '-' + imageBlock.id} className="flex flex-col md:flex-row gap-8 my-4 items-center">
-                    <div className="md:w-[65%] md:flex-shrink-0 prose dark:prose-invert prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: textBlock.content || '' }} />
-                    <div className="md:w-[35%] md:flex-shrink-0 relative w-full aspect-video items-stretch" onClick={() => setImageToView(imageBlock.content)}>
-                        <Image src={imageBlock.content!} alt="Visual support" fill className="object-contain rounded-lg cursor-pointer" quality={100} data-ai-hint="lesson visual aid" />
+                <div key={textBlock.id + '-' + imageBlock.id} className="flex flex-col md:flex-row gap-8 my-4">
+                    <div className="md:w-[65%] prose dark:prose-invert prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: textBlock.content || '' }} />
+                    <div className="md:w-[35%] md:flex-shrink-0 flex flex-col justify-center self-center" onClick={() => setImageToView(imageBlock.content)}>
+                        <div className="relative w-full aspect-video">
+                            <Image src={imageBlock.content!} alt="Visual support" fill className="object-contain rounded-lg cursor-pointer" quality={100} data-ai-hint="lesson visual aid" />
+                        </div>
                     </div>
                 </div>
             );
@@ -719,7 +721,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   return (
     <div className="flex h-[calc(100vh-5rem)] md:relative">
       <aside className={cn(
-        "sticky top-20 flex-shrink-0 border-r bg-card flex-col self-start transition-all duration-300 max-h-[calc(100vh-5rem)]",
+        "flex-shrink-0 border-r bg-card flex-col self-start transition-all duration-300 max-h-[calc(100vh-5rem)] sticky top-20",
         isSidebarVisible ? "w-80" : "w-0 overflow-hidden",
         isMobile ? "hidden" : "flex"
       )}>
