@@ -11,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '../ui/textarea';
-import { PlusCircle, Trash2, Pencil, Check, X, Image as ImageIcon, UploadCloud, Timer, LayoutTemplate } from 'lucide-react';
+import { PlusCircle, Trash2, Pencil, Check, X, Image as ImageIcon, UploadCloud, Timer, LayoutTemplate, FlipVertical, CheckSquare, ImagePlay, BrainCircuit } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
 import type { AppQuiz, AppQuestion, FormFieldOption } from '@/types';
@@ -24,7 +24,8 @@ import { Loader2 } from 'lucide-react';
 import { Label } from '../ui/label';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/select';
 import { QuizGameView } from './quiz-game-view';
-
+import { Card, CardHeader, CardContent } from '../ui/card';
+import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 
 const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
@@ -35,6 +36,13 @@ export const optionShapes = [
     (props: any) => <path d="M12 2.5l2.5 7.5h8l-6 4.5 2.5 7.5-6.5-5-6.5 5 2.5-7.5-6-4.5h8l2.5-7.5z" {...props} />,
 ];
 export const optionColors = ['bg-red-500', 'bg-blue-500', 'bg-yellow-500', 'bg-green-500'];
+
+const templateOptions = [
+    { value: 'default', label: 'Múltiple Elección', icon: CheckSquare, description: 'Clásico, con 4 opciones.' },
+    { value: 'image', label: 'Pregunta con Imagen', icon: ImagePlay, description: 'Una imagen como foco principal.' },
+    { value: 'true_false', label: 'Verdadero / Falso', icon: BrainCircuit, description: 'Respuesta rápida de dos opciones.' },
+    { value: 'flip_card', label: 'Tarjeta Giratoria', icon: FlipVertical, description: 'Ideal para memorización y conceptos.' },
+];
 
 export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, onClose: () => void, quiz: AppQuiz, onSave: (updatedQuiz: AppQuiz) => void }) {
     const { toast } = useToast();
@@ -170,40 +178,44 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                             </div>
                          </ScrollArea>
                           <div className="p-4 border-t space-y-3 bg-muted/30">
-                            <h4 className="font-semibold text-sm">Ajustes del Quiz</h4>
-                             <div className="space-y-1">
-                                <Label htmlFor="quiz-template" className="text-xs flex items-center gap-1"><LayoutTemplate className="h-3 w-3"/>Plantilla</Label>
-                                <Select value={localQuiz.template || 'default'} onValueChange={(v) => handleQuizMetaChange('template', v)}>
-                                    <SelectTrigger id="quiz-template" className="h-8 text-xs">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="default">Múltiple Elección</SelectItem>
-                                        <SelectItem value="image">Pregunta con Imagen</SelectItem>
-                                        <SelectItem value="true_false">Verdadero / Falso</SelectItem>
-                                        <SelectItem value="flip_card">Tarjeta Giratoria</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                             </div>
-                              <div className="space-y-1">
-                                <Label htmlFor="quiz-timer" className="text-xs flex items-center gap-1"><Timer className="h-3 w-3"/>Contador</Label>
-                                 <Select value={localQuiz.timerStyle || 'circular'} onValueChange={(v) => handleQuizMetaChange('timerStyle', v)}>
-                                    <SelectTrigger id="quiz-timer" className="h-8 text-xs">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="circular">Circular</SelectItem>
-                                        <SelectItem value="bar">Barra</SelectItem>
-                                        <SelectItem value="pill">Píldora</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                             </div>
+                            <Card>
+                                <CardHeader className="p-3"><CardTitle className="text-sm flex items-center gap-1.5"><LayoutTemplate className="h-4 w-4"/>Plantilla de Pregunta</CardTitle></CardHeader>
+                                <CardContent className="p-3 pt-0">
+                                     <RadioGroup value={localQuiz.template || 'default'} onValueChange={(v) => handleQuizMetaChange('template', v)} className="space-y-2">
+                                        {templateOptions.map(opt => (
+                                            <Label key={opt.value} htmlFor={`template-${opt.value}`} className={cn("flex flex-col p-2.5 rounded-lg border cursor-pointer transition-colors", localQuiz.template === opt.value ? 'border-primary ring-2 ring-primary/50' : 'hover:bg-accent/50')}>
+                                                <div className="flex items-center gap-2">
+                                                     <RadioGroupItem value={opt.value} id={`template-${opt.value}`}/>
+                                                     <div className="flex items-center gap-2">
+                                                         <opt.icon className="h-4 w-4"/>
+                                                         <span className="font-semibold">{opt.label}</span>
+                                                     </div>
+                                                </div>
+                                                <p className="text-xs text-muted-foreground mt-1 ml-6">{opt.description}</p>
+                                            </Label>
+                                        ))}
+                                    </RadioGroup>
+                                </CardContent>
+                            </Card>
+                             <Card>
+                                <CardHeader className="p-3"><CardTitle className="text-sm flex items-center gap-1.5"><Timer className="h-4 w-4"/>Estilo del Contador</CardTitle></CardHeader>
+                                <CardContent className="p-3 pt-0">
+                                     <Select value={localQuiz.timerStyle || 'circular'} onValueChange={(v) => handleQuizMetaChange('timerStyle', v)}>
+                                        <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="circular">Circular</SelectItem>
+                                            <SelectItem value="bar">Barra</SelectItem>
+                                            <SelectItem value="pill">Píldora</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </CardContent>
+                            </Card>
                          </div>
                     </div>
                      <div className="md:col-span-2 flex flex-col bg-muted/30">
                         {activeQuestion ? (
                             <div className="flex-1 flex flex-col p-4 gap-4 overflow-y-auto">
-                                <Textarea value={activeQuestion.text} onChange={(e) => handleQuestionChange('text', e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-xl text-center font-bold h-32 resize-none"/>
+                                <Textarea value={activeQuestion.text} onChange={(e) => handleQuestionChange('text', e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-xl text-center font-bold h-24 resize-none"/>
                                 
                                 <div className="flex-grow w-full max-w-lg mx-auto flex items-center justify-center rounded-lg overflow-hidden relative">
                                     <div className="absolute inset-0 bg-card shadow-inner" />
