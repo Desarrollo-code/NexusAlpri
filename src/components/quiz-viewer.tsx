@@ -1,18 +1,16 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
-import type { Quiz as AppQuiz, AnswerOption as AppAnswerOption, Question as AppQuestion } from '@/types';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import type { Quiz as AppQuiz } from '@/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
-import { CheckCircle, XCircle, Award, MessageCircleQuestion, Loader2, PlayCircle, ShieldAlert } from 'lucide-react';
+import { Loader2, PlayCircle, ShieldAlert } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Separator } from './ui/separator';
-import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
+import { MultipleChoiceTemplate } from './quizz-it/templates/multiple-choice-template';
+import { ResultScreenTemplate } from './quizz-it/templates/result-screen-template';
+import { AnimatePresence, motion } from 'framer-motion';
 
 interface QuizViewerProps {
   quiz: AppQuiz | undefined | null;
@@ -23,39 +21,28 @@ interface QuizViewerProps {
   onQuizCompleted?: (lessonId: string, score: number) => void;
 }
 
-interface Result {
-  score: number;
-  correctAnswers: number;
-  totalQuestions: number;
-  questionResults: Record<string, {
-    selectedOptionId: string;
-    correctOptionId: string;
-    isCorrect: boolean;
-  }>;
-}
-
 export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPreview = false, onQuizCompleted }: QuizViewerProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
-  const [result, setResult] = useState<Result | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [quizStarted, setQuizStarted] = useState(false);
+  const [gameState, setGameState] = useState<'intro' | 'playing' | 'finished'>('intro');
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [answers, setAnswers] = useState<any[]>([]);
+
   const [userAttempts, setUserAttempts] = useState(0);
   const [isCheckingAttempts, setIsCheckingAttempts] = useState(true);
 
   const maxAttempts = quiz?.maxAttempts;
   const canRetry = maxAttempts === null || userAttempts < maxAttempts;
+  const currentQuestion = quiz?.questions[currentQuestionIndex];
 
   useEffect(() => {
     if (quiz && user && !isCreatorPreview) {
         setIsCheckingAttempts(true);
         fetch(`/api/quizzes/${quiz.id}/attempts?userId=${user.id}`)
             .then(res => res.json())
-            .then(data => {
-                setUserAttempts(data.count || 0);
-            })
+            .then(data => setUserAttempts(data.count || 0))
             .catch(() => setUserAttempts(0))
             .finally(() => setIsCheckingAttempts(false));
     } else {
@@ -63,258 +50,129 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPrev
     }
   }, [quiz, user, isCreatorPreview]);
 
-
-  const handleOptionChange = (questionId: string, optionId: string) => {
-    setSelectedAnswers(prev => ({ ...prev, [questionId]: optionId }));
-  };
-
-  const handleSubmit = async () => {
-    if (Object.keys(selectedAnswers).length !== (quiz?.questions.length || 0)) {
-        toast({
-            title: "Cuestionario Incompleto",
-            description: "Por favor, responde todas las preguntas antes de enviar.",
-            variant: "destructive"
-        });
-        return;
+  const handleAnswerSubmit = useCallback((isCorrect: boolean, answerData: any) => {
+    if (isCorrect) {
+      setScore(prev => prev + 1);
     }
+    setAnswers(prev => [...prev, { questionId: currentQuestion?.id, ...answerData, isCorrect }]);
 
-    setIsSubmitting(true);
-    
-    let correctCount = 0;
-    const questionResults: Result['questionResults'] = {};
-    
-    quiz?.questions.forEach(q => {
-        const correctOption = q.options.find(opt => opt.isCorrect);
-        const selectedOptionId = selectedAnswers[q.id];
-        const isCorrect = correctOption?.id === selectedOptionId;
+    setTimeout(() => {
+      if (currentQuestionIndex < (quiz?.questions.length || 0) - 1) {
+        setCurrentQuestionIndex(prev => prev + 1);
+      } else {
+        // Quiz finished, save results
+        const finalScore = isCorrect ? score + 1 : score;
+        const totalQuestions = quiz?.questions.length || 1;
+        const percentage = totalQuestions > 0 ? (finalScore / totalQuestions) * 100 : 0;
 
-        if (isCorrect) {
-            correctCount++;
-        }
-        
-        if (correctOption) {
-            questionResults[q.id] = {
-                selectedOptionId: selectedOptionId,
-                correctOptionId: correctOption.id,
-                isCorrect,
-            };
-        }
-    });
-
-    const score = quiz?.questions.length ? (correctCount / quiz.questions.length) * 100 : 0;
-    
-    // Only save progress if it's a real attempt, not a creator preview
-    if (user && courseId && !isCreatorPreview) {
-       try {
-            const response = await fetch(`/api/progress/${user.id}/${courseId}/quiz`, {
+        if (user && courseId && !isCreatorPreview) {
+            fetch(`/api/progress/${user.id}/${courseId}/quiz`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ lessonId, quizId: quiz?.id, score, answers: selectedAnswers }),
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message || 'Error al guardar el resultado');
+                body: JSON.stringify({ lessonId, quizId: quiz?.id, score: percentage, answers: {...answerData, questionId: currentQuestion?.id} }),
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("No se pudo guardar el resultado del quiz.");
+                if (onQuizCompleted) onQuizCompleted(lessonId, percentage);
+            })
+            .catch(err => toast({ title: "Error", description: (err as Error).message, variant: "destructive" }));
+        }
+        setGameState('finished');
+      }
+    }, 2000);
+  }, [currentQuestionIndex, quiz?.questions.length, quiz?.id, score, lessonId, courseId, user, isCreatorPreview, onQuizCompleted, toast, currentQuestion?.id]);
 
-            toast({
-                title: score >= 80 ? "¡Quiz Aprobado!" : "Quiz Enviado",
-                description: `Has obtenido una puntuación de ${Math.round(score)}%. Tu progreso se ha actualizado.`,
-            });
-            
-            setUserAttempts(prev => prev + 1);
+  const handleTimeUp = useCallback(() => {
+    handleAnswerSubmit(false, { answer: null, timedOut: true });
+    toast({ title: "¡Tiempo!", description: "Se acabó el tiempo para esta pregunta.", variant: "destructive" });
+  }, [handleAnswerSubmit, toast]);
 
-            if (onQuizCompleted) {
-                onQuizCompleted(lessonId, score); 
-            }
-
-       } catch (err) {
-            toast({ title: "Error", description: err instanceof Error ? err.message : "No se pudo guardar el resultado del quiz.", variant: "destructive"});
-       }
-    }
-    
-    setResult({
-        score: Math.round(score),
-        correctAnswers: correctCount,
-        totalQuestions: quiz?.questions.length || 0,
-        questionResults,
-    });
-    
-    setIsSubmitting(false);
-  };
-  
   const resetQuiz = () => {
     if (!canRetry && !isCreatorPreview) return;
-    setSelectedAnswers({});
-    setResult(null);
-    setQuizStarted(false);
-  }
+    setGameState('intro');
+    setCurrentQuestionIndex(0);
+    setScore(0);
+    setAnswers([]);
+  };
 
-  if (!quiz) {
-    return (
-      <Alert variant="destructive">
-        <AlertTitle>Error</AlertTitle>
-        <AlertDescription>No se pudo cargar la información del quiz. Puede que no esté configurado.</AlertDescription>
-      </Alert>
-    );
-  }
-  
-  const canAttemptQuiz = isCreatorPreview || isEnrolled;
-
-  if (!canAttemptQuiz) {
+  const renderContent = () => {
+    if (gameState === 'intro') {
       return (
-          <Alert>
-              <AlertTitle>Inscripción Requerida</AlertTitle>
-              <AlertDescription>Debes estar inscrito en el curso para realizar este quiz.</AlertDescription>
-          </Alert>
-      )
-  }
-
-  if (result) {
-    return (
-      <Card className="mt-4 border-primary/20">
-        <CardHeader className="text-center">
-            <Award className="mx-auto h-12 w-12 text-primary" fill="currentColor" />
-            <CardTitle className="text-2xl font-bold">Resultados del Quiz</CardTitle>
-            <CardDescription>{quiz.title}</CardDescription>
-        </CardHeader>
-        <CardContent className="text-center space-y-4">
-            <p className="text-4xl font-bold">{result.score}%</p>
-            <Progress value={result.score} className="w-full" />
-            <p className="text-muted-foreground">Respondiste correctamente {result.correctAnswers} de {result.totalQuestions} preguntas.</p>
-        </CardContent>
-        <CardFooter className="flex-col gap-6">
-            <div className="w-full space-y-4">
-                {quiz.questions.map(question => {
-                    const qResult = result.questionResults[question.id];
-                    if (!qResult) return null;
-                    return (
-                        <div key={question.id} className="p-4 border rounded-md bg-muted/30">
-                            <p className="font-semibold mb-2">{question.text}</p>
-                            {question.options.map(option => {
-                                const isCorrectAnswer = option.id === qResult.correctOptionId;
-                                const isSelectedAnswer = option.id === qResult.selectedOptionId;
-
-                                return (
-                                <div key={option.id} className={cn(
-                                    "flex items-start gap-3 p-3 rounded-md text-sm mb-2 border",
-                                    isCorrectAnswer ? "bg-green-100/80 border-green-300 dark:bg-green-900/30 dark:border-green-700" : "",
-                                    !isCorrectAnswer && isSelectedAnswer ? "bg-red-100/80 border-red-300 dark:bg-red-900/30 dark:border-red-700" : ""
-                                )}>
-                                    <div className="flex-shrink-0 pt-0.5">
-                                        {isCorrectAnswer ? <CheckCircle className="h-4 w-4 text-green-600" fill="currentColor" /> : 
-                                         (isSelectedAnswer ? <XCircle className="h-4 w-4 text-red-600" fill="currentColor" /> : <div className="h-4 w-4" />)}
-                                    </div>
-                                    <div className="flex-grow">
-                                        <p>{option.text}</p>
-                                        {option.feedback && isSelectedAnswer && (
-                                            <p className={cn(
-                                                "text-xs mt-1 p-2 rounded-md",
-                                                isCorrectAnswer ? "bg-green-200/50 dark:bg-green-800/40" : "bg-red-200/50 dark:bg-red-800/40"
-                                            )}>{option.feedback}</p>
-                                        )}
-                                    </div>
-                                </div>
-                                )
-                            })}
-                        </div>
-                    );
-                })}
-            </div>
-             {canRetry || isCreatorPreview ? (
-                <Button onClick={resetQuiz}>
-                    {isCreatorPreview ? 'Volver a intentar (Vista Previa)' : 'Volver a intentar'}
-                </Button>
-             ) : (
-                <p className="text-sm text-destructive font-medium">Has alcanzado el número máximo de intentos.</p>
-             )}
-        </CardFooter>
-      </Card>
-    );
-  }
-  
-  if (isCheckingAttempts) {
-    return <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin"/></div>
-  }
-
-  // New intro screen
-  if (!quizStarted) {
-    return (
-        <Card className="my-4 shadow-lg text-center">
+        <Card className="my-4 shadow-lg text-center bg-card">
             <CardHeader>
-                <MessageCircleQuestion className="mx-auto h-12 w-12 text-primary"/>
-                <CardTitle className="text-2xl font-headline mt-2">{quiz.title}</CardTitle>
-                <CardDescription className="max-w-prose mx-auto">{quiz.description || "Prepárate para probar tus conocimientos."}</CardDescription>
+                <CardTitle className="text-2xl font-headline mt-2">{quiz?.title}</CardTitle>
+                <CardDescription className="max-w-prose mx-auto">{quiz?.description || "Prepárate para probar tus conocimientos."}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
-                <p className="text-sm text-muted-foreground">Este quiz contiene {quiz.questions.length} pregunta{quiz.questions.length !== 1 ? 's' : ''}.</p>
-                {!isCreatorPreview && maxAttempts !== null && (
-                     <p className="text-sm text-muted-foreground">
-                        Te quedan {maxAttempts - userAttempts} de {maxAttempts} intentos.
-                    </p>
-                )}
-                 {!isCreatorPreview && maxAttempts === null && (
-                    <p className="text-sm text-muted-foreground">Intentos ilimitados.</p>
-                 )}
+                <p className="text-sm text-muted-foreground">Este quiz contiene {quiz?.questions.length} pregunta{quiz?.questions.length !== 1 ? 's' : ''}.</p>
+                {!isCreatorPreview && maxAttempts !== null && <p className="text-sm text-muted-foreground">Te quedan {maxAttempts - userAttempts} de {maxAttempts} intentos.</p>}
             </CardContent>
             <CardFooter>
                  {!canRetry && !isCreatorPreview ? (
-                     <Alert variant="destructive" className="w-full">
-                         <ShieldAlert className="h-4 w-4" />
-                         <AlertTitle>Límite de Intentos Alcanzado</AlertTitle>
-                         <AlertDescription>
-                           Ya no puedes volver a realizar este quiz.
-                         </AlertDescription>
-                    </Alert>
+                     <Alert variant="destructive" className="w-full"><ShieldAlert className="h-4 w-4" /><AlertTitle>Límite de Intentos Alcanzado</AlertTitle><AlertDescription>Ya no puedes volver a realizar este quiz.</AlertDescription></Alert>
                  ) : (
-                    <Button className="w-full" onClick={() => setQuizStarted(true)} disabled={!canAttemptQuiz}>
+                    <Button className="w-full" onClick={() => setGameState('playing')} disabled={!isEnrolled && !isCreatorPreview}>
                         <PlayCircle className="mr-2 h-4 w-4"/>
                         {isCreatorPreview ? 'Comenzar (Vista Previa)' : 'Comenzar Quiz'}
                     </Button>
                  )}
             </CardFooter>
         </Card>
-    )
+      );
+    }
+
+    if (gameState === 'playing' && currentQuestion) {
+      // Aquí se debería elegir la plantilla adecuada según el tipo de pregunta
+      return (
+        <MultipleChoiceTemplate
+          key={currentQuestion.id}
+          question={currentQuestion}
+          onSubmit={handleAnswerSubmit}
+          onTimeUp={handleTimeUp}
+          questionNumber={currentQuestionIndex + 1}
+          totalQuestions={quiz?.questions.length || 0}
+        />
+      );
+    }
+    
+    if (gameState === 'finished') {
+      return (
+        <ResultScreenTemplate
+            score={score}
+            totalQuestions={quiz?.questions.length || 0}
+            formTitle={quiz?.title || ''}
+            onRestart={resetQuiz}
+        />
+      );
+    }
+    
+    return null;
+  };
+  
+  if (!isEnrolled && !isCreatorPreview) {
+      return (
+        <Alert variant="default" className="mt-4">
+            <ShieldAlert className="h-4 w-4"/>
+            <AlertTitle>Inscripción Requerida</AlertTitle>
+            <AlertDescription>Debes estar inscrito en el curso para poder realizar este quiz.</AlertDescription>
+        </Alert>
+      );
   }
 
-  // Quiz questions view (previously the main view)
   return (
-    <Card className="my-4 shadow-lg">
-      <CardHeader>
-        <div className="flex items-center gap-3">
-            <MessageCircleQuestion className="h-8 w-8 text-primary" />
-            <div>
-                <CardTitle>{quiz.title}</CardTitle>
-                <CardDescription>{quiz.description || "Responde las siguientes preguntas."}</CardDescription>
-            </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {quiz.questions.map((question, index) => (
-          <div key={question.id} className="p-4 border rounded-lg bg-muted/20">
-            <p className="font-semibold mb-3">Pregunta {index + 1}: {question.text}</p>
-            <RadioGroup
-              value={selectedAnswers[question.id]}
-              onValueChange={(value) => handleOptionChange(question.id, value)}
-            >
-              {question.options.map(option => (
-                <div key={option.id} className="flex items-center space-x-2 p-2 hover:bg-muted/40 rounded-md">
-                  <RadioGroupItem value={option.id} id={`${question.id}-${option.id}`} />
-                  <Label htmlFor={`${question.id}-${option.id}`} className="font-normal cursor-pointer">
-                    {option.text}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </div>
-        ))}
-      </CardContent>
-      <CardFooter>
-         <Button 
-            className="w-full"
-            onClick={handleSubmit} 
-            disabled={isSubmitting}>
-            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2"/> : null}
-            {isCreatorPreview ? 'Enviar (Vista Previa)' : 'Enviar Respuestas'}
-        </Button>
-      </CardFooter>
-    </Card>
+    <div className="flex flex-col items-center justify-center p-4 min-h-[300px] bg-gradient-to-br from-background via-muted to-background rounded-lg">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={gameState === 'playing' ? currentQuestionIndex : gameState}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-4xl"
+        >
+          {renderContent()}
+        </motion.div>
+      </AnimatePresence>
+    </div>
   );
 }
