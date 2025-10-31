@@ -1,4 +1,3 @@
-
 // src/components/quizz-it/quiz-editor-modal.tsx
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
@@ -46,21 +45,16 @@ const templateOptions = [
     { value: 'image_options', label: 'Respuestas con Imágenes', icon: LayoutTemplate, description: 'Usa imágenes como opciones de respuesta.' },
 ];
 
-
 export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, onClose: () => void, quiz: AppQuiz, onSave: (updatedQuiz: AppQuiz) => void }) {
     const { toast } = useToast();
     const [localQuiz, setLocalQuiz] = useState<AppQuiz>(quiz);
     const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
-
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [isSaving, setIsSaving] = useState(false);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-    
-    // States for image option uploads
     const [isOptionUploading, setIsOptionUploading] = useState<Record<string, boolean>>({});
     const [optionUploadProgress, setOptionUploadProgress] = useState<Record<string, number>>({});
-
 
     useEffect(() => {
         setLocalQuiz(JSON.parse(JSON.stringify(quiz)));
@@ -70,12 +64,10 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
     const handleQuizMetaChange = (field: keyof AppQuiz, value: any) => {
         setLocalQuiz(prev => ({...prev, [field]: value}));
     };
-    
+
     const handleTemplateChange = (value: string) => {
         const newQuestions = [...localQuiz.questions];
         const currentQuestion = newQuestions[activeQuestionIndex];
-        
-        // Asignar el nuevo template
         currentQuestion.template = value;
 
         if (value === 'true_false') {
@@ -84,17 +76,14 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                 { id: generateUniqueId('opt'), text: 'Falso', imageUrl: null, isCorrect: false, points: 0 }
             ];
         } else if(value === 'image_options') {
-            // Asegurarse de que haya 4 opciones
             const neededOptions = 4 - currentQuestion.options.length;
             for(let i=0; i<neededOptions; i++) {
                 currentQuestion.options.push({ id: generateUniqueId('opt'), text: '', imageUrl: null, isCorrect: false, points: 0 });
             }
-            // Limitar a 4
             currentQuestion.options = currentQuestion.options.slice(0, 4);
         }
-        
         setLocalQuiz(prev => ({...prev, questions: newQuestions}));
-    }
+    };
 
     const handleQuestionChange = (field: 'text' | 'imageUrl', value: string | null) => {
         const newQuestions = [...localQuiz.questions];
@@ -116,13 +105,13 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
         }));
         setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
     };
-    
+
     const addQuestion = () => {
         const newQuestion: AppQuestion = {
             id: generateUniqueId('question'),
             text: 'Nueva Pregunta',
             order: localQuiz.questions.length,
-            type: 'SINGLE_CHOICE', // Por defecto
+            type: 'SINGLE_CHOICE',
             imageUrl: null,
             template: 'default',
             options: [
@@ -133,7 +122,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
         setLocalQuiz(prev => ({ ...prev, questions: [...prev.questions, newQuestion] }));
         setActiveQuestionIndex(localQuiz.questions.length);
     };
-    
+
     const addOption = () => {
         const newQuestions = [...localQuiz.questions];
         const currentOptions = newQuestions[activeQuestionIndex].options;
@@ -142,7 +131,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
             setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
         }
     };
-    
+
     const deleteOption = (optionIndex: number) => {
         const newQuestions = [...localQuiz.questions];
         const currentOptions = newQuestions[activeQuestionIndex].options;
@@ -163,7 +152,6 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
 
     const handleImageUpload = async (file: File | null, type: 'question' | 'option', optionIndex?: number) => {
         if (!file) return;
-
         if (type === 'question') {
             setIsUploading(true);
             setUploadProgress(0);
@@ -171,16 +159,13 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
              setIsOptionUploading(prev => ({ ...prev, [optionIndex]: true }));
              setOptionUploadProgress(prev => ({ ...prev, [optionIndex]: 0 }));
         }
-        
         try {
             const result = await uploadWithProgress('/api/upload/lesson-file', file, (progress) => {
                 if (type === 'question') setUploadProgress(progress);
                 else if (optionIndex !== undefined) setOptionUploadProgress(prev => ({ ...prev, [optionIndex]: progress }));
             });
-            
             if (type === 'question') handleQuestionChange('imageUrl', result.url);
             else if (optionIndex !== undefined) handleOptionChange(optionIndex, 'imageUrl', result.url);
-            
             toast({ title: 'Imagen subida' });
         } catch (err) {
             toast({ title: 'Error de subida', description: (err as Error).message, variant: 'destructive' });
@@ -226,98 +211,68 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                     <div className="md:col-span-2 flex flex-col">
                         {activeQuestion ? (
                             <ScrollArea className="flex-grow">
-                            <div className="p-4 space-y-4">
-                                <Textarea value={activeQuestion.text} onChange={(e) => handleQuestionChange('text', e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-xl text-center font-bold h-auto resize-none bg-background flex-shrink-0" rows={2}/>
-                                
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle className="text-base flex items-center gap-2">
-                                            <LayoutTemplate className="h-4 w-4" /> Plantilla de Pregunta
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <Select value={activeQuestion.template || 'default'} onValueChange={handleTemplateChange}>
-                                            <SelectTrigger><SelectValue /></SelectTrigger>
-                                            <SelectContent>
-                                                {templateOptions.map(opt => (
-                                                    <SelectItem key={opt.value} value={opt.value}>
-                                                        <div className="flex items-center gap-2">
-                                                           <opt.icon className="h-4 w-4"/>
-                                                           <span>{opt.label}</span>
-                                                        </div>
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <p className="text-xs text-muted-foreground mt-2">{templateOptions.find(o => o.value === (activeQuestion.template || 'default'))?.description}</p>
-                                    </CardContent>
-                                </Card>
-
-                                {activeQuestion.template === 'image' && (
-                                     <div className="w-full">
-                                        {isUploading ? (
-                                            <div className="w-full p-4 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2">
-                                                <Loader2 className="h-6 w-6 animate-spin text-primary"/><p className="text-sm text-muted-foreground">Subiendo...</p><Progress value={uploadProgress} className="w-full h-1.5"/>
-                                            </div>
-                                        ) : activeQuestion.imageUrl ? (
-                                            <div className="relative w-full aspect-video rounded-lg overflow-hidden border p-1 bg-background">
-                                                <Image src={activeQuestion.imageUrl} alt="preview" fill className="object-contain" />
-                                                <Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => handleQuestionChange('imageUrl', null)}><X className="h-4 w-4"/></Button>
-                                            </div>
-                                        ) : (
-                                            <UploadArea onFileSelect={(file) => handleImageUpload(file, 'question')} inputId={`img-upload-${activeQuestion.id}`} />
-                                        )}
-                                    </div>
-                                )}
-                                
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle className="text-base">Opciones de Respuesta</CardTitle>
-                                    </CardHeader>
-                                     <CardContent className={cn("grid gap-2", isImageOptionsTemplate ? "grid-cols-2" : "grid-cols-1")}>
-                                        {activeQuestion.options.slice(0, 4).map((opt, index) => {
-                                            const optionIsUploading = isOptionUploading[index];
-                                            const optionProgress = optionUploadProgress[index] || 0;
-                                            return (
-                                                <div key={opt.id} className={cn("flex items-center gap-2 p-2 rounded-md shadow-sm border", opt.isCorrect ? 'ring-2 ring-offset-2 ring-offset-background ring-green-500' : '')}>
-                                                    {isImageOptionsTemplate ? (
-                                                        <div className="flex-grow space-y-2">
-                                                            <div className="relative">
-                                                                <div className={cn("absolute inset-0 flex items-center justify-center z-10", optionIsUploading ? 'flex' : 'hidden')}>
-                                                                    <Loader2 className="h-6 w-6 animate-spin text-primary"/>
+                                <div className="p-4 space-y-4">
+                                    <Textarea value={activeQuestion.text} onChange={(e) => handleQuestionChange('text', e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-xl text-center font-bold h-auto resize-none bg-background flex-shrink-0" rows={2}/>
+                                    <Card>
+                                        <CardHeader><CardTitle className="text-base flex items-center gap-2"><LayoutTemplate className="h-4 w-4" /> Plantilla de Pregunta</CardTitle></CardHeader>
+                                        <CardContent>
+                                            <Select value={activeQuestion.template || 'default'} onValueChange={handleTemplateChange}>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    {templateOptions.map(opt => (
+                                                        <SelectItem key={opt.value} value={opt.value}>
+                                                            <div className="flex items-center gap-2"><opt.icon className="h-4 w-4"/><span>{opt.label}</span></div>
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <p className="text-xs text-muted-foreground mt-2">{templateOptions.find(o => o.value === (activeQuestion.template || 'default'))?.description}</p>
+                                        </CardContent>
+                                    </Card>
+                                    {activeQuestion.template === 'image' && (
+                                         <div className="w-full">
+                                            {isUploading ? (
+                                                <div className="w-full p-4 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2"><Loader2 className="h-6 w-6 animate-spin text-primary"/><p className="text-sm text-muted-foreground">Subiendo...</p><Progress value={uploadProgress} className="w-full h-1.5"/></div>
+                                            ) : activeQuestion.imageUrl ? (
+                                                <div className="relative w-full aspect-video rounded-lg overflow-hidden border p-1 bg-background"><Image src={activeQuestion.imageUrl} alt="preview" fill className="object-contain" /><Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => handleQuestionChange('imageUrl', null)}><X className="h-4 w-4"/></Button></div>
+                                            ) : (
+                                                <UploadArea onFileSelect={(file) => handleImageUpload(file, 'question')} inputId={`img-upload-${activeQuestion.id}`} />
+                                            )}
+                                        </div>
+                                    )}
+                                    <Card>
+                                        <CardHeader><CardTitle className="text-base">Opciones de Respuesta</CardTitle></CardHeader>
+                                         <CardContent className={cn("grid gap-2", isImageOptionsTemplate ? "grid-cols-2" : "grid-cols-1")}>
+                                            {activeQuestion.options.slice(0, 4).map((opt, index) => {
+                                                const optionIsUploading = isOptionUploading[index];
+                                                const optionProgress = optionUploadProgress[index] || 0;
+                                                return (
+                                                    <div key={opt.id} className={cn("flex items-center gap-2 p-2 rounded-md shadow-sm border", opt.isCorrect ? 'ring-2 ring-offset-2 ring-offset-background ring-green-500' : '')}>
+                                                        {isImageOptionsTemplate ? (
+                                                            <div className="flex-grow space-y-2">
+                                                                <div className="relative">
+                                                                    <div className={cn("absolute inset-0 flex items-center justify-center z-10", optionIsUploading ? 'flex' : 'hidden')}><Loader2 className="h-6 w-6 animate-spin text-primary"/></div>
+                                                                     {opt.imageUrl && (<Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6 z-20" onClick={() => handleOptionChange(index, 'imageUrl', '')}><X className="h-4 w-4"/></Button>)}
+                                                                    <UploadArea onFileSelect={(file) => handleImageUpload(file, 'option', index)} inputId={`opt-img-upload-${opt.id}`} className={cn("h-24 w-full", opt.imageUrl && 'bg-cover bg-center')} style={{backgroundImage: opt.imageUrl ? `url(${opt.imageUrl})` : 'none'}}/>
                                                                 </div>
-                                                                 {opt.imageUrl && (
-                                                                    <Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6 z-20" onClick={() => handleOptionChange(index, 'imageUrl', '')}><X className="h-4 w-4"/></Button>
-                                                                )}
-                                                                <UploadArea
-                                                                    onFileSelect={(file) => handleImageUpload(file, 'option', index)}
-                                                                    inputId={`opt-img-upload-${opt.id}`}
-                                                                    className={cn("h-24 w-full", opt.imageUrl && 'bg-cover bg-center')}
-                                                                    style={{backgroundImage: opt.imageUrl ? `url(${opt.imageUrl})` : 'none'}}
-                                                                />
+                                                                <div className="flex items-center justify-center">
+                                                                   <Button variant="ghost" size="sm" onClick={() => handleSetCorrect(opt.id)}><Check className={cn("h-5 w-5", opt.isCorrect ? 'text-green-500' : 'text-muted-foreground')}/> <span className="ml-1 text-xs">Correcta</span></Button>
+                                                                </div>
                                                             </div>
-                                                            <div className="flex items-center justify-center">
-                                                               <Button variant="ghost" size="sm" onClick={() => handleSetCorrect(opt.id)}>
-                                                                    <Check className={cn("h-5 w-5", opt.isCorrect ? 'text-green-500' : 'text-muted-foreground')}/> <span className="ml-1 text-xs">Correcta</span>
-                                                                </Button>
-                                                            </div>
-                                                        </div>
-                                                    ) : (
-                                                        <Input value={opt.text} onChange={(e) => handleOptionChange(index, 'text', e.target.value)} placeholder={`Opción ${index + 1}`} />
-                                                    )}
-                                                     {!isImageOptionsTemplate && <Button variant="ghost" size="icon" onClick={() => handleSetCorrect(opt.id)}><Check className={cn("h-6 w-6", opt.isCorrect ? 'text-green-500' : 'text-muted-foreground')}/></Button>}
-                                                     {localQuiz.questions[activeQuestionIndex].options.length > 1 && <Button variant="ghost" size="icon" onClick={() => deleteOption(index)} className="text-destructive/70 hover:text-destructive"><X className="h-4 w-4"/></Button>}
-                                                </div>
-                                            )
-                                        })}
-                                    </CardContent>
-                                    <CardFooter>
-                                         {localQuiz.questions[activeQuestionIndex].options.length < 4 && !isImageOptionsTemplate && (
-                                            <Button variant="outline" size="sm" onClick={addOption} className="mt-2 self-start">+ Añadir opción</Button>
-                                        )}
-                                    </CardFooter>
-                                </Card>
-                            </div>
+                                                        ) : (
+                                                            <Input value={opt.text} onChange={(e) => handleOptionChange(index, 'text', e.target.value)} placeholder={`Opción ${index + 1}`} />
+                                                        )}
+                                                         {!isImageOptionsTemplate && <Button variant="ghost" size="icon" onClick={() => handleSetCorrect(opt.id)}><Check className={cn("h-6 w-6", opt.isCorrect ? 'text-green-500' : 'text-muted-foreground')}/></Button>}
+                                                         {localQuiz.questions[activeQuestionIndex].options.length > 1 && <Button variant="ghost" size="icon" onClick={() => deleteOption(index)} className="text-destructive/70 hover:text-destructive"><X className="h-4 w-4"/></Button>}
+                                                    </div>
+                                                );
+                                            })}
+                                        </CardContent>
+                                        <CardFooter>
+                                             {localQuiz.questions[activeQuestionIndex].options.length < 4 && !isImageOptionsTemplate && (<Button variant="outline" size="sm" onClick={addOption} className="mt-2 self-start">+ Añadir opción</Button>)}
+                                        </CardFooter>
+                                    </Card>
+                                </div>
                             </ScrollArea>
                         ) : (
                             <div className="flex items-center justify-center h-full text-muted-foreground"><p>Selecciona una pregunta para editarla.</p></div>
@@ -332,7 +287,6 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                 </DialogFooter>
             </DialogContent>
         </Dialog>
-
         <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
             <DialogContent className="max-w-4xl p-0">
                 <div className="bg-gradient-to-br from-background via-muted to-background p-8 rounded-lg">
@@ -343,5 +297,3 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
       </>
     );
 }
-
-```
