@@ -67,8 +67,10 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     const session = await getCurrentUser();
     const { id: messageId } = params;
 
-    const permission = await checkPermissions(session, messageId);
-    if (!permission.authorized && permission.error) return permission.error;
+    const permissionCheck = await checkPermissions(session, messageId);
+    if (!permissionCheck.authorized && permissionCheck.error) {
+      return permissionCheck.error;
+    }
     
     try {
         await prisma.$transaction([
