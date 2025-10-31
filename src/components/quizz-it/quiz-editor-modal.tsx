@@ -11,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '../ui/textarea';
-import { PlusCircle, Trash2, Pencil, Check, X, Image as ImageIcon, UploadCloud } from 'lucide-react';
+import { PlusCircle, Trash2, Pencil, Check, X, Image as ImageIcon, UploadCloud, Timer, LayoutTemplate } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
 import type { AppQuiz, AppQuestion, FormFieldOption } from '@/types';
@@ -21,6 +21,8 @@ import { UploadArea } from '../ui/upload-area';
 import Image from 'next/image';
 import { Progress } from '../ui/progress';
 import { Loader2 } from 'lucide-react';
+import { Label } from '../ui/label';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/select';
 
 
 const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -46,7 +48,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
         setActiveQuestionIndex(0);
     }, [quiz, isOpen]);
 
-    const handleQuizMetaChange = (field: 'title' | 'description', value: string) => {
+    const handleQuizMetaChange = (field: keyof AppQuiz, value: any) => {
         setLocalQuiz(prev => ({...prev, [field]: value}));
     };
 
@@ -158,6 +160,35 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                             ))}
                             </div>
                          </ScrollArea>
+                          <div className="p-4 border-t space-y-3 bg-muted/30">
+                            <h4 className="font-semibold text-sm">Ajustes del Quiz</h4>
+                             <div className="space-y-1">
+                                <Label htmlFor="quiz-template" className="text-xs flex items-center gap-1"><LayoutTemplate className="h-3 w-3"/>Plantilla</Label>
+                                <Select value={localQuiz.template || 'default'} onValueChange={(v) => handleQuizMetaChange('template', v)}>
+                                    <SelectTrigger id="quiz-template" className="h-8 text-xs">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="default">Múltiple Elección</SelectItem>
+                                        <SelectItem value="image">Imagen de Pregunta</SelectItem>
+                                        <SelectItem value="true_false">Verdadero / Falso</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                             </div>
+                              <div className="space-y-1">
+                                <Label htmlFor="quiz-timer" className="text-xs flex items-center gap-1"><Timer className="h-3 w-3"/>Contador</Label>
+                                 <Select value={localQuiz.timerStyle || 'circular'} onValueChange={(v) => handleQuizMetaChange('timerStyle', v)}>
+                                    <SelectTrigger id="quiz-timer" className="h-8 text-xs">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="circular">Circular</SelectItem>
+                                        <SelectItem value="bar">Barra</SelectItem>
+                                        <SelectItem value="pill">Píldora</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                             </div>
+                         </div>
                     </div>
                      <div className="md:col-span-3 flex flex-col bg-muted/30">
                         {activeQuestion && (
