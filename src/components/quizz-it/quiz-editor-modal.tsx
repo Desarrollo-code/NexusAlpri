@@ -215,22 +215,38 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                     </div>
                      <div className="md:col-span-2 flex flex-col bg-muted/30">
                         {activeQuestion ? (
-                            <div className="flex-1 flex flex-col p-4 gap-4 overflow-y-auto">
-                                <Textarea value={activeQuestion.text} onChange={(e) => handleQuestionChange('text', e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-xl text-center font-bold h-24 resize-none"/>
+                            <div className="flex-1 flex flex-col p-4 gap-4 overflow-y-auto thin-scrollbar">
+                                <Textarea value={activeQuestion.text} onChange={(e) => handleQuestionChange('text', e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-xl text-center font-bold h-24 resize-none bg-background"/>
                                 
-                                <div className="flex-grow w-full max-w-lg mx-auto flex items-center justify-center rounded-lg overflow-hidden relative">
+                                <div className="flex-grow w-full min-h-[200px] max-w-lg mx-auto flex items-center justify-center rounded-lg overflow-hidden relative">
                                     <div className="absolute inset-0 bg-card shadow-inner" />
-                                    <div className="relative z-10 w-full p-4">
-                                      <QuizGameView form={quizPreviewForm} isEditorPreview={true} />
+                                    <div className="relative z-10 w-full p-4 transform scale-[0.8]">
+                                        <QuizGameView form={quizPreviewForm} isEditorPreview={true} />
                                     </div>
                                 </div>
-
+                                
+                                 <div className="w-full">
+                                    {isUploading ? (
+                                        <div className="w-full p-4 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2">
+                                            <Loader2 className="h-6 w-6 animate-spin text-primary"/>
+                                            <p className="text-sm text-muted-foreground">Subiendo...</p>
+                                            <Progress value={uploadProgress} className="w-full h-1.5"/>
+                                        </div>
+                                    ) : activeQuestion.imageUrl ? (
+                                        <div className="relative w-40 h-24 rounded-lg overflow-hidden border p-1 bg-background">
+                                            <Image src={activeQuestion.imageUrl} alt="preview" fill className="object-contain" />
+                                            <Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => handleQuestionChange('imageUrl', null)}><X className="h-4 w-4"/></Button>
+                                        </div>
+                                    ) : (
+                                        <UploadArea onFileSelect={handleImageUpload} inputId={`img-upload-${activeQuestion.id}`} />
+                                    )}
+                                </div>
 
                                  <div className="grid grid-cols-2 gap-2">
                                     {activeQuestion.options.map((opt, index) => (
-                                        <div key={opt.id} className={cn("flex items-center p-2 rounded-md shadow-lg text-white", optionColors[index])}>
+                                        <div key={opt.id} className={cn("flex items-center p-2 rounded-md shadow-sm border text-foreground", optionColors[index], opt.isCorrect ? 'ring-2 ring-offset-2 ring-offset-background ring-green-500' : '')}>
                                             <div className="h-10 w-10 flex-shrink-0 flex items-center justify-center">
-                                                <svg viewBox="0 0 24 24" className="h-8 w-8 fill-current">{React.createElement(optionShapes[index])}</svg>
+                                                <svg viewBox="0 0 24 24" className="h-8 w-8 fill-current text-white">{React.createElement(optionShapes[index])}</svg>
                                             </div>
                                             <Input value={opt.text} onChange={(e) => handleOptionChange(index, e.target.value)} placeholder={`Opción ${index + 1}`} className="bg-transparent border-0 border-b-2 rounded-none text-white placeholder:text-white/70 focus-visible:ring-0 focus-visible:border-white"/>
                                             <Button variant="ghost" size="icon" onClick={() => handleSetCorrect(opt.id)} className="text-white hover:bg-white/20 hover:text-white">
