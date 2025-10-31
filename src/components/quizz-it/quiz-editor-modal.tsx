@@ -11,10 +11,17 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '../ui/textarea';
-import { PlusCircle, Trash2, Pencil, Check, X } from 'lucide-react';
+import { PlusCircle, Trash2, Pencil, Check, X, Image as ImageIcon, UploadCloud } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
 import type { AppQuiz, AppQuestion, FormFieldOption } from '@/types';
+import { useToast } from '@/hooks/use-toast';
+import { uploadWithProgress } from '@/lib/upload-with-progress';
+import { UploadArea } from '../ui/upload-area';
+import Image from 'next/image';
+import { Progress } from '../ui/progress';
+import { Loader2 } from 'lucide-react';
+
 
 const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
@@ -27,8 +34,12 @@ export const optionShapes = [
 export const optionColors = ['bg-red-500', 'bg-blue-500', 'bg-yellow-500', 'bg-green-500'];
 
 export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, onClose: () => void, quiz: AppQuiz, onSave: (updatedQuiz: AppQuiz) => void }) {
+    const { toast } = useToast();
     const [localQuiz, setLocalQuiz] = useState<AppQuiz>(quiz);
     const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
+
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
     useEffect(() => {
         setLocalQuiz(JSON.parse(JSON.stringify(quiz)));
@@ -39,9 +50,9 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
         setLocalQuiz(prev => ({...prev, [field]: value}));
     };
 
-    const handleQuestionChange = (text: string) => {
+    const handleQuestionChange = (field: 'text' | 'imageUrl', value: string) => {
         const newQuestions = [...localQuiz.questions];
-        newQuestions[activeQuestionIndex].text = text;
+        newQuestions[activeQuestionIndex][field] = value;
         setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
     };
 
@@ -66,6 +77,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
             text: 'Nueva Pregunta',
             order: localQuiz.questions.length,
             type: 'SINGLE_CHOICE',
+            imageUrl: null,
             options: [
                 { id: generateUniqueId('option'), text: '', isCorrect: true, points: 10 },
                 { id: generateUniqueId('option'), text: '', isCorrect: false, points: 0 }
@@ -102,6 +114,21 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
          setActiveQuestionIndex(prev => Math.max(0, prev - 1));
     };
 
+    const handleImageUpload = async (file: File | null) => {
+        if (!file) return;
+        setIsUploading(true);
+        setUploadProgress(0);
+        try {
+            const result = await uploadWithProgress('/api/upload/lesson-file', file, setUploadProgress);
+            handleQuestionChange('imageUrl', result.url);
+            toast({ title: 'Imagen subida' });
+        } catch (err) {
+            toast({ title: 'Error de subida', description: (err as Error).message, variant: 'destructive' });
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
     const handleSaveChanges = () => {
         onSave(localQuiz);
     };
@@ -135,10 +162,29 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                      <div className="md:col-span-3 flex flex-col bg-muted/30">
                         {activeQuestion && (
                             <div className="flex-1 flex flex-col p-4 gap-4 overflow-y-auto">
-                                <Textarea value={activeQuestion.text} onChange={(e) => handleQuestionChange(e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-xl text-center font-bold h-32 resize-none"/>
-                                <div className="flex-grow w-full max-w-lg mx-auto bg-gradient-to-br from-teal-400 to-blue-500 flex items-center justify-center rounded-lg shadow-lg">
-                                    <h2 className="text-4xl font-extrabold text-white opacity-90">{localQuiz.title}</h2>
+                                <Textarea value={activeQuestion.text} onChange={(e) => handleQuestionChange('text', e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-xl text-center font-bold h-32 resize-none"/>
+                                
+                                <div className="flex-grow w-full max-w-lg mx-auto bg-card flex items-center justify-center rounded-lg shadow-inner overflow-hidden relative">
+                                    {activeQuestion.imageUrl ? (
+                                        <Image src={activeQuestion.imageUrl} alt={activeQuestion.text} fill className="object-cover" />
+                                    ) : (
+                                        <UploadArea onFileSelect={handleImageUpload} disabled={isUploading} className="w-full h-full">
+                                            {isUploading ? (
+                                                <div className="text-center">
+                                                    <Loader2 className="h-8 w-8 animate-spin mx-auto"/>
+                                                    <Progress value={uploadProgress} className="w-32 mt-2 h-1"/>
+                                                </div>
+                                            ) : (
+                                                <div className="text-center text-muted-foreground">
+                                                    <ImageIcon className="h-10 w-10 mx-auto mb-2"/>
+                                                    <p className="font-semibold">Añadir Imagen (Opcional)</p>
+                                                    <p className="text-xs">Arrastra o haz clic para subir</p>
+                                                </div>
+                                            )}
+                                        </UploadArea>
+                                    )}
                                 </div>
+
                                  <div className="grid grid-cols-2 gap-2">
                                     {activeQuestion.options.map((opt, index) => (
                                         <div key={opt.id} className={cn("flex items-center p-2 rounded-md shadow-lg text-white", optionColors[index])}>

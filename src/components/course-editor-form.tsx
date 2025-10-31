@@ -102,7 +102,7 @@ const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdat
                                                         onAddBlock={(type) => onAddBlock(lessonIndex, type)}
                                                         onBlockUpdate={(blockIndex, field, value) => onBlockUpdate(lessonIndex, blockIndex, field, value)}
                                                         onBlockDelete={(blockIndex) => onBlockDelete(lessonIndex, blockIndex)}
-                                                        onEditQuiz={onEditQuiz}
+                                                        onEditQuiz={(quiz) => onEditQuiz(quiz)}
                                                         isSaving={isSaving}
                                                         ref={provided.innerRef}
                                                         {...provided.draggableProps}
@@ -410,12 +410,12 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                 router.replace(`/manage-courses/${savedCourse.id}/edit`, { scroll: false });
             }
             
-            return savedCourse; // Devolver el curso guardado para encadenar acciones
+            return savedCourse;
 
         } catch (error: any) {
             console.error('Error al guardar el curso:', error);
             toast({ title: "Error al Guardar", description: error.message || "No se pudo guardar.", variant: "destructive" });
-            return null; // Devolver null en caso de error
+            return null;
         } finally {
             setIsSaving(false);
         }
@@ -427,9 +427,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         updateCourseField('isMandatory', checked);
         
         if (checked) {
-            const savedCourse = await handleSaveCourse(); // Guardar primero
+            const savedCourse = await handleSaveCourse();
             if (savedCourse) {
-                 // Abrir el modal de asignación después de guardar exitosamente
                  setTimeout(() => setIsAssignmentModalOpen(true), 100);
             }
         }
@@ -456,7 +455,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             setShowBackButton(true);
         }
         return () => {
-            setPageTitle(''); // Reset on unmount
+            setPageTitle('');
             setHeaderActions(null);
             setShowBackButton(false);
         }
@@ -503,7 +502,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const handleEditQuiz = (quizToEdit: AppQuiz) => {
         const handleSave = (updatedQuiz: AppQuiz) => {
             handleStateUpdate(prev => {
-                // Find the quiz and update it
                 for (const mod of prev.modules) {
                     for (const les of mod.lessons) {
                         const blockIndex = les.contentBlocks.findIndex(b => b.quiz?.id === quizToEdit.id);
@@ -515,7 +513,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                 }
                 return prev;
             });
-            setQuizToEdit(null); // Close modal
+            setQuizToEdit(null);
         };
         
         setQuizToEdit({ quiz: quizToEdit, onSave: handleSave });
@@ -675,7 +673,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     };
     
     useEffect(() => {
-        // Cleanup local URL on unmount
         return () => {
             if (localCoverImagePreview) {
                 URL.revokeObjectURL(localCoverImagePreview);

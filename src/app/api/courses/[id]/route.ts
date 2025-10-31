@@ -1,4 +1,3 @@
-
 // src/app/api/courses/[id]/route.ts
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
@@ -150,6 +149,7 @@ export async function PUT(
                     order: qIndex,
                     type: 'SINGLE_CHOICE',
                     quizId: newQuiz.id,
+                    imageUrl: questionData.imageUrl, // Save the new imageUrl field
                   },
                 });
 
@@ -248,4 +248,3 @@ export async function DELETE(
     return NextResponse.json({ message: "Error al eliminar el curso" }, { status: 500 });
   }
 }
-

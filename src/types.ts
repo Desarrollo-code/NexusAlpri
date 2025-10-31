@@ -91,6 +91,7 @@ export interface Question {
     type: QuestionType;
     order: number;
     options: AnswerOption[];
+    imageUrl?: string | null;
 }
 
 export interface Quiz {

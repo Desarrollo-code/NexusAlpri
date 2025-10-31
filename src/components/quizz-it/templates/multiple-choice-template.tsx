@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { Check, X, Timer } from 'lucide-react';
 import { CircularProgress } from '@/components/ui/circular-progress';
 import { FlipCard } from '../flip-card';
+import Image from 'next/image';
 
 interface MultipleChoiceTemplateProps {
   question: FormField;
@@ -73,6 +74,12 @@ export function MultipleChoiceTemplate({ question, onSubmit, onTimeUp, questionN
             </div>
             <h2 className="text-2xl md:text-3xl font-bold font-headline">{question.label}</h2>
         </Card>
+        
+        {question.imageUrl && (
+            <div className="w-full max-w-lg aspect-video relative rounded-lg overflow-hidden shadow-lg bg-card">
+                 <Image src={question.imageUrl} alt={question.label} fill className="object-cover" />
+            </div>
+        )}
 
         <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
             {(question.options as FormFieldOption[]).map((option, index) => (
