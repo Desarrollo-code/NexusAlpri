@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '../ui/textarea';
-import { PlusCircle, Trash2, Pencil, Check, X, Image as ImageIcon, UploadCloud, Timer, LayoutTemplate, FlipVertical, CheckSquare, ImagePlay, BrainCircuit } from 'lucide-react';
+import { PlusCircle, Trash2, Pencil, Check, X, Image as ImageIcon, UploadCloud, Timer, LayoutTemplate, FlipVertical, CheckSquare, ImagePlay, BrainCircuit, Info } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
 import type { AppQuiz, AppQuestion, FormFieldOption } from '@/types';
@@ -27,6 +27,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '.
 import { QuizGameView } from './quiz-game-view';
 import { Card, CardHeader, CardContent, CardTitle } from '../ui/card';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
+import { Alert, AlertDescription } from '../ui/alert';
 
 const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
@@ -39,7 +40,7 @@ export const optionShapes = [
 export const optionColors = ['bg-red-500', 'bg-blue-500', 'bg-yellow-500', 'bg-green-500'];
 
 const templateOptions = [
-    { value: 'default', label: 'Múltiple Elección', icon: CheckSquare, description: 'Clásico, con 4 opciones.' },
+    { value: 'default', label: 'Múltiple Elección', icon: CheckSquare, description: 'Clásico, con hasta 4 opciones.' },
     { value: 'image', label: 'Pregunta con Imagen', icon: ImagePlay, description: 'Una imagen como foco principal.' },
     { value: 'true_false', label: 'Verdadero / Falso', icon: BrainCircuit, description: 'Respuesta rápida de dos opciones.' },
     { value: 'flip_card', label: 'Tarjeta Giratoria', icon: FlipVertical, description: 'Ideal para memorización y conceptos.' },
@@ -50,7 +51,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
     const [localQuiz, setLocalQuiz] = useState<AppQuiz>(quiz);
     const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
 
-    const [isUploading, setIsUploading] = useState(false);
+    const [isUploading, setIsUploading] = useState(isUploading);
     const [uploadProgress, setUploadProgress] = useState(0);
 
     useEffect(() => {
@@ -185,7 +186,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                 <CardContent className="p-3 pt-0">
                                     <RadioGroup defaultValue={localQuiz.template || 'default'} onValueChange={(v) => handleQuizMetaChange('template', v)} className="space-y-2">
                                         {templateOptions.map(opt => (
-                                            <Label key={opt.value} htmlFor={`template-${opt.value}`} className={cn("flex flex-col p-2.5 rounded-lg border cursor-pointer transition-colors", (localQuiz.template || 'default') === opt.value ? 'border-primary ring-2 ring-primary/50' : 'hover:bg-accent/50')}>
+                                            <Label key={opt.value} htmlFor={`template-${opt.value}`} className={cn("flex flex-col p-2.5 rounded-lg border cursor-pointer transition-colors", (localQuiz.template || 'default') === opt.value ? 'border-primary ring-2 ring-offset-2 ring-offset-background ring-green-500' : 'hover:bg-accent/50')}>
                                                 <div className="flex items-center gap-2">
                                                      <RadioGroupItem value={opt.value} id={`template-${opt.value}`}/>
                                                      <div className="flex items-center gap-2">
@@ -215,20 +216,20 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                          </div>
                     </div>
                      {/* Panel Central de Edición y Vista Previa */}
-                     <div className="md:col-span-2 flex flex-col bg-muted/30">
+                    <div className="md:col-span-2 flex flex-col bg-muted/30">
                         {activeQuestion ? (
-                             <ScrollArea className="flex-1">
-                                <div className="p-4 space-y-4">
-                                    <Textarea value={activeQuestion.text} onChange={(e) => handleQuestionChange('text', e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-xl text-center font-bold h-24 resize-none bg-background"/>
-                                    
-                                    <div className="w-full flex-grow min-h-[200px] max-w-lg mx-auto flex items-center justify-center rounded-lg overflow-hidden relative">
-                                        <div className="absolute inset-0 bg-card shadow-inner" />
-                                        <div className="relative z-10 w-full p-4 transform scale-[0.8]">
-                                            <QuizGameView form={quizPreviewForm} isEditorPreview={true} />
-                                        </div>
+                            <div className="flex-1 flex flex-col p-4 gap-4 min-h-0">
+                                <Textarea value={activeQuestion.text} onChange={(e) => handleQuestionChange('text', e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-xl text-center font-bold h-auto resize-none bg-background flex-shrink-0" rows={2}/>
+                                
+                                <div className="flex-grow min-h-0 flex items-center justify-center bg-card shadow-inner rounded-lg p-2">
+                                    <div className="w-full max-w-lg mx-auto">
+                                      <QuizGameView form={quizPreviewForm} isEditorPreview={true} />
                                     </div>
-                                    
-                                     <div className="w-full">
+                                </div>
+                                 
+                                <ScrollArea className="flex-shrink-0 max-h-96">
+                                <div className="space-y-3 p-1">
+                                    <div className="w-full">
                                         {isUploading ? (
                                             <div className="w-full p-4 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2">
                                                 <Loader2 className="h-6 w-6 animate-spin text-primary"/>
@@ -244,12 +245,11 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                             <UploadArea onFileSelect={handleImageUpload} inputId={`img-upload-${activeQuestion.id}`} />
                                         )}
                                     </div>
-
-                                     <div className="grid grid-cols-2 gap-2">
+                                      <div className="grid grid-cols-2 gap-2">
                                         {activeQuestion.options.map((opt, index) => (
-                                            <div key={opt.id} className={cn("flex items-center p-2 rounded-md shadow-sm border text-foreground", optionColors[index], opt.isCorrect ? 'ring-2 ring-offset-2 ring-offset-background ring-green-500' : '')}>
+                                            <div key={opt.id} className={cn("flex items-center p-2 rounded-md shadow-sm border text-foreground", optionColors[index % optionColors.length], opt.isCorrect ? 'ring-2 ring-offset-2 ring-offset-background ring-green-500' : '')}>
                                                 <div className="h-10 w-10 flex-shrink-0 flex items-center justify-center">
-                                                    <svg viewBox="0 0 24 24" className="h-8 w-8 fill-current text-white">{React.createElement(optionShapes[index])}</svg>
+                                                    <svg viewBox="0 0 24 24" className="h-8 w-8 fill-current text-white">{React.createElement(optionShapes[index % optionShapes.length])}</svg>
                                                 </div>
                                                 <Input value={opt.text} onChange={(e) => handleOptionChange(index, e.target.value)} placeholder={`Opción ${index + 1}`} className="bg-transparent border-0 border-b-2 rounded-none text-white placeholder:text-white/70 focus-visible:ring-0 focus-visible:border-white"/>
                                                 <Button variant="ghost" size="icon" onClick={() => handleSetCorrect(opt.id)} className="text-white hover:bg-white/20 hover:text-white">
@@ -269,7 +269,8 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                         </Button>
                                     )}
                                 </div>
-                             </ScrollArea>
+                                </ScrollArea>
+                            </div>
                         ) : (
                             <div className="flex items-center justify-center h-full text-muted-foreground">
                                 <p>Selecciona una pregunta para editarla.</p>
