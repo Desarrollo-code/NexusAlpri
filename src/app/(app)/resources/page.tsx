@@ -55,7 +55,7 @@ export default function ResourcesPage() {
   }, [setPageTitle]);
 
   const fetchResources = useCallback(async () => {
-    if (isAuthLoading) return;
+    if (isAuthLoading) return; // Esperar a que la sesión del usuario se cargue
     setIsLoadingData(true);
     setError(null);
     

@@ -39,7 +39,7 @@ interface NotesByCourse {
 }
 
 export default function MyNotesPage() {
-  const { user, settings } = useAuth();
+  const { user, isLoading: isAuthLoading, settings } = useAuth();
   const { toast } = useToast();
   const { setPageTitle } = useTitle();
   const { startTour, forceStartTour } = useTour();
@@ -74,8 +74,12 @@ export default function MyNotesPage() {
   }, [user, toast]);
 
   useEffect(() => {
-    fetchNotes();
-  }, [fetchNotes]);
+    if (!isAuthLoading && user) {
+        fetchNotes();
+    } else if (!isAuthLoading && !user) {
+        setIsLoading(false);
+    }
+  }, [isAuthLoading, user, fetchNotes]);
 
   const handleNoteUpdate = (noteId: string, updates: Partial<UserNote>) => {
     setNotes(prev => prev.map(n => n.id === noteId ? { ...n, ...updates } : n));
@@ -127,6 +131,14 @@ export default function MyNotesPage() {
       }));
   }, [notes]);
 
+  if (isAuthLoading || isLoading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -139,11 +151,7 @@ export default function MyNotesPage() {
         </div>
 
       <div id="my-notes-board" className="space-y-12">
-        {isLoading ? (
-          <div className="flex justify-center items-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        ) : error ? (
+        {error ? (
           <div className="text-center py-12 text-destructive">
             <AlertTriangle className="mx-auto h-8 w-8 mb-2" />
             <p>Error al cargar: {error}</p>

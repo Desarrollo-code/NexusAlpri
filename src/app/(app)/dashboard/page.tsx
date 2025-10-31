@@ -27,7 +27,7 @@ export default function DashboardPage() {
   const { toast } = useToast();
   
   const fetchDashboardData = useCallback(async () => {
-    if (!user) { setIsLoading(false); return; }
+    if (!user) return; // No hacer fetch si no hay usuario
     setIsLoading(true); setError(null);
     try {
         const res = await fetch(`/api/dashboard/data`, { cache: 'no-store' });
@@ -41,7 +41,15 @@ export default function DashboardPage() {
     }
   }, [user]);
 
-  useEffect(() => { fetchDashboardData(); }, [fetchDashboardData]);
+  useEffect(() => {
+    // Solo llamar a fetch si el usuario está definido
+    if (user) {
+      fetchDashboardData();
+    } else if (!isAuthLoading) {
+      // Si la autenticación ha terminado y no hay usuario, dejar de cargar.
+      setIsLoading(false);
+    }
+  }, [user, isAuthLoading, fetchDashboardData]);
 
   useEffect(() => {
     setPageTitle('Panel Principal');
@@ -82,13 +90,17 @@ export default function DashboardPage() {
     }
   };
   
+  if (isAuthLoading || isLoading) {
+    return (
+      <div className="flex justify-center items-center py-16">
+          <Loader2 className="h-8 w-8 animate-spin text-primary"/>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
-      {isLoading || isAuthLoading ? (
-        <div className="flex justify-center items-center py-16">
-            <Loader2 className="h-8 w-8 animate-spin text-primary"/>
-        </div>
-      ) : error ? (
+      {error ? (
         <Card className="text-center p-8"><p className="text-destructive">{error}</p></Card>
       ) : renderContentForRole()}
     </div>

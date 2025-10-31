@@ -28,7 +28,7 @@ interface ApiCourse extends Omit<PrismaCourse, 'instructor' | '_count' | 'status
 }
 
 export default function CoursesPage() {
-  const { user, settings } = useAuth();
+  const { user, isLoading: isAuthLoading, settings } = useAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const { setPageTitle } = useTitle();
@@ -46,6 +46,8 @@ export default function CoursesPage() {
   }, [setPageTitle]);
 
   const fetchCoursesAndEnrollments = useCallback(async () => {
+    if (!user) return; // Wait for user to be available
+    
     setIsLoading(true);
     setError(null);
     try {
@@ -53,10 +55,7 @@ export default function CoursesPage() {
       if (user?.id) courseParams.append('userId', user.id);
       
       const coursePromise = fetch(`/api/courses?${courseParams.toString()}`, { cache: 'no-store' });
-      
-      const enrollmentPromise = user?.id 
-        ? fetch(`/api/enrollment/${user.id}`, { cache: 'no-store' })
-        : Promise.resolve(null);
+      const enrollmentPromise = fetch(`/api/enrollment/${user.id}`, { cache: 'no-store' });
         
       const [courseResponse, enrollmentResponse] = await Promise.all([coursePromise, enrollmentPromise]);
 
@@ -85,8 +84,12 @@ export default function CoursesPage() {
   
 
   useEffect(() => {
-    fetchCoursesAndEnrollments();
-  }, [fetchCoursesAndEnrollments]); 
+    if (!isAuthLoading && user) {
+        fetchCoursesAndEnrollments();
+    } else if (!isAuthLoading && !user) {
+        setIsLoading(false);
+    }
+  }, [isAuthLoading, user, fetchCoursesAndEnrollments]); 
 
   const allCoursesForDisplay = useMemo(() => allApiCourses.map(mapApiCourseToAppCourse), [allApiCourses]);
   
@@ -141,6 +144,26 @@ export default function CoursesPage() {
     </Card>
   );
 
+  if (isAuthLoading || (isLoading && user)) {
+    return (
+      <div className="space-y-8">
+        <div>
+          <Skeleton className="h-6 w-3/4" />
+        </div>
+        <Card className="p-4 space-y-4 shadow">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-4 w-40" />
+        </Card>
+        <div className="space-y-4">
+            <Skeleton className="h-8 w-48" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, i) => <CourseCardSkeleton key={i} />)}
+            </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <div>
@@ -174,24 +197,11 @@ export default function CoursesPage() {
           </div>
         </div>
         <div className="text-sm text-muted-foreground pt-2 border-t">
-           {isLoading ? (
-             <Skeleton className="h-4 w-40" />
-           ) : (
             `Mostrando ${filteredCourses.length} cursos disponibles.`
-           )}
         </div>
       </Card>
 
-      {isLoading ? (
-        <div className="space-y-8">
-            <div className="space-y-4">
-                <Skeleton className="h-8 w-48" />
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {[...Array(4)].map((_, i) => <CourseCardSkeleton key={i} />)}
-                </div>
-            </div>
-        </div>
-      ) : error ? (
+      {error ? (
         <div className="flex flex-col items-center justify-center py-12 text-destructive">
           <AlertTriangle className="h-8 w-8 mb-2" />
           <p className="font-semibold">Error al cargar el catálogo</p>

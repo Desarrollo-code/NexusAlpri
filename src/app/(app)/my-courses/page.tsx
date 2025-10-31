@@ -39,7 +39,6 @@ export default function MyCoursesPage() {
   const fetchMyEnrollments = useCallback(async () => {
     if (!user || !user.id) {
         setIsFetchingPageData(false); 
-        setMyEnrolledCourses([]); 
         return;
     }
     setIsFetchingPageData(true);
@@ -82,8 +81,11 @@ export default function MyCoursesPage() {
   }, [user, toast]);
 
   useEffect(() => {
-    if (!isAuthLoading) {
+    if (!isAuthLoading && user) {
       fetchMyEnrollments();
+    } else if (!isAuthLoading && !user) {
+        setIsFetchingPageData(false);
+        setMyEnrolledCourses([]);
     }
   }, [isAuthLoading, user, fetchMyEnrollments]);
 
