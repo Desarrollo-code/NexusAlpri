@@ -236,18 +236,21 @@ model Quiz {
 }
 
 model Question {
-  id              String          @id @default(cuid())
-  text            String
-  order           Int
-  type            QuestionType    @default(SINGLE_CHOICE)
-  quiz            Quiz            @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  quizId          String
-  options         AnswerOption[]
-  AnswerAttempt   AnswerAttempt[]
+  id        String   @id @default(cuid())
+  text      String
+  order     Int
+  type      QuestionType
+  quizId    String
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  options   AnswerOption[]
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  answerAttempts AnswerAttempt[] 
 
-  @@map("questions")
+  
+  @@unique([quizId, order])
 }
-
 model AnswerOption {
   id               String          @id @default(cuid())
   text             String
@@ -666,6 +669,7 @@ model LessonTemplate {
 
   @@map("lesson_templates")
 }
+
 
 model TemplateBlock {
   id           String         @id @default(cuid())
