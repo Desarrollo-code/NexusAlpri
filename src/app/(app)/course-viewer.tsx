@@ -27,7 +27,7 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import YouTube from 'react-youtube';
 import mammoth from 'mammoth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { PdfViewer } from '@/components/pdf-viewer'; // Importamos el nuevo componente
+import { PdfViewer } from '@/components/pdf-viewer';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -484,84 +484,84 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
       router.push(`/courses/${courseId}?lesson=${lesson.id}`, { scroll: false });
   };
   
-  const renderContentBlock = (block: ContentBlock, index: number, allBlocks: ContentBlock[]) => {
-      const url = block.content || '';
-      const isTextFollowedByImage = block.type === 'TEXT' && allBlocks[index + 1]?.type === 'FILE' && /\.(jpg|jpeg|png|gif|webp)$/i.test(allBlocks[index + 1].content || '');
+    const renderContentBlock = (block: ContentBlock, index: number, allBlocks: ContentBlock[]) => {
+        const url = block.content || '';
+        const isTextFollowedByImage = block.type === 'TEXT' && allBlocks[index + 1]?.type === 'FILE' && /\.(jpg|jpeg|png|gif|webp)$/i.test(allBlocks[index + 1].content || '');
 
-      if (isTextFollowedByImage) {
-          const textBlock = block;
-          const imageBlock = allBlocks[index + 1];
-          return (
-              <div key={textBlock.id + '-' + imageBlock.id} className="flex flex-col md:flex-row items-stretch gap-8 my-4">
-                  <div className="prose dark:prose-invert prose-sm max-w-none md:w-[65%] md:flex-shrink-0" dangerouslySetInnerHTML={{ __html: textBlock.content || '' }} />
-                  <div className="relative md:w-[35%] flex-grow flex items-center justify-center">
-                      <div className="relative w-full max-h-full cursor-pointer" onClick={() => setImageToView(imageBlock.content)}>
-                          <Image src={imageBlock.content!} alt="Visual support for lesson content" width={300} height={200} className="object-contain rounded-lg w-full h-auto" quality={100} data-ai-hint="lesson visual aid" />
-                      </div>
-                  </div>
-              </div>
-          );
-      }
+        if (isTextFollowedByImage) {
+            const textBlock = block;
+            const imageBlock = allBlocks[index + 1];
+            return (
+                 <div key={textBlock.id + '-' + imageBlock.id} className="md:flex md:gap-8 md:items-center my-4">
+                    <div className="md:w-[65%] md:flex-shrink-0 prose dark:prose-invert prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: textBlock.content || '' }} />
+                    <div className="mt-4 md:mt-0 md:w-[35%] flex flex-col self-center">
+                         <div className="relative w-full max-h-[168px] aspect-video cursor-pointer" onClick={() => setImageToView(imageBlock.content)}>
+                            <Image src={imageBlock.content!} alt="Visual support" fill className="object-contain rounded-lg" priority quality={100} data-ai-hint="lesson visual aid" />
+                        </div>
+                    </div>
+                </div>
+            );
+        }
 
-      const isImagePrecededByText = block.type === 'FILE' && allBlocks[index - 1]?.type === 'TEXT' && /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
-      if (isImagePrecededByText) {
-          return null; // Don't render this image block separately, it's handled with the text block.
-      }
+        const isImagePrecededByText = block.type === 'FILE' && allBlocks[index - 1]?.type === 'TEXT' && /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+        if (isImagePrecededByText) {
+            return null; // Don't render this image block separately, it's handled with the text block.
+        }
 
-      if (block.type === 'VIDEO') return <VideoPlayer key={block.id} videoUrl={url} lessonTitle={selectedLesson?.title} onVideoEnd={handleVideoEnd} />;
-      if (block.type === 'QUIZ') return <QuizViewer key={block.id} quiz={block.quiz} lessonId={selectedLessonId!} courseId={courseId} isEnrolled={isEnrolled} isCreatorPreview={isCreatorViewingCourse} onQuizCompleted={handleQuizSubmitted} />;
+        if (block.type === 'VIDEO') return <VideoPlayer key={block.id} videoUrl={url} lessonTitle={selectedLesson?.title} onVideoEnd={handleVideoEnd} />;
+        if (block.type === 'QUIZ') return <QuizViewer key={block.id} quiz={block.quiz} lessonId={selectedLessonId!} courseId={courseId} isEnrolled={isEnrolled} isCreatorPreview={isCreatorViewingCourse} onQuizCompleted={handleQuizSubmitted} />;
 
-      if (block.type === 'TEXT') {
-          const isExternalUrl = /^(https?:\/\/)/.test(url.trim());
-          if (isExternalUrl) {
-              return (
-                  <div key={block.id} className="my-4 p-4 border rounded-md bg-card hover:bg-muted/50 transition-colors">
-                      <a href={url.trim()} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-primary font-semibold group">
-                          <ExternalLink className="h-5 w-5 text-primary/70 group-hover:text-primary transition-colors"/>
-                          <span className="group-hover:underline underline-offset-4">{url.trim()}</span>
-                      </a>
-                  </div>
-              );
-          }
-          return <div key={block.id} className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card" dangerouslySetInnerHTML={{ __html: url }} />;
-      }
-      
-      if (block.type === 'FILE') {
-          const isPdf = url.toLowerCase().endsWith('.pdf');
-          if (isPdf) return <PdfViewer url={url} key={block.id} />;
-          
-          const isOfficeDoc = url.toLowerCase().endsWith('.docx');
-          
-          if (isOfficeDoc) return <div key={block.id} className="my-4"><DocxPreviewer url={url}/></div>;
-          
-          const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url.toLowerCase());
-          if (isImage) {
-              return (
-                   <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md flex justify-center group relative cursor-pointer" onClick={() => setImageToView(url)}>
-                      <div className="relative aspect-video w-full max-w-4xl p-2">
-                          <Image src={url} alt={`Preview: ${selectedLesson?.title}`} fill className="object-contain p-2" priority quality={100} data-ai-hint="lesson file" />
-                      </div>
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <Expand className="h-12 w-12 text-white"/>
-                      </div>
-                  </div>
-              );
-          }
+        if (block.type === 'TEXT') {
+            const isExternalUrl = /^(https?:\/\/)/.test(url.trim());
+            if (isExternalUrl) {
+                return (
+                    <div key={block.id} className="my-4 p-4 border rounded-md bg-card hover:bg-muted/50 transition-colors">
+                        <a href={url.trim()} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-primary font-semibold group">
+                            <ExternalLink className="h-5 w-5 text-primary/70 group-hover:text-primary transition-colors"/>
+                            <span className="group-hover:underline underline-offset-4">{url.trim()}</span>
+                        </a>
+                    </div>
+                );
+            }
+            return <div key={block.id} className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card" dangerouslySetInnerHTML={{ __html: url }} />;
+        }
+        
+        if (block.type === 'FILE') {
+            const isPdf = url.toLowerCase().endsWith('.pdf');
+            if (isPdf) return <PdfViewer url={url} key={block.id} />;
+            
+            const isOfficeDoc = url.toLowerCase().endsWith('.docx');
+            
+            if (isOfficeDoc) return <div key={block.id} className="my-4"><DocxPreviewer url={url}/></div>;
+            
+            const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url.toLowerCase());
+            if (isImage) {
+                return (
+                     <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md flex justify-center group relative cursor-pointer" onClick={() => setImageToView(url)}>
+                        <div className="relative aspect-video w-full max-w-4xl p-2">
+                            <Image src={url} alt={`Preview: ${selectedLesson?.title}`} fill className="object-contain p-2" priority quality={100} data-ai-hint="lesson file" />
+                        </div>
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <Expand className="h-12 w-12 text-white"/>
+                        </div>
+                    </div>
+                );
+            }
 
-          return (
-              <div key={block.id} className="my-4 p-4 bg-muted/50 rounded-md text-center">
-                  <p className="text-sm text-muted-foreground mb-2">Este recurso es un archivo descargable:</p>
-                  <Button asChild size="sm">
-                      <Link href={url} target="_blank" rel="noopener noreferrer" download>
-                          <Download className="mr-2 h-4 w-4" /> Descargar Archivo
-                      </Link>
-                  </Button>
-              </div>
-          );
-      }
+            return (
+                <div key={block.id} className="my-4 p-4 bg-muted/50 rounded-md text-center">
+                    <p className="text-sm text-muted-foreground mb-2">Este recurso es un archivo descargable:</p>
+                    <Button asChild size="sm">
+                        <Link href={url} target="_blank" rel="noopener noreferrer" download>
+                            <Download className="mr-2 h-4 w-4" /> Descargar Archivo
+                        </Link>
+                    </Button>
+                </div>
+            );
+        }
 
-      return null;
-  };
+        return null;
+    };
 
   const renderLessonContent = () => {
     if (!selectedLesson) {
@@ -719,17 +719,14 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   }
 
   return (
-    <div className="flex h-[calc(100vh-5rem)] md:relative">
-      <aside className={cn(
-        "flex-shrink-0 border-r bg-card flex flex-col self-start transition-all duration-300 max-h-[calc(100vh-5rem)]",
-        "sticky top-20", // Hacer el sidebar sticky
-        isSidebarVisible ? "w-80" : "w-0 overflow-hidden",
-        isMobile ? "hidden" : "flex"
-      )}>
-        {isSidebarVisible && <SidebarContent />}
-      </aside>
-
-      <Sheet open={isMobile && isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
+    <div className="flex flex-grow min-h-0">
+      {!isMobile && isSidebarVisible && (
+        <aside className="w-80 flex-shrink-0 border-r bg-card flex flex-col self-stretch">
+            <SidebarContent />
+        </aside>
+      )}
+      
+      <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
         <SheetContent side="left" className="p-0 w-full max-w-sm">
           <SheetHeader className="p-4 border-b">
               <SheetTitle>Contenido del Curso</SheetTitle>
@@ -737,8 +734,11 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
           <SidebarContent />
         </SheetContent>
       </Sheet>
-
-      <div className={cn("flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out", isNotesPanelOpen && !isMobile && "mr-[28rem]")}>
+      
+      <div className={cn(
+        "flex-1 flex flex-col min-w-0 transition-[margin-right] duration-300 ease-in-out",
+        isNotesPanelOpen && !isMobile && "mr-[28rem]"
+      )}>
           <main className="flex-1 overflow-y-auto thin-scrollbar">
               <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8">
                  {renderLessonContent()}
@@ -746,24 +746,29 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
           </main>
       </div>
 
-       <aside className={cn(
-        "fixed top-20 right-0 z-20 h-[calc(100vh-5rem)] transition-transform duration-300 ease-in-out",
-        isNotesPanelOpen ? "translate-x-0" : "translate-x-full",
-        isMobile ? "w-full max-w-sm" : "w-[28rem]"
-      )}>
-          {selectedLessonId && isEnrolled && (
-              <LessonNotesPanel 
-                  lessonId={selectedLessonId}
-                  isOpen={isNotesPanelOpen}
-                  onClose={() => setIsNotesPanelOpen(false)}
-              />
-          )}
-      </aside>
+      {isNotesPanelOpen && !isMobile && (
+          <aside className="w-full max-w-md md:w-[28rem] flex-shrink-0 fixed top-20 right-0 z-20 h-[calc(100vh-5rem)]">
+              {selectedLessonId && isEnrolled && (
+                  <LessonNotesPanel 
+                      lessonId={selectedLessonId}
+                      isOpen={isNotesPanelOpen}
+                      onClose={() => setIsNotesPanelOpen(false)}
+                  />
+              )}
+          </aside>
+      )}
 
-       <div className="fixed bottom-20 right-4 z-40 flex flex-col gap-3">
-           <Button size="icon" className="rounded-full h-12 w-12 shadow-lg" onClick={isMobile ? () => setIsMobileSheetOpen(true) : () => setIsSidebarVisible(!isSidebarVisible)}>
-               <PanelLeft className="h-5 w-5" />
-           </Button>
+      <div className="fixed bottom-20 right-4 z-40 flex flex-col gap-3">
+           {isMobile && (
+              <Button size="icon" className="rounded-full h-12 w-12 shadow-lg" onClick={() => setIsMobileSheetOpen(true)}>
+                  <PanelLeft className="h-5 w-5" />
+              </Button>
+          )}
+           {!isMobile && (
+               <Button size="icon" className="rounded-full h-12 w-12 shadow-lg" onClick={() => setIsSidebarVisible(!isSidebarVisible)}>
+                  <PanelLeft className="h-5 w-5"/>
+              </Button>
+           )}
           {isEnrolled && !isCreatorViewingCourse && (
               <Sheet open={isMobile && isNotesPanelOpen} onOpenChange={setIsNotesPanelOpen}>
                   <SheetTrigger asChild>
