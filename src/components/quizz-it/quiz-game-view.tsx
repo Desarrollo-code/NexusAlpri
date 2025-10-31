@@ -7,6 +7,7 @@ import { MultipleChoiceTemplate } from './templates/multiple-choice-template';
 import { ResultScreenTemplate } from './templates/result-screen-template';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
+import { FlipCardTemplate } from './templates/flip-card-template';
 
 interface QuizGameViewProps {
   form: AppForm;
@@ -66,12 +67,9 @@ export function QuizGameView({ form, isEditorPreview = false }: QuizGameViewProp
   const renderQuestionTemplate = () => {
     if (!currentQuestion) return <div className="text-center">Fin del Quiz</div>;
     
-    // Aquí puedes añadir lógica para cambiar de plantilla según `form.template`
-    // Por ahora, solo usamos MultipleChoiceTemplate
     switch (form.template) {
         case 'flip_card':
-            // Implementar la plantilla de FlipCard aquí si se desea
-            // Por ahora, recae en la de opción múltiple
+            return <FlipCardTemplate question={currentQuestion} onAnswer={handleAnswerSubmit}/>;
         case 'image':
         case 'true_false':
         case 'default':

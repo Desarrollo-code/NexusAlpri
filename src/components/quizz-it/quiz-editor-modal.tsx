@@ -139,13 +139,21 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
     if (!localQuiz || !localQuiz.questions) return null;
     const activeQuestion = localQuiz.questions[activeQuestionIndex];
 
+    const quizPreviewForm = {
+        ...localQuiz,
+        fields: localQuiz.questions.map(q => ({
+            ...q,
+            label: q.text
+        }))
+    }
+
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0 gap-0">
+            <DialogContent className="max-w-6xl h-[90vh] flex flex-col p-0 gap-0">
                 <DialogHeader className="p-4 border-b">
                     <DialogTitle className="flex items-center gap-2"><Pencil className="h-5 w-5 text-primary"/>Editor de Quiz Interactivo</DialogTitle>
                 </DialogHeader>
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-4 min-h-0">
+                <div className="flex-1 grid grid-cols-1 md:grid-cols-3 min-h-0">
                     <div className="md:col-span-1 border-r flex flex-col">
                          <div className="p-2 space-y-2">
                              <Button onClick={addQuestion} className="w-full" variant="outline"><PlusCircle className="mr-2 h-4 w-4"/>Añadir Pregunta</Button>
@@ -192,33 +200,13 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                              </div>
                          </div>
                     </div>
-                     <div className="md:col-span-3 flex flex-col bg-muted/30">
-                        {activeQuestion && (
+                     <div className="md:col-span-2 flex flex-col bg-muted/30">
+                        {activeQuestion ? (
                             <div className="flex-1 flex flex-col p-4 gap-4 overflow-y-auto">
                                 <Textarea value={activeQuestion.text} onChange={(e) => handleQuestionChange('text', e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-xl text-center font-bold h-32 resize-none"/>
                                 
                                 <div className="flex-grow w-full max-w-lg mx-auto bg-card flex items-center justify-center rounded-lg shadow-inner overflow-hidden relative">
-                                    {activeQuestion.imageUrl ? (
-                                        <div className="relative w-full h-full">
-                                            <Image src={activeQuestion.imageUrl} alt={activeQuestion.text} fill className="object-cover" />
-                                            <Button variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 z-10" onClick={() => handleQuestionChange('imageUrl', null)}><Trash2 className="h-4 w-4"/></Button>
-                                        </div>
-                                    ) : (
-                                        <UploadArea onFileSelect={handleImageUpload} disabled={isUploading} className="w-full h-full">
-                                            {isUploading ? (
-                                                <div className="text-center">
-                                                    <Loader2 className="h-8 w-8 animate-spin mx-auto"/>
-                                                    <Progress value={uploadProgress} className="w-32 mt-2 h-1"/>
-                                                </div>
-                                            ) : (
-                                                <div className="text-center text-muted-foreground">
-                                                    <ImageIcon className="h-10 w-10 mx-auto mb-2"/>
-                                                    <p className="font-semibold">Añadir Imagen (Opcional)</p>
-                                                    <p className="text-xs">Arrastra o haz clic para subir</p>
-                                                </div>
-                                            )}
-                                        </UploadArea>
-                                    )}
+                                    <QuizGameView form={quizPreviewForm} isEditorPreview={true} />
                                 </div>
 
                                  <div className="grid grid-cols-2 gap-2">
@@ -244,6 +232,10 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                          + Añadir opción
                                      </Button>
                                  )}
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-center h-full text-muted-foreground">
+                                <p>Selecciona una pregunta para editarla.</p>
                             </div>
                         )}
                     </div>
