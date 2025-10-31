@@ -1,6 +1,7 @@
 // src/app/(app)/resources/page.tsx
 'use client';
 
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import type { AppResourceType, ResourceStatus } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
@@ -20,7 +21,6 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { FolderOpen } from 'lucide-react';
 import { EmptyState } from '@/components/empty-state';
 import { ResourceEditorModal } from '@/components/resources/resource-editor-modal';
