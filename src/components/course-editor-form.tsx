@@ -39,7 +39,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { QuizViewer } from '@/components/quiz-viewer';
+import { QuizGameView } from '@/components/quizz-it/quiz-game-view';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "@/components/ui/dropdown-menu";
 import { useTitle } from '@/contexts/title-context';
 import { QuizAnalyticsView } from '@/components/analytics/quiz-analytics-view';
@@ -247,10 +247,13 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
                 );
             }
             if (block.type === 'QUIZ') return (
-                <div className="flex items-center gap-2 w-full">
+                 <div className="flex flex-col gap-2 w-full">
                     <Input value={block.quiz?.title || ''} onChange={e => onUpdate('quiz', { ...block.quiz, title: e.target.value })} placeholder="Título del Quiz" disabled={isSaving} />
-                    <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={onEditQuiz}>
-                        <Pencil className="mr-2 h-4 w-4" /> Editar Quiz
+                     <div className="p-4 border rounded-lg bg-background">
+                         <QuizGameView form={{...block.quiz, fields: block.quiz.questions}} isEditorPreview={true} />
+                     </div>
+                     <Button type="button" variant="outline" size="sm" className="self-start" onClick={onEditQuiz}>
+                        <Pencil className="mr-2 h-4 w-4" /> Editar Preguntas
                     </Button>
                 </div>
             );

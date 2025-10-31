@@ -100,6 +100,8 @@ export interface Quiz {
     description?: string;
     maxAttempts?: number | null;
     questions: Question[];
+    template?: string | null;
+    timerStyle?: string | null;
 }
 
 export interface ContentBlock {
@@ -372,6 +374,8 @@ export type AppForm = Prisma.FormGetPayload<{}> & {
         name: string | null;
     } | null;
     sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
+    template?: string | null;
+    timerStyle?: string | null;
 };
 
 // --- PROCESSES ---

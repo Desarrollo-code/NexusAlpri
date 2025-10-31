@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import type { FormField, FormFieldOption } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Check, X, Timer } from 'lucide-react';
@@ -17,6 +17,8 @@ interface MultipleChoiceTemplateProps {
   onTimeUp: () => void;
   questionNumber: number;
   totalQuestions: number;
+  template?: string | null;
+  timerStyle?: string | null;
 }
 
 const optionShapes = [
@@ -29,7 +31,7 @@ const optionColors = [
   'bg-red-500', 'bg-blue-500', 'bg-yellow-500', 'bg-green-500'
 ];
 
-export function MultipleChoiceTemplate({ question, onSubmit, onTimeUp, questionNumber, totalQuestions }: MultipleChoiceTemplateProps) {
+export function MultipleChoiceTemplate({ question, onSubmit, onTimeUp, questionNumber, totalQuestions, template, timerStyle }: MultipleChoiceTemplateProps) {
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [timeLeft, setTimeLeft] = useState(20);
@@ -61,6 +63,19 @@ export function MultipleChoiceTemplate({ question, onSubmit, onTimeUp, questionN
     if (optionId === selectedOptionId && optionId !== correctOption?.id) return 'incorrect';
     return 'disabled';
   };
+  
+  const TimerDisplay = () => {
+       const progress = (timeLeft / 20) * 100;
+       switch (timerStyle) {
+           case 'bar':
+               return <div className="w-full h-2.5 bg-muted rounded-full"><div className="h-full bg-primary rounded-full transition-all duration-1000 linear" style={{width: `${progress}%`}}></div></div>
+           case 'pill':
+                return <div className="px-3 py-1 bg-muted text-foreground font-bold rounded-full text-lg">{timeLeft}</div>
+           case 'circular':
+           default:
+                return <CircularProgress value={progress} size={40} strokeWidth={4} />
+       }
+  }
 
   return (
     <div className="w-full flex flex-col items-center gap-6">
@@ -69,15 +84,15 @@ export function MultipleChoiceTemplate({ question, onSubmit, onTimeUp, questionN
                 <p className="text-sm font-semibold text-muted-foreground">{questionNumber}/{totalQuestions}</p>
                  <div className="flex items-center gap-2 font-bold text-lg text-primary">
                     <Timer className="h-5 w-5"/>
-                    <CircularProgress value={(timeLeft / 20) * 100} size={40} strokeWidth={4} />
+                    <TimerDisplay />
                  </div>
             </div>
-            <h2 className="text-2xl md:text-3xl font-bold font-headline">{question.label}</h2>
+            <h2 className="text-2xl md:text-3xl font-bold font-headline">{question.text}</h2>
         </Card>
         
         {question.imageUrl && (
             <div className="w-full max-w-lg aspect-video relative rounded-lg overflow-hidden shadow-lg bg-card">
-                 <Image src={question.imageUrl} alt={question.label} fill className="object-cover" />
+                 <Image src={question.imageUrl} alt={question.text} fill className="object-cover" />
             </div>
         )}
 

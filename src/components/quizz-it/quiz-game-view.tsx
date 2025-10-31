@@ -1,7 +1,7 @@
 // src/components/quizz-it/quiz-game-view.tsx
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
-import type { AppForm } from '@/types';
+import type { AppForm, AppQuestion } from '@/types';
 import { AnimatePresence, motion } from 'framer-motion';
 import { MultipleChoiceTemplate } from './templates/multiple-choice-template';
 import { ResultScreenTemplate } from './templates/result-screen-template';
@@ -10,9 +10,10 @@ import { useAuth } from '@/contexts/auth-context';
 
 interface QuizGameViewProps {
   form: AppForm;
+  isEditorPreview?: boolean;
 }
 
-export function QuizGameView({ form }: QuizGameViewProps) {
+export function QuizGameView({ form, isEditorPreview = false }: QuizGameViewProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [gameState, setGameState] = useState<'playing' | 'finished'>('playing');
@@ -20,50 +21,63 @@ export function QuizGameView({ form }: QuizGameViewProps) {
   const [score, setScore] = useState(0);
   const [answers, setAnswers] = useState<any[]>([]);
 
-  const currentQuestion = form.fields[currentQuestionIndex];
+  const questions: AppQuestion[] = (form.fields || []).filter(f => f.type === 'SINGLE_CHOICE' || f.type === 'MULTIPLE_CHOICE').map(f => ({
+      ...f,
+      text: f.label,
+  })) as AppQuestion[];
+
+  const currentQuestion = questions[currentQuestionIndex];
 
   const handleAnswerSubmit = useCallback((isCorrect: boolean, answerData: any) => {
+    if (isEditorPreview) {
+        // En modo preview, solo mostramos el feedback y no avanzamos.
+         setTimeout(() => {
+            if (currentQuestionIndex < questions.length - 1) {
+              setCurrentQuestionIndex(prev => prev + 1);
+            } else {
+              setGameState('finished');
+            }
+         }, 2000);
+         return;
+    }
+    
     if (isCorrect) {
       setScore(prev => prev + 1);
     }
     setAnswers(prev => [...prev, { questionId: currentQuestion.id, ...answerData, isCorrect }]);
 
-    // Move to next question or finish
     setTimeout(() => {
-      if (currentQuestionIndex < form.fields.length - 1) {
+      if (currentQuestionIndex < questions.length - 1) {
         setCurrentQuestionIndex(prev => prev + 1);
       } else {
         setGameState('finished');
       }
-    }, 2000); // Wait 2 seconds before moving on
-  }, [currentQuestionIndex, form.fields.length, currentQuestion.id]);
+    }, 2000);
+  }, [currentQuestionIndex, questions.length, currentQuestion?.id, isEditorPreview]);
   
   const handleTimeUp = useCallback(() => {
     handleAnswerSubmit(false, { answer: null, timedOut: true });
-    toast({ title: "¡Tiempo!", description: "Se acabó el tiempo para esta pregunta.", variant: "destructive" });
-  }, [handleAnswerSubmit, toast]);
+    if (!isEditorPreview) {
+       toast({ title: "¡Tiempo!", description: "Se acabó el tiempo para esta pregunta.", variant: "destructive" });
+    }
+  }, [handleAnswerSubmit, toast, isEditorPreview]);
 
 
   const renderQuestionTemplate = () => {
-    if (!currentQuestion) return null;
-
-    // Lógica para elegir plantilla (simplificada por ahora)
-    if (currentQuestion.type === 'SINGLE_CHOICE' || currentQuestion.type === 'MULTIPLE_CHOICE') {
-      return (
+    if (!currentQuestion) return <div className="text-center">Fin del Quiz</div>;
+    
+    return (
         <MultipleChoiceTemplate
           key={currentQuestion.id}
           question={currentQuestion}
           onSubmit={handleAnswerSubmit}
           onTimeUp={handleTimeUp}
           questionNumber={currentQuestionIndex + 1}
-          totalQuestions={form.fields.length}
+          totalQuestions={questions.length}
+          template={form.template}
+          timerStyle={form.timerStyle}
         />
-      );
-    }
-    
-    // Aquí se podrían añadir `ImageQuestionTemplate`, `TrueFalseTemplate`, etc.
-
-    return <div>Tipo de pregunta no soportado.</div>;
+    );
   };
   
   const handleRestart = () => {
@@ -74,7 +88,7 @@ export function QuizGameView({ form }: QuizGameViewProps) {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center p-4 min-h-[calc(100vh-8rem)] bg-gradient-to-br from-background via-muted to-background">
+    <div className="flex flex-col items-center justify-center p-4 min-h-[300px] bg-gradient-to-br from-background via-muted to-background rounded-lg">
       <AnimatePresence mode="wait">
         {gameState === 'playing' ? (
           <motion.div
@@ -97,7 +111,7 @@ export function QuizGameView({ form }: QuizGameViewProps) {
           >
              <ResultScreenTemplate
               score={score}
-              totalQuestions={form.fields.length}
+              totalQuestions={questions.length}
               formTitle={form.title}
               onRestart={handleRestart}
             />
