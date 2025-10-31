@@ -110,7 +110,6 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
             return opt;
         });
         
-        // Ensure at least one correct answer for single choice
         if (question.type === 'SINGLE_CHOICE' && !question.options.some(o => o.isCorrect)) {
             const clickedOption = question.options.find(o => o.id === optionId);
             if (clickedOption) clickedOption.isCorrect = true;
@@ -225,6 +224,22 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                         {activeQuestion ? (
                             <ScrollArea className="flex-grow">
                                 <div className="p-4 space-y-4">
+                                     <Card>
+                                        <CardHeader><CardTitle className="text-base flex items-center gap-2"><LayoutTemplate className="h-4 w-4" /> Plantilla de Pregunta</CardTitle></CardHeader>
+                                        <CardContent>
+                                            <Select value={activeQuestion.template || 'default'} onValueChange={handleTemplateChange}>
+                                                <SelectTrigger><SelectValue placeholder="Selecciona una plantilla..." /></SelectTrigger>
+                                                <SelectContent>
+                                                    {templateOptions.map((opt) => (
+                                                        <SelectItem key={opt.value} value={opt.value}>
+                                                            <div className="flex items-center gap-2"><opt.icon className="h-4 w-4"/>{opt.label}</div>
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </CardContent>
+                                    </Card>
+
                                     <Textarea value={activeQuestion.text} onChange={(e) => handleQuestionChange('text', e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-xl text-center font-bold h-auto resize-none bg-background flex-shrink-0" rows={2}/>
                                     
                                      {activeQuestion.template === 'image' && (
