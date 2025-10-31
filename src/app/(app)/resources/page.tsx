@@ -8,8 +8,8 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useTitle } from '@/contexts/title-context';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Move } from 'lucide-react';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Move, Trash2 } from 'lucide-react';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { ResourceListItem } from '@/components/resources/resource-list-item';
 import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
@@ -20,10 +20,12 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { FolderOpen } from 'lucide-react';
 import { EmptyState } from '@/components/empty-state';
+import { ResourceEditorModal } from '@/components/resources/resource-editor-modal';
+import { FolderCreatorModal } from '@/components/resources/folder-creator-modal';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 // --- MAIN PAGE COMPONENT ---
 export default function ResourcesPage() {
@@ -55,7 +57,7 @@ export default function ResourcesPage() {
   }, [setPageTitle]);
 
   const fetchResources = useCallback(async () => {
-    if (isAuthLoading) return; // Esperar a que la sesión del usuario se cargue
+    if (isAuthLoading) return;
     setIsLoadingData(true);
     setError(null);
     
@@ -114,6 +116,44 @@ export default function ResourcesPage() {
       }
     }
   };
+
+  const handleResourceSave = () => {
+    setResourceToEdit(null);
+    setIsFolderCreatorOpen(false);
+    setIsUploaderOpen(false);
+    fetchResources();
+  };
+
+  const confirmDelete = async () => {
+    if (!resourceToDelete) return;
+    setIsDeleting(true);
+    try {
+        const res = await fetch(`/api/resources/${resourceToDelete.id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error((await res.json()).message || 'No se pudo eliminar el recurso.');
+        toast({ title: "Recurso eliminado" });
+        fetchResources();
+    } catch(err) {
+        toast({ title: "Error", description: (err as Error).message, variant: "destructive" });
+    } finally {
+        setResourceToDelete(null);
+        setIsDeleting(false);
+    }
+  };
+
+  const handleRestore = async (resource: AppResourceType) => {
+    try {
+        const res = await fetch(`/api/resources/${resource.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'ACTIVE' })
+        });
+        if(!res.ok) throw new Error("No se pudo restaurar el recurso.");
+        toast({ title: "Recurso Restaurado" });
+        fetchResources();
+    } catch(err) {
+        toast({ title: "Error", description: (err as Error).message, variant: "destructive" });
+    }
+  }
     
   if (isAuthLoading) {
       return <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>
@@ -181,8 +221,8 @@ export default function ResourcesPage() {
                         {folders.length > 0 && (
                             <section>
                                 <h3 className="text-lg font-semibold mb-3">Carpetas</h3>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                                    {folders.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={true} onNavigate={handleNavigateFolder} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={() => {}} onSelect={() => {}}/>)}
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                                    {folders.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={true} onNavigate={handleNavigateFolder} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onSelect={() => {}}/>)}
                                 </div>
                             </section>
                         )}
@@ -190,12 +230,12 @@ export default function ResourcesPage() {
                             <section>
                                 <h3 className="text-lg font-semibold mb-3">Archivos Recientes</h3>
                                 {viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                                        {files.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={false} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={() => {}} onNavigate={() => {}} />)}
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                                        {files.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={false} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onNavigate={() => {}} />)}
                                     </div>
                                 ) : (
                                     <div className="border rounded-lg bg-card divide-y">
-                                        {files.map(res => <ResourceListItem key={res.id} resource={res} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={() => {}} />)}
+                                        {files.map(res => <ResourceListItem key={res.id} resource={res} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} />)}
                                     </div>
                                 )}
                             </section>
@@ -215,8 +255,41 @@ export default function ResourcesPage() {
              <ResourcePreviewModal
                 resource={selectedResource}
                 onClose={() => setSelectedResource(null)}
-                onNavigate={(dir) => { /* Logic to navigate between files */ }}
+                onNavigate={(dir) => {}}
             />
+            
+            <ResourceEditorModal
+                isOpen={!!resourceToEdit || isUploaderOpen}
+                onClose={() => { setResourceToEdit(null); setIsUploaderOpen(false); }}
+                resource={resourceToEdit}
+                parentId={currentFolderId}
+                onSave={handleResourceSave}
+            />
+
+            <FolderCreatorModal
+                 isOpen={isFolderCreatorOpen}
+                 onClose={() => setIsFolderCreatorOpen(false)}
+                 parentId={currentFolderId}
+                 onSave={handleResourceSave}
+            />
+
+             <AlertDialog open={!!resourceToDelete} onOpenChange={(open) => !open && setResourceToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            El recurso "<strong>{resourceToDelete?.title}</strong>" será eliminado permanentemente. Si es una carpeta, debe estar vacía. Esta acción no se puede deshacer.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmDelete} disabled={isDeleting} className={cn(buttonVariants({ variant: "destructive" }))}>
+                            {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                            <Trash2 className="mr-2 h-4 w-4"/>Sí, eliminar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     </div>
     </DndContext>

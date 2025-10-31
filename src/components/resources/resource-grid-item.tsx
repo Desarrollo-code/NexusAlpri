@@ -37,7 +37,6 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
     });
 
     const handleClick = (e: React.MouseEvent) => {
-        // Previene que el evento de clic se propague al listener de dnd-kit
         e.stopPropagation();
         if (isFolder) {
             if (resource.status === 'ACTIVE') onNavigate(resource);
@@ -94,7 +93,7 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                     resource.status === 'ARCHIVED' && 'opacity-60 bg-muted/50'
                 )}
             >
-                <div className="aspect-[4/3] w-full flex items-center justify-center relative border-b overflow-hidden rounded-t-lg bg-muted/20 cursor-pointer" onClick={handleClick}>
+                <div className="aspect-[3/2] w-full flex items-center justify-center relative border-b overflow-hidden rounded-t-lg bg-muted/20 cursor-pointer" onClick={handleClick}>
                     <Thumbnail />
                      {resource.hasPin && !isFolder && (
                         <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1 rounded-full">
@@ -102,9 +101,9 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                         </div>
                     )}
                 </div>
-                <div className="p-3">
-                    <div className="flex justify-between items-start gap-2">
-                         <div className="flex items-start gap-2 flex-grow overflow-hidden">
+                <div className="p-2.5">
+                    <div className="flex justify-between items-start gap-1">
+                         <div className="flex items-start gap-1.5 flex-grow overflow-hidden">
                             {canModify && !isFolder && resource.status === 'ACTIVE' ? (
                                 <div {...listeners} {...attributes} className="p-1 cursor-grab touch-none">
                                     <GripVertical className="h-4 w-4 text-muted-foreground" />
@@ -112,12 +111,12 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                             ) : (
                                 Icon && <Icon className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground" />
                             )}
-                            <p className="font-medium text-sm leading-tight break-words">{resource.title}</p>
+                            <p className="font-medium text-xs leading-tight break-words">{resource.title}</p>
                         </div>
                         {canModify && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 -mr-2 text-muted-foreground" aria-label={`Opciones para ${resource.title}`} onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
+                                    <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 -mr-1 text-muted-foreground" aria-label={`Opciones para ${resource.title}`} onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                                     {resource.status === 'ACTIVE' && (
@@ -159,7 +158,7 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                             </DropdownMenu>
                         )}
                     </div>
-                    <p className={cn("text-xs text-muted-foreground mt-1", canModify && !isFolder && "pl-8")}>
+                    <p className={cn("text-xs text-muted-foreground mt-1", canModify && !isFolder && "pl-7")}>
                         {new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>
                 </div>
