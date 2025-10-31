@@ -163,6 +163,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                     <DialogTitle className="flex items-center gap-2"><Pencil className="h-5 w-5 text-primary"/>Editor de Quiz Interactivo</DialogTitle>
                 </DialogHeader>
                 <div className="flex-1 grid grid-cols-1 md:grid-cols-3 min-h-0">
+                    {/* Panel de Preguntas y Ajustes */}
                     <div className="md:col-span-1 border-r flex flex-col">
                          <div className="p-2 space-y-2">
                              <Button onClick={addQuestion} className="w-full" variant="outline"><PlusCircle className="mr-2 h-4 w-4"/>Añadir Pregunta</Button>
@@ -182,9 +183,9 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                             <Card>
                                 <CardHeader className="p-3"><CardTitle className="text-sm flex items-center gap-1.5"><LayoutTemplate className="h-4 w-4"/>Plantilla de Pregunta</CardTitle></CardHeader>
                                 <CardContent className="p-3 pt-0">
-                                     <RadioGroup value={localQuiz.template || 'default'} onValueChange={(v) => handleQuizMetaChange('template', v)} className="space-y-2">
+                                    <RadioGroup defaultValue={localQuiz.template || 'default'} onValueChange={(v) => handleQuizMetaChange('template', v)} className="space-y-2">
                                         {templateOptions.map(opt => (
-                                            <Label key={opt.value} htmlFor={`template-${opt.value}`} className={cn("flex flex-col p-2.5 rounded-lg border cursor-pointer transition-colors", localQuiz.template === opt.value ? 'border-primary ring-2 ring-primary/50' : 'hover:bg-accent/50')}>
+                                            <Label key={opt.value} htmlFor={`template-${opt.value}`} className={cn("flex flex-col p-2.5 rounded-lg border cursor-pointer transition-colors", (localQuiz.template || 'default') === opt.value ? 'border-primary ring-2 ring-primary/50' : 'hover:bg-accent/50')}>
                                                 <div className="flex items-center gap-2">
                                                      <RadioGroupItem value={opt.value} id={`template-${opt.value}`}/>
                                                      <div className="flex items-center gap-2">
@@ -213,59 +214,62 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                             </Card>
                          </div>
                     </div>
+                     {/* Panel Central de Edición y Vista Previa */}
                      <div className="md:col-span-2 flex flex-col bg-muted/30">
                         {activeQuestion ? (
-                            <div className="flex-1 flex flex-col p-4 gap-4 overflow-y-auto thin-scrollbar">
-                                <Textarea value={activeQuestion.text} onChange={(e) => handleQuestionChange('text', e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-xl text-center font-bold h-24 resize-none bg-background"/>
-                                
-                                <div className="flex-grow w-full min-h-[200px] max-w-lg mx-auto flex items-center justify-center rounded-lg overflow-hidden relative">
-                                    <div className="absolute inset-0 bg-card shadow-inner" />
-                                    <div className="relative z-10 w-full p-4 transform scale-[0.8]">
-                                        <QuizGameView form={quizPreviewForm} isEditorPreview={true} />
+                             <ScrollArea className="flex-1">
+                                <div className="p-4 space-y-4">
+                                    <Textarea value={activeQuestion.text} onChange={(e) => handleQuestionChange('text', e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-xl text-center font-bold h-24 resize-none bg-background"/>
+                                    
+                                    <div className="w-full flex-grow min-h-[200px] max-w-lg mx-auto flex items-center justify-center rounded-lg overflow-hidden relative">
+                                        <div className="absolute inset-0 bg-card shadow-inner" />
+                                        <div className="relative z-10 w-full p-4 transform scale-[0.8]">
+                                            <QuizGameView form={quizPreviewForm} isEditorPreview={true} />
+                                        </div>
                                     </div>
-                                </div>
-                                
-                                 <div className="w-full">
-                                    {isUploading ? (
-                                        <div className="w-full p-4 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2">
-                                            <Loader2 className="h-6 w-6 animate-spin text-primary"/>
-                                            <p className="text-sm text-muted-foreground">Subiendo...</p>
-                                            <Progress value={uploadProgress} className="w-full h-1.5"/>
-                                        </div>
-                                    ) : activeQuestion.imageUrl ? (
-                                        <div className="relative w-40 h-24 rounded-lg overflow-hidden border p-1 bg-background">
-                                            <Image src={activeQuestion.imageUrl} alt="preview" fill className="object-contain" />
-                                            <Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => handleQuestionChange('imageUrl', null)}><X className="h-4 w-4"/></Button>
-                                        </div>
-                                    ) : (
-                                        <UploadArea onFileSelect={handleImageUpload} inputId={`img-upload-${activeQuestion.id}`} />
+                                    
+                                     <div className="w-full">
+                                        {isUploading ? (
+                                            <div className="w-full p-4 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2">
+                                                <Loader2 className="h-6 w-6 animate-spin text-primary"/>
+                                                <p className="text-sm text-muted-foreground">Subiendo...</p>
+                                                <Progress value={uploadProgress} className="w-full h-1.5"/>
+                                            </div>
+                                        ) : activeQuestion.imageUrl ? (
+                                            <div className="relative w-40 h-24 rounded-lg overflow-hidden border p-1 bg-background">
+                                                <Image src={activeQuestion.imageUrl} alt="preview" fill className="object-contain" />
+                                                <Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => handleQuestionChange('imageUrl', null)}><X className="h-4 w-4"/></Button>
+                                            </div>
+                                        ) : (
+                                            <UploadArea onFileSelect={handleImageUpload} inputId={`img-upload-${activeQuestion.id}`} />
+                                        )}
+                                    </div>
+
+                                     <div className="grid grid-cols-2 gap-2">
+                                        {activeQuestion.options.map((opt, index) => (
+                                            <div key={opt.id} className={cn("flex items-center p-2 rounded-md shadow-sm border text-foreground", optionColors[index], opt.isCorrect ? 'ring-2 ring-offset-2 ring-offset-background ring-green-500' : '')}>
+                                                <div className="h-10 w-10 flex-shrink-0 flex items-center justify-center">
+                                                    <svg viewBox="0 0 24 24" className="h-8 w-8 fill-current text-white">{React.createElement(optionShapes[index])}</svg>
+                                                </div>
+                                                <Input value={opt.text} onChange={(e) => handleOptionChange(index, e.target.value)} placeholder={`Opción ${index + 1}`} className="bg-transparent border-0 border-b-2 rounded-none text-white placeholder:text-white/70 focus-visible:ring-0 focus-visible:border-white"/>
+                                                <Button variant="ghost" size="icon" onClick={() => handleSetCorrect(opt.id)} className="text-white hover:bg-white/20 hover:text-white">
+                                                    <Check className={cn("h-6 w-6", opt.isCorrect ? "opacity-100" : "opacity-40")}/>
+                                                </Button>
+                                                 {localQuiz.questions[activeQuestionIndex].options.length > 1 &&
+                                                <Button variant="ghost" size="icon" onClick={() => deleteOption(index)} className="text-white hover:bg-white/20 hover:text-white">
+                                                    <X className="h-4 w-4"/>
+                                                </Button>
+                                                }
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {localQuiz.questions[activeQuestionIndex].options.length < 4 && (
+                                        <Button variant="outline" size="sm" onClick={addOption} className="mt-2 self-start">
+                                            + Añadir opción
+                                        </Button>
                                     )}
                                 </div>
-
-                                 <div className="grid grid-cols-2 gap-2">
-                                    {activeQuestion.options.map((opt, index) => (
-                                        <div key={opt.id} className={cn("flex items-center p-2 rounded-md shadow-sm border text-foreground", optionColors[index], opt.isCorrect ? 'ring-2 ring-offset-2 ring-offset-background ring-green-500' : '')}>
-                                            <div className="h-10 w-10 flex-shrink-0 flex items-center justify-center">
-                                                <svg viewBox="0 0 24 24" className="h-8 w-8 fill-current text-white">{React.createElement(optionShapes[index])}</svg>
-                                            </div>
-                                            <Input value={opt.text} onChange={(e) => handleOptionChange(index, e.target.value)} placeholder={`Opción ${index + 1}`} className="bg-transparent border-0 border-b-2 rounded-none text-white placeholder:text-white/70 focus-visible:ring-0 focus-visible:border-white"/>
-                                            <Button variant="ghost" size="icon" onClick={() => handleSetCorrect(opt.id)} className="text-white hover:bg-white/20 hover:text-white">
-                                                <Check className={cn("h-6 w-6", opt.isCorrect ? "opacity-100" : "opacity-40")}/>
-                                            </Button>
-                                             {localQuiz.questions[activeQuestionIndex].options.length > 1 &&
-                                               <Button variant="ghost" size="icon" onClick={() => deleteOption(index)} className="text-white hover:bg-white/20 hover:text-white">
-                                                  <X className="h-4 w-4"/>
-                                               </Button>
-                                             }
-                                        </div>
-                                    ))}
-                                </div>
-                                 {localQuiz.questions[activeQuestionIndex].options.length < 4 && (
-                                     <Button variant="outline" size="sm" onClick={addOption} className="mt-2 self-start">
-                                         + Añadir opción
-                                     </Button>
-                                 )}
-                            </div>
+                             </ScrollArea>
                         ) : (
                             <div className="flex items-center justify-center h-full text-muted-foreground">
                                 <p>Selecciona una pregunta para editarla.</p>
