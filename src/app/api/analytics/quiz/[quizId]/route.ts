@@ -3,6 +3,7 @@ import { NextResponse, NextRequest } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { getCurrentUser } from '@/lib/auth';
 import { checkCourseOwnership } from '@/lib/auth-utils';
+import type { FormFieldOption } from '@/types';
 
 const prisma = new PrismaClient();
 export const dynamic = 'force-dynamic';
@@ -19,7 +20,10 @@ export async function GET(req: NextRequest, { params }: { params: { quizId: stri
         const quiz = await prisma.quiz.findUnique({
             where: { id: quizId },
             include: { 
-                questions: { select: { id: true, text: true, order: true } },
+                questions: { 
+                    select: { id: true, text: true, order: true, options: true },
+                    orderBy: { order: 'asc' }
+                },
                 contentBlock: { select: { lesson: { select: { module: { select: { courseId: true } } } } } }
             },
         });
@@ -69,10 +73,19 @@ export async function GET(req: NextRequest, { params }: { params: { quizId: stri
                 const correctAnswers = questionAttempts.filter(a => a.selectedOption.isCorrect).length;
                 const successRate = totalAnswers > 0 ? (correctAnswers / totalAnswers) * 100 : 0;
                 
-                const optionsBreakdown = await prisma.answerOption.findMany({
-                    where: { questionId: question.id },
-                    select: { id: true, text: true, isCorrect: true, _count: { select: { AnswerAttempt: true } } }
+                const allOptions = question.options as unknown as FormFieldOption[];
+
+                const optionsBreakdown = allOptions.map(opt => {
+                    const selectionCount = questionAttempts.filter(qa => qa.selectedOption.id === opt.id).length;
+                    return {
+                        optionId: opt.id,
+                        text: opt.text,
+                        isCorrect: opt.isCorrect,
+                        selectionCount: selectionCount,
+                        selectionPercentage: totalAnswers > 0 ? (selectionCount / totalAnswers) * 100 : 0
+                    };
                 });
+
 
                 return {
                     questionId: question.id,
@@ -80,13 +93,7 @@ export async function GET(req: NextRequest, { params }: { params: { quizId: stri
                     order: question.order,
                     successRate,
                     totalAnswers,
-                    options: optionsBreakdown.map(opt => ({
-                        optionId: opt.id,
-                        text: opt.text,
-                        isCorrect: opt.isCorrect,
-                        selectionCount: opt._count.AnswerAttempt,
-                        selectionPercentage: totalAnswers > 0 ? (opt._count.AnswerAttempt / totalAnswers) * 100 : 0
-                    }))
+                    options: optionsBreakdown
                 };
             })
         );

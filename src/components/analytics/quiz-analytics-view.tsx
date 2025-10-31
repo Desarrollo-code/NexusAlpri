@@ -1,4 +1,3 @@
-
 // src/components/analytics/quiz-analytics-view.tsx
 'use client';
 import React, { useState, useEffect } from 'react';
@@ -10,6 +9,9 @@ import { Progress } from '../ui/progress';
 import { Separator } from '../ui/separator';
 import { Badge } from '../ui/badge';
 import { cn } from '@/lib/utils';
+import { ResponsiveContainer, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, Bar, TooltipProps, ComposedChart, Cell } from 'recharts';
+import type { FormFieldOption } from '@/types';
+
 
 interface QuizAnalytics {
     quizId: string;
@@ -34,6 +36,19 @@ interface QuizAnalytics {
 interface QuizAnalyticsViewProps {
     quizId: string;
 }
+
+const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="rounded-lg border bg-background/90 p-2 shadow-sm backdrop-blur-sm">
+        <p className="font-bold">{`${label}`}</p>
+        <p className="text-primary">{`Respuestas: ${payload[0].value}`}</p>
+      </div>
+    );
+  }
+  return null;
+};
+
 
 export const QuizAnalyticsView: React.FC<QuizAnalyticsViewProps> = ({ quizId }) => {
     const [analytics, setAnalytics] = useState<QuizAnalytics | null>(null);
@@ -116,19 +131,22 @@ export const QuizAnalyticsView: React.FC<QuizAnalyticsViewProps> = ({ quizId }) 
                                     <Progress value={q.successRate} className="mt-2 h-2"/>
                                 </CardHeader>
                                 <CardContent>
-                                    <ul className="space-y-2">
-                                        {q.options.map(opt => (
-                                             <li key={opt.optionId} className={cn("p-2 border rounded-md text-sm", opt.isCorrect ? "border-green-300 bg-green-50 dark:bg-green-900/20" : "border-border")}>
-                                                 <div className="flex justify-between items-center">
-                                                    <div className="flex items-center gap-2">
-                                                        {opt.isCorrect ? <CheckCircle className="h-4 w-4 text-green-500"/> : <XCircle className="h-4 w-4 text-muted-foreground"/>}
-                                                        <span>{opt.text}</span>
-                                                    </div>
-                                                    <Badge variant={opt.isCorrect ? "default" : "secondary"}>{Math.round(opt.selectionPercentage)}% ({opt.selectionCount})</Badge>
-                                                 </div>
-                                             </li>
-                                        ))}
-                                    </ul>
+                                    <h4 className="text-sm font-semibold mb-2">Distribución de Respuestas</h4>
+                                     <div className="h-40">
+                                         <ResponsiveContainer width="100%" height="100%">
+                                            <ComposedChart layout="vertical" data={q.options.map(o => ({name: o.text, value: o.selectionCount, isCorrect: o.isCorrect}))} margin={{ top: 5, right: 20, bottom: 5, left: 10 }}>
+                                                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                                                <XAxis type="number" allowDecimals={false} />
+                                                <YAxis dataKey="name" type="category" scale="band" width={120} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
+                                                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
+                                                <Bar dataKey="value" barSize={15} name="Respuestas">
+                                                    {q.options.map((entry, idx) => (
+                                                        <Cell key={`cell-${idx}`} fill={entry.isCorrect ? 'hsl(var(--primary))' : 'hsl(var(--secondary))'} />
+                                                    ))}
+                                                </Bar>
+                                            </ComposedChart>
+                                        </ResponsiveContainer>
+                                    </div>
                                 </CardContent>
                             </Card>
                         ))}

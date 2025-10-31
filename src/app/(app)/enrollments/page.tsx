@@ -3,9 +3,9 @@
 
 import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import type { Course as AppCourse, User, CourseProgress, LessonCompletionRecord } from '@/types';
+import type { Course as AppCourse, User, CourseProgress, Quiz as AppQuiz, Question as AppQuestion } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, AlertTriangle, UsersRound, Filter, MoreVertical, BookOpen, LineChart, TrendingDown, Search, CheckCircle, Percent, HelpCircle, UserX, BarChartHorizontal, ArrowRight, Download, MessageSquare, User as UserIcon } from 'lucide-react';
+import { Loader2, AlertTriangle, UsersRound, Filter, MoreVertical, BookOpen, LineChart, TrendingDown, Search, CheckCircle, Percent, HelpCircle, UserX, BarChartHorizontal, ArrowRight, Download, MessageSquare, User as UserIcon, BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -28,12 +28,14 @@ import { useTour } from '@/contexts/tour-context';
 import { enrollmentsTour } from '@/lib/tour-steps';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { ResponsiveContainer, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, Bar, TooltipProps, ComposedChart, Line } from 'recharts';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { startOfDay, subDays, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Link from 'next/link';
+import { QuizAnalyticsView } from '@/components/analytics/quiz-analytics-view';
+
 
 // --- TYPE DEFINITIONS ---
 interface StudentEnrollmentDetails {
@@ -67,11 +69,12 @@ interface CourseEnrollmentInfo extends AppCourse {
   avgQuizScore: number | null;
   completionTrend: { date: string, count: number }[];
   lessonCompletions: { lessonId: string, title: string, completions: number }[];
+  quizzes: { id: string, title: string }[];
   modules: {
       id: string;
       title: string;
       order: number;
-      lessons: { id: string, title: string, order: number }[];
+      lessons: { id: string, title: string, order: number, contentBlocks: { quiz: { id: string, title: string } | null }[] }[];
   }[];
 }
 
@@ -243,6 +246,8 @@ function EnrollmentsPageComponent() {
   const [studentToView, setStudentToView] = useState<StudentEnrollmentDetails | null>(null);
   const [studentToUnenroll, setStudentToUnenroll] = useState<StudentEnrollmentDetails | null>(null);
   const [isUnenrolling, setIsUnenrolling] = useState(false);
+  
+  const [quizToAnalyze, setQuizToAnalyze] = useState<{id: string, title: string} | null>(null);
 
   const selectedCourseId = searchParams.get('courseId') || '';
   const searchTerm = searchParams.get('search') || '';
@@ -482,6 +487,23 @@ function EnrollmentsPageComponent() {
                          </Card>
                     </div>
 
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Rendimiento en Quizzes</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {selectedCourseInfo.quizzes && selectedCourseInfo.quizzes.length > 0 ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {selectedCourseInfo.quizzes.map(quiz => (
+                                    <Button key={quiz.id} variant="secondary" onClick={() => setQuizToAnalyze(quiz)}>
+                                        <BarChart3 className="mr-2 h-4 w-4"/> {quiz.title}
+                                    </Button>
+                                ))}
+                                </div>
+                            ) : <p className="text-muted-foreground text-sm">Este curso no tiene quizzes.</p>}
+                        </CardContent>
+                    </Card>
+
                     <Card className="bg-muted/20" id="enrollments-student-list">
                     <CardHeader>
                         <div className="flex flex-col sm:flex-row gap-4 justify-between items-start">
@@ -584,6 +606,16 @@ function EnrollmentsPageComponent() {
             </AlertDialogFooter>
         </AlertDialogContent>
     </AlertDialog>
+     <Dialog open={!!quizToAnalyze} onOpenChange={open => !open && setQuizToAnalyze(null)}>
+        <DialogContent className="max-w-4xl h-[80vh]">
+            <DialogHeader>
+                <DialogTitle>Analíticas del Quiz: {quizToAnalyze?.title}</DialogTitle>
+            </DialogHeader>
+            {quizToAnalyze && (
+                <QuizAnalyticsView quizId={quizToAnalyze.id} />
+            )}
+        </DialogContent>
+    </Dialog>
     </>
   );
 }

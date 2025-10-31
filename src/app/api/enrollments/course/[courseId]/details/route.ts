@@ -23,7 +23,13 @@ export async function GET(req: NextRequest, { params }: { params: { courseId: st
             where: { id: courseId },
             include: {
                  modules: {
-                    select: { id: true, title: true, order: true, lessons: { select: { id: true, title: true, order: true } } },
+                    select: { 
+                        id: true, title: true, order: true, 
+                        lessons: { 
+                            select: { id: true, title: true, order: true, contentBlocks: { select: { quiz: { select: { id: true, title: true } } } } },
+                            orderBy: { order: 'asc'}
+                        } 
+                    },
                     orderBy: { order: 'asc' }
                 },
                 _count: {
@@ -65,6 +71,8 @@ export async function GET(req: NextRequest, { params }: { params: { courseId: st
             select: { score: true }
         });
         const avgQuizScore = allQuizAttempts.length > 0 ? allQuizAttempts.reduce((sum, attempt) => sum + attempt.score, 0) / allQuizAttempts.length : 0;
+        
+        const courseQuizzes = course.modules.flatMap(m => m.lessons.flatMap(l => l.contentBlocks.map(cb => cb.quiz).filter(Boolean)));
 
         const enrollmentsWithDetails = await Promise.all(course.enrollments.map(async (enrollment) => {
             const progress = enrollment.progress;
@@ -171,6 +179,7 @@ export async function GET(req: NextRequest, { params }: { params: { courseId: st
             },
             avgProgress: Math.round(avgProgress),
             avgQuizScore: Math.round(avgQuizScore),
+            quizzes: courseQuizzes,
             completionTrend,
             lessonCompletions,
         };
