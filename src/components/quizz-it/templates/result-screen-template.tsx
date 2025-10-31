@@ -2,9 +2,10 @@
 'use client';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Award, Repeat } from 'lucide-react';
+import { Award, Repeat, Star, Crown, Ribbon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Confetti } from '@/components/ui/confetti';
+import { useMemo } from 'react';
 
 interface ResultScreenTemplateProps {
   score: number;
@@ -15,16 +16,31 @@ interface ResultScreenTemplateProps {
 
 export function ResultScreenTemplate({ score, totalQuestions, formTitle, onRestart }: ResultScreenTemplateProps) {
   const router = useRouter();
-  const percentage = totalQuestions > 0 ? (score / totalQuestions) * 100 : 0;
+  const percentage = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
+
+  const resultTier = useMemo(() => {
+    if (percentage === 100) {
+      return { title: "¡Perfecto!", icon: Crown, iconColor: "text-amber-400" };
+    }
+    if (percentage >= 90) {
+      return { title: "¡Excelente!", icon: Star, iconColor: "text-yellow-400" };
+    }
+    if (percentage >= 70) {
+      return { title: "¡Felicidades!", icon: Award, iconColor: "text-green-500" };
+    }
+    return { title: "¡Buen Intento!", icon: Ribbon, iconColor: "text-blue-500" };
+  }, [percentage]);
+  
+  const Icon = resultTier.icon;
   const isWinner = percentage >= 70;
 
   return (
     <Card className="w-full max-w-2xl mx-auto text-center p-8 overflow-hidden">
       {isWinner && <Confetti />}
       <CardHeader>
-        <Award className="mx-auto h-16 w-16 text-amber-400" />
+        <Icon className={`mx-auto h-16 w-16 ${resultTier.iconColor}`} />
         <CardTitle className="text-4xl font-extrabold font-headline mt-4">
-            {isWinner ? "¡Felicidades!" : "¡Buen Intento!"}
+            {resultTier.title}
         </CardTitle>
         <CardDescription className="text-lg">
             Has completado el quiz "{formTitle}".
@@ -36,7 +52,7 @@ export function ResultScreenTemplate({ score, totalQuestions, formTitle, onResta
             <span className="text-7xl font-bold text-primary">{score}</span>
             <span className="text-3xl font-semibold text-muted-foreground">/ {totalQuestions}</span>
         </div>
-         <p className="text-2xl font-semibold text-primary">({percentage.toFixed(0)}%)</p>
+         <p className="text-2xl font-semibold text-primary">({percentage}%)</p>
       </CardContent>
       <CardFooter className="flex flex-col sm:flex-row gap-4 justify-center">
         <Button onClick={onRestart} variant="outline">
