@@ -11,7 +11,7 @@ import { Separator } from "../ui/separator";
 import { useAuth } from "@/contexts/auth-context";
 import Link from "next/link";
 import { useEffect, useState, useMemo, useCallback } from "react";
-import type { Notification, NavItem } from "@/types";
+import type { Notification as AppNotification, NavItem } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useTitle } from "@/contexts/title-context";
 import { useRouter, usePathname } from "next/navigation";
@@ -41,7 +41,7 @@ export const TopBar = () => {
     const router = useRouter();
     const pathname = usePathname();
     const isMobile = useIsMobile();
-    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [notifications, setNotifications] = useState<AppNotification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const { toast } = useToast();
 
@@ -78,7 +78,7 @@ export const TopBar = () => {
             try {
                 const response = await fetch('/api/notifications');
                 if (response.ok) {
-                    const data: Notification[] = await response.json();
+                    const data: AppNotification[] = await response.json();
                     setNotifications(data);
                     setUnreadCount(data.filter(n => !n.read).length);
                 }

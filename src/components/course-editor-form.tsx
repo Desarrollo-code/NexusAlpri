@@ -440,12 +440,12 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     useEffect(() => {
         const EditorActions = () => (
              <div className="flex items-center gap-2">
-                <Button asChild variant="outline" size="sm">
+                <Button asChild variant="ghost" className="text-primary-foreground hover:bg-black/20" size="sm">
                     <Link href={`/courses/${courseId}`} target="_blank">
                         <Eye className="mr-2 h-4 w-4" /> Vista Previa
                     </Link>
                 </Button>
-                <Button onClick={handleSaveCourse} disabled={isSaving || !isDirty} size="sm">
+                <Button onClick={handleSaveCourse} disabled={isSaving || !isDirty} size="sm" className="bg-white/90 text-primary hover:bg-white">
                     {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                     {isSaving ? 'Guardando...' : 'Guardar'}
                 </Button>
