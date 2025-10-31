@@ -468,7 +468,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const handleStateUpdate = useCallback((updater: (prev: AppCourse) => AppCourse) => {
         setCourse(prev => {
             if (!prev) return null;
-            // Create a deep copy to ensure React detects nested changes
             const newCourse = JSON.parse(JSON.stringify(prev));
             return updater(newCourse);
         });
@@ -751,7 +750,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                                             onBlockUpdate={(lessonIndex, blockIndex, field, value) => updateBlockField(moduleIndex, lessonIndex, blockIndex, field, value)}
                                                             onBlockDelete={(lessonIndex, blockIndex) => handleRemoveBlock(moduleIndex, lessonIndex, blockIndex)}
                                                             onQuizUpdate={(lessonIndex, blockIndex, updatedQuiz) => updateQuizForBlock(moduleIndex, lessonIndex, blockIndex, updatedQuiz)}
-                                                            onEditQuiz={(blockIndex) => handleEditQuiz(moduleIndex, course.modules[moduleIndex].lessons.findIndex(l => l.contentBlocks[blockIndex]), blockIndex)}
+                                                            onEditQuiz={(lessonIndex, blockIndex) => handleEditQuiz(moduleIndex, lessonIndex, blockIndex)}
                                                             isSaving={isSaving}
                                                             provided={provided}
                                                             ref={provided.innerRef}
