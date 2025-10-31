@@ -266,7 +266,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                                                 <div className="relative">
                                                                     <div className={cn("absolute inset-0 flex items-center justify-center z-10", optionIsUploading ? 'flex' : 'hidden')}><Loader2 className="h-6 w-6 animate-spin text-primary"/></div>
                                                                      {opt.imageUrl && (<Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6 z-20" onClick={() => handleOptionChange(index, 'imageUrl', null)}><X className="h-4 w-4"/></Button>)}
-                                                                    <UploadArea onFileSelect={(file) => handleImageUpload(file, 'option', index)} inputId={`opt-img-upload-${opt.id}`} className={cn("h-24 w-full", opt.imageUrl && 'bg-cover bg-center')} style={{backgroundImage: opt.imageUrl ? `url(${opt.imageUrl})` : 'none'}}/>
+                                                                    <UploadArea onFileSelect={(file) => handleImageUpload(file, 'option', index)} inputId={`opt-img-upload-${opt.id}`} className={cn("h-24 w-full", opt.imageUrl && 'bg-cover bg-center')} style={{backgroundImage: opt.imageUrl ? `url(${opt.imageUrl})` : 'none'}} compact/>
                                                                 </div>
                                                             </div>
                                                         ) : (
