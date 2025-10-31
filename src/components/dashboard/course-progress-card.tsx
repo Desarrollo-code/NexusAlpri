@@ -1,13 +1,14 @@
 // src/components/dashboard/course-progress-card.tsx
 'use client';
 
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { CircularProgress } from "@/components/ui/circular-progress";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, PencilRuler, Monitor, Award, Layers } from "lucide-react";
 import type { Course } from "@/types";
 import Link from "next/link";
 import { useAnimatedCounter } from "@/hooks/use-animated-counter";
+import { cn } from "@/lib/utils";
 
 interface CourseProgressCardProps {
     course: Course;
@@ -15,71 +16,39 @@ interface CourseProgressCardProps {
 }
 
 const ICONS = [PencilRuler, Monitor, Award, Layers];
-const COLORS = [
-  'text-teal-500', 
-  'text-purple-500', 
-  'text-orange-500', 
-  'text-sky-500'
-];
-
-const SegmentedProgressBar = ({ total, completed }: { total: number, completed: number }) => {
-    return (
-        <div className="flex items-center gap-1.5">
-            <span className="text-xs font-semibold text-muted-foreground w-12 shrink-0">
-                {completed}/{total}
-            </span>
-            <div className="flex-grow grid gap-1" style={{gridTemplateColumns: `repeat(${total}, minmax(0, 1fr))`}}>
-                {Array.from({ length: total }).map((_, i) => (
-                    <div
-                        key={i}
-                        className={`h-1.5 rounded-full ${i < completed ? 'bg-primary' : 'bg-muted'}`}
-                    />
-                ))}
-            </div>
-        </div>
-    );
-};
+const GRADIENTS = ['bg-gradient-blue', 'bg-gradient-green', 'bg-gradient-purple', 'bg-gradient-pink', 'bg-gradient-orange'];
 
 export function CourseProgressCard({ course, index }: CourseProgressCardProps) {
     const averageCompletion = Math.round(course.averageCompletion || 0);
-    const animatedValue = useAnimatedCounter(averageCompletion, 0, 1500);
 
     const Icon = ICONS[index % ICONS.length];
-    const colorClass = COLORS[index % COLORS.length];
+    const gradientClass = GRADIENTS[index % GRADIENTS.length];
     
-    const completedLessons = Math.round((course.lessonsCount || 0) * (averageCompletion / 100));
-
     return (
-        <Card className="p-4 transition-all duration-300 hover:shadow-lg hover:border-primary/50">
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-                {/* Circular Progress */}
-                <div className="flex-shrink-0">
-                    <CircularProgress value={averageCompletion} size={80} strokeWidth={8} showValue={false} className={colorClass}>
-                        <Icon className={`h-8 w-8 ${colorClass}`} />
-                    </CircularProgress>
-                </div>
-
-                {/* Course Info */}
-                <div className="flex-grow text-center sm:text-left">
-                    <h3 className="font-bold text-lg">{course.title}</h3>
-                    <p className="text-sm text-muted-foreground">{course.modulesCount} Módulos, {course.lessonsCount || 0} Lecciones</p>
-                </div>
-
-                {/* Stats and Action */}
-                <div className="flex flex-col items-center sm:items-end gap-2 w-full sm:w-auto">
-                    <div className="flex items-baseline gap-2">
-                        <span className="text-4xl font-bold">{animatedValue}</span>
-                        <span className="text-2xl font-semibold text-muted-foreground">%</span>
+        <Card className={cn(
+            "p-4 transition-all duration-300 hover:shadow-lg hover:border-primary/50 text-white flex flex-col h-full",
+            gradientClass
+        )}>
+            <CardHeader className="flex-row items-start justify-between gap-4 p-0 mb-4">
+                <div className="flex flex-col">
+                    <div className="p-3 bg-white/20 rounded-lg mb-2 w-fit">
+                        <Icon className="h-5 w-5" />
                     </div>
-                     <Button asChild variant="outline" size="sm">
-                        <Link href={`/enrollments?courseId=${course.id}`}>
-                            Ver Detalles <ArrowRight className="ml-2 h-4 w-4"/>
-                        </Link>
-                    </Button>
+                    <p className="text-sm text-white/80">{course.modulesCount} Módulos, {course.lessonsCount || 0} Lecciones</p>
                 </div>
-            </div>
-            <div className="mt-4 pt-4 border-t">
-                 <SegmentedProgressBar total={course.lessonsCount || 10} completed={completedLessons} />
+                <CircularProgress value={averageCompletion} size={60} strokeWidth={6} className="text-white" valueTextClass="text-base font-bold" />
+            </CardHeader>
+
+            <CardContent className="p-0 flex-grow">
+                <h3 className="font-bold text-lg leading-tight line-clamp-2">{course.title}</h3>
+            </CardContent>
+
+            <div className="mt-4 pt-4 border-t border-white/20">
+                <Button asChild variant="secondary" size="sm" className="w-full bg-white/90 text-primary hover:bg-white">
+                    <Link href={`/enrollments?courseId=${course.id}`}>
+                        Ver Detalles <ArrowRight className="ml-2 h-4 w-4"/>
+                    </Link>
+                </Button>
             </div>
         </Card>
     );
