@@ -74,8 +74,14 @@ const FormCard = ({ form, onAction }: { form: AppForm, onAction: (action: 'edit'
                     <div className={cn("w-2 h-2 rounded-full", statusDetails.color)} />
                     <span>{statusDetails.label}</span>
                 </div>
-                 <div className="flex items-center gap-4">
-                    <span>{form._count.responses} respuesta{form._count.responses !== 1 && 's'}</span>
+                 <div className="flex items-center gap-2">
+                    {form.isQuiz && (
+                        <Button variant="secondary" size="sm" asChild className="h-7 px-2 py-1 text-xs">
+                            <Link href={`/quizz-it/${form.id}`}>
+                                <Zap className="mr-1.5 h-3.5 w-3.5"/> Iniciar Quizz-IT
+                            </Link>
+                        </Button>
+                    )}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 -mr-2"><MoreVertical className="h-4 w-4"/></Button>
