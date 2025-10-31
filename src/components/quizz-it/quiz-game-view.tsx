@@ -97,7 +97,7 @@ export function QuizGameView({ form, isEditorPreview = false }: QuizGameViewProp
   }
 
   return (
-    <div className="flex flex-col items-center justify-center p-4 min-h-[300px] bg-gradient-to-br from-background via-muted to-background rounded-lg">
+    <div className="flex flex-col items-center justify-center p-4 rounded-lg">
       <AnimatePresence mode="wait">
         {gameState === 'playing' ? (
           <motion.div

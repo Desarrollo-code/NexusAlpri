@@ -179,7 +179,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="default">Múltiple Elección</SelectItem>
-                                        <SelectItem value="image">Imagen de Pregunta</SelectItem>
+                                        <SelectItem value="image">Pregunta con Imagen</SelectItem>
                                         <SelectItem value="true_false">Verdadero / Falso</SelectItem>
                                         <SelectItem value="flip_card">Tarjeta Giratoria</SelectItem>
                                     </SelectContent>
@@ -205,9 +205,13 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                             <div className="flex-1 flex flex-col p-4 gap-4 overflow-y-auto">
                                 <Textarea value={activeQuestion.text} onChange={(e) => handleQuestionChange('text', e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-xl text-center font-bold h-32 resize-none"/>
                                 
-                                <div className="flex-grow w-full max-w-lg mx-auto bg-card flex items-center justify-center rounded-lg shadow-inner overflow-hidden relative">
-                                    <QuizGameView form={quizPreviewForm} isEditorPreview={true} />
+                                <div className="flex-grow w-full max-w-lg mx-auto flex items-center justify-center rounded-lg overflow-hidden relative">
+                                    <div className="absolute inset-0 bg-card shadow-inner" />
+                                    <div className="relative z-10 w-full p-4">
+                                      <QuizGameView form={quizPreviewForm} isEditorPreview={true} />
+                                    </div>
                                 </div>
+
 
                                  <div className="grid grid-cols-2 gap-2">
                                     {activeQuestion.options.map((opt, index) => (
