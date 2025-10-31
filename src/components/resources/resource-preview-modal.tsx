@@ -420,7 +420,7 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
                         </Button>
                     )
                  )}
-                 {!isEditing && <DownloadButton url={resource.url} resourceId={resource.id} hasPin={resource.hasPin} onDownloadSuccess={() => addXp(user!.id, XP_CONFIG.DOWNLOAD_RESOURCE)} variant="default" size="sm" />}
+                 {!isEditing && <DownloadButton url={resource.url} resourceId={resource.id} hasPin={resource.hasPin} onDownloadSuccess={() => user && addXp(user.id, XP_CONFIG.DOWNLOAD_RESOURCE)} variant="default" size="sm" />}
             </div>
           </DialogFooter>
         </DialogContent>
