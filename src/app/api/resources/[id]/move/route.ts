@@ -29,7 +29,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
             return NextResponse.json({ message: 'No tienes permiso para mover este recurso' }, { status: 403 });
         }
         
-        // Verificar que el destino es una carpeta
+        // Verificar que el destino es una carpeta o la raíz (null)
         if (parentId) {
             const targetFolder = await prisma.enterpriseResource.findUnique({
                 where: { id: parentId }

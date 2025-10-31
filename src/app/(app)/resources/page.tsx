@@ -14,7 +14,6 @@ import { ResourceListItem } from '@/components/resources/resource-list-item';
 import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { DndContext, type DragEndEvent, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { useDroppable } from '@dnd-kit/core';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -157,12 +156,7 @@ export default function ResourcesPage() {
   if (isAuthLoading) {
       return <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>
   }
-
-  const { isOver, setNodeRef: rootDroppableRef } = useDroppable({
-        id: 'root',
-        disabled: !!currentFolderId,
-    });
-    
+  
   return (
     <DndContext onDragEnd={handleDragEnd} sensors={useSensors(useSensor(MouseSensor), useSensor(TouchSensor))}>
     <div className="grid grid-cols-1 gap-6 items-start">
@@ -210,7 +204,7 @@ export default function ResourcesPage() {
                 </ol>
             </nav>
             
-            <div ref={rootDroppableRef}>
+            <div>
                 {isLoadingData ? (
                     <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
                 ) : error ? (
@@ -258,7 +252,7 @@ export default function ResourcesPage() {
             />
             
             <ResourceEditorModal
-                isOpen={!!resourceToEdit || isUploaderOpen}
+                isOpen={isUploaderOpen || !!resourceToEdit}
                 onClose={() => { setResourceToEdit(null); setIsUploaderOpen(false); }}
                 resource={resourceToEdit}
                 parentId={currentFolderId}
