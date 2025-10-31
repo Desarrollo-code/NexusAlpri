@@ -1,7 +1,7 @@
-
+// src/hooks/use-idle-timeout.ts
 'use client';
 
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 
 /**
@@ -23,36 +23,42 @@ export const useIdleTimeout = (
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const promptTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pathname = usePathname();
-  
+
   const timeoutMs = timeoutMinutes * 60 * 1000;
-  const promptMs = timeoutMs - (promptBeforeIdleSeconds * 1000);
+  // Asegurarnos de que el prompt no se active con tiempo negativo
+  const promptMs = Math.max(0, timeoutMs - (promptBeforeIdleSeconds * 1000));
 
   const clearTimers = useCallback(() => {
     if (promptTimeoutRef.current) {
       clearTimeout(promptTimeoutRef.current);
+      promptTimeoutRef.current = null;
     }
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
   }, []);
 
   const startTimers = useCallback(() => {
     clearTimers();
-    if (enabled && promptMs > 0) {
-      promptTimeoutRef.current = setTimeout(onPrompt, promptMs);
-    }
     if (enabled) {
+      if (promptMs > 0 && promptMs < timeoutMs) {
+        promptTimeoutRef.current = setTimeout(onPrompt, promptMs);
+      }
       timeoutRef.current = setTimeout(onTimeout, timeoutMs);
     }
   }, [onTimeout, onPrompt, timeoutMs, promptMs, enabled, clearTimers]);
   
-  // This is the function the user calls to "stay" active
+  // La función `stay` ahora simplemente reinicia los temporizadores,
+  // lo cual es lo mismo que cualquier otra actividad del usuario.
   const stay = useCallback(() => {
     startTimers();
   }, [startTimers]);
 
   useEffect(() => {
-    const handleActivity = () => startTimers();
+    const handleActivity = () => {
+      startTimers();
+    };
     
     if (!enabled) {
       clearTimers();
@@ -64,7 +70,7 @@ export const useIdleTimeout = (
     ];
 
     events.forEach(event => window.addEventListener(event, handleActivity));
-    startTimers();
+    startTimers(); // Iniciar los temporizadores al montar o cuando se habilita
 
     return () => {
       events.forEach(event => window.removeEventListener(event, handleActivity));
@@ -72,7 +78,7 @@ export const useIdleTimeout = (
     };
   }, [startTimers, clearTimers, enabled]);
 
-  // Reset timer on route change
+  // Reiniciar el temporizador también en cada cambio de ruta
   useEffect(() => {
     if (enabled) {
       startTimers();
