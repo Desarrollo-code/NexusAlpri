@@ -494,8 +494,8 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             return (
                  <div key={textBlock.id + '-' + imageBlock.id} className="md:flex md:gap-8 md:items-stretch my-4">
                     <div className="md:w-[65%] md:flex-shrink-0 prose dark:prose-invert prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: textBlock.content || '' }} />
-                    <div className="mt-4 md:mt-0 md:w-[35%] flex flex-col items-center justify-center">
-                        <div className="relative w-full h-full max-h-48 cursor-pointer" onClick={() => setImageToView(imageBlock.content)}>
+                    <div className="md:w-[35%] md:flex-shrink-0 flex flex-col items-center justify-center mt-4 md:mt-0">
+                        <div className="relative w-full h-full cursor-pointer" onClick={() => setImageToView(imageBlock.content)}>
                            <Image src={imageBlock.content!} alt="Visual support" fill className="object-contain rounded-lg" priority quality={100} data-ai-hint="lesson visual aid" />
                        </div>
                     </div>
@@ -538,7 +538,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             if (isImage) {
                 return (
                      <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md flex justify-center group relative cursor-pointer" onClick={() => setImageToView(url)}>
-                        <div className="relative aspect-video w-full max-w-4xl p-2">
+                        <div className="relative w-full max-w-4xl p-2" style={{aspectRatio: '16/9'}}>
                             <Image src={url} alt={`Preview: ${selectedLesson?.title}`} fill className="object-contain p-2" priority quality={100} data-ai-hint="lesson file" />
                         </div>
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -719,7 +719,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   }
 
   return (
-    <div className="flex flex-grow">
+    <div className="flex flex-grow h-[calc(100vh-5rem)]">
       {!isMobile && isSidebarVisible && (
         <aside className="w-80 flex-shrink-0 border-r bg-card flex flex-col sticky top-20 self-start max-h-[calc(100vh-5rem)]">
             <SidebarContent />
