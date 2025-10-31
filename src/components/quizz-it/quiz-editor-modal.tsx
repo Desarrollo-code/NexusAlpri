@@ -1,7 +1,7 @@
 
 // src/components/quizz-it/quiz-editor-modal.tsx
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -77,8 +77,8 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
             const newQuestions = [...localQuiz.questions];
             const currentQuestion = newQuestions[activeQuestionIndex];
             currentQuestion.options = [
-                { id: generateUniqueId('opt'), text: 'Verdadero', isCorrect: true, points: 10 },
-                { id: generateUniqueId('opt'), text: 'Falso', isCorrect: false, points: 0 }
+                { id: generateUniqueId('opt'), text: 'Verdadero', imageUrl: null, isCorrect: true, points: 10 },
+                { id: generateUniqueId('opt'), text: 'Falso', imageUrl: null, isCorrect: false, points: 0 }
             ];
             setLocalQuiz(prev => ({...prev, questions: newQuestions}));
         }
@@ -212,17 +212,42 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                     </div>
                     <div className="md:col-span-2 flex flex-col">
                         {activeQuestion ? (
-                            <div className="flex-1 flex flex-col p-4 gap-4 min-h-0">
+                            <ScrollArea className="flex-grow">
+                            <div className="p-4 space-y-4">
                                 <Textarea value={activeQuestion.text} onChange={(e) => handleQuestionChange('text', e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-xl text-center font-bold h-auto resize-none bg-background flex-shrink-0" rows={2}/>
-                                <ScrollArea className="flex-grow">
-                                <div className="space-y-4 pr-2">
+                                
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="text-base flex items-center gap-2">
+                                            <LayoutTemplate className="h-4 w-4" /> Plantilla de Pregunta
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <Select value={localQuiz.template || 'default'} onValueChange={handleTemplateChange}>
+                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                {templateOptions.map(opt => (
+                                                    <SelectItem key={opt.value} value={opt.value}>
+                                                        <div className="flex items-center gap-2">
+                                                           <opt.icon className="h-4 w-4"/>
+                                                           <span>{opt.label}</span>
+                                                        </div>
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <p className="text-xs text-muted-foreground mt-2">{templateOptions.find(o => o.value === (localQuiz.template || 'default'))?.description}</p>
+                                    </CardContent>
+                                </Card>
+
+                                {localQuiz.template === 'image' && (
                                      <div className="w-full">
                                         {isUploading ? (
                                             <div className="w-full p-4 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2">
                                                 <Loader2 className="h-6 w-6 animate-spin text-primary"/><p className="text-sm text-muted-foreground">Subiendo...</p><Progress value={uploadProgress} className="w-full h-1.5"/>
                                             </div>
                                         ) : activeQuestion.imageUrl ? (
-                                            <div className="relative w-40 h-24 rounded-lg overflow-hidden border p-1 bg-background">
+                                            <div className="relative w-full aspect-video rounded-lg overflow-hidden border p-1 bg-background">
                                                 <Image src={activeQuestion.imageUrl} alt="preview" fill className="object-contain" />
                                                 <Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => handleQuestionChange('imageUrl', null)}><X className="h-4 w-4"/></Button>
                                             </div>
@@ -230,8 +255,13 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                             <UploadArea onFileSelect={(file) => handleImageUpload(file, 'question')} inputId={`img-upload-${activeQuestion.id}`} />
                                         )}
                                     </div>
-                                    
-                                     <div className={cn("grid gap-2", isImageOptionsTemplate ? "grid-cols-2" : "grid-cols-1")}>
+                                )}
+                                
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="text-base">Opciones de Respuesta</CardTitle>
+                                    </CardHeader>
+                                     <CardContent className={cn("grid gap-2", isImageOptionsTemplate ? "grid-cols-2" : "grid-cols-1")}>
                                         {activeQuestion.options.slice(0, 4).map((opt, index) => {
                                             const optionIsUploading = isOptionUploading[index];
                                             const optionProgress = optionUploadProgress[index] || 0;
@@ -239,16 +269,20 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                                 <div key={opt.id} className={cn("flex items-center gap-2 p-2 rounded-md shadow-sm border", opt.isCorrect ? 'ring-2 ring-offset-2 ring-offset-background ring-green-500' : '')}>
                                                     {isImageOptionsTemplate ? (
                                                         <div className="flex-grow space-y-2">
-                                                             {isOptionUploading ? (
-                                                                <div className="w-full h-24 flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg bg-muted/50 p-2"><Loader2 className="h-6 w-6 animate-spin text-primary"/><p className="text-sm text-muted-foreground">Subiendo...</p><Progress value={optionProgress} className="w-full h-1.5"/></div>
-                                                            ) : opt.imageUrl ? (
-                                                                 <div className="relative w-full h-24 rounded-lg overflow-hidden border p-1 bg-background">
-                                                                     <Image src={opt.imageUrl} alt={`Opción ${index+1}`} fill className="object-cover" />
-                                                                     <Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => handleOptionChange(index, 'imageUrl', '')}><X className="h-4 w-4"/></Button>
+                                                            <div className="relative">
+                                                                <div className={cn("absolute inset-0 flex items-center justify-center z-10", isOptionUploading ? 'flex' : 'hidden')}>
+                                                                    <Loader2 className="h-6 w-6 animate-spin text-primary"/>
                                                                 </div>
-                                                            ) : (
-                                                                <UploadArea onFileSelect={(file) => handleImageUpload(file, 'option', index)} inputId={`opt-img-upload-${opt.id}`} />
-                                                            )}
+                                                                 {opt.imageUrl && (
+                                                                    <Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6 z-20" onClick={() => handleOptionChange(index, 'imageUrl', '')}><X className="h-4 w-4"/></Button>
+                                                                )}
+                                                                <UploadArea
+                                                                    onFileSelect={(file) => handleImageUpload(file, 'option', index)}
+                                                                    inputId={`opt-img-upload-${opt.id}`}
+                                                                    className={cn("h-24 w-full", opt.imageUrl && 'bg-cover bg-center')}
+                                                                    style={{backgroundImage: opt.imageUrl ? `url(${opt.imageUrl})` : 'none'}}
+                                                                />
+                                                            </div>
                                                             <div className="flex items-center justify-center">
                                                                <Button variant="ghost" size="sm" onClick={() => handleSetCorrect(opt.id)}>
                                                                     <Check className={cn("h-5 w-5", opt.isCorrect ? 'text-green-500' : 'text-muted-foreground')}/> <span className="ml-1 text-xs">Correcta</span>
@@ -263,20 +297,22 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                                 </div>
                                             )
                                         })}
-                                    </div>
-                                    {localQuiz.questions[activeQuestionIndex].options.length < 4 && !isImageOptionsTemplate && (
-                                        <Button variant="outline" size="sm" onClick={addOption} className="mt-2 self-start">+ Añadir opción</Button>
-                                    )}
-                                </div>
-                                </ScrollArea>
+                                    </CardContent>
+                                    <CardFooter>
+                                         {localQuiz.questions[activeQuestionIndex].options.length < 4 && !isImageOptionsTemplate && (
+                                            <Button variant="outline" size="sm" onClick={addOption} className="mt-2 self-start">+ Añadir opción</Button>
+                                        )}
+                                    </CardFooter>
+                                </Card>
                             </div>
+                            </ScrollArea>
                         ) : (
                             <div className="flex items-center justify-center h-full text-muted-foreground"><p>Selecciona una pregunta para editarla.</p></div>
                         )}
                     </div>
                 </div>
                 <DialogFooter className="p-4 border-t">
-                    <Button variant="outline" onClick={() => setIsPreviewOpen(true)}><Eye className="mr-2 h-4 w-4" />Previsualizar</Button>
+                     <Button variant="outline" onClick={() => setIsPreviewOpen(true)}><Eye className="mr-2 h-4 w-4" />Previsualizar</Button>
                     <div className="flex-grow"/>
                     <Button variant="outline" onClick={onClose}>Cancelar</Button>
                     <Button onClick={handleSaveChanges}>Guardar Cambios del Quiz</Button>
@@ -294,417 +330,3 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
       </>
     );
 }
-```
-  <change>
-    <file>src/types.ts</file>
-    <content><![CDATA[
-// src/types.ts
-import type { Prisma, User as PrismaUser } from '@prisma/client';
-
-// --- USER & AUTH ---
-export type UserRole = 'ADMINISTRATOR' | 'INSTRUCTOR' | 'STUDENT';
-
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatar: string | null;
-  role: UserRole;
-  isTwoFactorEnabled?: boolean;
-  registeredDate?: string | Date;
-  theme?: string | null;
-  xp?: number | null;
-  isActive?: boolean;
-}
-
-export interface PlatformSettings {
-    platformName: string;
-    allowPublicRegistration: boolean;
-    enableEmailNotifications: boolean;
-    emailWhitelist: string;
-    require2faForAdmins: boolean;
-    idleTimeoutMinutes: number;
-    enableIdleTimeout: boolean;
-    passwordMinLength: number;
-    passwordRequireUppercase: boolean;
-    passwordRequireLowercase: boolean;
-    passwordRequireNumber: boolean;
-    passwordRequireSpecialChar: boolean;
-    resourceCategories: string[];
-    primaryColor?: string;
-    secondaryColor?: string;
-    accentColor?: string;
-    backgroundColorLight?: string;
-    fontHeadline?: string;
-    fontBody?: string;
-    primaryColorDark?: string;
-    backgroundColorDark?: string;
-    logoUrl?: string | null;
-    watermarkUrl?: string | null;
-    landingImageUrl?: string | null;
-    authImageUrl?: string | null;
-    aboutImageUrl?: string | null;
-    benefitsImageUrl?: string | null;
-    announcementsImageUrl?: string | null;
-    publicPagesBgUrl?: string | null;
-    securityMascotUrl?: string | null;
-    emptyStateCoursesUrl?: string | null;
-    emptyStateMyCoursesUrl?: string | null;
-    emptyStateFormsUrl?: string | null;
-    emptyStateMyNotesUrl?: string | null;
-    emptyStateResourcesUrl?: string | null;
-    emptyStateCertificatesUrl?: string | null;
-    emptyStateMotivationsUrl?: string | null;
-    emptyStateUsersUrl?: string | null;
-    emptyStateLeaderboardUrl?: string | null;
-}
-
-// --- NAVIGATION ---
-export interface NavItem {
-    id: string;
-    label: string;
-    icon: React.ElementType;
-    roles: UserRole[];
-    path?: string;
-    badge?: string;
-    color?: string;
-    children?: NavItem[];
-}
-
-
-// --- COURSE CONTENT ---
-export type LessonType = 'TEXT' | 'VIDEO' | 'QUIZ' | 'FILE';
-export type CourseStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
-export type QuestionType = 'MULTIPLE_CHOICE' | 'SINGLE_CHOICE';
-
-export interface AnswerOption {
-    id: string;
-    text: string;
-    isCorrect: boolean;
-    feedback?: string | null;
-    points: number;
-}
-
-export interface Question {
-    id: string;
-    text: string;
-    type: QuestionType;
-    order: number;
-    options: AnswerOption[];
-    imageUrl?: string | null;
-}
-
-export interface Quiz {
-    id: string;
-    title: string;
-    description?: string;
-    maxAttempts?: number | null;
-    questions: Question[];
-    template?: string | null;
-    timerStyle?: string | null;
-}
-
-export interface ContentBlock {
-  id: string;
-  type: LessonType;
-  content?: string;
-  order: number;
-  quiz?: Quiz;
-}
-
-export interface Lesson {
-  id: string;
-  title: string;
-  order: number;
-  contentBlocks: ContentBlock[];
-}
-
-export interface Module {
-  id: string;
-  title: string;
-  order: number;
-  lessons: Lesson[];
-}
-
-export type CoursePrerequisiteInfo = {
-  id: string;
-  title: string;
-} | null;
-
-export interface Course extends Omit<Prisma.CourseGetPayload<{}>, 'instructor' | 'prerequisite' | 'isMandatory'> {
-  instructor: {
-      id: string;
-      name: string;
-      avatar: string | null;
-  };
-  modulesCount: number;
-  lessonsCount?: number;
-  modules: Module[];
-  isEnrolled?: boolean;
-  enrollmentsCount?: number;
-  averageCompletion?: number;
-  publicationDate?: Date | null;
-  prerequisite: CoursePrerequisiteInfo;
-  userProgress?: {
-      completedAt: Date | null;
-  }[] | null;
-  prerequisiteCompleted?: boolean;
-  isMandatory: boolean;
-}
-
-
-export interface EnrolledCourse extends Course {
-    enrollmentId: string;
-    enrolledAt: string;
-    progressPercentage?: number;
-}
-
-export type LessonCompletionRecord = {
-    lessonId: string;
-    type: 'view' | 'quiz' | 'video';
-    score?: number | null;
-};
-
-export interface CourseProgress {
-    userId: string;
-    courseId: string;
-    completedLessons: LessonCompletionRecord[];
-    progressPercentage: number;
-    completedAt?: Date | null;
-    id: string;
-}
-
-export interface UserNote {
-    id: string;
-    userId: string;
-    lessonId: string;
-    content: string;
-    color: string;
-    createdAt: string;
-    updatedAt: string;
-}
-
-export type CourseAssignment = Prisma.CourseAssignmentGetPayload<{}>;
-
-
-// --- RESOURCES ---
-export type ResourceType = 'FOLDER' | 'DOCUMENT' | 'GUIDE' | 'MANUAL' | 'POLICY' | 'VIDEO' | 'EXTERNAL_LINK' | 'OTHER' | 'DOCUMENTO_EDITABLE';
-export type ResourceStatus = 'ACTIVE' | 'ARCHIVED';
-
-export interface EnterpriseResource extends Omit<Prisma.EnterpriseResourceGetPayload<{}>, 'tags' | 'status'> {
-    tags: string[];
-    uploaderName: string;
-    hasPin: boolean;
-    status: ResourceStatus;
-    uploader?: { id: string, name: string | null, avatar: string | null } | null;
-    sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
-}
-
-
-// --- ANNOUNCEMENTS ---
-export interface Reaction {
-    userId: string;
-    reaction: string;
-    user: {
-      id: string;
-      name: string | null;
-      avatar?: string | null;
-    };
-}
-
-export interface Attachment {
-    id?: string;
-    name: string;
-    url: string;
-    type: string;
-    size: number;
-}
-
-export interface Announcement {
-    id: string;
-    title: string;
-    content: string;
-    date: string;
-    author: { id: string; name: string | null; avatar?: string | null; role?: string } | null;
-    audience: UserRole[] | 'ALL' | string;
-    priority?: 'Normal' | 'Urgente';
-    isPinned: boolean;
-    attachments: Attachment[];
-    reads: { id: string; name: string | null; avatar?: string | null; }[];
-    reactions: Reaction[];
-    _count: {
-      reads: number;
-      reactions: number;
-    };
-}
-
-// --- NOTIFICATIONS ---
-export interface Notification {
-    id: string;
-    userId: string;
-    title: string;
-    description?: string;
-    date: string; // ISO string from DB
-    link?: string;
-    read: boolean;
-    isMotivational?: boolean;
-    motivationalMessageId?: string | null;
-    interactiveEventId?: string | null;
-    interactiveEventOccurrence?: Date | string | null;
-}
-
-// --- CALENDAR ---
-export type EventAudienceType = 'ALL' | UserRole | 'SPECIFIC';
-
-export interface CalendarEvent {
-    id: string;
-    title: string;
-    start: string;
-    end: string;
-    allDay: boolean;
-    description?: string | null;
-    location?: string | null;
-    audienceType: EventAudienceType;
-    attendees: Pick<User, 'id' | 'name' | 'email'>[];
-    color: string;
-    creatorId: string;
-    creator?: { id: string, name: string | null };
-    videoConferenceLink?: string | null;
-    attachments: Attachment[];
-    recurrence: Prisma.RecurrenceType;
-    recurrenceEndDate?: string | null;
-    parentId?: string | null;
-    isInteractive: boolean;
-}
-
-// --- SECURITY ---
-export type SecurityLogEvent = 
-    | 'SUCCESSFUL_LOGIN'
-    | 'FAILED_LOGIN_ATTEMPT' 
-    | 'PASSWORD_CHANGE_SUCCESS'
-    | 'TWO_FACTOR_ENABLED'
-    | 'TWO_FACTOR_DISABLED'
-    | 'USER_ROLE_CHANGED'
-    | 'COURSE_CREATED'
-    | 'COURSE_UPDATED'
-    | 'COURSE_DELETED'
-    | 'USER_SUSPENDED';
-
-export type SecurityLog = Prisma.SecurityLogGetPayload<{
-    include: { user: { select: { id: true, name: true, avatar: true, email: true } } }
-}> & {
-    userAgent: string | null;
-    city: string | null;
-    country: string | null;
-    lat?: number | null;
-    lng?: number | null;
-};
-
-export type SecurityStats = {
-    successfulLogins: number;
-    failedLogins: number;
-    roleChanges: number;
-    courseModifications: number;
-    browsers: { name: string, count: number }[];
-    os: { name: string, count: number }[];
-    topIps: { ip: string, count: number, country: string }[];
-    topCountries: { name: string, count: number }[];
-    securityScore: number;
-    twoFactorAdoptionRate: number;
-    atRiskUsers: { userId: string, name: string | null, email: string, avatar: string | null, failedAttempts: number }[];
-};
-
-
-// --- ANALYTICS ---
-type TrendData = { date: string, count: number };
-export interface AdminDashboardStats {
-    totalUsers: number;
-    totalCourses: number;
-    totalPublishedCourses: number;
-    totalEnrollments: number;
-    averageCompletionRate: number;
-    userRegistrationTrend: TrendData[];
-    contentActivityTrend: { date: string, newCourses: number, newEnrollments: number }[];
-    enrollmentTrend: TrendData[];
-    usersByRole: { role: UserRole; count: number }[];
-    coursesByStatus: { status: CourseStatus; count: number }[];
-    topCoursesByEnrollment: any[];
-    topCoursesByCompletion: any[];
-    lowestCoursesByCompletion: any[];
-    topStudentsByEnrollment: any[];
-    topStudentsByCompletion: any[];
-    topInstructorsByCourses: any[];
-}
-
-// --- TEMPLATES ---
-export type TemplateType = 'SYSTEM' | 'USER';
-export { type LessonTemplate, type TemplateBlock, type CertificateTemplate } from '@prisma/client';
-
-// --- GAMIFICATION ---
-export type UserAchievement = Prisma.UserAchievementGetPayload<{
-    include: {
-        achievement: true;
-    }
-}>;
-export { type AchievementSlug } from '@prisma/client';
-
-// --- MOTIVATIONAL MESSAGES ---
-export type MotivationalMessage = Prisma.MotivationalMessageGetPayload<{}>;
-export { type MotivationalMessageTriggerType } from '@prisma/client';
-
-
-// --- FORMS ---
-export interface FormFieldOption {
-  id: string;
-  text: string;
-  isCorrect: boolean;
-  points: number;
-  imageUrl?: string | null;
-}
-
-export type FormField = Omit<Prisma.FormFieldGetPayload<{}>, 'options'> & {
-  options: FormFieldOption[];
-};
-
-export type AppForm = Prisma.FormGetPayload<{}> & {
-    fields: FormField[];
-    _count: {
-        responses: number;
-    };
-    creator?: {
-        name: string | null;
-    } | null;
-    sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
-    template?: string | null;
-    timerStyle?: string | null;
-};
-
-// --- PROCESSES ---
-export type Process = Prisma.ProcessGetPayload<{
-    include: {
-        children: true,
-        users: true
-    }
-}>;
-
-// --- MESSAGES / CHAT ---
-export interface Conversation {
-    id: string;
-    participants: Participant[];
-    messages: Message[];
-    updatedAt: string;
-    isGroup: boolean;
-}
-export interface Participant extends Pick<User, 'id' | 'name' | 'avatar'> {}
-export interface Message {
-    id: string;
-    content: string | null;
-    createdAt: string;
-    authorId: string;
-    author: Participant;
-    attachments: Attachment[];
-    conversationId: string;
-}
-
-
-export { type FormStatus, type FormFieldType, type AnnouncementAttachment, type RecurrenceType, type ChatAttachment } from '@prisma/client';
