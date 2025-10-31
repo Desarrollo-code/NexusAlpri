@@ -494,8 +494,10 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             return (
                 <div key={textBlock.id + '-' + imageBlock.id} className="grid grid-cols-1 md:grid-cols-10 gap-8 my-4 items-center">
                     <div className="md:col-span-7 prose dark:prose-invert prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: textBlock.content || '' }} />
-                    <div className="md:col-span-3 relative aspect-square p-2 cursor-pointer" onClick={() => setImageToView(imageBlock.content)}>
-                        <Image src={imageBlock.content!} alt="Visual support for lesson content" fill className="object-contain rounded-lg" priority quality={100} data-ai-hint="lesson visual aid" />
+                    <div className="md:col-span-3 flex items-center justify-center p-2 cursor-pointer" onClick={() => setImageToView(imageBlock.content)}>
+                        <div className="relative w-full h-full min-h-[200px]">
+                           <Image src={imageBlock.content!} alt="Visual support for lesson content" fill className="object-contain rounded-lg" priority quality={100} data-ai-hint="lesson visual aid" />
+                        </div>
                     </div>
                 </div>
             );
