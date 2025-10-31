@@ -61,6 +61,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (userRes.status === 'fulfilled' && userRes.value.ok) {
             const userData = await userRes.value.json();
             setUser(userData.user);
+            if (userData.user?.theme) {
+              setTheme(userData.user.theme);
+            }
         } else {
             setUser(null);
         }
@@ -71,7 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
         setIsLoading(false);
     }
-  }, []);
+  }, [setTheme]);
 
 
   useEffect(() => {
@@ -80,16 +83,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = useCallback((userData: User) => {
     setUser(userData);
+    if (userData.theme) {
+        setTheme(userData.theme);
+    }
     const params = new URLSearchParams(window.location.search);
     const redirectedFrom = params.get('redirectedFrom');
     router.replace(redirectedFrom || '/dashboard');
-  }, [router]);
+  }, [router, setTheme]);
 
   const logout = useCallback(() => {
-    // Fire and forget the API call
     fetch('/api/auth/logout', { method: 'POST' }).catch(err => console.error("Fallo al llamar a la API de logout en segundo plano:", err));
-    
-    // Perform immediate client-side changes
     setUser(null);
     setTheme('light'); 
     router.push('/sign-in');
@@ -98,12 +101,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const updateUser = useCallback((updatedData: Partial<User>) => {
     setUser(prevUser => {
       if (!prevUser) return null;
-      if (updatedData.theme && updatedData.theme !== prevUser.theme) {
-          setTheme(updatedData.theme);
-      }
+      // El cambio de tema ya se maneja de forma optimista en los componentes que lo llaman.
+      // Aquí solo actualizamos el estado del usuario.
       return { ...prevUser, ...updatedData };
     });
-  }, [setTheme]);
+  }, []);
 
   const updateSettings = useCallback((updatedData: Partial<PlatformSettings>) => {
     setSettings(prevSettings => {

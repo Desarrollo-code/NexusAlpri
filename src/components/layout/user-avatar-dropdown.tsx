@@ -32,25 +32,25 @@ function ThemeToggle() {
   const { user, updateUser } = useAuth();
 
   const handleThemeChange = async (newTheme: string) => {
-    // 1. Optimistic UI update
+    // 1. Actualizar el tema visualmente de forma inmediata (optimista).
     setTheme(newTheme);
     
-    if (!user) return;
-    
-    // 2. Update local context state
-    updateUser({ theme: newTheme });
+    if (user) {
+        // 2. Actualizar el estado local en el contexto sin causar recargas.
+        updateUser({ theme: newTheme });
 
-    // 3. Persist to backend in the background
-    try {
-      await fetch(`/api/users/${user.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ theme: newTheme }),
-      });
-    } catch (error) {
-      console.error('Error al guardar la preferencia de tema:', error);
-      // Optional: revert theme change on error, though it might cause a flicker.
-      // For simplicity, we'll let the optimistic update stand.
+        // 3. Guardar en el backend en segundo plano sin bloquear la UI.
+        try {
+            await fetch(`/api/users/${user.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ theme: newTheme }),
+            });
+        } catch (error) {
+            console.error('Error guardando la preferencia de tema:', error);
+            // Opcional: podrías revertir el tema si falla el guardado,
+            // pero para una mejor experiencia de usuario, mantenemos la UI optimista.
+        }
     }
   };
 
