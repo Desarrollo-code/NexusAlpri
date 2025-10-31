@@ -492,10 +492,10 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             const textBlock = block;
             const imageBlock = allBlocks[index + 1];
             return (
-                <div key={textBlock.id + '-' + imageBlock.id} className="flex flex-col md:flex-row gap-8 my-4">
-                    <div className="md:w-[65%] prose dark:prose-invert prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: textBlock.content || '' }} />
-                    <div className="md:w-[35%] md:flex-shrink-0 flex flex-col justify-center self-center" onClick={() => setImageToView(imageBlock.content)}>
-                        <div className="relative w-full aspect-video">
+                <div key={textBlock.id + '-' + imageBlock.id} className="flex flex-col md:flex-row items-center gap-8 my-4">
+                    <div className="md:flex-shrink-0 md:w-[65%] prose dark:prose-invert prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: textBlock.content || '' }} />
+                    <div className="flex-grow flex flex-col justify-center" onClick={() => setImageToView(imageBlock.content)}>
+                        <div className="relative w-full max-h-[168px]">
                             <Image src={imageBlock.content!} alt="Visual support" fill className="object-contain rounded-lg cursor-pointer" quality={100} data-ai-hint="lesson visual aid" />
                         </div>
                     </div>
@@ -721,7 +721,8 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   return (
     <div className="flex h-[calc(100vh-5rem)] md:relative">
       <aside className={cn(
-        "flex-shrink-0 border-r bg-card flex-col self-start transition-all duration-300 max-h-[calc(100vh-5rem)] sticky top-20",
+        "flex-shrink-0 border-r bg-card flex flex-col self-start transition-all duration-300 max-h-[calc(100vh-5rem)]",
+        "sticky top-20", // Hacer el sidebar sticky
         isSidebarVisible ? "w-80" : "w-0 overflow-hidden",
         isMobile ? "hidden" : "flex"
       )}>
@@ -760,15 +761,9 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
       </aside>
 
        <div className="fixed bottom-20 right-4 z-40 flex flex-col gap-3">
-           {isMobile ? (
-              <Button size="icon" className="rounded-full h-12 w-12 shadow-lg" onClick={() => setIsMobileSheetOpen(true)}>
-                  <PanelLeft className="h-5 w-5" />
-              </Button>
-            ) : (
-               <Button size="icon" className="rounded-full h-12 w-12 shadow-lg" onClick={() => setIsSidebarVisible(!isSidebarVisible)}>
-                  <PanelLeft className="h-5 w-5"/>
-              </Button>
-           )}
+           <Button size="icon" className="rounded-full h-12 w-12 shadow-lg" onClick={isMobile ? () => setIsMobileSheetOpen(true) : () => setIsSidebarVisible(!isSidebarVisible)}>
+               <PanelLeft className="h-5 w-5" />
+           </Button>
           {isEnrolled && !isCreatorViewingCourse && (
               <Sheet open={isMobile && isNotesPanelOpen} onOpenChange={setIsNotesPanelOpen}>
                   <SheetTrigger asChild>
