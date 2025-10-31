@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 'use client';
 
@@ -341,10 +340,6 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
 
         if (!response.ok) throw new Error('Failed to record interaction');
         
-        // La actualización real del servidor se hará en segundo plano, no necesitamos esperar aquí
-        // a menos que queramos confirmar. Para una UI más rápida, no esperamos.
-        // await fetchProgress(user.id, courseId);
-        
         const lesson = allLessons.find(l => l.id === lessonId);
         if (lesson) {
             toast({ description: `Progreso guardado: "${lesson.title}"`, duration: 2000 });
@@ -497,10 +492,10 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             const textBlock = block;
             const imageBlock = allBlocks[index + 1];
             return (
-                <div key={textBlock.id + '-' + imageBlock.id} className="flex flex-col md:flex-row gap-4 my-4 items-stretch">
-                    <div className="md:flex-1 w-full prose dark:prose-invert prose-sm max-w-none p-3 border rounded-md bg-card" dangerouslySetInnerHTML={{ __html: textBlock.content || '' }} />
-                    <div className="md:flex-1 w-full h-64 md:h-auto relative p-2 bg-muted/30 rounded-md cursor-pointer" onClick={() => setImageToView(imageBlock.content)}>
-                        <Image src={imageBlock.content!} alt="Visual support for lesson content" fill className="object-contain p-2" priority quality={100} data-ai-hint="lesson visual aid" />
+                <div key={textBlock.id + '-' + imageBlock.id} className="grid grid-cols-1 md:grid-cols-10 gap-8 my-4 items-center">
+                    <div className="md:col-span-6 prose dark:prose-invert prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: textBlock.content || '' }} />
+                    <div className="md:col-span-4 relative aspect-square p-2 cursor-pointer" onClick={() => setImageToView(imageBlock.content)}>
+                        <Image src={imageBlock.content!} alt="Visual support for lesson content" fill className="object-contain rounded-lg" priority quality={100} data-ai-hint="lesson visual aid" />
                     </div>
                 </div>
             );
@@ -533,11 +528,11 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             const isPdf = url.toLowerCase().endsWith('.pdf');
             if (isPdf) return <PdfViewer url={url} key={block.id} />;
             
-            const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url.toLowerCase());
             const isOfficeDoc = url.toLowerCase().endsWith('.docx');
             
             if (isOfficeDoc) return <div key={block.id} className="my-4"><DocxPreviewer url={url}/></div>;
             
+            const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url.toLowerCase());
             if (isImage) {
                 return (
                      <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md flex justify-center group relative cursor-pointer" onClick={() => setImageToView(url)}>
