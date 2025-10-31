@@ -1,7 +1,7 @@
 // src/app/(app)/layout.tsx
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useIdleTimeout } from '@/hooks/use-idle-timeout';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -15,6 +15,36 @@ import { SidebarHeader } from '@/components/layout/sidebar-header';
 import { Toaster } from '@/components/ui/toaster';
 import { TitleProvider } from '@/contexts/title-context';
 import { useTheme } from 'next-themes';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Clock } from 'lucide-react';
+
+
+function IdleTimeoutDialog({ isOpen, onStay, countdown }: { isOpen: boolean, onStay: () => void, countdown: number }) {
+  return (
+    <AlertDialog open={isOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <div className="flex justify-center mb-4">
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                        <Clock className="w-8 h-8 text-primary" />
+                    </div>
+                </div>
+                <AlertDialogTitle className="text-center">¿Sigues ahí?</AlertDialogTitle>
+                <AlertDialogDescription className="text-center">
+                    Tu sesión está a punto de cerrarse por inactividad.
+                    <br />
+                    La sesión se cerrará en <span className="font-bold">{countdown}</span> segundos.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="flex-row justify-center gap-4">
+                <Button onClick={onStay} className="w-full">Continuar Sesión</Button>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const { isMobile, isCollapsed } = useSidebar();
@@ -23,24 +53,50 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
   const { setTheme } = useTheme();
 
-  // Aplicar el tema del usuario al montar el layout privado
-  React.useEffect(() => {
-    if (user?.theme) {
-      setTheme(user.theme);
-    } else {
-      setTheme('light'); // O el tema por defecto para usuarios sin preferencia
-    }
-  }, [user, setTheme]);
+  const [isIdlePromptVisible, setIsIdlePromptVisible] = useState(false);
+  const [promptCountdown, setPromptCountdown] = useState(60);
 
   const handleIdleLogout = React.useCallback(() => {
+    setIsIdlePromptVisible(false);
     logout();
-    toast({ title: "Sesión Expirada", description: "Tu sesión se ha cerrado por inactividad. Por favor, inicia sesión de nuevo.", variant: "destructive" });
+    toast({ title: "Sesión Expirada", description: "Tu sesión se ha cerrado por inactividad.", variant: "destructive" });
   }, [logout, toast]);
+
+  const handleIdlePrompt = React.useCallback(() => {
+    setIsIdlePromptVisible(true);
+    setPromptCountdown(60);
+  }, []);
 
   const idleTimeoutMinutes = settings?.idleTimeoutMinutes ?? 20;
   const isIdleTimeoutEnabled = settings?.enableIdleTimeout ?? true;
 
-  useIdleTimeout(handleIdleLogout, idleTimeoutMinutes, isIdleTimeoutEnabled);
+  const { stay } = useIdleTimeout(handleIdleLogout, handleIdlePrompt, idleTimeoutMinutes, 60, isIdleTimeoutEnabled);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isIdlePromptVisible && promptCountdown > 0) {
+      interval = setInterval(() => {
+        setPromptCountdown(prev => prev - 1);
+      }, 1000);
+    } else if (isIdlePromptVisible && promptCountdown === 0) {
+      handleIdleLogout();
+    }
+    return () => clearInterval(interval);
+  }, [isIdlePromptVisible, promptCountdown, handleIdleLogout]);
+
+
+  const handleStay = () => {
+    setIsIdlePromptVisible(false);
+    stay();
+  };
+  
+  React.useEffect(() => {
+    if (user?.theme) {
+      setTheme(user.theme);
+    } else {
+      setTheme('light');
+    }
+  }, [user, setTheme]);
 
   return (
       <div className="flex h-screen bg-background text-foreground">
@@ -70,6 +126,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         )}
         <AppWatermark />
         <Toaster />
+        <IdleTimeoutDialog isOpen={isIdlePromptVisible} onStay={handleStay} countdown={promptCountdown}/>
       </div>
   );
 }
