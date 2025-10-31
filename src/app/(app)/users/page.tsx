@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'reac
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, List, Grid, Filter, UserPlus, MoreVertical, Loader2, Briefcase, MessageSquare, Edit, Trash2, UserCog, UserX } from 'lucide-react';
+import { PlusCircle, Search, List, Grid, Filter, UserPlus, MoreVertical, Loader2, Briefcase, MessageSquare, Edit, Trash2, UserCog, UserX, Users as UsersIcon } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -24,7 +24,7 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { AlertTriangle, Users as UsersIcon } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { ProcessTree } from '@/components/users/process-tree';
 import { BulkAssignModal } from '@/components/users/bulk-assign-modal';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -36,6 +36,7 @@ import { UserProfileCard } from '@/components/profile/user-profile-card';
 import { getRoleInSpanish, getRoleBadgeVariant } from '@/lib/security-log-utils';
 import { getProcessColors } from '@/lib/utils';
 import { Identicon } from '@/components/ui/identicon';
+import { EmptyState } from '../components/empty-state';
 
 
 // --- TYPES & CONTEXT ---
@@ -47,7 +48,7 @@ interface UserWithProcess extends User {
     process: { id: string; name: string } | null;
 }
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 15;
 
 const DraggableUserPreview = ({ user }: { user: UserWithProcess }) => (
     <Card className="flex items-center gap-2 p-2 shadow-lg w-48">
@@ -208,7 +209,7 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
                                     <span className="text-xs text-muted-foreground">Sin asignar</span>
                                 )}
                             </TableCell>
-                            <TableCell><Badge variant={user.isActive ? 'default' : 'secondary'} className={cn(user.isActive ? 'bg-green-500' : 'bg-gray-400', 'text-white')}>{user.isActive ? 'Activo' : 'Inactivo'}</Badge></TableCell>
+                            <TableCell><Badge variant={user.isActive ? 'default' : 'secondary'} className={cn(user.isActive ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-500/30" : "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300 border-gray-500/30")}>{user.isActive ? 'Activo' : 'Inactivo'}</Badge></TableCell>
                             <TableCell className="text-right">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
@@ -237,7 +238,7 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
 
 // --- MAIN PAGE COMPONENT ---
 function UsersPageComponent() {
-    const { user: currentUser } = useAuth();
+    const { user: currentUser, settings } = useAuth();
     const { setPageTitle } = useTitle();
     const isMobile = useIsMobile();
 
@@ -549,7 +550,7 @@ function UsersPageComponent() {
     }
 
     const GridView = () => (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {usersList.map(u => (
                 <DraggableUserCard 
                     key={u.id} 
@@ -574,18 +575,19 @@ function UsersPageComponent() {
                          <div className="mb-24 md:mb-4">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">{[...Array(8)].map((_,i) => <Skeleton key={i} className="h-48 w-full" />)}</div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">{[...Array(10)].map((_,i) => <Skeleton key={i} className="h-48 w-full" />)}</div>
                                 ) : (
                                     <Card><CardContent className="p-4"><Skeleton className="h-96 w-full"/></CardContent></Card>
                                 )
                             ) : usersList.length > 0 ? (
                                viewMode === 'grid' ? <GridView /> : <UserTable users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} onEdit={handleOpenUserModal} onRoleChange={handleOpenUserModal} onStatusChange={handleStatusChange} />
                             ) : (
-                               <div className="text-center py-16 border-2 border-dashed rounded-lg col-span-full">
-                                    <UsersIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4"/>
-                                    <h3 className="text-xl font-semibold mb-2">No se encontraron colaboradores</h3>
-                                    <p className="text-muted-foreground">Prueba a ajustar los filtros o a añadir un nuevo colaborador.</p>
-                               </div>
+                               <EmptyState
+                                 icon={UsersIcon}
+                                 title="No se encontraron colaboradores"
+                                 description="Prueba a ajustar los filtros o a añadir un nuevo colaborador."
+                                 imageUrl={settings?.emptyStateUsersUrl}
+                               />
                             )}
                          </div>
                          {totalPages > 1 && <SmartPagination className="mt-6" currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />}

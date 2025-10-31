@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
 import { getProcessColors } from '@/lib/utils';
-import { getRoleInSpanish } from '@/lib/security-log-utils';
+import { getRoleInSpanish, getRoleBadgeVariant } from '@/lib/security-log-utils';
 import type { User } from '@/types';
 import { Button } from '../ui/button';
 import { MessageSquare, Briefcase, MoreVertical, Edit, UserCog, UserX } from 'lucide-react';
@@ -43,12 +43,12 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange }: 
 
     return (
         <Card className="flex flex-col h-full bg-card shadow-md hover:shadow-primary/20 transition-shadow duration-300 text-center overflow-hidden">
-             <div className="h-16 w-full relative bg-gradient-to-br from-primary/10 to-accent/10">
+             <div className="h-14 w-full relative bg-gradient-to-br from-primary/10 to-accent/10">
                  {canModify && (
-                    <div className="absolute top-2 right-2">
+                    <div className="absolute top-1 right-1">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-foreground/70 hover:bg-black/20 hover:text-white"><MoreVertical className="h-4 w-4"/></Button>
+                                <Button variant="ghost" size="icon" className="h-7 w-7 text-foreground/70 hover:bg-black/20 hover:text-white"><MoreVertical className="h-4 w-4"/></Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 <DropdownMenuItem onSelect={() => onEdit?.(user)}><Edit className="mr-2 h-4 w-4"/>Editar Perfil</DropdownMenuItem>
@@ -59,46 +59,40 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange }: 
                     </div>
                 )}
                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2">
-                    <Avatar className="h-20 w-20 border-4 border-card shadow-lg">
+                    <Avatar className="h-16 w-16 border-4 border-card shadow-lg">
                         <AvatarImage src={user.avatar || undefined} />
                         <AvatarFallback><Identicon userId={user.id} /></AvatarFallback>
                     </Avatar>
                 </div>
             </div>
 
-            <CardContent className="pt-12 px-4 pb-4 flex-grow flex flex-col items-center">
-                <p className="font-semibold text-lg truncate max-w-[200px]">{user.name}</p>
-                <p className="text-sm text-primary font-medium">{getRoleInSpanish(user.role)}</p>
-                <p className="text-xs text-muted-foreground break-all">{user.email}</p>
+            <CardContent className="pt-10 px-2 pb-3 flex-grow flex flex-col items-center">
+                <p className="font-semibold text-base truncate max-w-[180px]">{user.name}</p>
+                <p className="text-xs text-primary font-medium">{getRoleInSpanish(user.role)}</p>
+                <p className="text-xs text-muted-foreground break-all max-w-[180px] truncate">{user.email}</p>
                 
-                 <Badge variant={user.isActive ? "default" : "secondary"} className={cn("mt-2", user.isActive ? "bg-green-500/20 text-green-700 dark:bg-green-500/10 dark:text-green-400 border-green-500/30" : "bg-gray-500/20 text-gray-600 dark:bg-gray-500/10 dark:text-gray-400 border-gray-500/30")}>
-                    {user.isActive ? 'Activo' : 'Inactivo'}
-                 </Badge>
-
-                {displayProcess.length > 0 && (
-                     <div className="mt-3 flex flex-wrap justify-center gap-1">
-                        {displayProcess.map(p => {
-                            const colors = getProcessColors(p.id);
-                            return (
-                                <Badge 
-                                    key={p.id} 
-                                    className="text-xs"
-                                    style={{
-                                        backgroundColor: colors.raw.light,
-                                        color: colors.raw.dark,
-                                    }}
-                                >
-                                    {p.name}
-                                </Badge>
-                            )
-                        })}
-                    </div>
-                )}
+                 <div className="mt-2 flex items-center flex-wrap justify-center gap-1">
+                     <Badge variant={user.isActive ? "default" : "secondary"} className={cn("text-xs py-0.5 px-1.5", user.isActive ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-500/30" : "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300 border-gray-500/30")}>
+                        {user.isActive ? 'Activo' : 'Inactivo'}
+                     </Badge>
+                     {displayProcess.length > 0 && displayProcess[0] && (
+                         <Badge 
+                            key={displayProcess[0].id} 
+                            className="text-xs py-0.5 px-1.5"
+                            style={{
+                                backgroundColor: getProcessColors(displayProcess[0].id).raw.light,
+                                color: getProcessColors(displayProcess[0].id).raw.dark,
+                            }}
+                         >
+                            <Briefcase className="mr-1 h-3 w-3"/> {displayProcess[0].name}
+                        </Badge>
+                     )}
+                </div>
             </CardContent>
 
             {showMessageButton && (
-                <CardFooter className="p-2 border-t mt-auto">
-                    <Button size="sm" variant="ghost" className="w-full h-8 text-xs" onClick={handleSendMessage}>
+                <CardFooter className="p-1 border-t mt-auto">
+                    <Button size="sm" variant="ghost" className="w-full h-7 text-xs" onClick={handleSendMessage}>
                         <MessageSquare className="mr-1.5 h-3 w-3"/> Mensaje
                     </Button>
                 </CardFooter>
