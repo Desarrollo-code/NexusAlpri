@@ -18,14 +18,14 @@ import { cn } from '@/lib/utils';
 import type { AppQuiz, AppQuestion, FormFieldOption } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
-import { UploadArea } from '../ui/upload-area';
+import { UploadArea } from '@/components/ui/upload-area';
 import Image from 'next/image';
 import { Progress } from '../ui/progress';
 import { Loader2 } from 'lucide-react';
 import { Label } from '../ui/label';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/select';
 import { QuizGameView } from './quiz-game-view';
-import { Card, CardHeader, CardContent, CardTitle } from '../ui/card';
+import { Card, CardHeader, CardContent, CardTitle, CardFooter } from '../ui/card';
 import { Alert, AlertDescription } from '../ui/alert';
 
 const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -245,7 +245,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                             {activeQuestion.options.slice(0, 4).map((opt, index) => {
                                                 const optionIsUploading = isOptionUploading[index];
                                                 return (
-                                                    <div key={opt.id} className={cn("flex items-center gap-2 p-2 rounded-md shadow-sm border", opt.isCorrect ? 'bg-green-100/50 dark:bg-green-900/20 border-green-500/50' : '')}>
+                                                    <div key={opt.id} className="flex items-center gap-2 p-2 rounded-md shadow-sm border">
                                                         {isImageOptionsTemplate ? (
                                                             <div className="flex-grow space-y-2">
                                                                 <div className="relative">
@@ -257,8 +257,8 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                                         ) : (
                                                             <Input value={opt.text} onChange={(e) => handleOptionChange(index, 'text', e.target.value)} placeholder={`Opción ${index + 1}`} />
                                                         )}
-                                                         <Button variant="ghost" size="icon" onClick={() => handleSetCorrect(opt.id)}>
-                                                            {opt.isCorrect ? <Check className="h-6 w-6 text-green-500"/> : <X className="h-6 w-6 text-red-500"/>}
+                                                         <Button variant={opt.isCorrect ? 'default' : 'outline'} size="icon" onClick={() => handleSetCorrect(opt.id)}>
+                                                            {opt.isCorrect ? <Check className="h-5 w-5"/> : <X className="h-5 w-5"/>}
                                                          </Button>
                                                          {localQuiz.questions[activeQuestionIndex].options.length > 1 && <Button variant="ghost" size="icon" onClick={() => deleteOption(index)} className="text-destructive/70 hover:text-destructive"><X className="h-4 w-4"/></Button>}
                                                     </div>
