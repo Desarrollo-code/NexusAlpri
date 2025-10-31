@@ -492,10 +492,10 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             const textBlock = block;
             const imageBlock = allBlocks[index + 1];
             return (
-                <div key={textBlock.id + '-' + imageBlock.id} className="grid grid-cols-1 md:grid-cols-10 gap-8 my-4 relative">
-                    <div className="md:col-span-7 prose dark:prose-invert prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: textBlock.content || '' }} />
-                    <div className="md:col-span-3 md:absolute md:right-0 md:top-0 md:h-full md:w-[28%] cursor-pointer p-2 flex items-center justify-center" onClick={() => setImageToView(imageBlock.content)}>
-                        <div className="relative w-full h-full max-h-64 md:max-h-none">
+                <div key={textBlock.id + '-' + imageBlock.id} className="flex flex-col md:flex-row gap-8 my-4 items-stretch">
+                    <div className="flex-[2] prose dark:prose-invert prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: textBlock.content || '' }} />
+                    <div className="flex-1 relative cursor-pointer min-w-0" onClick={() => setImageToView(imageBlock.content)}>
+                         <div className="relative w-full h-full min-h-[150px]">
                             <Image src={imageBlock.content!} alt="Visual support" fill className="object-contain rounded-lg" quality={100} data-ai-hint="lesson visual aid" />
                         </div>
                     </div>
@@ -719,14 +719,16 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   }
 
   return (
-    <div className="flex h-screen md:h-auto md:relative">
-      {!isMobile && isSidebarVisible && (
-        <aside className="w-80 flex-shrink-0 border-r bg-card flex flex-col sticky top-20 self-start max-h-[calc(100vh-5rem)]">
-            <SidebarContent />
-        </aside>
-      )}
-      
-      <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
+    <div className="flex h-[calc(100vh-5rem)] md:h-auto md:relative">
+      <aside className={cn(
+        "flex-shrink-0 border-r bg-card flex-col self-start transition-all duration-300",
+        isSidebarVisible ? "w-80" : "w-0",
+        isMobile ? "hidden" : "sticky top-20 flex max-h-[calc(100vh-5rem)]"
+      )}>
+        {isSidebarVisible && <SidebarContent />}
+      </aside>
+
+      <Sheet open={isMobile && isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
         <SheetContent side="left" className="p-0 w-full max-w-sm">
           <SheetHeader className="p-4 border-b">
               <SheetTitle>Contenido del Curso</SheetTitle>
@@ -734,11 +736,8 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
           <SidebarContent />
         </SheetContent>
       </Sheet>
-      
-      <div className={cn(
-        "flex-1 flex flex-col min-w-0 transition-[margin-right] duration-300 ease-in-out",
-        isNotesPanelOpen && !isMobile && "mr-[28rem]"
-      )}>
+
+      <div className={cn("flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out", isNotesPanelOpen && !isMobile && "mr-[28rem]")}>
           <main className="flex-1 overflow-y-auto thin-scrollbar">
               <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8">
                  {renderLessonContent()}
@@ -746,54 +745,37 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
           </main>
       </div>
 
-      {isNotesPanelOpen && !isMobile && (
-          <aside className="w-full max-w-md md:w-[28rem] flex-shrink-0 fixed top-20 right-0 z-20 h-[calc(100vh-5rem)]">
-              {selectedLessonId && isEnrolled && (
-                  <LessonNotesPanel 
-                      lessonId={selectedLessonId}
-                      isOpen={isNotesPanelOpen}
-                      onClose={() => setIsNotesPanelOpen(false)}
-                  />
-              )}
-          </aside>
-      )}
+      <aside className={cn(
+        "fixed top-20 right-0 z-20 h-[calc(100vh-5rem)] transition-transform duration-300 ease-in-out",
+        isNotesPanelOpen ? "translate-x-0" : "translate-x-full",
+        isMobile ? "w-full max-w-sm" : "w-[28rem]"
+      )}>
+          {selectedLessonId && isEnrolled && (
+              <LessonNotesPanel 
+                  lessonId={selectedLessonId}
+                  isOpen={isNotesPanelOpen}
+                  onClose={() => setIsNotesPanelOpen(false)}
+              />
+          )}
+      </aside>
 
-      <div className="fixed bottom-20 right-4 z-40 flex flex-col gap-3">
-           {isMobile && (
+       <div className="fixed bottom-20 right-4 z-40 flex flex-col gap-3">
+           {isMobile ? (
               <Button size="icon" className="rounded-full h-12 w-12 shadow-lg" onClick={() => setIsMobileSheetOpen(true)}>
                   <PanelLeft className="h-5 w-5" />
               </Button>
-          )}
-           {!isMobile && (
+            ) : (
                <Button size="icon" className="rounded-full h-12 w-12 shadow-lg" onClick={() => setIsSidebarVisible(!isSidebarVisible)}>
                   <PanelLeft className="h-5 w-5"/>
               </Button>
            )}
           {isEnrolled && !isCreatorViewingCourse && (
-              <Sheet open={isMobile && isNotesPanelOpen} onOpenChange={setIsNotesPanelOpen}>
-                  <SheetTrigger asChild>
-                       <Button 
-                          size="icon" 
-                          className={cn(
-                            "rounded-full h-12 w-12 shadow-lg transition-colors",
-                            isNotesPanelOpen && "bg-primary text-primary-foreground"
-                          )}
-                          onClick={() => !isMobile && setIsNotesPanelOpen(!isNotesPanelOpen)}>
-                          <Notebook className="h-5 w-5" />
-                      </Button>
-                  </SheetTrigger>
-                  {isMobile && (
-                      <SheetContent side="right" className="p-0 w-full max-w-sm">
-                           {selectedLessonId && (
-                              <LessonNotesPanel 
-                                  lessonId={selectedLessonId}
-                                  isOpen={isNotesPanelOpen}
-                                  onClose={() => setIsNotesPanelOpen(false)}
-                              />
-                           )}
-                      </SheetContent>
-                  )}
-              </Sheet>
+              <Button 
+                size="icon" 
+                className={cn("rounded-full h-12 w-12 shadow-lg transition-colors", isNotesPanelOpen && "bg-primary text-primary-foreground")}
+                onClick={() => setIsNotesPanelOpen(!isNotesPanelOpen)}>
+                <Notebook className="h-5 w-5" />
+            </Button>
           )}
       </div>
 
