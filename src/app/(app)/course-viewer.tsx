@@ -492,11 +492,11 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             const textBlock = block;
             const imageBlock = allBlocks[index + 1];
             return (
-                <div key={textBlock.id + '-' + imageBlock.id} className="grid grid-cols-1 md:grid-cols-10 gap-8 my-4 items-center">
+                <div key={textBlock.id + '-' + imageBlock.id} className="grid grid-cols-1 md:grid-cols-10 gap-8 my-4 relative">
                     <div className="md:col-span-7 prose dark:prose-invert prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: textBlock.content || '' }} />
-                    <div className="md:col-span-3 flex items-center justify-center p-2 cursor-pointer" onClick={() => setImageToView(imageBlock.content)}>
-                        <div className="relative w-full h-full min-h-[200px]">
-                           <Image src={imageBlock.content!} alt="Visual support for lesson content" fill className="object-contain rounded-lg" priority quality={100} data-ai-hint="lesson visual aid" />
+                    <div className="md:col-span-3 md:absolute md:right-0 md:top-0 md:h-full md:w-[28%] cursor-pointer p-2 flex items-center justify-center" onClick={() => setImageToView(imageBlock.content)}>
+                        <div className="relative w-full h-full max-h-64 md:max-h-none">
+                            <Image src={imageBlock.content!} alt="Visual support" fill className="object-contain rounded-lg" quality={100} data-ai-hint="lesson visual aid" />
                         </div>
                     </div>
                 </div>
@@ -719,7 +719,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   }
 
   return (
-    <div className="flex h-[calc(100vh-5rem)] md:h-auto md:relative">
+    <div className="flex h-screen md:h-auto md:relative">
       {!isMobile && isSidebarVisible && (
         <aside className="w-80 flex-shrink-0 border-r bg-card flex flex-col sticky top-20 self-start max-h-[calc(100vh-5rem)]">
             <SidebarContent />
