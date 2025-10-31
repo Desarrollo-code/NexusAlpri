@@ -7,11 +7,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '../ui/textarea';
-import { PlusCircle, Trash2, Pencil, Check, X, Image as ImageIcon, UploadCloud, Timer, LayoutTemplate, FlipVertical, CheckSquare, ImagePlay, BrainCircuit, Info, Eye } from 'lucide-react';
+import { PlusCircle, Trash2, Pencil, Check, X, Image as ImageIcon, UploadCloud, Timer, LayoutTemplate, FlipVertical, CheckSquare, ImagePlay, BrainCircuit, Info, Eye, Save } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
 import type { AppQuiz, AppQuestion, FormFieldOption } from '@/types';
@@ -24,8 +25,7 @@ import { Loader2 } from 'lucide-react';
 import { Label } from '../ui/label';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/select';
 import { QuizGameView } from './quiz-game-view';
-import { Card, CardHeader, CardContent, CardTitle, CardFooter } from '../ui/card';
-import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
+import { Card, CardHeader, CardContent, CardTitle } from '../ui/card';
 import { Alert, AlertDescription } from '../ui/alert';
 
 const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -91,7 +91,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
         setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
     };
 
-    const handleOptionChange = (oIndex: number, field: 'text' | 'imageUrl', value: string) => {
+    const handleOptionChange = (oIndex: number, field: 'text' | 'imageUrl', value: string | null) => {
         const newQuestions = [...localQuiz.questions];
         (newQuestions[activeQuestionIndex].options[oIndex] as any)[field] = value;
         setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
@@ -99,10 +99,23 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
 
     const handleSetCorrect = (optionId: string) => {
         const newQuestions = [...localQuiz.questions];
-        newQuestions[activeQuestionIndex].options = newQuestions[activeQuestionIndex].options.map(opt => ({
-            ...opt,
-            isCorrect: opt.id === optionId
-        }));
+        const question = newQuestions[activeQuestionIndex];
+        question.options = question.options.map(opt => {
+            if (question.type === 'SINGLE_CHOICE') {
+                return { ...opt, isCorrect: opt.id === optionId };
+            }
+            if (opt.id === optionId) {
+                return { ...opt, isCorrect: !opt.isCorrect };
+            }
+            return opt;
+        });
+        
+        // Ensure at least one correct answer for single choice
+        if (question.type === 'SINGLE_CHOICE' && !question.options.some(o => o.isCorrect)) {
+            const clickedOption = question.options.find(o => o.id === optionId);
+            if (clickedOption) clickedOption.isCorrect = true;
+        }
+
         setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
     };
 
@@ -213,23 +226,8 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                             <ScrollArea className="flex-grow">
                                 <div className="p-4 space-y-4">
                                     <Textarea value={activeQuestion.text} onChange={(e) => handleQuestionChange('text', e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-xl text-center font-bold h-auto resize-none bg-background flex-shrink-0" rows={2}/>
-                                    <Card>
-                                        <CardHeader><CardTitle className="text-base flex items-center gap-2"><LayoutTemplate className="h-4 w-4" /> Plantilla de Pregunta</CardTitle></CardHeader>
-                                        <CardContent>
-                                            <Select value={activeQuestion.template || 'default'} onValueChange={handleTemplateChange}>
-                                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                                <SelectContent>
-                                                    {templateOptions.map(opt => (
-                                                        <SelectItem key={opt.value} value={opt.value}>
-                                                            <div className="flex items-center gap-2"><opt.icon className="h-4 w-4"/><span>{opt.label}</span></div>
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <p className="text-xs text-muted-foreground mt-2">{templateOptions.find(o => o.value === (activeQuestion.template || 'default'))?.description}</p>
-                                        </CardContent>
-                                    </Card>
-                                    {activeQuestion.template === 'image' && (
+                                    
+                                     {activeQuestion.template === 'image' && (
                                          <div className="w-full">
                                             {isUploading ? (
                                                 <div className="w-full p-4 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2"><Loader2 className="h-6 w-6 animate-spin text-primary"/><p className="text-sm text-muted-foreground">Subiendo...</p><Progress value={uploadProgress} className="w-full h-1.5"/></div>
@@ -240,29 +238,28 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                             )}
                                         </div>
                                     )}
+
                                     <Card>
                                         <CardHeader><CardTitle className="text-base">Opciones de Respuesta</CardTitle></CardHeader>
                                          <CardContent className={cn("grid gap-2", isImageOptionsTemplate ? "grid-cols-2" : "grid-cols-1")}>
                                             {activeQuestion.options.slice(0, 4).map((opt, index) => {
                                                 const optionIsUploading = isOptionUploading[index];
-                                                const optionProgress = optionUploadProgress[index] || 0;
                                                 return (
-                                                    <div key={opt.id} className={cn("flex items-center gap-2 p-2 rounded-md shadow-sm border", opt.isCorrect ? 'ring-2 ring-offset-2 ring-offset-background ring-green-500' : '')}>
+                                                    <div key={opt.id} className={cn("flex items-center gap-2 p-2 rounded-md shadow-sm border", opt.isCorrect ? 'bg-green-100/50 dark:bg-green-900/20 border-green-500/50' : '')}>
                                                         {isImageOptionsTemplate ? (
                                                             <div className="flex-grow space-y-2">
                                                                 <div className="relative">
                                                                     <div className={cn("absolute inset-0 flex items-center justify-center z-10", optionIsUploading ? 'flex' : 'hidden')}><Loader2 className="h-6 w-6 animate-spin text-primary"/></div>
-                                                                     {opt.imageUrl && (<Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6 z-20" onClick={() => handleOptionChange(index, 'imageUrl', '')}><X className="h-4 w-4"/></Button>)}
+                                                                     {opt.imageUrl && (<Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6 z-20" onClick={() => handleOptionChange(index, 'imageUrl', null)}><X className="h-4 w-4"/></Button>)}
                                                                     <UploadArea onFileSelect={(file) => handleImageUpload(file, 'option', index)} inputId={`opt-img-upload-${opt.id}`} className={cn("h-24 w-full", opt.imageUrl && 'bg-cover bg-center')} style={{backgroundImage: opt.imageUrl ? `url(${opt.imageUrl})` : 'none'}}/>
-                                                                </div>
-                                                                <div className="flex items-center justify-center">
-                                                                   <Button variant="ghost" size="sm" onClick={() => handleSetCorrect(opt.id)}><Check className={cn("h-5 w-5", opt.isCorrect ? 'text-green-500' : 'text-muted-foreground')}/> <span className="ml-1 text-xs">Correcta</span></Button>
                                                                 </div>
                                                             </div>
                                                         ) : (
                                                             <Input value={opt.text} onChange={(e) => handleOptionChange(index, 'text', e.target.value)} placeholder={`Opción ${index + 1}`} />
                                                         )}
-                                                         {!isImageOptionsTemplate && <Button variant="ghost" size="icon" onClick={() => handleSetCorrect(opt.id)}><Check className={cn("h-6 w-6", opt.isCorrect ? 'text-green-500' : 'text-muted-foreground')}/></Button>}
+                                                         <Button variant="ghost" size="icon" onClick={() => handleSetCorrect(opt.id)}>
+                                                            {opt.isCorrect ? <Check className="h-6 w-6 text-green-500"/> : <X className="h-6 w-6 text-red-500"/>}
+                                                         </Button>
                                                          {localQuiz.questions[activeQuestionIndex].options.length > 1 && <Button variant="ghost" size="icon" onClick={() => deleteOption(index)} className="text-destructive/70 hover:text-destructive"><X className="h-4 w-4"/></Button>}
                                                     </div>
                                                 );
