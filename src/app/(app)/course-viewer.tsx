@@ -492,9 +492,9 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             const textBlock = block;
             const imageBlock = allBlocks[index + 1];
             return (
-                 <div key={textBlock.id + '-' + imageBlock.id} className="md:flex md:gap-8 md:items-center my-4">
-                    <div className="md:w-[65%] md:flex-shrink-0 prose dark:prose-invert prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: textBlock.content || '' }} />
-                    <div className="mt-4 md:mt-0 md:w-[35%] flex flex-col self-center">
+                <div key={textBlock.id + '-' + imageBlock.id} className="md:flex md:items-center md:gap-8 my-4">
+                    <div className="prose dark:prose-invert prose-sm max-w-none md:w-[65%] md:flex-shrink-0" dangerouslySetInnerHTML={{ __html: textBlock.content || '' }} />
+                    <div className="mt-4 md:mt-0 md:w-[35%] md:flex-shrink-0 flex flex-col self-center">
                          <div className="relative w-full max-h-[168px] aspect-video cursor-pointer" onClick={() => setImageToView(imageBlock.content)}>
                             <Image src={imageBlock.content!} alt="Visual support" fill className="object-contain rounded-lg" priority quality={100} data-ai-hint="lesson visual aid" />
                         </div>
@@ -719,9 +719,9 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   }
 
   return (
-    <div className="flex flex-grow min-h-0">
-      {!isMobile && isSidebarVisible && (
-        <aside className="w-80 flex-shrink-0 border-r bg-card flex flex-col self-stretch">
+    <div className="flex h-[calc(100vh-5rem)] md:h-auto md:relative flex-grow">
+      {isSidebarVisible && (
+        <aside className="w-80 flex-shrink-0 border-r bg-card flex-col self-stretch hidden md:sticky md:top-20 md:flex">
             <SidebarContent />
         </aside>
       )}
@@ -741,7 +741,9 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
       )}>
           <main className="flex-1 overflow-y-auto thin-scrollbar">
               <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8">
-                 {renderLessonContent()}
+                 <div className="border rounded-lg p-4 md:p-6 lg:p-8">
+                    {renderLessonContent()}
+                 </div>
               </div>
           </main>
       </div>
