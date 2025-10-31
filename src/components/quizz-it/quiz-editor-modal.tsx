@@ -23,6 +23,7 @@ import { Progress } from '../ui/progress';
 import { Loader2 } from 'lucide-react';
 import { Label } from '../ui/label';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/select';
+import { QuizGameView } from './quiz-game-view';
 
 
 const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -52,7 +53,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
         setLocalQuiz(prev => ({...prev, [field]: value}));
     };
 
-    const handleQuestionChange = (field: 'text' | 'imageUrl', value: string) => {
+    const handleQuestionChange = (field: 'text' | 'imageUrl', value: string | null) => {
         const newQuestions = [...localQuiz.questions];
         newQuestions[activeQuestionIndex][field] = value;
         setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
@@ -172,6 +173,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                         <SelectItem value="default">Múltiple Elección</SelectItem>
                                         <SelectItem value="image">Imagen de Pregunta</SelectItem>
                                         <SelectItem value="true_false">Verdadero / Falso</SelectItem>
+                                        <SelectItem value="flip_card">Tarjeta Giratoria</SelectItem>
                                     </SelectContent>
                                 </Select>
                              </div>
@@ -197,7 +199,10 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                 
                                 <div className="flex-grow w-full max-w-lg mx-auto bg-card flex items-center justify-center rounded-lg shadow-inner overflow-hidden relative">
                                     {activeQuestion.imageUrl ? (
-                                        <Image src={activeQuestion.imageUrl} alt={activeQuestion.text} fill className="object-cover" />
+                                        <div className="relative w-full h-full">
+                                            <Image src={activeQuestion.imageUrl} alt={activeQuestion.text} fill className="object-cover" />
+                                            <Button variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 z-10" onClick={() => handleQuestionChange('imageUrl', null)}><Trash2 className="h-4 w-4"/></Button>
+                                        </div>
                                     ) : (
                                         <UploadArea onFileSelect={handleImageUpload} disabled={isUploading} className="w-full h-full">
                                             {isUploading ? (

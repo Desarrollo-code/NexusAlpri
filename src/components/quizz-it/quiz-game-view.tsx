@@ -66,18 +66,29 @@ export function QuizGameView({ form, isEditorPreview = false }: QuizGameViewProp
   const renderQuestionTemplate = () => {
     if (!currentQuestion) return <div className="text-center">Fin del Quiz</div>;
     
-    return (
-        <MultipleChoiceTemplate
-          key={currentQuestion.id}
-          question={currentQuestion}
-          onSubmit={handleAnswerSubmit}
-          onTimeUp={handleTimeUp}
-          questionNumber={currentQuestionIndex + 1}
-          totalQuestions={questions.length}
-          template={form.template}
-          timerStyle={form.timerStyle}
-        />
-    );
+    // Aquí puedes añadir lógica para cambiar de plantilla según `form.template`
+    // Por ahora, solo usamos MultipleChoiceTemplate
+    switch (form.template) {
+        case 'flip_card':
+            // Implementar la plantilla de FlipCard aquí si se desea
+            // Por ahora, recae en la de opción múltiple
+        case 'image':
+        case 'true_false':
+        case 'default':
+        default:
+             return (
+                <MultipleChoiceTemplate
+                  key={currentQuestion.id}
+                  question={currentQuestion}
+                  onSubmit={handleAnswerSubmit}
+                  onTimeUp={handleTimeUp}
+                  questionNumber={currentQuestionIndex + 1}
+                  totalQuestions={questions.length}
+                  template={form.template}
+                  timerStyle={form.timerStyle}
+                />
+            );
+    }
   };
   
   const handleRestart = () => {

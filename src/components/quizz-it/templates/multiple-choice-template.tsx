@@ -1,7 +1,7 @@
 // src/components/quizz-it/templates/multiple-choice-template.tsx
 'use client';
 import React, { useState, useEffect } from 'react';
-import type { FormField, FormFieldOption } from '@/types';
+import type { FormField, FormFieldOption, AppQuestion } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,7 +12,7 @@ import { FlipCard } from '../flip-card';
 import Image from 'next/image';
 
 interface MultipleChoiceTemplateProps {
-  question: FormField;
+  question: AppQuestion;
   onSubmit: (isCorrect: boolean, answerData: any) => void;
   onTimeUp: () => void;
   questionNumber: number;

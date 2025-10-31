@@ -6,13 +6,13 @@ export const FlipCard = ({ children, isFlipped }: { children: React.ReactNode[],
   const [front, back] = children;
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full" style={{ perspective: 1000 }}>
       <AnimatePresence initial={false}>
         <motion.div
           key={isFlipped ? 'back' : 'front'}
-          initial={{ rotateY: isFlipped ? -180 : 0 }}
+          initial={{ rotateY: 180 }}
           animate={{ rotateY: 0 }}
-          exit={{ rotateY: 180 }}
+          exit={{ rotateY: -180 }}
           transition={{ duration: 0.4, ease: "easeInOut" }}
           style={{
             position: 'absolute',
