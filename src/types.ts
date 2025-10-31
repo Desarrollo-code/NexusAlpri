@@ -359,6 +359,7 @@ export interface FormFieldOption {
   text: string;
   isCorrect: boolean;
   points: number;
+  imageUrl?: string | null;
 }
 
 export type FormField = Omit<Prisma.FormFieldGetPayload<{}>, 'options'> & {
