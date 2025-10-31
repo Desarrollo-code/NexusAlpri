@@ -52,13 +52,14 @@ const CircularProgress = React.forwardRef<SVGSVGElement, CircularProgressProps>(
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          {children ? (
-             children
-          ) : showValue ? (
-            <span className={cn('text-foreground', valueTextClass)}>
-                {`${Math.round(clampedValue)}%`}
-            </span>
-          ) : null}
+            <div className="flex items-baseline justify-center gap-1">
+              {children}
+              {showValue && (
+                <span className={cn('text-foreground', valueTextClass)}>
+                  {`${Math.round(clampedValue)}%`}
+                </span>
+              )}
+            </div>
         </div>
       </div>
     );
