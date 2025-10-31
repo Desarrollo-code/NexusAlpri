@@ -196,9 +196,7 @@ export default function CoursesPage() {
             </Select>
           </div>
         </div>
-        <div className="text-sm text-muted-foreground pt-2 border-t">
-            `Mostrando ${filteredCourses.length} cursos disponibles.`
-        </div>
+        
       </Card>
 
       {error ? (
