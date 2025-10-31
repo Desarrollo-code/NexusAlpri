@@ -25,7 +25,7 @@ import { Loader2 } from 'lucide-react';
 import { Label } from '../ui/label';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/select';
 import { QuizGameView } from './quiz-game-view';
-import { Card, CardHeader, CardContent, CardTitle } from '../ui/card';
+import { Card, CardHeader, CardContent, CardTitle, CardFooter } from '../ui/card';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { Alert, AlertDescription } from '../ui/alert';
 
@@ -72,16 +72,28 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
     };
     
     const handleTemplateChange = (value: string) => {
-        handleQuizMetaChange('template', value);
+        const newQuestions = [...localQuiz.questions];
+        const currentQuestion = newQuestions[activeQuestionIndex];
+        
+        // Asignar el nuevo template
+        currentQuestion.template = value;
+
         if (value === 'true_false') {
-            const newQuestions = [...localQuiz.questions];
-            const currentQuestion = newQuestions[activeQuestionIndex];
             currentQuestion.options = [
                 { id: generateUniqueId('opt'), text: 'Verdadero', imageUrl: null, isCorrect: true, points: 10 },
                 { id: generateUniqueId('opt'), text: 'Falso', imageUrl: null, isCorrect: false, points: 0 }
             ];
-            setLocalQuiz(prev => ({...prev, questions: newQuestions}));
+        } else if(value === 'image_options') {
+            // Asegurarse de que haya 4 opciones
+            const neededOptions = 4 - currentQuestion.options.length;
+            for(let i=0; i<neededOptions; i++) {
+                currentQuestion.options.push({ id: generateUniqueId('opt'), text: '', imageUrl: null, isCorrect: false, points: 0 });
+            }
+            // Limitar a 4
+            currentQuestion.options = currentQuestion.options.slice(0, 4);
         }
+        
+        setLocalQuiz(prev => ({...prev, questions: newQuestions}));
     }
 
     const handleQuestionChange = (field: 'text' | 'imageUrl', value: string | null) => {
@@ -110,8 +122,9 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
             id: generateUniqueId('question'),
             text: 'Nueva Pregunta',
             order: localQuiz.questions.length,
-            type: 'SINGLE_CHOICE',
+            type: 'SINGLE_CHOICE', // Por defecto
             imageUrl: null,
+            template: 'default',
             options: [
                 { id: generateUniqueId('option'), text: '', imageUrl: null, isCorrect: true, points: 10 },
                 { id: generateUniqueId('option'), text: '', imageUrl: null, isCorrect: false, points: 0 }
@@ -184,7 +197,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
 
     const quizPreviewForm = { ...localQuiz, fields: localQuiz.questions.map(q => ({ ...q, label: q.text })) };
     
-    const isImageOptionsTemplate = localQuiz.template === 'image_options';
+    const isImageOptionsTemplate = activeQuestion?.template === 'image_options';
 
     return (
       <>
@@ -223,7 +236,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <Select value={localQuiz.template || 'default'} onValueChange={handleTemplateChange}>
+                                        <Select value={activeQuestion.template || 'default'} onValueChange={handleTemplateChange}>
                                             <SelectTrigger><SelectValue /></SelectTrigger>
                                             <SelectContent>
                                                 {templateOptions.map(opt => (
@@ -236,11 +249,11 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                                 ))}
                                             </SelectContent>
                                         </Select>
-                                        <p className="text-xs text-muted-foreground mt-2">{templateOptions.find(o => o.value === (localQuiz.template || 'default'))?.description}</p>
+                                        <p className="text-xs text-muted-foreground mt-2">{templateOptions.find(o => o.value === (activeQuestion.template || 'default'))?.description}</p>
                                     </CardContent>
                                 </Card>
 
-                                {localQuiz.template === 'image' && (
+                                {activeQuestion.template === 'image' && (
                                      <div className="w-full">
                                         {isUploading ? (
                                             <div className="w-full p-4 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2">
@@ -270,7 +283,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                                     {isImageOptionsTemplate ? (
                                                         <div className="flex-grow space-y-2">
                                                             <div className="relative">
-                                                                <div className={cn("absolute inset-0 flex items-center justify-center z-10", isOptionUploading ? 'flex' : 'hidden')}>
+                                                                <div className={cn("absolute inset-0 flex items-center justify-center z-10", optionIsUploading ? 'flex' : 'hidden')}>
                                                                     <Loader2 className="h-6 w-6 animate-spin text-primary"/>
                                                                 </div>
                                                                  {opt.imageUrl && (
@@ -330,3 +343,5 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
       </>
     );
 }
+
+```
