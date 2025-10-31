@@ -1,4 +1,3 @@
-
 // src/app/(app)/resources/page.tsx
 'use client';
 
@@ -296,5 +295,3 @@ export default function ResourcesPage() {
     </DndContext>
   );
 }
-
-    
