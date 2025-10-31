@@ -484,84 +484,84 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
       router.push(`/courses/${courseId}?lesson=${lesson.id}`, { scroll: false });
   };
   
-    const renderContentBlock = (block: ContentBlock, index: number, allBlocks: ContentBlock[]) => {
-        const url = block.content || '';
-        const isTextFollowedByImage = block.type === 'TEXT' && allBlocks[index + 1]?.type === 'FILE' && /\.(jpg|jpeg|png|gif|webp)$/i.test(allBlocks[index + 1].content || '');
+  const renderContentBlock = (block: ContentBlock, index: number, allBlocks: ContentBlock[]) => {
+      const url = block.content || '';
+      const isTextFollowedByImage = block.type === 'TEXT' && allBlocks[index + 1]?.type === 'FILE' && /\.(jpg|jpeg|png|gif|webp)$/i.test(allBlocks[index + 1].content || '');
 
-        if (isTextFollowedByImage) {
-            const textBlock = block;
-            const imageBlock = allBlocks[index + 1];
-            return (
-                <div key={textBlock.id + '-' + imageBlock.id} className="flex flex-col md:flex-row items-center gap-8 my-4">
-                    <div className="md:flex-shrink-0 md:w-[65%] prose dark:prose-invert prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: textBlock.content || '' }} />
-                    <div className="flex-grow flex flex-col justify-center" onClick={() => setImageToView(imageBlock.content)}>
-                        <div className="relative w-full max-h-[168px]">
-                            <Image src={imageBlock.content!} alt="Visual support" fill className="object-contain rounded-lg cursor-pointer" quality={100} data-ai-hint="lesson visual aid" />
-                        </div>
-                    </div>
-                </div>
-            );
-        }
+      if (isTextFollowedByImage) {
+          const textBlock = block;
+          const imageBlock = allBlocks[index + 1];
+          return (
+              <div key={textBlock.id + '-' + imageBlock.id} className="flex flex-col md:flex-row items-stretch gap-8 my-4">
+                  <div className="prose dark:prose-invert prose-sm max-w-none md:w-[65%] md:flex-shrink-0" dangerouslySetInnerHTML={{ __html: textBlock.content || '' }} />
+                  <div className="relative md:w-[35%] flex-grow flex items-center justify-center">
+                      <div className="relative w-full max-h-full cursor-pointer" onClick={() => setImageToView(imageBlock.content)}>
+                          <Image src={imageBlock.content!} alt="Visual support for lesson content" width={300} height={200} className="object-contain rounded-lg w-full h-auto" quality={100} data-ai-hint="lesson visual aid" />
+                      </div>
+                  </div>
+              </div>
+          );
+      }
 
-        const isImagePrecededByText = block.type === 'FILE' && allBlocks[index - 1]?.type === 'TEXT' && /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
-        if (isImagePrecededByText) {
-            return null; // Don't render this image block separately, it's handled with the text block.
-        }
+      const isImagePrecededByText = block.type === 'FILE' && allBlocks[index - 1]?.type === 'TEXT' && /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+      if (isImagePrecededByText) {
+          return null; // Don't render this image block separately, it's handled with the text block.
+      }
 
-        if (block.type === 'VIDEO') return <VideoPlayer key={block.id} videoUrl={url} lessonTitle={selectedLesson?.title} onVideoEnd={handleVideoEnd} />;
-        if (block.type === 'QUIZ') return <QuizViewer key={block.id} quiz={block.quiz} lessonId={selectedLessonId!} courseId={courseId} isEnrolled={isEnrolled} isCreatorPreview={isCreatorViewingCourse} onQuizCompleted={handleQuizSubmitted} />;
+      if (block.type === 'VIDEO') return <VideoPlayer key={block.id} videoUrl={url} lessonTitle={selectedLesson?.title} onVideoEnd={handleVideoEnd} />;
+      if (block.type === 'QUIZ') return <QuizViewer key={block.id} quiz={block.quiz} lessonId={selectedLessonId!} courseId={courseId} isEnrolled={isEnrolled} isCreatorPreview={isCreatorViewingCourse} onQuizCompleted={handleQuizSubmitted} />;
 
-        if (block.type === 'TEXT') {
-            const isExternalUrl = /^(https?:\/\/)/.test(url.trim());
-            if (isExternalUrl) {
-                return (
-                    <div key={block.id} className="my-4 p-4 border rounded-md bg-card hover:bg-muted/50 transition-colors">
-                        <a href={url.trim()} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-primary font-semibold group">
-                            <ExternalLink className="h-5 w-5 text-primary/70 group-hover:text-primary transition-colors"/>
-                            <span className="group-hover:underline underline-offset-4">{url.trim()}</span>
-                        </a>
-                    </div>
-                );
-            }
-            return <div key={block.id} className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card" dangerouslySetInnerHTML={{ __html: url }} />;
-        }
-        
-        if (block.type === 'FILE') {
-            const isPdf = url.toLowerCase().endsWith('.pdf');
-            if (isPdf) return <PdfViewer url={url} key={block.id} />;
-            
-            const isOfficeDoc = url.toLowerCase().endsWith('.docx');
-            
-            if (isOfficeDoc) return <div key={block.id} className="my-4"><DocxPreviewer url={url}/></div>;
-            
-            const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url.toLowerCase());
-            if (isImage) {
-                return (
-                     <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md flex justify-center group relative cursor-pointer" onClick={() => setImageToView(url)}>
-                        <div className="relative aspect-video w-full max-w-4xl p-2">
-                            <Image src={url} alt={`Preview: ${selectedLesson?.title}`} fill className="object-contain p-2" priority quality={100} data-ai-hint="lesson file" />
-                        </div>
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <Expand className="h-12 w-12 text-white"/>
-                        </div>
-                    </div>
-                );
-            }
+      if (block.type === 'TEXT') {
+          const isExternalUrl = /^(https?:\/\/)/.test(url.trim());
+          if (isExternalUrl) {
+              return (
+                  <div key={block.id} className="my-4 p-4 border rounded-md bg-card hover:bg-muted/50 transition-colors">
+                      <a href={url.trim()} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-primary font-semibold group">
+                          <ExternalLink className="h-5 w-5 text-primary/70 group-hover:text-primary transition-colors"/>
+                          <span className="group-hover:underline underline-offset-4">{url.trim()}</span>
+                      </a>
+                  </div>
+              );
+          }
+          return <div key={block.id} className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card" dangerouslySetInnerHTML={{ __html: url }} />;
+      }
+      
+      if (block.type === 'FILE') {
+          const isPdf = url.toLowerCase().endsWith('.pdf');
+          if (isPdf) return <PdfViewer url={url} key={block.id} />;
+          
+          const isOfficeDoc = url.toLowerCase().endsWith('.docx');
+          
+          if (isOfficeDoc) return <div key={block.id} className="my-4"><DocxPreviewer url={url}/></div>;
+          
+          const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url.toLowerCase());
+          if (isImage) {
+              return (
+                   <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md flex justify-center group relative cursor-pointer" onClick={() => setImageToView(url)}>
+                      <div className="relative aspect-video w-full max-w-4xl p-2">
+                          <Image src={url} alt={`Preview: ${selectedLesson?.title}`} fill className="object-contain p-2" priority quality={100} data-ai-hint="lesson file" />
+                      </div>
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Expand className="h-12 w-12 text-white"/>
+                      </div>
+                  </div>
+              );
+          }
 
-            return (
-                <div key={block.id} className="my-4 p-4 bg-muted/50 rounded-md text-center">
-                    <p className="text-sm text-muted-foreground mb-2">Este recurso es un archivo descargable:</p>
-                    <Button asChild size="sm">
-                        <Link href={url} target="_blank" rel="noopener noreferrer" download>
-                            <Download className="mr-2 h-4 w-4" /> Descargar Archivo
-                        </Link>
-                    </Button>
-                </div>
-            );
-        }
+          return (
+              <div key={block.id} className="my-4 p-4 bg-muted/50 rounded-md text-center">
+                  <p className="text-sm text-muted-foreground mb-2">Este recurso es un archivo descargable:</p>
+                  <Button asChild size="sm">
+                      <Link href={url} target="_blank" rel="noopener noreferrer" download>
+                          <Download className="mr-2 h-4 w-4" /> Descargar Archivo
+                      </Link>
+                  </Button>
+              </div>
+          );
+      }
 
-        return null;
-    };
+      return null;
+  };
 
   const renderLessonContent = () => {
     if (!selectedLesson) {
