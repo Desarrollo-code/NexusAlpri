@@ -70,7 +70,13 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const idleTimeoutMinutes = settings?.idleTimeoutMinutes ?? 20;
   const isIdleTimeoutEnabled = settings?.enableIdleTimeout ?? true;
 
-  const { stay } = useIdleTimeout(handleIdleLogout, handleIdlePrompt, idleTimeoutMinutes, 60, isIdleTimeoutEnabled);
+  const { stay } = useIdleTimeout({
+    onIdle: handleIdleLogout,
+    onPrompt: handleIdlePrompt,
+    timeout: idleTimeoutMinutes,
+    promptBeforeIdle: 60, // 60 segundos
+    enabled: isIdleTimeoutEnabled,
+  });
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
