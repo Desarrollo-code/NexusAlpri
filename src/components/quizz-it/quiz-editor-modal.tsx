@@ -1,3 +1,4 @@
+
 // src/components/quizz-it/quiz-editor-modal.tsx
 'use client';
 import React, { useState, useEffect } from 'react';
@@ -24,7 +25,7 @@ import { Loader2 } from 'lucide-react';
 import { Label } from '../ui/label';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/select';
 import { QuizGameView } from './quiz-game-view';
-import { Card, CardHeader, CardContent } from '../ui/card';
+import { Card, CardHeader, CardContent, CardTitle } from '../ui/card';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 
 const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
