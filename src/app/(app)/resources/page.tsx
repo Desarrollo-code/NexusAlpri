@@ -8,18 +8,14 @@ import { cn } from '@/lib/utils';
 import { useTitle } from '@/contexts/title-context';
 import { Card } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Move, Trash2 } from 'lucide-react';
+import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Move, Trash2, FolderOpen } from 'lucide-react';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { ResourceListItem } from '@/components/resources/resource-list-item';
 import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { DndContext, type DragEndEvent, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { FolderOpen } from 'lucide-react';
 import { EmptyState } from '@/components/empty-state';
 import { ResourceEditorModal } from '@/components/resources/resource-editor-modal';
 import { FolderCreatorModal } from '@/components/resources/folder-creator-modal';
@@ -159,131 +155,123 @@ export default function ResourcesPage() {
   
   return (
     <DndContext onDragEnd={handleDragEnd} sensors={useSensors(useSensor(MouseSensor), useSensor(TouchSensor))}>
-    <div className="grid grid-cols-1 gap-6 items-start">
-        <div className="col-span-1 space-y-6">
-            <Card className="p-4 space-y-4">
-                <div className="relative">
+    <div className="space-y-6">
+        <Card className="p-4 bg-card shadow-sm">
+             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                 <div className="relative w-full flex-grow">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input placeholder="Buscar en mi nube..." className="pl-10 h-10 text-base rounded-md" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                    <Input placeholder="Buscar en la carpeta actual..." className="pl-10 h-10 text-base rounded-md" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                 </div>
-                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                     <RadioGroup defaultValue="ACTIVE" value={activeTab} onValueChange={(v) => setActiveTab(v as ResourceStatus)} className="flex items-center gap-1 p-1 rounded-full bg-green-100 dark:bg-green-900/20 w-fit">
-                        <Label htmlFor="status-active" className={cn("px-4 py-1.5 text-sm font-semibold rounded-full cursor-pointer transition-colors", activeTab === 'ACTIVE' && 'bg-white text-green-700 shadow')}>Activo</Label>
-                        <RadioGroupItem value="ACTIVE" id="status-active" className="sr-only"/>
-                        <Label htmlFor="status-archived" className={cn("px-4 py-1.5 text-sm font-semibold rounded-full cursor-pointer transition-colors", activeTab === 'ARCHIVED' && 'bg-white text-green-700 shadow')}>Archivado</Label>
-                        <RadioGroupItem value="ARCHIVED" id="status-archived" className="sr-only"/>
-                    </RadioGroup>
-                     <div className="flex items-center gap-2">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                               <Button className="bg-slate-800 text-white hover:bg-slate-700 h-9">
-                                    + Nuevo <ChevronDown className="ml-2 h-4 w-4"/>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onSelect={() => setIsFolderCreatorOpen(true)}><FolderIcon className="mr-2 h-4 w-4"/>Nueva Carpeta</DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => setIsUploaderOpen(true)}><UploadCloud className="mr-2 h-4 w-4"/>Subir Archivo</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                         <div className="flex items-center gap-1 p-1 rounded-lg bg-gray-200 dark:bg-gray-800">
-                             <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-7 w-7" onClick={() => setViewMode('list')}><List className="h-4 w-4"/></Button>
-                            <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-7 w-7" onClick={() => setViewMode('grid')}><Grid className="h-4 w-4"/></Button>
-                        </div>
+                 <div className="flex items-center gap-2 w-full md:w-auto">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                           <Button className="h-10 flex-grow md:flex-none">
+                                + Nuevo <ChevronDown className="ml-2 h-4 w-4"/>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onSelect={() => setIsFolderCreatorOpen(true)}><FolderIcon className="mr-2 h-4 w-4"/>Nueva Carpeta</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => setIsUploaderOpen(true)}><UploadCloud className="mr-2 h-4 w-4"/>Subir Archivo</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                     <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
+                         <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')}><List className="h-4 w-4"/></Button>
+                        <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')}><Grid className="h-4 w-4"/></Button>
                     </div>
                 </div>
-            </Card>
-
-            <nav aria-label="Breadcrumb">
-                <ol className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
-                    {breadcrumbs.map((crumb, index) => (
-                        <li key={crumb.id || 'root'} className="flex items-center gap-1.5">
-                            <button onClick={() => handleBreadcrumbClick(crumb.id, index)} disabled={index === breadcrumbs.length - 1} className={cn("hover:text-primary disabled:hover:text-muted-foreground disabled:cursor-default", index === breadcrumbs.length - 1 && "text-foreground font-semibold")}>{crumb.title}</button>
-                            {index < breadcrumbs.length - 1 && <ChevronDown className="h-4 w-4 -rotate-90" />}
-                        </li>
-                    ))}
-                </ol>
-            </nav>
-            
-            <div>
-                {isLoadingData ? (
-                    <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
-                ) : error ? (
-                    <div className="text-center py-10"><AlertTriangle className="mx-auto h-8 w-8 text-destructive" /><p className="mt-2 font-semibold text-destructive">{error}</p></div>
-                ) : (
-                    <div className="space-y-8">
-                        {folders.length > 0 && (
-                            <section>
-                                <h3 className="text-lg font-semibold mb-3">Carpetas</h3>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                                    {folders.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={true} onNavigate={handleNavigateFolder} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onSelect={() => {}}/>)}
-                                </div>
-                            </section>
-                        )}
-                        {files.length > 0 && (
-                            <section>
-                                <h3 className="text-lg font-semibold mb-3">Archivos Recientes</h3>
-                                {viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                                        {files.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={false} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onNavigate={() => {}} />)}
-                                    </div>
-                                ) : (
-                                    <div className="border rounded-lg bg-card divide-y">
-                                        {files.map(res => <ResourceListItem key={res.id} resource={res} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} />)}
-                                    </div>
-                                )}
-                            </section>
-                        )}
-                        {folders.length === 0 && files.length === 0 && (
-                             <EmptyState 
-                                icon={FolderOpen} 
-                                title="Esta carpeta está vacía"
-                                description="Sube un archivo o crea una nueva carpeta para empezar."
-                                imageUrl={settings?.emptyStateResourcesUrl}
-                             />
-                        )}
-                    </div>
-                )}
             </div>
+        </Card>
 
-             <ResourcePreviewModal
-                resource={selectedResource}
-                onClose={() => setSelectedResource(null)}
-                onNavigate={(dir) => {}}
-            />
-            
-            <ResourceEditorModal
-                isOpen={isUploaderOpen || !!resourceToEdit}
-                onClose={() => { setResourceToEdit(null); setIsUploaderOpen(false); }}
-                resource={resourceToEdit}
-                parentId={currentFolderId}
-                onSave={handleResourceSave}
-            />
-
-            <FolderCreatorModal
-                 isOpen={isFolderCreatorOpen}
-                 onClose={() => setIsFolderCreatorOpen(false)}
-                 parentId={currentFolderId}
-                 onSave={handleResourceSave}
-            />
-
-             <AlertDialog open={!!resourceToDelete} onOpenChange={(open) => !open && setResourceToDelete(null)}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            El recurso "<strong>{resourceToDelete?.title}</strong>" será eliminado permanentemente. Si es una carpeta, debe estar vacía. Esta acción no se puede deshacer.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={confirmDelete} disabled={isDeleting} className={cn(buttonVariants({ variant: "destructive" }))}>
-                            {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                            <Trash2 className="mr-2 h-4 w-4"/>Sí, eliminar
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+        <nav aria-label="Breadcrumb">
+            <ol className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+                {breadcrumbs.map((crumb, index) => (
+                    <li key={crumb.id || 'root'} className="flex items-center gap-1.5">
+                        <button onClick={() => handleBreadcrumbClick(crumb.id, index)} disabled={index === breadcrumbs.length - 1} className={cn("hover:text-primary disabled:hover:text-muted-foreground disabled:cursor-default", index === breadcrumbs.length - 1 && "text-foreground font-semibold")}>{crumb.title}</button>
+                        {index < breadcrumbs.length - 1 && <ChevronDown className="h-4 w-4 -rotate-90" />}
+                    </li>
+                ))}
+            </ol>
+        </nav>
+        
+        <div>
+            {isLoadingData ? (
+                <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+            ) : error ? (
+                <div className="text-center py-10"><AlertTriangle className="mx-auto h-8 w-8 text-destructive" /><p className="mt-2 font-semibold text-destructive">{error}</p></div>
+            ) : (
+                <div className="space-y-8">
+                    {folders.length > 0 && (
+                        <section>
+                            <h3 className="text-lg font-semibold mb-3">Carpetas</h3>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                                {folders.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={true} onNavigate={handleNavigateFolder} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onSelect={() => {}}/>)}
+                            </div>
+                        </section>
+                    )}
+                    {files.length > 0 && (
+                        <section>
+                            <h3 className="text-lg font-semibold mb-3">Archivos</h3>
+                            {viewMode === 'grid' ? (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                                    {files.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={false} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onNavigate={() => {}} />)}
+                                </div>
+                            ) : (
+                                <div className="border rounded-lg bg-card divide-y">
+                                    {files.map(res => <ResourceListItem key={res.id} resource={res} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} />)}
+                                </div>
+                            )}
+                        </section>
+                    )}
+                    {folders.length === 0 && files.length === 0 && (
+                         <EmptyState 
+                            icon={FolderOpen} 
+                            title={searchTerm ? "No se encontraron resultados" : "Esta carpeta está vacía"}
+                            description={searchTerm ? "Intenta con otro término de búsqueda." : "Sube un archivo o crea una nueva carpeta para empezar."}
+                            imageUrl={settings?.emptyStateResourcesUrl}
+                         />
+                    )}
+                </div>
+            )}
         </div>
+
+         <ResourcePreviewModal
+            resource={selectedResource}
+            onClose={() => setSelectedResource(null)}
+            onNavigate={(dir) => {}}
+        />
+        
+        <ResourceEditorModal
+            isOpen={isUploaderOpen || !!resourceToEdit}
+            onClose={() => { setResourceToEdit(null); setIsUploaderOpen(false); }}
+            resource={resourceToEdit}
+            parentId={currentFolderId}
+            onSave={handleResourceSave}
+        />
+
+        <FolderCreatorModal
+             isOpen={isFolderCreatorOpen}
+             onClose={() => setIsFolderCreatorOpen(false)}
+             parentId={currentFolderId}
+             onSave={handleResourceSave}
+        />
+
+         <AlertDialog open={!!resourceToDelete} onOpenChange={(open) => !open && setResourceToDelete(null)}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        El recurso "<strong>{resourceToDelete?.title}</strong>" será eliminado permanentemente. Si es una carpeta, debe estar vacía. Esta acción no se puede deshacer.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={confirmDelete} disabled={isDeleting} className={cn(buttonVariants({ variant: "destructive" }))}>
+                        {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                        <Trash2 className="mr-2 h-4 w-4"/>Sí, eliminar
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </div>
     </DndContext>
   );

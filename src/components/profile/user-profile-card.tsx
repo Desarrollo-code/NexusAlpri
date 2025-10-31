@@ -70,6 +70,10 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange }: 
                 <p className="font-semibold text-lg truncate max-w-[200px]">{user.name}</p>
                 <p className="text-sm text-primary font-medium">{getRoleInSpanish(user.role)}</p>
                 <p className="text-xs text-muted-foreground break-all">{user.email}</p>
+                
+                 <Badge variant={user.isActive ? "default" : "secondary"} className={cn("mt-2", user.isActive ? "bg-green-500/20 text-green-700 dark:bg-green-500/10 dark:text-green-400 border-green-500/30" : "bg-gray-500/20 text-gray-600 dark:bg-gray-500/10 dark:text-gray-400 border-gray-500/30")}>
+                    {user.isActive ? 'Activo' : 'Inactivo'}
+                 </Badge>
 
                 {displayProcess.length > 0 && (
                      <div className="mt-3 flex flex-wrap justify-center gap-1">
