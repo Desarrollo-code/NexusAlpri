@@ -185,10 +185,9 @@ export function ChatClient({ newChatUserId }: ChatClientProps) {
     const renderListView = () => (
         <Tabs defaultValue="chats" className="flex flex-col h-full">
             <CardHeader>
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="chats"><MessageSquare className="h-4 w-4 mr-2"/>Chats</TabsTrigger>
                     <TabsTrigger value="announcements"><Megaphone className="h-4 w-4 mr-2"/>Anuncios</TabsTrigger>
-                    <TabsTrigger value="notifications"><Bell className="h-4 w-4 mr-2"/>Alertas</TabsTrigger>
                 </TabsList>
             </CardHeader>
             <TabsContent value="chats" className="p-0 m-0 flex-1 min-h-0">
@@ -196,9 +195,6 @@ export function ChatClient({ newChatUserId }: ChatClientProps) {
             </TabsContent>
             <TabsContent value="announcements" className="p-0 m-0 flex-1 min-h-0">
                 <AnnouncementsView onSelectAnnouncement={setActiveAnnouncement} />
-            </TabsContent>
-            <TabsContent value="notifications" className="p-0 m-0 flex-1 min-h-0">
-                <NotificationsView />
             </TabsContent>
         </Tabs>
     );
