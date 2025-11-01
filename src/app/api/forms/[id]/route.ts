@@ -38,7 +38,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       include: {
         fields: {
           orderBy: { order: 'asc' },
-          select: { id: true, label: true, type: true, required: true, placeholder: true, order: true, options: true }
+          select: { id: true, label: true, type: true, required: true, placeholder: true, order: true, options: true, imageUrl: true }
         },
         sharedWith: {
             select: { id: true, name: true, avatar: true }
@@ -92,13 +92,15 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
   try {
     const body = await req.json();
-    const { title, description, status, isQuiz, fields, sharedWithUserIds } = body;
+    const { title, description, status, isQuiz, fields, sharedWithUserIds, template, timerStyle } = body;
 
     const dataToUpdate: any = {};
     if (title !== undefined) dataToUpdate.title = title;
     if (description !== undefined) dataToUpdate.description = description;
     if (status !== undefined) dataToUpdate.status = status;
     if (isQuiz !== undefined) dataToUpdate.isQuiz = isQuiz;
+    if (template !== undefined) dataToUpdate.template = template;
+    if (timerStyle !== undefined) dataToUpdate.timerStyle = timerStyle;
     if (sharedWithUserIds !== undefined) {
         dataToUpdate.sharedWith = {
             set: sharedWithUserIds.map((id: string) => ({ id }))
@@ -138,6 +140,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             placeholder: fieldData.placeholder || null,
             order: index,
             formId: formId,
+            imageUrl: fieldData.imageUrl,
+            template: fieldData.template,
           };
           
           await tx.formField.upsert({

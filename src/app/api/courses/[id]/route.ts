@@ -139,6 +139,8 @@ export async function PUT(
                   description: blockData.quiz.description || '',
                   maxAttempts: blockData.quiz.maxAttempts,
                   contentBlockId: newBlock.id,
+                  template: blockData.quiz.template,
+                  timerStyle: blockData.quiz.timerStyle,
                 },
               });
 
@@ -149,7 +151,8 @@ export async function PUT(
                     order: qIndex,
                     type: 'SINGLE_CHOICE',
                     quizId: newQuiz.id,
-                    imageUrl: questionData.imageUrl, // Save the new imageUrl field
+                    imageUrl: questionData.imageUrl,
+                    template: questionData.template,
                   },
                 });
 
@@ -161,6 +164,7 @@ export async function PUT(
                       feedback: opt.feedback || null,
                       points: opt.points || 0,
                       questionId: newQuestion.id,
+                      imageUrl: opt.imageUrl
                     })),
                   });
                 }

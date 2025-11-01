@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
   const filter = searchParams.get('filter'); // all, by-me, by-others, pinned, trending
   
   const page = pageParam ? parseInt(pageParam, 10) : 1;
-  const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 4;
+  const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 50; // Aumentado para la vista unificada
   
   // Validar parámetros de paginación
   if (isNaN(page) || page < 1 || isNaN(pageSize) || pageSize < 1) {
@@ -171,7 +171,7 @@ export async function POST(req: NextRequest) {
           userId: user.id,
           title: `Nuevo Anuncio: ${title}`,
           description: description,
-          link: '/announcements',
+          link: '/messages', // Link a la nueva página de mensajería
           announcementId: newAnnouncement.id,
         }))
       });
