@@ -30,8 +30,8 @@ const fileTypeMap: Record<string, FileTypeDetails> = {
   ZIP: { label: 'ZIP', color: '#A0AEC0', icon: ZipIcon },
   ISO: { label: 'ISO', color: '#F6E05E', icon: FileGenericIcon },
   // Código y Diseño
-  HTML: { label: 'HTM', color: '#DD6B20', icon: FileCode },
-  CSS: { label: 'CSS', color: '#3182CE', icon: FileCode },
+  HTML: { label: 'HTM', color: '#DD6B20', icon: FileTextIcon },
+  CSS: { label: 'CSS', color: '#3182CE', icon: FileTextIcon },
   AI: { label: 'AI', color: '#ED8936', icon: FilePen },
   PSD: { label: 'PSD', color: '#4299E1', icon: FilePen },
   CAD: { label: 'CAD', color: '#4A5568', icon: FilePen },
