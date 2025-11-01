@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogFo
 import type { AppResourceType } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Download, Share2, ChevronLeft, ChevronRight, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users, ExternalLink, FileText, Archive, FileCode, List, X, Edit, Save } from 'lucide-react';
-import { getIconForType, getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
+import { getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '../ui/input';
@@ -26,6 +26,7 @@ import { PdfViewer } from '@/components/pdf-viewer';
 import { RichTextEditor } from '../ui/rich-text-editor';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
+import { FileIcon } from '../ui/file-icon';
 
 const DocxPreviewer = ({ url }: { url: string }) => {
     const [html, setHtml] = useState<string | null>(null);
@@ -370,7 +371,7 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
         <DialogContent className="w-[95vw] h-[90vh] max-w-6xl p-0 flex flex-col bg-background/80 backdrop-blur-lg gap-0">
           <DialogHeader className="p-4 flex-shrink-0 h-16 px-4 flex flex-row justify-between items-center border-b z-10 bg-background/70">
             <div className="flex items-center gap-3 overflow-hidden flex-1">
-              {React.createElement(getIconForType(resource.type), { className: "h-5 w-5 shrink-0" })}
+              <FileIcon type={resource.fileType || resource.type} className="w-8 h-10 flex-shrink-0"/>
               <DialogTitle className="font-semibold truncate text-foreground">{resource.title}</DialogTitle>
             </div>
             <DialogClose asChild><Button variant="ghost" size="icon" className="h-8 w-8"><X className="h-4 w-4"/></Button></DialogClose>

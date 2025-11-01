@@ -1,11 +1,54 @@
-
 // src/lib/resource-utils.tsx
 import React from 'react';
 import type { AppResourceType } from '@/types';
-import { FolderIcon, FileQuestion, Video as VideoIcon, FileText as FileTextIcon, Info, Notebook, Shield, Link as LinkIcon, Archive as ZipIcon, FilePen } from 'lucide-react';
+import { FolderIcon, FileQuestion, Video as VideoIcon, FileText as FileTextIcon, Info, Notebook, Shield, Link as LinkIcon, Archive as ZipIcon, FilePen, File as FileGenericIcon } from 'lucide-react';
 import { cn } from './utils';
 
-// Enhanced getIconForType with colors
+// --- NUEVA LÓGICA PARA ICONOS DE ARCHIVO ESTILIZADOS ---
+export interface FileTypeDetails {
+  label: string;
+  color: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const fileTypeMap: Record<string, FileTypeDetails> = {
+  // Documentos
+  PDF: { label: 'PDF', color: '#E53E3E', icon: FileTextIcon },
+  DOCX: { label: 'DOCX', color: '#4285F4', icon: FileTextIcon },
+  DOC: { label: 'DOC', color: '#4285F4', icon: FileTextIcon },
+  PPT: { label: 'PPT', color: '#D94B25', icon: FileTextIcon },
+  XLS: { label: 'XLS', color: '#34A853', icon: FileTextIcon },
+  // Imágenes
+  PNG: { label: 'PNG', color: '#4A5568', icon: FileGenericIcon },
+  JPG: { label: 'JPG', color: '#4A5568', icon: FileGenericIcon },
+  GIF: { label: 'GIF', color: '#4299E1', icon: FileGenericIcon },
+  BMP: { label: 'BMP', color: '#805AD5', icon: FileGenericIcon },
+  SVG: { label: 'SVG', color: '#F56565', icon: FileGenericIcon },
+  // Video
+  MP4: { label: 'MP4', color: '#3182CE', icon: VideoIcon },
+  // Archivos
+  ZIP: { label: 'ZIP', color: '#A0AEC0', icon: ZipIcon },
+  ISO: { label: 'ISO', color: '#F6E05E', icon: FileGenericIcon },
+  // Código y Diseño
+  HTML: { label: 'HTM', color: '#DD6B20', icon: FileCode },
+  CSS: { label: 'CSS', color: '#3182CE', icon: FileCode },
+  AI: { label: 'AI', color: '#ED8936', icon: FilePen },
+  PSD: { label: 'PSD', color: '#4299E1', icon: FilePen },
+  CAD: { label: 'CAD', color: '#4A5568', icon: FilePen },
+  // Otros
+  DB: { label: 'DB', color: '#38B2AC', icon: FileQuestion },
+  DEFAULT: { label: 'FILE', color: '#A0AEC0', icon: FileQuestion },
+};
+
+export const getFileTypeDetails = (type: string): FileTypeDetails => {
+  const upperType = type.toUpperCase();
+  // Extraer extensión de un nombre de archivo
+  const extension = upperType.split('.').pop() || 'DEFAULT';
+  return fileTypeMap[extension] || fileTypeMap['DEFAULT'];
+};
+
+
+// --- LÓGICA ANTIGUA (aún se usa para iconos simples) ---
 export const getIconForType = (type: AppResourceType['type']): React.ComponentType<React.SVGProps<SVGSVGElement> & { className?: string }> => {
     const iconMap: Record<string, { icon: React.ElementType, color: string, gradient: string }> = {
         FOLDER: { icon: FolderIcon, color: 'text-amber-500', gradient: 'from-amber-500/10' },
@@ -25,7 +68,7 @@ export const getIconForType = (type: AppResourceType['type']): React.ComponentTy
 };
 
 export const getIconForFileType = (mimeType: string) => {
-    if (mimeType.startsWith('image/')) return FileTextIcon;
+    if (mimeType.startsWith('image/')) return ImageIcon;
     if (mimeType.startsWith('video/')) return VideoIcon;
     if (mimeType === 'application/pdf') return FileTextIcon;
     if (mimeType.includes('word')) return FileTextIcon;
@@ -75,12 +118,6 @@ export const FallbackIcon = ({ resource, className }: { resource: AppResourceTyp
     );
 };
 
-/**
- * Checks if a given URL points to a PDF file.
- * This version is more robust for URLs with query parameters.
- * @param url The URL string to check.
- * @returns True if the URL is for a PDF, false otherwise.
- */
 export function isPdfUrl(url: string | null | undefined): boolean {
   if (!url) {
     return false;
@@ -89,7 +126,6 @@ export function isPdfUrl(url: string | null | undefined): boolean {
     const parsedUrl = new URL(url);
     return parsedUrl.pathname.toLowerCase().endsWith('.pdf');
   } catch (error) {
-    // Fallback for relative URLs or invalid URLs
     return url.toLowerCase().includes('.pdf');
   }
 }

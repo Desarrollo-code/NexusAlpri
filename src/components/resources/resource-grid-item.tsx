@@ -16,9 +16,11 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import Image from 'next/image';
-import { getIconForType, getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
+import { getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
 import { DownloadButton } from '../ui/download-button';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '../ui/tooltip';
+import { FileIcon } from '../ui/file-icon';
 
 // --- Sub-components for Page ---
 const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onDelete, onNavigate, onRestore }: { resource: AppResourceType, isFolder: boolean, onSelect: () => void, onEdit: (r: AppResourceType) => void, onDelete: (r: AppResourceType) => void, onNavigate: (r: AppResourceType) => void, onRestore: (r:AppResourceType) => void }) => {
@@ -46,9 +48,6 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
     };
     
     const Thumbnail = () => {
-        const isImage = !isFolder && resource.url && /\.(jpe?g|png|gif|webp)$/i.test(resource.url);
-        const youtubeId = !isFolder && resource.type === 'VIDEO' ? getYoutubeVideoId(resource.url) : null;
-        
         if (isFolder) {
             return (
                 <div className="w-full h-full relative" onClick={handleClick}>
@@ -65,16 +64,9 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
             );
         }
 
-        if (isImage) {
-           return <Image src={resource.url!} alt={resource.title} fill className="object-contain p-2" data-ai-hint="resource document"/>
-        }
-        if (youtubeId) {
-            return <Image src={`https://i.ytimg.com/vi/${youtubeId}/mqdefault.jpg`} alt={resource.title} fill className="object-cover" data-ai-hint="video thumbnail" quality={100} priority/>
-        }
-        return <FallbackIcon resource={resource} />;
+        const fileExtension = resource.fileType?.split('/')[1] || resource.url?.split('.').pop() || 'file';
+        return <FileIcon type={fileExtension} />;
     };
-
-    const Icon = !isFolder ? getIconForType(resource.type) : null;
 
     const setNodeRef = (node: HTMLElement | null) => {
         setDraggableNodeRef(node);
@@ -109,7 +101,7 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                                     <GripVertical className="h-4 w-4 text-muted-foreground" />
                                 </div>
                             ) : (
-                                Icon && <Icon className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground" />
+                                <div className="w-6 h-4"/>
                             )}
                             <p className="font-medium text-xs leading-tight break-words">{resource.title}</p>
                         </div>
