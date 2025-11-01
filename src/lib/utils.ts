@@ -76,17 +76,6 @@ const stringToHash = (str: string): number => {
     return Math.abs(hash);
 };
 
-// Se mantiene la lógica original, pero debes asegurarte que estos valores
-// hexadecimales estén en tu configuración de Tailwind para que funcionen.
-// Alternativamente, puedes forzar su inclusión usando la técnica de comentario.
-
-// Esto asegura que Tailwind CSS incluya los colores personalizados.
-// Las clases reales serán generadas por el return de la función.
-/*
-  bg-[#fde047] bg-[#a7f3d0] bg-[#93c5fd] bg-[#f87171] bg-[#a5b4fc] bg-[#d8b4fe] bg-[#f9a8d4] bg-[#6ee7b7] bg-[#5eead4]
-  text-[#eab308] text-[#22c55e] text-[#3b82f6] text-[#dc2626] text-[#6366f1] text-[#a855f7] text-[#ec4899] text-[#10b981] text-[#14b8a6]
-  border-[#facc15] border-[#4ade80] border-[#60a5fa] border-[#ef4444] border-[#818cf8] border-[#c084fc] border-[#f472b6] border-[#34d399] border-[#2dd4bf]
-*/
 export const getProcessColors = (id: string) => {
     const hash = stringToHash(id);
     const palette = PALETTES[hash % PALETTES.length];
@@ -133,4 +122,24 @@ export const getEventColorClass = (color?: string): string => {
     orange: 'bg-event-orange',
   };
   return colorMap[color as string] || 'bg-primary';
+};
+
+/**
+ * Formats a date into a "time since" string.
+ * @param date The date to format.
+ * @returns A string like "Ahora", "Hace 5 seg.", "Hace 10 min.", "Ayer", etc.
+ */
+export const timeSince = (date: Date): string => {
+  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+  let interval = seconds / 31536000;
+  if (interval > 1) return `Hace ${Math.floor(interval)}a`;
+  interval = seconds / 2592000;
+  if (interval > 1) return `Hace ${Math.floor(interval)}m`;
+  interval = seconds / 86400;
+  if (interval > 1) return `Hace ${Math.floor(interval)}d`;
+  interval = seconds / 3600;
+  if (interval > 1) return `Hace ${Math.floor(interval)}h`;
+  interval = seconds / 60;
+  if (interval > 1) return `Hace ${Math.floor(interval)} min`;
+  return `Hace ${Math.floor(seconds)} seg`;
 };

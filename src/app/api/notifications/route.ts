@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     const notificationsFromDb = await prisma.notification.findMany({
       where: { userId: session.id },
       orderBy: { createdAt: 'desc' },
-      ...(!getAll && { take: 50 }), // Limit if not requesting all
+      ...(!getAll && { take: 10 }), // Limit if not requesting all
     });
     
     // Map to the client-side type
@@ -96,6 +96,8 @@ export async function DELETE(req: NextRequest) {
         if (Array.isArray(ids) && ids.length > 0) {
             whereClause.id = { in: ids };
         } else {
+            // This is a special case to delete all notifications for a user, if needed.
+            // For now, we require specific IDs to prevent accidental mass deletion.
             return NextResponse.json({ message: 'El campo "ids" debe ser un array de IDs válido.' }, { status: 400 });
         }
 
@@ -104,7 +106,9 @@ export async function DELETE(req: NextRequest) {
         });
 
         if (deleteResult.count === 0) {
-            return NextResponse.json({ message: 'No se encontraron notificaciones para eliminar.' }, { status: 404 });
+            // It's not an error if no notifications were found to delete.
+            // The desired state (no such notifications) is achieved.
+            return new NextResponse(null, { status: 204 });
         }
         
         return new NextResponse(null, { status: 204 }); // Success, no content

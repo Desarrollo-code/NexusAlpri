@@ -18,21 +18,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getNavItemsForRole } from "@/lib/nav-items";
 import { GradientIcon } from "../ui/gradient-icon";
-
-const timeSince = (date: Date): string => {
-    const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-    let interval = seconds / 31536000;
-    if (interval > 1) return Math.floor(interval) + "a";
-    interval = seconds / 2592000;
-    if (interval > 1) return Math.floor(interval) + "m";
-    interval = seconds / 86400;
-    if (interval > 1) return Math.floor(interval) + "d";
-    interval = seconds / 3600;
-    if (interval > 1) return Math.floor(interval) + "h";
-    interval = seconds / 60;
-    if (interval > 1) return Math.floor(interval) + "min";
-    return Math.floor(seconds) + "s";
-};
+import { timeSince } from "@/lib/utils";
 
 export const TopBar = () => {
     const { toggleSidebar } = useSidebar();
@@ -70,47 +56,52 @@ export const TopBar = () => {
         return { icon: currentItem?.icon || null, title };
     }, [pathname, user?.role, pageTitle]);
 
+    const fetchNotifications = useCallback(async () => {
+        if (!user) return;
+        try {
+            const response = await fetch('/api/notifications');
+            if (response.ok) {
+                const data: AppNotification[] = await response.json();
+                setNotifications(data);
+                setUnreadCount(data.filter(n => !n.read).length);
+            }
+        } catch (error) {
+            // Silently fail for polling
+        }
+    }, [user]);
 
     useEffect(() => {
-        if (!user) return; // No hacer fetch si no hay usuario
-
-        const fetchNotifications = async () => {
-            try {
-                const response = await fetch('/api/notifications');
-                if (response.ok) {
-                    const data: AppNotification[] = await response.json();
-                    setNotifications(data);
-                    setUnreadCount(data.filter(n => !n.read).length);
-                }
-            } catch (error) {
-                // Silently fail
-            }
-        };
         fetchNotifications();
         const interval = setInterval(fetchNotifications, 60000); // Poll every 60 seconds
         return () => clearInterval(interval);
-    }, [user]); // Añadir user como dependencia
+    }, [fetchNotifications]);
 
     const markAsRead = async (ids: string[] | 'all') => {
+        if (unreadCount === 0 && ids === 'all') return;
+        
+        const originalNotifications = [...notifications];
+        const unreadIdsToMark = ids === 'all'
+            ? originalNotifications.filter(n => !n.read).map(n => n.id)
+            : ids;
+            
+        // Optimistic update
+        setNotifications(prev => prev.map(n => unreadIdsToMark.includes(n.id) ? {...n, read: true} : n));
+        setUnreadCount(prev => prev - unreadIdsToMark.length);
+        
         try {
             const res = await fetch('/api/notifications', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ids: ids === 'all' ? 'all' : ids, read: true })
             });
-            if (res.ok) {
-                 if (ids === 'all') {
-                    setNotifications(prev => prev.map(n => ({...n, read: true})));
-                    setUnreadCount(0);
-                } else {
-                    setNotifications(prev => prev.map(n => ids.includes(n.id) ? {...n, read: true} : n));
-                    setUnreadCount(prev => prev - ids.length);
-                }
-            } else {
-                 toast({ title: "Error", description: "No se pudieron marcar las notificaciones."})
+            if (!res.ok) {
+                 throw new Error("No se pudieron marcar las notificaciones.");
             }
         } catch(error) {
-            // silent
+            // Revert on error
+            setNotifications(originalNotifications);
+            setUnreadCount(originalNotifications.filter(n => !n.read).length);
+            toast({ title: "Error", description: "No se pudieron marcar las notificaciones."})
         }
     }
 
@@ -143,7 +134,7 @@ export const TopBar = () => {
             {/* Right side */}
             <div className="flex items-center gap-3">
                  {headerActions && <div className="hidden md:flex items-center gap-2">{headerActions}</div>}
-                 <Popover>
+                 <Popover onOpenChange={(open) => { if (open) fetchNotifications() }}>
                     <PopoverTrigger asChild>
                         <Button variant="ghost" size="icon" className="relative text-primary-foreground/80 hover:text-primary-foreground hover:bg-black/20 transition-colors">
                             <Bell className="h-5 w-5"/>
