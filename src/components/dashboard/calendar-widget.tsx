@@ -44,12 +44,12 @@ export function CalendarWidget({ events }: { events?: CalendarEvent[] }) {
                                <span className="font-bold text-2xl">{format(eventDate, 'd')}</span>
                                <span className="text-xs font-semibold opacity-80">{format(eventDate, 'EEE', { locale: es }).toUpperCase()}</span>
                             </div>
-                            <div className="flex-grow">
+                            <div className="flex-grow min-w-0">
                                 <p className="font-bold text-base truncate">{event.title}</p>
                                 <p className="text-sm opacity-90">{event.allDay ? 'Todo el día' : format(eventDate, 'p', { locale: es })}</p>
                             </div>
                             {event.recurrence !== 'NONE' && (
-                                <div className="flex flex-col items-center text-xs opacity-80">
+                                <div className="flex flex-col items-center text-xs opacity-80 shrink-0">
                                     <Bell className="h-4 w-4" />
                                     <span>Recurrente</span>
                                 </div>

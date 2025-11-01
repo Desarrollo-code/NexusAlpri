@@ -10,6 +10,7 @@ import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverTrigger, PopoverContent } from '../ui/popover';
 import { Button } from '../ui/button';
+import { Bell } from 'lucide-react';
 
 const getEventColorClass = (color?: string): string => {
   const colorMap: Record<string, string> = {
@@ -91,8 +92,15 @@ export function DatePickerSidebar({ selectedDate, onDateSelect, events, onEventC
                                     className="flex items-start gap-3 cursor-pointer group"
                                 >
                                     <div className={cn("w-2 h-2 rounded-full mt-1.5 shrink-0", getEventColorClass(event.color))} />
-                                    <div className="flex-grow">
-                                        <p className="text-sm font-medium leading-tight group-hover:text-primary">{event.title}</p>
+                                    <div className="flex-grow min-w-0">
+                                        <div className="flex justify-between items-start gap-1">
+                                            <p className="text-sm font-medium leading-tight group-hover:text-primary truncate">{event.title}</p>
+                                            {event.recurrence !== 'NONE' && (
+                                                <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
+                                                    <Bell className="h-3 w-3" />
+                                                </div>
+                                            )}
+                                        </div>
                                         <p className="text-xs text-muted-foreground">
                                              {event.allDay ? 'Todo el día' : `${format(new Date(event.start), 'p', {locale: es})} - ${format(new Date(event.end), 'p', {locale: es})}`}
                                         </p>
