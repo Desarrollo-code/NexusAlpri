@@ -45,26 +45,44 @@ export function ChatClient({ newChatUserId }: ChatClientProps) {
 
     const [isNewConvoModalOpen, setIsNewConvoModalOpen] = useState(false);
 
-    const handleRealtimeMessage = useCallback((payload: any) => {
-        const isForActiveConvo = payload.conversationId === activeConversation?.id;
-
-        if (isForActiveConvo) {
-            setMessages(prev => [...prev, payload]);
-        }
+    const handleRealtimeEvent = useCallback((payload: any) => {
+        const { event, payload: data } = payload;
         
-        setConversations(prev => {
-            const convoIndex = prev.findIndex(c => c.id === payload.conversationId);
-            if (convoIndex > -1) {
-                const updatedConvo = { ...prev[convoIndex], messages: [payload], updatedAt: payload.createdAt };
-                const restConvos = prev.filter(c => c.id !== payload.conversationId);
-                return [updatedConvo, ...restConvos];
-            }
-            fetchConversations();
-            return prev;
-        });
-    }, [activeConversation?.id]);
+        switch(event) {
+            case 'chat_message':
+                const isForActiveConvo = data.conversationId === activeConversation?.id;
+                if (isForActiveConvo) {
+                    setMessages(prev => [...prev, data]);
+                }
+                setConversations(prev => {
+                    const convoIndex = prev.findIndex(c => c.id === data.conversationId);
+                    if (convoIndex > -1) {
+                        const updatedConvo = { ...prev[convoIndex], messages: [data], updatedAt: data.createdAt };
+                        const restConvos = prev.filter(c => c.id !== data.conversationId);
+                        return [updatedConvo, ...restConvos];
+                    }
+                    fetchConversations(); // If convo not found, refetch all
+                    return prev;
+                });
+                break;
+            
+            case 'announcement_deleted':
+                 if (activeAnnouncement?.id === data.id) {
+                    setActiveAnnouncement(null); // Close the viewer if the active announcement is deleted
+                }
+                break;
+            case 'announcement_updated':
+                 if (activeAnnouncement?.id === data.id) {
+                    setActiveAnnouncement(data); // Update the viewer with new data
+                }
+                break;
+        }
+
+    }, [activeConversation?.id, activeAnnouncement?.id]);
     
-    useRealtime(user ? `user:${user.id}` : null, handleRealtimeMessage);
+    // Subscribe to both user-specific and general announcement channels
+    useRealtime(user ? `user:${user.id}` : null, handleRealtimeEvent);
+    useRealtime('announcements', handleRealtimeEvent);
 
     const fetchConversations = useCallback(async () => {
         setIsLoadingConversations(true);

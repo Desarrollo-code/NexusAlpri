@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
+import { supabaseAdmin } from '@/lib/supabase-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -81,6 +82,16 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       data: dataToUpdate,
       include: { author: { select: { id: true, name: true, avatar: true, role: true } }, attachments: true, _count: { select: { reads: true, reactions: true } } },
     });
+    
+    // Broadcast update
+    if (supabaseAdmin) {
+        const channel = supabaseAdmin.channel('announcements');
+        await channel.send({
+            type: 'broadcast',
+            event: 'announcement_updated',
+            payload: updatedAnnouncement,
+        });
+    }
 
     return NextResponse.json(updatedAnnouncement);
   } catch (error) {
@@ -108,7 +119,6 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       return NextResponse.json({ message: 'No tienes permiso para eliminar este anuncio' }, { status: 403 });
     }
     
-    // Use a transaction to delete the announcement and its related notifications atomically
     await prisma.$transaction([
         prisma.notification.deleteMany({
             where: { announcementId: id }
@@ -117,6 +127,16 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
             where: { id } 
         })
     ]);
+    
+    // Real-time broadcast for deletion
+    if (supabaseAdmin) {
+        const channel = supabaseAdmin.channel('announcements');
+        await channel.send({
+            type: 'broadcast',
+            event: 'announcement_deleted',
+            payload: { id },
+        });
+    }
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
