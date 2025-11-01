@@ -64,10 +64,10 @@ export function InstructorDashboard({ instructorStats, recentAnnouncements, taug
                     )}
                 </CardContent>
             </Card>
-            <AnnouncementsWidget announcements={recentAnnouncements} />
         </div>
         <div className="lg:col-span-1 space-y-6">
             <CalendarWidget events={upcomingEvents} />
+            <AnnouncementsWidget announcements={recentAnnouncements} />
         </div>
       </div>
     </div>
