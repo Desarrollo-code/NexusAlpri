@@ -48,7 +48,7 @@ export function InstructorDashboard({ instructorStats, recentAnnouncements, taug
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {taughtCourses && taughtCourses.length > 0 ? (
-                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         {taughtCourses.map((course, index) => (
                            <CourseProgressCard key={course.id} course={course} index={index} />
                         ))}
