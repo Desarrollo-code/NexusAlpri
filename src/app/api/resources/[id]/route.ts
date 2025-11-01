@@ -52,7 +52,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         const { title, category, description, isPublic, sharedWithUserIds, expiresAt, status, content, observations } = await req.json();
 
         // Lógica de versionado: se crea una versión si el contenido cambia.
-        const createVersion = resourceToUpdate.content !== content;
+        const createVersion = resourceToUpdate.type === 'DOCUMENTO_EDITABLE' && resourceToUpdate.content !== content;
 
         const updateData = {
             title,

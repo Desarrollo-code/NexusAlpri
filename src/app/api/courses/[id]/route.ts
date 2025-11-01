@@ -208,19 +208,16 @@ export async function DELETE(
   }
 
   try {
-    // We need the announcementId to delete related notifications.
-    const announcementsToDelete = await prisma.announcement.findMany({
-        where: {
-            content: {
-                contains: `/courses/${courseId}`
-            }
-        },
-        select: { id: true }
-    });
-    const announcementIds = announcementsToDelete.map(a => a.id);
+    await prisma.$transaction(async (tx) => {
+        // 1. Encontrar todos los anuncios que mencionan este curso para obtener sus IDs
+        const announcementsToDelete = await tx.announcement.findMany({
+            where: { content: { contains: `/courses/${courseId}` } },
+            select: { id: true }
+        });
+        const announcementIds = announcementsToDelete.map(a => a.id);
 
-    await prisma.$transaction([
-        prisma.notification.deleteMany({
+        // 2. Eliminar todas las notificaciones relacionadas
+        await tx.notification.deleteMany({
             where: {
                 OR: [
                     { link: `/courses/${courseId}` },
@@ -228,17 +225,19 @@ export async function DELETE(
                     { announcementId: { in: announcementIds } }
                 ]
             }
-        }),
-        prisma.announcement.deleteMany({
-            where: {
-                id: { in: announcementIds }
-            }
-        }),
-        prisma.courseAssignment.deleteMany({
-            where: { courseId: courseId }
-        }),
-        prisma.course.delete({ where: { id: courseId } })
-    ]);
+        });
+
+        // 3. Eliminar los anuncios en sí
+        if (announcementIds.length > 0) {
+            await tx.announcement.deleteMany({ where: { id: { in: announcementIds } } });
+        }
+
+        // 4. Eliminar asignaciones de cursos
+        await tx.courseAssignment.deleteMany({ where: { courseId: courseId } });
+
+        // 5. Finalmente, eliminar el curso
+        await tx.course.delete({ where: { id: courseId } });
+    });
     
     if (supabaseAdmin) {
         const channel = supabaseAdmin.channel('courses');
