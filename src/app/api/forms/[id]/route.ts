@@ -3,6 +3,7 @@ import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { FormField, FormFieldType, FormFieldOption } from '@/types';
+import { supabaseAdmin } from '@/lib/supabase-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -182,27 +183,31 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   if (!permission.authorized) return permission.error;
 
   try {
-    // Inicia una transacción para asegurar la coherencia
     await prisma.$transaction([
-      // 1. Eliminar las notificaciones relacionadas con este formulario
-      prisma.notification.deleteMany({
-        where: {
-          link: {
-            contains: `/forms/${formId}`
-          }
-        }
-      }),
-      // 2. Eliminar el formulario (Prisma se encargará de eliminar en cascada las respuestas y campos)
-      prisma.form.delete({ where: { id: formId } })
+        prisma.notification.deleteMany({
+            where: {
+                link: {
+                    contains: `/forms/${formId}`
+                }
+            }
+        }),
+        prisma.form.delete({ where: { id: formId } })
     ]);
+    
+    if (supabaseAdmin) {
+        const channel = supabaseAdmin.channel('forms');
+        await channel.send({
+            type: 'broadcast',
+            event: 'form_deleted',
+            payload: { id: formId },
+        });
+    }
 
     return new NextResponse(null, { status: 204 });
-
   } catch (error) {
     console.error(`[DELETE_FORM_ID: ${formId}] Error al eliminar el formulario:`, error);
     if ((error as any).code === 'P2025') {
-       // Si el formulario ya no existe, la operación es idempotente, así que es un éxito.
-       return new NextResponse(null, { status: 204 });
+       return NextResponse.json({ message: 'El formulario a eliminar no fue encontrado.' }, { status: 404 });
     }
     return NextResponse.json({ message: 'Error al eliminar el formulario' }, { status: 500 });
   }

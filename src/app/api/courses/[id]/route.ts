@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import type { Course as AppCourse, Module as AppModule, Lesson as AppLesson, ContentBlock, Quiz as AppQuiz, Question as AppQuestion, AnswerOption as AppAnswerOption } from '@/types';
 import { checkCourseOwnership } from "@/lib/auth-utils";
+import { supabaseAdmin } from "@/lib/supabase-client";
 
 export const dynamic = "force-dynamic";
 
@@ -139,8 +140,6 @@ export async function PUT(
                   description: blockData.quiz.description || '',
                   maxAttempts: blockData.quiz.maxAttempts,
                   contentBlockId: newBlock.id,
-                  template: blockData.quiz.template,
-                  timerStyle: blockData.quiz.timerStyle,
                 },
               });
 
@@ -151,8 +150,6 @@ export async function PUT(
                     order: qIndex,
                     type: 'SINGLE_CHOICE',
                     quizId: newQuiz.id,
-                    imageUrl: questionData.imageUrl,
-                    template: questionData.template,
                   },
                 });
 
@@ -164,7 +161,6 @@ export async function PUT(
                       feedback: opt.feedback || null,
                       points: opt.points || 0,
                       questionId: newQuestion.id,
-                      imageUrl: opt.imageUrl
                     })),
                   });
                 }
@@ -173,17 +169,6 @@ export async function PUT(
           }
         }
       }
-
-      // Log security event
-       await tx.securityLog.create({
-        data: {
-          event: 'COURSE_UPDATED',
-          ipAddress: req.ip || req.headers.get('x-forwarded-for'),
-          userId: session.id,
-          details: `Curso "${courseData.title}" actualizado.`,
-          userAgent: req.headers.get('user-agent'),
-        }
-      });
     }, {
       maxWait: 20000,
       timeout: 40000,
@@ -223,29 +208,47 @@ export async function DELETE(
   }
 
   try {
-    const courseToDelete = await prisma.course.findUnique({ where: { id: courseId } });
-    if (!courseToDelete) return new NextResponse(null, { status: 204 });
+    // We need the announcementId to delete related notifications.
+    const announcementsToDelete = await prisma.announcement.findMany({
+        where: {
+            content: {
+                contains: `/courses/${courseId}`
+            }
+        },
+        select: { id: true }
+    });
+    const announcementIds = announcementsToDelete.map(a => a.id);
 
     await prisma.$transaction([
         prisma.notification.deleteMany({
             where: {
                 OR: [
                     { link: `/courses/${courseId}` },
-                    { link: `/manage-courses/${courseId}/edit` }
+                    { link: `/manage-courses/${courseId}/edit` },
+                    { announcementId: { in: announcementIds } }
                 ]
             }
         }),
-        prisma.course.delete({ where: { id: courseId } }),
-        prisma.securityLog.create({
-            data: {
-              event: 'COURSE_DELETED',
-              ipAddress: req.ip || req.headers.get('x-forwarded-for'),
-              userId: session.id,
-              details: `Curso "${courseToDelete.title}" eliminado.`,
-              userAgent: req.headers.get('user-agent'),
+        prisma.announcement.deleteMany({
+            where: {
+                id: { in: announcementIds }
             }
-        })
+        }),
+        prisma.courseAssignment.deleteMany({
+            where: { courseId: courseId }
+        }),
+        prisma.course.delete({ where: { id: courseId } })
     ]);
+    
+    if (supabaseAdmin) {
+        const channel = supabaseAdmin.channel('courses');
+        await channel.send({
+            type: 'broadcast',
+            event: 'course_deleted',
+            payload: { id: courseId },
+        });
+    }
+
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error(`[DELETE_COURSE_ID: ${courseId}]`, error);

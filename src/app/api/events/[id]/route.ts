@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 import { RecurrenceType } from '@prisma/client';
+import { supabaseAdmin } from '@/lib/supabase-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -102,7 +103,7 @@ export async function DELETE(
         });
 
         if (!existingEvent) {
-            return NextResponse.json({ message: 'Evento no encontrado' }, { status: 404 });
+            return new NextResponse(null, { status: 204 });
         }
 
         if (session.role !== 'ADMINISTRATOR' && existingEvent.creatorId !== session.id) {
@@ -111,10 +112,24 @@ export async function DELETE(
         
         await prisma.$transaction([
             prisma.notification.deleteMany({
-                where: { interactiveEventId: id }
+                where: { 
+                  OR: [
+                    { interactiveEventId: id },
+                    { link: `/calendar?eventId=${id}` }
+                  ]
+                }
             }),
             prisma.calendarEvent.delete({ where: { id } })
         ]);
+
+        if (supabaseAdmin) {
+            const channel = supabaseAdmin.channel('events');
+            await channel.send({
+                type: 'broadcast',
+                event: 'event_deleted',
+                payload: { id },
+            });
+        }
         
         return new NextResponse(null, { status: 204 });
     } catch (error) {
