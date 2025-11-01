@@ -54,7 +54,7 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
                     <FileIcon type={fileExtension} />
                 </div>
                  <div 
-                    className="flex-grow overflow-hidden"
+                    className="flex-grow overflow-hidden min-w-0"
                  >
                     <p className="font-semibold truncate text-foreground">{resource.title}</p>
                     <p className="text-xs text-muted-foreground truncate">{resource.description || 'Sin descripción'}</p>
@@ -113,14 +113,14 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
                                         </DropdownMenuItem>
                                     ) : (
                                         <DropdownMenuItem asChild>
-                                            <DownloadButton
+                                           <DownloadButton
                                                 url={resource.url}
                                                 resourceId={resource.id}
                                                 hasPin={resource.hasPin}
                                                 className="w-full justify-start font-normal h-auto py-1.5 px-2"
                                                 variant="ghost"
                                             >
-                                                <Download className="mr-2 h-4 w-4" /> Descargar
+                                                 <Download className="mr-2 h-4 w-4" /> Descargar
                                             </DownloadButton>
                                         </DropdownMenuItem>
                                     )
