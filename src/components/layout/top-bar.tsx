@@ -135,8 +135,7 @@ export const TopBar = () => {
                  ) : (
                     <div className="w-8"/> // Placeholder to keep alignment
                  )}
-                 <h1 className="text-xl font-semibold truncate flex items-center gap-2">
-                    {currentPageIcon && <GradientIcon icon={currentPageIcon} isActive={true} />}
+                 <h1 className="text-xl font-bold truncate">
                     {currentPageTitle}
                  </h1>
             </div>
@@ -146,7 +145,7 @@ export const TopBar = () => {
                  {headerActions && <div className="hidden md:flex items-center gap-2">{headerActions}</div>}
                  <Popover>
                     <PopoverTrigger asChild>
-                        <Button variant="ghost" size="icon" className="relative text-primary-foreground hover:bg-black/20">
+                        <Button variant="ghost" size="icon" className="relative text-primary-foreground/80 hover:text-primary-foreground hover:bg-black/20 transition-colors">
                             <Bell className="h-5 w-5"/>
                             {unreadCount > 0 && (
                                 <span className="absolute top-1 right-1 flex h-4 w-4">
