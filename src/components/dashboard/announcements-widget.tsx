@@ -13,14 +13,17 @@ export function AnnouncementsWidget({ announcements }: { announcements?: Announc
         <Card>
             <CardHeader>
                 <CardTitle className="text-lg flex items-center justify-between">
-                    Anuncios Recientes
+                    <div className="flex items-center gap-2">
+                        <Megaphone className="h-5 w-5 text-primary"/>
+                        Anuncios Recientes
+                    </div>
                     <Link href="/messages" className="text-sm font-medium text-primary hover:underline">Ver todos</Link>
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
                 {announcements.map(ann => (
                     <div key={ann.id} className="flex items-start gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                             <Megaphone className="h-5 w-5" />
                         </div>
                         <div>
