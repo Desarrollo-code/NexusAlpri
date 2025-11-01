@@ -1,21 +1,24 @@
+// src/app/api/events/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
+import { RecurrenceType } from '@prisma/client';
+import { supabaseAdmin } from '@/lib/supabase-client';
 
 export const dynamic = 'force-dynamic';
 
 // PUT (update) an event
 export async function PUT(
   req: NextRequest, 
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const session = await getCurrentUser();
   if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
-  const { id } = await params;
+  const { id } = params;
 
   try {
     const existingEvent = await prisma.calendarEvent.findUnique({
@@ -32,7 +35,7 @@ export async function PUT(
     }
     
     const body = await req.json();
-    const { title, description, location, start, end, allDay, audienceType, attendeeIds, color, videoConferenceLink, attachments } = body;
+    const { title, description, location, start, end, allDay, audienceType, attendeeIds, color, videoConferenceLink, attachments, recurrence, recurrenceEndDate } = body;
 
     const dataToUpdate: any = {
       title,
@@ -45,6 +48,8 @@ export async function PUT(
       color,
       videoConferenceLink,
       attachments,
+      recurrence: recurrence as RecurrenceType || RecurrenceType.NONE,
+      recurrenceEndDate: recurrenceEndDate ? new Date(recurrenceEndDate) : null
     };
 
     if (attendeeIds && Array.isArray(attendeeIds)) {
@@ -81,14 +86,14 @@ export async function PUT(
 // DELETE an event
 export async function DELETE(
   req: NextRequest, 
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
     const session = await getCurrentUser();
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
-    const { id } = await params;
+    const { id } = params;
 
     try {
         const existingEvent = await prisma.calendarEvent.findUnique({
@@ -105,6 +110,16 @@ export async function DELETE(
         }
         
         await prisma.calendarEvent.delete({ where: { id } });
+
+        if (supabaseAdmin) {
+            const channel = supabaseAdmin.channel('events');
+            await channel.send({
+                type: 'broadcast',
+                event: 'event_deleted',
+                payload: { id },
+            });
+        }
+        
         return new NextResponse(null, { status: 204 });
     } catch (error) {
         console.error('[EVENT_DELETE_ERROR]', error);

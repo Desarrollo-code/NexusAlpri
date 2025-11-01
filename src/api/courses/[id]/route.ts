@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import type { Course as AppCourse, Module as AppModule, Lesson as AppLesson, ContentBlock, Quiz as AppQuiz, Question as AppQuestion, AnswerOption as AppAnswerOption } from '@/types';
 import { checkCourseOwnership } from "@/lib/auth-utils";
+import { supabaseAdmin } from "@/lib/supabase-client";
 
 export const dynamic = "force-dynamic";
 
@@ -218,6 +219,16 @@ export async function DELETE(
         }),
         prisma.course.delete({ where: { id: courseId } })
     ]);
+    
+    if (supabaseAdmin) {
+        const channel = supabaseAdmin.channel('courses');
+        await channel.send({
+            type: 'broadcast',
+            event: 'course_deleted',
+            payload: { id: courseId },
+        });
+    }
+
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error(`[DELETE_COURSE_ID: ${courseId}]`, error);

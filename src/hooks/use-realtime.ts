@@ -41,9 +41,14 @@ export function useRealtime(
       .on('broadcast', { event: 'chat_message' }, (payload) => {
           handleIncomingEvent(payload.payload); // Para el chat, el payload directo es el mensaje
       })
+      .on('broadcast', { event: 'announcement_updated' }, handleIncomingEvent)
+      .on('broadcast', { event: 'announcement_deleted' }, handleIncomingEvent)
+      .on('broadcast', { event: 'course_deleted' }, handleIncomingEvent)
+      .on('broadcast', { event: 'form_deleted' }, handleIncomingEvent)
+      .on('broadcast', { event: 'event_deleted' }, handleIncomingEvent)
       .subscribe((status, err) => {
         if (status === 'SUBSCRIBED') {
-          console.log(`Conectado al canal en tiempo real: ${channelName}`);
+          // console.log(`Conectado al canal en tiempo real: ${channelName}`);
         }
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
           console.error(`Error en el canal ${channelName}:`, err);
@@ -52,7 +57,7 @@ export function useRealtime(
       
     return () => {
       if (channel) {
-        console.log(`Desconectando del canal: ${channelName}`);
+        // console.log(`Desconectando del canal: ${channelName}`);
         supabaseBrowserClient.removeChannel(channel);
       }
     };

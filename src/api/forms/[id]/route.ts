@@ -3,6 +3,7 @@ import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { FormField, FormFieldType, FormFieldOption } from '@/types';
+import { supabaseAdmin } from '@/lib/supabase-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,19 +14,19 @@ async function checkPermissions(formId: string, session: any) {
   });
 
   if (!form) {
-    return NextResponse.json({ message: 'Formulario no encontrado' }, { status: 404 });
+    return { authorized: false, error: NextResponse.json({ message: 'Formulario no encontrado' }, { status: 404 }) };
   }
 
   if (session.role !== 'ADMINISTRATOR' && form.creatorId !== session.id) {
-    return NextResponse.json({ message: 'No tienes permiso para modificar este formulario' }, { status: 403 });
+    return { authorized: false, error: NextResponse.json({ message: 'No tienes permiso para acceder a este formulario' }, { status: 403 }) };
   }
 
-  return null; // Devuelve null si todo está bien
+  return { authorized: true, error: null };
 }
 
 // GET a specific form by ID with its fields
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { id: formId } = await params;
+export async function GET(request: Request, { params }: { params: { id: string } }) {
+  const { id: formId } = params;
 
   try {
     const session = await getCurrentUser();
@@ -38,6 +39,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       include: {
         fields: {
           orderBy: { order: 'asc' },
+          select: { id: true, label: true, type: true, required: true, placeholder: true, order: true, options: true }
         },
         sharedWith: {
             select: { id: true, name: true, avatar: true }
@@ -48,8 +50,29 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     if (!form) {
       return NextResponse.json({ message: 'Formulario no encontrado' }, { status: 404 });
     }
+    
+    // Parse options string to JSON object for each field safely
+    const formWithParsedOptions = {
+        ...form,
+        fields: form.fields.map(field => {
+            let parsedOptions = [];
+            try {
+                if (field.options && typeof field.options === 'string') {
+                    parsedOptions = JSON.parse(field.options);
+                } else if (Array.isArray(field.options)) {
+                    parsedOptions = field.options; // It's already an array
+                }
+            } catch (e) {
+                console.error(`Could not parse options for field ${field.id}:`, e);
+            }
+            return {
+                ...field,
+                options: parsedOptions,
+            };
+        })
+    };
 
-    return NextResponse.json(form);
+    return NextResponse.json(formWithParsedOptions);
   } catch (error) {
     console.error(`[GET_FORM_ID: ${formId}] Error al obtener el formulario:`, error);
     return NextResponse.json({ message: 'Error al obtener el formulario' }, { status: 500 });
@@ -57,16 +80,16 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 }
 
 // PUT (update) a form, including its fields
-export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id: formId } = await params;
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+  const { id: formId } = params;
 
   const session = await getCurrentUser();
   if (!session) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
   }
 
-  const authError = await checkPermissions(formId, session);
-  if (authError) return authError;
+  const permission = await checkPermissions(formId, session);
+  if (!permission.authorized) return permission.error;
 
   try {
     const body = await req.json();
@@ -96,7 +119,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       if (fields && Array.isArray(fields)) {
         const incomingFieldIds = new Set(fields.map((f: FormField) => f.id).filter(id => !id.startsWith('new-')));
         
-        // Delete fields that are not in the incoming list
         await tx.formField.deleteMany({
           where: {
             formId: formId,
@@ -106,14 +128,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
           },
         });
 
-        // Upsert all incoming fields
         for (const [index, fieldData] of (fields as FormField[]).entries()) {
           const isNew = fieldData.id.startsWith('new-');
           
           const fieldPayload = {
             label: fieldData.label,
             type: fieldData.type as FormFieldType,
-            options: (fieldData.options as unknown as FormFieldOption[]) || [],
+            options: (fieldData.options as unknown as FormFieldOption[]),
             required: fieldData.required || false,
             placeholder: fieldData.placeholder || null,
             order: index,
@@ -146,19 +167,29 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 // DELETE a form
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id: formId } = await params;
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  const { id: formId } = params;
 
   const session = await getCurrentUser();
   if (!session) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
   }
 
-  const authError = await checkPermissions(formId, session);
-  if (authError) return authError;
+  const permission = await checkPermissions(formId, session);
+  if (!permission.authorized) return permission.error;
 
   try {
     await prisma.form.delete({ where: { id: formId } });
+    
+    if (supabaseAdmin) {
+        const channel = supabaseAdmin.channel('forms');
+        await channel.send({
+            type: 'broadcast',
+            event: 'form_deleted',
+            payload: { id: formId },
+        });
+    }
+
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error(`[DELETE_FORM_ID: ${formId}] Error al eliminar el formulario:`, error);
