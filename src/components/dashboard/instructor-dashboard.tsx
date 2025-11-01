@@ -8,6 +8,7 @@ import Link from "next/link";
 import { AnnouncementsWidget } from "./announcements-widget";
 import { CalendarWidget } from "./calendar-widget";
 import { CourseProgressCard } from "./course-progress-card";
+import { MetricCard } from "../analytics/metric-card";
 
 interface InstructorDashboardProps {
   instructorStats: {
@@ -29,14 +30,8 @@ export function InstructorDashboard({ instructorStats, recentAnnouncements, taug
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Cursos Creados</CardTitle><GraduationCap className="h-4 w-4 text-primary"/></CardHeader>
-            <CardContent><div className="text-2xl font-bold">{instructorStats?.taught || 0}</div></CardContent>
-        </Card>
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Estudiantes Totales</CardTitle><Users className="h-4 w-4 text-primary"/></CardHeader>
-            <CardContent><div className="text-2xl font-bold">{instructorStats?.students || 0}</div></CardContent>
-        </Card>
+          <MetricCard title="Cursos Creados" value={instructorStats?.taught || 0} icon={GraduationCap} gradient="bg-gradient-blue" />
+          <MetricCard title="Estudiantes Totales" value={instructorStats?.students || 0} icon={Users} gradient="bg-gradient-green" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">

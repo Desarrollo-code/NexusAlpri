@@ -14,6 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { VerifiedBadge } from "../ui/verified-badge";
 import { useMemo } from "react";
 import { InteractiveEventsWidget } from "./interactive-events-widget";
+import { MetricCard } from "../analytics/metric-card";
 
 const calculateLevel = (xp: number) => {
     const baseXP = 250; const exponent = 1.5;
@@ -65,14 +66,8 @@ export function StudentDashboard({ studentStats, myDashboardCourses, assignedCou
           </Card>
           
            <div className="grid grid-cols-2 gap-4">
-              <Card>
-                  <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Cursos Inscritos</CardTitle><GraduationCap className="h-4 w-4 text-primary"/></CardHeader>
-                  <CardContent><div className="text-2xl font-bold">{studentStats?.enrolled || 0}</div></CardContent>
-              </Card>
-              <Card>
-                  <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Cursos Completados</CardTitle><CheckCircle className="h-4 w-4 text-primary"/></CardHeader>
-                  <CardContent><div className="text-2xl font-bold">{studentStats?.completed || 0}</div></CardContent>
-              </Card>
+              <MetricCard title="Cursos Inscritos" value={studentStats?.enrolled || 0} icon={GraduationCap} gradient="bg-gradient-blue" />
+              <MetricCard title="Cursos Completados" value={studentStats?.completed || 0} icon={CheckCircle} gradient="bg-gradient-green" />
            </div>
           
           <InteractiveEventsWidget events={studentStats.interactiveEventsToday} onParticipate={onParticipate} />
