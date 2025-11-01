@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'reac
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, List, Grid, Filter, UserPlus, MoreVertical, Loader2, Briefcase, MessageSquare, Edit, Trash2, UserCog, UserX, Users as UsersIcon } from 'lucide-react';
+import { PlusCircle, Search, List, Grid, Filter, UserPlus, MoreVertical, Loader2, Briefcase, MessageSquare, Edit, Trash2, UserCog, UserX, Users as UsersIcon, Key } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -37,6 +37,7 @@ import { getRoleInSpanish, getRoleBadgeVariant } from '@/lib/security-log-utils'
 import { getProcessColors } from '@/lib/utils';
 import { Identicon } from '@/components/ui/identicon';
 import { EmptyState } from '../empty-state';
+import { ChatPermissionsModal } from './chat-permissions-modal';
 
 
 // --- TYPES & CONTEXT ---
@@ -60,13 +61,14 @@ const DraggableUserPreview = ({ user }: { user: UserWithProcess }) => (
     </Card>
 );
 
-const DraggableUserCard = ({ user, isSelected, onSelectionChange, onEdit, onRoleChange, onStatusChange }: { 
+const DraggableUserCard = ({ user, isSelected, onSelectionChange, onEdit, onRoleChange, onStatusChange, onChatPermissions }: { 
     user: UserWithProcess, 
     isSelected: boolean, 
     onSelectionChange: (id: string, selected: boolean) => void,
     onEdit: (user: User) => void,
     onRoleChange: (user: User) => void,
-    onStatusChange: (user: User, status: boolean) => void
+    onStatusChange: (user: User, status: boolean) => void,
+    onChatPermissions: (user: User) => void
 }) => {
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: user.id });
     
@@ -78,6 +80,7 @@ const DraggableUserCard = ({ user, isSelected, onSelectionChange, onEdit, onRole
                     onEdit={onEdit}
                     onRoleChange={onRoleChange}
                     onStatusChange={onStatusChange}
+                    onChatPermissions={onChatPermissions}
                 />
                  <div className="absolute top-2 left-2 z-20">
                     <Checkbox checked={isSelected} onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)} className="bg-background border-primary" />
@@ -87,13 +90,14 @@ const DraggableUserCard = ({ user, isSelected, onSelectionChange, onEdit, onRole
     )
 }
 
-const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleChange, onStatusChange }: { 
+const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleChange, onStatusChange, onChatPermissions }: { 
     users: UserWithProcess[], 
     onSelectionChange: (id: string, selected: boolean) => void, 
     selectedUserIds: Set<string>,
     onEdit: (user: User) => void,
     onRoleChange: (user: User) => void,
-    onStatusChange: (user: User, status: boolean) => void
+    onStatusChange: (user: User, status: boolean) => void,
+    onChatPermissions: (user: User) => void
 }) => {
     const isMobile = useIsMobile();
 
@@ -123,8 +127,8 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
                                             <Badge 
                                                 className="text-xs"
                                                 style={{
-                                                    backgroundColor: colors.raw.light,
-                                                    color: colors.raw.dark,
+                                                    backgroundColor: processColors.raw.light,
+                                                    color: processColors.raw.dark,
                                                 }}
                                             >
                                                 {user.process.name}
@@ -138,6 +142,7 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
                                         <DropdownMenuItem onSelect={() => onEdit(user)}><Edit className="mr-2 h-4 w-4"/>Editar Perfil</DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => onChatPermissions(user)}><Key className="mr-2 h-4 w-4"/>Permisos de Chat</DropdownMenuItem>
                                         <DropdownMenuItem onSelect={() => onRoleChange(user)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol</DropdownMenuItem>
                                         <DropdownMenuItem onSelect={() => onStatusChange(user, !user.isActive)} className={user.isActive ? "text-destructive" : ""}><UserX className="mr-2 h-4 w-4"/>{user.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
                                     </DropdownMenuContent>
@@ -209,19 +214,16 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
                                     <span className="text-xs text-muted-foreground">Sin asignar</span>
                                 )}
                             </TableCell>
-                            <TableCell><Badge variant={user.isActive ? 'default' : 'secondary'} className={cn(user.isActive ? 'bg-green-500' : 'bg-gray-400', 'text-white')}>{user.isActive ? 'Activo' : 'Inactivo'}</Badge></TableCell>
+                            <TableCell><Badge variant={user.isActive ? "default" : "secondary"} className={cn("text-xs py-0.5 px-1.5", user.isActive ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300" : "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300")}>{user.isActive ? 'Activo' : 'Inactivo'}</Badge></TableCell>
                             <TableCell className="text-right">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4"/></Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
-                                        <DropdownMenuItem onSelect={() => onEdit(user)}>
-                                            <Edit className="mr-2 h-4 w-4"/>Editar Perfil
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onSelect={() => onRoleChange(user)}>
-                                            <UserCog className="mr-2 h-4 w-4"/>Cambiar Rol
-                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => onEdit(user)}><Edit className="mr-2 h-4 w-4"/>Editar Perfil</DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => onChatPermissions(user)}><Key className="mr-2 h-4 w-4"/>Permisos de Chat</DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => onRoleChange(user)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol</DropdownMenuItem>
                                         <DropdownMenuItem onSelect={() => onStatusChange(user, !user.isActive)} className={user.isActive ? "text-destructive" : ""}>
                                             <UserX className="mr-2 h-4 w-4"/>{user.isActive ? 'Inactivar' : 'Activar'}
                                         </DropdownMenuItem>
@@ -248,6 +250,7 @@ function UsersPageComponent() {
     const [isLoading, setIsLoading] = useState(true);
 
     const [userToEdit, setUserToEdit] = useState<User | null>(null);
+    const [userForChatPermissions, setUserForChatPermissions] = useState<User | null>(null);
     const [showUserModal, setShowUserModal] = useState(false);
     
     const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
@@ -560,6 +563,7 @@ function UsersPageComponent() {
                     onEdit={handleOpenUserModal}
                     onRoleChange={handleOpenUserModal}
                     onStatusChange={handleStatusChange}
+                    onChatPermissions={setUserForChatPermissions}
                 />
             ))}
         </div>
@@ -580,7 +584,7 @@ function UsersPageComponent() {
                                     <Card><CardContent className="p-4"><Skeleton className="h-96 w-full"/></CardContent></Card>
                                 )
                             ) : usersList.length > 0 ? (
-                               viewMode === 'grid' ? <GridView /> : <UserTable users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} onEdit={handleOpenUserModal} onRoleChange={handleOpenUserModal} onStatusChange={handleStatusChange} />
+                               viewMode === 'grid' ? <GridView /> : <UserTable users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} onEdit={handleOpenUserModal} onRoleChange={handleOpenUserModal} onStatusChange={handleStatusChange} onChatPermissions={setUserForChatPermissions} />
                             ) : (
                                <EmptyState
                                  icon={UsersIcon}
@@ -626,6 +630,7 @@ function UsersPageComponent() {
             
             {showUserModal && <UserFormModal isOpen={showUserModal} onClose={() => setShowUserModal(false)} onSave={fetchData} user={userToEdit} processes={processes} />}
             {isBulkAssignModalOpen && <BulkAssignModal isOpen={isBulkAssignModalOpen} onClose={() => setIsBulkAssignModalOpen(false)} onSave={fetchData} userIds={Array.from(selectedUserIds)} processes={processes}/>}
+            {userForChatPermissions && <ChatPermissionsModal isOpen={!!userForChatPermissions} onClose={() => setUserForChatPermissions(null)} user={userForChatPermissions} />}
             
              <AlertDialog open={!!userToDeactivate} onOpenChange={(open) => setUserToDeactivate(open ? userToDeactivate : null)}>
                 <AlertDialogContent>
@@ -656,3 +661,4 @@ export default function UsersPage() {
         </Suspense>
     )
 }
+
