@@ -52,18 +52,12 @@ export function ChatClient({ newChatUserId }: ChatClientProps) {
             case 'chat_message':
                 const isForActiveConvo = data.conversationId === activeConversation?.id;
                 if (isForActiveConvo) {
-                    setMessages(prev => [...prev, data]);
+                    setMessages(prev => {
+                        if (prev.find(m => m.id === data.id)) return prev;
+                        return [...prev, data];
+                    });
                 }
-                setConversations(prev => {
-                    const convoIndex = prev.findIndex(c => c.id === data.conversationId);
-                    if (convoIndex > -1) {
-                        const updatedConvo = { ...prev[convoIndex], messages: [data], updatedAt: data.createdAt };
-                        const restConvos = prev.filter(c => c.id !== data.conversationId);
-                        return [updatedConvo, ...restConvos];
-                    }
-                    fetchConversations(); // If convo not found, refetch all
-                    return prev;
-                });
+                fetchConversations(); // Re-fetch all conversations to update the list and last message
                 break;
             
             case 'announcement_deleted':
@@ -80,27 +74,29 @@ export function ChatClient({ newChatUserId }: ChatClientProps) {
 
     }, [activeConversation?.id, activeAnnouncement?.id]);
     
-    // Subscribe to both user-specific and general announcement channels
     useRealtime(user ? `user:${user.id}` : null, handleRealtimeEvent);
     useRealtime('announcements', handleRealtimeEvent);
 
     const fetchConversations = useCallback(async () => {
-        setIsLoadingConversations(true);
+        // Don't set loading to true for background polling
         try {
             const res = await fetch('/api/conversations');
             if (!res.ok) throw new Error("No se pudieron cargar las conversaciones");
             const data = await res.json();
             setConversations(data);
         } catch (err) {
-            toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+            // Silently fail for polling
         } finally {
             setIsLoadingConversations(false);
         }
-    }, [toast]);
+    }, []);
     
     useEffect(() => {
         if (!isAuthLoading && user) {
             fetchConversations();
+            // Polling interval
+            const intervalId = setInterval(fetchConversations, 15000); // Poll every 15 seconds
+            return () => clearInterval(intervalId);
         }
     }, [user, isAuthLoading, fetchConversations]);
     
