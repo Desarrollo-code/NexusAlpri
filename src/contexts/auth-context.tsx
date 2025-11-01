@@ -92,14 +92,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [router, setTheme]);
 
   const logout = useCallback(() => {
-    // Make logout feel instantaneous to the user
     setUser(null);
-    setTheme('light'); 
-    router.push('/sign-in');
+    setTheme('light');
     
     // Perform server-side logout in the background
     fetch('/api/auth/logout', { method: 'POST' }).catch(err => console.error("Fallo al llamar a la API de logout en segundo plano:", err));
-  }, [router, setTheme]);
+    
+    // Force a full page refresh to the sign-in page to clear all state
+    window.location.href = '/sign-in';
+  }, [setTheme]);
   
   const updateUser = useCallback((updatedData: Partial<User>) => {
     setUser(prevUser => {
