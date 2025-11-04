@@ -17,43 +17,36 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
   const isYoutube = type.toLowerCase() === 'youtube';
 
   return (
-    <div className={cn("relative w-20 h-24 rounded-lg overflow-hidden group", className)} style={{ backgroundColor: bgColor }}>
-      {/* Esquina doblada */}
-      <div className="absolute top-0 right-0 w-0 h-0 border-solid border-transparent" style={{borderWidth: '0px 24px 24px 0px', borderColor: `transparent transparent hsl(var(--card)) transparent`, filter: 'drop-shadow(-1px 1px 1px rgba(0,0,0,0.1))'}}/>
-
-      {/* Miniatura si está disponible */}
-      {thumbnailUrl && (
+    <div
+      className={cn(
+        "relative w-20 h-12 flex items-center justify-center rounded-lg overflow-hidden group",
+        className
+      )}
+      style={{ backgroundColor: bgColor }}
+    >
+      {thumbnailUrl && isYoutube ? (
         <>
           <Image
             src={thumbnailUrl}
             alt={label}
             fill
-            className={cn(
-                "transition-transform duration-300 group-hover:scale-105",
-                isYoutube ? "object-cover" : "object-contain p-2"
-            )}
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
             quality={75}
           />
-          {isYoutube && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-colors">
-              <PlayCircle className="h-10 w-10 text-white/80 drop-shadow-lg transition-transform duration-300 group-hover:scale-110" />
-            </div>
-          )}
+          <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-colors">
+            <PlayCircle className="h-8 w-8 text-white/80 drop-shadow-lg transition-transform duration-300 group-hover:scale-110" />
+          </div>
+          <div className="absolute bottom-1 left-1 bg-black/50 backdrop-blur-sm px-1.5 py-0.5 rounded">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.7)' }}>
+                {label}
+            </span>
+          </div>
         </>
-      )}
-
-      {/* Etiqueta inferior */}
-      <div
-        className={cn(
-          "absolute bottom-0 left-0 right-0 h-7 px-1 flex items-center justify-center rounded-b-lg",
-          thumbnailUrl ? "bg-black/40 backdrop-blur-sm" : ""
-        )}
-        style={!thumbnailUrl ? { backgroundColor: labelColor } : {}}
-      >
-        <span className="text-xs font-bold uppercase tracking-wider text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>
+      ) : (
+        <span className="text-xs font-bold uppercase tracking-wider text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.2)' }}>
           {label}
         </span>
-      </div>
+      )}
     </div>
   );
 };
