@@ -5,8 +5,7 @@ import { cn } from '@/lib/utils';
 import type { AppResourceType } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
 import { Card } from '@/components/ui/card';
-import { DecorativeFolder } from '@/components/resources/decorative-folder';
-import { Edit, MoreVertical, Trash2, Lock, Download, Globe, ExternalLink, Users, Move, GripVertical, ArchiveRestore } from 'lucide-react';
+import { Edit, MoreVertical, Trash2, Lock, Download, Globe, Users, Move, GripVertical, ArchiveRestore } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -21,6 +20,8 @@ import { DownloadButton } from '../ui/download-button';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '../ui/tooltip';
 import { FileIcon } from '../ui/file-icon';
+import { DecorativeFolder } from './decorative-folder';
+import { ExternalLink } from 'lucide-react';
 
 // --- Sub-components for Page ---
 const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onDelete, onNavigate, onRestore }: { resource: AppResourceType, isFolder: boolean, onSelect: () => void, onEdit: (r: AppResourceType) => void, onDelete: (r: AppResourceType) => void, onNavigate: (r: AppResourceType) => void, onRestore: (r:AppResourceType) => void }) => {
@@ -65,21 +66,9 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
         }
 
         const youtubeId = getYoutubeVideoId(resource.url);
-        if (youtubeId) {
-            return (
-                <div className="relative w-full h-full">
-                    <Image
-                        src={`https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`}
-                        alt={resource.title}
-                        fill
-                        className="object-cover"
-                    />
-                </div>
-            );
-        }
-
-        const fileExtension = resource.fileType?.split('/')[1] || resource.url?.split('.').pop() || 'file';
-        return <FileIcon type={fileExtension} />;
+        const fileExtension = youtubeId ? 'youtube' : (resource.fileType?.split('/')[1] || resource.url?.split('.').pop() || 'file');
+        
+        return <FileIcon type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null} />;
     };
 
     const setNodeRef = (node: HTMLElement | null) => {
