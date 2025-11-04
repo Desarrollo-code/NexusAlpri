@@ -72,13 +72,11 @@ export default function ResourcesPage() {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // --- State for searching and filtering ---
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [activeTab, setActiveTab] = useState<ResourceStatus>('ACTIVE');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
-  // --- New Advanced Filters State ---
   const [filters, setFilters] = useState({
       dateRange: { from: undefined, to: undefined },
       fileType: 'all',
@@ -110,7 +108,6 @@ export default function ResourcesPage() {
     if (currentFolderId) params.append('parentId', currentFolderId);
     if (debouncedSearchTerm) params.append('search', debouncedSearchTerm);
     
-    // Append advanced filters to the request
     if (filters.dateRange.from) params.append('startDate', filters.dateRange.from.toISOString());
     if (filters.dateRange.to) params.append('endDate', filters.dateRange.to.toISOString());
     if (filters.fileType !== 'all') params.append('fileType', filters.fileType);
@@ -212,19 +209,47 @@ export default function ResourcesPage() {
   }
   
     const ListView = () => (
-      <div className="flex flex-col items-center w-full space-y-4">
-        {files.map(res => (
-          <ResourceListItem 
-            key={res.id} 
-            resource={res} 
-            onSelect={() => setSelectedResource(res)} 
-            onEdit={setResourceToEdit} 
-            onDelete={setResourceToDelete} 
-            onRestore={handleRestore}
-          />
-        ))}
+      <div className="flex flex-col w-full items-center">
+        {files.length > 0 && (
+          <Table className="hidden md:table">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[40%]">Nombre</TableHead>
+                <TableHead className="w-[15%] hidden md:table-cell">Propietario</TableHead>
+                <TableHead className="w-[15%] hidden lg:table-cell">Categoría</TableHead>
+                <TableHead className="w-[15%] hidden lg:table-cell">Fecha</TableHead>
+                <TableHead className="w-[10%] hidden md:table-cell">Estado</TableHead>
+                <TableHead className="w-[5%] text-right">Acciones</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {files.map(res => (
+                <ResourceListItem 
+                  key={res.id} 
+                  resource={res} 
+                  onSelect={() => setSelectedResource(res)} 
+                  onEdit={setResourceToEdit} 
+                  onDelete={setResourceToDelete} 
+                  onRestore={handleRestore}
+                />
+              ))}
+            </TableBody>
+          </Table>
+        )}
+        <div className="w-full md:hidden space-y-3 flex flex-col items-center">
+          {files.map(res => (
+            <ResourceListItem 
+              key={res.id} 
+              resource={res} 
+              onSelect={() => setSelectedResource(res)} 
+              onEdit={setResourceToEdit} 
+              onDelete={setResourceToDelete} 
+              onRestore={handleRestore}
+            />
+          ))}
+        </div>
       </div>
-  );
+    );
 
   return (
     <DndContext onDragEnd={handleDragEnd} sensors={useSensors(useSensor(MouseSensor), useSensor(TouchSensor))}>
