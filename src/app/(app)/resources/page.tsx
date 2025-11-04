@@ -211,6 +211,21 @@ export default function ResourcesPage() {
       return <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>
   }
   
+    const ListView = () => (
+      <div className="flex flex-col items-center w-full space-y-4">
+        {files.map(res => (
+          <ResourceListItem 
+            key={res.id} 
+            resource={res} 
+            onSelect={() => setSelectedResource(res)} 
+            onEdit={setResourceToEdit} 
+            onDelete={setResourceToDelete} 
+            onRestore={handleRestore}
+          />
+        ))}
+      </div>
+  );
+
   return (
     <DndContext onDragEnd={handleDragEnd} sensors={useSensors(useSensor(MouseSensor), useSensor(TouchSensor))}>
     <div className="space-y-6">
@@ -285,6 +300,7 @@ export default function ResourcesPage() {
                             </div>
                         </section>
                     )}
+                     {(folders.length > 0 && files.length > 0) && <Separator />}
                     {files.length > 0 && (
                         <section>
                              <h3 className="text-lg font-semibold mb-3">Archivos</h3>
@@ -293,23 +309,7 @@ export default function ResourcesPage() {
                                     {files.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={false} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onNavigate={() => {}} />)}
                                 </div>
                             ) : (
-                               <Card>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="w-[40%]">Nombre</TableHead>
-                                            <TableHead className="w-[15%] hidden md:table-cell">Propietario</TableHead>
-                                            <TableHead className="w-[15%] hidden lg:table-cell">Categoría</TableHead>
-                                            <TableHead className="w-[15%] hidden lg:table-cell">Fecha</TableHead>
-                                            <TableHead className="w-[5%] hidden md:table-cell">Estado</TableHead>
-                                            <TableHead className="w-[10%] text-right"></TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                      {files.map(res => <ResourceListItem key={res.id} resource={res} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} />)}
-                                    </TableBody>
-                                </Table>
-                               </Card>
+                               <ListView />
                             )}
                         </section>
                     )}
