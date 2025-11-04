@@ -1,3 +1,4 @@
+
 // src/components/users/user-form-modal.tsx
 'use client';
 
@@ -160,13 +161,13 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="w-[95vw] sm:max-w-md max-h-[90vh] flex flex-col p-0 gap-0 rounded-2xl">
-                <DialogHeader className="p-6 pb-4 border-b">
+                <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
                     <DialogTitle>{user ? 'Editar Colaborador' : 'Añadir Nuevo Colaborador'}</DialogTitle>
                     <DialogDescription>
                         {user ? 'Modifica la información del colaborador.' : 'Completa los datos para registrar un nuevo colaborador en la plataforma.'}
                     </DialogDescription>
                 </DialogHeader>
-                <ScrollArea className="flex-1 min-h-0 thin-scrollbar">
+                <ScrollArea className="flex-1 min-h-0">
                   <form id="user-form" onSubmit={handleSubmit} className="space-y-4 px-6 py-4">
                       <div className="flex flex-col items-center gap-4">
                         <div className="relative">
@@ -188,15 +189,15 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="name">Nombre Completo</Label>
-                        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
+                        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required autoComplete="off" />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="email">Correo Electrónico</Label>
-                        <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                        <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="off" />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="password">{user ? 'Nueva Contraseña (Opcional)' : 'Contraseña'}</Label>
-                        <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required={!user} />
+                        <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required={!user} autoComplete="new-password" />
                         {password && <PasswordStrengthIndicator password={password} isVisible={true} />}
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -232,7 +233,7 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
                     </div>
                   </form>
                 </ScrollArea>
-                <DialogFooter className="p-6 pt-4 flex-col-reverse sm:flex-row sm:justify-end gap-2 border-t">
+                <DialogFooter className="p-6 pt-4 flex-col-reverse sm:flex-row sm:justify-end gap-2 border-t flex-shrink-0">
                     <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
                     <Button type="submit" form="user-form" disabled={isSaving || !name.trim() || !email.trim() || (!user && !password)}>
                         {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

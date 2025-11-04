@@ -1,3 +1,4 @@
+
 // src/components/calendar/event-editor-modal.tsx
 'use client';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
@@ -368,8 +369,8 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
     return (
         <>
             <Dialog open={isOpen} onOpenChange={onClose}>
-                <DialogContent className={cn("w-[95vw] max-w-2xl overflow-hidden flex flex-col max-h-[90vh] rounded-lg", event && canEditSelectedEvent && !isEditMode && "border-primary shadow-primary/20")}>
-                    <DialogHeader className="flex flex-row items-center justify-between p-6 pb-0">
+                <DialogContent className={cn("w-[95vw] max-w-2xl overflow-hidden flex flex-col max-h-[90vh] rounded-lg p-0", event && canEditSelectedEvent && !isEditMode && "border-primary shadow-primary/20")}>
+                    <DialogHeader className="flex flex-row items-center justify-between p-4 sm:p-6 pb-4 border-b flex-shrink-0">
                         <div className="space-y-1.5">
                             <DialogTitle>{(event && !isEditMode) ? event.title : (isEditMode ? (event ? "Editar Evento" : "Crear Evento") : "Detalles del Evento")}</DialogTitle>
                             <DialogDescription>{isEditMode ? "Completa los detalles del evento." : "Información detallada sobre el evento."}</DialogDescription>
@@ -383,11 +384,11 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
                         )}
                     </DialogHeader>
                     <ScrollArea className="flex-1 min-h-0 thin-scrollbar">
-                        <div className="px-6 py-4">
+                        <div className="px-4 sm:px-6 py-4">
                             {renderContent()}
                         </div>
                     </ScrollArea>
-                    <DialogFooter className="p-6 pt-4 sm:col-span-2 flex flex-row w-full justify-end gap-2 border-t">
+                    <DialogFooter className="p-4 sm:p-6 border-t flex-shrink-0 flex flex-row sm:justify-end gap-2">
                         {isEditMode ? (
                             <>
                                 <Button type="button" variant="outline" onClick={() => event ? setIsEditMode(false) : onClose()} disabled={isSaving}>Cancelar</Button>

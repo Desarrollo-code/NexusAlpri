@@ -1,3 +1,4 @@
+
 // src/components/users/chat-permissions-modal.tsx
 'use client';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
@@ -89,7 +90,7 @@ export function ChatPermissionsModal({ isOpen, onClose, user }: ChatPermissionsM
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md h-[70vh] flex flex-col p-0">
-        <DialogHeader className="p-6 pb-4 border-b">
+        <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
           <DialogTitle>Permisos de Chat para {user.name}</DialogTitle>
           <DialogDescription>
             Selecciona con qué usuarios puede iniciar una conversación.
@@ -123,8 +124,8 @@ export function ChatPermissionsModal({ isOpen, onClose, user }: ChatPermissionsM
             )}
           </ScrollArea>
         </div>
-        <DialogFooter className="p-6 pt-4 border-t">
-          <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
+        <DialogFooter className="p-6 pt-4 border-t flex-shrink-0">
+          <Button variant="outline" onClick={onClose}>Cancelar</Button>
           <Button onClick={handleSaveChanges} disabled={isSaving}>
             {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
             Guardar Cambios
