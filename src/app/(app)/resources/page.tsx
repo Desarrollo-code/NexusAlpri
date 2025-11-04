@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useTitle } from '@/contexts/title-context';
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Move, Trash2, FolderOpen } from 'lucide-react';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
@@ -20,7 +20,7 @@ import { EmptyState } from '@/components/empty-state';
 import { ResourceEditorModal } from '@/components/resources/resource-editor-modal';
 import { FolderCreatorModal } from '@/components/resources/folder-creator-modal';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { TableHeader, TableHead } from '@/components/ui/table';
+import { Table, TableBody, TableHeader, TableHead, TableRow } from '@/components/ui/table';
 
 // --- MAIN PAGE COMPONENT ---
 export default function ResourcesPage() {
@@ -219,18 +219,22 @@ export default function ResourcesPage() {
                                 </div>
                             ) : (
                                 <Card>
-                                     <div className="grid grid-cols-[auto_minmax(0,3fr)_minmax(0,1.5fr)_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_auto] items-center border-b px-2 font-medium text-muted-foreground text-xs uppercase h-12 gap-4">
-                                        <div className="w-12 p-2"></div>
-                                        <div className="pl-3">Nombre</div>
-                                        <div className="hidden md:block">Propietario</div>
-                                        <div className="hidden md:block">Categoría</div>
-                                        <TableHead>Fecha</TableHead>
-                                        <TableHead className="hidden md:block text-center">Estado</TableHead>
-                                        <div className="w-8"></div>
-                                     </div>
-                                    <div className="divide-y">
-                                       {files.map(res => <ResourceListItem key={res.id} resource={res} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} />)}
-                                    </div>
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead className="w-16"></TableHead>
+                                                <TableHead>Nombre</TableHead>
+                                                <TableHead className="hidden md:table-cell">Propietario</TableHead>
+                                                <TableHead className="hidden md:table-cell">Categoría</TableHead>
+                                                <TableHead className="hidden md:table-cell">Fecha</TableHead>
+                                                <TableHead className="hidden md:table-cell text-center">Estado</TableHead>
+                                                <TableHead className="text-right w-12"></TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                           {files.map(res => <ResourceListItem key={res.id} resource={res} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} />)}
+                                        </TableBody>
+                                    </Table>
                                 </Card>
                             )}
                         </section>
