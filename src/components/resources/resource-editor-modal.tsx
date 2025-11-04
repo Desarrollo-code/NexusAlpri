@@ -125,7 +125,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   const handleFileSelect = (file: File | null) => {
     setLocalFile(file);
     if(file && !title) {
-      // Clean up file name for title suggestion
       const fileNameWithoutExt = file.name.split('.').slice(0, -1).join('.');
       setTitle(fileNameWithoutExt);
     }
@@ -143,7 +142,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
       toast({ title: "PIN actualizado correctamente" });
       setPin('');
       setConfirmPin('');
-      onSave(); // Refresh data
+      onSave();
     } catch (err) {
       toast({ title: 'Error', description: (err as Error).message, variant: 'destructive'});
     } finally {
