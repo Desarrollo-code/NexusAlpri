@@ -243,14 +243,14 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-lg">
-            <DialogHeader>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col p-0 gap-0">
+            <DialogHeader className="p-6 pb-4 border-b">
                 <DialogTitle>{resource ? 'Editar Recurso' : 'Subir Nuevo Recurso'}</DialogTitle>
                 <DialogDescription>{resource ? 'Modifica los detalles de tu recurso.' : 'Añade un nuevo archivo, enlace o documento a la biblioteca.'}</DialogDescription>
             </DialogHeader>
-            <form id="resource-form" onSubmit={handleSave}>
-                 <ScrollArea className="max-h-[60vh] p-1 pr-4">
-                    <div className="space-y-4 pr-2">
+            <form id="resource-form" onSubmit={handleSave} className="flex-1 min-h-0">
+                 <ScrollArea className="h-full">
+                    <div className="space-y-4 px-6 py-4">
                       {!resource && (
                          <RadioGroup defaultValue="DOCUMENT" onValueChange={(v) => {setResourceType(v as any); setLocalFile(null); setExternalLink('');}} className="grid grid-cols-2 gap-4">
                             <div><RadioGroupItem value="DOCUMENT" id="type-doc" className="peer sr-only"/><Label htmlFor="type-doc" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><ImageIcon className="mb-2 h-6 w-6"/>Archivo</Label></div>
@@ -299,7 +299,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                     </div>
                 </ScrollArea>
             </form>
-            <DialogFooter className="border-t pt-4">
+            <DialogFooter className="border-t p-6 flex-shrink-0">
                 <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
                 <Button type="submit" form="resource-form" disabled={isSaving || isUploading}>
                     {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
