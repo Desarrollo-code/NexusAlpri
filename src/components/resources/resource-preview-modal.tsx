@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogFooter } from '@/components/ui/dialog';
 import type { AppResourceType } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Download, Share2, ChevronLeft, ChevronRight, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users, ExternalLink, FileText, Archive, FileCode, List, X, Edit, Save } from 'lucide-react';
+import { Download, Share2, ChevronLeft, ChevronRight, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users, ExternalLink, FileText, Archive, FileCode, List, X, Edit, Save, Expand, Minimize } from 'lucide-react';
 import { getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
@@ -26,7 +26,7 @@ import { PdfViewer } from '@/components/pdf-viewer';
 import { RichTextEditor } from '../ui/rich-text-editor';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
-import { FileIcon } from '../ui/file-icon';
+import { getFileTypeDetails } from '@/lib/resource-utils';
 
 const DocxPreviewer = ({ url }: { url: string }) => {
     const [html, setHtml] = useState<string | null>(null);
@@ -163,10 +163,21 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified, isEditing, ed
     const [isVerifying, setIsVerifying] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { user } = useAuth();
+    const [isFullScreen, setIsFullScreen] = useState(false);
+    const previewContainerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         setPin('');
         setError(null);
+        
+        const handleFullScreenChange = () => {
+            if (!document.fullscreenElement) {
+                setIsFullScreen(false);
+            }
+        };
+        document.addEventListener('fullscreenchange', handleFullScreenChange);
+        return () => document.removeEventListener('fullscreenchange', handleFullScreenChange);
+
     }, [resource]);
    
     const handlePinSubmit = async (e: React.FormEvent) => {
@@ -195,6 +206,18 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified, isEditing, ed
             setIsVerifying(false);
         }
     };
+    
+    const toggleFullScreen = () => {
+        if (!previewContainerRef.current) return;
+        if (isFullScreen) {
+            document.exitFullscreen();
+        } else {
+            previewContainerRef.current.requestFullscreen().catch(err => {
+                console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+            });
+        }
+        setIsFullScreen(!isFullScreen);
+    }
     
     if (isEditing) {
         return (
@@ -228,31 +251,37 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified, isEditing, ed
        );
     }
     
-    // Si el recurso tiene contenido editable, lo mostramos. Si no, mostramos el preview del archivo.
-    if (resource.type === 'DOCUMENTO_EDITABLE' && resource.content) {
-        return <div className="prose prose-sm dark:prose-invert max-w-none p-4 bg-background h-full overflow-auto" dangerouslySetInnerHTML={{ __html: resource.content || '' }} />;
-    }
-    
     const displayUrl = pinVerifiedUrl || resource.url;
     
-    if (displayUrl) {
-        const isPdf = displayUrl.toLowerCase().endsWith('.pdf');
-        if (isPdf) return <PdfViewer url={displayUrl} />;
-        
-        const youtubeId = getYoutubeVideoId(displayUrl);
-        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(displayUrl);
-        const isVideoFile = /\.(mp4|webm|ogv)$/i.test(displayUrl);
-        const isOfficeDoc = displayUrl.toLowerCase().endsWith('.docx');
-        const isZipFile = displayUrl.toLowerCase().endsWith('.zip');
+    const renderPreview = () => {
+        if (displayUrl) {
+            const isPdf = displayUrl.toLowerCase().endsWith('.pdf');
+            const youtubeId = getYoutubeVideoId(displayUrl);
+            const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(displayUrl);
+            const isVideoFile = /\.(mp4|webm|ogv)$/i.test(displayUrl);
+            const isOfficeDoc = displayUrl.toLowerCase().endsWith('.docx');
+            const isZipFile = displayUrl.toLowerCase().endsWith('.zip');
 
-        if (youtubeId) return <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${youtubeId}`} title={`YouTube video: ${resource.title}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>;
-        if (isVideoFile) return <video src={displayUrl} controls className="w-full h-full object-contain bg-black" />;
-        if (isImage) return <div className="relative w-full h-full p-2"><Image src={displayUrl} alt={resource.title} fill className="object-contain" data-ai-hint="document image" /></div>;
-        if (isOfficeDoc) return <DocxPreviewer url={displayUrl} />;
-        if (isZipFile) return <ZipPreviewer url={displayUrl} />;
+            if (isPdf) return <PdfViewer url={displayUrl} />;
+            if (youtubeId) return <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${youtubeId}`} title={`YouTube video: ${resource.title}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>;
+            if (isVideoFile) return <video src={displayUrl} controls className="w-full h-full object-contain bg-black" />;
+            if (isImage) return <div className="relative w-full h-full p-2"><Image src={displayUrl} alt={resource.title} fill className="object-contain" data-ai-hint="document image" /></div>;
+            if (isOfficeDoc) return <DocxPreviewer url={displayUrl} />;
+            if (isZipFile) return <ZipPreviewer url={displayUrl} />;
+        }
+        return <FallbackPreview resource={resource} />;
     }
 
-    return <FallbackPreview resource={resource} />;
+    return (
+        <div ref={previewContainerRef} className="relative w-full h-full group bg-muted/20">
+             {renderPreview()}
+             <div className="absolute top-2 right-2 z-20">
+                 <Button variant="secondary" size="icon" className="h-10 w-10 opacity-0 group-hover:opacity-100 transition-opacity rounded-full shadow-lg" onClick={toggleFullScreen}>
+                    {isFullScreen ? <Minimize className="h-5 w-5"/> : <Expand className="h-5 w-5"/>}
+                 </Button>
+             </div>
+        </div>
+    );
 }
 
 
@@ -308,7 +337,7 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
     const [pinVerifiedUrl, setPinVerifiedUrl] = useState<string | null>(null);
     const [showDetails, setShowDetails] = useState(false);
     const isMobile = useIsMobile();
-    const { user, ...auth } = useAuth();
+    const { user } = useAuth();
     const { toast } = useToast();
 
     // Estado para el modo de edición
@@ -357,21 +386,29 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
             
             toast({ title: "Recurso Actualizado" });
             setIsEditing(false);
-            // Opcional: recargar los datos del recurso.
-            // onClose(); // Podrías cerrar el modal o recargar los datos del recurso.
         } catch(err) {
             toast({ title: 'Error al Guardar', description: (err as Error).message, variant: 'destructive' });
         } finally {
             setIsSaving(false);
         }
     }
+    
+    const fileExtension = resource.fileType?.split('/')[1] || resource.url?.split('.').pop() || 'file';
+    const { label, bgColor } = getFileTypeDetails(fileExtension);
 
     return (
       <Dialog open={!!resource} onOpenChange={(isOpen) => !isOpen && onClose()}>
         <DialogContent className="w-[95vw] h-[90vh] max-w-6xl p-0 flex flex-col bg-background/80 backdrop-blur-lg gap-0">
           <DialogHeader className="p-4 flex-shrink-0 h-16 px-4 flex flex-row justify-between items-center border-b z-10 bg-background/70">
             <div className="flex items-center gap-3 overflow-hidden flex-1">
-              <FileIcon type={resource.fileType || resource.type} className="w-8 h-10 flex-shrink-0"/>
+              <div 
+                className="w-auto h-8 flex items-center justify-center rounded-md px-2"
+                style={{ backgroundColor: bgColor }}
+              >
+                  <span className="text-xs font-bold uppercase text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.2)' }}>
+                      {label}
+                  </span>
+              </div>
               <DialogTitle className="font-semibold truncate text-foreground">{resource.title}</DialogTitle>
             </div>
             <DialogClose asChild><Button variant="ghost" size="icon" className="h-8 w-8"><X className="h-4 w-4"/></Button></DialogClose>

@@ -49,7 +49,7 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
     );
   }
 
-  // --- Vista de Cuadrícula (Grid View) ---
+  // --- Vista de Cuadrícula (Grid View) con el nuevo estilo ---
   return (
     <div
       className={cn(
