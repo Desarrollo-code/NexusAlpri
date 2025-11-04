@@ -27,7 +27,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-
+import type { Prisma } from '@prisma/client';
 
 const getFileTypeFilter = (fileType: string): Prisma.EnterpriseResourceWhereInput => {
     const mimeMap: Record<string, string[]> = {
@@ -293,21 +293,16 @@ export default function ResourcesPage() {
                                     {files.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={false} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onNavigate={() => {}} />)}
                                 </div>
                             ) : (
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow className="grid grid-cols-12 gap-4 px-4">
-                                            <TableHead className="col-span-5 md:col-span-4 flex items-center gap-2">Nombre</TableHead>
-                                            <TableHead className="col-span-2 hidden md:flex items-center gap-2">Propietario</TableHead>
-                                            <TableHead className="col-span-2 hidden md:flex items-center gap-2">Categoría</TableHead>
-                                            <TableHead className="col-span-2 hidden md:flex items-center gap-2">Fecha</TableHead>
-                                            <TableHead className="col-span-1 hidden md:flex items-center gap-2">Estado</TableHead>
-                                            <TableHead className="col-span-2 md:col-span-1"></TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <div className="space-y-2 mt-2">
-                                        {files.map(res => <ResourceListItem key={res.id} resource={res} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} />)}
+                                <div className="space-y-1">
+                                    <div className="hidden md:grid grid-cols-12 gap-4 px-4 py-2 border-b text-xs font-medium text-muted-foreground">
+                                        <div className="col-span-5 flex items-center gap-2">Nombre</div>
+                                        <div className="col-span-2 flex items-center gap-2">Propietario</div>
+                                        <div className="col-span-2 flex items-center gap-2">Categoría</div>
+                                        <div className="col-span-2 flex items-center gap-2">Fecha</div>
+                                        <div className="col-span-1"></div>
                                     </div>
-                                </Table>
+                                    {files.map(res => <ResourceListItem key={res.id} resource={res} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} />)}
+                                </div>
                             )}
                         </section>
                     )}
