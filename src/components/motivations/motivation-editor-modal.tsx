@@ -1,4 +1,3 @@
-
 // src/components/motivations/motivation-editor-modal.tsx
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
@@ -181,7 +180,7 @@ export function MotivationEditorModal({ isOpen, onClose, message, onSave }: Moti
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-xl max-h-[90vh] flex flex-col p-0 gap-0">
+            <DialogContent className="sm:max-w-xl max-h-[90vh] flex flex-col p-0 gap-0 rounded-2xl">
                 <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
                     <DialogTitle className="flex items-center gap-2">
                         <Sparkles className="h-5 w-5 text-primary"/>

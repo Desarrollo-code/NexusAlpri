@@ -88,7 +88,7 @@ export function ChatPermissionsModal({ isOpen, onClose, user }: ChatPermissionsM
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md h-[70vh] flex flex-col p-0 gap-0">
+      <DialogContent className="max-w-md h-[70vh] flex flex-col p-0 gap-0 rounded-2xl">
         <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
           <DialogTitle>Permisos de Chat para {user.name}</DialogTitle>
           <DialogDescription>

@@ -75,15 +75,15 @@ export function BulkAssignModal({ isOpen, onClose, onSave, userIds, processes }:
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-md">
-                <DialogHeader>
+            <DialogContent className="sm:max-w-md h-auto flex flex-col p-0 gap-0 rounded-2xl">
+                <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
                     <DialogTitle>Asignar Proceso en Lote</DialogTitle>
                     <DialogDescription>
                         Selecciona un proceso para asignar a los {userIds.length} colaboradores seleccionados.
                     </DialogDescription>
                 </DialogHeader>
-                <div className="py-4">
-                     <Select value={targetProcessId || 'unassigned'} onValueChange={v => setTargetProcessId(v)}>
+                <div className="flex-1 min-h-0 p-6">
+                    <Select value={targetProcessId || 'unassigned'} onValueChange={v => setTargetProcessId(v)}>
                         <SelectTrigger><SelectValue placeholder="Seleccionar proceso..." /></SelectTrigger>
                         <SelectContent>
                             <ScrollArea className="max-h-60">
@@ -97,7 +97,7 @@ export function BulkAssignModal({ isOpen, onClose, onSave, userIds, processes }:
                         </SelectContent>
                     </Select>
                 </div>
-                <DialogFooter>
+                <DialogFooter className="p-6 pt-4 border-t flex-shrink-0">
                     <Button variant="outline" onClick={onClose}>Cancelar</Button>
                     <Button onClick={handleBulkAssign} disabled={isSaving || !targetProcessId}>
                         {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Briefcase className="mr-2 h-4 w-4" />}

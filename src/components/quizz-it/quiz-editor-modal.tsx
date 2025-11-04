@@ -169,7 +169,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
             setUploadProgress(0);
         } else if (optionIndex !== undefined) {
              setIsOptionUploading(prev => ({ ...prev, [optionIndex]: true }));
-             setOptionUploadProgress(prev => ({ ...prev, [optionIndex]: 0 }));
+             setOptionUploadProgress(prev => ({ ...prev, [optionIndex]: progress }));
         }
         try {
             const result = await uploadWithProgress('/api/upload/lesson-file', file, (progress) => {
@@ -199,13 +199,13 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
     return (
       <>
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0 gap-0">
-                <DialogHeader className="p-4 border-b">
+            <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0 gap-0 rounded-2xl">
+                <DialogHeader className="p-4 border-b flex-shrink-0">
                     <DialogTitle className="flex items-center gap-2"><Pencil className="h-5 w-5 text-primary"/>Editor de Quiz Interactivo</DialogTitle>
                 </DialogHeader>
                 <div className="flex-1 grid grid-cols-1 md:grid-cols-3 min-h-0">
                     <div className="md:col-span-1 border-r flex flex-col">
-                         <div className="p-2 space-y-2">
+                         <div className="p-2 space-y-2 flex-shrink-0">
                              <Button onClick={addQuestion} className="w-full" variant="outline"><PlusCircle className="mr-2 h-4 w-4"/>Añadir Pregunta</Button>
                          </div>
                          <ScrollArea className="flex-1">
@@ -291,7 +291,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                         )}
                     </div>
                 </div>
-                <DialogFooter className="p-4 border-t">
+                <DialogFooter className="p-4 border-t flex-shrink-0">
                      <Button variant="outline" onClick={() => setIsPreviewOpen(true)}><Eye className="mr-2 h-4 w-4" />Previsualizar</Button>
                     <div className="flex-grow"/>
                     <Button variant="outline" onClick={onClose}>Cancelar</Button>
