@@ -19,7 +19,7 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
   return (
     <div className={cn("relative w-20 h-24 rounded-lg overflow-hidden group", className)} style={{ backgroundColor: bgColor }}>
       {/* Esquina doblada */}
-      <div className="absolute top-0 right-0 w-0 h-0 border-solid border-transparent" style={{borderWidth: '0px 24px 24px 0px', borderColor: `transparent transparent hsl(var(--card)) transparent`, filter: 'drop-shadow(-1px 1px 1px rgba(0,0,0,0.1))'}} />
+      <div className="absolute top-0 right-0 w-0 h-0 border-solid border-transparent" style={{borderWidth: '0px 24px 24px 0px', borderColor: `transparent transparent hsl(var(--card)) transparent`, filter: 'drop-shadow(-1px 1px 1px rgba(0,0,0,0.1))'}}/>
 
       {/* Miniatura si está disponible */}
       {thumbnailUrl && (
@@ -30,8 +30,9 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
             fill
             className={cn(
                 "transition-transform duration-300 group-hover:scale-105",
-                isYoutube ? "object-cover" : "object-contain" // <-- CAMBIO CLAVE AQUÍ
+                isYoutube ? "object-cover" : "object-contain p-2"
             )}
+            quality={75}
           />
           {isYoutube && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-colors">
