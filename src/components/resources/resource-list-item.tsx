@@ -45,7 +45,7 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
                 {/* Drag Handle & Thumbnail */}
                  <div className="flex items-center gap-3 pl-2">
                     {canModify && !resource.type.includes('FOLDER') && resource.status === 'ACTIVE' ? (
-                        <div {...attributes} {...listeners} className="p-1 cursor-grab touch-none text-muted-foreground"><Grip className="h-5 w-5" /></div>
+                        <div {...listeners} {...attributes} className="p-1 cursor-grab touch-none text-muted-foreground"><Grip className="h-5 w-5" /></div>
                     ) : ( <div className="w-8 h-8"/> )}
                     <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null} />
                 </div>

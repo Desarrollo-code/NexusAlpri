@@ -224,8 +224,8 @@ export default function ResourcesPage() {
                                         <div className="pl-3">Nombre</div>
                                         <div className="hidden md:block">Propietario</div>
                                         <div className="hidden md:block">Categoría</div>
-                                        <div className="hidden md:block">Fecha</div>
-                                        <div className="hidden md:block text-center">Estado</div>
+                                        <TableHead>Fecha</TableHead>
+                                        <TableHead className="hidden md:block text-center">Estado</TableHead>
                                         <div className="w-8"></div>
                                      </div>
                                     <div className="divide-y">
