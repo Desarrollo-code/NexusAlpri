@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import type { AppResourceType } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
 import { Card } from '@/components/ui/card';
-import { Edit, MoreVertical, Trash2, Lock, Download, Globe, Users, Move, GripVertical, ArchiveRestore } from 'lucide-react';
+import { Edit, MoreVertical, Trash2, Lock, Download, Globe, Users, Move, Grip, ArchiveRestore } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -101,7 +101,7 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                          <div className="flex items-start gap-1.5 flex-grow overflow-hidden">
                             {canModify && !isFolder && resource.status === 'ACTIVE' ? (
                                 <div {...listeners} {...attributes} className="p-1 cursor-grab touch-none">
-                                    <GripVertical className="h-4 w-4 text-muted-foreground" />
+                                    <Grip className="h-4 w-4 text-muted-foreground" />
                                 </div>
                             ) : (
                                 <div className="w-6 h-4"/>

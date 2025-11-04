@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu';
-import { MoreVertical, Edit, Trash2, Lock, Download, Globe, Users, ExternalLink, User, GripVertical, ArchiveRestore, Tag, Calendar } from 'lucide-react';
+import { MoreVertical, Edit, Trash2, Lock, Download, Globe, Users, ExternalLink, User, Grip, ArchiveRestore, Tag, Calendar } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { DownloadButton } from '../ui/download-button';
 import { Identicon } from '../ui/identicon';
@@ -45,7 +45,7 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
                 {/* Drag Handle & Thumbnail */}
                  <div className="flex items-center gap-3 pl-2">
                     {canModify && !resource.type.includes('FOLDER') && resource.status === 'ACTIVE' ? (
-                        <div {...attributes} {...listeners} className="p-1 cursor-grab touch-none text-muted-foreground"><GripVertical className="h-5 w-5" /></div>
+                        <div {...attributes} {...listeners} className="p-1 cursor-grab touch-none text-muted-foreground"><Grip className="h-5 w-5" /></div>
                     ) : ( <div className="w-8 h-8"/> )}
                     <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null} />
                 </div>
