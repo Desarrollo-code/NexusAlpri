@@ -47,6 +47,67 @@ interface ResourceEditorModalProps {
   onSave: () => void;
 }
 
+const UploadWidget = ({
+  label,
+  id,
+  currentImageUrl,
+  onFileSelect,
+  onRemove,
+  disabled,
+  isUploading,
+  uploadProgress
+}: {
+  label: string;
+  id: string;
+  currentImageUrl?: string | null;
+  onFileSelect: (file: File | null) => void;
+  onRemove: () => void;
+  disabled: boolean;
+  isUploading: boolean;
+  uploadProgress: number;
+}) => {
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      {currentImageUrl && !isUploading ? (
+             <div className="relative w-40 h-32 rounded-lg border overflow-hidden bg-muted/20 p-2">
+                <Image src={currentImageUrl} alt={`Previsualización de ${label}`} fill className="object-contain p-2" />
+                 <div className="absolute top-1 right-1 flex flex-col gap-1 z-10">
+                    <Button type="button" variant="secondary" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={() => document.getElementById(id)?.click()} disabled={disabled}>
+                        <Replace className="h-4 w-4" />
+                        <span className="sr-only">Reemplazar imagen</span>
+                    </Button>
+                    <Button type="button" variant="destructive" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={onRemove} disabled={disabled}>
+                        <XCircle className="h-4 w-4" />
+                        <span className="sr-only">Eliminar imagen</span>
+                    </Button>
+                 </div>
+            </div>
+      ) : isUploading ? (
+         <div className="w-40 h-32 flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg bg-muted/50 p-2 relative">
+            {currentImageUrl && <Image src={currentImageUrl} alt="Subiendo" fill className="object-contain opacity-30 p-2"/>}
+            <div className="z-10 text-center space-y-2">
+                <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+                <p className="text-sm text-muted-foreground">Subiendo...</p>
+                <Progress value={uploadProgress} className="w-32 h-1.5" />
+            </div>
+         </div>
+      ) : (
+        <UploadArea onFileSelect={onFileSelect} disabled={disabled} inputId={id}/>
+      )}
+      <input
+        type="file"
+        id={id}
+        onChange={(e) => onFileSelect(e.target.files ? e.target.files[0] : null)}
+        disabled={disabled || isUploading}
+        accept="image/png, image/jpeg, image/svg+xml, image/webp"
+        className="hidden"
+      />
+    </div>
+  );
+};
+
+
 export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSave }: ResourceEditorModalProps) {
   const { toast } = useToast();
   const { user, settings } = useAuth();
@@ -255,12 +316,12 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] sm:max-w-lg max-h-[90vh] flex flex-col p-0 gap-0 rounded-lg">
-          <DialogHeader className="p-4 sm:p-6 pb-4 border-b">
+      <DialogContent className="w-[95vw] sm:max-w-lg max-h-[90vh] flex flex-col p-0 gap-0 rounded-2xl">
+          <DialogHeader className="p-4 sm:p-6 pb-4 border-b flex-shrink-0">
               <DialogTitle>{resource ? 'Editar Recurso' : 'Subir Nuevo Recurso'}</DialogTitle>
               <DialogDescription>{resource ? 'Modifica los detalles de tu recurso.' : 'Añade un nuevo archivo, enlace o documento a la biblioteca.'}</DialogDescription>
           </DialogHeader>
-          <ScrollArea className="flex-1 min-h-0 thin-scrollbar">
+          <ScrollArea className="flex-1 min-h-0">
             <form id="resource-form" onSubmit={handleSave} className="space-y-4 px-4 sm:px-6 py-4">
                 {!resource && (
                     <RadioGroup defaultValue="DOCUMENT" onValueChange={(v) => {setResourceType(v as any); setLocalFile(null); setExternalLink('');}} className="grid grid-cols-2 gap-4">
