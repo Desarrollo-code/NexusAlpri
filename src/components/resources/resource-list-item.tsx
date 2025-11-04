@@ -54,8 +54,8 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
                 </div>
                 
                 {/* Thumbnail */}
-                <div className="w-16 h-10 flex-shrink-0 mr-3">
-                   <FileIcon type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null} className="w-16 h-10" />
+                <div className="w-16 h-10 flex-shrink-0 mr-3 flex items-center justify-center">
+                   <FileIcon type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null} className="w-12 h-8" />
                 </div>
                 
                 {/* Main Content */}

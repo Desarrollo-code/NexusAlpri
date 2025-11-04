@@ -22,7 +22,6 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
         "relative w-20 h-12 flex items-center justify-center rounded-lg overflow-hidden group",
         className
       )}
-      style={{ backgroundColor: bgColor }}
     >
       {thumbnailUrl && isYoutube ? (
         <>
@@ -43,9 +42,14 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
           </div>
         </>
       ) : (
-        <span className="text-xs font-bold uppercase tracking-wider text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.2)' }}>
-          {label}
-        </span>
+        <div 
+            className="w-full h-full flex items-center justify-center rounded-lg"
+            style={{ backgroundColor: bgColor }}
+        >
+            <span className="text-xs font-bold uppercase tracking-wider text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.2)' }}>
+              {label}
+            </span>
+        </div>
       )}
     </div>
   );
