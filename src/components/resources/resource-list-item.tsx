@@ -13,6 +13,8 @@ import { Identicon } from '../ui/identicon';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { useDraggable } from '@dnd-kit/core';
 import { FileIcon } from '../ui/file-icon';
+import Image from 'next/image';
+import { getYoutubeVideoId } from '@/lib/resource-utils';
 
 interface ResourceListItemProps {
     resource: AppResourceType;
@@ -27,7 +29,8 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
     const { user } = useAuth();
     const canModify = user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && resource.uploaderId === user.id));
     
-    const fileExtension = resource.fileType?.split('/')[1] || resource.url?.split('.').pop() || 'file';
+    const youtubeId = getYoutubeVideoId(resource.url);
+    const fileExtension = youtubeId ? 'youtube' : (resource.fileType?.split('/')[1] || resource.url?.split('.').pop() || 'file');
 
 
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
@@ -35,6 +38,17 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
         data: { type: 'resource', resource: resource },
         disabled: !canModify || resource.status === 'ARCHIVED',
     });
+
+    const Thumbnail = () => {
+        if (youtubeId) {
+            return (
+                <div className="w-12 h-12 relative flex-shrink-0 rounded-md overflow-hidden bg-black">
+                     <Image src={`https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`} alt={resource.title} fill className="object-cover" />
+                </div>
+            );
+        }
+        return <FileIcon type={fileExtension} className="w-12 h-14 flex-shrink-0" />;
+    };
 
     return (
         <div 
@@ -50,8 +64,8 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
                 onClick={onSelect}
             >
                 {canModify && resource.status === 'ACTIVE' && <div {...listeners} {...attributes} className="p-1 cursor-grab touch-none"><GripVertical className="h-4 w-4 text-muted-foreground"/></div>}
-                <div className="w-12 h-14 flex-shrink-0 flex items-center justify-center">
-                    <FileIcon type={fileExtension} />
+                <div className="flex-shrink-0 flex items-center justify-center">
+                    <Thumbnail />
                 </div>
                  <div 
                     className="flex-grow overflow-hidden min-w-0"

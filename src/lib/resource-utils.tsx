@@ -1,7 +1,7 @@
 // src/lib/resource-utils.tsx
 import React from 'react';
 import type { AppResourceType } from '@/types';
-import { FolderIcon, FileQuestion, Video as VideoIcon, FileText as FileTextIcon, Info, Notebook, Shield, Link as LinkIcon, Archive as ZipIcon, FilePen, File as FileGenericIcon } from 'lucide-react';
+import { FolderIcon, FileQuestion, Video as VideoIcon, FileText as FileTextIcon, Info, Notebook, Shield, Link as LinkIcon, Archive as ZipIcon, FilePen } from 'lucide-react';
 import { cn } from './utils';
 
 // --- NUEVA LÓGICA PARA ICONOS DE ARCHIVO ESTILIZADOS ---
@@ -19,16 +19,19 @@ const fileTypeMap: Record<string, FileTypeDetails> = {
   PPT: { label: 'PPT', color: '#D94B25', icon: FileTextIcon },
   XLS: { label: 'XLS', color: '#34A853', icon: FileTextIcon },
   // Imágenes
-  PNG: { label: 'PNG', color: '#4A5568', icon: FileGenericIcon },
-  JPG: { label: 'JPG', color: '#4A5568', icon: FileGenericIcon },
-  GIF: { label: 'GIF', color: '#4299E1', icon: FileGenericIcon },
-  BMP: { label: 'BMP', color: '#805AD5', icon: FileGenericIcon },
-  SVG: { label: 'SVG', color: '#F56565', icon: FileGenericIcon },
+  PNG: { label: 'PNG', color: '#4A5568', icon: FileTextIcon },
+  JPG: { label: 'JPG', color: '#4A5568', icon: FileTextIcon },
+  JPEG: { label: 'JPEG', color: '#4A5568', icon: FileTextIcon },
+  GIF: { label: 'GIF', color: '#4299E1', icon: FileTextIcon },
+  BMP: { label: 'BMP', color: '#805AD5', icon: FileTextIcon },
+  SVG: { label: 'SVG', color: '#F56565', icon: FileTextIcon },
+  WEBP: { label: 'WEBP', color: '#38B2AC', icon: FileTextIcon },
   // Video
   MP4: { label: 'MP4', color: '#3182CE', icon: VideoIcon },
+  YOUTUBE: { label: 'YOUTUBE', color: '#FF0000', icon: VideoIcon },
   // Archivos
   ZIP: { label: 'ZIP', color: '#A0AEC0', icon: ZipIcon },
-  ISO: { label: 'ISO', color: '#F6E05E', icon: FileGenericIcon },
+  ISO: { label: 'ISO', color: '#F6E05E', icon: FileTextIcon },
   // Código y Diseño
   HTML: { label: 'HTM', color: '#DD6B20', icon: FileTextIcon },
   CSS: { label: 'CSS', color: '#3182CE', icon: FileTextIcon },
@@ -67,7 +70,8 @@ export const getIconForType = (type: AppResourceType['type']): React.ComponentTy
     return ({ className, ...props }) => <Icon className={cn(color, className)} {...props} />;
 };
 
-export const getIconForFileType = (mimeType: string) => {
+export const getIconForFileType = (mimeType?: string | null): React.ElementType => {
+    if (!mimeType) return FileQuestion;
     if (mimeType.startsWith('image/')) return ImageIcon;
     if (mimeType.startsWith('video/')) return VideoIcon;
     if (mimeType === 'application/pdf') return FileTextIcon;
@@ -78,21 +82,11 @@ export const getIconForFileType = (mimeType: string) => {
     return FileQuestion;
 }
 
-export const getYoutubeVideoId = (url: string | undefined): string | null => {
+export const getYoutubeVideoId = (url: string | undefined | null): string | null => {
     if (!url) return null;
-    let videoId = null;
-    try {
-      const urlObj = new URL(url);
-      if (urlObj.hostname === 'www.youtube.com' || urlObj.hostname === 'youtube.com') {
-        videoId = urlObj.searchParams.get('v');
-      } else if (urlObj.hostname === 'youtu.be') {
-        videoId = urlObj.pathname.substring(1);
-      }
-    } catch (e) {
-      const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-      return match ? match[1] : null;
-    }
-    return videoId;
+    const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const match = url.match(regex);
+    return match ? match[1] : null;
 };
 
 export const FallbackIcon = ({ resource, className }: { resource: AppResourceType, className?: string }) => {

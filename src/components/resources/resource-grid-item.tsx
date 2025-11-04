@@ -16,7 +16,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import Image from 'next/image';
-import { getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
+import { getYoutubeVideoId } from '@/lib/resource-utils';
 import { DownloadButton } from '../ui/download-button';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '../ui/tooltip';
@@ -60,6 +60,20 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                             <Move className="h-8 w-8 text-primary/80 animate-pulse" />
                         </div>
                     )}
+                </div>
+            );
+        }
+
+        const youtubeId = getYoutubeVideoId(resource.url);
+        if (youtubeId) {
+            return (
+                <div className="relative w-full h-full">
+                    <Image
+                        src={`https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`}
+                        alt={resource.title}
+                        fill
+                        className="object-cover"
+                    />
                 </div>
             );
         }
