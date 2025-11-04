@@ -33,7 +33,7 @@ const fileTypeMap: Record<string, FileTypeDetails> = {
   AI: { label: 'AI', bgColor: '#546e7a', labelColor: '#455a64' },
   PSD: { label: 'PSD', bgColor: '#3949ab', labelColor: '#283593' },
   DB: { label: 'DB', bgColor: '#43a047', labelColor: '#388e3c' },
-  BMP: { label: 'BMP', bgColor-dark: 'bg-purple-700', labelColor: '#6a1b9a' },
+  BMP: { label: 'BMP', bgColor: '#8e24aa', labelColor: '#6a1b9a' },
   ISO: { label: 'ISO', bgColor: '#fb8c00', labelColor: '#f57c00' },
   CAD: { label: 'CAD', bgColor: '#00897b', labelColor: '#00796b' },
   DEFAULT: { label: 'FILE', bgColor: '#757575', labelColor: '#616161' },
