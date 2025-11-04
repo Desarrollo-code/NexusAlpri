@@ -1,10 +1,10 @@
 // src/components/resources/resource-editor-modal.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -12,14 +12,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogClose
 } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Save, UploadCloud, FileWarning, Link as LinkIcon, Image as ImageIcon, XCircle, Trash2, Replace, Calendar as CalendarIcon, Eye, EyeOff, X } from 'lucide-react';
+import { Loader2, Save, UploadCloud, Link as LinkIcon, Image as ImageIcon, XCircle, Replace, Calendar as CalendarIcon, Eye, EyeOff, X, Globe, Users } from 'lucide-react';
 import type { AppResourceType, User as AppUser } from '@/types';
 import { UploadArea } from '../ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
@@ -34,10 +33,10 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import Image from 'next/image';
-import { FileIcon } from '../ui/file-icon';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import { cn } from '@/lib/utils';
 import { Separator } from '../ui/separator';
+import { FileIcon } from '../ui/file-icon';
 
 interface ResourceEditorModalProps {
   isOpen: boolean;
@@ -47,110 +46,55 @@ interface ResourceEditorModalProps {
   onSave: () => void;
 }
 
-const UploadWidget = ({
-  label,
-  id,
-  currentImageUrl,
-  onFileSelect,
-  onRemove,
-  disabled,
-  isUploading,
-  uploadProgress
-}: {
-  label: string;
-  id: string;
-  currentImageUrl?: string | null;
-  onFileSelect: (file: File | null) => void;
-  onRemove: () => void;
-  disabled: boolean;
-  isUploading: boolean;
-  uploadProgress: number;
-}) => {
-  return (
-    <div className="space-y-2">
-      <Label>{label}</Label>
-      {currentImageUrl && !isUploading ? (
-             <div className="relative w-40 h-32 rounded-lg border overflow-hidden bg-muted/20 p-2">
-                <Image src={currentImageUrl} alt={`Previsualización de ${label}`} fill className="object-contain p-2" />
-                 <div className="absolute top-1 right-1 flex flex-col gap-1 z-10">
-                    <Button type="button" variant="secondary" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={() => document.getElementById(id)?.click()} disabled={disabled}>
-                        <Replace className="h-4 w-4" />
-                        <span className="sr-only">Reemplazar imagen</span>
-                    </Button>
-                    <Button type="button" variant="destructive" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={onRemove} disabled={disabled}>
-                        <XCircle className="h-4 w-4" />
-                        <span className="sr-only">Eliminar imagen</span>
-                    </Button>
-                 </div>
-            </div>
-      ) : isUploading ? (
-         <div className="w-40 h-32 flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg bg-muted/50 p-2 relative">
-            {currentImageUrl && <Image src={currentImageUrl} alt="Subiendo" fill className="object-contain opacity-30 p-2"/>}
-            <div className="z-10 text-center space-y-2">
-                <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-                <p className="text-sm text-muted-foreground">Subiendo...</p>
-                <Progress value={uploadProgress} className="w-32 h-1.5" />
-            </div>
-         </div>
-      ) : (
-        <UploadArea onFileSelect={onFileSelect} disabled={disabled} inputId={id}/>
-      )}
-      <input
-        type="file"
-        id={id}
-        onChange={(e) => onFileSelect(e.target.files ? e.target.files[0] : null)}
-        disabled={disabled || isUploading}
-        accept="image/png, image/jpeg, image/svg+xml, image/webp"
-        className="hidden"
-      />
-    </div>
-  );
-};
-
-
 export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSave }: ResourceEditorModalProps) {
   const { toast } = useToast();
   const { user, settings } = useAuth();
   
+  // States for form fields
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
   const [isPublic, setIsPublic] = useState(true);
   const [sharedWithUserIds, setSharedWithUserIds] = useState<string[]>([]);
   const [expiresAt, setExpiresAt] = useState<Date | undefined>(undefined);
-  const [status, setStatus] = useState<'ACTIVE' | 'ARCHIVED'>('ACTIVE');
-  
   const [resourceType, setResourceType] = useState<AppResourceType['type']>('DOCUMENT');
   const [externalLink, setExternalLink] = useState('');
+  const [content, setContent] = useState('');
+  const [observations, setObservations] = useState('');
+  const [currentUrl, setCurrentUrl] = useState<string | null>(null);
 
-  const [localFile, setLocalFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-
+  // States for UI logic
   const [isSaving, setIsSaving] = useState(false);
   const [allUsers, setAllUsers] = useState<AppUser[]>([]);
   const [userSearch, setUserSearch] = useState('');
   
+  // State for file uploads
+  const [localFile, setLocalFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  // States for PIN management
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [showPin, setShowPin] = useState(false);
   const [isSettingPin, setIsSettingPin] = useState(false);
 
-
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setTitle('');
     setDescription('');
     setCategory(settings?.resourceCategories[0] || 'General');
     setIsPublic(true);
     setSharedWithUserIds([]);
     setExpiresAt(undefined);
-    setStatus('ACTIVE');
     setResourceType('DOCUMENT');
     setExternalLink('');
+    setContent('');
+    setObservations('');
     setLocalFile(null);
+    setCurrentUrl(null);
     setPin('');
     setConfirmPin('');
-  };
+  }, [settings?.resourceCategories]);
 
   useEffect(() => {
     if (isOpen) {
@@ -161,23 +105,22 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         setIsPublic(resource.ispublic);
         setSharedWithUserIds(resource.sharedWith?.map(u => u.id) || []);
         setExpiresAt(resource.expiresAt ? new Date(resource.expiresAt) : undefined);
-        setStatus(resource.status);
         setResourceType(resource.type);
         setExternalLink(resource.type === 'EXTERNAL_LINK' ? resource.url || '' : '');
-        setPin('');
-        setConfirmPin('');
-        setLocalFile(null);
+        setContent(resource.content || '');
+        setObservations(resource.observations || '');
+        setCurrentUrl(resource.url);
       } else {
         resetForm();
       }
-      
-       if (user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') {
+
+      if (user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') {
           fetch('/api/users/list')
             .then(res => res.json())
             .then(data => setAllUsers(data.users || []));
-        }
+      }
     }
-  }, [resource, isOpen, settings]);
+  }, [resource, isOpen, resetForm, settings, user]);
 
   const handleFileSelect = (file: File | null) => {
     setLocalFile(file);
@@ -185,46 +128,26 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
       setTitle(file.name.split('.').slice(0, -1).join('.'));
     }
   };
-  
+
   const handleSetPin = async () => {
-    if (!resource || !pin || pin !== confirmPin) {
-        toast({ title: 'Error de PIN', description: 'Los PIN no coinciden o están vacíos.', variant: 'destructive'});
+    if (!resource || !pin || pin !== confirmPin || pin.length < 4) {
+        toast({ title: 'Error de PIN', description: 'Los PIN no coinciden o tienen menos de 4 dígitos.', variant: 'destructive'});
         return;
     }
     setIsSettingPin(true);
     try {
-      const res = await fetch(`/api/resources/${resource.id}/pin`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pin })
-      });
+      const res = await fetch(`/api/resources/${resource.id}/pin`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pin }) });
       if(!res.ok) throw new Error((await res.json()).message);
-      toast({ title: "PIN actualizado" });
+      toast({ title: "PIN actualizado correctamente" });
       setPin('');
       setConfirmPin('');
-      onSave(); // Refrescar datos
+      onSave(); // Refresh data
     } catch (err) {
       toast({ title: 'Error', description: (err as Error).message, variant: 'destructive'});
     } finally {
       setIsSettingPin(false);
     }
   }
-  
-  const handleRemovePin = async () => {
-      if (!resource) return;
-      setIsSettingPin(true);
-      try {
-          const res = await fetch(`/api/resources/${resource.id}/pin`, { method: 'DELETE' });
-          if(!res.ok) throw new Error((await res.json()).message);
-          toast({ title: "PIN eliminado" });
-          onSave();
-      } catch (err) {
-          toast({ title: 'Error', description: (err as Error).message, variant: 'destructive'});
-      } finally {
-          setIsSettingPin(false);
-      }
-  }
-
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -234,7 +157,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     }
 
     setIsSaving(true);
-    let finalUrl = resource?.url || null;
+    let finalUrl = currentUrl;
     let finalSize = resource?.size || 0;
     let finalFileType = resource?.fileType || '';
     
@@ -248,14 +171,8 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             finalSize = localFile.size;
             finalFileType = localFile.type;
         } catch (err) {
-            toast({
-                title: "Error de subida",
-                description: (err as Error).message,
-                variant: "destructive"
-            });
-            setIsSaving(false);
-            setIsUploading(false);
-            return;
+            toast({ title: "Error de subida", description: (err as Error).message, variant: "destructive" });
+            setIsSaving(false); setIsUploading(false); return;
         }
         setIsUploading(false);
     }
@@ -263,29 +180,21 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     const payload = {
         title, description, category, isPublic, sharedWithUserIds: isPublic ? [] : sharedWithUserIds,
         expiresAt: expiresAt ? expiresAt.toISOString() : null,
-        status, type: resourceType, url: finalUrl,
-        size: finalSize, fileType: finalFileType,
-        parentId: resource ? resource.parentId : parentId
+        status: resource?.status || 'ACTIVE', type: resourceType, url: finalUrl,
+        size: finalSize, fileType: finalFileType, parentId: resource ? resource.parentId : parentId,
+        content: resourceType === 'DOCUMENTO_EDITABLE' ? content : null, observations
     };
     
     const endpoint = resource ? `/api/resources/${resource.id}` : '/api/resources';
     const method = resource ? 'PUT' : 'POST';
 
     try {
-        const response = await fetch(endpoint, {
-            method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            throw new Error((await response.json()).message || 'No se pudo guardar el recurso.');
-        }
+        const response = await fetch(endpoint, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        if (!response.ok) throw new Error((await response.json()).message || 'No se pudo guardar el recurso.');
         
         toast({ title: 'Éxito', description: `Recurso ${resource ? 'actualizado' : 'creado'}.` });
         onSave();
         onClose();
-
     } catch(err) {
         toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
     } finally {
@@ -295,99 +204,84 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   
   const filteredUsers = allUsers.filter(u => u.name.toLowerCase().includes(userSearch.toLowerCase()));
 
-  const ExistingFileDisplay = () => {
-    if (!resource || !resource.url) return null;
-    const youtubeId = getYoutubeVideoId(resource.url);
-    const fileExtension = youtubeId ? 'youtube' : (resource.fileType?.split('/')[1] || resource.url?.split('.').pop() || 'file');
-
-    return (
-      <div className="flex items-center justify-between p-2 rounded-lg border bg-background min-w-0">
-        <div className="flex items-center gap-3 overflow-hidden">
-          <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null} />
-          <span className="text-sm font-medium truncate">{resource.title}</span>
-        </div>
-        <Button type="button" variant="outline" size="sm" onClick={() => setLocalFile({} as File)}>
-           <Replace className="mr-2 h-4 w-4"/> Reemplazar
-        </Button>
-      </div>
-    );
-  };
-
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[95vw] sm:max-w-lg max-h-[90vh] flex flex-col p-0 gap-0 rounded-2xl">
-          <DialogHeader className="p-4 sm:p-6 pb-4 border-b flex-shrink-0">
-              <DialogTitle>{resource ? 'Editar Recurso' : 'Subir Nuevo Recurso'}</DialogTitle>
-              <DialogDescription>{resource ? 'Modifica los detalles de tu recurso.' : 'Añade un nuevo archivo, enlace o documento a la biblioteca.'}</DialogDescription>
-          </DialogHeader>
-          <ScrollArea className="flex-1 min-h-0">
-            <form id="resource-form" onSubmit={handleSave} className="space-y-4 px-4 sm:px-6 py-4">
-                {!resource && (
-                    <RadioGroup defaultValue="DOCUMENT" onValueChange={(v) => {setResourceType(v as any); setLocalFile(null); setExternalLink('');}} className="grid grid-cols-2 gap-4">
-                      <div><RadioGroupItem value="DOCUMENT" id="type-doc" className="peer sr-only"/><Label htmlFor="type-doc" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><ImageIcon className="mb-2 h-6 w-6"/>Archivo</Label></div>
-                      <div><RadioGroupItem value="EXTERNAL_LINK" id="type-link" className="peer sr-only"/><Label htmlFor="type-link" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><LinkIcon className="mb-2 h-6 w-6"/>Enlace</Label></div>
-                    </RadioGroup>
-                )}
-                
-                {resourceType !== 'EXTERNAL_LINK' && (
-                  (localFile || !resource?.url) ? (
-                      <>
-                          <UploadArea onFileSelect={handleFileSelect} disabled={isSaving || isUploading}>
-                              {localFile && <p className="text-sm font-semibold">{localFile.name}</p>}
-                          </UploadArea>
-                          {isUploading && <div className="flex items-center gap-2 text-xs text-muted-foreground"><Progress value={uploadProgress} className="w-full h-1.5" /><span>{uploadProgress}%</span></div>}
-                      </>
+        <DialogHeader className="p-4 sm:p-6 pb-4 border-b flex-shrink-0">
+          <DialogTitle>{resource ? 'Editar Recurso' : 'Subir Nuevo Recurso'}</DialogTitle>
+          <DialogDescription>{resource ? 'Modifica los detalles de tu recurso.' : 'Añade un nuevo archivo, enlace o documento a la biblioteca.'}</DialogDescription>
+        </DialogHeader>
+
+        <ScrollArea className="flex-1 min-h-0">
+          <form id="resource-form" onSubmit={handleSave} className="space-y-6 px-4 sm:px-6 py-4">
+              {!resource && (
+                  <RadioGroup defaultValue={resourceType} onValueChange={(v) => {setResourceType(v as any); setLocalFile(null); setExternalLink('');}} className="grid grid-cols-2 gap-4">
+                    <div><RadioGroupItem value="DOCUMENT" id="type-doc" className="peer sr-only"/><Label htmlFor="type-doc" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><ImageIcon className="mb-2 h-6 w-6"/>Archivo</Label></div>
+                    <div><RadioGroupItem value="EXTERNAL_LINK" id="type-link" className="peer sr-only"/><Label htmlFor="type-link" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><LinkIcon className="mb-2 h-6 w-6"/>Enlace</Label></div>
+                  </RadioGroup>
+              )}
+
+              {resourceType !== 'EXTERNAL_LINK' && (
+                <div className="space-y-2">
+                  <Label>Archivo</Label>
+                  {localFile || !currentUrl ? (
+                    <>
+                      <UploadArea onFileSelect={handleFileSelect} disabled={isSaving || isUploading}>
+                        {localFile && <p className="text-sm font-semibold">{localFile.name}</p>}
+                      </UploadArea>
+                      {isUploading && <div className="flex items-center gap-2 text-xs text-muted-foreground"><Progress value={uploadProgress} className="w-full h-1.5" /><span>{uploadProgress}%</span></div>}
+                    </>
                   ) : (
-                      <ExistingFileDisplay />
-                  )
-                )}
-
-                {resourceType === 'EXTERNAL_LINK' && <div className="space-y-1.5"><Label htmlFor="url">URL del Enlace</Label><Input id="url" type="url" value={externalLink} onChange={e => setExternalLink(e.target.value)} required placeholder="https://..."/></div>}
-                  
-                  <div className="space-y-1.5"><Label htmlFor="title">Título</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
-                  <div className="space-y-1.5"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)}/></div>
-                  <div className="space-y-1.5"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory}><SelectTrigger id="category"><SelectValue placeholder="Seleccionar..." /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select></div>
-                  <div className="space-y-1.5"><Label>Expiración</Label><Popover><PopoverTrigger asChild><Button variant="outline" className="w-full justify-start font-normal">{expiresAt ? format(expiresAt, "PPP", {locale: es}) : <span>Sin fecha de expiración</span>}</Button></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={expiresAt} onSelect={setExpiresAt} initialFocus /></PopoverContent></Popover></div>
-                  <div className="flex items-center space-x-2 pt-2"><Switch id="is-public" checked={isPublic} onCheckedChange={setIsPublic} /><Label htmlFor="is-public">Público (visible para todos)</Label></div>
-                  {!isPublic && (
-                      <div className="space-y-1.5"><Label>Compartir con</Label><Input placeholder="Buscar usuarios..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
-                      <ScrollArea className="h-32 border rounded-md p-2">
-                          {allUsers.filter(u => u.id !== user?.id).map(u => (
-                              <div key={u.id} className="flex items-center space-x-3 py-1"><Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={(c) => setSharedWithUserIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(u.name)}</AvatarFallback></Avatar>{u.name}</Label></div>
-                          ))}
-                      </ScrollArea></div>
-                  )}
-                  {resource && (
-                    <div className="space-y-4 pt-4 border-t">
-                      <Label className="font-semibold">Seguridad con PIN</Label>
-                        <div className="relative">
-                          <Input type={showPin ? "text" : "password"} value={pin} onChange={(e) => setPin(e.target.value)} placeholder="Nuevo PIN (4-8 dígitos)"/>
-                          <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => setShowPin(!showPin)}>
-                              {showPin ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
-                          </Button>
-                        </div>
-                        <div className="relative">
-                          <Input type={showPin ? "text" : "password"} value={confirmPin} onChange={(e) => setConfirmPin(e.target.value)} placeholder="Confirmar nuevo PIN" disabled={!pin}/>
-                        </div>
-                        {pin && pin !== confirmPin && <p className="text-xs text-destructive">Los PIN no coinciden.</p>}
-
-                      <div className="flex gap-2">
-                          <Button type="button" onClick={handleSetPin} disabled={isSettingPin || !pin || pin.length < 4 || pin !== confirmPin} className="w-full">Establecer PIN</Button>
-                          {resource.hasPin && <Button type="button" variant="destructive" onClick={handleRemovePin} disabled={isSettingPin} className="w-full">Eliminar PIN</Button>}
+                    <div className="flex items-center justify-between p-2 rounded-lg border bg-background min-w-0">
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <FileIcon displayMode="list" type={currentUrl.split('.').pop() || 'file'} />
+                        <span className="text-sm font-medium truncate">{title}</span>
                       </div>
+                      <Button type="button" variant="outline" size="sm" onClick={() => setLocalFile({} as File)}>
+                        <Replace className="mr-2 h-4 w-4"/> Reemplazar
+                      </Button>
                     </div>
                   )}
-            </form>
-          </ScrollArea>
-           <DialogFooter className="p-4 sm:p-6 border-t flex-shrink-0 flex flex-row sm:justify-end gap-2">
-              <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
-              <Button type="submit" form="resource-form" disabled={isSaving || isUploading || !title}>
-                  {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                  Guardar
-              </Button>
-          </DialogFooter>
+                </div>
+              )}
+
+              {resourceType === 'EXTERNAL_LINK' && <div className="space-y-1.5"><Label htmlFor="url">URL del Enlace</Label><Input id="url" type="url" value={externalLink} onChange={e => setExternalLink(e.target.value)} required placeholder="https://..."/></div>}
+                
+              <div className="space-y-1.5"><Label htmlFor="title">Título</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
+              <div className="space-y-1.5"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)}/></div>
+              <div className="space-y-1.5"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory}><SelectTrigger id="category"><SelectValue placeholder="Seleccionar..." /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select></div>
+              <div className="space-y-1.5"><Label>Expiración</Label><Popover><PopoverTrigger asChild><Button variant="outline" className="w-full justify-start font-normal">{expiresAt ? format(expiresAt, "PPP", {locale: es}) : <span>Sin fecha de expiración</span>}</Button></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={expiresAt} onSelect={setExpiresAt} initialFocus /></PopoverContent></Popover></div>
+              <div className="flex items-center space-x-2 pt-2"><Switch id="is-public" checked={isPublic} onCheckedChange={setIsPublic} /><Label htmlFor="is-public">Público (visible para todos)</Label></div>
+              
+              {!isPublic && (
+                  <div className="space-y-1.5"><Label>Compartir con</Label><Input placeholder="Buscar usuarios..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
+                  <ScrollArea className="h-32 border rounded-md p-2">
+                      {filteredUsers.filter(u => u.id !== user?.id).map(u => (
+                          <div key={u.id} className="flex items-center space-x-3 py-1"><Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={(c) => setSharedWithUserIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(u.name)}</AvatarFallback></Avatar>{u.name}</Label></div>
+                      ))}
+                  </ScrollArea></div>
+              )}
+              
+              {resource && (
+                <div className="space-y-4 pt-4 border-t">
+                  <Label className="font-semibold">Seguridad con PIN</Label>
+                  <div className="relative"><Input type={showPin ? "text" : "password"} value={pin} onChange={(e) => setPin(e.target.value)} placeholder="Nuevo PIN (4-8 dígitos)" autoComplete="new-password"/><Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowPin(!showPin)}><Eye className="h-5 w-5"/></Button></div>
+                  <div className="relative"><Input type={showPin ? "text" : "password"} value={confirmPin} onChange={(e) => setConfirmPin(e.target.value)} placeholder="Confirmar nuevo PIN" disabled={!pin} autoComplete="new-password"/></div>
+                  {pin && pin !== confirmPin && <p className="text-xs text-destructive">Los PIN no coinciden.</p>}
+                  <div className="flex gap-2"><Button type="button" onClick={handleSetPin} disabled={isSettingPin || !pin || pin.length < 4 || pin !== confirmPin} className="w-full">Establecer PIN</Button></div>
+                </div>
+              )}
+          </form>
+        </ScrollArea>
+        <DialogFooter className="p-4 sm:p-6 border-t flex-shrink-0 flex flex-row sm:justify-end gap-2">
+          <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
+          <Button type="submit" form="resource-form" disabled={isSaving || isUploading || !title}>
+              {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+              Guardar
+          </Button>
+        </DialogFooter>
       </DialogContent>
-  </Dialog>
+    </Dialog>
   );
 }
+```
