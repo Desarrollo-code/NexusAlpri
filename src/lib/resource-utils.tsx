@@ -10,29 +10,51 @@ export interface FileTypeDetails {
   labelColor: string;
 }
 
+// Paleta de colores inspirada en la imagen de referencia.
 const fileTypeMap: Record<string, FileTypeDetails> = {
-  PDF: { label: 'PDF', bgColor: '#FFF1F0', labelColor: '#D32F2F' },
-  DOCX: { label: 'DOCX', bgColor: '#E7F3FF', labelColor: '#1976D2' },
-  DOC: { label: 'DOC', bgColor: '#E7F3FF', labelColor: '#1976D2' },
-  PPT: { label: 'PPT', bgColor: '#FFF3E0', labelColor: '#E64A19' },
-  PPTX: { label: 'PPTX', bgColor: '#FFF3E0', labelColor: '#E64A19' },
-  XLS: { label: 'XLS', bgColor: '#E8F5E9', labelColor: '#388E3C' },
-  XLSX: { label: 'XLSX', bgColor: '#E8F5E9', labelColor: '#388E3C' },
-  PNG: { label: 'PNG', bgColor: '#F3E8FD', labelColor: '#5E35B1' },
-  JPG: { label: 'JPG', bgColor: '#F3E8FD', labelColor: '#5E35B1' },
-  JPEG: { label: 'JPEG', bgColor: '#F3E8FD', labelColor: '#5E35B1' },
-  SVG: { label: 'SVG', bgColor: '#FFFDE7', labelColor: '#FBC02D' },
-  GIF: { label: 'GIF', bgColor: '#E1F5FE', labelColor: '#039BE5' },
-  MP4: { label: 'MP4', bgColor: '#E1F5FE', labelColor: '#039BE5' },
-  WEBM: { label: 'WEBM', bgColor: '#E1F5FE', labelColor: '#039BE5' },
-  YOUTUBE: { label: 'YT', bgColor: '#FFEBEE', labelColor: '#D32F2F' },
-  ZIP: { label: 'ZIP', bgColor: '#ECEFF1', labelColor: '#546E7A' },
-  HTML: { label: 'CODE', bgColor: '#E0F2F1', labelColor: '#00897b' },
-  CSS: { label: 'CODE', bgColor: '#F1F8E9', labelColor: '#7cb342' },
-  JS: { label: 'CODE', bgColor: '#FFF9C4', labelColor: '#fdd835' },
-  AI: { label: 'AI', bgColor: '#CFD8DC', labelColor: '#455A64' },
-  PSD: { label: 'PSD', bgColor: '#E3F2FD', labelColor: '#1976D2' },
-  DEFAULT: { label: 'FILE', bgColor: '#ECEFF1', labelColor: '#78909C' },
+  // Rojos y Rosas
+  PDF: { label: 'PDF', bgColor: '#F44336', labelColor: '#D32F2F' },
+  PPT: { label: 'PPT', bgColor: '#E53935', labelColor: '#C62828' },
+  PPTX: { label: 'PPTX', bgColor: '#E53935', labelColor: '#C62828' },
+  AUT: { label: 'AUT', bgColor: '#D81B60', labelColor: '#C2185B' },
+
+  // Azules
+  DOC: { label: 'DOCX', bgColor: '#2196F3', labelColor: '#1976D2' },
+  DOCX: { label: 'DOCX', bgColor: '#2196F3', labelColor: '#1976D2' },
+  GIF: { label: 'GIF', bgColor: '#1E88E5', labelColor: '#1565C0' },
+  XLS: { label: 'XLS', bgColor: '#29B6F6', labelColor: '#039BE5' },
+  XLSX: { label: 'XLSX', bgColor: '#29B6F6', labelColor: '#039BE5' },
+  MP4: { label: 'MP4', bgColor: '#03A9F4', labelColor: '#0288D1' },
+
+  // Verdes
+  CSS: { label: 'CSS', bgColor: '#4CAF50', labelColor: '#388E3C' },
+  XLS_GREEN: { label: 'XLS', bgColor: '#66BB6A', labelColor: '#43A047' }, // Alternativa para XLS
+  CAD: { label: 'CAD', bgColor: '#81C784', labelColor: '#689F38' },
+  DB: { label: 'DB', bgColor: '#4CAF50', labelColor: '#2E7D32' },
+  
+  // Amarillos y Naranjas
+  JS: { label: 'JS', bgColor: '#FFEB3B', labelColor: '#FBC02D' },
+  ISO: { label: 'ISO', bgColor: '#FFC107', labelColor: '#FFA000' },
+  PSD: { label: 'PSD', bgColor: '#FF9800', labelColor: '#F57C00' },
+  
+  // Grises y Negros
+  AI: { label: 'AI', bgColor: '#78909C', labelColor: '#546E7A' },
+  PS: { label: 'PS', bgColor: '#9E9E9E', labelColor: '#616161' },
+  RSS: { label: 'RSS', bgColor: '#E53935', labelColor: '#D32F2F' },
+  
+  // Morados y Violetas
+  SVG: { label: 'SVG', bgColor: '#E53935', labelColor: '#D32F2F' },
+  BMP: { label: 'BMP', bgColor: '#5E35B1', labelColor: '#4527A0' },
+  
+  // Marrones
+  PNG: { label: 'PNG', bgColor: '#6D4C41', labelColor: '#4E342E' },
+
+  // Otros
+  HTM: { label: 'HTM', bgColor: '#009688', labelColor: '#00796B' },
+  HTML: { label: 'HTML', bgColor: '#009688', labelColor: '#00796B' },
+  SWF: { label: 'SWF', bgColor: '#4CAF50', labelColor: '#388E3C' },
+  YOUTUBE: { label: 'YT', bgColor: '#D32F2F', labelColor: '#C62828' },
+  DEFAULT: { label: 'FILE', bgColor: '#90A4AE', labelColor: '#607D8B' },
 };
 
 
