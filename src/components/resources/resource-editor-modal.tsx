@@ -1,4 +1,3 @@
-
 // src/components/resources/resource-editor-modal.tsx
 'use client';
 
@@ -13,13 +12,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogClose
 } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Save, UploadCloud, FileWarning, Link as LinkIcon, Image as ImageIcon, XCircle, Trash2, Replace, Calendar as CalendarIcon, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Save, UploadCloud, FileWarning, Link as LinkIcon, Image as ImageIcon, XCircle, Trash2, Replace, Calendar as CalendarIcon, Eye, EyeOff, X } from 'lucide-react';
 import type { AppResourceType, User as AppUser } from '@/types';
 import { UploadArea } from '../ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
@@ -290,13 +290,13 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                           <div className="space-y-1.5"><Label>Compartir con</Label><Input placeholder="Buscar usuarios..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
                           <ScrollArea className="h-32 border rounded-md p-2">
                               {allUsers.filter(u => u.id !== user?.id).map(u => (
-                                  <div key={u.id} className="flex items-center space-x-3 py-1"><Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={(c) => setSharedWithUserIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{u.name?.charAt(0)}</AvatarFallback></Avatar>{u.name}</Label></div>
+                                  <div key={u.id} className="flex items-center space-x-3 py-1"><Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={(c) => setSharedWithUserIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(u.name)}</AvatarFallback></Avatar>{u.name}</Label></div>
                               ))}
                           </ScrollArea></div>
                       )}
                       {resource && (
                         <div className="space-y-4 pt-4 border-t">
-                          <Label>Seguridad</Label>
+                          <Label className="font-semibold">Seguridad con PIN</Label>
                             <div className="relative">
                               <Input type={showPin ? "text" : "password"} value={pin} onChange={(e) => setPin(e.target.value)} placeholder="Nuevo PIN (4-8 dígitos)"/>
                               <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => setShowPin(!showPin)}>
@@ -308,7 +308,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                             </div>
 
                           <div className="flex gap-2">
-                              <Button type="button" onClick={handleSetPin} disabled={isSettingPin || !pin || pin !== confirmPin} className="w-full">Establecer PIN</Button>
+                              <Button type="button" onClick={handleSetPin} disabled={isSettingPin || !pin || pin.length < 4 || pin !== confirmPin} className="w-full">Establecer PIN</Button>
                               {resource.hasPin && <Button type="button" variant="destructive" onClick={handleRemovePin} disabled={isSettingPin} className="w-full">Eliminar PIN</Button>}
                           </div>
                         </div>
@@ -318,7 +318,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             </div>
             <DialogFooter className="p-4 sm:p-6 border-t flex-shrink-0 flex flex-row sm:justify-end gap-2">
                 <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
-                <Button type="submit" form="resource-form" disabled={isSaving || isUploading}>
+                <Button type="submit" form="resource-form" disabled={isSaving || isUploading || !title}>
                     {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                     Guardar
                 </Button>
@@ -327,3 +327,4 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     </Dialog>
   );
 }
+```
