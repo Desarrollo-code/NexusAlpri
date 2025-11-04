@@ -50,7 +50,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   const { toast } = useToast();
   const { user, settings } = useAuth();
   
-  // States for form fields
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [content, setContent] = useState('');
@@ -62,18 +61,15 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   const [resourceType, setResourceType] = useState<AppResourceType['type']>('DOCUMENT');
   const [externalLink, setExternalLink] = useState('');
   const [currentUrl, setCurrentUrl] = useState<string | null>(null);
-
-  // States for UI logic
+  
   const [isSaving, setIsSaving] = useState(false);
   const [allUsers, setAllUsers] = useState<AppUser[]>([]);
   const [userSearch, setUserSearch] = useState('');
   
-  // State for file uploads
   const [localFile, setLocalFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  // States for PIN management
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [showPin, setShowPin] = useState(false);
@@ -99,7 +95,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   useEffect(() => {
     if (isOpen) {
       if (resource) {
-        setTitle(resource.title);
+        setTitle(resource.title || (localFile ? localFile.name.split('.').slice(0, -1).join('.') : ''));
         setDescription(resource.description || '');
         setContent(resource.content || '');
         setObservations(resource.observations || '');
@@ -120,11 +116,11 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             .then(data => setAllUsers(data.users || []));
       }
     }
-  }, [resource, isOpen, resetForm, settings, user]);
+  }, [resource, isOpen, resetForm, settings, user, localFile]);
 
   const handleFileSelect = (file: File | null) => {
     setLocalFile(file);
-    if(file && !title) {
+    if (file && !title) {
       const fileNameWithoutExt = file.name.split('.').slice(0, -1).join('.');
       setTitle(fileNameWithoutExt);
     }
@@ -163,7 +159,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             setIsSettingPin(false);
         }
     }
-
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -222,7 +217,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] sm:max-w-lg max-h-[90vh] flex flex-col p-0 gap-0 rounded-2xl">
+      <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0 rounded-2xl">
         <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
           <DialogTitle>{resource ? 'Editar Recurso' : 'Subir Nuevo Recurso'}</DialogTitle>
           <DialogDescription>{resource ? 'Modifica los detalles de tu recurso.' : 'Añade un nuevo archivo o enlace a la biblioteca.'}</DialogDescription>
@@ -302,7 +297,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
               )}
           </form>
         </ScrollArea>
-        <DialogFooter className="p-4 sm:p-6 border-t flex-shrink-0 flex flex-row sm:justify-end gap-2">
+        <DialogFooter className="p-4 sm:p-6 border-t flex-shrink-0">
           <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
           <Button type="submit" form="resource-form" disabled={isSaving || isUploading || !title || (resourceType === 'EXTERNAL_LINK' && !externalLink) || (resourceType !== 'EXTERNAL_LINK' && !localFile && !currentUrl)}>
               {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
