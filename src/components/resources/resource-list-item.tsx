@@ -83,7 +83,7 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
 
     return (
         <TableRow ref={setNodeRef} onClick={onSelect} className={cn("cursor-pointer", isDragging && 'opacity-50')}>
-             <TableCell className="w-[45%]">
+             <TableCell className="w-[35%]">
                 <div className="flex items-center gap-4">
                     <div {...listeners} {...attributes} className="p-1 cursor-grab touch-none">
                         <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null} />
@@ -94,28 +94,29 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
                     </div>
                 </div>
             </TableCell>
-            <TableCell className="w-[15%] hidden sm:table-cell">
+            <TableCell className="w-[20%] hidden md:table-cell">
                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Avatar className="h-6 w-6"><AvatarImage src={resource.uploader?.avatar || undefined} /><AvatarFallback className="text-xs"><Identicon userId={resource.uploaderId || ''} /></AvatarFallback></Avatar>
                     <span className="truncate">{resource.uploaderName}</span>
                 </div>
             </TableCell>
-            <TableCell className="w-[15%] hidden md:table-cell">
+            <TableCell className="w-[15%] hidden lg:table-cell">
                 <Badge variant="outline">{resource.category}</Badge>
             </TableCell>
             <TableCell className="w-[15%] hidden lg:table-cell text-sm text-muted-foreground">
                 {new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
             </TableCell>
+             <TableCell className="w-[5%] hidden md:table-cell">
+                <div className="flex items-center justify-center">
+                    {resource.ispublic ? (
+                        <TooltipProvider><Tooltip><TooltipTrigger><Globe className="h-4 w-4 text-green-500"/></TooltipTrigger><TooltipContent><p>Público</p></TooltipContent></Tooltip></TooltipProvider>
+                    ) : (
+                        <TooltipProvider><Tooltip><TooltipTrigger><Users className="h-4 w-4 text-blue-500"/></TooltipTrigger><TooltipContent><p>Compartido ({resource.sharedWith?.length || 0})</p></TooltipContent></Tooltip></TooltipProvider>
+                    )}
+                </div>
+             </TableCell>
             <TableCell className="w-[10%] text-right">
                 <div className="flex items-center justify-end gap-2">
-                     <div className="flex items-center gap-3 text-muted-foreground">
-                        {resource.ispublic ? (
-                            <TooltipProvider><Tooltip><TooltipTrigger><Globe className="h-4 w-4 text-green-500"/></TooltipTrigger><TooltipContent><p>Público</p></TooltipContent></Tooltip></TooltipProvider>
-                        ) : (
-                            <TooltipProvider><Tooltip><TooltipTrigger><Users className="h-4 w-4 text-blue-500"/></TooltipTrigger><TooltipContent><p>Compartido ({resource.sharedWith?.length || 0})</p></TooltipContent></Tooltip></TooltipProvider>
-                        )}
-                        {resource.hasPin && <TooltipProvider><Tooltip><TooltipTrigger><Lock className="h-4 w-4 text-amber-500"/></TooltipTrigger><TooltipContent><p>Protegido con PIN</p></TooltipContent></Tooltip></TooltipProvider>}
-                    </div>
                     {canModify && (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>

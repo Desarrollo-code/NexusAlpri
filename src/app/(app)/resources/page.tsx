@@ -293,11 +293,23 @@ export default function ResourcesPage() {
                                     {files.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={false} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onNavigate={() => {}} />)}
                                 </div>
                             ) : (
-                               <div className="flex flex-col items-center">
-                                    <div className="w-full space-y-3">
+                               <Card>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="w-[40%]">Nombre</TableHead>
+                                            <TableHead className="w-[15%] hidden md:table-cell">Propietario</TableHead>
+                                            <TableHead className="w-[15%] hidden lg:table-cell">Categoría</TableHead>
+                                            <TableHead className="w-[15%] hidden lg:table-cell">Fecha</TableHead>
+                                            <TableHead className="w-[5%] hidden md:table-cell">Estado</TableHead>
+                                            <TableHead className="w-[10%] text-right"></TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
                                       {files.map(res => <ResourceListItem key={res.id} resource={res} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} />)}
-                                    </div>
-                               </div>
+                                    </TableBody>
+                                </Table>
+                               </Card>
                             )}
                         </section>
                     )}
