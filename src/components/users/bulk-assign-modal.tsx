@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Briefcase } from 'lucide-react';
 import type { Process } from '@/types';
+import { ScrollArea } from '../ui/scroll-area';
 
 interface BulkAssignModalProps {
     isOpen: boolean;
@@ -74,7 +75,7 @@ export function BulkAssignModal({ isOpen, onClose, onSave, userIds, processes }:
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent>
+            <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>Asignar Proceso en Lote</DialogTitle>
                     <DialogDescription>
@@ -82,22 +83,24 @@ export function BulkAssignModal({ isOpen, onClose, onSave, userIds, processes }:
                     </DialogDescription>
                 </DialogHeader>
                 <div className="py-4">
-                    <Select value={targetProcessId || 'unassigned'} onValueChange={v => setTargetProcessId(v)}>
+                     <Select value={targetProcessId || 'unassigned'} onValueChange={v => setTargetProcessId(v)}>
                         <SelectTrigger><SelectValue placeholder="Seleccionar proceso..." /></SelectTrigger>
                         <SelectContent>
-                             <SelectItem value="unassigned">Sin Asignar</SelectItem>
-                             {flattenedProcesses.map(p => (
-                                 <SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem` }}>
-                                     {p.name}
-                                 </SelectItem>
-                             ))}
+                            <ScrollArea className="max-h-60">
+                                 <SelectItem value="unassigned">Sin Asignar</SelectItem>
+                                 {flattenedProcesses.map(p => (
+                                     <SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem` }}>
+                                         {p.name}
+                                     </SelectItem>
+                                 ))}
+                             </ScrollArea>
                         </SelectContent>
                     </Select>
                 </div>
                 <DialogFooter>
                     <Button variant="outline" onClick={onClose}>Cancelar</Button>
                     <Button onClick={handleBulkAssign} disabled={isSaving || !targetProcessId}>
-                        {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Briefcase className="mr-2 h-4 w-4" />}
                         Asignar
                     </Button>
                 </DialogFooter>
