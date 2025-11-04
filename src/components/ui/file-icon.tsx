@@ -12,30 +12,25 @@ interface FileIconProps {
 }
 
 export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUrl }) => {
-  const { label, bgColor, textColor } = getFileTypeDetails(type);
+  const { label, bgColor, labelColor } = getFileTypeDetails(type);
 
   return (
     <div className={cn("relative w-20 h-24", className)}>
       <div
         className={cn(
           "w-full h-full rounded-lg shadow-sm overflow-hidden relative",
-          "before:absolute before:top-0 before:right-0 before:border-l-[24px] before:border-b-[24px]",
-          "before:border-l-transparent before:border-b-white/80 dark:before:border-b-black/50 before:rounded-bl-lg before:shadow-[-2px_2px_4px_rgba(0,0,0,0.05)]"
         )}
         style={{ backgroundColor: bgColor }}
       >
-        {thumbnailUrl ? (
-          <div className="relative w-full h-full">
+        {thumbnailUrl && (
             <Image src={thumbnailUrl} alt={label} fill className="object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-          </div>
-        ) : null}
-        
-        <div className={cn(
-          "absolute bottom-2 left-2 right-2 p-1.5 rounded-md text-center",
-          "bg-white/70 backdrop-blur-sm border border-black/5"
-        )}>
-          <span className={cn("text-xs font-bold uppercase tracking-wider")} style={{ color: textColor }}>{label}</span>
+        )}
+        <div 
+          className="absolute top-0 right-0 border-l-[24px] border-b-[24px] border-l-transparent" 
+          style={{ borderBottomColor: 'rgba(0,0,0,0.2)'}}
+        />
+        <div className="absolute bottom-0 left-0 right-0 h-8 px-2 flex items-center justify-center" style={{ backgroundColor: labelColor }}>
+          <span className="text-white text-xs font-bold uppercase tracking-wider">{label}</span>
         </div>
       </div>
     </div>

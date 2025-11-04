@@ -4,48 +4,44 @@ import type { AppResourceType } from '@/types';
 import { FolderIcon, FileQuestion, Video as VideoIcon, FileText as FileTextIcon, Info, Notebook, Shield, Link as LinkIcon, Archive as ZipIcon, FilePen } from 'lucide-react';
 import { cn } from './utils';
 
-// --- NUEVA LÓGICA PARA ICONOS DE ARCHIVO ESTILIZADOS ---
 export interface FileTypeDetails {
   label: string;
   bgColor: string;
-  textColor: string;
+  labelColor: string;
 }
 
-// Paletas de colores sólidos y sutiles para los fondos
 const fileTypeMap: Record<string, FileTypeDetails> = {
-  // Documentos
-  PDF: { label: 'PDF', bgColor: 'hsl(0, 100%, 98%)', textColor: 'hsl(0, 70%, 50%)' },
-  DOCX: { label: 'DOCX', bgColor: 'hsl(220, 100%, 98%)', textColor: 'hsl(220, 70%, 55%)' },
-  DOC: { label: 'DOC', bgColor: 'hsl(220, 100%, 98%)', textColor: 'hsl(220, 70%, 55%)' },
-  PPT: { label: 'PPT', bgColor: 'hsl(25, 100%, 97%)', textColor: 'hsl(25, 85%, 55%)' },
-  XLS: { label: 'XLS', bgColor: 'hsl(145, 80%, 97%)', textColor: 'hsl(145, 63%, 42%)' },
-  // Imágenes
-  PNG: { label: 'PNG', bgColor: 'hsl(225, 20%, 97%)', textColor: 'hsl(225, 10%, 40%)' },
-  JPG: { label: 'JPG', bgColor: 'hsl(225, 20%, 97%)', textColor: 'hsl(225, 10%, 40%)' },
-  JPEG: { label: 'JPEG', bgColor: 'hsl(225, 20%, 97%)', textColor: 'hsl(225, 10%, 40%)' },
-  GIF: { label: 'GIF', bgColor: 'hsl(206, 95%, 97%)', textColor: 'hsl(206, 85%, 55%)' },
-  SVG: { label: 'SVG', bgColor: 'hsl(346, 72%, 97%)', textColor: 'hsl(346, 62%, 55%)' },
-  WEBP: { label: 'WEBP', bgColor: 'hsl(160, 60%, 97%)', textColor: 'hsl(160, 50%, 50%)' },
-  // Video
-  MP4: { label: 'MP4', bgColor: 'hsl(262, 74%, 98%)', textColor: 'hsl(262, 64%, 60%)' },
-  YOUTUBE: { label: 'YOUTUBE', bgColor: 'hsl(0, 100%, 98%)', textColor: 'hsl(0, 70%, 50%)' },
-  // Archivos
-  ZIP: { label: 'ZIP', bgColor: 'hsl(220, 10%, 97%)', textColor: 'hsl(220, 5%, 45%)' },
-  ISO: { label: 'ISO', bgColor: 'hsl(60, 90%, 97%)', textColor: 'hsl(60, 80%, 45%)' },
-  // Código y Diseño
-  HTML: { label: 'HTML', bgColor: 'hsl(25, 95%, 97%)', textColor: 'hsl(25, 75%, 55%)' },
-  CSS: { label: 'CSS', bgColor: 'hsl(221, 83%, 97%)', textColor: 'hsl(221, 63%, 55%)' },
-  AI: { label: 'AI', bgColor: 'hsl(30, 80%, 97%)', textColor: 'hsl(30, 70%, 55%)' },
-  PSD: { label: 'PSD', bgColor: 'hsl(206, 95%, 97%)', textColor: 'hsl(206, 85%, 55%)' },
-  CAD: { label: 'CAD', bgColor: 'hsl(225, 20%, 97%)', textColor: 'hsl(225, 10%, 40%)' },
-  // Otros
-  DB: { label: 'DB', bgColor: 'hsl(180, 60%, 97%)', textColor: 'hsl(180, 50%, 50%)' },
-  DEFAULT: { label: 'FILE', bgColor: 'hsl(220, 10%, 97%)', textColor: 'hsl(220, 5%, 45%)' },
+  // Colores basados en la imagen proporcionada
+  PDF: { label: 'PDF', bgColor: '#e53935', labelColor: '#c62828' }, // Rojo
+  DOCX: { label: 'DOCX', bgColor: '#3949ab', labelColor: '#283593' }, // Indigo
+  DOC: { label: 'DOC', bgColor: '#3949ab', labelColor: '#283593' }, // Indigo
+  PPT: { label: 'PPT', bgColor: '#d81b60', labelColor: '#c2185b' }, // Rosa
+  PPTX: { label: 'PPTX', bgColor: '#d81b60', labelColor: '#c2185b' },
+  XLS: { label: 'XLS', bgColor: '#00897b', labelColor: '#00796b' }, // Verde azulado
+  XLSX: { label: 'XLSX', bgColor: '#00897b', labelColor: '#00796b' },
+  PNG: { label: 'PNG', bgColor: '#546e7a', labelColor: '#455a64' }, // Gris azulado
+  JPG: { label: 'JPG', bgColor: '#546e7a', labelColor: '#455a64' },
+  JPEG: { label: 'JPEG', bgColor: '#546e7a', labelColor: '#455a64' },
+  SVG: { label: 'SVG', bgColor: '#fb8c00', labelColor: '#f57c00' }, // Naranja
+  GIF: { label: 'GIF', bgColor: '#1e88e5', labelColor: '#1565c0' }, // Azul
+  MP4: { label: 'MP4', bgColor: '#039be5', labelColor: '#0288d1' }, // Celeste
+  WEBM: { label: 'WEBM', bgColor: '#039be5', labelColor: '#0288d1' },
+  YOUTUBE: { label: 'YT', bgColor: '#e53935', labelColor: '#c62828' },
+  ZIP: { label: 'ZIP', bgColor: '#757575', labelColor: '#616161' }, // Gris
+  HTML: { label: 'HTM', bgColor: '#00897b', labelColor: '#00796b' },
+  CSS: { label: 'CSS', bgColor: '#7cb342', labelColor: '#689f38' },
+  AI: { label: 'AI', bgColor: '#546e7a', labelColor: '#455a64' },
+  PSD: { label: 'PSD', bgColor: '#3949ab', labelColor: '#283593' },
+  DB: { label: 'DB', bgColor: '#43a047', labelColor: '#388e3c' },
+  BMP: { label: 'BMP', bgColor-dark: 'bg-purple-700', labelColor: '#6a1b9a' },
+  ISO: { label: 'ISO', bgColor: '#fb8c00', labelColor: '#f57c00' },
+  CAD: { label: 'CAD', bgColor: '#00897b', labelColor: '#00796b' },
+  DEFAULT: { label: 'FILE', bgColor: '#757575', labelColor: '#616161' },
 };
 
 export const getFileTypeDetails = (type: string): FileTypeDetails => {
+  if (!type) return fileTypeMap['DEFAULT'];
   const upperType = type.toUpperCase();
-  // Extraer extensión de un nombre de archivo
   const extension = upperType.split('.').pop() || 'DEFAULT';
   return fileTypeMap[extension] || fileTypeMap['DEFAULT'];
 };
