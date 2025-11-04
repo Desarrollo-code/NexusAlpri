@@ -244,7 +244,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                     </>
                   ) : (
                     <div className="flex items-center justify-between p-2 rounded-lg border bg-background min-w-0">
-                      <div className="flex items-center gap-3 overflow-hidden flex-shrink-0">
+                      <div className="flex items-center gap-3 overflow-hidden">
                         <FileIcon displayMode="list" type={currentUrl.split('.').pop() || 'file'} />
                         <span className="text-sm font-medium truncate">{title}</span>
                       </div>
@@ -274,7 +274,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                   <div className="space-y-1.5"><Label>Compartir con</Label><Input placeholder="Buscar usuarios..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
                   <ScrollArea className="h-32 border rounded-md p-2">
                       {filteredUsers.filter(u => u.id !== user?.id).map(u => (
-                          <div key={u.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={(c) => setSharedWithUserIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(u.name)}</AvatarFallback></Avatar>{u.name}</Label></div>
+                          <div key={u.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={(c) => setSharedWithUserIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{u.name?.charAt(0)}</AvatarFallback></Avatar>{u.name}</Label></div>
                       ))}
                   </ScrollArea></div>
               )}
@@ -297,7 +297,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
               )}
           </form>
         </ScrollArea>
-        <DialogFooter className="p-6 pt-4 border-t flex-shrink-0">
+        <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex flex-row sm:justify-end gap-2">
           <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
           <Button type="submit" form="resource-form" disabled={isSaving || isUploading || !title || (resourceType === 'EXTERNAL_LINK' && !externalLink) || (resourceType !== 'EXTERNAL_LINK' && !localFile && !currentUrl)}>
               {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
