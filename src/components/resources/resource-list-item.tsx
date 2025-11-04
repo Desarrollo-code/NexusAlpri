@@ -36,11 +36,11 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
         id: resource.id,
         data: { type: 'resource', resource: resource },
-        disabled: !canModify || resource.status === 'ARCHIVED',
+        disabled: !canModify || resource.status === 'ACTIVE',
     });
 
     const Thumbnail = () => {
-        return <FileIcon type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null} />;
+        return <FileIcon type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null} className="w-12 h-auto" />;
     };
 
     return (
@@ -52,23 +52,24 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
                 resource.status === 'ARCHIVED' && 'opacity-60'
             )}
         >
-            <div 
-                className="col-span-6 flex items-center gap-4 cursor-pointer"
-                onClick={onSelect}
-            >
-                {canModify && resource.status === 'ACTIVE' && <div {...listeners} {...attributes} className="p-1 cursor-grab touch-none"><GripVertical className="h-4 w-4 text-muted-foreground"/></div>}
-                <div className="flex-shrink-0 flex items-center justify-center">
+            <div className="col-span-12 md:col-span-5 flex items-center gap-3 cursor-pointer" onClick={onSelect}>
+                 {canModify && resource.status === 'ACTIVE' ? (
+                    <div {...listeners} {...attributes} className="p-1 cursor-grab touch-none text-muted-foreground">
+                        <GripVertical className="h-5 w-5" />
+                    </div>
+                ) : (
+                    <div className="w-7 h-7" /> // Placeholder to keep alignment
+                )}
+                 <div className="flex-shrink-0">
                     <Thumbnail />
                 </div>
-                 <div 
-                    className="flex-grow overflow-hidden min-w-0"
-                 >
+                 <div className="flex-grow overflow-hidden min-w-0">
                     <p className="font-semibold truncate text-foreground">{resource.title}</p>
                     <p className="text-xs text-muted-foreground truncate">{resource.description || 'Sin descripción'}</p>
                 </div>
             </div>
 
-            <div className="col-span-2 hidden md:flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="hidden md:col-span-2 md:flex items-center gap-2 text-sm text-muted-foreground">
                 <Avatar className="h-6 w-6">
                     <AvatarImage src={resource.uploader?.avatar || undefined} />
                     <AvatarFallback className="text-xs"><Identicon userId={resource.uploaderId || ''} /></AvatarFallback>
@@ -76,15 +77,17 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
                 <span className="truncate">{resource.uploaderName}</span>
             </div>
             
-            <div className="col-span-2 hidden lg:block text-sm text-muted-foreground">
+            <div className="hidden lg:col-span-2 lg:block text-sm text-muted-foreground">
                 {new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
             </div>
 
-             <div className="col-span-1 hidden md:flex items-center gap-2 text-muted-foreground">
+             <div className="hidden md:col-span-2 md:flex items-center gap-2 text-muted-foreground">
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
+                           <div className="flex items-center gap-1.5">
                             {resource.ispublic ? <Globe className="h-4 w-4 text-green-500" /> : <Users className="h-4 w-4 text-blue-500"/>}
+                           </div>
                         </TooltipTrigger>
                         <TooltipContent>
                            <p>{resource.ispublic ? 'Público' : 'Privado'}</p>
@@ -101,7 +104,7 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
                 </TooltipProvider>
             </div>
             
-            <div className="col-span-full md:col-span-1 text-right">
+            <div className="col-span-12 md:col-span-1 text-right">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Opciones para ${resource.title}`} onClick={(e) => e.stopPropagation()}>
