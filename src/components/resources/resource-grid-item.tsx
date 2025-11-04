@@ -68,7 +68,7 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
         const youtubeId = getYoutubeVideoId(resource.url);
         const fileExtension = youtubeId ? 'youtube' : (resource.fileType?.split('/')[1] || resource.url?.split('.').pop() || 'file');
         
-        return <FileIcon type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null} />;
+        return <FileIcon displayMode="grid" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null} />;
     };
 
     const setNodeRef = (node: HTMLElement | null) => {
