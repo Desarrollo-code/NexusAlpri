@@ -293,22 +293,11 @@ export default function ResourcesPage() {
                                     {files.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={false} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onNavigate={() => {}} />)}
                                 </div>
                             ) : (
-                               <Card>
-                                  <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="w-[45%]">Nombre</TableHead>
-                                            <TableHead className="w-[15%] hidden sm:table-cell">Propietario</TableHead>
-                                            <TableHead className="w-[15%] hidden md:table-cell">Categoría</TableHead>
-                                            <TableHead className="w-[15%] hidden lg:table-cell">Fecha</TableHead>
-                                            <TableHead className="w-[10%] text-right"></TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                       {files.map(res => <ResourceListItem key={res.id} resource={res} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} />)}
-                                    </TableBody>
-                                  </Table>
-                                </Card>
+                               <div className="flex flex-col items-center">
+                                    <div className="w-full space-y-3">
+                                      {files.map(res => <ResourceListItem key={res.id} resource={res} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} />)}
+                                    </div>
+                               </div>
                             )}
                         </section>
                     )}

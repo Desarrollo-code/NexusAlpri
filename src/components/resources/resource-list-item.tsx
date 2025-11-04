@@ -50,13 +50,26 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
     
      if (isMobile) {
         return (
-            <Card onClick={onSelect} className="w-full flex flex-col">
-                <CardHeader className="flex flex-row items-center gap-4 p-3">
+            <Card onClick={onSelect} className="w-full flex flex-col shadow-sm">
+                <CardHeader className="flex flex-row items-center gap-4 p-3 relative">
                     <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null} />
                     <div className="flex-grow min-w-0">
                        <p className="font-semibold truncate text-foreground">{resource.title}</p>
                        <p className="text-xs text-muted-foreground">{resource.description || 'Sin descripción'}</p>
                     </div>
+                    {canModify && (
+                        <div className="absolute top-1 right-1">
+                             <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4"/></Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
+                                    <DropdownMenuItem onSelect={(e) => handleAction(e, () => onEdit(resource))}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={(e) => handleAction(e, () => onDelete(resource))} className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    )}
                 </CardHeader>
                 <CardContent className="px-3 pb-3 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
                     <div className="flex items-center gap-2"><User className="h-4 w-4 text-muted-foreground"/> <span>{resource.uploaderName}</span></div>

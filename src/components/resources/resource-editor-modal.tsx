@@ -227,7 +227,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                 <DialogDescription>{resource ? 'Modifica los detalles de tu recurso.' : 'Añade un nuevo archivo, enlace o documento a la biblioteca.'}</DialogDescription>
             </DialogHeader>
             <form id="resource-form" onSubmit={handleSave}>
-                <ScrollArea className="max-h-[60vh] p-1 pr-4">
+                 <ScrollArea className="max-h-[60vh] p-1 pr-4">
                     <div className="space-y-4 pr-2">
                       {!resource && (
                          <RadioGroup defaultValue="DOCUMENT" onValueChange={(v) => {setResourceType(v as any); setLocalFile(null); setExternalLink('');}} className="grid grid-cols-2 gap-4">
@@ -253,7 +253,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                         {!isPublic && (
                             <div className="space-y-2"><Label>Compartir con</Label><Input placeholder="Buscar usuarios..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
                             <ScrollArea className="h-32 border rounded-md p-2">
-                                {filteredUsers.map(u => (
+                                {allUsers.filter(u => u.id !== user?.id).map(u => (
                                     <div key={u.id} className="flex items-center space-x-3 py-1"><Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={(c) => setSharedWithUserIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{u.name?.charAt(0)}</AvatarFallback></Avatar>{u.name}</Label></div>
                                 ))}
                             </ScrollArea></div>
