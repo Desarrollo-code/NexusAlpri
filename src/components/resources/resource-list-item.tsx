@@ -13,10 +13,7 @@ import { Identicon } from '../ui/identicon';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '../ui/tooltip';
 import { useDraggable } from '@dnd-kit/core';
 import { FileIcon } from '../ui/file-icon';
-import Image from 'next/image';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
-import { Table, TableBody, TableCell, TableHeader, TableRow } from '../ui/table';
-import { Card } from '../ui/card';
 
 interface ResourceListItemProps {
     resource: AppResourceType;
@@ -42,7 +39,7 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
     });
 
     const Thumbnail = () => {
-        return <FileIcon type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null} className="w-10 h-auto" />;
+        return <FileIcon type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null} className="w-10 h-auto flex-shrink-0" />;
     };
 
     return (
@@ -54,6 +51,7 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
             )}
         >
             <div className="flex items-center p-2 transition-colors hover:bg-muted/50 rounded-lg">
+                {/* Drag Handle */}
                 <div 
                     {...attributes} 
                     {...listeners} 
@@ -65,7 +63,8 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
                     <GripVertical className="h-5 w-5" />
                 </div>
                 
-                <div className="flex items-center gap-3 flex-grow cursor-pointer" onClick={onSelect}>
+                {/* Main Content */}
+                <div className="flex items-center gap-3 flex-grow cursor-pointer min-w-0" onClick={onSelect}>
                     <Thumbnail />
                     <div className="flex-grow min-w-0">
                         <p className="font-semibold truncate text-foreground text-sm">{resource.title}</p>
@@ -73,6 +72,7 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
                     </div>
                 </div>
 
+                {/* Metadata columns */}
                 <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground w-48 shrink-0 px-4">
                     <Avatar className="h-6 w-6">
                         <AvatarImage src={resource.uploader?.avatar || undefined} />
@@ -108,6 +108,7 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
                     </TooltipProvider>
                 </div>
                 
+                {/* Actions */}
                 <div className="shrink-0 px-2">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
