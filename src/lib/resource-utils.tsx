@@ -11,35 +11,36 @@ export interface FileTypeDetails {
   textColor: string;
 }
 
+// Paletas de colores sólidos y sutiles para los fondos
 const fileTypeMap: Record<string, FileTypeDetails> = {
   // Documentos
-  PDF: { label: 'PDF', bgColor: 'hsl(0, 72%, 96%)', textColor: 'hsl(0, 63%, 45%)' }, // bg-red-50, text-red-700
-  DOCX: { label: 'DOCX', bgColor: 'hsl(221, 83%, 97%)', textColor: 'hsl(221, 63%, 45%)' },// bg-blue-50, text-blue-700
-  DOC: { label: 'DOC', bgColor: 'hsl(221, 83%, 97%)', textColor: 'hsl(221, 63%, 45%)' },
-  PPT: { label: 'PPT', bgColor: 'hsl(25, 95%, 96%)', textColor: 'hsl(25, 75%, 45%)' }, // bg-orange-50, text-orange-700
-  XLS: { label: 'XLS', bgColor: 'hsl(145, 63%, 96%)', textColor: 'hsl(145, 53%, 35%)' }, // bg-green-50, text-green-800
+  PDF: { label: 'PDF', bgColor: 'hsl(0, 100%, 98%)', textColor: 'hsl(0, 70%, 50%)' },
+  DOCX: { label: 'DOCX', bgColor: 'hsl(220, 100%, 98%)', textColor: 'hsl(220, 70%, 55%)' },
+  DOC: { label: 'DOC', bgColor: 'hsl(220, 100%, 98%)', textColor: 'hsl(220, 70%, 55%)' },
+  PPT: { label: 'PPT', bgColor: 'hsl(25, 100%, 97%)', textColor: 'hsl(25, 85%, 55%)' },
+  XLS: { label: 'XLS', bgColor: 'hsl(145, 80%, 97%)', textColor: 'hsl(145, 63%, 42%)' },
   // Imágenes
-  PNG: { label: 'PNG', bgColor: 'hsl(225, 20%, 96%)', textColor: 'hsl(225, 10%, 40%)' }, // bg-slate-100, text-slate-600
-  JPG: { label: 'JPG', bgColor: 'hsl(225, 20%, 96%)', textColor: 'hsl(225, 10%, 40%)' },
-  JPEG: { label: 'JPEG', bgColor: 'hsl(225, 20%, 96%)', textColor: 'hsl(225, 10%, 40%)' },
-  GIF: { label: 'GIF', bgColor: 'hsl(206, 95%, 96%)', textColor: 'hsl(206, 85%, 45%)' }, // bg-sky-50, text-sky-700
-  SVG: { label: 'SVG', bgColor: 'hsl(346, 72%, 96%)', textColor: 'hsl(346, 62%, 45%)' }, // bg-pink-50, text-pink-700
-  WEBP: { label: 'WEBP', bgColor: 'hsl(160, 60%, 96%)', textColor: 'hsl(160, 50%, 40%)' },// bg-emerald-50, text-emerald-700
+  PNG: { label: 'PNG', bgColor: 'hsl(225, 20%, 97%)', textColor: 'hsl(225, 10%, 40%)' },
+  JPG: { label: 'JPG', bgColor: 'hsl(225, 20%, 97%)', textColor: 'hsl(225, 10%, 40%)' },
+  JPEG: { label: 'JPEG', bgColor: 'hsl(225, 20%, 97%)', textColor: 'hsl(225, 10%, 40%)' },
+  GIF: { label: 'GIF', bgColor: 'hsl(206, 95%, 97%)', textColor: 'hsl(206, 85%, 55%)' },
+  SVG: { label: 'SVG', bgColor: 'hsl(346, 72%, 97%)', textColor: 'hsl(346, 62%, 55%)' },
+  WEBP: { label: 'WEBP', bgColor: 'hsl(160, 60%, 97%)', textColor: 'hsl(160, 50%, 50%)' },
   // Video
-  MP4: { label: 'MP4', bgColor: 'hsl(262, 74%, 97%)', textColor: 'hsl(262, 64%, 50%)' }, // bg-violet-50, text-violet-700
-  YOUTUBE: { label: 'YOUTUBE', bgColor: 'hsl(0, 63%, 97%)', textColor: 'hsl(0, 63%, 45%)' }, // bg-red-50, text-red-700
+  MP4: { label: 'MP4', bgColor: 'hsl(262, 74%, 98%)', textColor: 'hsl(262, 64%, 60%)' },
+  YOUTUBE: { label: 'YOUTUBE', bgColor: 'hsl(0, 100%, 98%)', textColor: 'hsl(0, 70%, 50%)' },
   // Archivos
-  ZIP: { label: 'ZIP', bgColor: 'hsl(220, 10%, 96%)', textColor: 'hsl(220, 5%, 45%)' }, // bg-gray-100, text-gray-600
-  ISO: { label: 'ISO', bgColor: 'hsl(60, 90%, 96%)', textColor: 'hsl(60, 80%, 35%)' }, // bg-yellow-50, text-yellow-800
+  ZIP: { label: 'ZIP', bgColor: 'hsl(220, 10%, 97%)', textColor: 'hsl(220, 5%, 45%)' },
+  ISO: { label: 'ISO', bgColor: 'hsl(60, 90%, 97%)', textColor: 'hsl(60, 80%, 45%)' },
   // Código y Diseño
-  HTML: { label: 'HTML', bgColor: 'hsl(25, 95%, 96%)', textColor: 'hsl(25, 75%, 45%)' },// bg-orange-50, text-orange-700
-  CSS: { label: 'CSS', bgColor: 'hsl(221, 83%, 97%)', textColor: 'hsl(221, 63%, 45%)' },// bg-blue-50, text-blue-700
-  AI: { label: 'AI', bgColor: 'hsl(30, 80%, 96%)', textColor: 'hsl(30, 70%, 45%)' },   // bg-orange-50, text-orange-700
-  PSD: { label: 'PSD', bgColor: 'hsl(206, 95%, 96%)', textColor: 'hsl(206, 85%, 45%)' },// bg-sky-50, text-sky-700
-  CAD: { label: 'CAD', bgColor: 'hsl(225, 20%, 96%)', textColor: 'hsl(225, 10%, 40%)' },// bg-slate-100, text-slate-600
+  HTML: { label: 'HTML', bgColor: 'hsl(25, 95%, 97%)', textColor: 'hsl(25, 75%, 55%)' },
+  CSS: { label: 'CSS', bgColor: 'hsl(221, 83%, 97%)', textColor: 'hsl(221, 63%, 55%)' },
+  AI: { label: 'AI', bgColor: 'hsl(30, 80%, 97%)', textColor: 'hsl(30, 70%, 55%)' },
+  PSD: { label: 'PSD', bgColor: 'hsl(206, 95%, 97%)', textColor: 'hsl(206, 85%, 55%)' },
+  CAD: { label: 'CAD', bgColor: 'hsl(225, 20%, 97%)', textColor: 'hsl(225, 10%, 40%)' },
   // Otros
-  DB: { label: 'DB', bgColor: 'hsl(180, 60%, 96%)', textColor: 'hsl(180, 50%, 40%)' }, // bg-cyan-50, text-cyan-700
-  DEFAULT: { label: 'FILE', bgColor: 'hsl(220, 10%, 96%)', textColor: 'hsl(220, 5%, 45%)' },
+  DB: { label: 'DB', bgColor: 'hsl(180, 60%, 97%)', textColor: 'hsl(180, 50%, 50%)' },
+  DEFAULT: { label: 'FILE', bgColor: 'hsl(220, 10%, 97%)', textColor: 'hsl(220, 5%, 45%)' },
 };
 
 export const getFileTypeDetails = (type: string): FileTypeDetails => {
