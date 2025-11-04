@@ -143,3 +143,12 @@ export const timeSince = (date: Date): string => {
   if (interval > 1) return `Hace ${Math.floor(interval)} min`;
   return `Hace ${Math.floor(seconds)} seg`;
 };
+
+export const formatFileSize = (bytes: number | null | undefined): string => {
+    if (bytes === null || bytes === undefined || bytes === 0) {
+        return '-';
+    }
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return `${parseFloat((bytes / Math.pow(1024, i)).toFixed(2))} ${sizes[i]}`;
+}

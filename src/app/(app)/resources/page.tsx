@@ -218,13 +218,15 @@ export default function ResourcesPage() {
                                 </div>
                             ) : (
                                 <Card>
-                                     <TableHeader className="border-b px-2 hidden md:flex">
-                                        <TableHead className="w-[45%] pl-12">Nombre</TableHead>
-                                        <TableHead className="w-[20%]">Propietario</TableHead>
-                                        <TableHead className="w-[15%]">Fecha</TableHead>
-                                        <TableHead className="w-[10%]">Permisos</TableHead>
-                                        <TableHead className="w-[10%] text-right pr-4">Acciones</TableHead>
-                                    </TableHeader>
+                                     <div className="grid grid-cols-[auto_minmax(0,3fr)_minmax(0,1.5fr)_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_auto] items-center border-b px-2 font-medium text-muted-foreground text-xs uppercase h-12 gap-4">
+                                        <div className="w-12"></div>
+                                        <div className="pl-3">Nombre</div>
+                                        <div className="hidden md:block">Propietario</div>
+                                        <div className="hidden md:block">Categoría</div>
+                                        <div className="hidden lg:block">Tamaño</div>
+                                        <div className="hidden md:block text-right">Fecha</div>
+                                        <div className="w-8"></div>
+                                     </div>
                                     <div className="divide-y">
                                        {files.map(res => <ResourceListItem key={res.id} resource={res} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} />)}
                                     </div>
