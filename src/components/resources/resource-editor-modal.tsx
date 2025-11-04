@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -33,7 +33,6 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import Image from 'next/image';
-import { getYoutubeVideoId } from '@/lib/resource-utils';
 import { cn } from '@/lib/utils';
 import { Separator } from '../ui/separator';
 import { FileIcon } from '../ui/file-icon';
@@ -59,8 +58,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   const [expiresAt, setExpiresAt] = useState<Date | undefined>(undefined);
   const [resourceType, setResourceType] = useState<AppResourceType['type']>('DOCUMENT');
   const [externalLink, setExternalLink] = useState('');
-  const [content, setContent] = useState('');
-  const [observations, setObservations] = useState('');
   const [currentUrl, setCurrentUrl] = useState<string | null>(null);
 
   // States for UI logic
@@ -88,8 +85,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     setExpiresAt(undefined);
     setResourceType('DOCUMENT');
     setExternalLink('');
-    setContent('');
-    setObservations('');
     setLocalFile(null);
     setCurrentUrl(null);
     setPin('');
@@ -107,8 +102,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         setExpiresAt(resource.expiresAt ? new Date(resource.expiresAt) : undefined);
         setResourceType(resource.type);
         setExternalLink(resource.type === 'EXTERNAL_LINK' ? resource.url || '' : '');
-        setContent(resource.content || '');
-        setObservations(resource.observations || '');
         setCurrentUrl(resource.url);
       } else {
         resetForm();
@@ -182,7 +175,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         expiresAt: expiresAt ? expiresAt.toISOString() : null,
         status: resource?.status || 'ACTIVE', type: resourceType, url: finalUrl,
         size: finalSize, fileType: finalFileType, parentId: resource ? resource.parentId : parentId,
-        content: resourceType === 'DOCUMENTO_EDITABLE' ? content : null, observations
     };
     
     const endpoint = resource ? `/api/resources/${resource.id}` : '/api/resources';
@@ -209,7 +201,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
       <DialogContent className="w-[95vw] sm:max-w-lg max-h-[90vh] flex flex-col p-0 gap-0 rounded-2xl">
         <DialogHeader className="p-4 sm:p-6 pb-4 border-b flex-shrink-0">
           <DialogTitle>{resource ? 'Editar Recurso' : 'Subir Nuevo Recurso'}</DialogTitle>
-          <DialogDescription>{resource ? 'Modifica los detalles de tu recurso.' : 'Añade un nuevo archivo, enlace o documento a la biblioteca.'}</DialogDescription>
+          <DialogDescription>{resource ? 'Modifica los detalles de tu recurso.' : 'Añade un nuevo archivo o enlace a la biblioteca.'}</DialogDescription>
         </DialogHeader>
 
         <ScrollArea className="flex-1 min-h-0">
@@ -251,20 +243,26 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
               <div className="space-y-1.5"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)}/></div>
               <div className="space-y-1.5"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory}><SelectTrigger id="category"><SelectValue placeholder="Seleccionar..." /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select></div>
               <div className="space-y-1.5"><Label>Expiración</Label><Popover><PopoverTrigger asChild><Button variant="outline" className="w-full justify-start font-normal">{expiresAt ? format(expiresAt, "PPP", {locale: es}) : <span>Sin fecha de expiración</span>}</Button></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={expiresAt} onSelect={setExpiresAt} initialFocus /></PopoverContent></Popover></div>
-              <div className="flex items-center space-x-2 pt-2"><Switch id="is-public" checked={isPublic} onCheckedChange={setIsPublic} /><Label htmlFor="is-public">Público (visible para todos)</Label></div>
               
+              <Separator />
+              
+              <div className="space-y-4">
+                  <div className="flex items-center justify-between space-x-2"><Label htmlFor="is-public" className="font-semibold text-base flex items-center gap-2">{isPublic ? <Globe className="h-4 w-4 text-green-500"/> : <Users className="h-4 w-4 text-blue-500" />}Visibilidad</Label><Switch id="is-public" checked={isPublic} onCheckedChange={setIsPublic} /></div>
+                  <p className="text-xs text-muted-foreground -mt-2">{isPublic ? "Visible para todos los usuarios." : "Solo visible para usuarios seleccionados."}</p>
+              </div>
+
               {!isPublic && (
                   <div className="space-y-1.5"><Label>Compartir con</Label><Input placeholder="Buscar usuarios..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
                   <ScrollArea className="h-32 border rounded-md p-2">
                       {filteredUsers.filter(u => u.id !== user?.id).map(u => (
-                          <div key={u.id} className="flex items-center space-x-3 py-1"><Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={(c) => setSharedWithUserIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(u.name)}</AvatarFallback></Avatar>{u.name}</Label></div>
+                          <div key={u.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={(c) => setSharedWithUserIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{u.name.charAt(0)}</AvatarFallback></Avatar>{u.name}</Label></div>
                       ))}
                   </ScrollArea></div>
               )}
               
               {resource && (
                 <div className="space-y-4 pt-4 border-t">
-                  <Label className="font-semibold">Seguridad con PIN</Label>
+                  <Label className="font-semibold text-base">Seguridad con PIN</Label>
                   <div className="relative"><Input type={showPin ? "text" : "password"} value={pin} onChange={(e) => setPin(e.target.value)} placeholder="Nuevo PIN (4-8 dígitos)" autoComplete="new-password"/><Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowPin(!showPin)}><Eye className="h-5 w-5"/></Button></div>
                   <div className="relative"><Input type={showPin ? "text" : "password"} value={confirmPin} onChange={(e) => setConfirmPin(e.target.value)} placeholder="Confirmar nuevo PIN" disabled={!pin} autoComplete="new-password"/></div>
                   {pin && pin !== confirmPin && <p className="text-xs text-destructive">Los PIN no coinciden.</p>}
@@ -277,6 +275,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
           <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
           <Button type="submit" form="resource-form" disabled={isSaving || isUploading || !title}>
               {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+              <Save className="mr-2 h-4 w-4" />
               Guardar
           </Button>
         </DialogFooter>
@@ -284,4 +283,3 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     </Dialog>
   );
 }
-```
