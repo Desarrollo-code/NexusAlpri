@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Save, UploadCloud, Link as LinkIcon, Image as ImageIcon, XCircle, Replace, Calendar as CalendarIcon, Eye, EyeOff, X, Globe, Users } from 'lucide-react';
+import { Loader2, Save, UploadCloud, Link as LinkIcon, Image as ImageIcon, XCircle, Replace, Calendar as CalendarIcon, Eye, EyeOff, X, Globe, Users, FileText, Check } from 'lucide-react';
 import type { AppResourceType, User as AppUser } from '@/types';
 import { UploadArea } from '../ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
@@ -36,6 +36,7 @@ import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { Separator } from '../ui/separator';
 import { FileIcon } from '../ui/file-icon';
+import { RichTextEditor } from '../ui/rich-text-editor';
 
 interface ResourceEditorModalProps {
   isOpen: boolean;
@@ -52,6 +53,8 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   // States for form fields
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [content, setContent] = useState('');
+  const [observations, setObservations] = useState('');
   const [category, setCategory] = useState('');
   const [isPublic, setIsPublic] = useState(true);
   const [sharedWithUserIds, setSharedWithUserIds] = useState<string[]>([]);
@@ -79,6 +82,8 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   const resetForm = useCallback(() => {
     setTitle('');
     setDescription('');
+    setContent('');
+    setObservations('');
     setCategory(settings?.resourceCategories[0] || 'General');
     setIsPublic(true);
     setSharedWithUserIds([]);
@@ -96,6 +101,8 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
       if (resource) {
         setTitle(resource.title);
         setDescription(resource.description || '');
+        setContent(resource.content || '');
+        setObservations(resource.observations || '');
         setCategory(resource.category || settings?.resourceCategories[0] || 'General');
         setIsPublic(resource.ispublic);
         setSharedWithUserIds(resource.sharedWith?.map(u => u.id) || []);
@@ -118,13 +125,15 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   const handleFileSelect = (file: File | null) => {
     setLocalFile(file);
     if(file && !title) {
-      setTitle(file.name.split('.').slice(0, -1).join('.'));
+      // Clean up file name for title suggestion
+      const fileNameWithoutExt = file.name.split('.').slice(0, -1).join('.');
+      setTitle(fileNameWithoutExt);
     }
   };
 
   const handleSetPin = async () => {
     if (!resource || !pin || pin !== confirmPin || pin.length < 4) {
-        toast({ title: 'Error de PIN', description: 'Los PIN no coinciden o tienen menos de 4 dígitos.', variant: 'destructive'});
+        toast({ title: 'Error de PIN', description: 'Los PIN no coinciden o tienen menos de 4 caracteres.', variant: 'destructive'});
         return;
     }
     setIsSettingPin(true);
@@ -140,7 +149,22 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     } finally {
       setIsSettingPin(false);
     }
-  }
+  };
+  
+    const handleRemovePin = async () => {
+        if (!resource) return;
+        setIsSettingPin(true);
+        try {
+            await fetch(`/api/resources/${resource.id}/pin`, { method: 'DELETE' });
+            toast({ title: 'PIN Eliminado' });
+            onSave();
+        } catch (err) {
+            toast({ title: 'Error', description: 'No se pudo eliminar el PIN.', variant: 'destructive'});
+        } finally {
+            setIsSettingPin(false);
+        }
+    }
+
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -171,7 +195,8 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     }
     
     const payload = {
-        title, description, category, isPublic, sharedWithUserIds: isPublic ? [] : sharedWithUserIds,
+        title, description, content, observations, category, isPublic, 
+        sharedWithUserIds: isPublic ? [] : sharedWithUserIds,
         expiresAt: expiresAt ? expiresAt.toISOString() : null,
         status: resource?.status || 'ACTIVE', type: resourceType, url: finalUrl,
         size: finalSize, fileType: finalFileType, parentId: resource ? resource.parentId : parentId,
@@ -229,7 +254,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                         <FileIcon displayMode="list" type={currentUrl.split('.').pop() || 'file'} />
                         <span className="text-sm font-medium truncate">{title}</span>
                       </div>
-                      <Button type="button" variant="outline" size="sm" onClick={() => setLocalFile({} as File)}>
+                      <Button type="button" variant="outline" size="sm" onClick={() => { setLocalFile(null); setCurrentUrl(null); }}>
                         <Replace className="mr-2 h-4 w-4"/> Reemplazar
                       </Button>
                     </div>
@@ -240,7 +265,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
               {resourceType === 'EXTERNAL_LINK' && <div className="space-y-1.5"><Label htmlFor="url">URL del Enlace</Label><Input id="url" type="url" value={externalLink} onChange={e => setExternalLink(e.target.value)} required placeholder="https://..."/></div>}
                 
               <div className="space-y-1.5"><Label htmlFor="title">Título</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required autoComplete="off" /></div>
-              <div className="space-y-1.5"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)}/></div>
+              <div className="space-y-1.5"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} placeholder="Un resumen breve del contenido del recurso..."/></div>
               <div className="space-y-1.5"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory}><SelectTrigger id="category"><SelectValue placeholder="Seleccionar..." /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select></div>
               <div className="space-y-1.5"><Label>Expiración</Label><Popover><PopoverTrigger asChild><Button variant="outline" className="w-full justify-start font-normal">{expiresAt ? format(expiresAt, "PPP", {locale: es}) : <span>Sin fecha de expiración</span>}</Button></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={expiresAt} onSelect={setExpiresAt} initialFocus /></PopoverContent></Popover></div>
               
@@ -266,7 +291,14 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                   <div className="relative"><Input type={showPin ? "text" : "password"} value={pin} onChange={(e) => setPin(e.target.value)} placeholder="Nuevo PIN (4-8 dígitos)" autoComplete="new-password"/><Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowPin(!showPin)}><Eye className="h-5 w-5"/></Button></div>
                   <div className="relative"><Input type={showPin ? "text" : "password"} value={confirmPin} onChange={(e) => setConfirmPin(e.target.value)} placeholder="Confirmar nuevo PIN" disabled={!pin} autoComplete="new-password"/></div>
                   {pin && pin !== confirmPin && <p className="text-xs text-destructive">Los PIN no coinciden.</p>}
-                  <div className="flex gap-2"><Button type="button" onClick={handleSetPin} disabled={isSettingPin || !pin || pin.length < 4 || pin !== confirmPin} className="w-full">Establecer PIN</Button></div>
+                  <div className="flex gap-2">
+                      <Button type="button" onClick={handleSetPin} disabled={isSettingPin || !pin || pin.length < 4 || pin !== confirmPin} className="w-full">
+                          <Check className="mr-2 h-4 w-4" />Establecer PIN
+                      </Button>
+                      <Button type="button" variant="destructive" onClick={handleRemovePin} disabled={isSettingPin} className="w-full">
+                          <X className="mr-2 h-4 w-4" />Quitar PIN
+                      </Button>
+                  </div>
                 </div>
               )}
           </form>
