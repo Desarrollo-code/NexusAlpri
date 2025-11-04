@@ -209,15 +209,21 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified, isEditing, ed
     
     const toggleFullScreen = () => {
         if (!previewContainerRef.current) return;
-        if (isFullScreen) {
+        if (document.fullscreenElement) {
             document.exitFullscreen();
         } else {
             previewContainerRef.current.requestFullscreen().catch(err => {
                 console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
             });
         }
-        setIsFullScreen(!isFullScreen);
     }
+     useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullScreen(!!document.fullscreenElement);
+        };
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    }, []);
     
     if (isEditing) {
         return (
@@ -397,71 +403,68 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
     const { label, bgColor } = getFileTypeDetails(fileExtension);
 
     return (
-      <Dialog open={!!resource} onOpenChange={(isOpen) => !isOpen && onClose()}>
-        <DialogContent className="w-[95vw] h-[90vh] max-w-6xl p-0 flex flex-col bg-background/80 backdrop-blur-lg gap-0">
-          <DialogHeader className="p-4 flex-shrink-0 h-16 px-4 flex flex-row justify-between items-center border-b z-10 bg-background/70">
-            <div className="flex items-center gap-3 overflow-hidden flex-1">
-              <div 
-                className="w-auto h-8 flex items-center justify-center rounded-md px-2"
-                style={{ backgroundColor: bgColor }}
-              >
-                  <span className="text-xs font-bold uppercase text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.2)' }}>
-                      {label}
-                  </span>
-              </div>
-              <DialogTitle className="font-semibold truncate text-foreground">{resource.title}</DialogTitle>
-            </div>
-            <DialogClose asChild><Button variant="ghost" size="icon" className="h-8 w-8"><X className="h-4 w-4"/></Button></DialogClose>
-          </DialogHeader>
-          <div className="flex-grow flex relative overflow-hidden">
-            <div className="flex-grow flex-1 relative">
-              <Button variant="ghost" size="icon" onClick={() => onNavigate('prev')} className="absolute left-2 top-1/2 -translate-y-1/2 z-20 h-10 w-10 bg-background/50 hover:bg-background/80"><ChevronLeft/></Button>
-              <div className="absolute inset-0 flex items-center justify-center bg-muted/20">
-                  <ContentPreview 
-                    resource={resource} 
-                    pinVerifiedUrl={pinVerifiedUrl} 
-                    onPinVerified={setPinVerifiedUrl} 
-                    isEditing={isEditing}
-                    editedContent={editedContent}
-                    onContentChange={setEditedContent}
-                    editedObservations={editedObservations}
-                    onObservationsChange={setEditedObservations}
-                  />
-              </div>
-              <Button variant="ghost" size="icon" onClick={() => onNavigate('next')} className="absolute right-2 top-1/2 -translate-y-1/2 z-20 h-10 w-10 bg-background/50 hover:bg-background/80"><ChevronRight/></Button>
-            </div>
-            {!isMobile && showDetails && (
-              <aside className="w-80 h-full flex-shrink-0 border-l bg-background/70">
-                <ScrollArea className="h-full p-4">
-                  <ResourceDetailsContent resource={resource} />
-                </ScrollArea>
-              </aside>
-            )}
-          </div>
-          <DialogFooter className="p-2 border-t flex-shrink-0 bg-background/70 justify-between items-center">
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => setShowDetails(prev => !prev)}>
-                <Info className="h-5 w-5"/>
-                <span className="sr-only">Ver detalles</span>
-            </Button>
-            <div className="flex items-center gap-2">
-                 {canEdit && (
-                    isEditing ? (
-                        <>
-                           <Button variant="outline" size="sm" onClick={() => setIsEditing(false)} disabled={isSaving}>Cancelar</Button>
-                           <Button size="sm" onClick={handleSaveChanges} disabled={isSaving}>
-                             {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin"/> : <Save className="h-4 w-4 mr-2"/>}Guardar
-                           </Button>
-                        </>
-                    ) : (
-                        <Button variant="secondary" size="sm" onClick={() => setIsEditing(true)}>
-                            <Edit className="h-4 w-4 mr-2"/> Editar Contenido
-                        </Button>
-                    )
-                 )}
-                 {!isEditing && <DownloadButton url={resource.url} resourceId={resource.id} hasPin={resource.hasPin} onDownloadSuccess={() => user && addXp(user.id, XP_CONFIG.DOWNLOAD_RESOURCE)} variant="default" size="sm" />}
-            </div>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        <>
+            <Dialog open={!!resource} onOpenChange={(isOpen) => !isOpen && onClose()}>
+                <DialogContent className="w-[95vw] h-[90vh] max-w-6xl p-0 flex flex-col bg-background/80 backdrop-blur-lg gap-0">
+                  <DialogHeader className="p-4 flex-shrink-0 h-16 px-4 flex flex-row justify-between items-center border-b z-10 bg-background/70">
+                    <div className="flex items-center gap-3 overflow-hidden flex-1">
+                      <div className="w-auto h-8 flex items-center justify-center rounded-md px-2" style={{ backgroundColor: bgColor }}>
+                        <span className="text-xs font-bold uppercase text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.2)' }}>{label}</span>
+                      </div>
+                      <DialogTitle className="font-semibold truncate text-foreground">{resource.title}</DialogTitle>
+                    </div>
+                    <DialogClose asChild><Button variant="ghost" size="icon" className="h-8 w-8"><X className="h-4 w-4"/></Button></DialogClose>
+                  </DialogHeader>
+                  <div className="flex-grow flex relative overflow-hidden">
+                    <div className="flex-grow flex-1 relative">
+                      <div className="absolute inset-0 flex items-center justify-center bg-muted/20">
+                          <ContentPreview 
+                            resource={resource} 
+                            pinVerifiedUrl={pinVerifiedUrl} 
+                            onPinVerified={setPinVerifiedUrl} 
+                            isEditing={isEditing}
+                            editedContent={editedContent}
+                            onContentChange={setEditedContent}
+                            editedObservations={editedObservations}
+                            onObservationsChange={setEditedObservations}
+                          />
+                      </div>
+                    </div>
+                    {!isMobile && showDetails && (
+                      <aside className="w-80 h-full flex-shrink-0 border-l bg-background/70">
+                        <ScrollArea className="h-full p-4">
+                          <ResourceDetailsContent resource={resource} />
+                        </ScrollArea>
+                      </aside>
+                    )}
+                  </div>
+                  <DialogFooter className="p-2 border-t flex-shrink-0 bg-background/70 justify-between items-center">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => setShowDetails(prev => !prev)}>
+                        <Info className="h-5 w-5"/>
+                        <span className="sr-only">Ver detalles</span>
+                    </Button>
+                    <div className="flex items-center gap-2">
+                         {canEdit && (
+                            isEditing ? (
+                                <>
+                                   <Button variant="outline" size="sm" onClick={() => setIsEditing(false)} disabled={isSaving}>Cancelar</Button>
+                                   <Button size="sm" onClick={handleSaveChanges} disabled={isSaving}>
+                                     {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin"/> : <Save className="h-4 w-4 mr-2"/>}Guardar
+                                   </Button>
+                                </>
+                            ) : (
+                                <Button variant="secondary" size="sm" onClick={() => setIsEditing(true)}>
+                                    <Edit className="h-4 w-4 mr-2"/> Editar Contenido
+                                </Button>
+                            )
+                         )}
+                         {!isEditing && <DownloadButton url={resource.url} resourceId={resource.id} hasPin={resource.hasPin} onDownloadSuccess={() => user && addXp(user.id, XP_CONFIG.DOWNLOAD_RESOURCE)} variant="default" size="sm" />}
+                    </div>
+                  </DialogFooter>
+                </DialogContent>
+            </Dialog>
+            <Button variant="ghost" size="icon" onClick={() => onNavigate('prev')} className="fixed left-2 md:left-4 top-1/2 -translate-y-1/2 z-[100] h-12 w-12 bg-background/50 hover:bg-background/80 rounded-full shadow-lg"><ChevronLeft/></Button>
+            <Button variant="ghost" size="icon" onClick={() => onNavigate('next')} className="fixed right-2 md:right-4 top-1/2 -translate-y-1/2 z-[100] h-12 w-12 bg-background/50 hover:bg-background/80 rounded-full shadow-lg"><ChevronRight/></Button>
+        </>
     );
 };
