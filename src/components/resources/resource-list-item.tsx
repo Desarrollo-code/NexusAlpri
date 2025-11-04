@@ -41,7 +41,7 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
 
     return (
         <div ref={setNodeRef} className={cn("touch-none", isDragging && 'opacity-50 z-10')}>
-            <div onClick={onSelect} className="grid grid-cols-[auto_minmax(0,3fr)_minmax(0,1.5fr)_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] items-center p-2 rounded-lg hover:bg-muted/50 cursor-pointer border-b gap-4">
+            <div onClick={onSelect} className="grid grid-cols-[auto_minmax(0,3fr)_minmax(0,1.5fr)_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_auto] items-center p-2 rounded-lg hover:bg-muted/50 cursor-pointer border-b gap-4">
                 {/* Drag Handle */}
                 <div 
                     {...attributes} 
@@ -76,11 +76,6 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
                  {/* Category */}
                 <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
                    <Badge variant="outline">{resource.category || "General"}</Badge>
-                </div>
-                
-                {/* Size */}
-                <div className="hidden lg:flex text-sm text-muted-foreground font-mono">
-                    {formatFileSize(resource.size)}
                 </div>
 
                 {/* Fecha y Permisos */}
