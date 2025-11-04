@@ -1,4 +1,3 @@
-
 // src/components/resources/resource-editor-modal.tsx
 'use client';
 
@@ -209,7 +208,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
           <form id="resource-form" onSubmit={handleSave} className="space-y-6 px-4 sm:px-6 py-4">
               {!resource && (
                   <RadioGroup defaultValue={resourceType} onValueChange={(v) => {setResourceType(v as any); setLocalFile(null); setExternalLink('');}} className="grid grid-cols-2 gap-4">
-                    <div><RadioGroupItem value="DOCUMENT" id="type-doc" className="peer sr-only"/><Label htmlFor="type-doc" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><ImageIcon className="mb-2 h-6 w-6"/>Archivo</Label></div>
+                    <div><RadioGroupItem value="DOCUMENT" id="type-doc" className="peer sr-only"/><Label htmlFor="type-doc" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><UploadCloud className="mb-2 h-6 w-6"/>Archivo</Label></div>
                     <div><RadioGroupItem value="EXTERNAL_LINK" id="type-link" className="peer sr-only"/><Label htmlFor="type-link" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><LinkIcon className="mb-2 h-6 w-6"/>Enlace</Label></div>
                   </RadioGroup>
               )}
@@ -256,7 +255,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                   <div className="space-y-1.5"><Label>Compartir con</Label><Input placeholder="Buscar usuarios..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
                   <ScrollArea className="h-32 border rounded-md p-2">
                       {filteredUsers.filter(u => u.id !== user?.id).map(u => (
-                          <div key={u.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={(c) => setSharedWithUserIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(u.name)}</AvatarFallback></Avatar>{u.name}</Label></div>
+                          <div key={u.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={(c) => setSharedWithUserIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{u.name[0]}</AvatarFallback></Avatar>{u.name}</Label></div>
                       ))}
                   </ScrollArea></div>
               )}
@@ -274,7 +273,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         </ScrollArea>
         <DialogFooter className="p-4 sm:p-6 border-t flex-shrink-0 flex flex-row sm:justify-end gap-2">
           <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
-          <Button type="submit" form="resource-form" disabled={isSaving || isUploading || !title}>
+          <Button type="submit" form="resource-form" disabled={isSaving || isUploading || !title || (resourceType === 'EXTERNAL_LINK' && !externalLink) || (resourceType !== 'EXTERNAL_LINK' && !localFile && !currentUrl)}>
               {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
               <Save className="mr-2 h-4 w-4" />
               Guardar
