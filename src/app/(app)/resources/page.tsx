@@ -26,6 +26,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
+
 
 const getFileType = (mimeType: string | null): string => {
     if (!mimeType) return 'Other';
@@ -203,6 +205,7 @@ export default function ResourcesPage() {
   return (
     <DndContext onDragEnd={handleDragEnd} sensors={useSensors(useSensor(MouseSensor), useSensor(TouchSensor))}>
     <div className="space-y-6">
+       <p className="text-muted-foreground">Gestiona y comparte documentos importantes, guías y materiales de formación para toda la organización.</p>
        <Card className="p-4 bg-card shadow-sm">
              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                  <div className="relative w-full flex-grow">
@@ -284,12 +287,12 @@ export default function ResourcesPage() {
                                 <Table>
                                     <TableHeader>
                                         <TableRow className="grid grid-cols-12 gap-4 px-4">
-                                            <TableHead className="col-span-4 flex items-center gap-2">Nombre</TableHead>
+                                            <TableHead className="col-span-5 md:col-span-4 flex items-center gap-2">Nombre</TableHead>
                                             <TableHead className="col-span-2 hidden md:flex items-center gap-2">Propietario</TableHead>
                                             <TableHead className="col-span-2 hidden md:flex items-center gap-2">Categoría</TableHead>
                                             <TableHead className="col-span-2 hidden md:flex items-center gap-2">Fecha</TableHead>
                                             <TableHead className="col-span-1 hidden md:flex items-center gap-2">Estado</TableHead>
-                                            <TableHead className="col-span-1 hidden md:block"></TableHead>
+                                            <TableHead className="col-span-2 md:col-span-1 hidden md:block"></TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <div className="space-y-2 mt-2">
