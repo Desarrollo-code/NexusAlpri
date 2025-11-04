@@ -40,14 +40,7 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
     });
 
     const Thumbnail = () => {
-        if (youtubeId) {
-            return (
-                <div className="w-12 h-12 relative flex-shrink-0 rounded-md overflow-hidden bg-black">
-                     <Image src={`https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`} alt={resource.title} fill className="object-cover" />
-                </div>
-            );
-        }
-        return <FileIcon type={fileExtension} className="w-12 h-14 flex-shrink-0" />;
+        return <FileIcon type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null} />;
     };
 
     return (
