@@ -8,19 +8,48 @@ import { cn } from '@/lib/utils';
 import { useTitle } from '@/contexts/title-context';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Move, Trash2, FolderOpen } from 'lucide-react';
+import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Move, Trash2, FolderOpen, Filter } from 'lucide-react';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { ResourceListItem } from '@/components/resources/resource-list-item';
 import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
 import { DndContext, type DragEndEvent, MouseSensor, TouchSensor, useSensor, useSensors, useDroppable } from '@dnd-kit/core';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Input } from '@/components/ui/input';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { EmptyState } from '@/components/empty-state';
 import { ResourceEditorModal } from '@/components/resources/resource-editor-modal';
 import { FolderCreatorModal } from '@/components/resources/folder-creator-modal';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Table, TableBody, TableHeader, TableHead, TableRow } from '@/components/ui/table';
+import { Table, TableHeader, TableRow, TableHead } from '@/components/ui/table';
+import { DateRangePicker } from '../ui/date-range-picker';
+import { Label } from '../ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Switch } from '../ui/switch';
+import { Separator } from '../ui/separator';
+
+const getFileType = (mimeType: string | null): string => {
+    if (!mimeType) return 'Other';
+    if (mimeType.startsWith('image/')) return 'image';
+    if (mimeType.startsWith('video/')) return 'video';
+    if (mimeType === 'application/pdf') return 'pdf';
+    if (mimeType.includes('word')) return 'doc';
+    if (mimeType.includes('excel')) return 'xls';
+    if (mimeType.includes('presentation')) return 'ppt';
+    if (mimeType.includes('zip') || mimeType.includes('archive')) return 'zip';
+    return 'other';
+};
+
+const FILE_TYPE_OPTIONS = [
+  { value: "all", label: "Todos los tipos" },
+  { value: "image", label: "Imágenes" },
+  { value: "video", label: "Videos" },
+  { value: "pdf", label: "PDFs" },
+  { value: "doc", label: "Documentos de Word" },
+  { value: "xls", label: "Hojas de cálculo" },
+  { value: "ppt", label: "Presentaciones" },
+  { value: "zip", label: "Archivos Comprimidos" },
+  { value: "other", label: "Otros" },
+];
 
 // --- MAIN PAGE COMPONENT ---
 export default function ResourcesPage() {
@@ -32,11 +61,20 @@ export default function ResourcesPage() {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
+  // --- State for searching and filtering ---
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [activeTab, setActiveTab] = useState<ResourceStatus>('ACTIVE');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
+  // --- New Advanced Filters State ---
+  const [filters, setFilters] = useState({
+      dateRange: { from: undefined, to: undefined },
+      fileType: 'all',
+      hasPin: false,
+      hasExpiry: false,
+  });
+
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; title: string }[]>([{ id: null, title: 'Principal' }]);
   const [selectedResource, setSelectedResource] = useState<AppResourceType | null>(null);
@@ -61,6 +99,13 @@ export default function ResourcesPage() {
     if (currentFolderId) params.append('parentId', currentFolderId);
     if (debouncedSearchTerm) params.append('search', debouncedSearchTerm);
     
+    // Append advanced filters to the request
+    if (filters.dateRange.from) params.append('startDate', filters.dateRange.from.toISOString());
+    if (filters.dateRange.to) params.append('endDate', filters.dateRange.to.toISOString());
+    if (filters.fileType !== 'all') params.append('fileType', filters.fileType);
+    if (filters.hasPin) params.append('hasPin', 'true');
+    if (filters.hasExpiry) params.append('hasExpiry', 'true');
+    
     try {
       const response = await fetch(`/api/resources?${params.toString()}`, { cache: 'no-store' });
       if (!response.ok) throw new Error((await response.json()).message || 'Failed to fetch resources');
@@ -71,7 +116,7 @@ export default function ResourcesPage() {
     } finally {
       setIsLoadingData(false);
     }
-  }, [isAuthLoading, activeTab, currentFolderId, debouncedSearchTerm]);
+  }, [isAuthLoading, activeTab, currentFolderId, debouncedSearchTerm, filters]);
 
   useEffect(() => {
     fetchResources();
@@ -158,13 +203,31 @@ export default function ResourcesPage() {
   return (
     <DndContext onDragEnd={handleDragEnd} sensors={useSensors(useSensor(MouseSensor), useSensor(TouchSensor))}>
     <div className="space-y-6">
-        <Card className="p-4 bg-card shadow-sm">
+       <Card className="p-4 bg-card shadow-sm">
              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                  <div className="relative w-full flex-grow">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input placeholder="Buscar en la carpeta actual..." className="pl-10 h-10 text-base rounded-md" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                 </div>
                  <div className="flex items-center gap-2 w-full md:w-auto">
+                    <Popover>
+                        <PopoverTrigger asChild>
+                           <Button variant="outline" className="h-10 flex-grow md:flex-none">
+                             <Filter className="mr-2 h-4 w-4"/>
+                             Filtros
+                           </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-screen max-w-sm p-4" align="end">
+                           <div className="space-y-4">
+                              <h4 className="font-medium text-center">Filtros Avanzados</h4>
+                              <div className="space-y-2"><Label>Fecha de Subida</Label><DateRangePicker date={filters.dateRange} onDateChange={(range) => setFilters(f => ({...f, dateRange: range || {from: undefined, to: undefined}}))} /></div>
+                              <div className="space-y-2"><Label>Tipo de Archivo</Label><Select value={filters.fileType} onValueChange={(v) => setFilters(f => ({...f, fileType: v}))}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{FILE_TYPE_OPTIONS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent></Select></div>
+                              <Separator/>
+                              <div className="flex items-center justify-between"><Label htmlFor="has-pin">Protegido con PIN</Label><Switch id="has-pin" checked={filters.hasPin} onCheckedChange={(c) => setFilters(f => ({...f, hasPin: c}))} /></div>
+                              <div className="flex items-center justify-between"><Label htmlFor="has-expiry">Tiene Vencimiento</Label><Switch id="has-expiry" checked={filters.hasExpiry} onCheckedChange={(c) => setFilters(f => ({...f, hasExpiry: c}))}/></div>
+                           </div>
+                        </PopoverContent>
+                    </Popover>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                            <Button className="h-10 flex-grow md:flex-none">
@@ -218,32 +281,29 @@ export default function ResourcesPage() {
                                     {files.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={false} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onNavigate={() => {}} />)}
                                 </div>
                             ) : (
-                                <Card>
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead className="w-16"></TableHead>
-                                                <TableHead>Nombre</TableHead>
-                                                <TableHead className="hidden md:table-cell">Propietario</TableHead>
-                                                <TableHead className="hidden md:table-cell">Categoría</TableHead>
-                                                <TableHead className="hidden md:table-cell">Fecha</TableHead>
-                                                <TableHead className="hidden md:table-cell text-center">Estado</TableHead>
-                                                <TableHead className="text-right w-12"></TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                           {files.map(res => <ResourceListItem key={res.id} resource={res} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} />)}
-                                        </TableBody>
-                                    </Table>
-                                </Card>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="grid grid-cols-12 gap-4 px-4">
+                                            <TableHead className="col-span-4 flex items-center gap-2">Nombre</TableHead>
+                                            <TableHead className="col-span-2 hidden md:flex items-center gap-2">Propietario</TableHead>
+                                            <TableHead className="col-span-2 hidden md:flex items-center gap-2">Categoría</TableHead>
+                                            <TableHead className="col-span-2 hidden md:flex items-center gap-2">Fecha</TableHead>
+                                            <TableHead className="col-span-1 hidden md:flex items-center gap-2">Estado</TableHead>
+                                            <TableHead className="col-span-1 hidden md:block"></TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <div className="space-y-2 mt-2">
+                                        {files.map(res => <ResourceListItem key={res.id} resource={res} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} />)}
+                                    </div>
+                                </Table>
                             )}
                         </section>
                     )}
                     {folders.length === 0 && files.length === 0 && (
                          <EmptyState 
                             icon={FolderOpen} 
-                            title={searchTerm ? "No se encontraron resultados" : "Esta carpeta está vacía"}
-                            description={searchTerm ? "Intenta con otro término de búsqueda." : "Sube un archivo o crea una nueva carpeta para empezar."}
+                            title={debouncedSearchTerm || filters.fileType !== 'all' || filters.hasPin || filters.hasExpiry ? "No se encontraron resultados" : "Esta carpeta está vacía"}
+                            description={debouncedSearchTerm || filters.fileType !== 'all' || filters.hasPin || filters.hasExpiry ? "Intenta con otros filtros de búsqueda." : "Sube un archivo o crea una nueva carpeta para empezar."}
                             imageUrl={settings?.emptyStateResourcesUrl}
                          />
                     )}
