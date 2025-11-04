@@ -42,7 +42,7 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
     });
 
     const Thumbnail = () => {
-        return <FileIcon type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null} className="w-12 h-auto" />;
+        return <FileIcon type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null} className="w-10 h-auto" />;
     };
 
     return (
@@ -65,7 +65,7 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
                     <GripVertical className="h-5 w-5" />
                 </div>
                 
-                <div className="flex items-center gap-4 flex-grow cursor-pointer" onClick={onSelect}>
+                <div className="flex items-center gap-3 flex-grow cursor-pointer" onClick={onSelect}>
                     <Thumbnail />
                     <div className="flex-grow min-w-0">
                         <p className="font-semibold truncate text-foreground text-sm">{resource.title}</p>
