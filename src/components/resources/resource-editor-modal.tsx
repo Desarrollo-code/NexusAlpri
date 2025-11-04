@@ -299,7 +299,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                     </div>
                 </ScrollArea>
             </form>
-            <DialogFooter className="border-t p-4 flex-shrink-0">
+            <DialogFooter className="border-t p-4 flex-shrink-0 flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
                 <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
                 <Button type="submit" form="resource-form" disabled={isSaving || isUploading}>
                     {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
