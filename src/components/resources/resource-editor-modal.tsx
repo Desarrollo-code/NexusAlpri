@@ -244,11 +244,11 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                     </>
                   ) : (
                     <div className="flex items-center justify-between p-2 rounded-lg border bg-background min-w-0">
-                      <div className="flex items-center gap-3 overflow-hidden">
+                      <div className="flex items-center gap-3 overflow-hidden flex-shrink-0">
                         <FileIcon displayMode="list" type={currentUrl.split('.').pop() || 'file'} />
                         <span className="text-sm font-medium truncate">{title}</span>
                       </div>
-                      <Button type="button" variant="outline" size="sm" onClick={() => { setLocalFile(null); setCurrentUrl(null); }}>
+                      <Button type="button" variant="outline" size="sm" onClick={() => { setLocalFile(null); setCurrentUrl(null); }} className="flex-shrink-0">
                         <Replace className="mr-2 h-4 w-4"/> Reemplazar
                       </Button>
                     </div>
@@ -297,7 +297,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
               )}
           </form>
         </ScrollArea>
-        <DialogFooter className="p-4 sm:p-6 border-t flex-shrink-0">
+        <DialogFooter className="p-6 pt-4 border-t flex-shrink-0">
           <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
           <Button type="submit" form="resource-form" disabled={isSaving || isUploading || !title || (resourceType === 'EXTERNAL_LINK' && !externalLink) || (resourceType !== 'EXTERNAL_LINK' && !localFile && !currentUrl)}>
               {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
