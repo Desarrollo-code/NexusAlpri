@@ -53,29 +53,35 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
   return (
     <div
       className={cn(
-        "relative w-20 h-24 rounded-lg overflow-hidden group",
+        "relative w-20 h-24 rounded-lg overflow-hidden group shadow-sm",
         className
       )}
       style={{ backgroundColor: thumbnailUrl ? 'hsl(var(--muted))' : bgColor }}
     >
-      {thumbnailUrl ? (
-        <>
-           <Image src={thumbnailUrl} alt={label} fill className="object-cover"/>
-           <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-             <PlayCircle className="h-8 w-8 text-white/80 drop-shadow-lg transition-transform duration-300 group-hover:scale-110" />
-           </div>
-        </>
-      ) : (
-        <div
-          className="absolute top-0 right-0 w-0 h-0 border-solid"
-          style={{
+      {/* Dog-ear effect */}
+      <div 
+        className="absolute top-0 right-0 w-0 h-0 border-solid border-transparent"
+        style={{
             borderWidth: '0 24px 24px 0',
-            borderColor: 'transparent hsl(var(--card)) transparent transparent',
-            filter: 'drop-shadow(-1px 1px 1px rgba(0,0,0,0.1))',
-          }}
-        />
-      )}
-      <div className="absolute bottom-0 left-0 right-0 h-7 px-1 flex items-center justify-center rounded-b-lg">
+            borderColor: 'transparent transparent hsl(var(--card)) transparent',
+            filter: 'drop-shadow(-1px 1px 1px rgba(0,0,0,0.1))'
+        }}
+      />
+      
+      {/* Content */}
+      <div className="flex flex-col items-center justify-center h-full">
+        {thumbnailUrl ? (
+          <div className="relative w-full h-full">
+             <Image src={thumbnailUrl} alt={label} fill className="object-cover"/>
+             <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+               <PlayCircle className="h-8 w-8 text-white/80 drop-shadow-lg transition-transform duration-300 group-hover:scale-110" />
+             </div>
+          </div>
+        ) : null}
+      </div>
+
+      {/* Label */}
+      <div className="absolute bottom-0 left-0 right-0 h-7 px-1 flex items-center justify-center bg-black/10">
         <span className="text-xs font-bold uppercase tracking-wider text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>
           {label}
         </span>
