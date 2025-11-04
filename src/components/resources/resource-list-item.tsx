@@ -14,6 +14,7 @@ import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '../ui/
 import { useDraggable } from '@dnd-kit/core';
 import { FileIcon } from '../ui/file-icon';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
+import { TableRow, TableCell } from '../ui/table';
 
 interface ResourceListItemProps {
     resource: AppResourceType;
@@ -38,78 +39,77 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
         disabled: !canModify || resource.status === 'ARCHIVED',
     });
 
-    const Thumbnail = () => {
-        return <FileIcon type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null} className="w-10 h-auto flex-shrink-0" />;
-    };
-
     return (
-        <div 
-            ref={setNodeRef}
-            className={cn(
-                "touch-none group",
-                isDragging && 'opacity-50 z-10'
-            )}
-        >
-            <div className="flex items-center p-2 transition-colors hover:bg-muted/50 rounded-lg">
-                {/* Drag Handle */}
-                <div 
-                    {...attributes} 
-                    {...listeners} 
-                    className={cn(
-                        "p-2 cursor-grab text-muted-foreground",
-                        (!canModify || resource.status === 'ARCHIVED') && "cursor-default opacity-0"
-                    )}
-                >
-                    <GripVertical className="h-5 w-5" />
-                </div>
+        <div ref={setNodeRef} className={cn("touch-none", isDragging && 'opacity-50 z-10')}>
+            <TableRow onClick={onSelect} className="cursor-pointer">
+                 {/* Drag Handle */}
+                <TableCell className="w-10 pl-2">
+                    <div 
+                        {...attributes} 
+                        {...listeners} 
+                        className={cn(
+                            "p-2 cursor-grab text-muted-foreground",
+                            (!canModify || resource.status === 'ARCHIVED') && "cursor-default opacity-0"
+                        )}
+                         onClick={(e) => e.stopPropagation()}
+                    >
+                        <GripVertical className="h-5 w-5" />
+                    </div>
+                </TableCell>
                 
                 {/* Main Content */}
-                <div className="flex items-center gap-3 flex-grow cursor-pointer min-w-0" onClick={onSelect}>
-                    <Thumbnail />
-                    <div className="flex-grow min-w-0">
-                        <p className="font-semibold truncate text-foreground text-sm">{resource.title}</p>
-                        <p className="text-xs text-muted-foreground truncate">{resource.description || 'Sin descripción'}</p>
+                 <TableCell className="w-[45%]">
+                     <div className="flex items-center gap-3">
+                        <FileIcon type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null} className="w-10 h-auto flex-shrink-0" />
+                        <div className="flex-grow min-w-0">
+                            <p className="font-semibold truncate text-foreground text-sm">{resource.title}</p>
+                            <p className="text-xs text-muted-foreground truncate">{resource.description || 'Sin descripción'}</p>
+                        </div>
                     </div>
-                </div>
+                 </TableCell>
 
                 {/* Metadata columns */}
-                <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground w-48 shrink-0 px-4">
-                    <Avatar className="h-6 w-6">
-                        <AvatarImage src={resource.uploader?.avatar || undefined} />
-                        <AvatarFallback className="text-xs"><Identicon userId={resource.uploaderId || ''} /></AvatarFallback>
-                    </Avatar>
-                    <span className="truncate">{resource.uploaderName}</span>
-                </div>
+                <TableCell className="hidden md:table-cell w-[20%]">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Avatar className="h-6 w-6">
+                            <AvatarImage src={resource.uploader?.avatar || undefined} />
+                            <AvatarFallback className="text-xs"><Identicon userId={resource.uploaderId || ''} /></AvatarFallback>
+                        </Avatar>
+                        <span className="truncate">{resource.uploaderName}</span>
+                    </div>
+                </TableCell>
                 
-                <div className="hidden lg:block text-sm text-muted-foreground w-36 shrink-0 px-4">
+                <TableCell className="hidden lg:table-cell w-[15%] text-sm text-muted-foreground">
                     {new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
-                </div>
+                </TableCell>
 
-                <div className="hidden md:flex items-center gap-2 text-muted-foreground w-24 shrink-0 px-4">
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                               <div className="flex items-center gap-1.5">
-                                {resource.ispublic ? <Globe className="h-4 w-4 text-green-500" /> : <Users className="h-4 w-4 text-blue-500"/>}
-                               </div>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                               <p>{resource.ispublic ? 'Público' : 'Privado'}</p>
-                            </TooltipContent>
-                        </Tooltip>
-                         {resource.hasPin && (
+                <TableCell className="hidden md:table-cell w-[10%]">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                        <TooltipProvider>
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                   <Lock className="h-4 w-4 text-amber-500" />
+                                   <div className="flex items-center gap-1.5">
+                                    {resource.ispublic ? <Globe className="h-4 w-4 text-green-500" /> : <Users className="h-4 w-4 text-blue-500"/>}
+                                   </div>
                                 </TooltipTrigger>
-                                 <TooltipContent><p>Protegido con PIN</p></TooltipContent>
+                                <TooltipContent>
+                                   <p>{resource.ispublic ? 'Público' : 'Privado'}</p>
+                                </TooltipContent>
                             </Tooltip>
-                         )}
-                    </TooltipProvider>
-                </div>
+                             {resource.hasPin && (
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                       <Lock className="h-4 w-4 text-amber-500" />
+                                    </TooltipTrigger>
+                                     <TooltipContent><p>Protegido con PIN</p></TooltipContent>
+                                </Tooltip>
+                             )}
+                        </TooltipProvider>
+                    </div>
+                </TableCell>
                 
                 {/* Actions */}
-                <div className="shrink-0 px-2">
+                <TableCell className="w-[10%] text-right pr-4">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Opciones para ${resource.title}`} onClick={(e) => e.stopPropagation()}>
@@ -168,8 +168,8 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
                              )}
                         </DropdownMenuContent>
                     </DropdownMenu>
-                </div>
-            </div>
+                </TableCell>
+            </TableRow>
         </div>
     );
 });

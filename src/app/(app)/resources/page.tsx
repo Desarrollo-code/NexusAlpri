@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useTitle } from '@/contexts/title-context';
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Move, Trash2, FolderOpen } from 'lucide-react';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
@@ -20,6 +20,7 @@ import { EmptyState } from '@/components/empty-state';
 import { ResourceEditorModal } from '@/components/resources/resource-editor-modal';
 import { FolderCreatorModal } from '@/components/resources/folder-creator-modal';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { TableHeader, TableHead } from '@/components/ui/table';
 
 // --- MAIN PAGE COMPONENT ---
 export default function ResourcesPage() {
@@ -210,15 +211,24 @@ export default function ResourcesPage() {
                     )}
                     {files.length > 0 && (
                         <section>
-                            <h3 className="text-lg font-semibold mb-3">Archivos</h3>
+                             <h3 className="text-lg font-semibold mb-3">Archivos</h3>
                             {viewMode === 'grid' ? (
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                                     {files.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={false} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onNavigate={() => {}} />)}
                                 </div>
                             ) : (
-                                <div className="border rounded-lg bg-card divide-y">
-                                    {files.map(res => <ResourceListItem key={res.id} resource={res} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} />)}
-                                </div>
+                                <Card>
+                                     <TableHeader className="border-b px-2 hidden md:flex">
+                                        <TableHead className="w-[45%] pl-12">Nombre</TableHead>
+                                        <TableHead className="w-[20%]">Propietario</TableHead>
+                                        <TableHead className="w-[15%]">Fecha</TableHead>
+                                        <TableHead className="w-[10%]">Permisos</TableHead>
+                                        <TableHead className="w-[10%] text-right pr-4">Acciones</TableHead>
+                                    </TableHeader>
+                                    <div className="divide-y">
+                                       {files.map(res => <ResourceListItem key={res.id} resource={res} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} />)}
+                                    </div>
+                                </Card>
                             )}
                         </section>
                     )}
