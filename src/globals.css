@@ -126,24 +126,6 @@
   .profile-card .card__subtitle {
     @apply text-center text-sm text-muted-foreground mt-2;
   }
-
-  .file-icon-body {
-    @apply relative;
-  }
-
-  .file-icon-body::before {
-    content: '';
-    @apply absolute top-0 right-0 w-0 h-0 border-solid transition-all duration-300;
-    border-width: 0 24px 24px 0;
-    border-color: transparent hsl(var(--card)) hsl(var(--card)) transparent;
-    box-shadow: -2px 2px 3px rgba(0, 0, 0, 0.15);
-  }
-  .file-icon-body::after {
-    content: '';
-    @apply absolute top-0 right-0 w-0 h-0 border-solid transition-all duration-300;
-    border-width: 0 24px 24px 0;
-    border-color: transparent transparent rgba(0,0,0,0.2) transparent;
-  }
 }
 
 
