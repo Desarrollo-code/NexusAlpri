@@ -4,6 +4,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import { getFileTypeDetails } from '@/lib/resource-utils';
 import Image from 'next/image';
+import { PlayCircle } from 'lucide-react';
 
 interface FileIconProps {
   type: string;
@@ -21,7 +22,9 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
         {thumbnailUrl && (
           <>
             <Image src={thumbnailUrl} alt={label} fill className="object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-colors">
+                <PlayCircle className="h-10 w-10 text-white/80 drop-shadow-lg transition-transform duration-300 group-hover:scale-110" />
+            </div>
           </>
         )}
 
