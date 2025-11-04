@@ -1,3 +1,4 @@
+
 // src/components/resources/resource-editor-modal.tsx
 'use client';
 
@@ -297,7 +298,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
               )}
           </form>
         </ScrollArea>
-        <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex flex-row sm:justify-end gap-2">
+        <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-col sm:flex-row sm:justify-end gap-2">
           <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
           <Button type="submit" form="resource-form" disabled={isSaving || isUploading || !title || (resourceType === 'EXTERNAL_LINK' && !externalLink) || (resourceType !== 'EXTERNAL_LINK' && !localFile && !currentUrl)}>
               {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
