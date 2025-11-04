@@ -7,40 +7,39 @@ import { cn } from './utils';
 // --- NUEVA LÓGICA PARA ICONOS DE ARCHIVO ESTILIZADOS ---
 export interface FileTypeDetails {
   label: string;
-  color: string;
-  icon: React.ComponentType<{ className?: string }>;
+  bgColor: string;
+  textColor: string;
 }
 
 const fileTypeMap: Record<string, FileTypeDetails> = {
   // Documentos
-  PDF: { label: 'PDF', color: '#E53E3E', icon: FileTextIcon },
-  DOCX: { label: 'DOCX', color: '#4285F4', icon: FileTextIcon },
-  DOC: { label: 'DOC', color: '#4285F4', icon: FileTextIcon },
-  PPT: { label: 'PPT', color: '#D94B25', icon: FileTextIcon },
-  XLS: { label: 'XLS', color: '#34A853', icon: FileTextIcon },
+  PDF: { label: 'PDF', bgColor: 'hsl(0, 72%, 96%)', textColor: 'hsl(0, 63%, 45%)' }, // bg-red-50, text-red-700
+  DOCX: { label: 'DOCX', bgColor: 'hsl(221, 83%, 97%)', textColor: 'hsl(221, 63%, 45%)' },// bg-blue-50, text-blue-700
+  DOC: { label: 'DOC', bgColor: 'hsl(221, 83%, 97%)', textColor: 'hsl(221, 63%, 45%)' },
+  PPT: { label: 'PPT', bgColor: 'hsl(25, 95%, 96%)', textColor: 'hsl(25, 75%, 45%)' }, // bg-orange-50, text-orange-700
+  XLS: { label: 'XLS', bgColor: 'hsl(145, 63%, 96%)', textColor: 'hsl(145, 53%, 35%)' }, // bg-green-50, text-green-800
   // Imágenes
-  PNG: { label: 'PNG', color: '#4A5568', icon: FileTextIcon },
-  JPG: { label: 'JPG', color: '#4A5568', icon: FileTextIcon },
-  JPEG: { label: 'JPEG', color: '#4A5568', icon: FileTextIcon },
-  GIF: { label: 'GIF', color: '#4299E1', icon: FileTextIcon },
-  BMP: { label: 'BMP', color: '#805AD5', icon: FileTextIcon },
-  SVG: { label: 'SVG', color: '#F56565', icon: FileTextIcon },
-  WEBP: { label: 'WEBP', color: '#38B2AC', icon: FileTextIcon },
+  PNG: { label: 'PNG', bgColor: 'hsl(225, 20%, 96%)', textColor: 'hsl(225, 10%, 40%)' }, // bg-slate-100, text-slate-600
+  JPG: { label: 'JPG', bgColor: 'hsl(225, 20%, 96%)', textColor: 'hsl(225, 10%, 40%)' },
+  JPEG: { label: 'JPEG', bgColor: 'hsl(225, 20%, 96%)', textColor: 'hsl(225, 10%, 40%)' },
+  GIF: { label: 'GIF', bgColor: 'hsl(206, 95%, 96%)', textColor: 'hsl(206, 85%, 45%)' }, // bg-sky-50, text-sky-700
+  SVG: { label: 'SVG', bgColor: 'hsl(346, 72%, 96%)', textColor: 'hsl(346, 62%, 45%)' }, // bg-pink-50, text-pink-700
+  WEBP: { label: 'WEBP', bgColor: 'hsl(160, 60%, 96%)', textColor: 'hsl(160, 50%, 40%)' },// bg-emerald-50, text-emerald-700
   // Video
-  MP4: { label: 'MP4', color: '#3182CE', icon: VideoIcon },
-  YOUTUBE: { label: 'YOUTUBE', color: '#FF0000', icon: VideoIcon },
+  MP4: { label: 'MP4', bgColor: 'hsl(262, 74%, 97%)', textColor: 'hsl(262, 64%, 50%)' }, // bg-violet-50, text-violet-700
+  YOUTUBE: { label: 'YOUTUBE', bgColor: 'hsl(0, 63%, 97%)', textColor: 'hsl(0, 63%, 45%)' }, // bg-red-50, text-red-700
   // Archivos
-  ZIP: { label: 'ZIP', color: '#A0AEC0', icon: ZipIcon },
-  ISO: { label: 'ISO', color: '#F6E05E', icon: FileTextIcon },
+  ZIP: { label: 'ZIP', bgColor: 'hsl(220, 10%, 96%)', textColor: 'hsl(220, 5%, 45%)' }, // bg-gray-100, text-gray-600
+  ISO: { label: 'ISO', bgColor: 'hsl(60, 90%, 96%)', textColor: 'hsl(60, 80%, 35%)' }, // bg-yellow-50, text-yellow-800
   // Código y Diseño
-  HTML: { label: 'HTM', color: '#DD6B20', icon: FileTextIcon },
-  CSS: { label: 'CSS', color: '#3182CE', icon: FileTextIcon },
-  AI: { label: 'AI', color: '#ED8936', icon: FilePen },
-  PSD: { label: 'PSD', color: '#4299E1', icon: FilePen },
-  CAD: { label: 'CAD', color: '#4A5568', icon: FilePen },
+  HTML: { label: 'HTML', bgColor: 'hsl(25, 95%, 96%)', textColor: 'hsl(25, 75%, 45%)' },// bg-orange-50, text-orange-700
+  CSS: { label: 'CSS', bgColor: 'hsl(221, 83%, 97%)', textColor: 'hsl(221, 63%, 45%)' },// bg-blue-50, text-blue-700
+  AI: { label: 'AI', bgColor: 'hsl(30, 80%, 96%)', textColor: 'hsl(30, 70%, 45%)' },   // bg-orange-50, text-orange-700
+  PSD: { label: 'PSD', bgColor: 'hsl(206, 95%, 96%)', textColor: 'hsl(206, 85%, 45%)' },// bg-sky-50, text-sky-700
+  CAD: { label: 'CAD', bgColor: 'hsl(225, 20%, 96%)', textColor: 'hsl(225, 10%, 40%)' },// bg-slate-100, text-slate-600
   // Otros
-  DB: { label: 'DB', color: '#38B2AC', icon: FileQuestion },
-  DEFAULT: { label: 'FILE', color: '#A0AEC0', icon: FileQuestion },
+  DB: { label: 'DB', bgColor: 'hsl(180, 60%, 96%)', textColor: 'hsl(180, 50%, 40%)' }, // bg-cyan-50, text-cyan-700
+  DEFAULT: { label: 'FILE', bgColor: 'hsl(220, 10%, 96%)', textColor: 'hsl(220, 5%, 45%)' },
 };
 
 export const getFileTypeDetails = (type: string): FileTypeDetails => {

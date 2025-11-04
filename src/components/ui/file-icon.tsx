@@ -2,7 +2,7 @@
 'use client';
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { getFileTypeDetails, FileTypeDetails } from '@/lib/resource-utils';
+import { getFileTypeDetails, type FileTypeDetails } from '@/lib/resource-utils';
 import Image from 'next/image';
 
 interface FileIconProps {
@@ -12,14 +12,14 @@ interface FileIconProps {
 }
 
 export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUrl }) => {
-  const { label, color } = getFileTypeDetails(type);
+  const { label, bgColor, textColor } = getFileTypeDetails(type);
 
   return (
     <div className={cn("relative w-20 h-24", className)}>
       {/* Main file body */}
       <div
         className={cn("w-full h-full rounded-lg shadow-sm overflow-hidden")}
-        style={{ backgroundColor: color }}
+        style={{ backgroundColor: bgColor }}
       >
         {thumbnailUrl ? (
           <div className="relative w-full h-full">
@@ -30,9 +30,9 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
          {/* Etiqueta con la extensión del archivo */}
         <div className={cn(
           "absolute bottom-2 left-2 right-2 p-1 rounded-md text-center",
-          thumbnailUrl ? "bg-black/60 backdrop-blur-sm" : "bg-white/80"
+           "bg-white/80"
         )}>
-            <span className={cn("text-xs font-bold", thumbnailUrl ? "text-white" : "")} style={thumbnailUrl ? {} : { color }}>{label}</span>
+            <span className={cn("text-xs font-bold")} style={{ color: textColor }}>{label}</span>
         </div>
       </div>
       
