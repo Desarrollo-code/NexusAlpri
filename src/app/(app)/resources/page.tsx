@@ -12,7 +12,7 @@ import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDow
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { ResourceListItem } from '@/components/resources/resource-list-item';
 import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
-import { DndContext, type DragEndEvent, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, type DragEndEvent, MouseSensor, TouchSensor, useSensor, useSensors, useDroppable } from '@dnd-kit/core';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -46,6 +46,7 @@ export default function ResourcesPage() {
   const [isFolderCreatorOpen, setIsFolderCreatorOpen] = useState(false);
   const [isUploaderOpen, setIsUploaderOpen] = useState(false);
 
+  const { setNodeRef: setRootDroppableRef, isOver: isOverRoot } = useDroppable({ id: 'root' });
 
   useEffect(() => {
     setPageTitle('Mi Nube');
@@ -184,7 +185,7 @@ export default function ResourcesPage() {
         </Card>
 
         <nav aria-label="Breadcrumb">
-            <ol className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+            <ol ref={setRootDroppableRef} className={cn("flex items-center gap-1.5 text-sm font-medium text-muted-foreground p-2 rounded-lg", isOverRoot && "bg-primary/20")}>
                 {breadcrumbs.map((crumb, index) => (
                     <li key={crumb.id || 'root'} className="flex items-center gap-1.5">
                         <button onClick={() => handleBreadcrumbClick(crumb.id, index)} disabled={index === breadcrumbs.length - 1} className={cn("hover:text-primary disabled:hover:text-muted-foreground disabled:cursor-default", index === breadcrumbs.length - 1 && "text-foreground font-semibold")}>{crumb.title}</button>
@@ -218,13 +219,12 @@ export default function ResourcesPage() {
                                 </div>
                             ) : (
                                 <Card>
-                                     <div className="grid grid-cols-[auto_minmax(0,3fr)_minmax(0,1.5fr)_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_auto] items-center border-b px-2 font-medium text-muted-foreground text-xs uppercase h-12 gap-4">
+                                     <div className="grid grid-cols-[auto_minmax(0,3fr)_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_auto] items-center border-b px-2 font-medium text-muted-foreground text-xs uppercase h-12 gap-4">
                                         <div className="w-12"></div>
                                         <div className="pl-3">Nombre</div>
                                         <div className="hidden md:block">Propietario</div>
                                         <div className="hidden md:block">Categoría</div>
-                                        <div className="hidden md:block text-right">Fecha</div>
-                                        <div className="hidden md:block text-center">Estado</div>
+                                        <div className="hidden md:block">Estado</div>
                                         <div className="w-8"></div>
                                      </div>
                                     <div className="divide-y">
