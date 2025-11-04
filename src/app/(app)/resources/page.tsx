@@ -38,7 +38,7 @@ export default function ResourcesPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
-  const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; title: string }[]>([{ id: null, title: 'Mi Nube' }]);
+  const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; title: string }[]>([{ id: null, title: 'Principal' }]);
   const [selectedResource, setSelectedResource] = useState<AppResourceType | null>(null);
   const [resourceToEdit, setResourceToEdit] = useState<AppResourceType | null>(null);
   const [resourceToDelete, setResourceToDelete] = useState<AppResourceType | null>(null);
@@ -49,7 +49,7 @@ export default function ResourcesPage() {
   const { setNodeRef: setRootDroppableRef, isOver: isOverRoot } = useDroppable({ id: 'root' });
 
   useEffect(() => {
-    setPageTitle('Mi Nube');
+    setPageTitle('Biblioteca de Recursos');
   }, [setPageTitle]);
 
   const fetchResources = useCallback(async () => {
