@@ -219,12 +219,12 @@ export default function ResourcesPage() {
                                 </div>
                             ) : (
                                 <Card>
-                                     <div className="grid grid-cols-[auto_minmax(0,3fr)_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_auto] items-center border-b px-2 font-medium text-muted-foreground text-xs uppercase h-12 gap-4">
-                                        <div className="w-12"></div>
+                                     <div className="grid grid-cols-[auto_minmax(0,3fr)_minmax(0,1.5fr)_minmax(0,1.5fr)_minmax(0,1fr)_auto] items-center border-b px-2 font-medium text-muted-foreground text-xs uppercase h-12 gap-4">
+                                        <div className="w-12 p-2"></div>
                                         <div className="pl-3">Nombre</div>
                                         <div className="hidden md:block">Propietario</div>
                                         <div className="hidden md:block">Categoría</div>
-                                        <div className="hidden md:block">Estado</div>
+                                        <div className="hidden md:block text-center">Estado</div>
                                         <div className="w-8"></div>
                                      </div>
                                     <div className="divide-y">

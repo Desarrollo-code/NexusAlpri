@@ -41,27 +41,19 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
 
     return (
         <div ref={setNodeRef} className={cn("touch-none", isDragging && 'opacity-50 z-10')}>
-            <div onClick={onSelect} className="grid grid-cols-[auto_minmax(0,3fr)_minmax(0,1.5fr)_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_auto] items-center p-2 rounded-lg hover:bg-muted/50 cursor-pointer border-b gap-4">
-                {/* Drag Handle */}
-                <div 
-                    {...attributes} 
-                    {...listeners} 
-                    className={cn(
-                        "p-2 cursor-grab text-muted-foreground",
-                        (!canModify || resource.status === 'ARCHIVED') && "cursor-default opacity-0"
-                    )}
-                     onClick={(e) => e.stopPropagation()}
-                >
-                    <GripVertical className="h-5 w-5" />
+            <div onClick={onSelect} className="grid grid-cols-[auto_minmax(0,3fr)_minmax(0,1.5fr)_minmax(0,1.5fr)_minmax(0,1fr)_auto] items-center p-2 rounded-lg hover:bg-muted/50 cursor-pointer border-b gap-4">
+                {/* Drag Handle & Thumbnail */}
+                 <div className="flex items-center gap-3 pl-2">
+                    {canModify && !resource.type.includes('FOLDER') && resource.status === 'ACTIVE' ? (
+                        <div {...attributes} {...listeners} className="p-1 cursor-grab touch-none text-muted-foreground"><GripVertical className="h-5 w-5" /></div>
+                    ) : ( <div className="w-8 h-8"/> )}
+                    <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null} />
                 </div>
                 
-                {/* Thumbnail y Título */}
-                 <div className="flex items-center gap-3 min-w-0">
-                     <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null} />
-                    <div className="min-w-0">
-                        <p className="font-semibold truncate text-foreground text-sm">{resource.title}</p>
-                        <p className="text-xs text-muted-foreground truncate">{resource.description || 'Sin descripción'}</p>
-                    </div>
+                {/* Título y Descripción */}
+                 <div className="min-w-0">
+                    <p className="font-semibold truncate text-foreground text-sm">{resource.title}</p>
+                    <p className="text-xs text-muted-foreground truncate">{resource.description || 'Sin descripción'}</p>
                 </div>
 
                 {/* Uploader */}
@@ -78,13 +70,8 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
                    <Badge variant="outline">{resource.category || "General"}</Badge>
                 </div>
 
-                {/* Fecha y Permisos */}
-                <div className="hidden md:flex text-muted-foreground text-sm justify-end">
-                     <span>{new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                </div>
-                
                  {/* Status Icons */}
-                 <div className="hidden md:flex items-center justify-center gap-2">
+                 <div className="hidden md:flex items-center justify-center gap-3">
                      <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -150,7 +137,7 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
                                     {canModify && (
                                         <>
                                             <DropdownMenuSeparator />
-                                            <DropdownMenuItem onClick={() => onEdit(resource)}>
+                                            <DropdownMenuItem onClick={()=> onEdit(resource)}>
                                                 <Edit className="mr-2 h-4 w-4" /> Editar / Compartir
                                             </DropdownMenuItem>
                                         </>
