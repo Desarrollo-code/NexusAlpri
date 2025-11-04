@@ -7,7 +7,7 @@ import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
-import { getIconForFileType } from '@/lib/resource-utils';
+import { getIconForFileType, getFileTypeDetails } from '@/lib/resource-utils';
 import type { Attachment } from '@/types';
 import { ScrollArea } from '../ui/scroll-area';
 
@@ -22,7 +22,7 @@ type Message = {
 };
 
 const AttachmentPreview = ({ attachment }: { attachment: Attachment }) => {
-    const FileIconComponent = getIconForFileType(attachment.type);
+    const { label, bgColor } = getFileTypeDetails(attachment.type);
 
     if (attachment.type.startsWith('image/')) {
         return <Image src={attachment.url} alt={attachment.name} width={300} height={200} className="rounded-lg object-cover max-w-full h-auto cursor-pointer" />;
@@ -33,7 +33,14 @@ const AttachmentPreview = ({ attachment }: { attachment: Attachment }) => {
 
     return (
         <a href={attachment.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-3 rounded-lg bg-muted hover:bg-muted/80">
-            <FileIconComponent className="h-6 w-6 text-primary" />
+            <div
+                className="w-8 h-8 flex items-center justify-center rounded-md flex-shrink-0"
+                style={{ backgroundColor: bgColor }}
+            >
+                <span className="text-xs font-bold uppercase text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.2)' }}>
+                    {label}
+                </span>
+            </div>
             <span className="truncate text-sm font-medium">{attachment.name}</span>
         </a>
     );
