@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu';
-import { MoreVertical, Edit, Trash2, Lock, Download, Globe, Users, ExternalLink, User, GripVertical, ArchiveRestore, Tag } from 'lucide-react';
+import { MoreVertical, Edit, Trash2, Lock, Download, Globe, Users, ExternalLink, User, GripVertical, ArchiveRestore, Tag, Calendar } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { DownloadButton } from '../ui/download-button';
 import { Identicon } from '../ui/identicon';
@@ -41,7 +41,7 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
 
     return (
         <div ref={setNodeRef} className={cn("touch-none", isDragging && 'opacity-50 z-10')}>
-            <div onClick={onSelect} className="grid grid-cols-[auto_1fr] md:grid-cols-[auto_minmax(0,3fr)_minmax(0,1.5fr)_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_auto] items-center p-2 rounded-lg hover:bg-muted/50 cursor-pointer border-b gap-4">
+            <div onClick={onSelect} className="grid grid-cols-[auto_minmax(0,3fr)_minmax(0,1.5fr)_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] items-center p-2 rounded-lg hover:bg-muted/50 cursor-pointer border-b gap-4">
                 {/* Drag Handle */}
                 <div 
                     {...attributes} 
@@ -84,8 +84,12 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
                 </div>
 
                 {/* Fecha y Permisos */}
-                <div className="hidden md:flex items-center gap-4 text-muted-foreground text-sm justify-end">
+                <div className="hidden md:flex text-muted-foreground text-sm justify-end">
                      <span>{new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                </div>
+                
+                 {/* Status Icons */}
+                 <div className="hidden md:flex items-center justify-center gap-2">
                      <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -105,8 +109,16 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
                                  <TooltipContent><p>Protegido con PIN</p></TooltipContent>
                             </Tooltip>
                          )}
+                         {resource.expiresAt && (
+                             <Tooltip>
+                                 <TooltipTrigger asChild>
+                                     <Calendar className="h-4 w-4 text-red-500"/>
+                                 </TooltipTrigger>
+                                 <TooltipContent><p>Expira el {new Date(resource.expiresAt).toLocaleDateString()}</p></TooltipContent>
+                             </Tooltip>
+                         )}
                     </TooltipProvider>
-                </div>
+                 </div>
                 
                 {/* Actions */}
                 <div className="ml-auto pl-2 flex-shrink-0">
