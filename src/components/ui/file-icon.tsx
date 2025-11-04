@@ -40,7 +40,7 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
         
         {/* Label at the bottom */}
         <div
-          className="absolute bottom-0 left-0 right-0 h-7 px-1 flex items-center justify-center bg-white/30 backdrop-blur-sm"
+          className="absolute bottom-0 left-0 right-0 h-7 px-1 flex items-center justify-center bg-white/30 backdrop-blur-sm rounded-b-lg"
         >
           <span className="text-xs font-bold uppercase tracking-wider" style={{ color: textColor }}>{label}</span>
         </div>
