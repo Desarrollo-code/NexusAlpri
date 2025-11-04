@@ -20,7 +20,7 @@ import { EmptyState } from '@/components/empty-state';
 import { ResourceEditorModal } from '@/components/resources/resource-editor-modal';
 import { FolderCreatorModal } from '@/components/resources/folder-creator-modal';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Table, TableHeader, TableRow, TableHead } from '@/components/ui/table';
+import { Table, TableHeader, TableRow, TableHead, TableBody } from '@/components/ui/table';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -293,16 +293,22 @@ export default function ResourcesPage() {
                                     {files.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={false} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onNavigate={() => {}} />)}
                                 </div>
                             ) : (
-                                <div className="space-y-1">
-                                    <div className="hidden md:grid grid-cols-12 gap-4 px-4 py-2 border-b text-xs font-medium text-muted-foreground">
-                                        <div className="col-span-5 flex items-center gap-2">Nombre</div>
-                                        <div className="col-span-2 flex items-center gap-2">Propietario</div>
-                                        <div className="col-span-2 flex items-center gap-2">Categoría</div>
-                                        <div className="col-span-2 flex items-center gap-2">Fecha</div>
-                                        <div className="col-span-1"></div>
-                                    </div>
-                                    {files.map(res => <ResourceListItem key={res.id} resource={res} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} />)}
-                                </div>
+                               <Card>
+                                  <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="w-[45%]">Nombre</TableHead>
+                                            <TableHead className="w-[15%] hidden sm:table-cell">Propietario</TableHead>
+                                            <TableHead className="w-[15%] hidden md:table-cell">Categoría</TableHead>
+                                            <TableHead className="w-[15%] hidden lg:table-cell">Fecha</TableHead>
+                                            <TableHead className="w-[10%] text-right"></TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                       {files.map(res => <ResourceListItem key={res.id} resource={res} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} />)}
+                                    </TableBody>
+                                  </Table>
+                                </Card>
                             )}
                         </section>
                     )}
