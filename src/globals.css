@@ -4,9 +4,9 @@
 
 @layer base {
   :root {
-    /* Paleta de colores base */
-    --background: 220 20% 99%; /* Blanco ligeramente azulado */
-    --foreground: 220 15% 15%; /* Casi negro */
+    /* Paleta de colores base (Tema Claro por defecto) */
+    --background: 220 20% 99%;
+    --foreground: 220 15% 15%;
     --card: 0 0% 100%;
     --card-foreground: 220 15% 15%;
     --popover: 0 0% 100%;
@@ -39,15 +39,11 @@
     --event-red: 0 80% 60%;
     --event-orange: 25 90% 60%;
 
-    /* Sidebar */
-    --sidebar-background: 220 40% 5%; 
-    --sidebar-foreground: 45 80% 70%;
-    --sidebar-muted-foreground: 45 50% 55%;
-    --sidebar-accent: 210 90% 55%;
-    --sidebar-accent-foreground: hsl(var(--primary-foreground));
-    --sidebar-border: 220 40% 10%;
+    /* Fuentes */
+    --font-body: 'Inter', sans-serif;
+    --font-headline: 'Space Grotesk', sans-serif;
   }
- 
+
   .dark {
     /* Tema oscuro con colores complementarios */
     --background: 220 15% 8%;
@@ -86,9 +82,16 @@
   body {
     @apply bg-background text-foreground;
   }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-headline);
+  }
 }
 
 @layer components {
+  .primary-gradient {
+    @apply bg-gradient-to-r from-primary to-accent;
+  }
+  
   .announcement-pattern-bg {
     background-size: cover;
     background-position: center;
@@ -122,6 +125,24 @@
   }
   .profile-card .card__subtitle {
     @apply text-center text-sm text-muted-foreground mt-2;
+  }
+
+  .file-icon-body {
+    @apply relative;
+  }
+
+  .file-icon-body::before {
+    content: '';
+    @apply absolute top-0 right-0 w-0 h-0 border-solid transition-all duration-300;
+    border-width: 0 24px 24px 0;
+    border-color: transparent hsl(var(--card)) hsl(var(--card)) transparent;
+    box-shadow: -2px 2px 3px rgba(0, 0, 0, 0.15);
+  }
+  .file-icon-body::after {
+    content: '';
+    @apply absolute top-0 right-0 w-0 h-0 border-solid transition-all duration-300;
+    border-width: 0 24px 24px 0;
+    border-color: transparent transparent rgba(0,0,0,0.2) transparent;
   }
 }
 
