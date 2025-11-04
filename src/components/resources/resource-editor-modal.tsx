@@ -1,10 +1,11 @@
+
 // src/components/resources/resource-editor-modal.tsx
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -186,7 +187,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             finalSize = localFile.size;
             finalFileType = localFile.type;
         } catch (err) {
-            toast({ title: 'Error de subida', description: (err as Error).message, variant = 'destructive' });
+            toast({ title: 'Error de subida', description: (err as Error).message, variant: 'destructive' });
             setIsSaving(false);
             setIsUploading(false);
             return;
@@ -221,7 +222,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         onClose();
 
     } catch(err) {
-        toast({ title: 'Error', description: (err as Error).message, variant = 'destructive' });
+        toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
     } finally {
         setIsSaving(false);
     }
@@ -255,66 +256,66 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                 <DialogTitle>{resource ? 'Editar Recurso' : 'Subir Nuevo Recurso'}</DialogTitle>
                 <DialogDescription>{resource ? 'Modifica los detalles de tu recurso.' : 'Añade un nuevo archivo, enlace o documento a la biblioteca.'}</DialogDescription>
             </DialogHeader>
-            <form id="resource-form" onSubmit={handleSave} className="flex-1 min-h-0">
-                 <ScrollArea className="h-full">
-                    <div className="space-y-4 p-4 sm:p-6">
-                      {!resource && (
-                         <RadioGroup defaultValue="DOCUMENT" onValueChange={(v) => {setResourceType(v as any); setLocalFile(null); setExternalLink('');}} className="grid grid-cols-2 gap-4">
-                            <div><RadioGroupItem value="DOCUMENT" id="type-doc" className="peer sr-only"/><Label htmlFor="type-doc" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><ImageIcon className="mb-2 h-6 w-6"/>Archivo</Label></div>
-                            <div><RadioGroupItem value="EXTERNAL_LINK" id="type-link" className="peer sr-only"/><Label htmlFor="type-link" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><LinkIcon className="mb-2 h-6 w-6"/>Enlace</Label></div>
-                         </RadioGroup>
-                      )}
+            <div className="flex-1 min-h-0">
+              <ScrollArea className="h-full">
+                <form id="resource-form" onSubmit={handleSave} className="space-y-4 px-4 sm:px-6 py-4">
+                    {!resource && (
+                        <RadioGroup defaultValue="DOCUMENT" onValueChange={(v) => {setResourceType(v as any); setLocalFile(null); setExternalLink('');}} className="grid grid-cols-2 gap-4">
+                          <div><RadioGroupItem value="DOCUMENT" id="type-doc" className="peer sr-only"/><Label htmlFor="type-doc" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><ImageIcon className="mb-2 h-6 w-6"/>Archivo</Label></div>
+                          <div><RadioGroupItem value="EXTERNAL_LINK" id="type-link" className="peer sr-only"/><Label htmlFor="type-link" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><LinkIcon className="mb-2 h-6 w-6"/>Enlace</Label></div>
+                        </RadioGroup>
+                    )}
+                    
+                    {resourceType !== 'EXTERNAL_LINK' && (
+                      (localFile || !resource?.url) ? (
+                          <>
+                              <UploadArea onFileSelect={handleFileSelect} disabled={isSaving || isUploading}>
+                                  {localFile && <p className="text-sm font-semibold">{localFile.name}</p>}
+                              </UploadArea>
+                              {isUploading && <div className="flex items-center gap-2 text-xs text-muted-foreground"><Progress value={uploadProgress} className="w-full h-1.5" /><span>{uploadProgress}%</span></div>}
+                          </>
+                      ) : (
+                          <ExistingFileDisplay />
+                      )
+                    )}
+
+                    {resourceType === 'EXTERNAL_LINK' && <div className="space-y-1.5"><Label htmlFor="url">URL del Enlace</Label><Input id="url" type="url" value={externalLink} onChange={e => setExternalLink(e.target.value)} required placeholder="https://..."/></div>}
                       
-                      {resourceType !== 'EXTERNAL_LINK' && (
-                        (localFile || !resource?.url) ? (
-                            <>
-                                <UploadArea onFileSelect={handleFileSelect} disabled={isSaving || isUploading}>
-                                    {localFile && <p className="text-sm font-semibold">{localFile.name}</p>}
-                                </UploadArea>
-                                {isUploading && <div className="flex items-center gap-2 text-xs text-muted-foreground"><Progress value={uploadProgress} className="w-full h-1.5" /><span>{uploadProgress}%</span></div>}
-                            </>
-                        ) : (
-                           <ExistingFileDisplay />
-                        )
+                      <div className="space-y-1.5"><Label htmlFor="title">Título</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
+                      <div className="space-y-1.5"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)}/></div>
+                      <div className="space-y-1.5"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory}><SelectTrigger id="category"><SelectValue placeholder="Seleccionar..." /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select></div>
+                      <div className="space-y-1.5"><Label>Expiración</Label><Popover><PopoverTrigger asChild><Button variant="outline" className="w-full justify-start font-normal">{expiresAt ? format(expiresAt, "PPP", {locale: es}) : <span>Sin fecha de expiración</span>}</Button></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={expiresAt} onSelect={setExpiresAt} initialFocus /></PopoverContent></Popover></div>
+                      <div className="flex items-center space-x-2 pt-2"><Switch id="is-public" checked={isPublic} onCheckedChange={setIsPublic} /><Label htmlFor="is-public">Público (visible para todos)</Label></div>
+                      {!isPublic && (
+                          <div className="space-y-1.5"><Label>Compartir con</Label><Input placeholder="Buscar usuarios..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
+                          <ScrollArea className="h-32 border rounded-md p-2">
+                              {allUsers.filter(u => u.id !== user?.id).map(u => (
+                                  <div key={u.id} className="flex items-center space-x-3 py-1"><Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={(c) => setSharedWithUserIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{u.name?.charAt(0)}</AvatarFallback></Avatar>{u.name}</Label></div>
+                              ))}
+                          </ScrollArea></div>
                       )}
-
-                      {resourceType === 'EXTERNAL_LINK' && <div className="space-y-1.5"><Label htmlFor="url">URL del Enlace</Label><Input id="url" type="url" value={externalLink} onChange={e => setExternalLink(e.target.value)} required placeholder="https://..."/></div>}
-                        
-                       <div className="space-y-1.5"><Label htmlFor="title">Título</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
-                       <div className="space-y-1.5"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)}/></div>
-                       <div className="space-y-1.5"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory}><SelectTrigger id="category"><SelectValue placeholder="Seleccionar..." /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select></div>
-                       <div className="space-y-1.5"><Label>Expiración</Label><Popover><PopoverTrigger asChild><Button variant="outline" className="w-full justify-start font-normal">{expiresAt ? format(expiresAt, "PPP", {locale: es}) : <span>Sin fecha de expiración</span>}</Button></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={expiresAt} onSelect={setExpiresAt} initialFocus /></PopoverContent></Popover></div>
-                       <div className="flex items-center space-x-2 pt-2"><Switch id="is-public" checked={isPublic} onCheckedChange={setIsPublic} /><Label htmlFor="is-public">Público (visible para todos)</Label></div>
-                        {!isPublic && (
-                            <div className="space-y-1.5"><Label>Compartir con</Label><Input placeholder="Buscar usuarios..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
-                            <ScrollArea className="h-32 border rounded-md p-2">
-                                {allUsers.filter(u => u.id !== user?.id).map(u => (
-                                    <div key={u.id} className="flex items-center space-x-3 py-1"><Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={(c) => setSharedWithUserIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{u.name?.charAt(0)}</AvatarFallback></Avatar>{u.name}</Label></div>
-                                ))}
-                            </ScrollArea></div>
-                        )}
-                        {resource && (
-                          <div className="space-y-4 pt-4 border-t">
-                            <Label>Seguridad</Label>
-                             <div className="relative">
-                                <Input type={showPin ? "text" : "password"} value={pin} onChange={(e) => setPin(e.target.value)} placeholder="Nuevo PIN (4-8 dígitos)"/>
-                                <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => setShowPin(!showPin)}>
-                                    {showPin ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
-                                </Button>
-                             </div>
-                              <div className="relative">
-                                <Input type={showPin ? "text" : "password"} value={confirmPin} onChange={(e) => setConfirmPin(e.target.value)} placeholder="Confirmar nuevo PIN" disabled={!pin}/>
-                              </div>
-
-                            <div className="flex gap-2">
-                                <Button type="button" onClick={handleSetPin} disabled={isSettingPin || !pin || pin !== confirmPin} className="w-full">Establecer PIN</Button>
-                                {resource.hasPin && <Button type="button" variant="destructive" onClick={handleRemovePin} disabled={isSettingPin} className="w-full">Eliminar PIN</Button>}
+                      {resource && (
+                        <div className="space-y-4 pt-4 border-t">
+                          <Label>Seguridad</Label>
+                            <div className="relative">
+                              <Input type={showPin ? "text" : "password"} value={pin} onChange={(e) => setPin(e.target.value)} placeholder="Nuevo PIN (4-8 dígitos)"/>
+                              <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => setShowPin(!showPin)}>
+                                  {showPin ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
+                              </Button>
                             </div>
+                            <div className="relative">
+                              <Input type={showPin ? "text" : "password"} value={confirmPin} onChange={(e) => setConfirmPin(e.target.value)} placeholder="Confirmar nuevo PIN" disabled={!pin}/>
+                            </div>
+
+                          <div className="flex gap-2">
+                              <Button type="button" onClick={handleSetPin} disabled={isSettingPin || !pin || pin !== confirmPin} className="w-full">Establecer PIN</Button>
+                              {resource.hasPin && <Button type="button" variant="destructive" onClick={handleRemovePin} disabled={isSettingPin} className="w-full">Eliminar PIN</Button>}
                           </div>
-                        )}
-                    </div>
-                </ScrollArea>
-            </form>
+                        </div>
+                      )}
+                </form>
+              </ScrollArea>
+            </div>
             <DialogFooter className="p-4 sm:p-6 border-t flex-shrink-0 flex flex-row sm:justify-end gap-2">
                 <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
                 <Button type="submit" form="resource-form" disabled={isSaving || isUploading}>
