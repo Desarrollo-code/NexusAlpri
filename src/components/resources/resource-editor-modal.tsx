@@ -18,7 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Save, UploadCloud, FileWarning, Link as LinkIcon, Image as ImageIcon, XCircle, Trash2, Replace } from 'lucide-react';
+import { Loader2, Save, UploadCloud, FileWarning, Link as LinkIcon, Image as ImageIcon, XCircle, Trash2, Replace, Calendar as CalendarIcon, Eye, EyeOff } from 'lucide-react';
 import type { AppResourceType, User as AppUser } from '@/types';
 import { UploadArea } from '../ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
@@ -31,11 +31,12 @@ import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Calendar } from '../ui/calendar';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import bcrypt from 'bcryptjs';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import Image from 'next/image';
 import { FileIcon } from '../ui/file-icon';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
+import { cn } from '@/lib/utils';
+import { Separator } from '../ui/separator';
 
 interface ResourceEditorModalProps {
   isOpen: boolean;
@@ -69,6 +70,8 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   const [userSearch, setUserSearch] = useState('');
   
   const [pin, setPin] = useState('');
+  const [confirmPin, setConfirmPin] = useState('');
+  const [showPin, setShowPin] = useState(false);
   const [isSettingPin, setIsSettingPin] = useState(false);
 
 
@@ -84,6 +87,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     setExternalLink('');
     setLocalFile(null);
     setPin('');
+    setConfirmPin('');
   };
 
   useEffect(() => {
@@ -99,6 +103,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         setResourceType(resource.type);
         setExternalLink(resource.type === 'EXTERNAL_LINK' ? resource.url || '' : '');
         setPin(''); // No pre-cargamos el PIN por seguridad
+        setConfirmPin('');
         setLocalFile(null); // Asegurarse de que no haya un archivo local al editar
       } else {
         resetForm();
@@ -120,19 +125,21 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   };
   
   const handleSetPin = async () => {
-    if (!resource || !pin) return;
+    if (!resource || !pin || pin !== confirmPin) {
+        toast({ title: 'Error de PIN', description: 'Los PIN no coinciden o están vacíos.', variant: 'destructive'});
+        return;
+    }
     setIsSettingPin(true);
     try {
-      const endpoint = pin ? `/api/resources/${resource.id}/pin` : `/api/resources/${resource.id}/pin`;
-      const method = pin ? 'POST' : 'DELETE';
-      const res = await fetch(endpoint, {
-        method: pin ? 'POST' : 'DELETE',
+      const res = await fetch(`/api/resources/${resource.id}/pin`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pin })
       });
       if(!res.ok) throw new Error((await res.json()).message);
       toast({ title: "PIN actualizado" });
       setPin('');
+      setConfirmPin('');
       onSave(); // Refrescar datos
     } catch (err) {
       toast({ title: 'Error', description: (err as Error).message, variant: 'destructive'});
@@ -179,7 +186,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             finalSize = localFile.size;
             finalFileType = localFile.type;
         } catch (err) {
-            toast({ title: 'Error de subida', description: (err as Error).message, variant: 'destructive' });
+            toast({ title: 'Error de subida', description: (err as Error).message, variant = 'destructive' });
             setIsSaving(false);
             setIsUploading(false);
             return;
@@ -214,7 +221,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         onClose();
 
     } catch(err) {
-        toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+        toast({ title: 'Error', description: (err as Error).message, variant = 'destructive' });
     } finally {
         setIsSaving(false);
     }
@@ -228,12 +235,12 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     const fileExtension = youtubeId ? 'youtube' : (resource.fileType?.split('/')[1] || resource.url?.split('.').pop() || 'file');
 
     return (
-      <div className="flex items-center justify-between p-2 rounded-lg border bg-muted/50">
+      <div className="flex items-center justify-between p-2 rounded-lg border bg-background min-w-0">
         <div className="flex items-center gap-3 overflow-hidden">
           <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null} />
           <span className="text-sm font-medium truncate">{resource.title}</span>
         </div>
-        <Button type="button" variant="ghost" size="sm" onClick={() => setLocalFile({} as File)}>
+        <Button type="button" variant="outline" size="sm" onClick={() => setLocalFile({} as File)}>
            <Replace className="mr-2 h-4 w-4"/> Reemplazar
         </Button>
       </div>
@@ -243,7 +250,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col p-0 gap-0 rounded-2xl">
+        <DialogContent className="w-[95vw] sm:max-w-lg max-h-[90vh] flex flex-col p-0 gap-0 rounded-2xl">
             <DialogHeader className="p-4 sm:p-6 pb-4 border-b">
                 <DialogTitle>{resource ? 'Editar Recurso' : 'Subir Nuevo Recurso'}</DialogTitle>
                 <DialogDescription>{resource ? 'Modifica los detalles de tu recurso.' : 'Añade un nuevo archivo, enlace o documento a la biblioteca.'}</DialogDescription>
@@ -287,19 +294,28 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                             </ScrollArea></div>
                         )}
                         {resource && (
-                          <div className="space-y-2 pt-4 border-t">
+                          <div className="space-y-4 pt-4 border-t">
                             <Label>Seguridad</Label>
+                             <div className="relative">
+                                <Input type={showPin ? "text" : "password"} value={pin} onChange={(e) => setPin(e.target.value)} placeholder="Nuevo PIN (4-8 dígitos)"/>
+                                <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => setShowPin(!showPin)}>
+                                    {showPin ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
+                                </Button>
+                             </div>
+                              <div className="relative">
+                                <Input type={showPin ? "text" : "password"} value={confirmPin} onChange={(e) => setConfirmPin(e.target.value)} placeholder="Confirmar nuevo PIN" disabled={!pin}/>
+                              </div>
+
                             <div className="flex gap-2">
-                              <Input type="password" value={pin} onChange={(e) => setPin(e.target.value)} placeholder="Nuevo PIN (4-8 dígitos)"/>
-                              <Button type="button" onClick={handleSetPin} disabled={isSettingPin || !pin}>Establecer</Button>
-                              {resource.hasPin && <Button type="button" variant="ghost" size="icon" onClick={handleRemovePin} disabled={isSettingPin}><Trash2 className="h-4 w-4"/></Button>}
+                                <Button type="button" onClick={handleSetPin} disabled={isSettingPin || !pin || pin !== confirmPin} className="w-full">Establecer PIN</Button>
+                                {resource.hasPin && <Button type="button" variant="destructive" onClick={handleRemovePin} disabled={isSettingPin} className="w-full">Eliminar PIN</Button>}
                             </div>
                           </div>
                         )}
                     </div>
                 </ScrollArea>
             </form>
-            <DialogFooter className="border-t p-4 flex-shrink-0 flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+            <DialogFooter className="p-4 sm:p-6 border-t flex-shrink-0 flex flex-row sm:justify-end gap-2">
                 <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
                 <Button type="submit" form="resource-form" disabled={isSaving || isUploading}>
                     {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
