@@ -29,17 +29,26 @@ import { Separator } from '@/components/ui/separator';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
 
-const getFileType = (mimeType: string | null): string => {
-    if (!mimeType) return 'Other';
-    if (mimeType.startsWith('image/')) return 'image';
-    if (mimeType.startsWith('video/')) return 'video';
-    if (mimeType === 'application/pdf') return 'pdf';
-    if (mimeType.includes('word')) return 'doc';
-    if (mimeType.includes('excel')) return 'xls';
-    if (mimeType.includes('presentation')) return 'ppt';
-    if (mimeType.includes('zip') || mimeType.includes('archive')) return 'zip';
-    return 'other';
-};
+const getFileTypeFilter = (fileType: string): Prisma.EnterpriseResourceWhereInput => {
+    const mimeMap: Record<string, string[]> = {
+        image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+        video: ['video/mp4', 'video/webm', 'video/ogg'],
+        pdf: ['application/pdf'],
+        doc: ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+        xls: ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+        ppt: ['application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'],
+        zip: ['application/zip', 'application/x-rar-compressed', 'application/x-7z-compressed'],
+    };
+    const mimeTypes = mimeMap[fileType];
+    if (mimeTypes) {
+        return { fileType: { in: mimeTypes } };
+    }
+    if (fileType === 'other') {
+        const allKnownMimes = Object.values(mimeMap).flat();
+        return { fileType: { notIn: allKnownMimes } };
+    }
+    return {};
+}
 
 const FILE_TYPE_OPTIONS = [
   { value: "all", label: "Todos los tipos" },
@@ -292,7 +301,7 @@ export default function ResourcesPage() {
                                             <TableHead className="col-span-2 hidden md:flex items-center gap-2">Categoría</TableHead>
                                             <TableHead className="col-span-2 hidden md:flex items-center gap-2">Fecha</TableHead>
                                             <TableHead className="col-span-1 hidden md:flex items-center gap-2">Estado</TableHead>
-                                            <TableHead className="col-span-2 md:col-span-1 hidden md:block"></TableHead>
+                                            <TableHead className="col-span-2 md:col-span-1"></TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <div className="space-y-2 mt-2">
