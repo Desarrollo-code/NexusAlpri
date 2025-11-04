@@ -22,6 +22,8 @@ import { UploadArea } from '../ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '../ui/progress';
 import Image from 'next/image';
+import { ScrollArea } from '../ui/scroll-area';
+
 
 interface MotivationEditorModalProps {
     isOpen: boolean;
@@ -178,8 +180,8 @@ export function MotivationEditorModal({ isOpen, onClose, message, onSave }: Moti
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-xl">
-                <DialogHeader>
+            <DialogContent className="sm:max-w-xl max-h-[90vh] flex flex-col p-0">
+                <DialogHeader className="p-6 pb-4 border-b">
                     <DialogTitle className="flex items-center gap-2">
                         <Sparkles className="h-5 w-5 text-primary"/>
                         {message ? 'Editar Mensaje de Motivación' : 'Crear Nuevo Mensaje'}
@@ -188,74 +190,76 @@ export function MotivationEditorModal({ isOpen, onClose, message, onSave }: Moti
                         Diseña la ventana emergente que verán tus usuarios al alcanzar un logro.
                     </DialogDescription>
                 </DialogHeader>
-                <form id="motivation-form" onSubmit={handleFormSubmit} className="space-y-4">
-                    <div className="space-y-1">
-                        <Label htmlFor="msg-title">Título del Mensaje</Label>
-                        <Input id="msg-title" value={title} onChange={e => setTitle(e.target.value)} required />
-                    </div>
-                    <div className="space-y-1">
-                        <Label htmlFor="msg-content">Contenido del Mensaje</Label>
-                        <Textarea id="msg-content" value={content} onChange={e => setContent(e.target.value)} />
-                    </div>
-                     <div className="space-y-1">
-                        <Label htmlFor="msg-image-url">Imagen (Opcional)</Label>
-                        {finalImageUrl && !isUploading ? (
-                            <div className="relative w-full aspect-video rounded-lg border overflow-hidden bg-muted/20 p-2">
-                                <Image src={finalImageUrl} alt="Previsualización" fill className="object-contain p-2" />
-                                <div className="absolute top-1 right-1 flex flex-col gap-1 z-10">
-                                    <Button type="button" variant="secondary" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={() => document.getElementById('image-upload-input')?.click()} disabled={isSubmitting}>
-                                        <Replace className="h-4 w-4"/>
-                                    </Button>
-                                    <Button type="button" variant="destructive" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={handleRemoveImage} disabled={isSubmitting}>
-                                        <XCircle className="h-4 w-4"/>
-                                    </Button>
-                                </div>
-                            </div>
-                        ) : isUploading ? (
-                             <div className="w-full aspect-video flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg bg-muted/50 p-2 relative">
-                                {localImagePreview && <Image src={localImagePreview} alt="Subiendo" fill className="object-contain opacity-30 p-2"/>}
-                                <div className="z-10 text-center space-y-2">
-                                    <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-                                    <p className="text-sm text-muted-foreground">Subiendo...</p>
-                                    <Progress value={uploadProgress} className="w-32 h-1.5" />
-                                </div>
-                            </div>
-                        ) : (
-                            <UploadArea inputId="image-upload-input" onFileSelect={handleImageUpload} disabled={isSubmitting} />
-                        )}
-                         <input type="file" id="image-upload-input" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e.target.files ? e.target.files[0] : null)} />
-                    </div>
-                     <div className="space-y-1">
-                        <Label htmlFor="msg-video-url">URL de Video (YouTube, opcional)</Label>
-                        <Input id="msg-video-url" value={videoUrl || ''} onChange={e => setVideoUrl(e.target.value)} placeholder="https://www.youtube.com/watch?v=..."/>
-                    </div>
-                    <div className="space-y-2 p-4 border rounded-lg bg-muted/30">
-                        <Label>Disparador del Mensaje</Label>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                             <Select value={triggerType} onValueChange={(v: MotivationalMessageTriggerType) => { setTriggerType(v); setTriggerId(null); }}>
-                                <SelectTrigger>
-                                    <SelectValue/>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {Object.entries(triggerLabels).map(([key, label]) => (
-                                        <SelectItem key={key} value={key}>{label}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <Select value={triggerId || ''} onValueChange={setTriggerId} required>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Selecciona..."/>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {(triggerOptions[triggerType] || []).map(opt => (
-                                        <SelectItem key={opt.id} value={opt.id}>{opt.title}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                <ScrollArea className="flex-1 min-h-0">
+                    <form id="motivation-form" onSubmit={handleFormSubmit} className="space-y-4 px-6 py-4">
+                        <div className="space-y-1">
+                            <Label htmlFor="msg-title">Título del Mensaje</Label>
+                            <Input id="msg-title" value={title} onChange={e => setTitle(e.target.value)} required />
                         </div>
-                    </div>
-                </form>
-                 <DialogFooter>
+                        <div className="space-y-1">
+                            <Label htmlFor="msg-content">Contenido del Mensaje</Label>
+                            <Textarea id="msg-content" value={content} onChange={e => setContent(e.target.value)} />
+                        </div>
+                        <div className="space-y-1">
+                            <Label htmlFor="msg-image-url">Imagen (Opcional)</Label>
+                            {finalImageUrl && !isUploading ? (
+                                <div className="relative w-full aspect-video rounded-lg border overflow-hidden bg-muted/20 p-2">
+                                    <Image src={finalImageUrl} alt="Previsualización" fill className="object-contain p-2" />
+                                    <div className="absolute top-1 right-1 flex flex-col gap-1 z-10">
+                                        <Button type="button" variant="secondary" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={() => document.getElementById('image-upload-input')?.click()} disabled={isSubmitting}>
+                                            <Replace className="h-4 w-4"/>
+                                        </Button>
+                                        <Button type="button" variant="destructive" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={handleRemoveImage} disabled={isSubmitting}>
+                                            <XCircle className="h-4 w-4"/>
+                                        </Button>
+                                    </div>
+                                </div>
+                            ) : isUploading ? (
+                                <div className="w-full aspect-video flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg bg-muted/50 p-2 relative">
+                                    {localImagePreview && <Image src={localImagePreview} alt="Subiendo" fill className="object-contain opacity-30 p-2"/>}
+                                    <div className="z-10 text-center space-y-2">
+                                        <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+                                        <p className="text-sm text-muted-foreground">Subiendo...</p>
+                                        <Progress value={uploadProgress} className="w-32 h-1.5" />
+                                    </div>
+                                </div>
+                            ) : (
+                                <UploadArea inputId="image-upload-input" onFileSelect={handleImageUpload} disabled={isSubmitting} />
+                            )}
+                            <input type="file" id="image-upload-input" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e.target.files ? e.target.files[0] : null)} />
+                        </div>
+                        <div className="space-y-1">
+                            <Label htmlFor="msg-video-url">URL de Video (YouTube, opcional)</Label>
+                            <Input id="msg-video-url" value={videoUrl || ''} onChange={e => setVideoUrl(e.target.value)} placeholder="https://www.youtube.com/watch?v=..."/>
+                        </div>
+                        <div className="space-y-2 p-4 border rounded-lg bg-muted/30">
+                            <Label>Disparador del Mensaje</Label>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <Select value={triggerType} onValueChange={(v: MotivationalMessageTriggerType) => { setTriggerType(v); setTriggerId(null); }}>
+                                    <SelectTrigger>
+                                        <SelectValue/>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {Object.entries(triggerLabels).map(([key, label]) => (
+                                            <SelectItem key={key} value={key}>{label}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <Select value={triggerId || ''} onValueChange={setTriggerId} required>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Selecciona..."/>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {(triggerOptions[triggerType] || []).map(opt => (
+                                            <SelectItem key={opt.id} value={opt.id}>{opt.title}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    </form>
+                </ScrollArea>
+                 <DialogFooter className="p-6 pt-4 border-t">
                     <Button variant="outline" onClick={onClose}>Cancelar</Button>
                     <Button type="submit" form="motivation-form" disabled={isSubmitting || !title || !triggerId}>
                         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}

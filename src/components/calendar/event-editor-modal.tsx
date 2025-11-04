@@ -36,7 +36,7 @@ import { EventDetailsView } from '@/components/calendar/event-details-view';
 import { Separator } from '@/components/ui/separator';
 import { Identicon } from '@/components/ui/identicon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Loader2, Save, MapPin, Video, Link as LinkIcon, X, Check, Users, Edit, Trash2, Repeat, CalendarIcon, Hand } from 'lucide-react';
+import { Loader2, Save, MapPin, Video, Link as LinkIcon, X, Check, Users, Edit, Trash2, Repeat, Calendar as CalendarIcon, Hand } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Calendar } from '../ui/calendar';
 import { es } from 'date-fns/locale';
@@ -368,7 +368,7 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
     return (
         <>
             <Dialog open={isOpen} onOpenChange={onClose}>
-                <DialogContent className={cn("w-[95vw] max-w-2xl overflow-hidden flex flex-col max-h-[90vh] rounded-lg", event && canEditSelectedEvent && "border-primary shadow-primary/20")}>
+                <DialogContent className={cn("w-[95vw] max-w-2xl overflow-hidden flex flex-col max-h-[90vh] rounded-lg", event && canEditSelectedEvent && !isEditMode && "border-primary shadow-primary/20")}>
                     <DialogHeader className="flex flex-row items-center justify-between p-6 pb-0">
                         <div className="space-y-1.5">
                             <DialogTitle>{(event && !isEditMode) ? event.title : (isEditMode ? (event ? "Editar Evento" : "Crear Evento") : "Detalles del Evento")}</DialogTitle>
@@ -382,9 +382,11 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
                             </div>
                         )}
                     </DialogHeader>
-                    <div className="flex-1 overflow-y-auto px-6 py-4 pr-6 thin-scrollbar">
-                        {renderContent()}
-                    </div>
+                    <ScrollArea className="flex-1 min-h-0 thin-scrollbar">
+                        <div className="px-6 py-4">
+                            {renderContent()}
+                        </div>
+                    </ScrollArea>
                     <DialogFooter className="p-6 pt-4 sm:col-span-2 flex flex-row w-full justify-end gap-2 border-t">
                         {isEditMode ? (
                             <>

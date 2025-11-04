@@ -88,21 +88,20 @@ export function ChatPermissionsModal({ isOpen, onClose, user }: ChatPermissionsM
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
+      <DialogContent className="max-w-md h-[70vh] flex flex-col p-0">
+        <DialogHeader className="p-6 pb-4 border-b">
           <DialogTitle>Permisos de Chat para {user.name}</DialogTitle>
           <DialogDescription>
             Selecciona con qué usuarios puede iniciar una conversación.
           </DialogDescription>
         </DialogHeader>
-        <div className="py-4">
+        <div className="flex-1 min-h-0 flex flex-col p-6 pt-0 gap-4">
           <Input
             placeholder="Buscar usuarios..."
             value={userSearch}
             onChange={e => setUserSearch(e.target.value)}
-            className="mb-3"
           />
-          <ScrollArea className="h-64 border rounded-md">
+          <ScrollArea className="flex-grow border rounded-md">
             {isLoading ? (
               <div className="p-4 text-center"><Loader2 className="animate-spin" /></div>
             ) : (
@@ -124,7 +123,7 @@ export function ChatPermissionsModal({ isOpen, onClose, user }: ChatPermissionsM
             )}
           </ScrollArea>
         </div>
-        <DialogFooter>
+        <DialogFooter className="p-6 pt-4 border-t">
           <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
           <Button onClick={handleSaveChanges} disabled={isSaving}>
             {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
