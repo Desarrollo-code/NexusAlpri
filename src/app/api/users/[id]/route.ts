@@ -1,6 +1,5 @@
 // src/app/api/users/[id]/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { getCurrentUser } from '@/lib/auth';
 import prisma from '@/lib/prisma';
@@ -54,11 +53,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         if ('name' in body) dataToUpdate.name = body.name;
         if ('avatar' in body) dataToUpdate.avatar = body.avatar;
         if ('theme' in body) dataToUpdate.theme = body.theme;
-
-        // Correctly handle processId assignment
-        if ('processId' in body) {
-            dataToUpdate.processId = body.processId;
-        }
+        if ('processId' in body) dataToUpdate.processId = body.processId;
 
         if (session.role === 'ADMINISTRATOR') {
             const userToUpdate = await prisma.user.findUnique({ where: { id } });
@@ -87,6 +82,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                         city: req.geo?.city,
                     }
                 });
+            }
+            
+            // Si se proporciona una nueva contraseña, encriptarla
+            if (body.password && body.password.trim() !== '') {
+                const hashedPassword = await bcrypt.hash(body.password, 10);
+                dataToUpdate.password = hashedPassword;
             }
         }
         
@@ -132,5 +133,3 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
         return NextResponse.json({ message: 'Error al inactivar el usuario' }, { status: 500 });
     }
 }
-
-    
