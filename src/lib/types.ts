@@ -48,6 +48,15 @@ export interface PlatformSettings {
     announcementsImageUrl?: string | null;
     publicPagesBgUrl?: string | null;
     securityMascotUrl?: string | null;
+    emptyStateCoursesUrl?: string | null;
+    emptyStateMyCoursesUrl?: string | null;
+    emptyStateFormsUrl?: string | null;
+    emptyStateMyNotesUrl?: string | null;
+    emptyStateResourcesUrl?: string | null;
+    emptyStateCertificatesUrl?: string | null;
+    emptyStateMotivationsUrl?: string | null;
+    emptyStateUsersUrl?: string | null;
+    emptyStateLeaderboardUrl?: string | null;
 }
 
 // --- NAVIGATION ---
@@ -74,6 +83,7 @@ export interface AnswerOption {
     isCorrect: boolean;
     feedback?: string | null;
     points: number;
+    imageUrl?: string | null;
 }
 
 export interface Question {
@@ -82,6 +92,8 @@ export interface Question {
     type: QuestionType;
     order: number;
     options: AnswerOption[];
+    imageUrl?: string | null;
+    template?: string | null;
 }
 
 export interface Quiz {
@@ -90,6 +102,8 @@ export interface Quiz {
     description?: string;
     maxAttempts?: number | null;
     questions: Question[];
+    template?: string | null;
+    timerStyle?: string | null;
 }
 
 export interface ContentBlock {
@@ -296,6 +310,7 @@ export type SecurityStats = {
     browsers: { name: string, count: number }[];
     os: { name: string, count: number }[];
     topIps: { ip: string, count: number, country: string }[];
+    topCountries: { name: string, count: number }[];
     securityScore: number;
     twoFactorAdoptionRate: number;
     atRiskUsers: { userId: string, name: string | null, email: string, avatar: string | null, failedAttempts: number }[];
@@ -303,26 +318,24 @@ export type SecurityStats = {
 
 
 // --- ANALYTICS ---
+type TrendData = { date: string, count: number };
 export interface AdminDashboardStats {
     totalUsers: number;
     totalCourses: number;
     totalPublishedCourses: number;
     totalEnrollments: number;
-    totalResources: number;
-    totalAnnouncements: number;
-    totalForms: number;
+    averageCompletionRate: number;
+    userRegistrationTrend: TrendData[];
+    contentActivityTrend: { date: string, newCourses: number, newEnrollments: number }[];
+    enrollmentTrend: TrendData[];
     usersByRole: { role: UserRole; count: number }[];
     coursesByStatus: { status: CourseStatus; count: number }[];
-    userRegistrationTrend: { date: string, newCourses: number, newEnrollments: number, newUsers: number }[];
-    averageCompletionRate: number;
     topCoursesByEnrollment: any[];
     topCoursesByCompletion: any[];
     lowestCoursesByCompletion: any[];
     topStudentsByEnrollment: any[];
     topStudentsByCompletion: any[];
     topInstructorsByCourses: any[];
-    interactiveEventsToday?: (CalendarEvent & { hasParticipated?: boolean })[];
-    assignedCourses?: Course[];
 }
 
 // --- TEMPLATES ---
@@ -348,6 +361,7 @@ export interface FormFieldOption {
   text: string;
   isCorrect: boolean;
   points: number;
+  imageUrl?: string | null;
 }
 
 export type FormField = Omit<Prisma.FormFieldGetPayload<{}>, 'options'> & {
@@ -363,6 +377,8 @@ export type AppForm = Prisma.FormGetPayload<{}> & {
         name: string | null;
     } | null;
     sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
+    template?: string | null;
+    timerStyle?: string | null;
 };
 
 // --- PROCESSES ---
@@ -372,5 +388,25 @@ export type Process = Prisma.ProcessGetPayload<{
         users: true
     }
 }>;
+
+// --- MESSAGES / CHAT ---
+export interface Conversation {
+    id: string;
+    participants: Participant[];
+    messages: Message[];
+    updatedAt: string;
+    isGroup: boolean;
+}
+export interface Participant extends Pick<User, 'id' | 'name' | 'avatar'> {}
+export interface Message {
+    id: string;
+    content: string | null;
+    createdAt: string;
+    authorId: string;
+    author: Participant;
+    attachments: Attachment[];
+    conversationId: string;
+}
+
 
 export { type FormStatus, type FormFieldType, type AnnouncementAttachment, type RecurrenceType, type ChatAttachment } from '@prisma/client';
