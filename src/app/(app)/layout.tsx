@@ -53,48 +53,17 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
   const { setTheme } = useTheme();
 
-  const [isIdlePromptVisible, setIsIdlePromptVisible] = useState(false);
-  const [promptCountdown, setPromptCountdown] = useState(60);
-
   const handleIdleLogout = React.useCallback(() => {
-    setIsIdlePromptVisible(false);
     logout();
     toast({ title: "Sesión Expirada", description: "Tu sesión se ha cerrado por inactividad.", variant: "destructive" });
   }, [logout, toast]);
 
-  const handleIdlePrompt = React.useCallback(() => {
-    setIsIdlePromptVisible(true);
-    setPromptCountdown(60);
-  }, []);
-
-  const idleTimeoutMinutes = settings?.idleTimeoutMinutes ?? 20;
-  const isIdleTimeoutEnabled = settings?.enableIdleTimeout ?? true;
-
-  const { stay } = useIdleTimeout({
+  const { isIdlePromptVisible, countdown, stay } = useIdleTimeout({
     onIdle: handleIdleLogout,
-    onPrompt: handleIdlePrompt,
-    timeout: idleTimeoutMinutes,
-    promptBeforeIdle: 60, // 60 segundos
-    enabled: isIdleTimeoutEnabled,
+    timeoutInMinutes: settings?.idleTimeoutMinutes ?? 20,
+    promptInSeconds: 60,
+    enabled: settings?.enableIdleTimeout ?? true,
   });
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isIdlePromptVisible && promptCountdown > 0) {
-      interval = setInterval(() => {
-        setPromptCountdown(prev => prev - 1);
-      }, 1000);
-    } else if (isIdlePromptVisible && promptCountdown === 0) {
-      handleIdleLogout();
-    }
-    return () => clearInterval(interval);
-  }, [isIdlePromptVisible, promptCountdown, handleIdleLogout]);
-
-
-  const handleStay = () => {
-    setIsIdlePromptVisible(false);
-    stay();
-  };
   
   React.useEffect(() => {
     if (user?.theme) {
@@ -132,7 +101,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         )}
         <AppWatermark />
         <Toaster />
-        <IdleTimeoutDialog isOpen={isIdlePromptVisible} onStay={handleStay} countdown={promptCountdown}/>
+        <IdleTimeoutDialog isOpen={isIdlePromptVisible} onStay={stay} countdown={countdown}/>
       </div>
   );
 }

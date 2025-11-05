@@ -1,66 +1,76 @@
 // src/hooks/use-idle-timeout.ts
 'use client';
-
-import { useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 
 interface IdleTimeoutProps {
   onIdle: () => void;
-  onPrompt: () => void;
-  timeout: number; // in minutes
-  promptBeforeIdle: number; // in seconds
+  timeoutInMinutes: number;
+  promptInSeconds: number;
   enabled: boolean;
 }
 
 export const useIdleTimeout = ({
   onIdle,
-  onPrompt,
-  timeout,
-  promptBeforeIdle,
+  timeoutInMinutes,
+  promptInSeconds,
   enabled,
 }: IdleTimeoutProps) => {
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const promptTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isIdlePromptVisible, setIsIdlePromptVisible] = useState(false);
+  const [countdown, setCountdown] = useState(promptInSeconds);
+
+  const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const promptTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
   const pathname = usePathname();
 
-  const timeoutMs = timeout * 60 * 1000;
-  const promptMs = Math.max(0, timeoutMs - (promptBeforeIdle * 1000));
+  const finalTimeout = timeoutInMinutes * 60 * 1000;
+  const promptTimeout = finalTimeout - (promptInSeconds * 1000);
 
-  const clearTimers = useCallback(() => {
-    if (promptTimeoutRef.current) {
-      clearTimeout(promptTimeoutRef.current);
-    }
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+  const clearAllTimers = useCallback(() => {
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    if (promptTimerRef.current) clearTimeout(promptTimerRef.current);
+    if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
   }, []);
 
-  const startTimers = useCallback(() => {
-    if (!enabled) {
-      clearTimers();
-      return;
-    }
-    
-    clearTimers();
-    
-    if (promptMs > 0 && promptMs < timeoutMs) {
-      promptTimeoutRef.current = setTimeout(onPrompt, promptMs);
-    }
+  const handlePrompt = useCallback(() => {
+    setIsIdlePromptVisible(true);
+    setCountdown(promptInSeconds);
+    countdownIntervalRef.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(countdownIntervalRef.current!);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, [promptInSeconds]);
 
-    timeoutRef.current = setTimeout(onIdle, timeoutMs);
-  }, [enabled, clearTimers, onPrompt, onIdle, promptMs, timeoutMs]);
-  
+  const startTimers = useCallback(() => {
+    if (!enabled) return;
+
+    clearAllTimers();
+
+    if (promptTimeout > 0) {
+      promptTimerRef.current = setTimeout(handlePrompt, promptTimeout);
+    }
+    
+    idleTimerRef.current = setTimeout(onIdle, finalTimeout);
+  }, [enabled, finalTimeout, promptTimeout, onIdle, handlePrompt, clearAllTimers]);
+
   const stay = useCallback(() => {
+    clearAllTimers();
+    setIsIdlePromptVisible(false);
     startTimers();
-  }, [startTimers]);
+  }, [clearAllTimers, startTimers]);
 
   useEffect(() => {
-    const events: (keyof WindowEventMap)[] = [
-      'mousemove', 'mousedown', 'click', 'scroll', 'keypress', 'touchstart'
-    ];
-
+    const events: (keyof WindowEventMap)[] = ['mousemove', 'mousedown', 'scroll', 'keypress', 'touchstart'];
+    
     const handleActivity = () => {
-      startTimers();
+      stay();
     };
 
     if (enabled) {
@@ -70,14 +80,13 @@ export const useIdleTimeout = ({
 
     return () => {
       events.forEach(event => window.removeEventListener(event, handleActivity));
-      clearTimers();
+      clearAllTimers();
     };
-  }, [enabled, startTimers, clearTimers]);
+  }, [enabled, stay, startTimers, clearAllTimers]);
   
   useEffect(() => {
-      startTimers();
-  }, [pathname, startTimers]);
+    stay();
+  }, [pathname, stay]);
 
-
-  return { stay };
+  return { isIdlePromptVisible, countdown, stay };
 };
