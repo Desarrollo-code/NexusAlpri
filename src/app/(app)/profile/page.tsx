@@ -30,6 +30,7 @@ import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { AVAILABLE_THEMES } from '@/components/theme-provider';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { UploadArea } from '@/components/ui/upload-area';
 
 
 // Gamification Level Calculation
@@ -309,7 +310,7 @@ const TwoFactorCard = ({ user, updateUser }: { user: AppUser, updateUser: (data:
     );
 };
 
-const ProfileCard = ({ user, onAvatarChange, onAvatarRemove, isUploading, uploadProgress }: { user: AppUser, onAvatarChange: (e: ChangeEvent<HTMLInputElement>) => void, onAvatarRemove: () => void, isUploading: boolean, uploadProgress: number }) => {
+const ProfileCard = ({ user, onAvatarChange, onAvatarRemove, isUploading, uploadProgress }: { user: AppUser, onAvatarChange: (file: File | null) => void, onAvatarRemove: () => void, isUploading: boolean, uploadProgress: number }) => {
     const { level, currentXPInLevel, xpForNextLevel, progressPercentage } = useMemo(() => calculateLevel(user?.xp || 0), [user?.xp]);
     const { user: currentUser } = useAuth();
     
@@ -321,27 +322,22 @@ const ProfileCard = ({ user, onAvatarChange, onAvatarRemove, isUploading, upload
             <div className="card__img--gradient" />
         </div>
         <div className="card__avatar group">
-            <Avatar className="avatar">
-                 <AvatarImage src={user.avatar || undefined} />
-                 <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
-            </Avatar>
-            <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                <label htmlFor="avatar-upload" className="bg-background text-foreground rounded-full p-2 cursor-pointer hover:bg-muted transition-colors shadow-md">
-                    <Replace className="h-5 w-5" />
-                    <input id="avatar-upload" type="file" className="hidden" onChange={onAvatarChange} accept="image/*" disabled={isUploading}/>
-                </label>
-                {user.avatar && (
-                     <button onClick={onAvatarRemove} className="bg-destructive text-destructive-foreground rounded-full p-2 cursor-pointer hover:bg-destructive/80 transition-colors shadow-md">
-                        <XCircle className="h-5 w-5" />
-                    </button>
-                )}
-            </div>
-             {!user.avatar && (
-                 <label htmlFor="avatar-upload" className="absolute bottom-1 right-1 bg-background text-foreground rounded-full p-1.5 cursor-pointer hover:bg-muted transition-colors shadow-md">
-                    <Camera className="h-5 w-5" />
-                    <input id="avatar-upload" type="file" className="hidden" onChange={onAvatarChange} accept="image/*" disabled={isUploading}/>
-                </label>
-             )}
+           <UploadArea
+                onFileSelect={onAvatarChange}
+                className="w-32 h-32 rounded-full border-4 border-background p-0"
+                inputId="avatar-upload-dnd"
+                disabled={isUploading}
+            >
+                <Avatar className="h-full w-full">
+                     <AvatarImage src={user.avatar || undefined} />
+                     <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
+                </Avatar>
+            </UploadArea>
+            {user.avatar && (
+                 <button onClick={onAvatarRemove} className="absolute top-1 right-1 z-20 bg-destructive text-destructive-foreground rounded-full p-1.5 cursor-pointer hover:bg-destructive/80 transition-colors shadow-md opacity-0 group-hover:opacity-100">
+                    <XCircle className="h-5 w-5" />
+                </button>
+            )}
         </div>
          <CardContent className="px-6 pb-6 pt-4">
             <CardTitle className="text-2xl font-bold font-headline flex items-center justify-center gap-2">
@@ -454,10 +450,8 @@ function ProfilePageContent() {
         startTour('profile', profileTour);
     }, [setPageTitle, startTour]);
 
-    const handleAvatarChange = async (e: ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0] && user) {
-            const file = e.target.files[0];
-            
+    const handleAvatarChange = async (file: File | null) => {
+        if (file && user) {
             setIsUploading(true);
             setUploadProgress(0);
 

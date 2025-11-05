@@ -68,43 +68,29 @@ const UploadWidget = ({
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
-      {currentImageUrl && !isUploading ? (
-             <div className="relative w-40 h-32 rounded-lg border overflow-hidden bg-muted/20 p-2">
-                <Image src={currentImageUrl} alt={`Previsualización de ${label}`} fill className="object-contain p-2" />
-                 <div className="absolute top-1 right-1 flex flex-col gap-1 z-10">
-                    <Button type="button" variant="secondary" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={() => document.getElementById(id)?.click()} disabled={disabled}>
-                        <Replace className="h-4 w-4" />
-                        <span className="sr-only">Reemplazar imagen</span>
-                    </Button>
-                    <Button type="button" variant="destructive" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={onRemove} disabled={disabled}>
-                        <XCircle className="h-4 w-4" />
-                        <span className="sr-only">Eliminar imagen</span>
-                    </Button>
-                 </div>
+      <UploadArea onFileSelect={onFileSelect} disabled={disabled || isUploading} inputId={id} className="h-32 w-40">
+        {currentImageUrl && !isUploading ? (
+          <div className="relative w-full h-full">
+            <Image src={currentImageUrl} alt={`Previsualización de ${label}`} fill className="object-contain p-2 rounded-lg" />
+            <div className="absolute top-1 right-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button type="button" variant="destructive" size="icon" className="h-6 w-6 rounded-full shadow-md" onClick={(e) => { e.stopPropagation(); onRemove(); }} disabled={disabled}>
+                <XCircle className="h-4 w-4" />
+                <span className="sr-only">Eliminar imagen</span>
+              </Button>
             </div>
-      ) : isUploading ? (
-         <div className="w-40 h-32 flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg bg-muted/50 p-2 relative">
-            {currentImageUrl && <Image src={currentImageUrl} alt="Subiendo" fill className="object-contain opacity-30 p-2"/>}
-            <div className="z-10 text-center space-y-2">
-                <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-                <p className="text-sm text-muted-foreground">Subiendo...</p>
-                <Progress value={uploadProgress} className="w-32 h-1.5" />
-            </div>
-         </div>
-      ) : (
-        <UploadArea onFileSelect={onFileSelect} disabled={disabled} inputId={id}/>
-      )}
-      <input
-        type="file"
-        id={id}
-        onChange={(e) => onFileSelect(e.target.files ? e.target.files[0] : null)}
-        disabled={disabled || isUploading}
-        accept="image/png, image/jpeg, image/svg+xml, image/webp"
-        className="hidden"
-      />
+          </div>
+        ) : isUploading ? (
+          <div className="w-full flex flex-col items-center justify-center gap-2">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            <p className="text-xs text-muted-foreground">Subiendo...</p>
+            <Progress value={uploadProgress} className="w-24 h-1.5" />
+          </div>
+        ) : null}
+      </UploadArea>
     </div>
   );
 };
+
 
 export default function SettingsPageComponent() {
   const { user, settings: globalSettings, updateSettings } = useAuth();
@@ -169,7 +155,8 @@ export default function SettingsPageComponent() {
     setFormState(prev => prev ? { ...prev, [field]: checked } : null);
   };
   
-  const handleImageUpload = useCallback(async (field: ImageField, file: File) => {
+  const handleImageUpload = useCallback(async (field: ImageField, file: File | null) => {
+      if (!file) return;
       setUploadStates(prev => ({ ...prev, [field]: { isUploading: true, progress: 0 }}));
       
       try {
@@ -316,8 +303,8 @@ export default function SettingsPageComponent() {
                            </div>
                            <Separator/>
                            <div className="grid grid-cols-2 gap-6 place-items-center md:place-items-start">
-                               <UploadWidget id="logo-upload" label="Logo (PNG/SVG)" currentImageUrl={formState.logoUrl} onFileSelect={(file) => file && handleImageUpload('logoUrl', file)} onRemove={() => handleRemoveImage('logoUrl')} disabled={isSaving} isUploading={uploadStates.logoUrl.isUploading} uploadProgress={uploadStates.logoUrl.progress} />
-                               <UploadWidget id="watermark-upload" label="Marca de Agua (PNG)" currentImageUrl={formState.watermarkUrl} onFileSelect={(file) => file && handleImageUpload('watermarkUrl', file)} onRemove={() => handleRemoveImage('watermarkUrl')} disabled={isSaving} isUploading={uploadStates.watermarkUrl.isUploading} uploadProgress={uploadStates.watermarkUrl.progress} />
+                               <UploadWidget id="logo-upload" label="Logo (PNG/SVG)" currentImageUrl={formState.logoUrl} onFileSelect={(file) => handleImageUpload('logoUrl', file)} onRemove={() => handleRemoveImage('logoUrl')} disabled={isSaving} isUploading={uploadStates.logoUrl.isUploading} uploadProgress={uploadStates.logoUrl.progress} />
+                               <UploadWidget id="watermark-upload" label="Marca de Agua (PNG)" currentImageUrl={formState.watermarkUrl} onFileSelect={(file) => handleImageUpload('watermarkUrl', file)} onRemove={() => handleRemoveImage('watermarkUrl')} disabled={isSaving} isUploading={uploadStates.watermarkUrl.isUploading} uploadProgress={uploadStates.watermarkUrl.progress} />
                            </div>
                         </CardContent>
                     </Card>

@@ -1,6 +1,5 @@
 // src/components/ui/upload-area.tsx
 'use client';
-
 import { cn } from "@/lib/utils";
 import React, { useRef, useState, useCallback } from 'react';
 import { IconUploadCloud } from '@/components/icons/icon-upload-cloud';
@@ -11,9 +10,10 @@ interface UploadAreaProps {
   className?: string;
   inputId?: string;
   children?: React.ReactNode;
+  compact?: boolean;
 }
 
-export function UploadArea({ onFileSelect, disabled, className, inputId = "file-upload", children }: UploadAreaProps) {
+export function UploadArea({ onFileSelect, disabled, className, inputId = "file-upload", children, compact = false }: UploadAreaProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -65,10 +65,11 @@ export function UploadArea({ onFileSelect, disabled, className, inputId = "file-
   return (
     <div 
       className={cn(
-        "group w-full h-32 flex flex-col items-center justify-center p-4 bg-card border-2 border-dashed border-border/50 rounded-lg cursor-pointer transition-all duration-300",
+        "group relative w-full flex flex-col items-center justify-center p-4 bg-card border-2 border-dashed border-border/50 rounded-lg cursor-pointer transition-all duration-300",
         "hover:border-primary/70 hover:bg-primary/5",
-        isDragging && "border-primary bg-primary/10",
+        isDragging && "border-primary bg-primary/10 ring-2 ring-primary/50",
         disabled && "cursor-not-allowed opacity-60",
+        compact ? "h-24" : "h-32",
         className
       )}
       onClick={!disabled ? handleClick : undefined}
@@ -85,20 +86,23 @@ export function UploadArea({ onFileSelect, disabled, className, inputId = "file-
         className="hidden"
         disabled={disabled}
       />
-      {children || (
-          <div className="flex flex-col items-center justify-center gap-2 transition-transform duration-300 group-hover:scale-105">
-             <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-background/50 dark:bg-black/30 border">
-                <IconUploadCloud className="h-6 w-6 text-muted-foreground transition-colors group-hover:text-primary" />
-             </div>
-             <div className="text-center">
-                <p className="text-sm font-semibold text-foreground">
-                    {isDragging ? 'Suelta el archivo aquí' : 'Arrastra y suelta o haz clic'}
-                </p>
-                 <p className="text-xs text-muted-foreground">
-                    Sube un archivo para adjuntar
-                </p>
-             </div>
-          </div>
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 transition-opacity duration-300 z-0">
+          <IconUploadCloud className={cn("text-muted-foreground transition-colors group-hover:text-primary", isDragging && "text-primary", compact ? "h-8 w-8" : "h-10 w-10")} />
+          {!compact && (
+            <div className="text-center">
+              <p className="text-sm font-semibold text-foreground">
+                  {isDragging ? 'Suelta el archivo aquí' : 'Arrastra y suelta o haz clic'}
+              </p>
+               <p className="text-xs text-muted-foreground">
+                  Sube un archivo para adjuntar
+              </p>
+            </div>
+          )}
+      </div>
+      {children && (
+        <div className={cn("relative z-10 w-full h-full", isDragging && "opacity-20")}>
+            {children}
+        </div>
       )}
     </div>
   );
