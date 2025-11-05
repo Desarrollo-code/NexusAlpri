@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Palette, Bell, Shield, List, Tag, Trash2, Loader2, FileWarning, KeyRound, Clock, Save, ImageIcon, Paintbrush, Type, User, UploadCloud, XCircle, Replace, HelpCircle, ImagePlay, Building, Image as ImageIconComponent, Trophy, FileText, Users, Award, Sparkles } from 'lucide-react';
+import { Palette, Bell, Shield, List, Tag, Trash2, Loader2, FileWarning, KeyRound, Clock, Save, ImageIcon, Paintbrush, Type, User, UploadCloud, XCircle, Replace, HelpCircle, ImagePlay, Building, Image as ImageIconComponent, Trophy, FileText, Users, Award, Sparkles, FolderOpen } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
@@ -398,6 +398,23 @@ export default function SettingsPageComponent() {
                                 <SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{ fontFamily: (fontMap[f.value] as any)?.style.fontFamily }}>{f.label}</SelectItem>)}</SelectContent>
                             </Select>
                         </div>
+                    </CardContent>
+                </Card>
+                 <Card className="card-border-animated" id="settings-empty-states-card">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><FolderOpen className="h-5 w-5 text-primary"/>Imágenes de Estado Vacío</CardTitle>
+                        <CardDescription>Personaliza las imágenes que se muestran cuando no hay contenido en una sección.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 place-items-center md:place-items-start">
+                        <UploadWidget id="es-courses-upload" label="Catálogo de Cursos" currentImageUrl={formState.emptyStateCoursesUrl} onFileSelect={(f) => f && handleImageUpload('emptyStateCoursesUrl', f)} onRemove={()=>handleRemoveImage('emptyStateCoursesUrl')} disabled={isSaving} isUploading={uploadStates.emptyStateCoursesUrl.isUploading} uploadProgress={uploadStates.emptyStateCoursesUrl.progress}/>
+                        <UploadWidget id="es-mycourses-upload" label="Mis Cursos" currentImageUrl={formState.emptyStateMyCoursesUrl} onFileSelect={(f) => f && handleImageUpload('emptyStateMyCoursesUrl', f)} onRemove={()=>handleRemoveImage('emptyStateMyCoursesUrl')} disabled={isSaving} isUploading={uploadStates.emptyStateMyCoursesUrl.isUploading} uploadProgress={uploadStates.emptyStateMyCoursesUrl.progress}/>
+                        <UploadWidget id="es-forms-upload" label="Formularios" currentImageUrl={formState.emptyStateFormsUrl} onFileSelect={(f) => f && handleImageUpload('emptyStateFormsUrl', f)} onRemove={()=>handleRemoveImage('emptyStateFormsUrl')} disabled={isSaving} isUploading={uploadStates.emptyStateFormsUrl.isUploading} uploadProgress={uploadStates.emptyStateFormsUrl.progress}/>
+                        <UploadWidget id="es-mynotes-upload" label="Mis Apuntes" currentImageUrl={formState.emptyStateMyNotesUrl} onFileSelect={(f) => f && handleImageUpload('emptyStateMyNotesUrl', f)} onRemove={()=>handleRemoveImage('emptyStateMyNotesUrl')} disabled={isSaving} isUploading={uploadStates.emptyStateMyNotesUrl.isUploading} uploadProgress={uploadStates.emptyStateMyNotesUrl.progress}/>
+                        <UploadWidget id="es-resources-upload" label="Recursos" currentImageUrl={formState.emptyStateResourcesUrl} onFileSelect={(f) => f && handleImageUpload('emptyStateResourcesUrl', f)} onRemove={()=>handleRemoveImage('emptyStateResourcesUrl')} disabled={isSaving} isUploading={uploadStates.emptyStateResourcesUrl.isUploading} uploadProgress={uploadStates.emptyStateResourcesUrl.progress}/>
+                        <UploadWidget id="es-certs-upload" label="Certificados" currentImageUrl={formState.emptyStateCertificatesUrl} onFileSelect={(f) => f && handleImageUpload('emptyStateCertificatesUrl', f)} onRemove={()=>handleRemoveImage('emptyStateCertificatesUrl')} disabled={isSaving} isUploading={uploadStates.emptyStateCertificatesUrl.isUploading} uploadProgress={uploadStates.emptyStateCertificatesUrl.progress}/>
+                        <UploadWidget id="es-motivations-upload" label="Motivaciones" currentImageUrl={formState.emptyStateMotivationsUrl} onFileSelect={(f) => f && handleImageUpload('emptyStateMotivationsUrl', f)} onRemove={()=>handleRemoveImage('emptyStateMotivationsUrl')} disabled={isSaving} isUploading={uploadStates.emptyStateMotivationsUrl.isUploading} uploadProgress={uploadStates.emptyStateMotivationsUrl.progress}/>
+                        <UploadWidget id="es-users-upload" label="Control Central" currentImageUrl={formState.emptyStateUsersUrl} onFileSelect={(f) => f && handleImageUpload('emptyStateUsersUrl', f)} onRemove={()=>handleRemoveImage('emptyStateUsersUrl')} disabled={isSaving} isUploading={uploadStates.emptyStateUsersUrl.isUploading} uploadProgress={uploadStates.emptyStateUsersUrl.progress}/>
+                        <UploadWidget id="es-leaderboard-upload" label="Ranking" currentImageUrl={formState.emptyStateLeaderboardUrl} onFileSelect={(f) => f && handleImageUpload('emptyStateLeaderboardUrl', f)} onRemove={()=>handleRemoveImage('emptyStateLeaderboardUrl')} disabled={isSaving} isUploading={uploadStates.emptyStateLeaderboardUrl.isUploading} uploadProgress={uploadStates.emptyStateLeaderboardUrl.progress}/>
                     </CardContent>
                 </Card>
             </TabsContent>
