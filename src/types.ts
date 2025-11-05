@@ -19,6 +19,7 @@ export interface User {
 
 export interface PlatformSettings {
     platformName: string;
+    projectVersion?: string | null;
     allowPublicRegistration: boolean;
     enableEmailNotifications: boolean;
     emailWhitelist: string;
@@ -83,6 +84,7 @@ export interface AnswerOption {
     isCorrect: boolean;
     feedback?: string | null;
     points: number;
+    imageUrl?: string | null;
 }
 
 export interface Question {

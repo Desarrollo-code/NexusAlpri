@@ -244,7 +244,7 @@ export const SidebarContent = () => {
 
 
 export const SidebarFooter = () => {
-    const { logout } = useAuth();
+    const { logout, settings } = useAuth();
     const { isCollapsed, toggleSidebar, isMobile } = useSidebar();
     const { theme, setTheme } = useTheme();
 
@@ -252,6 +252,11 @@ export const SidebarFooter = () => {
 
     return (
         <div className="p-3 border-t border-border flex flex-col gap-2">
+             {!isCollapsed && settings?.projectVersion && (
+                <div className="px-3 py-2 text-center text-xs text-muted-foreground">
+                    Versión: {settings.projectVersion}
+                </div>
+             )}
              {!isCollapsed && (
                 <div className="flex items-center justify-between px-3 py-2">
                      <Label htmlFor="theme-toggle" className="text-muted-foreground text-sm">Modo Oscuro</Label>

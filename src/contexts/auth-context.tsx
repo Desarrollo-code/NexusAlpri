@@ -19,6 +19,7 @@ interface AuthContextType {
 
 const DEFAULT_SETTINGS: PlatformSettings = {
     platformName: "NexusAlpri",
+    projectVersion: "1.0.0",
     allowPublicRegistration: true,
     enableEmailNotifications: true,
     emailWhitelist: "",

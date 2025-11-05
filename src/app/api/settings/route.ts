@@ -9,6 +9,7 @@ export const dynamic = 'force-dynamic';
 
 const DEFAULT_DB_SETTINGS = {
   platformName: "NexusAlpri",
+  projectVersion: "1.0.0",
   allowPublicRegistration: true,
   enableEmailNotifications: true,
   emailWhitelist: "alprigrama.com",
@@ -105,6 +106,7 @@ export async function POST(req: NextRequest) {
     
     const dataToSave = {
       platformName: dataFromClient.platformName,
+      projectVersion: dataFromClient.projectVersion,
       allowPublicRegistration: dataFromClient.allowPublicRegistration,
       enableEmailNotifications: dataFromClient.enableEmailNotifications,
       emailWhitelist: dataFromClient.emailWhitelist,

@@ -303,28 +303,36 @@ export default function SettingsPageComponent() {
                 <Card className="card-border-animated" id="settings-identity-card">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><Building className="h-5 w-5 text-primary"/>Identidad y Marca</CardTitle>
-                        <CardDescription>Nombre, logo, marca de agua e imágenes para las páginas públicas.</CardDescription>
+                        <CardDescription>Nombre, versión, logo, marca de agua e imágenes para las páginas públicas.</CardDescription>
                     </CardHeader>
-                    <CardContent className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 place-items-center md:place-items-start">
-                       <div className="col-span-full space-y-2 w-full">
-                           <Label htmlFor="platformName">Nombre de la Plataforma</Label>
-                           <Input
-                               id="platformName"
-                               value={formState.platformName}
-                               onChange={(e) => handleInputChange('platformName', e.target.value)}
-                               disabled={isSaving}
-                               placeholder="Nombre de tu plataforma"
-                           />
+                    <CardContent className="space-y-6">
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                           <div className="space-y-2">
+                               <Label htmlFor="platformName">Nombre de la Plataforma</Label>
+                               <Input
+                                   id="platformName"
+                                   value={formState.platformName}
+                                   onChange={(e) => handleInputChange('platformName', e.target.value)}
+                                   disabled={isSaving}
+                                   placeholder="Nombre de tu plataforma"
+                               />
+                           </div>
+                           <div className="space-y-2">
+                               <Label htmlFor="projectVersion">Versión del Proyecto</Label>
+                               <Input
+                                   id="projectVersion"
+                                   value={formState.projectVersion || ''}
+                                   onChange={(e) => handleInputChange('projectVersion', e.target.value)}
+                                   disabled={isSaving}
+                                   placeholder="Ej: 1.0.0"
+                               />
+                           </div>
                        </div>
-                       <UploadWidget id="logo-upload" label="Logo (PNG/SVG)" currentImageUrl={formState.logoUrl} onFileSelect={(file) => file && handleImageUpload('logoUrl', file)} onRemove={() => handleRemoveImage('logoUrl')} disabled={isSaving} isUploading={uploadStates.logoUrl.isUploading} uploadProgress={uploadStates.logoUrl.progress} />
-                       <UploadWidget id="watermark-upload" label="Marca de Agua (PNG)" currentImageUrl={formState.watermarkUrl} onFileSelect={(file) => file && handleImageUpload('watermarkUrl', file)} onRemove={() => handleRemoveImage('watermarkUrl')} disabled={isSaving} isUploading={uploadStates.watermarkUrl.isUploading} uploadProgress={uploadStates.watermarkUrl.progress} />
-                       <UploadWidget id="announcements-upload" label="Fondo Anuncios" currentImageUrl={formState.announcementsImageUrl} onFileSelect={(file) => file && handleImageUpload('announcementsImageUrl', file)} onRemove={() => handleRemoveImage('announcementsImageUrl')} disabled={isSaving} isUploading={uploadStates.announcementsImageUrl.isUploading} uploadProgress={uploadStates.announcementsImageUrl.progress} />
-                       <UploadWidget id="landing-upload" label="Imagen Página de Inicio" currentImageUrl={formState.landingImageUrl} onFileSelect={(file) => file && handleImageUpload('landingImageUrl', file)} onRemove={() => handleRemoveImage('landingImageUrl')} disabled={isSaving} isUploading={uploadStates.landingImageUrl.isUploading} uploadProgress={uploadStates.landingImageUrl.progress} />
-                       <UploadWidget id="auth-upload" label="Imagen Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(file) => file && handleImageUpload('authImageUrl', file)} onRemove={() => handleRemoveImage('authImageUrl')} disabled={isSaving} isUploading={uploadStates.authImageUrl.isUploading} uploadProgress={uploadStates.authImageUrl.progress} />
-                       <UploadWidget id="about-upload" label="Imagen Página 'Nosotros'" currentImageUrl={formState.aboutImageUrl} onFileSelect={(file) => file && handleImageUpload('aboutImageUrl', file)} onRemove={() => handleRemoveImage('aboutImageUrl')} disabled={isSaving} isUploading={uploadStates.aboutImageUrl.isUploading} uploadProgress={uploadStates.aboutImageUrl.progress} />
-                       <UploadWidget id="benefits-upload" label="Imagen Beneficios (Inicio)" currentImageUrl={formState.benefitsImageUrl} onFileSelect={(file) => file && handleImageUpload('benefitsImageUrl', file)} onRemove={() => handleRemoveImage('benefitsImageUrl')} disabled={isSaving} isUploading={uploadStates.benefitsImageUrl.isUploading} uploadProgress={uploadStates.benefitsImageUrl.progress} />
-                       <UploadWidget id="public-bg-upload" label="Fondo Páginas Públicas" currentImageUrl={formState.publicPagesBgUrl} onFileSelect={(file) => file && handleImageUpload('publicPagesBgUrl', file)} onRemove={() => handleRemoveImage('publicPagesBgUrl')} disabled={isSaving} isUploading={uploadStates.publicPagesBgUrl.isUploading} uploadProgress={uploadStates.publicPagesBgUrl.progress} />
-                       <UploadWidget id="security-mascot-upload" label="Mascota de Seguridad" currentImageUrl={formState.securityMascotUrl} onFileSelect={(file) => file && handleImageUpload('securityMascotUrl', file)} onRemove={() => handleRemoveImage('securityMascotUrl')} disabled={isSaving} isUploading={uploadStates.securityMascotUrl.isUploading} uploadProgress={uploadStates.securityMascotUrl.progress} />
+                       <Separator/>
+                       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 place-items-center md:place-items-start">
+                           <UploadWidget id="logo-upload" label="Logo (PNG/SVG)" currentImageUrl={formState.logoUrl} onFileSelect={(file) => file && handleImageUpload('logoUrl', file)} onRemove={() => handleRemoveImage('logoUrl')} disabled={isSaving} isUploading={uploadStates.logoUrl.isUploading} uploadProgress={uploadStates.logoUrl.progress} />
+                           <UploadWidget id="watermark-upload" label="Marca de Agua (PNG)" currentImageUrl={formState.watermarkUrl} onFileSelect={(file) => file && handleImageUpload('watermarkUrl', file)} onRemove={() => handleRemoveImage('watermarkUrl')} disabled={isSaving} isUploading={uploadStates.watermarkUrl.isUploading} uploadProgress={uploadStates.watermarkUrl.progress} />
+                       </div>
                     </CardContent>
                 </Card>
             </TabsContent>
