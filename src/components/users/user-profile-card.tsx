@@ -1,4 +1,4 @@
-// src/components/profile/user-profile-card.tsx
+// src/components/users/user-profile-card.tsx
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -44,7 +44,7 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange, on
 
     return (
         <Card className="flex flex-col h-full bg-card shadow-md hover:shadow-primary/20 transition-shadow duration-300 text-center overflow-hidden">
-             <div className="h-14 w-full relative bg-gradient-to-br from-primary/10 to-accent/10">
+             <div className="h-12 w-full relative bg-gradient-to-br from-primary/10 to-accent/10">
                  {canModify && (
                     <div className="absolute top-1 right-1">
                         <DropdownMenu>
@@ -61,32 +61,30 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange, on
                     </div>
                 )}
                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2">
-                    <Avatar className="h-16 w-16 border-4 border-card shadow-lg">
+                    <Avatar className="h-14 w-14 border-4 border-card shadow-lg">
                         <AvatarImage src={user.avatar || undefined} />
                         <AvatarFallback><Identicon userId={user.id} /></AvatarFallback>
                     </Avatar>
                 </div>
             </div>
 
-            <CardContent className="pt-10 px-2 pb-3 flex-grow flex flex-col items-center">
-                <p className="font-semibold text-base truncate max-w-[180px]">{user.name}</p>
+            <CardContent className="pt-8 px-2 pb-2 flex-grow flex flex-col items-center">
+                <p className="font-semibold text-sm truncate max-w-[150px]">{user.name}</p>
                 <p className="text-xs text-primary font-medium">{getRoleInSpanish(user.role)}</p>
-                <p className="text-xs text-muted-foreground break-all max-w-[180px] truncate">{user.email}</p>
-                
-                 <div className="mt-2 flex items-center flex-wrap justify-center gap-1">
-                     <Badge variant={user.isActive ? "default" : "secondary"} className={cn("text-xs py-0.5 px-1.5", user.isActive ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-500/30" : "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300 border-gray-500/30")}>
+                 <div className="mt-1.5 flex items-center flex-wrap justify-center gap-1">
+                     <Badge variant={user.isActive ? "default" : "secondary"} className={cn("text-[10px] py-0 px-1.5", user.isActive ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-500/30" : "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300 border-gray-500/30")}>
                         {user.isActive ? 'Activo' : 'Inactivo'}
                      </Badge>
                      {displayProcess.length > 0 && displayProcess[0] && (
                          <Badge 
                             key={displayProcess[0].id} 
-                            className="text-xs py-0.5 px-1.5"
+                            className="text-[10px] py-0 px-1.5"
                             style={{
                                 backgroundColor: getProcessColors(displayProcess[0].id).raw.light,
                                 color: getProcessColors(displayProcess[0].id).raw.dark,
                             }}
                          >
-                            <Briefcase className="mr-1 h-3 w-3"/> {displayProcess[0].name}
+                            {displayProcess[0].name}
                         </Badge>
                      )}
                 </div>
