@@ -98,7 +98,7 @@ export async function GET(req: NextRequest) {
                     emailAttempt: { not: null },
                 },
                 _count: { event: true },
-                having: { event: { _count: { gt: 5 } } },
+                having: { event: { _count: { gte: 5 } } }, // CORRECCIÓN: Usar gte (>=) en lugar de gt (>)
             }),
         ]);
 
