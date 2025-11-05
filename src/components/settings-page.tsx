@@ -70,20 +70,27 @@ const UploadWidget = ({
       <Label>{label}</Label>
       <UploadArea onFileSelect={onFileSelect} disabled={disabled || isUploading} inputId={id} className="h-32 w-40">
         {currentImageUrl && !isUploading ? (
-          <div className="relative w-full h-full">
+          <div className="relative w-full h-full group">
             <Image src={currentImageUrl} alt={`Previsualización de ${label}`} fill className="object-contain p-2 rounded-lg" />
-            <div className="absolute top-1 right-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Button type="button" variant="destructive" size="icon" className="h-6 w-6 rounded-full shadow-md" onClick={(e) => { e.stopPropagation(); onRemove(); }} disabled={disabled}>
+            <div className="absolute top-1 right-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-1">
+              <Button type="button" variant="secondary" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={(e) => { e.stopPropagation(); document.getElementById(id)?.click(); }} disabled={disabled}>
+                <Replace className="h-4 w-4" />
+                <span className="sr-only">Reemplazar imagen</span>
+              </Button>
+              <Button type="button" variant="destructive" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={(e) => { e.stopPropagation(); onRemove(); }} disabled={disabled}>
                 <XCircle className="h-4 w-4" />
                 <span className="sr-only">Eliminar imagen</span>
               </Button>
             </div>
           </div>
         ) : isUploading ? (
-          <div className="w-full flex flex-col items-center justify-center gap-2">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            <p className="text-xs text-muted-foreground">Subiendo...</p>
-            <Progress value={uploadProgress} className="w-24 h-1.5" />
+          <div className="w-full h-full flex flex-col items-center justify-center gap-2 relative">
+            {currentImageUrl && <Image src={currentImageUrl} alt="Subiendo" fill className="object-contain opacity-20 p-2"/>}
+            <div className="z-10 text-center space-y-2">
+                <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto" />
+                <p className="text-xs text-muted-foreground">Subiendo...</p>
+                <Progress value={uploadProgress} className="w-24 h-1.5" />
+            </div>
           </div>
         ) : null}
       </UploadArea>
