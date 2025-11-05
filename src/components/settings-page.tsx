@@ -323,7 +323,7 @@ export default function SettingsPageComponent() {
                     </Card>
                      <Card className="card-border-animated lg:col-span-2">
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><ImageIconComponent className="h-5 w-5 text-primary"/>Imágenes Públicas y del Sistema</CardTitle>
+                            <CardTitle className="flex items-center gap-2"><ImageIcon className="h-5 w-5 text-primary"/>Imágenes Públicas y del Sistema</CardTitle>
                             <CardDescription>Define las imágenes para las páginas públicas y elementos del sistema.</CardDescription>
                         </CardHeader>
                         <CardContent>
