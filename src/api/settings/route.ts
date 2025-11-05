@@ -11,6 +11,7 @@ export const dynamic = 'force-dynamic';
 // si no hay ninguna configuración guardada en la base de datos.
 const DEFAULT_DB_SETTINGS = {
   platformName: "NexusAlpri",
+  projectVersion: "1.0.0",
   allowPublicRegistration: true,
   enableEmailNotifications: true,
   emailWhitelist: "alprigrama.com",
@@ -19,7 +20,7 @@ const DEFAULT_DB_SETTINGS = {
   passwordRequireUppercase: true,
   passwordRequireLowercase: true,
   passwordRequireNumber: true,
-  passwordRequireSpecialChar: true,
+  passwordRequireSpecialChar: false,
   enableIdleTimeout: true,
   idleTimeoutMinutes: 20,
   require2faForAdmins: false,
@@ -37,8 +38,18 @@ const DEFAULT_DB_SETTINGS = {
   benefitsImageUrl: null,
   announcementsImageUrl: null,
   publicPagesBgUrl: null,
+  securityMascotUrl: null,
   fontHeadline: 'Space Grotesk',
-  fontBody: 'Inter'
+  fontBody: 'Inter',
+  emptyStateCoursesUrl: null,
+  emptyStateMyCoursesUrl: null,
+  emptyStateFormsUrl: null,
+  emptyStateMyNotesUrl: null,
+  emptyStateResourcesUrl: null,
+  emptyStateCertificatesUrl: null,
+  emptyStateMotivationsUrl: null,
+  emptyStateUsersUrl: null,
+  emptyStateLeaderboardUrl: null,
 };
 
 const getFallbackSettings = (): AppPlatformSettings => {
@@ -56,13 +67,15 @@ export async function GET(req: NextRequest) {
 
     if (!dbSettings) {
       dbSettings = await prisma.platformSettings.create({
-        data: DEFAULT_DB_SETTINGS,
+        data: {
+            ...DEFAULT_DB_SETTINGS,
+            id: 'cl-nexus-settings-default' // Ensure a default ID
+        },
       });
     }
     
-    // Transforma los campos de string a array para el cliente
     const settingsToReturn: AppPlatformSettings = {
-        ...DEFAULT_DB_SETTINGS, // Start with defaults to ensure all fields are present
+        ...DEFAULT_DB_SETTINGS,
         ...dbSettings,
         resourceCategories: dbSettings.resourceCategories ? dbSettings.resourceCategories.split(',').filter(Boolean) : [],
         emailWhitelist: dbSettings.emailWhitelist || '',
@@ -72,7 +85,6 @@ export async function GET(req: NextRequest) {
 
   } catch (error) {
     console.error('[SETTINGS_GET_ERROR]', error);
-    // En caso de error de conexión, devuelve la configuración por defecto
     const fallbackSettings = getFallbackSettings();
     return NextResponse.json(fallbackSettings);
   }
@@ -86,22 +98,60 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
-    const dataFromClient: AppPlatformSettings = await req.json();
+    const dataFromClient: Partial<AppPlatformSettings> = await req.json();
     
-    // Prepara los datos para guardar, convirtiendo arrays a strings
-    const dataToSave = {
-        ...dataFromClient,
-        resourceCategories: dataFromClient.resourceCategories.join(','),
+    const safeParseInt = (value: any, defaultValue: number): number => {
+        if (value === null || value === undefined || value === '') return defaultValue;
+        const num = Number(value);
+        return isNaN(num) ? defaultValue : num;
     };
-
-    // Elimina campos que no deben ser actualizados manualmente
-    delete (dataToSave as any).id;
-    delete (dataToSave as any).updatedAt;
+    
+    const dataToSave = {
+      platformName: dataFromClient.platformName,
+      projectVersion: dataFromClient.projectVersion,
+      allowPublicRegistration: dataFromClient.allowPublicRegistration,
+      enableEmailNotifications: dataFromClient.enableEmailNotifications,
+      emailWhitelist: dataFromClient.emailWhitelist,
+      resourceCategories: Array.isArray(dataFromClient.resourceCategories) ? dataFromClient.resourceCategories.join(',') : dataFromClient.resourceCategories,
+      passwordMinLength: safeParseInt(dataFromClient.passwordMinLength, 8),
+      passwordRequireUppercase: dataFromClient.passwordRequireUppercase,
+      passwordRequireLowercase: dataFromClient.passwordRequireLowercase,
+      passwordRequireNumber: dataFromClient.passwordRequireNumber,
+      passwordRequireSpecialChar: dataFromClient.passwordRequireSpecialChar,
+      enableIdleTimeout: dataFromClient.enableIdleTimeout,
+      idleTimeoutMinutes: safeParseInt(dataFromClient.idleTimeoutMinutes, 20),
+      require2faForAdmins: dataFromClient.require2faForAdmins,
+      primaryColor: dataFromClient.primaryColor,
+      secondaryColor: dataFromClient.secondaryColor,
+      accentColor: dataFromClient.accentColor,
+      backgroundColorLight: dataFromClient.backgroundColorLight,
+      primaryColorDark: dataFromClient.primaryColorDark,
+      backgroundColorDark: dataFromClient.backgroundColorDark,
+      logoUrl: dataFromClient.logoUrl,
+      watermarkUrl: dataFromClient.watermarkUrl,
+      landingImageUrl: dataFromClient.landingImageUrl,
+      authImageUrl: dataFromClient.authImageUrl,
+      aboutImageUrl: dataFromClient.aboutImageUrl,
+      benefitsImageUrl: dataFromClient.benefitsImageUrl,
+      announcementsImageUrl: dataFromClient.announcementsImageUrl,
+      publicPagesBgUrl: dataFromClient.publicPagesBgUrl,
+      securityMascotUrl: dataFromClient.securityMascotUrl,
+      fontHeadline: dataFromClient.fontHeadline,
+      fontBody: dataFromClient.fontBody,
+      emptyStateCoursesUrl: dataFromClient.emptyStateCoursesUrl,
+      emptyStateMyCoursesUrl: dataFromClient.emptyStateMyCoursesUrl,
+      emptyStateFormsUrl: dataFromClient.emptyStateFormsUrl,
+      emptyStateMyNotesUrl: dataFromClient.emptyStateMyNotesUrl,
+      emptyStateResourcesUrl: dataFromClient.emptyStateResourcesUrl,
+      emptyStateCertificatesUrl: dataFromClient.emptyStateCertificatesUrl,
+      emptyStateMotivationsUrl: dataFromClient.emptyStateMotivationsUrl,
+      emptyStateUsersUrl: dataFromClient.emptyStateUsersUrl,
+      emptyStateLeaderboardUrl: dataFromClient.emptyStateLeaderboardUrl,
+    };
     
     const currentSettings = await prisma.platformSettings.findFirst();
     
-    // --- Lógica para verificar si se puede eliminar una categoría ---
-    if (currentSettings && currentSettings.resourceCategories) {
+    if (currentSettings && currentSettings.resourceCategories && dataToSave.resourceCategories) {
         const oldCategories = currentSettings.resourceCategories.split(',').filter(Boolean);
         const newCategories = dataToSave.resourceCategories.split(',').filter(Boolean);
         const deletedCategories = oldCategories.filter(cat => !newCategories.includes(cat));
@@ -114,20 +164,18 @@ export async function POST(req: NextRequest) {
                 if (totalUsage > 0) {
                     return NextResponse.json({
                         message: `No se puede eliminar la categoría "${category}" porque está siendo utilizada por ${totalUsage} curso(s) o recurso(s).`,
-                    }, { status: 409 }); // 409 Conflict
+                    }, { status: 409 });
                 }
             }
         }
     }
 
-    // Upsert para crear la configuración si no existe, o actualizarla si existe.
     const updatedDbSettings = await prisma.platformSettings.upsert({
       where: { id: currentSettings?.id || 'non-existent-id-for-upsert' },
       update: dataToSave,
-      create: { ...DEFAULT_DB_SETTINGS, ...dataToSave },
+      create: { ...DEFAULT_DB_SETTINGS, ...dataToSave, id: 'cl-nexus-settings-default' },
     });
     
-    // Devuelve la configuración actualizada en el formato correcto para el cliente
     const settingsToReturn: AppPlatformSettings = {
         ...DEFAULT_DB_SETTINGS,
         ...updatedDbSettings,

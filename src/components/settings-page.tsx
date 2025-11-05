@@ -296,14 +296,13 @@ export default function SettingsPageComponent() {
                 <TabsTrigger value="theme">Tema y Estilo</TabsTrigger>
                 <TabsTrigger value="security">Seguridad</TabsTrigger>
                 <TabsTrigger value="general">Generales</TabsTrigger>
-                <TabsTrigger value="images">Imágenes</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="identity" className="mt-6">
+            <TabsContent value="identity" className="mt-6 space-y-6">
                 <Card className="card-border-animated" id="settings-identity-card">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><Building className="h-5 w-5 text-primary"/>Identidad y Marca</CardTitle>
-                        <CardDescription>Nombre, versión, logo, marca de agua e imágenes para las páginas públicas.</CardDescription>
+                        <CardDescription>Nombre de la plataforma, logo y marca de agua.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -333,6 +332,34 @@ export default function SettingsPageComponent() {
                            <UploadWidget id="logo-upload" label="Logo (PNG/SVG)" currentImageUrl={formState.logoUrl} onFileSelect={(file) => file && handleImageUpload('logoUrl', file)} onRemove={() => handleRemoveImage('logoUrl')} disabled={isSaving} isUploading={uploadStates.logoUrl.isUploading} uploadProgress={uploadStates.logoUrl.progress} />
                            <UploadWidget id="watermark-upload" label="Marca de Agua (PNG)" currentImageUrl={formState.watermarkUrl} onFileSelect={(file) => file && handleImageUpload('watermarkUrl', file)} onRemove={() => handleRemoveImage('watermarkUrl')} disabled={isSaving} isUploading={uploadStates.watermarkUrl.isUploading} uploadProgress={uploadStates.watermarkUrl.progress} />
                        </div>
+                    </CardContent>
+                </Card>
+                <Card className="card-border-animated">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><ImageIconComponent className="h-5 w-5 text-primary"/>Imágenes Públicas y del Sistema</CardTitle>
+                        <CardDescription>Define las imágenes para las páginas públicas y elementos del sistema.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-4">
+                            <div>
+                                <h3 className="font-semibold text-base mb-3">Páginas Públicas</h3>
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 place-items-center md:place-items-start">
+                                    <UploadWidget id="landing-img-upload" label="Página de Inicio" currentImageUrl={formState.landingImageUrl} onFileSelect={(f) => f && handleImageUpload('landingImageUrl', f)} onRemove={()=>handleRemoveImage('landingImageUrl')} disabled={isSaving} isUploading={uploadStates.landingImageUrl.isUploading} uploadProgress={uploadStates.landingImageUrl.progress}/>
+                                    <UploadWidget id="about-img-upload" label="Página 'Nosotros'" currentImageUrl={formState.aboutImageUrl} onFileSelect={(f) => f && handleImageUpload('aboutImageUrl', f)} onRemove={()=>handleRemoveImage('aboutImageUrl')} disabled={isSaving} isUploading={uploadStates.aboutImageUrl.isUploading} uploadProgress={uploadStates.aboutImageUrl.progress}/>
+                                    <UploadWidget id="benefits-img-upload" label="Beneficios (Inicio)" currentImageUrl={formState.benefitsImageUrl} onFileSelect={(f) => f && handleImageUpload('benefitsImageUrl', f)} onRemove={()=>handleRemoveImage('benefitsImageUrl')} disabled={isSaving} isUploading={uploadStates.benefitsImageUrl.isUploading} uploadProgress={uploadStates.benefitsImageUrl.progress}/>
+                                    <UploadWidget id="public-bg-upload" label="Fondo Páginas Públicas" currentImageUrl={formState.publicPagesBgUrl} onFileSelect={(f) => f && handleImageUpload('publicPagesBgUrl', f)} onRemove={()=>handleRemoveImage('publicPagesBgUrl')} disabled={isSaving} isUploading={uploadStates.publicPagesBgUrl.isUploading} uploadProgress={uploadStates.publicPagesBgUrl.progress}/>
+                                </div>
+                            </div>
+                            <Separator/>
+                             <div>
+                                <h3 className="font-semibold text-base mb-3">Imágenes del Sistema</h3>
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 place-items-center md:place-items-start">
+                                    <UploadWidget id="auth-img-upload" label="Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(f) => f && handleImageUpload('authImageUrl', f)} onRemove={()=>handleRemoveImage('authImageUrl')} disabled={isSaving} isUploading={uploadStates.authImageUrl.isUploading} uploadProgress={uploadStates.authImageUrl.progress}/>
+                                    <UploadWidget id="announce-bg-upload" label="Fondo Anuncios" currentImageUrl={formState.announcementsImageUrl} onFileSelect={(f) => f && handleImageUpload('announcementsImageUrl', f)} onRemove={()=>handleRemoveImage('announcementsImageUrl')} disabled={isSaving} isUploading={uploadStates.announcementsImageUrl.isUploading} uploadProgress={uploadStates.announcementsImageUrl.progress}/>
+                                    <UploadWidget id="security-mascot-upload" label="Mascota de Seguridad" currentImageUrl={formState.securityMascotUrl} onFileSelect={(f) => f && handleImageUpload('securityMascotUrl', f)} onRemove={()=>handleRemoveImage('securityMascotUrl')} disabled={isSaving} isUploading={uploadStates.securityMascotUrl.isUploading} uploadProgress={uploadStates.securityMascotUrl.progress}/>
+                                </div>
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -479,25 +506,6 @@ export default function SettingsPageComponent() {
                     </CardContent>
                 </Card>
              </TabsContent>
-             <TabsContent value="images" className="mt-6">
-                <Card className="card-border-animated">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><ImageIconComponent className="h-5 w-5 text-primary"/>Imágenes de Estado Vacío</CardTitle>
-                        <CardDescription>Personaliza las imágenes que se muestran cuando no hay contenido en una sección.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 place-items-center md:place-items-start">
-                        <UploadWidget id="empty-courses-upload" label="Catálogo de Cursos" currentImageUrl={formState.emptyStateCoursesUrl} onFileSelect={(file) => file && handleImageUpload('emptyStateCoursesUrl', file)} onRemove={() => handleRemoveImage('emptyStateCoursesUrl')} disabled={isSaving} isUploading={uploadStates.emptyStateCoursesUrl.isUploading} uploadProgress={uploadStates.emptyStateCoursesUrl.progress} />
-                        <UploadWidget id="empty-mycourses-upload" label="Mis Cursos" currentImageUrl={formState.emptyStateMyCoursesUrl} onFileSelect={(file) => file && handleImageUpload('emptyStateMyCoursesUrl', file)} onRemove={() => handleRemoveImage('emptyStateMyCoursesUrl')} disabled={isSaving} isUploading={uploadStates.emptyStateMyCoursesUrl.isUploading} uploadProgress={uploadStates.emptyStateMyCoursesUrl.progress} />
-                        <UploadWidget id="empty-forms-upload" label="Formularios" currentImageUrl={formState.emptyStateFormsUrl} onFileSelect={(file) => file && handleImageUpload('emptyStateFormsUrl', file)} onRemove={() => handleRemoveImage('emptyStateFormsUrl')} disabled={isSaving} isUploading={uploadStates.emptyStateFormsUrl.isUploading} uploadProgress={uploadStates.emptyStateFormsUrl.progress} />
-                        <UploadWidget id="empty-mynotes-upload" label="Mis Apuntes" currentImageUrl={formState.emptyStateMyNotesUrl} onFileSelect={(file) => file && handleImageUpload('emptyStateMyNotesUrl', file)} onRemove={() => handleRemoveImage('emptyStateMyNotesUrl')} disabled={isSaving} isUploading={uploadStates.emptyStateMyNotesUrl.isUploading} uploadProgress={uploadStates.emptyStateMyNotesUrl.progress} />
-                        <UploadWidget id="empty-resources-upload" label="Recursos" currentImageUrl={formState.emptyStateResourcesUrl} onFileSelect={(file) => file && handleImageUpload('emptyStateResourcesUrl', file)} onRemove={() => handleRemoveImage('emptyStateResourcesUrl')} disabled={isSaving} isUploading={uploadStates.emptyStateResourcesUrl.isUploading} uploadProgress={uploadStates.emptyStateResourcesUrl.progress} />
-                        <UploadWidget id="empty-certificates-upload" label="Certificados" currentImageUrl={formState.emptyStateCertificatesUrl} onFileSelect={(file) => file && handleImageUpload('emptyStateCertificatesUrl', file)} onRemove={() => handleRemoveImage('emptyStateCertificatesUrl')} disabled={isSaving} isUploading={uploadStates.emptyStateCertificatesUrl.isUploading} uploadProgress={uploadStates.emptyStateCertificatesUrl.progress} />
-                        <UploadWidget id="empty-motivations-upload" label="Motivaciones" currentImageUrl={formState.emptyStateMotivationsUrl} onFileSelect={(file) => file && handleImageUpload('emptyStateMotivationsUrl', file)} onRemove={() => handleRemoveImage('emptyStateMotivationsUrl')} disabled={isSaving} isUploading={uploadStates.emptyStateMotivationsUrl.isUploading} uploadProgress={uploadStates.emptyStateMotivationsUrl.progress} />
-                        <UploadWidget id="empty-users-upload" label="Control Central" currentImageUrl={formState.emptyStateUsersUrl} onFileSelect={(file) => file && handleImageUpload('emptyStateUsersUrl', file)} onRemove={() => handleRemoveImage('emptyStateUsersUrl')} disabled={isSaving} isUploading={uploadStates.emptyStateUsersUrl.isUploading} uploadProgress={uploadStates.emptyStateUsersUrl.progress} />
-                        <UploadWidget id="empty-leaderboard-upload" label="Ranking" currentImageUrl={formState.emptyStateLeaderboardUrl} onFileSelect={(file) => file && handleImageUpload('emptyStateLeaderboardUrl', file)} onRemove={() => handleRemoveImage('emptyStateLeaderboardUrl')} disabled={isSaving} isUploading={uploadStates.emptyStateLeaderboardUrl.isUploading} uploadProgress={uploadStates.emptyStateLeaderboardUrl.progress} />
-                    </CardContent>
-                </Card>
-            </TabsContent>
         </Tabs>
 
         <AlertDialog open={!!categoryToDelete} onOpenChange={(isOpen) => { if (!isOpen) setCategoryToDelete(null); }}>
