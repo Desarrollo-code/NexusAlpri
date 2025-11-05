@@ -270,7 +270,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                   {resourceType === 'DOCUMENTO_EDITABLE' && (
                      <div className="space-y-4">
                        <div className="space-y-1.5"><Label htmlFor="content-editor">Contenido</Label><RichTextEditor value={content} onChange={setContent} className="h-48" /></div>
-                       <div className="space-y-1.5"><Label htmlFor="observations-editor">Observaciones</Label><Textarea id="observations-editor" value={observations} onChange={e => setObservations(e.target.value)} placeholder="Notas internas, no visibles para estudiantes..." /></div>
+                       <div className="space-y-1.5"><Label htmlFor="observations-editor">Observaciones (Visible solo para administradores/instructores)</Label><Textarea id="observations-editor" value={observations} onChange={e => setObservations(e.target.value)} placeholder="Notas internas, no visibles para estudiantes..." /></div>
                      </div>
                   )}
 
@@ -311,7 +311,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                   )}
               </form>
             </ScrollArea>
-            <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex flex-row sm:justify-center gap-2">
+             <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex flex-col-reverse sm:flex-row sm:justify-center gap-2">
                 <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
                 <Button type="submit" form="resource-form" disabled={isSaving || isUploading || !title || (resourceType === 'EXTERNAL_LINK' && !externalLink) || (resourceType !== 'EXTERNAL_LINK' && resourceType !== 'DOCUMENTO_EDITABLE' && !localFile && !currentUrl)}>
                     {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
@@ -324,3 +324,5 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     </Dialog>
   );
 }
+
+    
