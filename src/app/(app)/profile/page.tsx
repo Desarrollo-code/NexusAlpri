@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Camera, User, KeyRound, Shield, Eye, EyeOff, Save, CheckCircle, Award, Star, HelpCircle, Trophy, Palette } from 'lucide-react';
+import { Loader2, Camera, User, KeyRound, Shield, Eye, EyeOff, Save, CheckCircle, Award, Star, HelpCircle, Trophy, Palette, Briefcase } from 'lucide-react';
 import React, { useState, ChangeEvent, FormEvent, useEffect, useCallback, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { PasswordStrengthIndicator } from '@/components/password-strength-indicator';
@@ -20,7 +20,7 @@ import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress as UploadProgress } from '@/components/ui/progress';
 import { useTour } from '@/contexts/tour-context';
 import { profileTour } from '@/lib/tour-steps';
-import type { UserAchievement } from '@/types';
+import type { UserAchievement, User as AppUser } from '@/types';
 import { Progress } from '@/components/ui/progress';
 import Image from 'next/image';
 import { VerifiedBadge } from '@/components/ui/verified-badge';
@@ -51,10 +51,14 @@ const calculateLevel = (xp: number) => {
 
 
 // --- Components defined outside of the main component to prevent re-creation on render ---
-const InfoCard = ({ user, updateUser }: { user: any, updateUser: (data: any) => void }) => {
+const InfoCard = ({ user, updateUser }: { user: AppUser, updateUser: (data: Partial<AppUser>) => void }) => {
     const [name, setName] = useState(user?.name || '');
     const [isSavingInfo, setIsSavingInfo] = useState(false);
     const { toast } = useToast();
+
+    useEffect(() => {
+        if(user?.name) setName(user.name);
+    }, [user?.name]);
 
     const handleInfoSubmit = async (e: FormEvent) => {
         e.preventDefault();
@@ -105,7 +109,7 @@ const InfoCard = ({ user, updateUser }: { user: any, updateUser: (data: any) => 
 };
 
 const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setConfirmPassword, currentPassword, setCurrentPassword }: 
-{ user: any, newPassword: any, setNewPassword: any, confirmPassword: any, setConfirmPassword: any, currentPassword: any, setCurrentPassword: any }) => {
+{ user: AppUser, newPassword: any, setNewPassword: any, confirmPassword: any, setConfirmPassword: any, currentPassword: any, setCurrentPassword: any }) => {
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -185,7 +189,7 @@ const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setC
     );
 };
 
-const TwoFactorCard = ({ user, updateUser }: { user: any, updateUser: (data: any) => void }) => {
+const TwoFactorCard = ({ user, updateUser }: { user: AppUser, updateUser: (data: Partial<AppUser>) => void }) => {
     const [qrCode, setQrCode] = useState<string | null>(null);
     const [verificationCode, setVerificationCode] = useState('');
     const [isActivating2FA, setIsActivating2FA] = useState(false);
@@ -305,8 +309,12 @@ const TwoFactorCard = ({ user, updateUser }: { user: any, updateUser: (data: any
     );
 };
 
-const ProfileCard = ({ user, onAvatarChange, isUploading, uploadProgress }: { user: any, onAvatarChange: (e: any) => void, isUploading: boolean, uploadProgress: number }) => {
+const ProfileCard = ({ user, onAvatarChange, isUploading, uploadProgress }: { user: AppUser, onAvatarChange: (e: ChangeEvent<HTMLInputElement>) => void, isUploading: boolean, uploadProgress: number }) => {
     const { level, currentXPInLevel, xpForNextLevel, progressPercentage } = useMemo(() => calculateLevel(user?.xp || 0), [user?.xp]);
+    const { user: currentUser } = useAuth();
+    
+    const canSeeProcess = user.role !== 'STUDENT' || currentUser?.role === 'ADMINISTRATOR';
+
     return (
      <Card className="profile-card" id="profile-card-display">
         <div className="card__img">
@@ -330,6 +338,11 @@ const ProfileCard = ({ user, onAvatarChange, isUploading, uploadProgress }: { us
             <CardDescription className="card__subtitle">
                 {user.email}
             </CardDescription>
+            {canSeeProcess && (user as any).process && (
+                <div className="mt-2 flex justify-center">
+                    <Badge variant="secondary" className="gap-1.5 text-xs"><Briefcase className="h-3 w-3"/> {(user as any).process.name}</Badge>
+                </div>
+            )}
              <div className="mt-6">
                 <div className="flex justify-between items-end mb-1">
                     <p className="font-semibold text-primary">Nivel {level}</p>
@@ -359,11 +372,9 @@ const ThemeSelectorCard = ({ className }: { className?: string }) => {
     const { user, updateUser } = useAuth();
 
     const handleThemeChange = async (newTheme: string) => {
-        // Optimistically update the UI
         setTheme(newTheme);
         if (user) {
-            updateUser({ theme: newTheme }); // Update context
-            // Asynchronously save to backend
+            updateUser({ theme: newTheme });
             try {
                 await fetch(`/api/users/${user.id}`, {
                     method: 'PUT',
@@ -372,7 +383,6 @@ const ThemeSelectorCard = ({ className }: { className?: string }) => {
                 });
             } catch (error) {
                 console.error('Error saving theme preference:', error);
-                // Optionally, revert the theme change on error
             }
         }
     };
@@ -384,20 +394,7 @@ const ThemeSelectorCard = ({ className }: { className?: string }) => {
           <CardDescription>Elige tu paleta de colores preferida.</CardDescription>
         </CardHeader>
         <CardContent>
-            <div className="grid grid-cols-5 gap-4">
-                <TooltipProvider delayDuration={100}>
-                   <Tooltip>
-                        <TooltipTrigger asChild>
-                            <div className="cursor-pointer group flex flex-col items-center gap-2">
-                                <div className="h-12 w-12 rounded-full flex items-center justify-center border-2 border-dashed border-border/80">
-                                    <Palette className="h-6 w-6 text-muted-foreground"/>
-                                </div>
-                            </div>
-                        </TooltipTrigger>
-                        <TooltipContent><p>Personalizar (Próximamente)</p></TooltipContent>
-                   </Tooltip>
-                </TooltipProvider>
-
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {AVAILABLE_THEMES.map((t) => (
                 <TooltipProvider key={t.value} delayDuration={100}>
                     <Tooltip>
@@ -405,12 +402,13 @@ const ThemeSelectorCard = ({ className }: { className?: string }) => {
                              <div onClick={() => handleThemeChange(t.value)} className="cursor-pointer group flex flex-col items-center gap-2">
                                 <div
                                     className={cn(
-                                        'h-12 w-12 rounded-full flex items-center justify-center border-2 transition-all',
-                                        theme === t.value ? 'border-primary ring-2 ring-primary/50' : 'border-border/50 group-hover:border-primary/70'
+                                        'h-16 w-full rounded-lg flex items-center justify-center border-2 transition-all',
+                                        theme === t.value ? 'border-primary ring-2 ring-primary/50' : 'border-border group-hover:border-primary/70'
                                     )}
                                 >
-                                    <div className={cn('h-10 w-10 rounded-full', t.previewClass)} />
+                                    <div className={cn('h-14 w-full mx-1 rounded-md', t.previewClass)} />
                                 </div>
+                                <p className="text-xs font-medium text-muted-foreground">{t.label}</p>
                             </div>
                         </TooltipTrigger>
                         <TooltipContent><p>{t.label}</p></TooltipContent>
