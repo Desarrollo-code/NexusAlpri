@@ -1,4 +1,3 @@
-
 // src/app/(app)/users/page.tsx
 'use client';
 
@@ -264,13 +263,14 @@ function UsersPageComponent() {
     const searchParams = useSearchParams();
     const { toast } = useToast();
 
-    const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
-    const [roleFilter, setRoleFilter] = useState<UserRole | 'ALL' | null>((searchParams.get('role') as UserRole | 'ALL') || null);
-    const [statusFilter, setStatusFilter] = useState<'active' | 'inactive' | 'ALL' | null>((searchParams.get('status') as 'active' | 'inactive' | 'ALL') || null);
-    const [processFilter, setProcessFilter] = useState<string | null>(searchParams.get('processId'));
-    const debouncedSearchTerm = useDebounce(searchTerm, 300);
+    const search = searchParams.get('search') || '';
+    const role = searchParams.get('role') as UserRole | 'ALL' | null;
+    const status = searchParams.get('status') as 'active' | 'inactive' | 'ALL' | null;
+    const processId = searchParams.get('processId');
 
+    const debouncedSearchTerm = useDebounce(search, 300);
     const currentPage = Number(searchParams.get('page')) || 1;
+    const totalPages = Math.ceil(totalUsers / PAGE_SIZE);
     
     const [activeDraggable, setActiveDraggable] = useState<Active | null>(null);
     const draggedUser = useMemo(() => {
@@ -283,9 +283,18 @@ function UsersPageComponent() {
     const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
     const [isBulkAssignModalOpen, setIsBulkAssignModalOpen] = useState(false);
     
+    const createQueryString = useCallback((paramsToUpdate: Record<string, string | number | null>) => {
+      const params = new URLSearchParams(searchParams.toString());
+      Object.entries(paramsToUpdate).forEach(([name, value]) => {
+          if (value === null || value === '' || value === 'ALL') params.delete(name);
+          else params.set(name, String(value));
+      });
+      return params.toString();
+    }, [searchParams]);
+    
     const activeFiltersCount = useMemo(() => {
-        return [debouncedSearchTerm, roleFilter, statusFilter, processFilter].filter(v => v && v !== 'ALL' && v !== null).length;
-    }, [debouncedSearchTerm, roleFilter, statusFilter, processFilter]);
+        return Object.values({ search, role, status, processId }).filter(v => v && v !== 'ALL' && v !== null).length;
+    }, [search, role, status, processId]);
 
     const fetchData = useCallback(async () => {
         if (!currentUser) return;
@@ -294,9 +303,9 @@ function UsersPageComponent() {
         const params = new URLSearchParams();
         if (debouncedSearchTerm) params.set('search', debouncedSearchTerm);
         params.set('page', String(currentPage));
-        if(roleFilter && roleFilter !== 'ALL') params.set('role', roleFilter);
-        if(statusFilter && statusFilter !== 'ALL') params.set('status', statusFilter);
-        if(processFilter) params.set('processId', processFilter);
+        if(role && role !== 'ALL') params.set('role', role);
+        if(status && status !== 'ALL') params.set('status', status);
+        if(processId) params.set('processId', processId);
         params.set('pageSize', String(PAGE_SIZE));
 
         try {
@@ -319,7 +328,7 @@ function UsersPageComponent() {
         } finally {
             setIsLoading(false);
         }
-    }, [currentUser, debouncedSearchTerm, currentPage, roleFilter, statusFilter, processFilter, toast]);
+    }, [currentUser, debouncedSearchTerm, currentPage, role, status, processId, toast]);
     
     useEffect(() => {
         setPageTitle('Control Central');
@@ -329,7 +338,7 @@ function UsersPageComponent() {
     
     useEffect(() => {
         setSelectedUserIds(new Set());
-    }, [currentPage, debouncedSearchTerm, roleFilter, statusFilter, processFilter]);
+    }, [currentPage, debouncedSearchTerm, role, status, processId]);
 
     const handleSelectionChange = useCallback((userId: string, isSelected: boolean) => {
         setSelectedUserIds(prev => {
@@ -349,32 +358,16 @@ function UsersPageComponent() {
         });
     }, [usersList]);
     
-    const handleFilterChange = useCallback((key: string, value: string | null) => {
-        const params = new URLSearchParams(searchParams.toString());
-        if (value === null || value === 'ALL') {
-            params.delete(key);
-        } else {
-            params.set(key, value);
-        }
-        params.set('page', '1');
-        router.push(`${pathname}?${params.toString()}`);
-    }, [pathname, router, searchParams]);
+    const handleFilterChange = (key: string, value: string | null) => {
+        router.push(`${pathname}?${createQueryString({ [key]: value, page: '1' })}`);
+    };
 
-    useEffect(() => {
-      const params = new URLSearchParams(searchParams.toString());
-      if (debouncedSearchTerm) {
-        params.set('search', debouncedSearchTerm);
-      } else {
-        params.delete('search');
-      }
-      params.set('page', '1');
-      router.push(`${pathname}?${params.toString()}`);
-    }, [debouncedSearchTerm, pathname, router, searchParams]);
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      router.push(`${pathname}?${createQueryString({ search: e.target.value, page: '1' })}`);
+    };
 
     const handlePageChange = (page: number) => {
-        const params = new URLSearchParams(searchParams.toString());
-        params.set('page', String(page));
-        router.push(`${pathname}?${params.toString()}`);
+        router.push(`${pathname}?${createQueryString({ page: String(page) })}`);
     };
 
     const handleOpenUserModal = (user: User | null = null) => {
@@ -463,7 +456,7 @@ function UsersPageComponent() {
          <div className="flex items-center justify-between gap-4">
             <div className="relative flex-grow max-w-xs">
                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                 <Input placeholder="Buscar por nombre o email..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10"/>
+                 <Input placeholder="Buscar por nombre o email..." value={search} onChange={handleSearchChange} className="pl-10"/>
             </div>
              <div className="flex items-center gap-2">
                 <Popover>
@@ -475,7 +468,7 @@ function UsersPageComponent() {
                     </PopoverTrigger>
                     <PopoverContent className="w-64 p-0" align="end">
                         <div className="p-4 space-y-4">
-                             <div className="space-y-2"><Label>Rol</Label><Select value={role || 'ALL'} onValueChange={(v) => handleFilterChange('role', v as UserRole | 'ALL')}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="ADMINISTRATOR">Admin</SelectItem><SelectItem value="INSTRUCTOR">Instructor</SelectItem><SelectItem value="STUDENT">Estudiante</SelectItem></SelectContent></Select></div>
+                             <div className="space-y-2"><Label>Rol</Label><Select value={role || 'ALL'} onValueChange={(v) => handleFilterChange('role', v as UserRole)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="ADMINISTRATOR">Admin</SelectItem><SelectItem value="INSTRUCTOR">Instructor</SelectItem><SelectItem value="STUDENT">Estudiante</SelectItem></SelectContent></Select></div>
                              <div className="space-y-2"><Label>Estado</Label><Select value={status || 'ALL'} onValueChange={(v) => handleFilterChange('status', v)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="active">Activo</SelectItem><SelectItem value="inactive">Inactivo</SelectItem></SelectContent></Select></div>
                              <div className="space-y-2"><Label>Proceso</Label><Select value={processId || 'ALL'} onValueChange={(v) => handleFilterChange('processId', v)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="unassigned">Sin Asignar</SelectItem><Separator/>{flattenedProcesses.map(p => (<SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem` }}>{p.name}</SelectItem>))}</SelectContent></Select></div>
                         </div>
@@ -505,7 +498,7 @@ function UsersPageComponent() {
             <CardContent className="p-4 space-y-4">
                 <div className="relative w-full">
                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                     <Input placeholder="Buscar por nombre o email..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10"/>
+                     <Input placeholder="Buscar por nombre o email..." value={search} onChange={handleSearchChange} className="pl-10"/>
                 </div>
                  <div className="grid grid-cols-2 gap-2">
                     <Popover>
@@ -517,7 +510,7 @@ function UsersPageComponent() {
                         </PopoverTrigger>
                         <PopoverContent className="w-64 p-0" align="start">
                             <div className="p-4 space-y-4">
-                                <div className="space-y-2"><Label>Rol</Label><Select value={role || 'ALL'} onValueChange={(v) => handleFilterChange('role', v as UserRole | 'ALL')}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="ADMINISTRATOR">Admin</SelectItem><SelectItem value="INSTRUCTOR">Instructor</SelectItem><SelectItem value="STUDENT">Estudiante</SelectItem></SelectContent></Select></div>
+                                <div className="space-y-2"><Label>Rol</Label><Select value={role || 'ALL'} onValueChange={(v) => handleFilterChange('role', v as UserRole)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="ADMINISTRATOR">Admin</SelectItem><SelectItem value="INSTRUCTOR">Instructor</SelectItem><SelectItem value="STUDENT">Estudiante</SelectItem></SelectContent></Select></div>
                                  <div className="space-y-2"><Label>Estado</Label><Select value={status || 'ALL'} onValueChange={(v) => handleFilterChange('status', v)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="active">Activo</SelectItem><SelectItem value="inactive">Inactivo</SelectItem></SelectContent></Select></div>
                                 <div className="space-y-2"><Label>Proceso</Label><Select value={processId || 'ALL'} onValueChange={(v) => handleFilterChange('processId', v)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="unassigned">Sin Asignar</SelectItem><Separator/>{flattenedProcesses.map(p => (
                                     <SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem` }}>{p.name}</SelectItem>
@@ -560,7 +553,7 @@ function UsersPageComponent() {
     }
 
     const GridView = () => (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {usersList.map(u => (
                 <DraggableUserCard 
                     key={u.id} 
@@ -586,7 +579,7 @@ function UsersPageComponent() {
                          <div className="mb-24 md:mb-4">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">{[...Array(10)].map((_,i) => <Skeleton key={i} className="h-48 w-full" />)}</div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">{[...Array(10)].map((_,i) => <Skeleton key={i} className="h-48 w-full" />)}</div>
                                 ) : (
                                     <Card><CardContent className="p-4"><Skeleton className="h-96 w-full"/></CardContent></Card>
                                 )
