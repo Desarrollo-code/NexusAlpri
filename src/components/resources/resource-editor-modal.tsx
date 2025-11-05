@@ -219,7 +219,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="w-[95vw] sm:max-w-2xl p-0 gap-0 rounded-2xl flex flex-col max-h-[90vh]">
+      <DialogContent className="w-[95vw] sm:max-w-2xl p-0 gap-0 rounded-2xl flex flex-col max-h-[90vh]">
           <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
             <DialogTitle>{resource ? 'Editar Recurso' : 'Subir Nuevo Recurso'}</DialogTitle>
             <DialogDescription>{resource ? 'Modifica los detalles de tu recurso.' : 'Añade un nuevo archivo o enlace a la biblioteca.'}</DialogDescription>
@@ -290,8 +290,8 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                   {resource && (
                     <div className="space-y-4 pt-4 border-t">
                       <Label className="font-semibold text-base">Seguridad con PIN</Label>
-                      <div className="relative"><Input type={showPin ? "text" : "password"} value={pin} onChange={(e) => setPin(e.target.value)} placeholder="Nuevo PIN (4-8 dígitos)" autoComplete="new-password"/><Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowPin(!showPin)}><Eye className="h-5 w-5"/></Button></div>
-                      <div className="relative"><Input type={showPin ? "text" : "password"} value={confirmPin} onChange={(e) => setConfirmPin(e.target.value)} placeholder="Confirmar nuevo PIN" disabled={!pin} autoComplete="new-password"/></div>
+                      <div className="relative"><Input type={showPin ? "text" : "password"} value={pin} onChange={(e) => setPin(e.target.value)} placeholder="Nuevo PIN (4-8 dígitos)" autoComplete="new-password"/><Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowPin(!showPin)}>{showPin ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}</Button></div>
+                      {pin && <div className="relative"><Input type={showPin ? "text" : "password"} value={confirmPin} onChange={(e) => setConfirmPin(e.target.value)} placeholder="Confirmar nuevo PIN" disabled={!pin} autoComplete="new-password"/></div>}
                       {pin && confirmPin && pin !== confirmPin && <p className="text-xs text-destructive">Los PIN no coinciden.</p>}
                       <div className="flex gap-2">
                           <Button type="button" onClick={handleSetPin} disabled={isSettingPin || !pin || pin.length < 4 || pin !== confirmPin} className="w-full">
@@ -304,17 +304,16 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                     </div>
                   )}
               </form>
-            </ScrollArea>
-            <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-col-reverse sm:flex-row sm:justify-center gap-2">
-              <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
-              <Button type="submit" form="resource-form" disabled={isSaving || isUploading || !title || (resourceType === 'EXTERNAL_LINK' && !externalLink) || (resourceType !== 'EXTERNAL_LINK' && resourceType !== 'DOCUMENTO_EDITABLE' && !localFile && !currentUrl)}>
-                  {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                  <Save className="mr-2 h-4 w-4" />
-                  Guardar
-              </Button>
-            </DialogFooter>
-          </div>
-      </DialogContent>
+          </ScrollArea>
+          <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex flex-col sm:flex-row sm:justify-center gap-2">
+            <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
+            <Button type="submit" form="resource-form" disabled={isSaving || isUploading || !title || (resourceType === 'EXTERNAL_LINK' && !externalLink) || (resourceType !== 'EXTERNAL_LINK' && resourceType !== 'DOCUMENTO_EDITABLE' && !localFile && !currentUrl)}>
+                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                <Save className="mr-2 h-4 w-4" />
+                Guardar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
     </Dialog>
   );
 }
