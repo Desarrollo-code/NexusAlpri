@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Camera, User, KeyRound, Shield, Eye, EyeOff, Save, CheckCircle, Award, Star, HelpCircle, Trophy, Palette, Briefcase } from 'lucide-react';
+import { Loader2, Camera, User, KeyRound, Shield, Eye, EyeOff, Save, CheckCircle, Award, Star, HelpCircle, Trophy, Palette, Briefcase, Replace, XCircle } from 'lucide-react';
 import React, { useState, ChangeEvent, FormEvent, useEffect, useCallback, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { PasswordStrengthIndicator } from '@/components/password-strength-indicator';
@@ -309,7 +309,7 @@ const TwoFactorCard = ({ user, updateUser }: { user: AppUser, updateUser: (data:
     );
 };
 
-const ProfileCard = ({ user, onAvatarChange, isUploading, uploadProgress }: { user: AppUser, onAvatarChange: (e: ChangeEvent<HTMLInputElement>) => void, isUploading: boolean, uploadProgress: number }) => {
+const ProfileCard = ({ user, onAvatarChange, onAvatarRemove, isUploading, uploadProgress }: { user: AppUser, onAvatarChange: (e: ChangeEvent<HTMLInputElement>) => void, onAvatarRemove: () => void, isUploading: boolean, uploadProgress: number }) => {
     const { level, currentXPInLevel, xpForNextLevel, progressPercentage } = useMemo(() => calculateLevel(user?.xp || 0), [user?.xp]);
     const { user: currentUser } = useAuth();
     
@@ -320,15 +320,28 @@ const ProfileCard = ({ user, onAvatarChange, isUploading, uploadProgress }: { us
         <div className="card__img">
             <div className="card__img--gradient" />
         </div>
-        <div className="card__avatar">
+        <div className="card__avatar group">
             <Avatar className="avatar">
                  <AvatarImage src={user.avatar || undefined} />
                  <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
             </Avatar>
-            <label htmlFor="avatar-upload" className="absolute bottom-1 right-1 bg-background text-foreground rounded-full p-1.5 cursor-pointer hover:bg-muted transition-colors shadow-md">
-                <Camera className="h-5 w-5" />
-                <input id="avatar-upload" type="file" className="hidden" onChange={onAvatarChange} accept="image/*" disabled={isUploading}/>
-            </label>
+            <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                <label htmlFor="avatar-upload" className="bg-background text-foreground rounded-full p-2 cursor-pointer hover:bg-muted transition-colors shadow-md">
+                    <Replace className="h-5 w-5" />
+                    <input id="avatar-upload" type="file" className="hidden" onChange={onAvatarChange} accept="image/*" disabled={isUploading}/>
+                </label>
+                {user.avatar && (
+                     <button onClick={onAvatarRemove} className="bg-destructive text-destructive-foreground rounded-full p-2 cursor-pointer hover:bg-destructive/80 transition-colors shadow-md">
+                        <XCircle className="h-5 w-5" />
+                    </button>
+                )}
+            </div>
+             {!user.avatar && (
+                 <label htmlFor="avatar-upload" className="absolute bottom-1 right-1 bg-background text-foreground rounded-full p-1.5 cursor-pointer hover:bg-muted transition-colors shadow-md">
+                    <Camera className="h-5 w-5" />
+                    <input id="avatar-upload" type="file" className="hidden" onChange={onAvatarChange} accept="image/*" disabled={isUploading}/>
+                </label>
+             )}
         </div>
          <CardContent className="px-6 pb-6 pt-4">
             <CardTitle className="text-2xl font-bold font-headline flex items-center justify-center gap-2">
@@ -471,6 +484,26 @@ function ProfilePageContent() {
         }
     };
     
+    const handleAvatarRemove = async () => {
+        if (!user) return;
+        setIsUploading(true);
+        try {
+             const updateUserResponse = await fetch(`/api/users/${user.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ avatar: null }),
+            });
+            if (!updateUserResponse.ok) throw new Error('No se pudo eliminar la imagen de perfil.');
+            const updatedUser = await updateUserResponse.json();
+            updateUser(updatedUser);
+            toast({ title: "Avatar Eliminado" });
+        } catch (error) {
+             toast({ title: 'Error', description: (error as Error).message, variant: 'destructive' });
+        } finally {
+             setIsUploading(false);
+        }
+    }
+    
     if (!user) return <Loader2 className="h-8 w-8 animate-spin" />;
     
     return (
@@ -492,7 +525,7 @@ function ProfilePageContent() {
                 <TabsContent value="profile" className="mt-6">
                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                         <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
-                            <ProfileCard user={user} onAvatarChange={handleAvatarChange} isUploading={isUploading} uploadProgress={uploadProgress} />
+                            <ProfileCard user={user} onAvatarChange={handleAvatarChange} onAvatarRemove={handleAvatarRemove} isUploading={isUploading} uploadProgress={uploadProgress} />
                         </div>
                         <div className="lg:col-span-2 space-y-6">
                             <InfoCard user={user} updateUser={updateUser} />
