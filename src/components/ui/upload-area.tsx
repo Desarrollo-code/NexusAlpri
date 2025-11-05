@@ -3,7 +3,7 @@
 
 import { cn } from "@/lib/utils";
 import React, { useRef, useState, useCallback } from 'react';
-import { UploadCloud } from 'lucide-react';
+import { IconUploadCloud } from '@/components/icons/icon-upload-cloud';
 
 interface UploadAreaProps {
   onFileSelect: (file: File | null) => void;
@@ -88,7 +88,7 @@ export function UploadArea({ onFileSelect, disabled, className, inputId = "file-
       {children || (
           <div className="flex flex-col items-center justify-center gap-2 transition-transform duration-300 group-hover:scale-105">
              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-background/50 dark:bg-black/30 border">
-                <UploadCloud className="h-6 w-6 text-muted-foreground transition-colors group-hover:text-primary" />
+                <IconUploadCloud className="h-6 w-6 text-muted-foreground transition-colors group-hover:text-primary" />
              </div>
              <div className="text-center">
                 <p className="text-sm font-semibold text-foreground">

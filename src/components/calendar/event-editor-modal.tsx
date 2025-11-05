@@ -37,6 +37,7 @@ import { Separator } from '@/components/ui/separator';
 import { Identicon } from '@/components/ui/identicon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Loader2, Save, MapPin, Video, Link as LinkIcon, X, Check, Users, Edit, Trash2, Repeat, Calendar as CalendarIcon, Hand, Image as ImageIcon, Replace, XCircle } from 'lucide-react';
+import { IconUploadCloud } from '@/components/icons/icon-upload-cloud';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Calendar } from '../ui/calendar';
 import { es } from 'date-fns/locale';
@@ -358,7 +359,7 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
                              <div className="flex items-center gap-2">
                                 <Input value={formImageUrl || ''} onChange={e => setFormImageUrl(e.target.value)} placeholder="Pega una URL o sube un archivo" disabled={isSaving || isUploading} />
                                 <UploadArea onFileSelect={(file) => handleImageUpload(file)} inputId="event-image-upload" className="h-10 w-10 p-0" disabled={isUploading}>
-                                    <UploadCloud className="h-5 w-5"/>
+                                    <IconUploadCloud className="h-5 w-5"/>
                                 </UploadArea>
                             </div>
                            {isUploading && <Progress value={uploadProgress} className="h-1"/>}
