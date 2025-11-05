@@ -75,6 +75,12 @@ const nextConfig = {
         port: '',
         pathname: '/storage/v1/object/public/chat_attachments/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'izefimwyuayfvektsstg.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/event_images/**',
+      },
     ],
   },
 };

@@ -36,11 +36,17 @@ import { EventDetailsView } from '@/components/calendar/event-details-view';
 import { Separator } from '@/components/ui/separator';
 import { Identicon } from '@/components/ui/identicon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Loader2, Save, MapPin, Video, Link as LinkIcon, X, Check, Users, Edit, Trash2, Repeat, Calendar as CalendarIcon, Hand, Image as ImageIcon } from 'lucide-react';
+import { Loader2, Save, MapPin, Video, Link as LinkIcon, X, Check, Users, Edit, Trash2, Repeat, Calendar as CalendarIcon, Hand, Image as ImageIcon, Replace, XCircle } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Calendar } from '../ui/calendar';
 import { es } from 'date-fns/locale';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { ParticipantsModal } from './participants-modal';
+import { UploadArea } from '../ui/upload-area';
+import { uploadWithProgress } from '@/lib/upload-with-progress';
+import { Progress } from '../ui/progress';
+import Image from 'next/image';
+
 
 const eventColors = [
   { value: 'blue', label: 'Evento General', color: 'bg-event-blue' },
@@ -80,7 +86,12 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
     const [formRecurrence, setFormRecurrence] = useState<RecurrenceType>('NONE');
     const [formRecurrenceEndDate, setFormRecurrenceEndDate] = useState<Date | undefined>(undefined);
     const [formIsInteractive, setFormIsInteractive] = useState(false);
+    
+    // Image state
     const [formImageUrl, setFormImageUrl] = useState<string | null>('');
+    const [localImagePreview, setLocalImagePreview] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
     const [allUsers, setAllUsers] = useState<AppUser[]>([]);
     const [isEditMode, setIsEditMode] = useState(false);
@@ -142,6 +153,7 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
             setFormImageUrl('');
             setIsEditMode(true);
         }
+        setLocalImagePreview(null);
 
     }, [event, selectedDate, isOpen]);
     
@@ -152,6 +164,25 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
                 .then(data => setAllUsers(data.users.filter((u:AppUser) => u.id !== user?.id)))
         }
     }, [isOpen, user]);
+    
+     const handleImageUpload = async (file: File | null) => {
+        if (!file) return;
+        const previewUrl = URL.createObjectURL(file);
+        setLocalImagePreview(previewUrl);
+        setIsUploading(true);
+        setUploadProgress(0);
+        try {
+            const result = await uploadWithProgress('/api/upload/event-image', file, setUploadProgress);
+            setFormImageUrl(result.url);
+            toast({ title: 'Imagen Subida' });
+        } catch (err) {
+            toast({ title: 'Error de subida', description: (err as Error).message, variant: 'destructive' });
+            URL.revokeObjectURL(previewUrl);
+            setLocalImagePreview(null);
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const handleSaveEvent = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -322,17 +353,16 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
                      </div>
                      <p className="text-xs text-muted-foreground">Si se activa, los usuarios verán una alerta el día del evento para confirmar su participación.</p>
                       {formIsInteractive && (
-                        <div className="space-y-1.5 pt-2">
-                          <Label htmlFor="event-image-url" className="flex items-center gap-2">
-                            <ImageIcon className="h-4 w-4" /> URL de Imagen/GIF (Opcional)
-                          </Label>
-                          <Input
-                            id="event-image-url"
-                            value={formImageUrl || ''}
-                            onChange={e => setFormImageUrl(e.target.value)}
-                            placeholder="https://example.com/imagen.gif"
-                            disabled={isSaving}
-                          />
+                        <div className="space-y-2 pt-2">
+                           <Label className="flex items-center gap-2"><ImageIcon className="h-4 w-4" /> Imagen o GIF</Label>
+                             <div className="flex items-center gap-2">
+                                <Input value={formImageUrl || ''} onChange={e => setFormImageUrl(e.target.value)} placeholder="Pega una URL o sube un archivo" disabled={isSaving || isUploading} />
+                                <UploadArea onFileSelect={(file) => handleImageUpload(file)} inputId="event-image-upload" className="h-10 w-10 p-0" disabled={isUploading}>
+                                    <UploadCloud className="h-5 w-5"/>
+                                </UploadArea>
+                            </div>
+                           {isUploading && <Progress value={uploadProgress} className="h-1"/>}
+                           {(localImagePreview || formImageUrl) && <div className="relative w-32 h-20 rounded-md border overflow-hidden"><Image src={localImagePreview || formImageUrl!} alt="preview" fill className="object-cover"/><Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => {setFormImageUrl(''); setLocalImagePreview(null);}}><X className="h-4 w-4"/></Button></div>}
                         </div>
                       )}
                   </div>
@@ -429,50 +459,5 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
             
             {event && <ParticipantsModal isOpen={showParticipantsModal} onClose={() => setShowParticipantsModal(false)} event={event} />}
         </>
-    )
-}
-
-const ParticipantsModal = ({ isOpen, onClose, event }: { isOpen: boolean, onClose: () => void, event: CalendarEvent }) => {
-    const [participants, setParticipants] = useState<any[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const { toast } = useToast();
-
-    useEffect(() => {
-        if (isOpen && event) {
-            setIsLoading(true);
-            fetch(`/api/events/participations?eventId=${event.parentId || event.id}&occurrenceDate=${new Date(event.start).toISOString()}`)
-                .then(res => res.json())
-                .then(data => setParticipants(data))
-                .catch(() => toast({ title: "Error", description: "No se pudo cargar la lista de participantes.", variant: "destructive"}))
-                .finally(() => setIsLoading(false));
-        }
-    }, [isOpen, event, toast]);
-    
-    return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Participantes de "{event.title}"</DialogTitle>
-                    <DialogDescription>
-                        Usuarios que confirmaron su participación el {format(new Date(event.start), "d 'de' MMMM", {locale: es})}.
-                    </DialogDescription>
-                </DialogHeader>
-                 <ScrollArea className="max-h-80">
-                    {isLoading ? <div className="flex justify-center p-8"><Loader2 className="animate-spin"/></div> :
-                     participants.length > 0 ? (
-                        <div className="space-y-3 p-1">
-                          {participants.map(p => (
-                             <div key={p.id} className="flex items-center gap-3">
-                                 <Avatar className="h-9 w-9"><AvatarImage src={p.user.avatar || ''}/><AvatarFallback><Identicon userId={p.userId}/></AvatarFallback></Avatar>
-                                 <p className="font-medium">{p.user.name}</p>
-                             </div>
-                          ))}
-                        </div>
-                     ) : (
-                         <p className="text-center text-sm text-muted-foreground p-8">Nadie ha confirmado su participación todavía.</p>
-                     )}
-                 </ScrollArea>
-            </DialogContent>
-        </Dialog>
     )
 }
