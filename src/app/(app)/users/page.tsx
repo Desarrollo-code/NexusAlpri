@@ -36,8 +36,8 @@ import { UserProfileCard } from '@/components/profile/user-profile-card';
 import { getRoleInSpanish, getRoleBadgeVariant } from '@/lib/security-log-utils';
 import { getProcessColors } from '@/lib/utils';
 import { Identicon } from '@/components/ui/identicon';
-import { EmptyState } from '../empty-state';
-import { ChatPermissionsModal } from './chat-permissions-modal';
+import { EmptyState } from '@/components/empty-state';
+import { ChatPermissionsModal } from '@/components/users/chat-permissions-modal';
 
 
 // --- TYPES & CONTEXT ---
@@ -174,10 +174,10 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {users.map(user => {
+                    {users.map((user, index) => {
                         const processColors = user.process ? getProcessColors(user.process.id) : null;
                         return (
-                        <TableRow key={user.id}>
+                        <TableRow key={user.id || index}>
                             <TableCell>
                                 <Checkbox
                                     checked={selectedUserIds.has(user.id)}
@@ -212,11 +212,7 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
                                     <span className="text-xs text-muted-foreground">Sin asignar</span>
                                 )}
                             </TableCell>
-                            <TableCell>
-                                 <Badge variant={user.isActive ? "default" : "secondary"} className={cn("text-xs py-0.5 px-1.5", user.isActive ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300" : "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300")}>
-                                    {user.isActive ? 'Activo' : 'Inactivo'}
-                                </Badge>
-                            </TableCell>
+                            <TableCell><Badge variant={user.isActive ? "default" : "secondary"} className={cn("text-xs py-0.5 px-1.5", user.isActive ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300" : "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300")}>{user.isActive ? 'Activo' : 'Inactivo'}</Badge></TableCell>
                             <TableCell className="text-right">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
@@ -555,7 +551,7 @@ function UsersPageComponent() {
     }
 
     const GridView = () => (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {usersList.map(u => (
                 <DraggableUserCard 
                     key={u.id} 
@@ -663,5 +659,3 @@ export default function UsersPage() {
         </Suspense>
     )
 }
-
-
