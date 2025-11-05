@@ -299,8 +299,8 @@ export default function SettingsPageComponent() {
             </TabsList>
             
             <TabsContent value="identity" className="mt-6">
-                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-                    <Card className="card-border-animated" id="settings-identity-card">
+                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                    <Card className="card-border-animated lg:col-span-1" id="settings-identity-card">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2"><Building className="h-5 w-5 text-primary"/>Identidad y Marca</CardTitle>
                             <CardDescription>Nombre de la plataforma, logo y marca de agua.</CardDescription>
@@ -321,7 +321,7 @@ export default function SettingsPageComponent() {
                            </div>
                         </CardContent>
                     </Card>
-                     <Card className="card-border-animated">
+                     <Card className="card-border-animated lg:col-span-2">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2"><ImageIconComponent className="h-5 w-5 text-primary"/>Imágenes Públicas y del Sistema</CardTitle>
                             <CardDescription>Define las imágenes para las páginas públicas y elementos del sistema.</CardDescription>
@@ -338,11 +338,11 @@ export default function SettingsPageComponent() {
                                   <UploadWidget id="about-img-upload" label="Página 'Nosotros'" currentImageUrl={formState.aboutImageUrl} onFileSelect={(f) => f && handleImageUpload('aboutImageUrl', f)} onRemove={()=>handleRemoveImage('aboutImageUrl')} disabled={isSaving} isUploading={uploadStates.aboutImageUrl.isUploading} uploadProgress={uploadStates.aboutImageUrl.progress}/>
                                   <UploadWidget id="benefits-img-upload" label="Beneficios (Inicio)" currentImageUrl={formState.benefitsImageUrl} onFileSelect={(f) => f && handleImageUpload('benefitsImageUrl', f)} onRemove={()=>handleRemoveImage('benefitsImageUrl')} disabled={isSaving} isUploading={uploadStates.benefitsImageUrl.isUploading} uploadProgress={uploadStates.benefitsImageUrl.progress}/>
                                   <UploadWidget id="public-bg-upload" label="Fondo Páginas Públicas" currentImageUrl={formState.publicPagesBgUrl} onFileSelect={(f) => f && handleImageUpload('publicPagesBgUrl', f)} onRemove={()=>handleRemoveImage('publicPagesBgUrl')} disabled={isSaving} isUploading={uploadStates.publicPagesBgUrl.isUploading} uploadProgress={uploadStates.publicPagesBgUrl.progress}/>
+                                  <UploadWidget id="auth-img-upload" label="Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(f) => f && handleImageUpload('authImageUrl', f)} onRemove={()=>handleRemoveImage('authImageUrl')} disabled={isSaving} isUploading={uploadStates.authImageUrl.isUploading} uploadProgress={uploadStates.authImageUrl.progress}/>
                                </div>
                              </TabsContent>
                              <TabsContent value="system" className="mt-4">
                                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 place-items-center md:place-items-start">
-                                    <UploadWidget id="auth-img-upload" label="Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(f) => f && handleImageUpload('authImageUrl', f)} onRemove={()=>handleRemoveImage('authImageUrl')} disabled={isSaving} isUploading={uploadStates.authImageUrl.isUploading} uploadProgress={uploadStates.authImageUrl.progress}/>
                                     <UploadWidget id="announce-bg-upload" label="Fondo Anuncios" currentImageUrl={formState.announcementsImageUrl} onFileSelect={(f) => f && handleImageUpload('announcementsImageUrl', f)} onRemove={()=>handleRemoveImage('announcementsImageUrl')} disabled={isSaving} isUploading={uploadStates.announcementsImageUrl.isUploading} uploadProgress={uploadStates.announcementsImageUrl.progress}/>
                                     <UploadWidget id="security-mascot-upload" label="Mascota de Seguridad" currentImageUrl={formState.securityMascotUrl} onFileSelect={(f) => f && handleImageUpload('securityMascotUrl', f)} onRemove={()=>handleRemoveImage('securityMascotUrl')} disabled={isSaving} isUploading={uploadStates.securityMascotUrl.isUploading} uploadProgress={uploadStates.securityMascotUrl.progress}/>
                                </div>
