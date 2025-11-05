@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Identicon } from '@/components/ui/identicon';
 import { Button } from "../ui/button";
-import { MoreVertical, Edit, UserCog, UserX } from "lucide-react";
+import { MoreVertical, Edit, UserCog, UserX, Key } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Checkbox } from "../ui/checkbox";
 import type { User } from '@/types';
@@ -24,9 +24,10 @@ interface UserTableProps {
     onEdit: (user: User) => void;
     onRoleChange: (user: User) => void;
     onStatusChange: (user: User, status: boolean) => void;
+    onChatPermissions: (user: User) => void;
 }
 
-export const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleChange, onStatusChange }: UserTableProps) => {
+export const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleChange, onStatusChange, onChatPermissions }: UserTableProps) => {
 
     const handleSelectAll = (checked: boolean) => {
         onSelectionChange('all', checked);
@@ -79,8 +80,8 @@ export const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, o
                                     <Badge 
                                         className="text-xs"
                                         style={{
-                                            backgroundColor: colors.raw.light,
-                                            color: colors.raw.dark,
+                                            backgroundColor: processColors.raw.light,
+                                            color: processColors.raw.dark,
                                         }}
                                     >
                                         {user.process.name}
@@ -90,7 +91,7 @@ export const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, o
                                 )}
                             </TableCell>
                             <TableCell>
-                                 <Badge variant={user.isActive ? "default" : "secondary"} className={cn(user.isActive ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300" : "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300")}>
+                                 <Badge variant={user.isActive ? "default" : "secondary"} className={cn("text-xs py-0.5 px-1.5", user.isActive ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300" : "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300")}>
                                     {user.isActive ? 'Activo' : 'Inactivo'}
                                 </Badge>
                             </TableCell>
@@ -102,6 +103,9 @@ export const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, o
                                     <DropdownMenuContent>
                                         <DropdownMenuItem onSelect={() => onEdit(user)}>
                                             <Edit className="mr-2 h-4 w-4"/>Editar Perfil
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => onChatPermissions(user)}>
+                                            <Key className="mr-2 h-4 w-4"/>Permisos de Chat
                                         </DropdownMenuItem>
                                         <DropdownMenuItem onSelect={() => onRoleChange(user)}>
                                             <UserCog className="mr-2 h-4 w-4"/>Cambiar Rol
