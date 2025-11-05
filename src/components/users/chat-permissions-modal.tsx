@@ -88,48 +88,50 @@ export function ChatPermissionsModal({ isOpen, onClose, user }: ChatPermissionsM
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md h-[70vh] flex flex-col p-0 gap-0 rounded-2xl">
-        <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
-          <DialogTitle>Permisos de Chat para {user.name}</DialogTitle>
-          <DialogDescription>
-            Selecciona con qué usuarios puede iniciar una conversación.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="flex-1 min-h-0 flex flex-col p-6 pt-0 gap-4">
-          <Input
-            placeholder="Buscar usuarios..."
-            value={userSearch}
-            onChange={e => setUserSearch(e.target.value)}
-          />
-          <ScrollArea className="flex-grow border rounded-md">
-            {isLoading ? (
-              <div className="p-4 text-center"><Loader2 className="animate-spin" /></div>
-            ) : (
-              <div className="p-4 space-y-2">
-                {filteredUsers.length > 0 ? filteredUsers.map(u => (
-                  <div key={u.id} className="flex items-center space-x-3 p-1.5 rounded-md hover:bg-muted">
-                    <Checkbox
-                      id={`permission-${u.id}`}
-                      checked={allowedUserIds.has(u.id)}
-                      onCheckedChange={(c) => handleUserPermissionToggle(u.id, !!c)}
-                    />
-                    <Label htmlFor={`permission-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer">
-                      <Avatar className="h-8 w-8"><AvatarImage src={u.avatar || undefined} /><AvatarFallback><Identicon userId={u.id} /></AvatarFallback></Avatar>
-                      <span>{u.name}</span>
-                    </Label>
+      <DialogContent className="max-w-md p-0 gap-0 rounded-2xl">
+          <div className="flex flex-col h-full max-h-[70vh]">
+            <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
+              <DialogTitle>Permisos de Chat para {user.name}</DialogTitle>
+              <DialogDescription>
+                Selecciona con qué usuarios puede iniciar una conversación.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex-1 min-h-0 flex flex-col p-6 pt-4 gap-4">
+              <Input
+                placeholder="Buscar usuarios..."
+                value={userSearch}
+                onChange={e => setUserSearch(e.target.value)}
+              />
+              <ScrollArea className="flex-grow border rounded-md">
+                {isLoading ? (
+                  <div className="p-4 text-center"><Loader2 className="animate-spin" /></div>
+                ) : (
+                  <div className="p-4 space-y-2">
+                    {filteredUsers.length > 0 ? filteredUsers.map(u => (
+                      <div key={u.id} className="flex items-center space-x-3 p-1.5 rounded-md hover:bg-muted">
+                        <Checkbox
+                          id={`permission-${u.id}`}
+                          checked={allowedUserIds.has(u.id)}
+                          onCheckedChange={(c) => handleUserPermissionToggle(u.id, !!c)}
+                        />
+                        <Label htmlFor={`permission-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer">
+                          <Avatar className="h-8 w-8"><AvatarImage src={u.avatar || undefined} /><AvatarFallback><Identicon userId={u.id} /></AvatarFallback></Avatar>
+                          <span>{u.name}</span>
+                        </Label>
+                      </div>
+                    )) : <p className="text-sm text-center text-muted-foreground p-4">No se encontraron usuarios.</p>}
                   </div>
-                )) : <p className="text-sm text-center text-muted-foreground p-4">No se encontraron usuarios.</p>}
-              </div>
-            )}
-          </ScrollArea>
-        </div>
-        <DialogFooter className="p-6 pt-4 border-t flex-shrink-0">
-          <Button variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button onClick={handleSaveChanges} disabled={isSaving}>
-            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-            Guardar Cambios
-          </Button>
-        </DialogFooter>
+                )}
+              </ScrollArea>
+            </div>
+            <DialogFooter className="p-6 pt-4 border-t flex-shrink-0">
+              <Button variant="outline" onClick={onClose}>Cancelar</Button>
+              <Button onClick={handleSaveChanges} disabled={isSaving}>
+                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                Guardar Cambios
+              </Button>
+            </DialogFooter>
+          </div>
       </DialogContent>
     </Dialog>
   );

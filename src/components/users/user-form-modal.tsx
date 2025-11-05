@@ -159,87 +159,89 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="w-[95vw] sm:max-w-md max-h-[90vh] flex flex-col p-0 gap-0 rounded-2xl">
-                <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
-                    <DialogTitle>{user ? 'Editar Colaborador' : 'Añadir Nuevo Colaborador'}</DialogTitle>
-                    <DialogDescription>
-                        {user ? 'Modifica la información del colaborador.' : 'Completa los datos para registrar un nuevo colaborador en la plataforma.'}
-                    </DialogDescription>
-                </DialogHeader>
-                <ScrollArea className="flex-1 min-h-0">
-                  <form id="user-form" onSubmit={handleSubmit} className="space-y-4 px-6 py-4">
-                      <div className="flex flex-col items-center gap-4">
-                        <div className="relative">
-                             <Avatar className="h-24 w-24">
-                                <AvatarImage src={localAvatarPreview || avatarUrl || undefined}/>
-                                <AvatarFallback className="text-3xl"><Identicon userId={user?.id || name}/></AvatarFallback>
-                            </Avatar>
-                             <Label htmlFor="avatar-upload" className="absolute -bottom-1 -right-1 bg-secondary text-secondary-foreground rounded-full p-1.5 cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors shadow-md">
-                                <Camera className="h-5 w-5" />
-                                <input id="avatar-upload" type="file" className="hidden" onChange={handleAvatarChange} accept="image/*" disabled={isUploading}/>
-                            </Label>
-                        </div>
-                        {isUploading && (
-                            <div className="w-full max-w-xs space-y-1">
-                               <Progress value={uploadProgress} />
-                               <p className="text-xs text-center text-muted-foreground">Subiendo...</p>
+            <DialogContent className="w-[95vw] sm:max-w-md p-0 gap-0 rounded-2xl">
+                 <div className="flex flex-col h-full max-h-[90vh]">
+                    <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
+                        <DialogTitle>{user ? 'Editar Colaborador' : 'Añadir Nuevo Colaborador'}</DialogTitle>
+                        <DialogDescription>
+                            {user ? 'Modifica la información del colaborador.' : 'Completa los datos para registrar un nuevo colaborador en la plataforma.'}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <ScrollArea className="flex-1 min-h-0">
+                      <form id="user-form" onSubmit={handleSubmit} className="space-y-4 px-6 py-4">
+                          <div className="flex flex-col items-center gap-4">
+                            <div className="relative">
+                                 <Avatar className="h-24 w-24">
+                                    <AvatarImage src={localAvatarPreview || avatarUrl || undefined}/>
+                                    <AvatarFallback className="text-3xl"><Identicon userId={user?.id || name}/></AvatarFallback>
+                                </Avatar>
+                                 <Label htmlFor="avatar-upload" className="absolute -bottom-1 -right-1 bg-secondary text-secondary-foreground rounded-full p-1.5 cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors shadow-md">
+                                    <Camera className="h-5 w-5" />
+                                    <input id="avatar-upload" type="file" className="hidden" onChange={handleAvatarChange} accept="image/*" disabled={isUploading}/>
+                                </Label>
                             </div>
-                        )}
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="name">Nombre Completo</Label>
-                        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required autoComplete="off" />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="email">Correo Electrónico</Label>
-                        <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="off" />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="password">{user ? 'Nueva Contraseña (Opcional)' : 'Contraseña'}</Label>
-                        <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required={!user} autoComplete="new-password" />
-                        {password && <PasswordStrengthIndicator password={password} isVisible={true} />}
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                          <Label htmlFor="role">Rol</Label>
-                          <Select value={role} onValueChange={(value) => setRole(value as UserRole)}>
-                              <SelectTrigger id="role">
-                                  <SelectValue placeholder="Seleccionar rol" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                  <SelectItem value="STUDENT">Estudiante</SelectItem>
-                                  <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
-                                  <SelectItem value="ADMINISTRATOR">Administrador</SelectItem>
-                              </SelectContent>
-                          </Select>
-                      </div>
-                       <div className="space-y-2">
-                            <Label htmlFor="process">Proceso Asignado</Label>
-                             <Select value={processId || 'unassigned'} onValueChange={(value) => setProcessId(value === 'unassigned' ? null : value)}>
-                              <SelectTrigger id="process">
-                                  <SelectValue placeholder="Sin asignar" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                  <SelectItem value="unassigned">Sin Asignar</SelectItem>
-                                  {flattenedProcesses.map(p => (
-                                      <SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem` }}>
-                                          {p.name}
-                                      </SelectItem>
-                                  ))}
-                              </SelectContent>
-                          </Select>
-                      </div>
-                    </div>
-                  </form>
-                </ScrollArea>
-                <DialogFooter className="p-6 pt-4 flex-col-reverse sm:flex-row sm:justify-end gap-2 border-t flex-shrink-0">
-                    <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
-                    <Button type="submit" form="user-form" disabled={isSaving || !name.trim() || !email.trim() || (!user && !password)}>
-                        {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        <Save className="mr-2 h-4 w-4" />
-                        {user ? 'Guardar Cambios' : 'Crear Colaborador'}
-                    </Button>
-                </DialogFooter>
+                            {isUploading && (
+                                <div className="w-full max-w-xs space-y-1">
+                                   <Progress value={uploadProgress} />
+                                   <p className="text-xs text-center text-muted-foreground">Subiendo...</p>
+                                </div>
+                            )}
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="name">Nombre Completo</Label>
+                            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required autoComplete="off" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="email">Correo Electrónico</Label>
+                            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="off" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="password">{user ? 'Nueva Contraseña (Opcional)' : 'Contraseña'}</Label>
+                            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required={!user} autoComplete="new-password" />
+                            {password && <PasswordStrengthIndicator password={password} isVisible={true} />}
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                              <Label htmlFor="role">Rol</Label>
+                              <Select value={role} onValueChange={(value) => setRole(value as UserRole)}>
+                                  <SelectTrigger id="role">
+                                      <SelectValue placeholder="Seleccionar rol" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                      <SelectItem value="STUDENT">Estudiante</SelectItem>
+                                      <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
+                                      <SelectItem value="ADMINISTRATOR">Administrador</SelectItem>
+                                  </SelectContent>
+                              </Select>
+                          </div>
+                           <div className="space-y-2">
+                                <Label htmlFor="process">Proceso Asignado</Label>
+                                 <Select value={processId || 'unassigned'} onValueChange={(value) => setProcessId(value === 'unassigned' ? null : value)}>
+                                  <SelectTrigger id="process">
+                                      <SelectValue placeholder="Sin asignar" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                      <SelectItem value="unassigned">Sin Asignar</SelectItem>
+                                      {flattenedProcesses.map(p => (
+                                          <SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem` }}>
+                                              {p.name}
+                                          </SelectItem>
+                                      ))}
+                                  </SelectContent>
+                              </Select>
+                          </div>
+                        </div>
+                      </form>
+                    </ScrollArea>
+                    <DialogFooter className="p-6 pt-4 flex-col-reverse sm:flex-row sm:justify-end gap-2 border-t flex-shrink-0">
+                        <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
+                        <Button type="submit" form="user-form" disabled={isSaving || !name.trim() || !email.trim() || (!user && !password)}>
+                            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            <Save className="mr-2 h-4 w-4" />
+                            {user ? 'Guardar Cambios' : 'Crear Colaborador'}
+                        </Button>
+                    </DialogFooter>
+                 </div>
             </DialogContent>
         </Dialog>
     );
