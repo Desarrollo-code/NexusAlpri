@@ -248,3 +248,10 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
                             {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             <Save className="mr-2 h-4 w-4" />
                             {user ? 'Guardar Cambios' : 'Crear Colaborador'}
+                        </Button>
+                    </DialogFooter>
+                 </div>
+            </DialogContent>
+        </Dialog>
+    );
+}
