@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -95,7 +95,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   useEffect(() => {
     if (isOpen) {
       if (resource) {
-        setTitle(resource.title || (localFile ? localFile.name.split('.').slice(0, -1).join('.') : ''));
+        setTitle(resource.title || '');
         setDescription(resource.description || '');
         setContent(resource.content || '');
         setObservations(resource.observations || '');
@@ -218,40 +218,38 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0 rounded-2xl">
+        <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
+          <DialogTitle>{resource ? 'Editar Recurso' : 'Subir Nuevo Recurso'}</DialogTitle>
+          <DialogDescription>{resource ? 'Modifica los detalles de tu recurso.' : 'Añade un nuevo archivo o enlace a la biblioteca.'}</DialogDescription>
+        </DialogHeader>
         <ScrollArea className="flex-1 min-h-0 thin-scrollbar">
-          <div className="p-6">
-            <DialogHeader className="mb-4">
-              <DialogTitle>{resource ? 'Editar Recurso' : 'Subir Nuevo Recurso'}</DialogTitle>
-              <DialogDescription>{resource ? 'Modifica los detalles de tu recurso.' : 'Añade un nuevo archivo o enlace a la biblioteca.'}</DialogDescription>
-            </DialogHeader>
-            <form id="resource-form" onSubmit={handleSave} className="space-y-6">
+          <form id="resource-form" onSubmit={handleSave} className="space-y-6 px-6 py-4">
                 {!resource && (
-                    <RadioGroup defaultValue={resourceType} onValueChange={(v) => {setResourceType(v as any); setLocalFile(null); setExternalLink('');}} className="grid grid-cols-2 gap-4">
+                    <RadioGroup defaultValue={resourceType} onValueChange={(v) => {setResourceType(v as any); setLocalFile(null); setExternalLink('');}} className="grid grid-cols-3 gap-4">
                       <div><RadioGroupItem value="DOCUMENT" id="type-doc" className="peer sr-only"/><Label htmlFor="type-doc" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><UploadCloud className="mb-2 h-6 w-6"/>Archivo</Label></div>
                       <div><RadioGroupItem value="EXTERNAL_LINK" id="type-link" className="peer sr-only"/><Label htmlFor="type-link" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><LinkIcon className="mb-2 h-6 w-6"/>Enlace</Label></div>
+                       <div><RadioGroupItem value="DOCUMENTO_EDITABLE" id="type-editable" className="peer sr-only"/><Label htmlFor="type-editable" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><FileText className="mb-2 h-6 w-6"/>Doc. Editable</Label></div>
                     </RadioGroup>
                 )}
 
-                {resourceType !== 'EXTERNAL_LINK' && (
+                {resourceType !== 'EXTERNAL_LINK' && resourceType !== 'DOCUMENTO_EDITABLE' && (
                   <div className="space-y-2">
                     <Label>Archivo</Label>
-                    {localFile || !currentUrl ? (
+                    {localFile || currentUrl ? (
                       <>
-                        <UploadArea onFileSelect={handleFileSelect} disabled={isSaving || isUploading}>
-                          {localFile && <p className="text-sm font-semibold">{localFile.name}</p>}
-                        </UploadArea>
+                        <div className="flex items-center justify-between p-2 rounded-lg border bg-background min-w-0">
+                          <div className="flex items-center gap-3 overflow-hidden">
+                            <FileIcon displayMode="list" type={localFile?.type || resource?.fileType || 'file'} />
+                            <span className="text-sm font-medium truncate">{localFile?.name || resource?.title}</span>
+                          </div>
+                          <Button type="button" variant="outline" size="sm" onClick={() => { setLocalFile(null); setCurrentUrl(null); }} className="flex-shrink-0">
+                            <Replace className="mr-2 h-4 w-4"/> Reemplazar
+                          </Button>
+                        </div>
                         {isUploading && <div className="flex items-center gap-2 text-xs text-muted-foreground"><Progress value={uploadProgress} className="w-full h-1.5" /><span>{uploadProgress}%</span></div>}
                       </>
                     ) : (
-                      <div className="flex items-center justify-between p-2 rounded-lg border bg-background min-w-0">
-                        <div className="flex items-center gap-3 overflow-hidden">
-                          <FileIcon displayMode="list" type={currentUrl.split('.').pop() || 'file'} />
-                          <span className="text-sm font-medium truncate">{title}</span>
-                        </div>
-                        <Button type="button" variant="outline" size="sm" onClick={() => { setLocalFile(null); setCurrentUrl(null); }} className="flex-shrink-0">
-                          <Replace className="mr-2 h-4 w-4"/> Reemplazar
-                        </Button>
-                      </div>
+                       <UploadArea onFileSelect={handleFileSelect} disabled={isSaving || isUploading} />
                     )}
                   </div>
                 )}
@@ -260,6 +258,14 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                   
                 <div className="space-y-1.5"><Label htmlFor="title">Título</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required autoComplete="off" /></div>
                 <div className="space-y-1.5"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} placeholder="Un resumen breve del contenido del recurso..."/></div>
+                
+                {resourceType === 'DOCUMENTO_EDITABLE' && (
+                   <div className="space-y-4">
+                     <div className="space-y-1.5"><Label htmlFor="content">Contenido</Label><RichTextEditor value={content} onChange={setContent} className="h-48" /></div>
+                     <div className="space-y-1.5"><Label htmlFor="observations">Observaciones</Label><Textarea id="observations" value={observations} onChange={e => setObservations(e.target.value)} placeholder="Notas internas, no visibles para estudiantes..." /></div>
+                   </div>
+                )}
+
                 <div className="space-y-1.5"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory}><SelectTrigger id="category"><SelectValue placeholder="Seleccionar..." /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select></div>
                 <div className="space-y-1.5"><Label>Expiración</Label><Popover><PopoverTrigger asChild><Button variant="outline" className="w-full justify-start font-normal">{expiresAt ? format(expiresAt, "PPP", {locale: es}) : <span>Sin fecha de expiración</span>}</Button></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={expiresAt} onSelect={setExpiresAt} initialFocus /></PopoverContent></Popover></div>
                 
@@ -296,11 +302,10 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                   </div>
                 )}
             </form>
-          </div>
         </ScrollArea>
-        <DialogFooter className="p-6 pt-4 border-t flex-shrink-0">
+        <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row sm:justify-end gap-2">
           <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
-          <Button type="submit" form="resource-form" disabled={isSaving || isUploading || !title || (resourceType === 'EXTERNAL_LINK' && !externalLink) || (resourceType !== 'EXTERNAL_LINK' && !localFile && !currentUrl)}>
+          <Button type="submit" form="resource-form" disabled={isSaving || isUploading || !title || (resourceType === 'EXTERNAL_LINK' && !externalLink) || (resourceType !== 'EXTERNAL_LINK' && resourceType !== 'DOCUMENTO_EDITABLE' && !localFile && !currentUrl)}>
               {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
               <Save className="mr-2 h-4 w-4" />
               Guardar
