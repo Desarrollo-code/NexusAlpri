@@ -43,16 +43,13 @@ export const useIdleTimeout = ({
     
     clearTimers();
     
-    // El prompt se activa ANTES del timeout final.
     if (promptMs > 0 && promptMs < timeoutMs) {
       promptTimeoutRef.current = setTimeout(onPrompt, promptMs);
     }
 
-    // El cierre de sesión se activa DESPUÉS del tiempo de inactividad completo.
     timeoutRef.current = setTimeout(onIdle, timeoutMs);
   }, [enabled, clearTimers, onPrompt, onIdle, promptMs, timeoutMs]);
   
-  // La función 'stay' ahora es simplemente un alias para 'startTimers', que reinicia todo.
   const stay = useCallback(() => {
     startTimers();
   }, [startTimers]);
@@ -62,24 +59,21 @@ export const useIdleTimeout = ({
       'mousemove', 'mousedown', 'click', 'scroll', 'keypress', 'touchstart'
     ];
 
-    // Cada vez que hay actividad, se reinician los contadores.
     const handleActivity = () => {
       startTimers();
     };
 
     if (enabled) {
       events.forEach(event => window.addEventListener(event, handleActivity));
-      startTimers(); // Inicia los contadores al montar el componente
+      startTimers();
     }
 
-    // Limpieza al desmontar el componente
     return () => {
       events.forEach(event => window.removeEventListener(event, handleActivity));
       clearTimers();
     };
   }, [enabled, startTimers, clearTimers]);
   
-  // Reinicia los contadores también en cada cambio de ruta.
   useEffect(() => {
       startTimers();
   }, [pathname, startTimers]);
