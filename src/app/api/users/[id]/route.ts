@@ -50,11 +50,13 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
         let dataToUpdate: any = {};
         
+        // --- Safe field updates ---
         if ('name' in body) dataToUpdate.name = body.name;
         if ('avatar' in body) dataToUpdate.avatar = body.avatar;
         if ('theme' in body) dataToUpdate.theme = body.theme;
         if ('processId' in body) dataToUpdate.processId = body.processId;
 
+        // --- Admin-only privileged updates ---
         if (session.role === 'ADMINISTRATOR') {
             const userToUpdate = await prisma.user.findUnique({ where: { id } });
             if (!userToUpdate) {
@@ -84,10 +86,21 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 });
             }
             
-            // Si se proporciona una nueva contraseña, encriptarla
-            if (body.password && body.password.trim() !== '') {
+            // *** CRITICAL FIX ***
+            // Only hash and update the password IF a new, non-empty password is provided.
+            // This prevents accidental overwrites with null or empty values.
+            if (body.password && typeof body.password === 'string' && body.password.trim() !== '') {
                 const hashedPassword = await bcrypt.hash(body.password, 10);
                 dataToUpdate.password = hashedPassword;
+                 await prisma.securityLog.create({
+                    data: {
+                        event: 'PASSWORD_CHANGE_SUCCESS',
+                        ipAddress: ip,
+                        userId: id,
+                        details: `La contraseña fue restablecida por el administrador ${session.email}.`,
+                        userAgent: req.headers.get('user-agent'),
+                    }
+                });
             }
         }
         
