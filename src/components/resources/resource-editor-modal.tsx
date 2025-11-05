@@ -37,6 +37,8 @@ import { cn } from '@/lib/utils';
 import { Separator } from '../ui/separator';
 import { FileIcon } from '../ui/file-icon';
 import { RichTextEditor } from '../ui/rich-text-editor';
+import { getInitials } from '@/lib/utils';
+
 
 interface ResourceEditorModalProps {
   isOpen: boolean;
