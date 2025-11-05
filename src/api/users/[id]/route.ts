@@ -1,10 +1,9 @@
 // src/app/api/users/[id]/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { getCurrentUser } from '@/lib/auth';
+import prisma from '@/lib/prisma';
 
-const prisma = new PrismaClient();
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +18,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     try {
         const user = await prisma.user.findUnique({
             where: { id },
+            include: {
+                process: true, 
+            }
         });
         if (!user) {
             return NextResponse.json({ message: 'Usuario no encontrado' }, { status: 404 });
@@ -39,24 +41,20 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
 
     const { id } = params;
-    // Admin can edit anyone. A user can edit their own profile.
     if (session.role !== 'ADMINISTRATOR' && session.id !== id) {
          return NextResponse.json({ message: 'No tienes permiso para actualizar este usuario.' }, { status: 403 });
     }
 
     try {
         const body = await req.json();
-        
         const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
-
         let dataToUpdate: any = {};
         
-        // General profile updates (name, avatar, theme) that a user can do for themselves
         if ('name' in body) dataToUpdate.name = body.name;
         if ('avatar' in body) dataToUpdate.avatar = body.avatar;
         if ('theme' in body) dataToUpdate.theme = body.theme;
+        if ('processId' in body) dataToUpdate.processId = body.processId;
 
-        // Admin-only updates
         if (session.role === 'ADMINISTRATOR') {
             const userToUpdate = await prisma.user.findUnique({ where: { id } });
             if (!userToUpdate) {
@@ -84,6 +82,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                         city: req.geo?.city,
                     }
                 });
+            }
+            
+            // Si se proporciona una nueva contraseña, encriptarla
+            if (body.password && body.password.trim() !== '') {
+                const hashedPassword = await bcrypt.hash(body.password, 10);
+                dataToUpdate.password = hashedPassword;
             }
         }
         

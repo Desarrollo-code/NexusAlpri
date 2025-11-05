@@ -117,14 +117,17 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
         e.preventDefault();
         setIsSaving(true);
         try {
-            const body = {
+            const body: any = {
                 name,
                 email,
                 role,
                 processId,
                 avatar: avatarUrl,
-                ...(password && { password }),
             };
+            
+            if (password.trim() !== '') {
+                body.password = password;
+            }
 
             const endpoint = user ? `/api/users/${user.id}` : '/api/users';
             const method = user ? 'PUT' : 'POST';
@@ -245,10 +248,3 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
                             {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             <Save className="mr-2 h-4 w-4" />
                             {user ? 'Guardar Cambios' : 'Crear Colaborador'}
-                        </Button>
-                    </DialogFooter>
-                 </div>
-            </DialogContent>
-        </Dialog>
-    );
-}
