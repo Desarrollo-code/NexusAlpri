@@ -368,38 +368,40 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
     return (
         <>
             <Dialog open={isOpen} onOpenChange={onClose}>
-                <DialogContent className={cn("w-[95vw] max-w-2xl overflow-hidden flex flex-col max-h-[90vh] rounded-lg p-0 gap-0", event && canEditSelectedEvent && !isEditMode && "border-primary shadow-primary/20")}>
-                    <DialogHeader className="flex flex-row items-center justify-between p-4 sm:p-6 pb-4 border-b flex-shrink-0">
-                        <div className="space-y-1.5">
-                            <DialogTitle>{(event && !isEditMode) ? event.title : (isEditMode ? (event ? "Editar Evento" : "Crear Evento") : "Detalles del Evento")}</DialogTitle>
-                            <DialogDescription>{isEditMode ? "Completa los detalles del evento." : "Información detallada sobre el evento."}</DialogDescription>
-                        </div>
-                        {event && canEditSelectedEvent && !isEditMode && (
-                            <div className="flex items-center gap-2">
-                                {event.isInteractive && <Button variant="secondary" size="sm" onClick={() => setShowParticipantsModal(true)}>Ver Participantes</Button>}
-                                <Button variant="destructive" size="icon" onClick={() => setEventToDelete(event)}><Trash2 className="h-4 w-4" /></Button>
-                                <Button variant="outline" size="icon" onClick={() => setIsEditMode(true)}><Edit className="h-4 w-4" /></Button>
+                <DialogContent className={cn("w-[95vw] sm:max-w-2xl p-0 gap-0 rounded-2xl", event && canEditSelectedEvent && !isEditMode && "border-primary shadow-primary/20")}>
+                    <div className="flex flex-col h-full max-h-[90vh]">
+                        <DialogHeader className="flex flex-row items-center justify-between p-4 sm:p-6 pb-4 border-b flex-shrink-0">
+                            <div className="space-y-1.5">
+                                <DialogTitle>{(event && !isEditMode) ? event.title : (isEditMode ? (event ? "Editar Evento" : "Crear Evento") : "Detalles del Evento")}</DialogTitle>
+                                <DialogDescription>{isEditMode ? "Completa los detalles del evento." : "Información detallada sobre el evento."}</DialogDescription>
                             </div>
-                        )}
-                    </DialogHeader>
-                    <ScrollArea className="flex-1 min-h-0 thin-scrollbar">
-                        <div className="px-4 sm:px-6 py-4">
-                            {renderContent()}
-                        </div>
-                    </ScrollArea>
-                    <DialogFooter className="p-4 sm:p-6 border-t flex-shrink-0 flex flex-row sm:justify-end gap-2">
-                        {isEditMode ? (
-                            <>
-                                <Button type="button" variant="outline" onClick={() => event ? setIsEditMode(false) : onClose()} disabled={isSaving}>Cancelar</Button>
-                                <Button form="event-form" type="submit" disabled={isSaving}>
-                                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                                    {event ? 'Guardar Cambios' : 'Crear Evento'}
-                                </Button>
-                            </>
-                        ) : (
-                            <Button type="button" variant="outline" onClick={onClose}>Cerrar</Button>
-                        )}
-                    </DialogFooter>
+                            {event && canEditSelectedEvent && !isEditMode && (
+                                <div className="flex items-center gap-2">
+                                    {event.isInteractive && <Button variant="secondary" size="sm" onClick={() => setShowParticipantsModal(true)}>Ver Participantes</Button>}
+                                    <Button variant="destructive" size="icon" onClick={() => setEventToDelete(event)}><Trash2 className="h-4 w-4" /></Button>
+                                    <Button variant="outline" size="icon" onClick={() => setIsEditMode(true)}><Edit className="h-4 w-4" /></Button>
+                                </div>
+                            )}
+                        </DialogHeader>
+                        <ScrollArea className="flex-1 min-h-0 thin-scrollbar">
+                            <div className="px-4 sm:px-6 py-4">
+                                {renderContent()}
+                            </div>
+                        </ScrollArea>
+                        <DialogFooter className="p-4 sm:p-6 border-t flex-shrink-0 flex flex-row sm:justify-end gap-2">
+                            {isEditMode ? (
+                                <>
+                                    <Button type="button" variant="outline" onClick={() => event ? setIsEditMode(false) : onClose()} disabled={isSaving}>Cancelar</Button>
+                                    <Button form="event-form" type="submit" disabled={isSaving}>
+                                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                                        {event ? 'Guardar Cambios' : 'Crear Evento'}
+                                    </Button>
+                                </>
+                            ) : (
+                                <Button type="button" variant="outline" onClick={onClose}>Cerrar</Button>
+                            )}
+                        </DialogFooter>
+                    </div>
                 </DialogContent>
             </Dialog>
 
