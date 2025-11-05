@@ -1,3 +1,4 @@
+
 // src/components/resources/resource-editor-modal.tsx
 'use client';
 
@@ -133,7 +134,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         toast({ title: 'Error de PIN', description: 'El PIN debe tener al menos 4 caracteres.', variant: 'destructive'});
         return;
     }
-     if (pin !== confirmPin) {
+     if (pin !== confirmPin && confirmPin) {
         toast({ title: 'Error de PIN', description: 'Los PIN no coinciden.', variant: 'destructive'});
         return;
     }
@@ -223,13 +224,14 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] sm:max-w-2xl p-0 gap-0 rounded-2xl flex flex-col max-h-[90vh]">
-          <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
-            <DialogTitle>{resource ? 'Editar Recurso' : 'Subir Nuevo Recurso'}</DialogTitle>
-            <DialogDescription>{resource ? 'Modifica los detalles de tu recurso.' : 'Añade un nuevo archivo o enlace a la biblioteca.'}</DialogDescription>
-          </DialogHeader>
-          <ScrollArea className="flex-1 min-h-0 thin-scrollbar">
-            <form id="resource-form" onSubmit={handleSave} className="space-y-6 px-6 py-4">
+        <DialogContent className="w-[95vw] sm:max-w-2xl p-0 gap-0 rounded-2xl">
+          <div className="flex flex-col h-full max-h-[90vh]">
+            <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
+              <DialogTitle>{resource ? 'Editar Recurso' : 'Subir Nuevo Recurso'}</DialogTitle>
+              <DialogDescription>{resource ? 'Modifica los detalles de tu recurso.' : 'Añade un nuevo archivo o enlace a la biblioteca.'}</DialogDescription>
+            </DialogHeader>
+            <ScrollArea className="flex-1 min-h-0 thin-scrollbar">
+              <form id="resource-form" onSubmit={handleSave} className="space-y-6 px-6 py-4">
                   {!resource && (
                       <RadioGroup defaultValue={resourceType} onValueChange={(v) => {setResourceType(v as any); setLocalFile(null); setExternalLink('');}} className="grid grid-cols-3 gap-4">
                         <div><RadioGroupItem value="DOCUMENT" id="type-doc" className="peer sr-only"/><Label htmlFor="type-doc" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><UploadCloud className="mb-2 h-6 w-6"/>Archivo</Label></div>
@@ -267,8 +269,8 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                   
                   {resourceType === 'DOCUMENTO_EDITABLE' && (
                      <div className="space-y-4">
-                       <div className="space-y-1.5"><Label htmlFor="content">Contenido</Label><RichTextEditor value={content} onChange={setContent} className="h-48" /></div>
-                       <div className="space-y-1.5"><Label htmlFor="observations">Observaciones</Label><Textarea id="observations" value={observations} onChange={e => setObservations(e.target.value)} placeholder="Notas internas, no visibles para estudiantes..." /></div>
+                       <div className="space-y-1.5"><Label htmlFor="content-editor">Contenido</Label><RichTextEditor value={content} onChange={setContent} className="h-48" /></div>
+                       <div className="space-y-1.5"><Label htmlFor="observations-editor">Observaciones</Label><Textarea id="observations-editor" value={observations} onChange={e => setObservations(e.target.value)} placeholder="Notas internas, no visibles para estudiantes..." /></div>
                      </div>
                   )}
 
@@ -298,7 +300,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                       {pin && <div className="relative"><Input type={showPin ? "text" : "password"} value={confirmPin} onChange={(e) => setConfirmPin(e.target.value)} placeholder="Confirmar nuevo PIN" disabled={!pin} autoComplete="new-password"/></div>}
                       {pin && confirmPin && pin !== confirmPin && <p className="text-xs text-destructive">Los PIN no coinciden.</p>}
                       <div className="flex gap-2">
-                          <Button type="button" onClick={handleSetPin} disabled={isSettingPin || !pin || pin.length < 4 || (pin && pin !== confirmPin)} className="w-full">
+                          <Button type="button" onClick={handleSetPin} disabled={isSettingPin || !pin || pin.length < 4 || (pin && confirmPin && pin !== confirmPin)} className="w-full">
                               <Check className="mr-2 h-4 w-4" />Establecer PIN
                           </Button>
                           <Button type="button" variant="destructive" onClick={handleRemovePin} disabled={isSettingPin} className="w-full">
@@ -308,15 +310,16 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                     </div>
                   )}
               </form>
-          </ScrollArea>
-          <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex flex-row justify-center sm:justify-center gap-2">
-            <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
-            <Button type="submit" form="resource-form" disabled={isSaving || isUploading || !title || (resourceType === 'EXTERNAL_LINK' && !externalLink) || (resourceType !== 'EXTERNAL_LINK' && resourceType !== 'DOCUMENTO_EDITABLE' && !localFile && !currentUrl)}>
-                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                <Save className="mr-2 h-4 w-4" />
-                Guardar
-            </Button>
-          </DialogFooter>
+            </ScrollArea>
+            <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex flex-row sm:justify-center gap-2">
+                <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
+                <Button type="submit" form="resource-form" disabled={isSaving || isUploading || !title || (resourceType === 'EXTERNAL_LINK' && !externalLink) || (resourceType !== 'EXTERNAL_LINK' && resourceType !== 'DOCUMENTO_EDITABLE' && !localFile && !currentUrl)}>
+                    {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                    <Save className="mr-2 h-4 w-4" />
+                    Guardar
+                </Button>
+            </DialogFooter>
+          </div>
         </DialogContent>
     </Dialog>
   );
