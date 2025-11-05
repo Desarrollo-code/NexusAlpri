@@ -370,16 +370,16 @@ model PlatformSettings {
   announcementsImageUrl      String?
   publicPagesBgUrl           String?
   securityMascotUrl          String?
-  emptyStateCoursesUrl      String?
-  emptyStateMyCoursesUrl    String?
-  emptyStateFormsUrl        String?
-  emptyStateMyNotesUrl      String?
-  emptyStateResourcesUrl    String?
-  emptyStateCertificatesUrl String?
-  emptyStateMotivationsUrl  String?
-  emptyStateUsersUrl        String?
-  emptyStateLeaderboardUrl  String?
-
+  emptyStateCoursesUrl       String?
+  emptyStateMyCoursesUrl     String?
+  emptyStateFormsUrl         String?
+  emptyStateMyNotesUrl       String?
+  emptyStateResourcesUrl     String?
+  emptyStateCertificatesUrl  String?
+  emptyStateMotivationsUrl   String?
+  emptyStateUsersUrl         String?
+  emptyStateLeaderboardUrl   String?
+  projectVersion             String? @default("1.0.0")
   updatedAt                  DateTime @updatedAt
 
   @@map("platform_settings")
@@ -544,6 +544,7 @@ model CalendarEvent {
   attendees           User[]          @relation("EventAttendees")
   createdAt           DateTime        @default(now())
   updatedAt           DateTime        @updatedAt
+  imageUrl            String?
   
   recurrence          RecurrenceType  @default(NONE)
   recurrenceEndDate   DateTime?
