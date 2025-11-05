@@ -129,8 +129,12 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   };
 
   const handleSetPin = async () => {
-    if (!resource || !pin || pin !== confirmPin || pin.length < 4) {
-        toast({ title: 'Error de PIN', description: 'Los PIN no coinciden o tienen menos de 4 caracteres.', variant: 'destructive'});
+    if (!resource || !pin || pin.length < 4) {
+        toast({ title: 'Error de PIN', description: 'El PIN debe tener al menos 4 caracteres.', variant: 'destructive'});
+        return;
+    }
+     if (pin !== confirmPin) {
+        toast({ title: 'Error de PIN', description: 'Los PIN no coinciden.', variant: 'destructive'});
         return;
     }
     setIsSettingPin(true);
@@ -294,7 +298,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                       {pin && <div className="relative"><Input type={showPin ? "text" : "password"} value={confirmPin} onChange={(e) => setConfirmPin(e.target.value)} placeholder="Confirmar nuevo PIN" disabled={!pin} autoComplete="new-password"/></div>}
                       {pin && confirmPin && pin !== confirmPin && <p className="text-xs text-destructive">Los PIN no coinciden.</p>}
                       <div className="flex gap-2">
-                          <Button type="button" onClick={handleSetPin} disabled={isSettingPin || !pin || pin.length < 4 || pin !== confirmPin} className="w-full">
+                          <Button type="button" onClick={handleSetPin} disabled={isSettingPin || !pin || pin.length < 4 || (pin && pin !== confirmPin)} className="w-full">
                               <Check className="mr-2 h-4 w-4" />Establecer PIN
                           </Button>
                           <Button type="button" variant="destructive" onClick={handleRemovePin} disabled={isSettingPin} className="w-full">
@@ -305,7 +309,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                   )}
               </form>
           </ScrollArea>
-          <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex flex-col sm:flex-row sm:justify-center gap-2">
+          <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex flex-row justify-center sm:justify-center gap-2">
             <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
             <Button type="submit" form="resource-form" disabled={isSaving || isUploading || !title || (resourceType === 'EXTERNAL_LINK' && !externalLink) || (resourceType !== 'EXTERNAL_LINK' && resourceType !== 'DOCUMENTO_EDITABLE' && !localFile && !currentUrl)}>
                 {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
