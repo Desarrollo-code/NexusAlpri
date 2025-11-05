@@ -35,7 +35,7 @@ export async function PUT(
     }
     
     const body = await req.json();
-    const { title, description, location, start, end, allDay, audienceType, attendeeIds, color, videoConferenceLink, attachments, recurrence, recurrenceEndDate } = body;
+    const { title, description, location, start, end, allDay, audienceType, attendeeIds, color, videoConferenceLink, attachments, recurrence, recurrenceEndDate, isInteractive, imageUrl } = body;
 
     const dataToUpdate: any = {
       title,
@@ -49,7 +49,9 @@ export async function PUT(
       videoConferenceLink,
       attachments,
       recurrence: recurrence as RecurrenceType || RecurrenceType.NONE,
-      recurrenceEndDate: recurrenceEndDate ? new Date(recurrenceEndDate) : null
+      recurrenceEndDate: recurrenceEndDate ? new Date(recurrenceEndDate) : null,
+      isInteractive,
+      imageUrl,
     };
 
     if (attendeeIds && Array.isArray(attendeeIds)) {
@@ -102,14 +104,24 @@ export async function DELETE(
         });
 
         if (!existingEvent) {
-            return NextResponse.json({ message: 'Evento no encontrado' }, { status: 404 });
+            return new NextResponse(null, { status: 204 });
         }
 
         if (session.role !== 'ADMINISTRATOR' && existingEvent.creatorId !== session.id) {
             return NextResponse.json({ message: 'No tienes permiso para eliminar este evento.' }, { status: 403 });
         }
         
-        await prisma.calendarEvent.delete({ where: { id } });
+        await prisma.$transaction([
+            prisma.notification.deleteMany({
+                where: { 
+                  OR: [
+                    { interactiveEventId: id },
+                    { link: `/calendar?eventId=${id}` }
+                  ]
+                }
+            }),
+            prisma.calendarEvent.delete({ where: { id } })
+        ]);
 
         if (supabaseAdmin) {
             const channel = supabaseAdmin.channel('events');

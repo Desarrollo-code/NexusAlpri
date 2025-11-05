@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Hand, Check } from "lucide-react";
 import type { CalendarEvent } from "@/types";
+import Image from 'next/image';
 
 interface InteractiveEventsWidgetProps {
   events?: (CalendarEvent & { hasParticipated?: boolean })[];
@@ -25,8 +26,16 @@ export function InteractiveEventsWidget({ events, onParticipate }: InteractiveEv
         </CardHeader>
         <CardContent className="space-y-3">
             {events.map(event => (
-                <div key={event.id} className="flex items-center justify-between p-3 bg-card rounded-lg">
-                    <p className="font-semibold">{event.title}</p>
+                <div key={event.id} className="flex flex-col sm:flex-row items-center justify-between p-3 bg-card rounded-lg gap-4">
+                    <div className="flex-grow">
+                        <p className="font-semibold">{event.title}</p>
+                        <p className="text-sm text-muted-foreground">{event.description}</p>
+                    </div>
+                    {event.imageUrl && (
+                        <div className="relative w-24 h-24 rounded-md overflow-hidden flex-shrink-0">
+                            <Image src={event.imageUrl} alt={event.title} fill className="object-cover" data-ai-hint="event gif" />
+                        </div>
+                    )}
                     <Button 
                         size="sm"
                         onClick={() => onParticipate(event.parentId || event.id, new Date(event.start))}

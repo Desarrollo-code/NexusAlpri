@@ -36,7 +36,7 @@ import { EventDetailsView } from '@/components/calendar/event-details-view';
 import { Separator } from '@/components/ui/separator';
 import { Identicon } from '@/components/ui/identicon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Loader2, Save, MapPin, Video, Link as LinkIcon, X, Check, Users, Edit, Trash2, Repeat, Calendar as CalendarIcon, Hand } from 'lucide-react';
+import { Loader2, Save, MapPin, Video, Link as LinkIcon, X, Check, Users, Edit, Trash2, Repeat, Calendar as CalendarIcon, Hand, Image as ImageIcon } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Calendar } from '../ui/calendar';
 import { es } from 'date-fns/locale';
@@ -80,6 +80,7 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
     const [formRecurrence, setFormRecurrence] = useState<RecurrenceType>('NONE');
     const [formRecurrenceEndDate, setFormRecurrenceEndDate] = useState<Date | undefined>(undefined);
     const [formIsInteractive, setFormIsInteractive] = useState(false);
+    const [formImageUrl, setFormImageUrl] = useState<string | null>('');
 
     const [allUsers, setAllUsers] = useState<AppUser[]>([]);
     const [isEditMode, setIsEditMode] = useState(false);
@@ -119,6 +120,7 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
             setFormRecurrence(event.recurrence || 'NONE');
             setFormRecurrenceEndDate(event.recurrenceEndDate ? new Date(event.recurrenceEndDate) : undefined);
             setFormIsInteractive(event.isInteractive || false);
+            setFormImageUrl(event.imageUrl || '');
             setIsEditMode(false);
         } else { // Creating new event
             const targetDate = selectedDate || new Date();
@@ -137,6 +139,7 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
             setFormRecurrence('NONE');
             setFormRecurrenceEndDate(undefined);
             setFormIsInteractive(false);
+            setFormImageUrl('');
             setIsEditMode(true);
         }
 
@@ -165,6 +168,7 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
             recurrence: formRecurrence,
             recurrenceEndDate: formRecurrence !== 'NONE' ? formRecurrenceEndDate?.toISOString() : null,
             isInteractive: formIsInteractive,
+            imageUrl: formImageUrl,
         };
 
         const endpoint = event ? `/api/events/${event.id}` : '/api/events';
@@ -317,6 +321,20 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
                         <Switch id="is-interactive" checked={formIsInteractive} onCheckedChange={setFormIsInteractive} disabled={isSaving}/>
                      </div>
                      <p className="text-xs text-muted-foreground">Si se activa, los usuarios verán una alerta el día del evento para confirmar su participación.</p>
+                      {formIsInteractive && (
+                        <div className="space-y-1.5 pt-2">
+                          <Label htmlFor="event-image-url" className="flex items-center gap-2">
+                            <ImageIcon className="h-4 w-4" /> URL de Imagen/GIF (Opcional)
+                          </Label>
+                          <Input
+                            id="event-image-url"
+                            value={formImageUrl || ''}
+                            onChange={e => setFormImageUrl(e.target.value)}
+                            placeholder="https://example.com/imagen.gif"
+                            disabled={isSaving}
+                          />
+                        </div>
+                      )}
                   </div>
                   <Separator />
                   <div className="space-y-2">

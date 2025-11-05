@@ -92,6 +92,7 @@ export interface Question {
     order: number;
     options: AnswerOption[];
     imageUrl?: string | null;
+    template?: string | null;
 }
 
 export interface Quiz {
@@ -275,6 +276,7 @@ export interface CalendarEvent {
     recurrenceEndDate?: string | null;
     parentId?: string | null;
     isInteractive: boolean;
+    imageUrl?: string | null;
 }
 
 // --- SECURITY ---
