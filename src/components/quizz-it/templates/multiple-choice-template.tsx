@@ -81,8 +81,8 @@ export function MultipleChoiceTemplate({ question, onSubmit, onTimeUp, questionN
         </Card>
         
         {question.imageUrl && (
-            <div className="w-full max-w-md aspect-video relative rounded-lg overflow-hidden shadow-lg bg-card">
-                 <Image src={question.imageUrl} alt={question.text} fill className="object-cover" />
+            <div className="w-full max-w-md max-h-64 aspect-video relative rounded-lg overflow-hidden shadow-lg bg-card">
+                 <Image src={question.imageUrl} alt={question.text} fill className="object-contain" />
             </div>
         )}
 
@@ -109,14 +109,14 @@ export function MultipleChoiceTemplate({ question, onSubmit, onTimeUp, questionN
                             onClick={() => handleOptionClick(option)}
                             disabled={isAnswered}
                             className={cn(
-                                "w-full h-16 text-lg font-bold text-white shadow-lg transition-all duration-300 transform-gpu hover:scale-105",
+                                "w-full h-auto min-h-[4rem] py-3 px-4 text-base md:text-lg font-bold text-white shadow-lg transition-all duration-300 transform-gpu hover:scale-105",
                                 optionColors[index % optionColors.length],
                                 isAnswered && state !== 'correct' && state !== 'incorrect' && 'opacity-30'
                             )}
                         >
-                             <div className="flex items-center gap-4">
-                                <svg viewBox="0 0 24 24" className="h-8 w-8 fill-current">{React.createElement(optionShapes[index % optionShapes.length])}</svg>
-                                <span>{option.text}</span>
+                             <div className="flex items-center justify-start w-full gap-4">
+                                <svg viewBox="0 0 24 24" className="h-8 w-8 fill-current shrink-0">{React.createElement(optionShapes[index % optionShapes.length])}</svg>
+                                <span className="flex-grow text-left whitespace-normal break-words">{option.text}</span>
                             </div>
                         </Button>
                    </div>
