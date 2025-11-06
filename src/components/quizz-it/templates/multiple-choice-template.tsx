@@ -21,6 +21,28 @@ interface MultipleChoiceTemplateProps {
   timerStyle?: string | null;
 }
 
+const SegmentedProgress = ({ current, total }: { current: number; total: number }) => {
+    return (
+        <div className="flex items-center gap-2 w-full">
+            <div className="flex-grow grid gap-1.5" style={{ gridTemplateColumns: `repeat(${total}, 1fr)`}}>
+                {Array.from({ length: total }).map((_, index) => (
+                    <div
+                        key={index}
+                        className={cn(
+                            "h-2 rounded-full transition-colors duration-300",
+                            index < current ? "bg-primary" : "bg-muted"
+                        )}
+                    />
+                ))}
+            </div>
+            <div className="text-sm font-semibold text-muted-foreground">
+                {current}/{total}
+            </div>
+        </div>
+    );
+};
+
+
 export function MultipleChoiceTemplate({ question, onSubmit, onTimeUp, questionNumber, totalQuestions, template, timerStyle }: MultipleChoiceTemplateProps) {
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
@@ -70,9 +92,11 @@ export function MultipleChoiceTemplate({ question, onSubmit, onTimeUp, questionN
   return (
     <div className="w-full flex flex-col items-center gap-6">
         <Card className="w-full bg-background/80 backdrop-blur-sm p-4 text-center shadow-lg">
-             <div className="flex justify-between items-center mb-4">
-                <p className="text-sm font-semibold text-muted-foreground">{questionNumber}/{totalQuestions}</p>
-                 <div className="flex items-center gap-2 font-bold text-lg text-primary">
+             <div className="flex justify-between items-center mb-4 gap-4">
+                <div className="w-full">
+                    <SegmentedProgress current={questionNumber} total={totalQuestions} />
+                </div>
+                 <div className="flex items-center gap-2 font-bold text-lg text-primary flex-shrink-0">
                     <Timer className="h-5 w-5"/>
                     <TimerDisplay />
                  </div>
