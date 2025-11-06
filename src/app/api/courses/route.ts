@@ -170,14 +170,12 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    // CORRECCIÓN: Solo extraer los campos necesarios y relevantes para la creación.
     const { title, description, category } = body;
     
     if (!title || !description) {
       return NextResponse.json({ message: 'Título y descripción son requeridos' }, { status: 400 });
     }
 
-    // El `prerequisiteId` se establece explícitamente como `null` en la creación.
     const newCourse = await prisma.course.create({
       data: {
         title,
@@ -185,17 +183,14 @@ export async function POST(req: NextRequest) {
         category: category || 'General',
         status: 'DRAFT',
         instructor: { connect: { id: session.id } },
-        prerequisiteId: null,
       },
       include: { instructor: true },
     });
 
     // --- SECURITY LOG (NON-BLOCKING) ---
-    // Usamos `then` para que no bloquee la respuesta al cliente.
     Promise.resolve().then(async () => {
         try {
             const ip = req.ip ?? req.headers.get('x-forwarded-for') ?? null;
-            // Verificación segura del objeto geo
             const geo = req.geo;
             const country = geo?.country ?? null;
             const city = geo?.city ?? null;
