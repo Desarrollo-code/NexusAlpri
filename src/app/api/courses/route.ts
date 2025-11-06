@@ -159,7 +159,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { title, description, category, prerequisiteId } = body;
+    const { title, description, category } = body;
     
     if (!title || !description) {
       return NextResponse.json({ message: 'Título y descripción son requeridos' }, { status: 400 });
@@ -172,7 +172,7 @@ export async function POST(req: NextRequest) {
         category: category || 'General',
         status: 'DRAFT',
         instructor: { connect: { id: session.id } },
-        prerequisiteId: prerequisiteId || null,
+        prerequisiteId: null, // Corrección: Explicitar que es null
       },
       include: { instructor: true },
     });
@@ -180,7 +180,7 @@ export async function POST(req: NextRequest) {
     // --- SECURITY LOG (NON-BLOCKING) ---
     Promise.resolve().then(async () => {
         try {
-            const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
+            const ip = req.ip ?? req.headers.get('x-forwarded-for') ?? null;
             const country = req.geo?.country ?? null;
             const city = req.geo?.city ?? null;
 
