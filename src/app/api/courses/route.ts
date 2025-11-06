@@ -13,8 +13,15 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const manageView = searchParams.get('manageView') === 'true';
     const simpleView = searchParams.get('simple') === 'true';
-    const userId = searchParams.get('userId');
-    const userRole = searchParams.get('userRole') as UserRole;
+
+    // Para las vistas que no son `simple`, se requiere una sesión.
+    if (!simpleView && !session) {
+      return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
+    }
+    
+    // Asignar userId y userRole solo si hay sesión.
+    const userId = session?.id;
+    const userRole = session?.role;
     
     const pageParam = searchParams.get('page');
     const pageSizeParam = searchParams.get('pageSize');
@@ -172,7 +179,7 @@ export async function POST(req: NextRequest) {
         category: category || 'General',
         status: 'DRAFT',
         instructor: { connect: { id: session.id } },
-        prerequisiteId: null, // Corrección: Explicitar que es null
+        prerequisiteId: null, // Explícitamente null para la creación
       },
       include: { instructor: true },
     });
