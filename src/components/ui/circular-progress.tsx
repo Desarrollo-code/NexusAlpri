@@ -11,7 +11,7 @@ interface CircularProgressProps extends React.SVGProps<SVGSVGElement> {
 }
 
 const CircularProgress = React.forwardRef<SVGSVGElement, CircularProgressProps>(
-  ({ value, strokeWidth = 10, size = 120, showValue = true, valueTextClass = "text-2xl font-bold", children, className, ...props }, ref) => {
+  ({ value, strokeWidth = 10, size = 120, showValue = true, valueTextClass = "text-base font-bold", children, className, ...props }, ref) => {
     const radius = (size - strokeWidth) / 2;
     const circumference = 2 * Math.PI * radius;
     // Clamp the value between 0 and 100
@@ -37,7 +37,7 @@ const CircularProgress = React.forwardRef<SVGSVGElement, CircularProgressProps>(
             cx={size / 2}
             cy={size / 2}
           />
-          <circle
+          <motion.circle
             className="text-primary"
             stroke="currentColor"
             strokeWidth={strokeWidth}
@@ -48,7 +48,10 @@ const CircularProgress = React.forwardRef<SVGSVGElement, CircularProgressProps>(
             r={radius}
             cx={size / 2}
             cy={size / 2}
-            style={{ transition: 'stroke-dashoffset 0.5s ease-out' }}
+            style={{ strokeDashoffset: offset }}
+            initial={{ strokeDashoffset: circumference }}
+            animate={{ strokeDashoffset: offset }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
