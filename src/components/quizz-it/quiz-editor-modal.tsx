@@ -199,106 +199,107 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
     return (
       <>
         <Dialog open={isOpen} onOpenChange={onClose}>
-          <DialogContent className="w-[95vw] sm:max-w-2xl p-0 gap-0 rounded-2xl">
-            <div className="flex flex-col h-full max-h-[90vh]">
-                <DialogHeader className="p-4 border-b flex-shrink-0">
-                    <DialogTitle className="flex items-center gap-2"><Pencil className="h-5 w-5 text-primary"/>Editor de Quiz Interactivo</DialogTitle>
-                </DialogHeader>
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-3 min-h-0">
-                    <div className="md:col-span-1 border-r flex flex-col">
-                         <div className="p-2 space-y-2 flex-shrink-0">
-                             <Button onClick={addQuestion} className="w-full" variant="outline"><PlusCircle className="mr-2 h-4 w-4"/>Añadir Pregunta</Button>
-                         </div>
-                         <ScrollArea className="flex-1">
-                            <div className="p-2 space-y-1">
-                            {localQuiz.questions.map((q, index) => (
-                                <button key={q.id} onClick={() => setActiveQuestionIndex(index)} className={cn("w-full text-left p-2 rounded-md border flex gap-2", activeQuestionIndex === index ? "bg-primary/10 border-primary" : "hover:bg-muted")}>
-                                    <span className="font-bold text-primary">{index + 1}.</span>
-                                    <span className="truncate flex-grow">{q.text || "Pregunta sin título"}</span>
-                                    <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive/70 hover:text-destructive" onClick={(e) => {e.stopPropagation(); deleteQuestion(index)}}><Trash2 className="h-4 w-4"/></Button>
-                                </button>
-                            ))}
+            <DialogContent className="w-[95vw] sm:max-w-7xl p-0 gap-0 rounded-2xl">
+                <div className="flex flex-col h-full max-h-[90vh]">
+                    <DialogHeader className="p-4 border-b flex-shrink-0">
+                        <DialogTitle className="flex items-center gap-2"><Pencil className="h-5 w-5 text-primary"/>Editor de Quiz Interactivo</DialogTitle>
+                    </DialogHeader>
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-3 min-h-0">
+                        <div className="md:col-span-1 border-r flex flex-col">
+                            <div className="p-2 space-y-2 flex-shrink-0">
+                                <Button onClick={addQuestion} className="w-full" variant="outline"><PlusCircle className="mr-2 h-4 w-4"/>Añadir Pregunta</Button>
                             </div>
-                         </ScrollArea>
-                    </div>
-                    <div className="md:col-span-2 flex flex-col">
-                        {activeQuestion ? (
-                            <ScrollArea className="flex-grow">
-                                <div className="p-4 space-y-4">
-                                     <Card>
-                                        <CardHeader><CardTitle className="text-base flex items-center gap-2"><LayoutTemplate className="h-4 w-4" /> Plantilla de Pregunta</CardTitle></CardHeader>
-                                        <CardContent>
-                                            <Select value={activeQuestion.template || 'default'} onValueChange={handleTemplateChange}>
-                                                <SelectTrigger><SelectValue placeholder="Selecciona una plantilla..." /></SelectTrigger>
-                                                <SelectContent>
-                                                    {templateOptions.map((opt) => (
-                                                        <SelectItem key={opt.value} value={opt.value}>
-                                                            <div className="flex items-center gap-2"><opt.icon className="h-4 w-4"/>{opt.label}</div>
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </CardContent>
-                                    </Card>
-
-                                    <Textarea value={activeQuestion.text} onChange={(e) => handleQuestionChange('text', e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-xl text-center font-bold h-auto resize-none bg-background flex-shrink-0" rows={2}/>
-                                    
-                                     {activeQuestion.template === 'image' && (
-                                         <div className="w-full">
-                                            {isUploading ? (
-                                                <div className="w-full p-4 h-48 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2"><Loader2 className="h-6 w-6 animate-spin text-primary"/><p className="text-sm text-muted-foreground">Subiendo...</p><Progress value={uploadProgress} className="w-full h-1.5"/></div>
-                                            ) : activeQuestion.imageUrl ? (
-                                                <div className="relative w-full h-48 rounded-lg overflow-hidden border p-1 bg-background"><Image src={activeQuestion.imageUrl} alt="preview" fill className="object-contain" /><Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => handleQuestionChange('imageUrl', null)}><X className="h-4 w-4"/></Button></div>
-                                            ) : (
-                                                <UploadArea onFileSelect={(file) => handleImageUpload(file, 'question')} inputId={`img-upload-${activeQuestion.id}`} />
-                                            )}
-                                        </div>
-                                    )}
-
-                                    <Card>
-                                        <CardHeader><CardTitle className="text-base">Opciones de Respuesta</CardTitle></CardHeader>
-                                         <CardContent className={cn("grid gap-2", isImageOptionsTemplate ? "grid-cols-2" : "grid-cols-1")}>
-                                            {activeQuestion.options.slice(0, 4).map((opt, index) => {
-                                                const optionIsUploading = isOptionUploading[index];
-                                                return (
-                                                    <div key={opt.id} className="flex items-center gap-2 p-2 rounded-md shadow-sm border">
-                                                        {isImageOptionsTemplate ? (
-                                                            <div className="flex-grow space-y-2">
-                                                                <div className="relative">
-                                                                    <div className={cn("absolute inset-0 flex items-center justify-center z-10", optionIsUploading ? 'flex' : 'hidden')}><Loader2 className="h-6 w-6 animate-spin text-primary"/></div>
-                                                                     {opt.imageUrl && (<Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6 z-20" onClick={() => handleOptionChange(index, 'imageUrl', null)}><X className="h-4 w-4"/></Button>)}
-                                                                    <UploadArea onFileSelect={(file) => handleImageUpload(file, 'option', index)} inputId={`opt-img-upload-${opt.id}`} className={cn("h-24 w-full", opt.imageUrl && 'bg-cover bg-center')} style={{backgroundImage: opt.imageUrl ? `url(${opt.imageUrl})` : 'none'}} compact/>
-                                                                </div>
-                                                            </div>
-                                                        ) : (
-                                                            <Input value={opt.text} onChange={(e) => handleOptionChange(index, 'text', e.target.value)} placeholder={`Opción ${index + 1}`} />
-                                                        )}
-                                                         <Button variant={opt.isCorrect ? 'default' : 'outline'} size="icon" onClick={() => handleSetCorrect(opt.id)}>
-                                                            {opt.isCorrect ? <Check className="h-5 w-5"/> : <X className="h-5 w-5"/>}
-                                                         </Button>
-                                                         {localQuiz.questions[activeQuestionIndex].options.length > 1 && <Button variant="ghost" size="icon" onClick={() => deleteOption(index)} className="text-destructive/70 hover:text-destructive"><X className="h-4 w-4"/></Button>}
-                                                    </div>
-                                                );
-                                            })}
-                                        </CardContent>
-                                        <CardFooter>
-                                             {localQuiz.questions[activeQuestionIndex].options.length < 4 && !isImageOptionsTemplate && (<Button variant="outline" size="sm" onClick={addOption} className="mt-2 self-start">+ Añadir opción</Button>)}
-                                        </CardFooter>
-                                    </Card>
+                            <ScrollArea className="flex-1">
+                                <div className="p-2 space-y-1">
+                                {localQuiz.questions.map((q, index) => (
+                                    <button key={q.id} onClick={() => setActiveQuestionIndex(index)} className={cn("w-full text-left p-2 rounded-md border flex gap-2", activeQuestionIndex === index ? "bg-primary/10 border-primary" : "hover:bg-muted")}>
+                                        <span className="font-bold text-primary">{index + 1}.</span>
+                                        <span className="truncate flex-grow">{q.text || "Pregunta sin título"}</span>
+                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive/70 hover:text-destructive" onClick={(e) => {e.stopPropagation(); deleteQuestion(index)}}><Trash2 className="h-4 w-4"/></Button>
+                                    </button>
+                                ))}
                                 </div>
                             </ScrollArea>
-                        ) : (
-                            <div className="flex items-center justify-center h-full text-muted-foreground"><p>Selecciona una pregunta para editarla.</p></div>
-                        )}
+                        </div>
+                        <div className="md:col-span-2 flex flex-col">
+                            {activeQuestion ? (
+                                <ScrollArea className="flex-grow">
+                                    <div className="p-4 space-y-4">
+                                        <Card>
+                                            <CardHeader><CardTitle className="text-base flex items-center gap-2"><LayoutTemplate className="h-4 w-4" /> Plantilla de Pregunta</CardTitle></CardHeader>
+                                            <CardContent>
+                                                <Select value={activeQuestion.template || 'default'} onValueChange={handleTemplateChange}>
+                                                    <SelectTrigger><SelectValue placeholder="Selecciona una plantilla..." /></SelectTrigger>
+                                                    <SelectContent>
+                                                        {templateOptions.map((opt) => (
+                                                            <SelectItem key={opt.value} value={opt.value}>
+                                                                <div className="flex items-center gap-2"><opt.icon className="h-4 w-4"/>{opt.label}</div>
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </CardContent>
+                                        </Card>
+
+                                        <Textarea value={activeQuestion.text} onChange={(e) => handleQuestionChange('text', e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-xl text-center font-bold h-auto resize-none bg-background flex-shrink-0" rows={2}/>
+                                        
+                                        {activeQuestion.template === 'image' && (
+                                            <div className="w-full">
+                                                {isUploading ? (
+                                                    <div className="w-full p-4 h-48 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2"><Loader2 className="h-6 w-6 animate-spin text-primary"/><p className="text-sm text-muted-foreground">Subiendo...</p><Progress value={uploadProgress} className="w-full h-1.5"/></div>
+                                                ) : activeQuestion.imageUrl ? (
+                                                    <div className="relative w-full h-48 rounded-lg overflow-hidden border p-1 bg-background"><Image src={activeQuestion.imageUrl} alt="preview" fill className="object-contain" /><Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => handleQuestionChange('imageUrl', null)}><X className="h-4 w-4"/></Button></div>
+                                                ) : (
+                                                    <UploadArea onFileSelect={(file) => handleImageUpload(file, 'question')} inputId={`img-upload-${activeQuestion.id}`} />
+                                                )}
+                                            </div>
+                                        )}
+
+                                        <Card>
+                                            <CardHeader><CardTitle className="text-base">Opciones de Respuesta</CardTitle></CardHeader>
+                                            <CardContent className={cn("grid gap-2", isImageOptionsTemplate ? "grid-cols-2" : "grid-cols-1")}>
+                                                {activeQuestion.options.slice(0, 4).map((opt, index) => {
+                                                    const optionIsUploading = isOptionUploading[index];
+                                                    return (
+                                                        <div key={opt.id} className="flex items-center gap-2 p-2 rounded-md shadow-sm border">
+                                                            {isImageOptionsTemplate ? (
+                                                                <div className="flex-grow space-y-2">
+                                                                    <div className="relative">
+                                                                        <div className={cn("absolute inset-0 flex items-center justify-center z-10", optionIsUploading ? 'flex' : 'hidden')}><Loader2 className="h-6 w-6 animate-spin text-primary"/></div>
+                                                                        {opt.imageUrl && (<Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6 z-20" onClick={() => handleOptionChange(index, 'imageUrl', null)}><X className="h-4 w-4"/></Button>)}
+                                                                        <UploadArea onFileSelect={(file) => handleImageUpload(file, 'option', index)} inputId={`opt-img-upload-${opt.id}`} className={cn("h-24 w-full", opt.imageUrl && 'bg-cover bg-center')} style={{backgroundImage: opt.imageUrl ? `url(${opt.imageUrl})` : 'none'}} compact/>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <Input value={opt.text} onChange={(e) => handleOptionChange(index, 'text', e.target.value)} placeholder={`Opción ${index + 1}`} />
+                                                            )}
+                                                            <Button variant={opt.isCorrect ? 'default' : 'outline'} size="icon" onClick={() => handleSetCorrect(opt.id)}>
+                                                                {opt.isCorrect ? <Check className="h-5 w-5"/> : <X className="h-5 w-5"/>}
+                                                            </Button>
+                                                            {localQuiz.questions[activeQuestionIndex].options.length > 1 && <Button variant="ghost" size="icon" onClick={() => deleteOption(index)} className="text-destructive/70 hover:text-destructive"><X className="h-4 w-4"/></Button>}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </CardContent>
+                                            <CardFooter>
+                                                {localQuiz.questions[activeQuestionIndex].options.length < 4 && !isImageOptionsTemplate && (<Button variant="outline" size="sm" onClick={addOption} className="mt-2 self-start">+ Añadir opción</Button>)}
+                                            </CardFooter>
+                                        </Card>
+                                    </div>
+                                </ScrollArea>
+                            ) : (
+                                <div className="flex items-center justify-center h-full text-muted-foreground"><p>Selecciona una pregunta para editarla.</p></div>
+                            )}
+                        </div>
                     </div>
+                    <DialogFooter className="p-4 border-t flex-shrink-0">
+                        <Button variant="outline" onClick={() => setIsPreviewOpen(true)}><Eye className="mr-2 h-4 w-4" />Previsualizar</Button>
+                        <div className="flex-grow"/>
+                        <Button variant="outline" onClick={onClose}>Cancelar</Button>
+                        <Button onClick={handleSaveChanges}>Guardar Cambios del Quiz</Button>
+                    </DialogFooter>
                 </div>
-                <DialogFooter className="p-4 border-t flex-shrink-0">
-                     <Button variant="outline" onClick={() => setIsPreviewOpen(true)}><Eye className="mr-2 h-4 w-4" />Previsualizar</Button>
-                    <div className="flex-grow"/>
-                    <Button variant="outline" onClick={onClose}>Cancelar</Button>
-                    <Button onClick={handleSaveChanges}>Guardar Cambios del Quiz</Button>
-                </DialogFooter>
-            </div>
+            </DialogContent>
         </Dialog>
         <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
             <DialogContent className="max-w-4xl p-0">
