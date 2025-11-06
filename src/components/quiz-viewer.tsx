@@ -98,26 +98,22 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPrev
   const renderContent = () => {
     if (gameState === 'intro') {
       return (
-        <Card className="my-4 shadow-lg text-center bg-card">
-            <CardHeader>
-                <CardTitle className="text-2xl font-headline mt-2">{quiz?.title}</CardTitle>
-                <CardDescription className="max-w-prose mx-auto">{quiz?.description || "Prepárate para probar tus conocimientos."}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-                <p className="text-sm text-muted-foreground">Este quiz contiene {quiz?.questions.length} pregunta{quiz?.questions.length !== 1 ? 's' : ''}.</p>
-                {!isCreatorPreview && maxAttempts !== null && <p className="text-sm text-muted-foreground">Te quedan {maxAttempts - userAttempts} de {maxAttempts} intentos.</p>}
-            </CardContent>
-            <CardFooter>
+        <div className="w-full text-center">
+            <h3 className="text-xl font-bold font-headline mt-2">{quiz?.title}</h3>
+            <p className="max-w-prose mx-auto text-sm text-muted-foreground mt-2">{quiz?.description || "Prepárate para probar tus conocimientos."}</p>
+            <p className="text-xs text-muted-foreground mt-4">Este quiz contiene {quiz?.questions.length} pregunta{quiz?.questions.length !== 1 ? 's' : ''}.</p>
+            {!isCreatorPreview && maxAttempts !== null && <p className="text-xs text-muted-foreground mt-1">Te quedan {maxAttempts - userAttempts} de {maxAttempts} intentos.</p>}
+            <div className="mt-6">
                  {!canRetry && !isCreatorPreview ? (
-                     <Alert variant="destructive" className="w-full"><ShieldAlert className="h-4 w-4" /><AlertTitle>Límite de Intentos Alcanzado</AlertTitle><AlertDescription>Ya no puedes volver a realizar este quiz.</AlertDescription></Alert>
+                     <Alert variant="destructive" className="w-full text-left"><ShieldAlert className="h-4 w-4" /><AlertTitle>Límite de Intentos Alcanzado</AlertTitle><AlertDescription>Ya no puedes volver a realizar este quiz.</AlertDescription></Alert>
                  ) : (
-                    <Button className="w-full" onClick={() => setGameState('playing')} disabled={!isEnrolled && !isCreatorPreview}>
+                    <Button className="w-full max-w-sm" onClick={() => setGameState('playing')} disabled={!isEnrolled && !isCreatorPreview}>
                         <PlayCircle className="mr-2 h-4 w-4"/>
                         {isCreatorPreview ? 'Comenzar (Vista Previa)' : 'Comenzar Quiz'}
                     </Button>
                  )}
-            </CardFooter>
-        </Card>
+            </div>
+        </div>
       );
     }
 
@@ -160,7 +156,7 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPrev
   }
 
   return (
-    <div className="flex flex-col items-center justify-center p-4 min-h-[300px] bg-gradient-to-br from-background via-muted to-background rounded-lg">
+    <div className="flex flex-col items-center justify-center p-4 min-h-[300px]">
       <AnimatePresence mode="wait">
         <motion.div
           key={gameState === 'playing' ? currentQuestionIndex : gameState}
