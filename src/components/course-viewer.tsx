@@ -27,7 +27,7 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import YouTube from 'react-youtube';
 import mammoth from 'mammoth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { PdfViewer } from '@/components/pdf-viewer'; // Importamos el nuevo componente
+import { PdfViewer } from '@/components/pdf-viewer';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -65,7 +65,7 @@ const DocxPreviewer = ({ url }: { url: string }) => {
 
     if (isLoading) return <div className="p-4 text-center"><Loader2 className="animate-spin" /></div>;
     if (error) return <div className="p-4 text-center text-destructive">{error}</div>;
-    return <div className="prose prose-sm dark:prose-invert max-w-none my-4 p-3 border rounded-md bg-card" dangerouslySetInnerHTML={{ __html: html || '' }} />;
+    return <div className="prose prose-sm dark:prose-invert max-w-none my-4 p-3 border rounded-lg bg-card" dangerouslySetInnerHTML={{ __html: html || '' }} />;
 };
 
 // --- Note Taking Component ---
@@ -521,12 +521,12 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                     </div>
                 );
             }
-            return <div key={block.id} className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card" dangerouslySetInnerHTML={{ __html: url }} />;
+            return <div key={block.id} className="prose dark:prose-invert prose-sm max-w-none my-4" dangerouslySetInnerHTML={{ __html: url }} />;
         }
         
         if (block.type === 'FILE') {
             const isPdf = url.toLowerCase().endsWith('.pdf');
-            if (isPdf) return <PdfViewer url={url} key={block.id} />;
+            if (isPdf) return <div key={block.id} className="my-4"><PdfViewer url={url} /></div>;
             
             const isOfficeDoc = url.toLowerCase().endsWith('.docx');
             
@@ -576,13 +576,15 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
 
     if (hasContent) {
         return (
-            <div>
+            <Card className="p-4 sm:p-6">
+              <CardContent className="p-0">
                 <div className="flex items-center gap-2 text-lg font-semibold mb-4">
                     <GraduationCap className="h-5 w-5 text-primary" />
                     <h2>{selectedLesson.title}</h2>
                 </div>
                 {selectedLesson.contentBlocks.map((block, index, allBlocks) => renderContentBlock(block, index, allBlocks))}
-            </div>
+              </CardContent>
+            </Card>
         )
     }
     
