@@ -209,10 +209,11 @@ async function getInstructorDashboardData(session: PrismaUser) {
         }), 0, 'totalStudents'),
         safeQuery(prisma.course.findMany({
             where: { instructorId: session.id },
-            include: { 
+            include: {
+                _count: { select: { modules: true } },
                 modules: {
-                    include: {
-                        _count: { select: { lessons: true }}
+                    select: {
+                       _count: { select: { lessons: true } }
                     }
                 },
                 enrollments: { 
@@ -234,7 +235,7 @@ async function getInstructorDashboardData(session: PrismaUser) {
             ...mapApiCourseToAppCourse({
               ...course,
               _count: {
-                modules: course.modules.length,
+                modules: course._count.modules,
                 lessons: course.modules.reduce((sum, mod) => sum + mod._count.lessons, 0)
               },
             }),
