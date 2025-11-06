@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
         }
         const courses = await prisma.course.findMany({
             where: {
-                status: 'PUBLISHED', // Solo se pueden asignar mensajes a cursos publicados
+                status: 'PUBLISHED',
             },
             select: {
                 id: true,
@@ -64,7 +64,7 @@ export async function GET(req: NextRequest) {
 
     const courseInclude = {
       instructor: { select: { id: true, name: true, avatar: true } },
-      prerequisite: { select: { id: true, title: true } }, // Incluir prerrequisito
+      prerequisite: { select: { id: true, title: true } },
       _count: {
         select: {
           modules: true,
@@ -91,21 +91,35 @@ export async function GET(req: NextRequest) {
         ...(isPaginated && { skip, take: pageSize }),
     });
 
-    const coursesWithPrereqCompletion = userId ? await Promise.all(coursesFromDb.map(async (course) => {
-        if (course.prerequisiteId) {
-            const prereqProgress = await prisma.courseProgress.findFirst({
-                where: {
-                    userId: userId,
-                    courseId: course.prerequisiteId,
-                    completedAt: { not: null },
-                },
-                select: { completedAt: true }
-            });
-            return { ...course, prerequisiteCompleted: !!prereqProgress };
-        }
-        return { ...course, prerequisiteCompleted: true }; // No prerequisite means it's "completed"
-    })) : coursesFromDb.map(c => ({...c, prerequisiteCompleted: true}));
+    let coursesWithPrereqCompletion;
 
+    if (userId) {
+      const prerequisiteIds = coursesFromDb
+        .map(course => course.prerequisiteId)
+        .filter((id): id is string => id !== null);
+
+      let completedPrereqs = new Set<string>();
+
+      if (prerequisiteIds.length > 0) {
+        const prereqProgress = await prisma.courseProgress.findMany({
+          where: {
+            userId: userId,
+            courseId: { in: prerequisiteIds },
+            completedAt: { not: null },
+          },
+          select: { courseId: true }
+        });
+        completedPrereqs = new Set(prereqProgress.map(p => p.courseId));
+      }
+
+      coursesWithPrereqCompletion = coursesFromDb.map(course => ({
+        ...course,
+        prerequisiteCompleted: !course.prerequisiteId || completedPrereqs.has(course.prerequisiteId),
+      }));
+
+    } else {
+        coursesWithPrereqCompletion = coursesFromDb.map(c => ({...c, prerequisiteCompleted: true}));
+    }
 
     const totalCourses = await prisma.course.count({ where: whereClause });
     
@@ -163,17 +177,14 @@ export async function POST(req: NextRequest) {
       include: { instructor: true },
     });
 
-    // Log the security event AFTER the course has been successfully created.
     try {
         await prisma.securityLog.create({
           data: {
             event: 'COURSE_CREATED',
-            ipAddress: req.ip || 'unknown',
+            ipAddress: req.headers.get('x-forwarded-for') ?? req.ip,
             userId: session.id,
             details: `Curso creado: "${newCourse.title}" (ID: ${newCourse.id}).`,
-            userAgent: req.headers.get('user-agent') || 'unknown',
-            country: req.geo?.country || 'unknown',
-            city: req.geo?.city || 'unknown',
+            userAgent: req.headers.get('user-agent'),
           }
         });
     } catch (logError) {
