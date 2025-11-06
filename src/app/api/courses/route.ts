@@ -178,8 +178,6 @@ export async function POST(req: NextRequest) {
     });
 
     // --- SECURITY LOG (NON-BLOCKING) ---
-    // We create the log after successfully creating the course and returning the response.
-    // This uses a `then` block which doesn't block the main execution flow.
     Promise.resolve().then(async () => {
         try {
             const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
