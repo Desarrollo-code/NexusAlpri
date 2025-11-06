@@ -178,13 +178,20 @@ export async function POST(req: NextRequest) {
     });
 
     try {
+        const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
+        // GEO object might be undefined in some environments
+        const country = req.geo?.country || null;
+        const city = req.geo?.city || null;
+
         await prisma.securityLog.create({
           data: {
             event: 'COURSE_CREATED',
-            ipAddress: req.headers.get('x-forwarded-for') ?? req.ip,
+            ipAddress: ip,
             userId: session.id,
             details: `Curso creado: "${newCourse.title}" (ID: ${newCourse.id}).`,
             userAgent: req.headers.get('user-agent'),
+            country,
+            city,
           }
         });
     } catch (logError) {
