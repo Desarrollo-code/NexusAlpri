@@ -199,7 +199,8 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
     return (
       <>
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-7xl h-[90vh] flex flex-col p-0 gap-0 rounded-2xl">
+          <DialogContent className="w-[95vw] sm:max-w-2xl p-0 gap-0 rounded-2xl">
+            <div className="flex flex-col h-full max-h-[90vh]">
                 <DialogHeader className="p-4 border-b flex-shrink-0">
                     <DialogTitle className="flex items-center gap-2"><Pencil className="h-5 w-5 text-primary"/>Editor de Quiz Interactivo</DialogTitle>
                 </DialogHeader>
@@ -297,7 +298,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                     <Button variant="outline" onClick={onClose}>Cancelar</Button>
                     <Button onClick={handleSaveChanges}>Guardar Cambios del Quiz</Button>
                 </DialogFooter>
-            </DialogContent>
+            </div>
         </Dialog>
         <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
             <DialogContent className="max-w-4xl p-0">
