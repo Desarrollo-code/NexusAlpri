@@ -18,7 +18,8 @@ interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | '_count' 
 
 
 export function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCourseType {
-  const totalLessons = apiCourse.modules?.reduce((acc, mod) => acc + (mod._count?.lessons || 0), 0) || apiCourse._count?.lessons || 0;
+  // Se añade una comprobación para asegurar que apiCourse.modules existe antes de intentar reducirlo.
+  const totalLessons = apiCourse.modules?.reduce((acc, mod) => acc + (mod._count?.lessons || 0), 0) ?? apiCourse._count?.lessons ?? 0;
   
   return {
     id: apiCourse.id,
