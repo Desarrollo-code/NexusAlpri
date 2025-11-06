@@ -169,7 +169,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
             setUploadProgress(0);
         } else if (optionIndex !== undefined) {
              setIsOptionUploading(prev => ({ ...prev, [optionIndex]: true }));
-             setOptionUploadProgress(prev => ({ ...prev, [optionIndex]: progress }));
+             setOptionUploadProgress(prev => ({ ...prev, [optionIndex]: 0 }));
         }
         try {
             const result = await uploadWithProgress('/api/upload/lesson-file', file, (progress) => {
@@ -199,7 +199,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
     return (
       <>
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-5xl h-[90vh] flex flex-col p-0 gap-0 rounded-2xl">
+            <DialogContent className="max-w-7xl h-[90vh] flex flex-col p-0 gap-0 rounded-2xl">
                 <DialogHeader className="p-4 border-b flex-shrink-0">
                     <DialogTitle className="flex items-center gap-2"><Pencil className="h-5 w-5 text-primary"/>Editor de Quiz Interactivo</DialogTitle>
                 </DialogHeader>
