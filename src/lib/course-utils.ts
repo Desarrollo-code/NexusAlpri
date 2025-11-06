@@ -28,7 +28,7 @@ export function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCours
     category: apiCourse.category || undefined,
     instructor: apiCourse.instructor ? {
         id: apiCourse.instructor.id,
-        name: apiCourse.instructor.name || 'N/A',
+        name: apiCourse.instructor.name || 'N/A', // Null check for name
         avatar: apiCourse.instructor.avatar || null,
     } : {
         id: 'unknown',
