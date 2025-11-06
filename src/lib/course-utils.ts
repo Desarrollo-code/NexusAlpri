@@ -18,14 +18,18 @@ interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | '_count' 
 
 
 export function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCourseType {
-  // Se añade una comprobación para asegurar que apiCourse.modules existe antes de intentar reducirlo.
-  const totalLessons = apiCourse.modules?.reduce((acc, mod) => acc + (mod._count?.lessons || 0), 0) ?? apiCourse._count?.lessons ?? 0;
+  // CORRECCIÓN: Se añade una comprobación robusta para asegurar que apiCourse.modules existe
+  // y es un array antes de intentar reducirlo. Esto evita el error "cannot read properties of undefined (reading 'reduce')".
+  const totalLessons = Array.isArray(apiCourse.modules)
+    ? apiCourse.modules.reduce((acc, mod) => acc + (mod?._count?.lessons || 0), 0)
+    : (apiCourse._count?.lessons ?? 0);
   
   return {
     id: apiCourse.id,
     title: apiCourse.title,
     description: apiCourse.description || '',
     category: apiCourse.category || undefined,
+    // CORRECCIÓN: Se asegura de que siempre haya un objeto instructor, incluso si es nulo en la DB.
     instructor: apiCourse.instructor ? {
         id: apiCourse.instructor.id,
         name: apiCourse.instructor.name || 'N/A', // Null check for name
