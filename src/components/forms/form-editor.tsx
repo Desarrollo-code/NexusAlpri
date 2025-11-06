@@ -32,6 +32,7 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '../ui/alert';
+import { ScrollArea } from '../ui/scroll-area';
 
 const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
@@ -99,6 +100,12 @@ const FieldEditor = ({ field, isScoringEnabled, onUpdate, onDelete, onOptionChan
         );
     };
 
+    const optionsContainer = (
+         <ScrollArea className="max-h-[400px] space-y-2 pr-3">
+              {options.map((option, index) => renderOption(option, index))}
+         </ScrollArea>
+    );
+
     if (field.type === 'SINGLE_CHOICE') {
         const correctOptionId = options.find(o => o.isCorrect)?.id;
         return (
@@ -107,7 +114,7 @@ const FieldEditor = ({ field, isScoringEnabled, onUpdate, onDelete, onOptionChan
                 onValueChange={(value) => onCorrectChange(field.id, value, true)} 
                 className="space-y-2 mt-2"
             >
-              {options.map((option, index) => renderOption(option, index))}
+              {optionsContainer}
               <Button variant="outline" size="sm" onClick={() => onOptionAdd(field.id)}>+ Añadir opción</Button>
             </RadioGroup>
         );
@@ -115,7 +122,7 @@ const FieldEditor = ({ field, isScoringEnabled, onUpdate, onDelete, onOptionChan
     if (field.type === 'MULTIPLE_CHOICE') {
         return (
             <div className="space-y-2 mt-2">
-                {options.map((option, index) => renderOption(option, index))}
+                {optionsContainer}
                 <Button variant="outline" size="sm" onClick={() => onOptionAdd(field.id)}>+ Añadir opción</Button>
             </div>
         )
