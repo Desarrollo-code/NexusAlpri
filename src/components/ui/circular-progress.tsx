@@ -1,5 +1,7 @@
+// src/components/ui/circular-progress.tsx
 import * as React from 'react';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 interface CircularProgressProps extends React.SVGProps<SVGSVGElement> {
   value: number;
