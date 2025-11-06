@@ -86,19 +86,25 @@ export function UploadArea({ onFileSelect, disabled, className, inputId = "file-
         className="hidden"
         disabled={disabled}
       />
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 transition-opacity duration-300 z-0">
-          <IconUploadCloud className={cn("text-muted-foreground transition-colors group-hover:text-primary", isDragging && "text-primary", compact ? "h-8 w-8" : "h-10 w-10")} />
-          {!compact && (
-            <div className="text-center">
-              <p className="text-sm font-semibold text-foreground">
-                  {isDragging ? 'Suelta el archivo aquí' : 'Arrastra y suelta o haz clic'}
-              </p>
-               <p className="text-xs text-muted-foreground">
-                  Sube un archivo para adjuntar
-              </p>
-            </div>
-          )}
-      </div>
+      
+      {/* Show placeholder icon and text only if there are no children (no image preview) */}
+      {!children && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 transition-opacity duration-300 z-0">
+            <IconUploadCloud className={cn("text-muted-foreground transition-colors group-hover:text-primary", isDragging && "text-primary", compact ? "h-8 w-8" : "h-10 w-10")} />
+            {!compact && (
+              <div className="text-center">
+                <p className="text-sm font-semibold text-foreground">
+                    {isDragging ? 'Suelta el archivo aquí' : 'Arrastra y suelta o haz clic'}
+                </p>
+                 <p className="text-xs text-muted-foreground">
+                    Sube un archivo para adjuntar
+                </p>
+              </div>
+            )}
+        </div>
+      )}
+
+      {/* Render children (image preview) if they exist */}
       {children && (
         <div className={cn("relative z-10 w-full h-full", isDragging && "opacity-20")}>
             {children}
