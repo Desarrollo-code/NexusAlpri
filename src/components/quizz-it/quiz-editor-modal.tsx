@@ -199,8 +199,8 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
     return (
       <>
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="w-[95vw] sm:max-w-7xl p-0 gap-0 rounded-2xl">
-                <div className="flex flex-col h-full max-h-[90vh]">
+          <DialogContent className="w-[95vw] sm:max-w-7xl p-0 gap-0 rounded-2xl">
+            <div className="flex flex-col h-full max-h-[90vh]">
                     <DialogHeader className="p-4 border-b flex-shrink-0">
                         <DialogTitle className="flex items-center gap-2"><Pencil className="h-5 w-5 text-primary"/>Editor de Quiz Interactivo</DialogTitle>
                     </DialogHeader>
@@ -222,8 +222,8 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                             </ScrollArea>
                         </div>
                         <div className="md:col-span-2 flex flex-col">
+                           <ScrollArea className="flex-grow">
                             {activeQuestion ? (
-                                <ScrollArea className="flex-grow">
                                     <div className="p-4 space-y-4">
                                         <Card>
                                             <CardHeader><CardTitle className="text-base flex items-center gap-2"><LayoutTemplate className="h-4 w-4" /> Plantilla de Pregunta</CardTitle></CardHeader>
@@ -240,20 +240,24 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                                 </Select>
                                             </CardContent>
                                         </Card>
-
-                                        <Textarea value={activeQuestion.text} onChange={(e) => handleQuestionChange('text', e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-xl text-center font-bold h-auto resize-none bg-background flex-shrink-0" rows={2}/>
                                         
-                                        {activeQuestion.template === 'image' && (
-                                            <div className="w-full">
-                                                {isUploading ? (
-                                                    <div className="w-full p-4 h-48 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2"><Loader2 className="h-6 w-6 animate-spin text-primary"/><p className="text-sm text-muted-foreground">Subiendo...</p><Progress value={uploadProgress} className="w-full h-1.5"/></div>
-                                                ) : activeQuestion.imageUrl ? (
-                                                    <div className="relative w-full h-48 rounded-lg overflow-hidden border p-1 bg-background"><Image src={activeQuestion.imageUrl} alt="preview" fill className="object-contain" /><Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => handleQuestionChange('imageUrl', null)}><X className="h-4 w-4"/></Button></div>
-                                                ) : (
-                                                    <UploadArea onFileSelect={(file) => handleImageUpload(file, 'question')} inputId={`img-upload-${activeQuestion.id}`} />
-                                                )}
-                                            </div>
-                                        )}
+                                        <Card>
+                                          <CardHeader><CardTitle className="text-base">Contenido de la Pregunta</CardTitle></CardHeader>
+                                          <CardContent className="space-y-4">
+                                            <Textarea value={activeQuestion.text} onChange={(e) => handleQuestionChange('text', e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-lg font-semibold h-auto resize-none" rows={3}/>
+                                             {activeQuestion.template === 'image' && (
+                                                <div className="w-full">
+                                                    {isUploading ? (
+                                                        <div className="w-full p-4 h-48 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2"><Loader2 className="h-6 w-6 animate-spin text-primary"/><p className="text-sm text-muted-foreground">Subiendo...</p><Progress value={uploadProgress} className="w-full h-1.5"/></div>
+                                                    ) : activeQuestion.imageUrl ? (
+                                                        <div className="relative w-full h-48 rounded-lg overflow-hidden border p-1 bg-background"><Image src={activeQuestion.imageUrl} alt="preview" fill className="object-contain" /><Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => handleQuestionChange('imageUrl', null)}><X className="h-4 w-4"/></Button></div>
+                                                    ) : (
+                                                        <UploadArea onFileSelect={(file) => handleImageUpload(file, 'question')} inputId={`img-upload-${activeQuestion.id}`} />
+                                                    )}
+                                                </div>
+                                            )}
+                                          </CardContent>
+                                        </Card>
 
                                         <Card>
                                             <CardHeader><CardTitle className="text-base">Opciones de Respuesta</CardTitle></CardHeader>
@@ -261,35 +265,37 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                                 {activeQuestion.options.slice(0, 4).map((opt, index) => {
                                                     const optionIsUploading = isOptionUploading[index];
                                                     return (
-                                                        <div key={opt.id} className="flex items-center gap-2 p-2 rounded-md shadow-sm border">
+                                                        <div key={opt.id} className="flex items-center gap-2 p-2 rounded-md shadow-sm border bg-background">
                                                             {isImageOptionsTemplate ? (
                                                                 <div className="flex-grow space-y-2">
                                                                     <div className="relative">
                                                                         <div className={cn("absolute inset-0 flex items-center justify-center z-10", optionIsUploading ? 'flex' : 'hidden')}><Loader2 className="h-6 w-6 animate-spin text-primary"/></div>
                                                                         {opt.imageUrl && (<Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6 z-20" onClick={() => handleOptionChange(index, 'imageUrl', null)}><X className="h-4 w-4"/></Button>)}
-                                                                        <UploadArea onFileSelect={(file) => handleImageUpload(file, 'option', index)} inputId={`opt-img-upload-${opt.id}`} className={cn("h-24 w-full", opt.imageUrl && 'bg-cover bg-center')} style={{backgroundImage: opt.imageUrl ? `url(${opt.imageUrl})` : 'none'}} compact/>
+                                                                        <UploadArea onFileSelect={(file) => handleImageUpload(file, 'option', index)} inputId={`opt-img-upload-${opt.id}`} className={cn("h-24 w-full", opt.imageUrl && 'bg-cover bg-center')} style={{backgroundImage: opt.imageUrl ? `url(${opt.imageUrl})` : 'none'}} compact>
+                                                                            {opt.imageUrl && <Image src={opt.imageUrl} alt={`Opción ${index + 1}`} fill className="object-contain" />}
+                                                                        </UploadArea>
                                                                     </div>
                                                                 </div>
                                                             ) : (
-                                                                <Input value={opt.text} onChange={(e) => handleOptionChange(index, 'text', e.target.value)} placeholder={`Opción ${index + 1}`} />
+                                                                <Input value={opt.text} onChange={(e) => handleOptionChange(index, 'text', e.target.value)} placeholder={`Opción ${index + 1}`} disabled={activeQuestion.template === 'true_false'}/>
                                                             )}
                                                             <Button variant={opt.isCorrect ? 'default' : 'outline'} size="icon" onClick={() => handleSetCorrect(opt.id)}>
                                                                 {opt.isCorrect ? <Check className="h-5 w-5"/> : <X className="h-5 w-5"/>}
                                                             </Button>
-                                                            {localQuiz.questions[activeQuestionIndex].options.length > 1 && <Button variant="ghost" size="icon" onClick={() => deleteOption(index)} className="text-destructive/70 hover:text-destructive"><X className="h-4 w-4"/></Button>}
+                                                            {activeQuestion.options.length > (activeQuestion.template === 'true_false' ? 2 : 1) && <Button variant="ghost" size="icon" onClick={() => deleteOption(index)} className="text-destructive/70 hover:text-destructive"><X className="h-4 w-4"/></Button>}
                                                         </div>
                                                     );
                                                 })}
                                             </CardContent>
                                             <CardFooter>
-                                                {localQuiz.questions[activeQuestionIndex].options.length < 4 && !isImageOptionsTemplate && (<Button variant="outline" size="sm" onClick={addOption} className="mt-2 self-start">+ Añadir opción</Button>)}
+                                                {activeQuestion.options.length < 4 && !isImageOptionsTemplate && activeQuestion.template !== 'true_false' && (<Button variant="outline" size="sm" onClick={addOption} className="mt-2 self-start">+ Añadir opción</Button>)}
                                             </CardFooter>
                                         </Card>
                                     </div>
-                                </ScrollArea>
                             ) : (
                                 <div className="flex items-center justify-center h-full text-muted-foreground"><p>Selecciona una pregunta para editarla.</p></div>
                             )}
+                            </ScrollArea>
                         </div>
                     </div>
                     <DialogFooter className="p-4 border-t flex-shrink-0">
