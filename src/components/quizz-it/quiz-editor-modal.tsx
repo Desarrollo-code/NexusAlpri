@@ -245,9 +245,9 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                      {activeQuestion.template === 'image' && (
                                          <div className="w-full">
                                             {isUploading ? (
-                                                <div className="w-full p-4 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2"><Loader2 className="h-6 w-6 animate-spin text-primary"/><p className="text-sm text-muted-foreground">Subiendo...</p><Progress value={uploadProgress} className="w-full h-1.5"/></div>
+                                                <div className="w-full p-4 h-48 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2"><Loader2 className="h-6 w-6 animate-spin text-primary"/><p className="text-sm text-muted-foreground">Subiendo...</p><Progress value={uploadProgress} className="w-full h-1.5"/></div>
                                             ) : activeQuestion.imageUrl ? (
-                                                <div className="relative w-full aspect-video rounded-lg overflow-hidden border p-1 bg-background"><Image src={activeQuestion.imageUrl} alt="preview" fill className="object-contain" /><Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => handleQuestionChange('imageUrl', null)}><X className="h-4 w-4"/></Button></div>
+                                                <div className="relative w-full h-48 rounded-lg overflow-hidden border p-1 bg-background"><Image src={activeQuestion.imageUrl} alt="preview" fill className="object-contain" /><Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => handleQuestionChange('imageUrl', null)}><X className="h-4 w-4"/></Button></div>
                                             ) : (
                                                 <UploadArea onFileSelect={(file) => handleImageUpload(file, 'question')} inputId={`img-upload-${activeQuestion.id}`} />
                                             )}
