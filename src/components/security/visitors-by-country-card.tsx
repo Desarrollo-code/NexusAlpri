@@ -1,9 +1,9 @@
 // src/components/security/visitors-by-country-card.tsx
 'use client';
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { WorldMap } from './world-map';
+import { Globe } from 'lucide-react';
 import { useAnimatedCounter } from '@/hooks/use-animated-counter';
 
 interface VisitorsByCountryCardProps {
@@ -25,12 +25,15 @@ export const VisitorsByCountryCard = ({ topCountries, isLoading }: VisitorsByCou
     return (
         <Card className="bg-gradient-to-r from-purple-500 to-blue-500 text-white overflow-hidden">
             <CardContent className="p-0 flex flex-col md:flex-row">
-                 <div className="flex-1 p-4">
+                 <div className="flex-1 p-4 flex flex-col items-center justify-center text-center">
                     {isLoading ? (
-                        <Skeleton className="w-full h-40 bg-white/20" />
+                        <Skeleton className="w-24 h-24 rounded-full bg-white/20" />
                     ) : (
-                        <WorldMap data={topCountries || []} />
+                        <div className="w-24 h-24 rounded-full bg-white/10 flex items-center justify-center">
+                            <Globe className="h-12 w-12 text-white/80" />
+                        </div>
                     )}
+                     <h3 className="font-bold text-lg mt-2">Visitantes por País</h3>
                 </div>
                 <div className="flex-shrink-0 md:w-48 bg-black/10 p-4 flex flex-col justify-center gap-4">
                      {isLoading ? (
