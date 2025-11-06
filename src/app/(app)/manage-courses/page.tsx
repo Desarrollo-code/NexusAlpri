@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { PlusCircle, List, Grid, Filter, UserPlus, MoreVertical, Loader2, AlertTriangle, ShieldAlert, Archive, ArchiveRestore, Trash2, Eye, HelpCircle, LineChart, BookOpen, Layers, Check, Award } from 'lucide-react';
+import { PlusCircle, List, Grid, Filter, UserPlus, MoreVertical, Loader2, AlertTriangle, ShieldAlert, Archive, ArchiveRestore, Trash2, Eye, HelpCircle, LineChart, BookOpen, Layers, Check, Award, ListPlus } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
 import type { Course as AppCourseType, CourseStatus, UserRole, User } from '@/types';
