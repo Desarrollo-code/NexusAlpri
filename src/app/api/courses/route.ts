@@ -163,6 +163,17 @@ export async function POST(req: NextRequest) {
       include: { instructor: true },
     });
 
+    // Log the security event
+    await prisma.securityLog.create({
+      data: {
+        event: 'COURSE_CREATED',
+        ipAddress: req.ip || req.headers.get('x-forwarded-for'),
+        userId: session.id,
+        details: `Curso creado: "${newCourse.title}" (ID: ${newCourse.id}).`,
+        userAgent: req.headers.get('user-agent'),
+      }
+    });
+
     return NextResponse.json(newCourse, { status: 201 });
   } catch (error) {
     console.error('[COURSE_POST_ERROR]', error);
