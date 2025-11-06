@@ -163,7 +163,7 @@ export async function POST(req: NextRequest) {
       include: { instructor: true },
     });
 
-    // Log the security event
+    // Log the security event AFTER the course has been successfully created.
     await prisma.securityLog.create({
       data: {
         event: 'COURSE_CREATED',
