@@ -164,15 +164,21 @@ export async function POST(req: NextRequest) {
     });
 
     // Log the security event AFTER the course has been successfully created.
-    await prisma.securityLog.create({
-      data: {
-        event: 'COURSE_CREATED',
-        ipAddress: req.ip || req.headers.get('x-forwarded-for'),
-        userId: session.id,
-        details: `Curso creado: "${newCourse.title}" (ID: ${newCourse.id}).`,
-        userAgent: req.headers.get('user-agent'),
-      }
-    });
+    try {
+        await prisma.securityLog.create({
+          data: {
+            event: 'COURSE_CREATED',
+            ipAddress: req.ip || 'unknown',
+            userId: session.id,
+            details: `Curso creado: "${newCourse.title}" (ID: ${newCourse.id}).`,
+            userAgent: req.headers.get('user-agent') || 'unknown',
+            country: req.geo?.country || 'unknown',
+            city: req.geo?.city || 'unknown',
+          }
+        });
+    } catch (logError) {
+        console.error("Failed to write security log, but course was created:", logError);
+    }
 
     return NextResponse.json(newCourse, { status: 201 });
   } catch (error) {
