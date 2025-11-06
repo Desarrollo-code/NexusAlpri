@@ -4,22 +4,23 @@ import type { Course as PrismaCourse } from '@prisma/client';
 
 // Define a more specific type for the input expected by the mapper
 // This helps ensure the function is used correctly.
-interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | '_count' | 'status'> {
+interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | 'status' | 'prerequisite' | 'isMandatory'> {
   instructor?: { id: string; name: string | null; avatar?: string | null; } | null;
   _count?: {
     modules?: number;
     enrollments?: number;
-    lessons?: number;
+    lessons?: number; // Puede que venga de una agregación anidada
   };
   modules?: { _count?: { lessons: number } }[];
   status: CourseStatus;
   averageCompletion?: number;
+  isMandatory: boolean;
 }
 
 
 export function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCourseType {
-  // CORRECCIÓN: Se añade una comprobación robusta para asegurar que apiCourse.modules existe
-  // y es un array antes de intentar reducirlo. Esto evita el error "cannot read properties of undefined (reading 'reduce')".
+  // CORRECCIÓN: Se calcula el total de lecciones de forma más robusta,
+  // considerando diferentes formas en que los datos pueden llegar.
   const totalLessons = Array.isArray(apiCourse.modules)
     ? apiCourse.modules.reduce((acc, mod) => acc + (mod?._count?.lessons || 0), 0)
     : (apiCourse._count?.lessons ?? 0);
@@ -29,10 +30,10 @@ export function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCours
     title: apiCourse.title,
     description: apiCourse.description || '',
     category: apiCourse.category || undefined,
-    // CORRECCIÓN: Se asegura de que siempre haya un objeto instructor, incluso si es nulo en la DB.
+    // Aseguramos que siempre haya un objeto instructor.
     instructor: apiCourse.instructor ? {
         id: apiCourse.instructor.id,
-        name: apiCourse.instructor.name || 'N/A', // Null check for name
+        name: apiCourse.instructor.name || 'N/A',
         avatar: apiCourse.instructor.avatar || null,
     } : {
         id: 'unknown',
@@ -41,12 +42,17 @@ export function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCours
     },
     instructorId: apiCourse.instructorId || undefined,
     imageUrl: apiCourse.imageUrl || undefined,
+    // CORRECCIÓN CLAVE: Se transfiere correctamente el conteo de módulos.
     modulesCount: apiCourse._count?.modules ?? 0,
     lessonsCount: totalLessons,
     enrollmentsCount: apiCourse._count?.enrollments ?? 0,
     averageCompletion: apiCourse.averageCompletion,
     status: apiCourse.status,
-    modules: [], // Modules are typically not needed for card displays
-    isEnrolled: undefined, // This is determined client-side
+    modules: [], // Los módulos completos no son necesarios para las tarjetas.
+    isEnrolled: undefined, // Se determina en el lado del cliente.
+    isMandatory: apiCourse.isMandatory || false,
+    prerequisite: (apiCourse as any).prerequisite,
+    prerequisiteCompleted: (apiCourse as any).prerequisiteCompleted,
+    certificateTemplateId: apiCourse.certificateTemplateId
   };
 }

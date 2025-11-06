@@ -2,7 +2,7 @@
 'use client';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, GraduationCap, PlusCircle, BookMarked, Layers } from "lucide-react";
+import { Users, GraduationCap, PlusCircle, BookMarked, Layers, FileText } from "lucide-react";
 import type { Course as AppCourse, Announcement as AnnouncementType, CalendarEvent } from '@/types';
 import Link from "next/link";
 import { AnnouncementsWidget } from "./announcements-widget";
@@ -43,7 +43,7 @@ export function InstructorDashboard({ instructorStats, recentAnnouncements, taug
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {taughtCourses && taughtCourses.length > 0 ? (
-                       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {taughtCourses.map((course, index) => (
                            <CourseProgressCard key={course.id} course={course} index={index} />
                         ))}

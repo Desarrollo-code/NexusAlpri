@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import type { Course as AppCourseType, EnrolledCourse, UserRole, CourseStatus } from '@/types';
-import { Layers, ArrowRight, Check, Plus, Loader2, X, User, Edit, MoreVertical, Eye, BookOpenCheck, Trash2, Users, AlertTriangle, Lock, Download, Award } from 'lucide-react';
+import { Layers, ArrowRight, Check, Plus, Loader2, X, User, Edit, MoreVertical, Eye, BookOpenCheck, Trash2, Users, AlertTriangle, Lock, Download, Award, FileText } from 'lucide-react';
 import { CircularProgress } from '@/components/ui/circular-progress';
 import { cn } from '@/lib/utils';
 import { Badge } from './ui/badge';
@@ -236,7 +236,10 @@ export function CourseCard({
                     </Avatar>
                     <span>Por {course.instructor?.name || 'N/A'}</span>
                   </div>
-                  <div className="flex items-center"><Layers className="mr-1.5 h-3 w-3" /> {course.modulesCount} Módulos</div>
+                  <div className="flex items-center gap-4">
+                     <span className="flex items-center"><Layers className="mr-1.5 h-3 w-3" /> {course.modulesCount} Módulos</span>
+                     <span className="flex items-center"><FileText className="mr-1.5 h-3 w-3" /> {course.lessonsCount} Lecciones</span>
+                  </div>
                   {course.prerequisite && (
                     <div className="flex items-center text-primary/80"><Lock className="mr-1.5 h-3 w-3" /> Requiere: {course.prerequisite.title}</div>
                   )}
