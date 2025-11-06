@@ -10,16 +10,20 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   try {
     const session = await getCurrentUser();
+    
+    // Si no hay sesión, no se puede continuar con la lógica que depende del usuario.
+    if (!session) {
+      // Las vistas que no son `simple` requieren una sesión.
+      const simpleView = req.nextUrl.searchParams.get('simple') === 'true';
+      if (!simpleView) {
+        return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
+      }
+    }
+    
     const { searchParams } = new URL(req.url);
     const manageView = searchParams.get('manageView') === 'true';
     const simpleView = searchParams.get('simple') === 'true';
 
-    // Para las vistas que no son `simple`, se requiere una sesión.
-    if (!simpleView && !session) {
-      return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
-    }
-    
-    // Asignar userId y userRole solo si hay sesión.
     const userId = session?.id;
     const userRole = session?.role;
     
@@ -34,7 +38,7 @@ export async function GET(req: NextRequest) {
 
     // --- Vista Simplificada para Selectores ---
     if (simpleView) {
-        if (!session) {
+        if (!session) { // La vista simple también debe estar protegida.
              return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
         }
         const courses = await prisma.course.findMany({
@@ -52,7 +56,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ courses });
     }
 
-    // --- Vistas de Gestión y Catálogo ---
+    // --- Vistas de Gestión y Catálogo (requieren sesión) ---
     let whereClause: any = {};
     
     if (manageView) {
@@ -166,12 +170,14 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
+    // CORRECCIÓN: Solo extraer los campos necesarios y relevantes para la creación.
     const { title, description, category } = body;
     
     if (!title || !description) {
       return NextResponse.json({ message: 'Título y descripción son requeridos' }, { status: 400 });
     }
 
+    // El `prerequisiteId` se establece explícitamente como `null` en la creación.
     const newCourse = await prisma.course.create({
       data: {
         title,
@@ -179,17 +185,20 @@ export async function POST(req: NextRequest) {
         category: category || 'General',
         status: 'DRAFT',
         instructor: { connect: { id: session.id } },
-        prerequisiteId: null, // Explícitamente null para la creación
+        prerequisiteId: null,
       },
       include: { instructor: true },
     });
 
     // --- SECURITY LOG (NON-BLOCKING) ---
+    // Usamos `then` para que no bloquee la respuesta al cliente.
     Promise.resolve().then(async () => {
         try {
             const ip = req.ip ?? req.headers.get('x-forwarded-for') ?? null;
-            const country = req.geo?.country ?? null;
-            const city = req.geo?.city ?? null;
+            // Verificación segura del objeto geo
+            const geo = req.geo;
+            const country = geo?.country ?? null;
+            const city = geo?.city ?? null;
 
             await prisma.securityLog.create({
               data: {
@@ -203,7 +212,7 @@ export async function POST(req: NextRequest) {
               }
             });
         } catch (logError) {
-            console.error("Failed to write security log for COURSE_CREATED, but the course was created successfully:", logError);
+            console.error("Fallo al escribir el log de seguridad, pero el curso fue creado:", logError);
         }
     });
 
