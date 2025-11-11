@@ -12,6 +12,8 @@ import type { User } from '@/types';
 import { cn } from "@/lib/utils";
 import { getProcessColors } from "@/lib/utils";
 import { getRoleInSpanish, getRoleBadgeVariant } from "@/lib/security-log-utils";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Card } from "../ui/card";
 
 interface UserWithProcess extends User {
     process: { id: string; name: string } | null;
@@ -24,14 +26,67 @@ interface UserTableProps {
     onEdit: (user: User) => void;
     onRoleChange: (user: User) => void;
     onStatusChange: (user: User, status: boolean) => void;
-    onChatPermissions: (user: User) => void;
 }
 
-export const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleChange, onStatusChange, onChatPermissions }: UserTableProps) => {
+export const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleChange, onStatusChange }: UserTableProps) => {
+    const isMobile = useIsMobile();
 
     const handleSelectAll = (checked: boolean) => {
         onSelectionChange('all', checked);
     };
+
+    if (isMobile) {
+        return (
+            <div className="space-y-3">
+                {users.map(user => {
+                    const processColors = user.process ? getProcessColors(user.process.id) : null;
+                    return (
+                        <Card key={user.id} className="p-3 overflow-hidden">
+                            <div className="flex items-start gap-3">
+                                <Checkbox
+                                    className="mt-1"
+                                    checked={selectedUserIds.has(user.id)}
+                                    onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)}
+                                />
+                                <Avatar className="h-10 w-10">
+                                    <AvatarImage src={user.avatar || undefined} />
+                                    <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
+                                </Avatar>
+                                <div className="flex-grow overflow-hidden">
+                                    <p className="font-semibold truncate">{user.name}</p>
+                                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                                     <div className="flex items-center flex-wrap gap-1.5 mt-2">
+                                        <Badge variant={getRoleBadgeVariant(user.role)} className="text-xs">{getRoleInSpanish(user.role)}</Badge>
+                                        {user.process && processColors && (
+                                            <Badge 
+                                                className="text-xs"
+                                                style={{
+                                                    backgroundColor: processColors.raw.light,
+                                                    color: processColors.raw.dark,
+                                                }}
+                                            >
+                                                {user.process.name}
+                                            </Badge>
+                                        )}
+                                     </div>
+                                </div>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 flex-shrink-0"><MoreVertical className="h-4 w-4"/></Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        <DropdownMenuItem onSelect={() => onEdit(user)}><Edit className="mr-2 h-4 w-4"/>Editar Perfil</DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => onRoleChange(user)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol</DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => onStatusChange(user, !user.isActive)} className={user.isActive ? "text-destructive" : ""}><UserX className="mr-2 h-4 w-4"/>{user.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                        </Card>
+                    );
+                })}
+            </div>
+        )
+    }
 
     return (
          <Card>
@@ -90,26 +145,15 @@ export const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, o
                                     <span className="text-xs text-muted-foreground">Sin asignar</span>
                                 )}
                             </TableCell>
-                            <TableCell>
-                                 <Badge variant={user.isActive ? "default" : "secondary"} className={cn("text-xs py-0.5 px-1.5", user.isActive ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300" : "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300")}>
-                                    {user.isActive ? 'Activo' : 'Inactivo'}
-                                </Badge>
-                            </TableCell>
+                            <TableCell><Badge variant={user.isActive ? "default" : "secondary"} className={cn("text-xs py-0.5 px-1.5", user.isActive ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300" : "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300")}>{user.isActive ? 'Activo' : 'Inactivo'}</Badge></TableCell>
                             <TableCell className="text-right">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4"/></Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
-                                        <DropdownMenuItem onSelect={() => onEdit(user)}>
-                                            <Edit className="mr-2 h-4 w-4"/>Editar Perfil
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onSelect={() => onChatPermissions(user)}>
-                                            <Key className="mr-2 h-4 w-4"/>Permisos de Chat
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onSelect={() => onRoleChange(user)}>
-                                            <UserCog className="mr-2 h-4 w-4"/>Cambiar Rol
-                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => onEdit(user)}><Edit className="mr-2 h-4 w-4"/>Editar Perfil</DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => onRoleChange(user)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol</DropdownMenuItem>
                                         <DropdownMenuItem onSelect={() => onStatusChange(user, !user.isActive)} className={user.isActive ? "text-destructive" : ""}>
                                             <UserX className="mr-2 h-4 w-4"/>{user.isActive ? 'Inactivar' : 'Activar'}
                                         </DropdownMenuItem>

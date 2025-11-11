@@ -88,13 +88,6 @@ const NAVIGATION_ITEMS: NavItem[] = [
         roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
       },
       {
-        id: 'communications',
-        label: 'Comunicaciones',
-        icon: MessageSquare,
-        path: '/messages',
-        roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
-      },
-      {
         id: 'calendar',
         label: 'Calendario',
         icon: CalendarDays,

@@ -24,19 +24,12 @@ interface UserProfileCardProps {
     onEdit?: (user: User) => void;
     onRoleChange?: (user: User) => void;
     onStatusChange?: (user: User, status: boolean) => void;
-    onChatPermissions?: (user: User) => void;
 }
 
-export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange, onChatPermissions }: UserProfileCardProps) => {
+export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange }: UserProfileCardProps) => {
     const router = useRouter();
     const { user: currentUser } = useAuth();
 
-    const handleSendMessage = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        router.push(`/messages?new=${user.id}`);
-    };
-    
-    const showMessageButton = currentUser?.id !== user.id;
     const canModify = currentUser?.role === 'ADMINISTRATOR';
     
     const displayProcess = user.process ? [user.process] : (user.processes || []);
@@ -53,7 +46,6 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange, on
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 <DropdownMenuItem onSelect={() => onEdit?.(user)}><Edit className="mr-2 h-4 w-4"/>Editar Perfil</DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => onChatPermissions?.(user)}><Key className="mr-2 h-4 w-4"/>Permisos de Chat</DropdownMenuItem>
                                 <DropdownMenuItem onSelect={() => onRoleChange?.(user)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol</DropdownMenuItem>
                                 <DropdownMenuItem onSelect={() => onStatusChange?.(user, !user.isActive)} className={user.isActive ? "text-destructive" : ""}><UserX className="mr-2 h-4 w-4"/>{user.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
                             </DropdownMenuContent>
@@ -91,13 +83,6 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange, on
                 </div>
             </CardContent>
 
-            {showMessageButton && (
-                <CardFooter className="p-2 border-t mt-auto">
-                    <Button size="sm" variant="ghost" className="w-full h-8 text-sm" onClick={handleSendMessage}>
-                        <MessageSquare className="mr-1.5 h-4 w-4"/> Mensaje
-                    </Button>
-                </CardFooter>
-            )}
         </Card>
     );
 };
