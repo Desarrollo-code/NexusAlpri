@@ -1,3 +1,4 @@
+// src/components/quiz-viewer.tsx
 'use client';
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
@@ -107,9 +108,9 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPrev
                  {!canRetry && !isCreatorPreview ? (
                      <Alert variant="destructive" className="w-full text-left"><ShieldAlert className="h-4 w-4" /><AlertTitle>Límite de Intentos Alcanzado</AlertTitle><AlertDescription>Ya no puedes volver a realizar este quiz.</AlertDescription></Alert>
                  ) : (
-                    <Button className="w-full max-w-sm" onClick={() => setGameState('playing')} disabled={!isEnrolled && !isCreatorPreview}>
-                        <PlayCircle className="mr-2 h-4 w-4"/>
-                        {isCreatorPreview ? 'Comenzar (Vista Previa)' : 'Comenzar Quiz'}
+                    <Button className="w-full max-w-sm" onClick={() => setGameState('playing')} disabled={(!isEnrolled && !isCreatorPreview) || isCheckingAttempts}>
+                        {isCheckingAttempts ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <PlayCircle className="mr-2 h-4 w-4"/>}
+                        {isCheckingAttempts ? 'Verificando...' : (isCreatorPreview ? 'Comenzar (Vista Previa)' : 'Comenzar Quiz')}
                     </Button>
                  )}
             </div>
