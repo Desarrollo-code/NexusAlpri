@@ -288,14 +288,16 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
 
   const lastCompletedLessonIndex = useMemo(() => {
     if (!allLessons || allLessons.length === 0) return -1;
-    // Encuentra el índice de la última lección completada en la lista aplanada
-    for (let i = allLessons.length - 1; i >= 0; i--) {
-        if (completedLessonIds.has(allLessons[i].id)) {
-            return i;
+    // Find the index of the last completed lesson in the flattened list
+    let lastIndex = -1;
+    allLessons.forEach((lesson, index) => {
+        if (completedLessonIds.has(lesson.id)) {
+            lastIndex = Math.max(lastIndex, index);
         }
-    }
-    return -1; // Ninguna lección completada
+    });
+    return lastIndex;
   }, [allLessons, completedLessonIds]);
+
 
   const isCreatorViewingCourse = useMemo(() => {
     if (!user || !course) return false;
@@ -324,23 +326,25 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   }, []);
 
  const recordInteraction = useCallback(async (lessonId: string, type: 'view' | 'quiz' | 'video') => {
-    if (isCreatorViewingCourse || !user || !courseId || !isEnrolled || completedLessonIds.has(lessonId)) return;
+    if (isCreatorViewingCourse || !user || !courseId || !isEnrolled || completedLessonIds.has(lessonId)) {
+        return;
+    }
     
-    const originalProgress = courseProgress; // Guardar estado previo
-    
-    // --- Actualización optimista de la UI ---
+    // Optimistic UI update
     setCourseProgress(prev => {
         if (!prev) return null;
+        if (prev.completedLessons.some(l => l.lessonId === lessonId)) return prev;
+        
         const newCompletedLesson = { lessonId, type, score: null };
         const newCompletedLessons = [...prev.completedLessons, newCompletedLesson];
-        const newPercentage = Math.round((newCompletedLessons.length / totalLessonsCount) * 100);
+        const newPercentage = totalLessonsCount > 0 ? Math.round((newCompletedLessons.length / totalLessonsCount) * 100) : 0;
+        
         return {
             ...prev,
             completedLessons: newCompletedLessons,
             progressPercentage: newPercentage
         };
     });
-    // ----------------------------------------
     
     try {
         const response = await fetch(`/api/progress/${user.id}/${courseId}/lesson`, {
@@ -349,19 +353,23 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
           body: JSON.stringify({ lessonId, type }),
         });
 
-        if (!response.ok) throw new Error('Failed to record interaction');
+        if (!response.ok) {
+            throw new Error('Failed to record interaction');
+        }
         
         const lesson = allLessons.find(l => l.id === lessonId);
         if (lesson) {
             toast({ description: `Progreso guardado: "${lesson.title}"`, duration: 2000 });
         }
-
+        // No need to fetchProgress here, optimistic update is enough for the frontend
     } catch (e) {
       console.error("Failed to record interaction:", e);
-      setCourseProgress(originalProgress); // Revertir en caso de error
+      // Revert on error by re-fetching the source of truth
+      fetchProgress(user.id, courseId);
       toast({ title: 'Error de Sincronización', description: 'No se pudo guardar tu progreso. Inténtalo de nuevo.', variant: 'destructive'});
     }
-  }, [user, courseId, isEnrolled, isCreatorViewingCourse, toast, allLessons, completedLessonIds, fetchProgress, courseProgress, totalLessonsCount]);
+  }, [user, courseId, isEnrolled, isCreatorViewingCourse, toast, allLessons, completedLessonIds, totalLessonsCount, fetchProgress]);
+
   
   const handleConsolidateProgress = useCallback(async () => {
       if (!user || !courseId || isConsolidating) return;
@@ -645,7 +653,9 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             </div>
             <ScrollArea className="flex-1">
                  <Accordion type="multiple" defaultValue={course?.modules.map(m => m.id)} className="w-full p-2">
-                    {filteredModules.map((moduleItem) => (
+                    {filteredModules.map((moduleItem) => {
+                      const lessonsInModule = allLessons.filter(l => l.moduleId === moduleItem.id);
+                      return (
                       <AccordionItem value={moduleItem.id} key={moduleItem.id} className="border-b-0 mb-1">
                         <AccordionTrigger className="text-sm font-semibold hover:no-underline py-2 px-2 hover:bg-muted/50 rounded-md">
                           <span className="text-left">{moduleItem.title}</span>
@@ -654,7 +664,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                           {moduleItem.lessons.length > 0 ? (
                             <ul className="space-y-1 border-l-2 border-primary/20 ml-2 pl-4">
                               {moduleItem.lessons.map(lesson => {
-                                const currentLessonIndex = lessonCounter++;
+                                const currentLessonIndex = allLessons.findIndex(l => l.id === lesson.id);
                                 const isCompleted = completedLessonIds.has(lesson.id);
                                 const isLocked = !isCreatorViewingCourse && currentLessonIndex > lastCompletedLessonIndex + 1;
 
@@ -686,7 +696,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                            )}
                         </AccordionContent>
                       </AccordionItem>
-                    ))}
+                    )})}
                  </Accordion>
                  {filteredModules.length === 0 && (
                      <p className="text-muted-foreground text-xs text-center py-4 px-2">No se encontraron lecciones que coincidan con la búsqueda.</p>
