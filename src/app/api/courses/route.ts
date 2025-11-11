@@ -76,10 +76,17 @@ export async function GET(req: NextRequest) {
     const courseInclude = {
       instructor: { select: { id: true, name: true, avatar: true } },
       prerequisite: { select: { id: true, title: true } },
+      modules: {
+        select: {
+          _count: {
+            select: { lessons: true }
+          }
+        }
+      },
       _count: {
         select: {
           modules: true,
-          ...(manageView && { enrollments: true }),
+          enrollments: true,
         },
       },
       ...(manageView && {
@@ -170,7 +177,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { title, description, category } = body;
+    const { title, description, category, prerequisiteId, isMandatory } = body;
     
     if (!title || !description) {
       return NextResponse.json({ message: 'Título y descripción son requeridos' }, { status: 400 });
@@ -183,6 +190,8 @@ export async function POST(req: NextRequest) {
         category: category || 'General',
         status: 'DRAFT',
         instructor: { connect: { id: session.id } },
+        prerequisiteId: prerequisiteId || null,
+        isMandatory: isMandatory || false,
       },
       include: { instructor: true },
     });
