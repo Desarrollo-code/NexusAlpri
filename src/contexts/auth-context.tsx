@@ -37,6 +37,21 @@ const DEFAULT_SETTINGS: PlatformSettings = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const AuthProviderContent = ({ children }: { children: ReactNode }) => {
+    const { user, isLoading } = useAuth();
+
+    // Muestra el loader solo mientras se determina el estado inicial de la sesión.
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center h-screen w-screen bg-background">
+          <ColorfulLoader />
+        </div>
+      );
+    }
+    return <>{children}</>;
+}
+
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [settings, setSettings] = useState<PlatformSettings | null>(null);
@@ -45,7 +60,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { setTheme } = useTheme();
 
   const fetchSessionData = useCallback(async () => {
-    // No reiniciar isLoading a true aquí para evitar el parpadeo en las recargas en caliente de desarrollo
     try {
         const [settingsRes, userRes] = await Promise.allSettled([
             fetch('/api/settings', { cache: 'no-store' }),
@@ -62,15 +76,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (userRes.status === 'fulfilled' && userRes.value.ok) {
             const userData = await userRes.value.json();
             setUser(userData.user);
-            // Aplicar el tema aquí, que es la fuente de verdad
             if (userData.user?.theme) {
               setTheme(userData.user.theme);
             } else {
-              setTheme('light'); // Forzar tema claro si no hay preferencia
+              setTheme('light'); 
             }
         } else {
             setUser(null);
-            setTheme('light'); // Forzar tema claro para usuarios no logueados
+            setTheme('light');
         }
     } catch (error) {
         console.error("[AuthContext] Excepción al obtener los datos de la sesión:", error);
@@ -96,10 +109,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     router.replace(redirectedFrom || '/dashboard');
   }, [router, setTheme]);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
     setUser(null);
     setTheme('light');
-    fetch('/api/auth/logout', { method: 'POST' });
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (error) {
+      console.error("Error during server logout, proceeding with client-side redirect.", error);
+    }
     window.location.href = '/sign-in';
   }, [setTheme]);
   
@@ -127,17 +144,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     updateSettings,
   }), [user, settings, login, logout, isLoading, updateUser, updateSettings]);
 
-  if (isLoading) {
-      return (
-        <div className="flex items-center justify-center h-screen w-screen bg-background">
-          <ColorfulLoader />
-        </div>
-      )
-  }
-
   return (
     <AuthContext.Provider value={contextValue}>
-      {children}
+      <AuthProviderContent>{children}</AuthProviderContent>
     </AuthContext.Provider>
   );
 };
