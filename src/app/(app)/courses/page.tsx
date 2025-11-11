@@ -46,18 +46,15 @@ export default function CoursesPage() {
   }, [setPageTitle]);
 
   const fetchCoursesAndEnrollments = useCallback(async () => {
-    if (!user) { // **LA CORRECCIÓN CLAVE**
-      // Si el usuario aún no está cargado, no hacer nada.
-      // El useEffect se volverá a ejecutar cuando el usuario cambie.
-      return;
+    if (!user) {
+        setIsLoading(false);
+        return;
     }
     
     setIsLoading(true);
     setError(null);
     try {
-      const courseParams = new URLSearchParams();
-      // Ahora es seguro acceder a user.id
-      courseParams.append('userId', user.id);
+      const courseParams = new URLSearchParams({ userId: user.id });
       
       const coursePromise = fetch(`/api/courses?${courseParams.toString()}`, { cache: 'no-store' });
       const enrollmentPromise = fetch(`/api/enrollment/${user.id}`, { cache: 'no-store' });
@@ -89,8 +86,10 @@ export default function CoursesPage() {
   
 
   useEffect(() => {
-    if (!isAuthLoading) { // Solo ejecutar cuando la autenticación inicial haya terminado.
+    if (!isAuthLoading && user) {
         fetchCoursesAndEnrollments();
+    } else if (!isAuthLoading && !user) {
+        setIsLoading(false);
     }
   }, [isAuthLoading, user, fetchCoursesAndEnrollments]); 
 

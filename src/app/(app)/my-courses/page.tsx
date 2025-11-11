@@ -37,8 +37,9 @@ export default function MyCoursesPage() {
   }, [setPageTitle]);
 
   const fetchMyEnrollments = useCallback(async () => {
-    if (!user || !user.id) {
-        setIsFetchingPageData(false); 
+    if (!user) { // **LA CORRECCIÓN CLAVE**
+        // Si el usuario aún no está cargado, no hacer nada.
+        // El useEffect se volverá a ejecutar cuando el usuario cambie.
         return;
     }
     setIsFetchingPageData(true);
