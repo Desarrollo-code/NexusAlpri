@@ -1,16 +1,16 @@
 // src/app/(app)/announcements/page.tsx
 'use client';
 
-import React, 'useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import type { Announcement as AnnouncementType, Reaction } from '@/types';
 import { Loader2, AlertTriangle, Edit, Trash2, Megaphone, PlusCircle, Pin, PinOff } from 'lucide-react';
-import { AnnouncementCard } from '@/components/announcement-card';
+import { AnnouncementCard } from '@/components/announcements/announcement-card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -162,7 +162,7 @@ export default function AnnouncementsPage() {
                     key={announcement.id}
                     announcement={announcement}
                     onEdit={setEditingAnnouncement}
-                    onDelete={setDeletingAnnouncement}
+                    onDelete={() => setDeletingAnnouncement(announcement)}
                     onReactionChange={handleReactionChange}
                     onRead={handleMarkAsRead}
                     onTogglePin={handleTogglePin}
