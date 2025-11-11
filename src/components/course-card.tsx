@@ -237,8 +237,8 @@ export function CourseCard({
                     <span>Por {course.instructor?.name || 'N/A'}</span>
                   </div>
                   <div className="flex items-center gap-4">
-                     <span className="flex items-center"><Layers className="mr-1.5 h-3 w-3" /> {course.modulesCount} Módulos</span>
-                     <span className="flex items-center"><FileText className="mr-1.5 h-3 w-3" /> {course.lessonsCount} Lecciones</span>
+                     <span className="flex items-center"><Layers className="mr-1.5 h-3 w-3" /> {course.modulesCount || 0} Módulos</span>
+                     <span className="flex items-center"><FileText className="mr-1.5 h-3 w-3" /> {course.lessonsCount || 0} Lecciones</span>
                   </div>
                   {course.prerequisite && (
                     <div className="flex items-center text-primary/80"><Lock className="mr-1.5 h-3 w-3" /> Requiere: {course.prerequisite.title}</div>

@@ -12,18 +12,13 @@ export async function GET(req: NextRequest) {
     const session = await getCurrentUser();
     
     // Si no hay sesión, no se puede continuar con la lógica que depende del usuario.
-    if (!session) {
-      // Las vistas que no son `simple` requieren una sesión.
-      const simpleView = req.nextUrl.searchParams.get('simple') === 'true';
-      if (!simpleView) {
-        return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
-      }
+    const { searchParams } = new URL(req.url);
+    const simpleView = searchParams.get('simple') === 'true';
+    if (!session && !simpleView) {
+      return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
     
-    const { searchParams } = new URL(req.url);
     const manageView = searchParams.get('manageView') === 'true';
-    const simpleView = searchParams.get('simple') === 'true';
-
     const userId = session?.id;
     const userRole = session?.role;
     
@@ -42,16 +37,9 @@ export async function GET(req: NextRequest) {
              return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
         }
         const courses = await prisma.course.findMany({
-            where: {
-                status: 'PUBLISHED',
-            },
-            select: {
-                id: true,
-                title: true,
-            },
-            orderBy: {
-                title: 'asc',
-            },
+            where: { status: 'PUBLISHED' },
+            select: { id: true, title: true },
+            orderBy: { title: 'asc' },
         });
         return NextResponse.json({ courses });
     }
@@ -76,18 +64,21 @@ export async function GET(req: NextRequest) {
     const courseInclude = {
       instructor: { select: { id: true, name: true, avatar: true } },
       prerequisite: { select: { id: true, title: true } },
-      modules: {
-        select: {
-          _count: {
-            select: { lessons: true }
-          }
-        }
-      },
       _count: {
         select: {
           modules: true,
           enrollments: true,
         },
+      },
+      // THIS IS THE KEY: Include nested lesson count
+      modules: {
+        select: {
+          lessons: {
+            select: {
+              id: true
+            }
+          }
+        }
       },
       ...(manageView && {
         enrollments: {

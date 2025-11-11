@@ -9,8 +9,9 @@ interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | 'status' 
   _count?: {
     modules?: number;
     enrollments?: number;
+    lessons?: number; // Add lessons count here
   };
-  modules?: { _count?: { lessons: number } }[];
+  modules?: { lessons: { id: string }[] }[]; // Ensure this structure is available
   status: CourseStatus;
   averageCompletion?: number;
   isMandatory: boolean;
@@ -20,8 +21,8 @@ interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | 'status' 
 export function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCourseType {
   // CORRECTED: Calculate total lessons by summing up the counts from each module.
   const totalLessons = Array.isArray(apiCourse.modules)
-    ? apiCourse.modules.reduce((acc, mod) => acc + (mod?._count?.lessons || 0), 0)
-    : 0;
+    ? apiCourse.modules.reduce((acc, mod) => acc + (mod?.lessons?.length || 0), 0)
+    : (apiCourse._count?.lessons || 0);
   
   return {
     id: apiCourse.id,
