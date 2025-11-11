@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { setTheme } = useTheme();
 
   const fetchSessionData = useCallback(async () => {
-    setIsLoading(true);
+    // No reiniciar isLoading a true aquí para evitar el parpadeo en las recargas en caliente de desarrollo
     try {
         const [settingsRes, userRes] = await Promise.allSettled([
             fetch('/api/settings', { cache: 'no-store' }),
@@ -62,21 +62,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (userRes.status === 'fulfilled' && userRes.value.ok) {
             const userData = await userRes.value.json();
             setUser(userData.user);
+            // Aplicar el tema aquí, que es la fuente de verdad
             if (userData.user?.theme) {
               setTheme(userData.user.theme);
+            } else {
+              setTheme('light'); // Forzar tema claro si no hay preferencia
             }
         } else {
             setUser(null);
+            setTheme('light'); // Forzar tema claro para usuarios no logueados
         }
     } catch (error) {
         console.error("[AuthContext] Excepción al obtener los datos de la sesión:", error);
         setUser(null);
         setSettings(DEFAULT_SETTINGS);
+        setTheme('light');
     } finally {
         setIsLoading(false);
     }
   }, [setTheme]);
-
 
   useEffect(() => {
     fetchSessionData();
@@ -95,19 +99,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = useCallback(() => {
     setUser(null);
     setTheme('light');
-    
-    // Perform server-side logout in the background
-    fetch('/api/auth/logout', { method: 'POST' }).catch(err => console.error("Fallo al llamar a la API de logout en segundo plano:", err));
-    
-    // Force a full page refresh to the sign-in page to clear all state
+    fetch('/api/auth/logout', { method: 'POST' });
     window.location.href = '/sign-in';
   }, [setTheme]);
   
   const updateUser = useCallback((updatedData: Partial<User>) => {
     setUser(prevUser => {
       if (!prevUser) return null;
-      // El cambio de tema ya se maneja de forma optimista en los componentes que lo llaman.
-      // Aquí solo actualizamos el estado del usuario.
       return { ...prevUser, ...updatedData };
     });
   }, []);
