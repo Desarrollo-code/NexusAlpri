@@ -3,7 +3,7 @@
 
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft, LineChart, Notebook, ScreenShare, ChevronRight, Palette, X, GraduationCap, Expand, Edit, Smartphone } from 'lucide-react';
+import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft, LineChart, Notebook, ScreenShare, ChevronRight, Palette, X, GraduationCap, Expand, Edit, Smartphone, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
@@ -286,6 +286,17 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     return new Set(courseProgress?.completedLessons?.map(l => l.lessonId) || []);
   }, [courseProgress]);
 
+  const lastCompletedLessonIndex = useMemo(() => {
+    if (completedLessonIds.size === 0) return -1;
+    let lastIndex = -1;
+    allLessons.forEach((lesson, index) => {
+        if (completedLessonIds.has(lesson.id)) {
+            lastIndex = index;
+        }
+    });
+    return lastIndex;
+  }, [allLessons, completedLessonIds]);
+
   const isCreatorViewingCourse = useMemo(() => {
     if (!user || !course) return false;
     return user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && user.id === course.instructorId);
@@ -472,7 +483,11 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     );
   }, [course, sidebarSearch]);
 
-  const handleLessonSelect = (lesson: AppLesson) => {
+  const handleLessonSelect = (lesson: AppLesson, isLocked: boolean) => {
+      if (isLocked) {
+        toast({ title: "Lección Bloqueada", description: "Debes completar la lección anterior para continuar.", variant: "default" });
+        return;
+      }
       setSelectedLessonId(lesson.id);
       if (isMobile) {
         setIsMobileSheetOpen(false);
@@ -613,101 +628,111 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     }
   }
   
-  const SidebarContent = () => (
-    <div className="flex flex-col h-full bg-card">
-        <div className="p-4 border-b">
-            <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input 
-                    placeholder="Buscar lección..." 
-                    className="pl-9 h-9" 
-                    value={sidebarSearch}
-                    onChange={(e) => setSidebarSearch(e.target.value)}
-                />
+  const SidebarContent = () => {
+    let lessonCounter = 0;
+    return (
+        <div className="flex flex-col h-full bg-card">
+            <div className="p-4 border-b">
+                <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                        placeholder="Buscar lección..." 
+                        className="pl-9 h-9" 
+                        value={sidebarSearch}
+                        onChange={(e) => setSidebarSearch(e.target.value)}
+                    />
+                </div>
             </div>
-        </div>
-        <ScrollArea className="flex-1">
-             <Accordion type="multiple" defaultValue={course?.modules.map(m => m.id)} className="w-full p-2">
-                {filteredModules.map((moduleItem) => (
-                  <AccordionItem value={moduleItem.id} key={moduleItem.id} className="border-b-0 mb-1">
-                    <AccordionTrigger className="text-sm font-semibold hover:no-underline py-2 px-2 hover:bg-muted/50 rounded-md">
-                      <span className="text-left">{moduleItem.title}</span>
-                    </AccordionTrigger>
-                    <AccordionContent className="pt-1 pb-1 pr-0 pl-2">
-                      {moduleItem.lessons.length > 0 ? (
-                        <ul className="space-y-1 border-l-2 border-primary/20 ml-2 pl-4">
-                          {moduleItem.lessons.map(lesson => {
-                            const isCompleted = completedLessonIds.has(lesson.id);
-                            return (
-                            <li key={lesson.id} className="py-0.5">
-                                <button 
-                                    onClick={() => handleLessonSelect(lesson)}
-                                    className={cn(
-                                        "w-full text-left text-sm flex items-start gap-2 p-2 rounded-md transition-colors",
-                                        selectedLessonId === lesson.id 
-                                            ? "bg-primary/10 text-primary font-medium" 
-                                            : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                                    )}
-                                >
-                                    <div className="flex-shrink-0 mt-0.5">
-                                        {isCompleted ? <CheckCircle className="h-4 w-4 text-green-500"/> : <BookOpenText className="h-4 w-4 text-primary/70" />}
-                                    </div>
-                                    <span className="flex-grow">{lesson.title}</span>
-                                </button>
-                            </li>
-                          )})}
-                        </ul>
-                       ) : (
-                        <p className="text-muted-foreground text-xs text-center py-2 italic">No hay lecciones en este módulo.</p>
-                       )}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-             </Accordion>
-             {filteredModules.length === 0 && (
-                 <p className="text-muted-foreground text-xs text-center py-4 px-2">No se encontraron lecciones que coincidan con la búsqueda.</p>
-             )}
-        </ScrollArea>
-        { !isCreatorViewingCourse && isEnrolled && (
-            <div className="p-4 border-t space-y-3">
-                 <Dialog>
-                    <DialogTrigger asChild>
-                        <Button variant="outline" size="sm" className="w-full">
-                            <LineChart className="mr-2 h-4 w-4" /> Ver Mi Progreso
+            <ScrollArea className="flex-1">
+                 <Accordion type="multiple" defaultValue={course?.modules.map(m => m.id)} className="w-full p-2">
+                    {filteredModules.map((moduleItem) => (
+                      <AccordionItem value={moduleItem.id} key={moduleItem.id} className="border-b-0 mb-1">
+                        <AccordionTrigger className="text-sm font-semibold hover:no-underline py-2 px-2 hover:bg-muted/50 rounded-md">
+                          <span className="text-left">{moduleItem.title}</span>
+                        </AccordionTrigger>
+                        <AccordionContent className="pt-1 pb-1 pr-0 pl-2">
+                          {moduleItem.lessons.length > 0 ? (
+                            <ul className="space-y-1 border-l-2 border-primary/20 ml-2 pl-4">
+                              {moduleItem.lessons.map(lesson => {
+                                const currentLessonIndex = lessonCounter++;
+                                const isCompleted = completedLessonIds.has(lesson.id);
+                                const isLocked = !isCreatorViewingCourse && (currentLessonIndex > lastCompletedLessonIndex + 1);
+
+                                return (
+                                <li key={lesson.id} className="py-0.5">
+                                    <button 
+                                        onClick={() => handleLessonSelect(lesson, isLocked)}
+                                        disabled={isLocked}
+                                        className={cn(
+                                            "w-full text-left text-sm flex items-start gap-2 p-2 rounded-md transition-colors",
+                                            selectedLessonId === lesson.id 
+                                                ? "bg-primary/10 text-primary font-medium" 
+                                                : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+                                            isLocked && "opacity-50 cursor-not-allowed hover:bg-transparent"
+                                        )}
+                                    >
+                                        <div className="flex-shrink-0 mt-0.5">
+                                            {isLocked ? <Lock className="h-4 w-4 text-muted-foreground"/> 
+                                            : isCompleted ? <CheckCircle className="h-4 w-4 text-green-500"/> 
+                                            : <BookOpenText className="h-4 w-4 text-primary/70" />}
+                                        </div>
+                                        <span className="flex-grow">{lesson.title}</span>
+                                    </button>
+                                </li>
+                              )})}
+                            </ul>
+                           ) : (
+                            <p className="text-muted-foreground text-xs text-center py-2 italic">No hay lecciones en este módulo.</p>
+                           )}
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                 </Accordion>
+                 {filteredModules.length === 0 && (
+                     <p className="text-muted-foreground text-xs text-center py-4 px-2">No se encontraron lecciones que coincidan con la búsqueda.</p>
+                 )}
+            </ScrollArea>
+            { !isCreatorViewingCourse && isEnrolled && (
+                <div className="p-4 border-t space-y-3">
+                     <Dialog>
+                        <DialogTrigger asChild>
+                            <Button variant="outline" size="sm" className="w-full">
+                                <LineChart className="mr-2 h-4 w-4" /> Ver Mi Progreso
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-sm text-center p-6">
+                            <DialogHeader>
+                                <DialogTitle>Tu Progreso en {course.title}</DialogTitle>
+                                <DialogDescription>
+                                     {courseProgress?.progressPercentage === 100
+                                        ? "¡Felicidades! Has completado el curso."
+                                        : "Este es tu avance actual. ¡Sigue así!"
+                                     }
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="flex flex-col items-center justify-center space-y-4 py-4">
+                                <CircularProgress value={courseProgress?.progressPercentage || 0} size={150} strokeWidth={12} />
+                                {completedLessonIds.size === totalLessonsCount && !courseProgress?.completedAt && (
+                                    <Button onClick={handleConsolidateProgress} disabled={isConsolidating}>
+                                        {isConsolidating ? <Loader2 className="mr-2 animate-spin"/> : <CheckCircle className="mr-2 h-4 w-4"/>}
+                                        Calcular Puntuación Final
+                                    </Button>
+                                )}
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                    {courseProgress?.completedAt && course.certificateTemplateId && enrollmentId && (
+                         <Button asChild size="sm" className="w-full bg-amber-500 hover:bg-amber-600">
+                            <Link href={`/certificates/${enrollmentId}/view`} target="_blank">
+                                <Award className="mr-2 h-4 w-4"/> Ver Certificado
+                            </Link>
                         </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-sm text-center p-6">
-                        <DialogHeader>
-                            <DialogTitle>Tu Progreso en {course.title}</DialogTitle>
-                            <DialogDescription>
-                                 {courseProgress?.progressPercentage === 100
-                                    ? "¡Felicidades! Has completado el curso."
-                                    : "Este es tu avance actual. ¡Sigue así!"
-                                 }
-                            </DialogDescription>
-                        </DialogHeader>
-                        <div className="flex flex-col items-center justify-center space-y-4 py-4">
-                            <CircularProgress value={courseProgress?.progressPercentage || 0} size={150} strokeWidth={12} />
-                            {completedLessonIds.size === totalLessonsCount && !courseProgress?.completedAt && (
-                                <Button onClick={handleConsolidateProgress} disabled={isConsolidating}>
-                                    {isConsolidating ? <Loader2 className="mr-2 animate-spin"/> : <CheckCircle className="mr-2 h-4 w-4"/>}
-                                    Calcular Puntuación Final
-                                </Button>
-                            )}
-                        </div>
-                    </DialogContent>
-                </Dialog>
-                {courseProgress?.completedAt && course.certificateTemplateId && enrollmentId && (
-                     <Button asChild size="sm" className="w-full bg-amber-500 hover:bg-amber-600">
-                        <Link href={`/certificates/${enrollmentId}/view`} target="_blank">
-                            <Award className="mr-2 h-4 w-4"/> Ver Certificado
-                        </Link>
-                    </Button>
-                )}
-            </div>
-        )}
-    </div>
-  );
+                    )}
+                </div>
+            )}
+        </div>
+      );
+  }
   
   if (isLoading || !course) {
     return (
