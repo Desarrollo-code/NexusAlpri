@@ -6,7 +6,6 @@ import {
   GraduationCap,
   Notebook,
   Folder,
-  MessageSquare,
   CalendarDays,
   FileText,
   Shield,

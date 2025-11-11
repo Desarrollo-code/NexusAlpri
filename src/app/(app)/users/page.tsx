@@ -37,7 +37,6 @@ import { getRoleInSpanish, getRoleBadgeVariant } from '@/lib/security-log-utils'
 import { getProcessColors } from '@/lib/utils';
 import { Identicon } from '@/components/ui/identicon';
 import { EmptyState } from '@/components/empty-state';
-import { ChatPermissionsModal } from '@/components/users/chat-permissions-modal';
 
 
 // --- TYPES & CONTEXT ---
@@ -61,14 +60,13 @@ const DraggableUserPreview = ({ user }: { user: UserWithProcess }) => (
     </Card>
 );
 
-const DraggableUserCard = ({ user, isSelected, onSelectionChange, onEdit, onRoleChange, onStatusChange, onChatPermissions }: { 
+const DraggableUserCard = ({ user, isSelected, onSelectionChange, onEdit, onRoleChange, onStatusChange }: { 
     user: UserWithProcess, 
     isSelected: boolean, 
     onSelectionChange: (id: string, selected: boolean) => void,
     onEdit: (user: User) => void,
     onRoleChange: (user: User) => void,
-    onStatusChange: (user: User, status: boolean) => void,
-    onChatPermissions: (user: User) => void
+    onStatusChange: (user: User, status: boolean) => void
 }) => {
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: user.id });
     
@@ -80,7 +78,6 @@ const DraggableUserCard = ({ user, isSelected, onSelectionChange, onEdit, onRole
                     onEdit={onEdit}
                     onRoleChange={onRoleChange}
                     onStatusChange={onStatusChange}
-                    onChatPermissions={onChatPermissions}
                 />
                  <div className="absolute top-2 left-2 z-20">
                     <Checkbox checked={isSelected} onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)} className="bg-background border-primary" />
@@ -90,14 +87,13 @@ const DraggableUserCard = ({ user, isSelected, onSelectionChange, onEdit, onRole
     )
 }
 
-const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleChange, onStatusChange, onChatPermissions }: { 
+const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleChange, onStatusChange }: { 
     users: UserWithProcess[], 
     onSelectionChange: (id: string, selected: boolean) => void, 
     selectedUserIds: Set<string>,
     onEdit: (user: User) => void,
     onRoleChange: (user: User) => void,
-    onStatusChange: (user: User, status: boolean) => void,
-    onChatPermissions: (user: User) => void
+    onStatusChange: (user: User, status: boolean) => void
 }) => {
     const isMobile = useIsMobile();
 
@@ -142,7 +138,6 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
                                         <DropdownMenuItem onSelect={() => onEdit(user)}><Edit className="mr-2 h-4 w-4"/>Editar Perfil</DropdownMenuItem>
-                                        <DropdownMenuItem onSelect={() => onChatPermissions(user)}><Key className="mr-2 h-4 w-4"/>Permisos de Chat</DropdownMenuItem>
                                         <DropdownMenuItem onSelect={() => onRoleChange(user)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol</DropdownMenuItem>
                                         <DropdownMenuItem onSelect={() => onStatusChange(user, !user.isActive)} className={user.isActive ? "text-destructive" : ""}><UserX className="mr-2 h-4 w-4"/>{user.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
                                     </DropdownMenuContent>
@@ -222,7 +217,6 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
                                         <DropdownMenuItem onSelect={() => onEdit(user)}><Edit className="mr-2 h-4 w-4"/>Editar Perfil</DropdownMenuItem>
-                                        <DropdownMenuItem onSelect={() => onChatPermissions(user)}><Key className="mr-2 h-4 w-4"/>Permisos de Chat</DropdownMenuItem>
                                         <DropdownMenuItem onSelect={() => onRoleChange(user)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol</DropdownMenuItem>
                                         <DropdownMenuItem onSelect={() => onStatusChange(user, !user.isActive)} className={user.isActive ? "text-destructive" : ""}>
                                             <UserX className="mr-2 h-4 w-4"/>{user.isActive ? 'Inactivar' : 'Activar'}
@@ -250,7 +244,6 @@ function UsersPageComponent() {
     const [isLoading, setIsLoading] = useState(true);
 
     const [userToEdit, setUserToEdit] = useState<User | null>(null);
-    const [userForChatPermissions, setUserForChatPermissions] = useState<User | null>(null);
     const [showUserModal, setShowUserModal] = useState(false);
     
     const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
@@ -553,7 +546,7 @@ function UsersPageComponent() {
     }
 
     const GridView = () => (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {usersList.map(u => (
                 <DraggableUserCard 
                     key={u.id} 
@@ -563,7 +556,6 @@ function UsersPageComponent() {
                     onEdit={handleOpenUserModal}
                     onRoleChange={handleOpenUserModal}
                     onStatusChange={handleStatusChange}
-                    onChatPermissions={setUserForChatPermissions}
                 />
             ))}
         </div>
@@ -579,12 +571,12 @@ function UsersPageComponent() {
                          <div className="mb-24 md:mb-4">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">{[...Array(10)].map((_,i) => <Skeleton key={i} className="h-48 w-full" />)}</div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">{[...Array(8)].map((_,i) => <Skeleton key={i} className="h-48 w-full" />)}</div>
                                 ) : (
                                     <Card><CardContent className="p-4"><Skeleton className="h-96 w-full"/></CardContent></Card>
                                 )
                             ) : usersList.length > 0 ? (
-                               viewMode === 'grid' ? <GridView /> : <UserTable users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} onEdit={handleOpenUserModal} onRoleChange={handleOpenUserModal} onStatusChange={handleStatusChange} onChatPermissions={setUserForChatPermissions} />
+                               viewMode === 'grid' ? <GridView /> : <UserTable users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} onEdit={handleOpenUserModal} onRoleChange={handleOpenUserModal} onStatusChange={handleStatusChange} />
                             ) : (
                                <EmptyState
                                  icon={UsersIcon}
@@ -630,7 +622,6 @@ function UsersPageComponent() {
             
             {showUserModal && <UserFormModal isOpen={showUserModal} onClose={() => setShowUserModal(false)} onSave={fetchData} user={userToEdit} processes={processes} />}
             {isBulkAssignModalOpen && <BulkAssignModal isOpen={isBulkAssignModalOpen} onClose={() => setIsBulkAssignModalOpen(false)} onSave={fetchData} userIds={Array.from(selectedUserIds)} processes={processes}/>}
-            {userForChatPermissions && <ChatPermissionsModal isOpen={!!userForChatPermissions} onClose={() => setUserForChatPermissions(null)} user={userForChatPermissions} />}
             
              <AlertDialog open={!!userToDeactivate} onOpenChange={(open) => setUserToDeactivate(open ? userToDeactivate : null)}>
                 <AlertDialogContent>
