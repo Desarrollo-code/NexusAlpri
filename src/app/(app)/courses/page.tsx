@@ -1,4 +1,3 @@
-// src/app/(app)/courses/page.tsx
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
@@ -46,7 +45,7 @@ export default function CoursesPage() {
   }, [setPageTitle]);
 
   const fetchCoursesAndEnrollments = useCallback(async () => {
-    // La guarda principal que previene el acceso a `user.id` si `user` es nulo.
+    // CORRECCIÓN: Guarda estricta para asegurar que 'user' existe.
     if (!user) {
         setIsLoading(false);
         return;
@@ -68,13 +67,11 @@ export default function CoursesPage() {
       }
       const courseData = await courseResponse.json();
       
-      // SOLUCIÓN: Validar que `courseData.courses` es un array antes de usarlo.
       const coursesArray = Array.isArray(courseData?.courses) ? courseData.courses : [];
       setAllApiCourses(coursesArray);
 
       if (enrollmentResponse?.ok) {
         const enrollmentData: EnrolledCourse[] = await enrollmentResponse.json();
-        // SOLUCIÓN: Validar cada elemento antes de mapear.
         const validEnrollmentIds = Array.isArray(enrollmentData)
             ? enrollmentData.map(c => c?.id).filter(Boolean)
             : [];
@@ -106,7 +103,7 @@ export default function CoursesPage() {
                             (course.description && course.description.toLowerCase().includes(searchTerm.toLowerCase()));
       
       const isPublished = course.status === 'PUBLISHED';
-      // SOLUCIÓN: Usar encadenamiento opcional 'course?.id' para prevenir errores.
+      // CORRECCIÓN: Uso de encadenamiento opcional para prevenir errores.
       const isNotEnrolled = !enrolledCourseIds.includes(course?.id);
       const matchesCategory = activeCategory === 'all' || course.category === activeCategory;
 

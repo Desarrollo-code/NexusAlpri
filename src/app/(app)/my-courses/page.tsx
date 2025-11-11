@@ -37,6 +37,7 @@ export default function MyCoursesPage() {
   }, [setPageTitle]);
 
   const fetchMyEnrollments = useCallback(async () => {
+    // CORRECCIÓN: Guarda estricta para asegurar que 'user' existe antes de continuar.
     if (!user) {
         setIsFetchingPageData(false);
         setMyEnrolledCourses([]);
@@ -52,25 +53,28 @@ export default function MyCoursesPage() {
         throw new Error(errorData.message || `Failed to fetch enrolled courses: ${response.statusText}`);
       }
       const data: any[] = await response.json(); 
-      const mappedCourses: EnrolledCourse[] = data.map(item => ({
-        id: item.course.id,
-        title: item.course.title,
-        description: item.course.description,
-        instructor: { 
-            id: item.course.instructor?.id || 'unknown',
-            name: item.course.instructor?.name || 'N/A', 
-            avatar: item.course.instructor?.avatar || null
-        },
-        imageUrl: item.course.imageUrl,
-        modulesCount: item.course._count?.modules || 0,
-        enrolledAt: item.enrolledAt,
-        isEnrolled: true, 
-        instructorId: item.course.instructorId,
-        status: item.course.status || 'PUBLISHED',
-        progressPercentage: item.progress?.progressPercentage || 0,
-        certificateTemplateId: item.course.certificateTemplateId,
-        enrollmentId: item.id,
-        modules: [], 
+      // CORRECCIÓN: Mapeo seguro, verificando que 'item' y 'item.course' existan.
+      const mappedCourses: EnrolledCourse[] = data
+        .filter(item => item && item.course) // Solo procesar elementos válidos
+        .map(item => ({
+            id: item.course.id,
+            title: item.course.title,
+            description: item.course.description,
+            instructor: { 
+                id: item.course.instructor?.id || 'unknown',
+                name: item.course.instructor?.name || 'N/A', 
+                avatar: item.course.instructor?.avatar || null
+            },
+            imageUrl: item.course.imageUrl,
+            modulesCount: item.course._count?.modules || 0,
+            enrolledAt: item.enrolledAt,
+            isEnrolled: true, 
+            instructorId: item.course.instructorId,
+            status: item.course.status || 'PUBLISHED',
+            progressPercentage: item.progress?.progressPercentage || 0,
+            certificateTemplateId: item.course.certificateTemplateId,
+            enrollmentId: item.id,
+            modules: [], 
       }));
       setMyEnrolledCourses(mappedCourses);
     } catch (err) {
@@ -83,13 +87,10 @@ export default function MyCoursesPage() {
   }, [user, toast]);
   
   useEffect(() => {
-    if (isAuthLoading) {
-      setIsFetchingPageData(true);
-      return;
-    }
+    // Lógica simplificada: fetch solo cuando el usuario está definido.
     if (user) {
       fetchMyEnrollments();
-    } else {
+    } else if (!isAuthLoading) {
       setIsFetchingPageData(false);
       setMyEnrolledCourses([]);
     }

@@ -30,7 +30,7 @@ export function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCours
     title: apiCourse.title,
     description: apiCourse.description || '',
     category: apiCourse.category || undefined,
-    // Aseguramos que siempre haya un objeto instructor.
+    // CORRECCIÓN: Se asegura que siempre haya un objeto instructor, incluso si es nulo en los datos.
     instructor: apiCourse.instructor ? {
         id: apiCourse.instructor.id,
         name: apiCourse.instructor.name || 'N/A',
@@ -42,7 +42,6 @@ export function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCours
     },
     instructorId: apiCourse.instructorId || undefined,
     imageUrl: apiCourse.imageUrl || undefined,
-    // CORRECCIÓN CLAVE: Se transfiere correctamente el conteo de módulos.
     modulesCount: apiCourse._count?.modules ?? 0,
     lessonsCount: totalLessons,
     enrollmentsCount: apiCourse._count?.enrollments ?? 0,
