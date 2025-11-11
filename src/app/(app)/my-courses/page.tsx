@@ -37,11 +37,12 @@ export default function MyCoursesPage() {
   }, [setPageTitle]);
 
   const fetchMyEnrollments = useCallback(async () => {
-    if (!user) { // **LA CORRECCIÓN CLAVE**
-        // Si el usuario aún no está cargado, no hacer nada.
-        // El useEffect se volverá a ejecutar cuando el usuario cambie.
+    if (!user) {
+        setIsFetchingPageData(false);
+        setMyEnrolledCourses([]);
         return;
     }
+
     setIsFetchingPageData(true);
     setError(null);
     try {
@@ -68,7 +69,7 @@ export default function MyCoursesPage() {
         status: item.course.status || 'PUBLISHED',
         progressPercentage: item.progress?.progressPercentage || 0,
         certificateTemplateId: item.course.certificateTemplateId,
-        enrollmentId: item.id, // <-- Add enrollmentId
+        enrollmentId: item.id,
         modules: [], 
       }));
       setMyEnrolledCourses(mappedCourses);
@@ -80,15 +81,19 @@ export default function MyCoursesPage() {
       setIsFetchingPageData(false);
     }
   }, [user, toast]);
-
+  
   useEffect(() => {
-    if (!isAuthLoading && user) {
-      fetchMyEnrollments();
-    } else if (!isAuthLoading && !user) {
-        setIsFetchingPageData(false);
-        setMyEnrolledCourses([]);
+    if (isAuthLoading) {
+      setIsFetchingPageData(true);
+      return;
     }
-  }, [isAuthLoading, user, fetchMyEnrollments]);
+    if (user) {
+      fetchMyEnrollments();
+    } else {
+      setIsFetchingPageData(false);
+      setMyEnrolledCourses([]);
+    }
+}, [user, isAuthLoading, fetchMyEnrollments]);
 
   const { completedCourses, inProgressCourses } = useMemo(() => {
       const completed = myEnrolledCourses
@@ -115,7 +120,7 @@ export default function MyCoursesPage() {
     }
   };
 
-  if (isAuthLoading || (isFetchingPageData && user)) {
+  if (isAuthLoading || isFetchingPageData) {
     return (
       <div className="space-y-8">
           <div>
