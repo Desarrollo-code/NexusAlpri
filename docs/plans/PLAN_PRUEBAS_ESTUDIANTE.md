@@ -41,22 +41,34 @@ Este documento describe las acciones a verificar para el rol de **Estudiante**.
 | **4.3. Realizar un quiz (Laura)** | Ve a la lección del quiz y respóndelo. Al enviarlo, el sistema debe mostrarte tu puntuación y marcar la lección como completada. |
 | **4.4. Tomar apuntes (Laura)** | En cualquier lección, abre el panel de "Mis Apuntes" y escribe algo. Cierra y vuelve a abrir para verificar que se guardó. Luego, ve a la página `/my-notes` para ver tu apunte allí. |
 
-### 5. Biblioteca de Recursos (`/resources`)
+### 5. Restricción de Progresión de Lecciones (¡NUEVO!)
 
 | Acción a Realizar | Verificación Esperada |
 | :--- | :--- |
-| **5.1. Navegar y ver recursos** | Ve a la biblioteca. Deberías poder entrar a la carpeta "Documentos de RRHH" y ver el archivo "Guía de Beneficios". |
-| **5.2. Acceder a recurso protegido** | Haz clic en "Guía de Beneficios". El sistema te pedirá un PIN. Ingresa `1234`. Deberías poder previsualizar o descargar el archivo. |
+| **5.1. Iniciar sesión como estudiante nuevo** | Inicia sesión como `carlos.santana@nexus.com` (o crea un nuevo estudiante). Ve al catálogo e inscríbete en el "Curso de Marketing Digital". |
+| **5.2. Verificar bloqueo inicial** | Entra al curso. La primera lección debe estar activa. Todas las demás lecciones deben aparecer con un ícono de candado y un estilo visual de "bloqueado". |
+| **5.3. Intentar acceder a lección bloqueada** | Haz clic en la segunda o tercera lección ("Video: ¿Qué es el SEO?"). **No deberías poder acceder.** En su lugar, debe aparecer un mensaje emergente indicando que debes completar la lección anterior. |
+| **5.4. Completar la primera lección** | Haz clic en la primera lección ("¿Qué es el Marketing Digital?"). Al hacerlo, se marcará como completada. |
+| **5.5. Verificar desbloqueo** | La segunda lección ("Video: ¿Qué es el SEO?") ahora debe estar desbloqueada y accesible. La tercera lección (el quiz) debe seguir bloqueada. |
+| **5.6. Completar lección de video** | Selecciona la lección del video. El sistema **no** la marcará como completada hasta que el video finalice. Una vez que el video termine, la siguiente lección (el quiz) se desbloqueará. |
 
-### 6. Anuncios (`/announcements`)
+
+### 6. Biblioteca de Recursos (`/resources`)
 
 | Acción a Realizar | Verificación Esperada |
 | :--- | :--- |
-| **6.1. Ver e interactuar (Laura)** | Como Laura, ve a `/announcements`. Reacciona al "Anuncio de Bienvenida" con un emoji. Haz clic en el contador de vistas (icono del ojo) y verifica que tu nombre aparece. Haz clic en la insignia de tu reacción y verifica que apareces en esa lista. |
+| **6.1. Navegar y ver recursos** | Ve a la biblioteca. Deberías poder entrar a la carpeta "Documentos de RRHH" y ver el archivo "Guía de Beneficios". |
+| **6.2. Acceder a recurso protegido** | Haz clic en "Guía de Beneficios". El sistema te pedirá un PIN. Ingresa `1234`. Deberías poder previsualizar o descargar el archivo. |
 
-### 7. Perfil (`/profile`)
+### 7. Anuncios (`/announcements`)
 
 | Acción a Realizar | Verificación Esperada |
 | :--- | :--- |
-| **7.1. Ver progreso y logros** | Como Laura, ve a tu perfil. Deberías ver tus puntos de experiencia (XP) y el logro "Primer Paso" por tu primera inscripción. |
-| **7.2. Editar información** | Cambia tu nombre. El cambio debe reflejarse en la tarjeta de perfil y en la barra superior. |
+| **7.1. Ver e interactuar (Laura)** | Como Laura, ve a `/announcements`. Reacciona al "Anuncio de Bienvenida" con un emoji. Haz clic en el contador de vistas (icono del ojo) y verifica que tu nombre aparece. Haz clic en la insignia de tu reacción y verifica que apareces en esa lista. |
+
+### 8. Perfil (`/profile`)
+
+| Acción a Realizar | Verificación Esperada |
+| :--- | :--- |
+| **8.1. Ver progreso y logros** | Como Laura, ve a tu perfil. Deberías ver tus puntos de experiencia (XP) y el logro "Primer Paso" por tu primera inscripción. |
+| **8.2. Editar información** | Cambia tu nombre. El cambio debe reflejarse en la tarjeta de perfil y en la barra superior. |
