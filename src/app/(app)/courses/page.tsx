@@ -46,6 +46,7 @@ export default function CoursesPage() {
   }, [setPageTitle]);
 
   const fetchCoursesAndEnrollments = useCallback(async () => {
+    // La guarda principal que previene el acceso a `user.id` si `user` es nulo.
     if (!user) {
         setIsLoading(false);
         return;
@@ -67,18 +68,24 @@ export default function CoursesPage() {
       }
       const courseData = await courseResponse.json();
       
-      const coursesArray = Array.isArray(courseData) ? courseData : courseData.courses;
-      setAllApiCourses(coursesArray || []);
+      // SOLUCIÓN: Validar que `courseData.courses` es un array antes de usarlo.
+      const coursesArray = Array.isArray(courseData?.courses) ? courseData.courses : [];
+      setAllApiCourses(coursesArray);
 
-      if (enrollmentResponse && enrollmentResponse.ok) {
+      if (enrollmentResponse?.ok) {
         const enrollmentData: EnrolledCourse[] = await enrollmentResponse.json();
-        setEnrolledCourseIds(enrollmentData.map(c => c.id));
+        // SOLUCIÓN: Validar cada elemento antes de mapear.
+        const validEnrollmentIds = Array.isArray(enrollmentData)
+            ? enrollmentData.map(c => c?.id).filter(Boolean)
+            : [];
+        setEnrolledCourseIds(validEnrollmentIds);
       }
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido al cargar cursos');
+      const errorMessage = err instanceof Error ? err.message : 'Ocurrió un error desconocido al cargar cursos';
+      setError(errorMessage);
       setAllApiCourses([]);
-      toast({ title: "Error al cargar cursos", description: err instanceof Error ? err.message : 'No se pudieron cargar los cursos.', variant: "destructive"});
+      toast({ title: "Error al cargar cursos", description: errorMessage, variant: "destructive"});
     } finally {
       setIsLoading(false);
     }
@@ -86,10 +93,8 @@ export default function CoursesPage() {
   
 
   useEffect(() => {
-    if (!isAuthLoading && user) {
-        fetchCoursesAndEnrollments();
-    } else if (!isAuthLoading && !user) {
-        setIsLoading(false);
+    if (!isAuthLoading) {
+      fetchCoursesAndEnrollments();
     }
   }, [isAuthLoading, user, fetchCoursesAndEnrollments]); 
 
@@ -101,7 +106,8 @@ export default function CoursesPage() {
                             (course.description && course.description.toLowerCase().includes(searchTerm.toLowerCase()));
       
       const isPublished = course.status === 'PUBLISHED';
-      const isNotEnrolled = !enrolledCourseIds.includes(course.id);
+      // SOLUCIÓN: Usar encadenamiento opcional 'course?.id' para prevenir errores.
+      const isNotEnrolled = !enrolledCourseIds.includes(course?.id);
       const matchesCategory = activeCategory === 'all' || course.category === activeCategory;
 
       return matchesSearch && isPublished && isNotEnrolled && matchesCategory;
