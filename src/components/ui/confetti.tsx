@@ -56,7 +56,7 @@ export const Confetti = () => {
             <style jsx>{`
                 @keyframes fall {
                     to {
-                        transform: translateY(110vh) rotate(720deg) scale(${piece.scale});
+                        transform: translateY(110vh) rotate(720deg) scale(var(--scale));
                     }
                 }
                  @keyframes sway {
