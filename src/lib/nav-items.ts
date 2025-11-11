@@ -20,6 +20,7 @@ import {
   Network,
   Sparkles,
   Award,
+  Megaphone,
 } from 'lucide-react';
 
 const NAVIGATION_ITEMS: NavItem[] = [
@@ -39,6 +40,30 @@ const NAVIGATION_ITEMS: NavItem[] = [
     icon: Trophy,
     path: '/leaderboard',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
+  },
+  
+   // --- Communications Section ---
+  {
+    id: 'communications',
+    label: 'Comunicaciones',
+    icon: Megaphone,
+    roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
+    children: [
+       {
+        id: 'announcements',
+        label: 'Anuncios',
+        icon: Megaphone,
+        path: '/announcements',
+        roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
+      },
+      {
+        id: 'calendar',
+        label: 'Calendario',
+        icon: CalendarDays,
+        path: '/calendar',
+        roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
+      },
+    ]
   },
 
   // --- Learning Section ---
@@ -84,13 +109,6 @@ const NAVIGATION_ITEMS: NavItem[] = [
         label: 'Biblioteca',
         icon: Folder,
         path: '/resources',
-        roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
-      },
-      {
-        id: 'calendar',
-        label: 'Calendario',
-        icon: CalendarDays,
-        path: '/calendar',
         roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
       },
        {
