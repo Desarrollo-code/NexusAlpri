@@ -287,14 +287,14 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   }, [courseProgress]);
 
   const lastCompletedLessonIndex = useMemo(() => {
-    if (completedLessonIds.size === 0) return -1;
-    let lastIndex = -1;
-    allLessons.forEach((lesson, index) => {
-        if (completedLessonIds.has(lesson.id)) {
-            lastIndex = index;
+    if (!allLessons || allLessons.length === 0) return -1;
+    // Encuentra el índice de la última lección completada en la lista aplanada
+    for (let i = allLessons.length - 1; i >= 0; i--) {
+        if (completedLessonIds.has(allLessons[i].id)) {
+            return i;
         }
-    });
-    return lastIndex;
+    }
+    return -1; // Ninguna lección completada
   }, [allLessons, completedLessonIds]);
 
   const isCreatorViewingCourse = useMemo(() => {
@@ -656,7 +656,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                               {moduleItem.lessons.map(lesson => {
                                 const currentLessonIndex = lessonCounter++;
                                 const isCompleted = completedLessonIds.has(lesson.id);
-                                const isLocked = !isCreatorViewingCourse && (currentLessonIndex > lastCompletedLessonIndex + 1);
+                                const isLocked = !isCreatorViewingCourse && currentLessonIndex > lastCompletedLessonIndex + 1;
 
                                 return (
                                 <li key={lesson.id} className="py-0.5">
