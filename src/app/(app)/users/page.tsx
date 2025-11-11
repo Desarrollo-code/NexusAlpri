@@ -48,7 +48,7 @@ interface UserWithProcess extends User {
     process: { id: string; name: string } | null;
 }
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 15;
 
 const DraggableUserPreview = ({ user }: { user: UserWithProcess }) => (
     <Card className="flex items-center gap-2 p-2 shadow-lg w-48">
@@ -352,11 +352,11 @@ function UsersPageComponent() {
     }, [usersList]);
     
     const handleFilterChange = (key: string, value: string | null) => {
-        router.push(`${pathname}?${createQueryString({ [key]: value, page: '1' })}`);
+        router.push(`${pathname}?${createQueryString({ [key]: value, page: 1 })}`);
     };
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      router.push(`${pathname}?${createQueryString({ search: e.target.value, page: '1' })}`);
+      router.push(`${pathname}?${createQueryString({ search: e.target.value, page: 1 })}`);
     };
 
     const handlePageChange = (page: number) => {
