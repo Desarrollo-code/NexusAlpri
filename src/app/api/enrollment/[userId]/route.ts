@@ -22,7 +22,7 @@ export async function GET(req: NextRequest, { params }: { params: { userId: stri
                 course: {
                     include: {
                         instructor: {
-                            select: { name: true },
+                            select: { id: true, name: true, avatar: true },
                         },
                         _count: {
                             select: { modules: true },
@@ -36,18 +36,17 @@ export async function GET(req: NextRequest, { params }: { params: { userId: stri
             },
         });
         
-        // Mapear los datos para incluir explícitamente el progressPercentage
+        // Mapear los datos para que coincidan con la estructura esperada por el frontend
         const data = enrollments.map(enrollment => {
             return {
-                id: enrollment.course.id,
-                title: enrollment.course.title,
-                description: enrollment.course.description,
-                instructorName: enrollment.course.instructor?.name,
-                instructorId: enrollment.course.instructorId,
-                imageUrl: enrollment.course.imageUrl,
-                modulesCount: enrollment.course._count.modules,
-                enrolledAt: enrollment.enrolledAt,
-                status: enrollment.course.status,
+                ...enrollment, // Devuelve el objeto de inscripción completo
+                course: {
+                    ...enrollment.course,
+                    instructor: enrollment.course.instructor, // Asegura que el instructor esté en el objeto del curso
+                    _count: {
+                        modules: enrollment.course._count.modules
+                    }
+                },
                 progressPercentage: enrollment.progress?.progressPercentage || 0
             };
         });
