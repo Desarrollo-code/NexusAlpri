@@ -9,6 +9,7 @@ import { colord } from "colord";
 import a11yPlugin from "colord/plugins/a11y";
 import { fontMap } from '@/lib/fonts';
 
+// Extender colord con el plugin de accesibilidad una sola vez
 colord.extend([a11yPlugin]);
 
 
@@ -70,11 +71,11 @@ function ThemeInjector() {
           '--background': hexToHslString(backgroundColor),
         };
         
-        // Determinar el color del texto del botón primario
         if (primaryColor) {
             const contrastWithWhite = colord(primaryColor).contrast('#FFFFFF');
             const contrastWithBlack = colord(primaryColor).contrast('#000000');
-            varsToSet['--primary-foreground'] = contrastWithWhite > contrastWithBlack ? '0 0% 100%' : '0 0% 0%';
+            // AA level requires a contrast ratio of at least 4.5
+            varsToSet['--primary-foreground'] = contrastWithWhite > contrastWithBlack && contrastWithWhite >= 4.5 ? '0 0% 100%' : '0 0% 0%';
         }
 
         Object.entries(varsToSet).forEach(([property, value]) => {
