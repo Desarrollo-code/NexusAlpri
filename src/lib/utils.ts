@@ -159,14 +159,20 @@ const stringToHash = (str: string): number => {
 export const getProcessColors = (id: string) => {
     const hash = stringToHash(id);
     const palette = PALETTES[hash % PALETTES.length];
+    const lightColor = palette[0];
+    const mediumColor = palette[1];
+    
+    // Ahora usamos la función de contraste para decidir el color del texto.
+    const textColor = getContrastingTextColor(lightColor);
+
     return {
-        bgColor: `bg-[${palette[0]}]`,
-        textColor: `text-[${palette[2]}]`,
-        borderColor: `border-[${palette[1]}]`,
+        bgColor: `bg-[${lightColor}]`,
+        textColor: textColor === 'white' ? 'text-white' : 'text-black',
+        borderColor: `border-[${mediumColor}]`,
         raw: {
-            light: palette[0],
-            medium: palette[1],
-            dark: palette[2],
+            light: lightColor,
+            medium: mediumColor,
+            dark: textColor, // Usamos el color de texto calculado como 'dark'
         }
     };
 };
