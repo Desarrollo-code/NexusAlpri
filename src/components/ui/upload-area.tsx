@@ -52,6 +52,10 @@ export function UploadArea({ onFileSelect, disabled, className, inputId = "file-
       setIsDragging(false);
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
           onFileSelect(e.dataTransfer.files);
+          // Clear the input in case the same files are dropped again
+          if (inputRef.current) {
+            inputRef.current.value = '';
+          }
       }
   }, [onFileSelect, disabled]);
 
@@ -96,7 +100,7 @@ export function UploadArea({ onFileSelect, disabled, className, inputId = "file-
                     {isDragging ? 'Suelta los archivos aquí' : 'Arrastra y suelta o haz clic'}
                 </p>
                  <p className="text-xs text-muted-foreground">
-                    Sube uno o varios archivos
+                    {multiple ? 'Sube uno o varios archivos' : 'Sube un archivo'}
                 </p>
               </div>
             )}

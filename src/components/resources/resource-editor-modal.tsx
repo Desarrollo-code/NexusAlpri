@@ -148,11 +148,12 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title && uploads.length <= 1 && resourceType !== 'DOCUMENTO_EDITABLE' && resourceType !== 'EXTERNAL_LINK') {
-        toast({ title: 'Título requerido', description: 'Por favor, añade un título para el recurso.', variant: 'destructive'});
+    const hasTitleForSingleUpload = uploads.length === 1 && title.trim() !== '';
+    if (uploads.length === 0 && resourceType === 'DOCUMENT' && !isEditing) {
+        toast({ title: 'Faltan archivos', description: 'Por favor, selecciona al menos un archivo para subir.', variant: 'destructive'});
         return;
     }
-    
+
     setIsSubmitting(true);
     let successCount = 0;
 
@@ -206,8 +207,8 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                 });
 
                 const payload = {
-                    title: upload.file.name.split('.').slice(0,-1).join('.'),
-                    description: '', category, isPublic, sharedWithUserIds: isPublic ? [] : sharedWithUserIds,
+                    title: uploads.length > 1 ? upload.file.name.split('.').slice(0,-1).join('.') : title,
+                    description, category, isPublic, sharedWithUserIds: isPublic ? [] : sharedWithUserIds,
                     expiresAt: expiresAt ? expiresAt.toISOString() : null,
                     status: 'ACTIVE', type: 'DOCUMENT', url: uploadedFile.url,
                     size: upload.file.size, fileType: upload.file.type, parentId,
@@ -256,7 +257,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                   {resourceType !== 'EXTERNAL_LINK' && resourceType !== 'DOCUMENTO_EDITABLE' && (
                     <div className="space-y-2">
                       <Label>Archivo(s)</Label>
-                      <UploadArea onFileSelect={(files) => handleFileSelect(files)} multiple={!isEditing} disabled={isSubmitting}/>
+                      <UploadArea onFileSelect={handleFileSelect} multiple={!isEditing} disabled={isSubmitting}/>
                     </div>
                   )}
                    {uploads.length > 0 && resourceType !== 'EXTERNAL_LINK' && resourceType !== 'DOCUMENTO_EDITABLE' && (
