@@ -18,7 +18,7 @@ export function AppWatermark() {
         <div className={cn(
             "fixed z-[9999] pointer-events-none",
              // En móvil, se posiciona más arriba para no chocar con la barra de navegación.
-            "bottom-20 md:bottom-4 right-4 opacity-30 md:opacity-50"
+            "bottom-24 md:bottom-4 right-4 opacity-30 md:opacity-50"
         )}>
           <Image 
             src={settings.watermarkUrl} 
