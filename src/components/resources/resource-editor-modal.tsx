@@ -46,7 +46,6 @@ interface ResourceEditorModalProps {
   onSave: () => void;
 }
 
-// --- NUEVA INTERFAZ PARA EL ESTADO DE SUBIDA ---
 interface UploadState {
   id: string;
   file: File;
@@ -59,7 +58,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   const { toast } = useToast();
   const { user, settings } = useAuth();
   
-  // Estado para la edición de un solo recurso
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [content, setContent] = useState('');
@@ -71,7 +69,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   const [resourceType, setResourceType] = useState<AppResourceType['type']>('DOCUMENT');
   const [externalLink, setExternalLink] = useState('');
   
-  // Estado para la subida de archivos (ahora maneja múltiples)
   const [uploads, setUploads] = useState<UploadState[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [allUsers, setAllUsers] = useState<AppUser[]>([]);
@@ -129,13 +126,11 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   const handleFileSelect = (files: FileList | null) => {
     if (!files || files.length === 0) return;
     
-    // Si es edición, solo se permite un archivo para reemplazar
     if (isEditing) {
         const file = files[0];
         setUploads([{ id: file.name, file, progress: 0, error: null, completed: false }]);
         if(!title) setTitle(file.name.split('.').slice(0,-1).join('.'));
     } else {
-        // Para creación, se permite múltiples
         const newUploads = Array.from(files).map(file => ({
             id: `${file.name}-${Date.now()}`,
             file,
@@ -145,7 +140,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         }));
         setUploads(prev => [...prev, ...newUploads]);
         
-        // Si solo se sube un archivo y no hay título, se auto-rellena
         if (newUploads.length === 1 && !title) {
             setTitle(newUploads[0].file.name.split('.').slice(0,-1).join('.'));
         }
@@ -162,16 +156,13 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     setIsSubmitting(true);
     let successCount = 0;
 
-    // --- LÓGICA PARA CREAR/EDITAR ENLACE O DOCUMENTO EDITABLE (UNO A LA VEZ) ---
     if (resourceType === 'EXTERNAL_LINK' || resourceType === 'DOCUMENTO_EDITABLE' || isEditing) {
         let finalUrl = isEditing ? resource.url : null;
         let finalSize = resource?.size || 0;
         let finalFileType = resource?.fileType || '';
 
-        // Si es un enlace, la URL es el valor del input
         if (resourceType === 'EXTERNAL_LINK') finalUrl = externalLink;
 
-        // Si hay un archivo local (solo en modo edición para reemplazar)
         const fileToUpload = uploads[0];
         if (fileToUpload) {
              setUploads(prev => prev.map(u => ({...u, progress: 0})));
@@ -207,7 +198,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             toast({ title: 'Error al Guardar', description: (err as Error).message, variant: 'destructive' });
         }
     } 
-    // --- LÓGICA PARA CREAR MÚLTIPLES ARCHIVOS ---
     else if (!isEditing && uploads.length > 0) {
         for (const upload of uploads) {
             try {
@@ -216,7 +206,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                 });
 
                 const payload = {
-                    title: upload.file.name.split('.').slice(0,-1).join('.'), // Usar nombre de archivo como título
+                    title: upload.file.name.split('.').slice(0,-1).join('.'),
                     description: '', category, isPublic, sharedWithUserIds: isPublic ? [] : sharedWithUserIds,
                     expiresAt: expiresAt ? expiresAt.toISOString() : null,
                     status: 'ACTIVE', type: 'DOCUMENT', url: uploadedFile.url,

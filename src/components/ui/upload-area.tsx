@@ -5,24 +5,22 @@ import React, { useRef, useState, useCallback } from 'react';
 import { IconUploadCloud } from '@/components/icons/icon-upload-cloud';
 
 interface UploadAreaProps {
-  onFileSelect: (file: File | null) => void;
+  onFileSelect: (files: FileList | null) => void;
   disabled?: boolean;
   className?: string;
   inputId?: string;
   children?: React.ReactNode;
   compact?: boolean;
+  multiple?: boolean;
 }
 
-export function UploadArea({ onFileSelect, disabled, className, inputId = "file-upload", children, compact = false }: UploadAreaProps) {
+export function UploadArea({ onFileSelect, disabled, className, inputId = "file-upload", children, compact = false, multiple = false }: UploadAreaProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      onFileSelect(event.target.files[0]);
-    } else {
-      onFileSelect(null);
-    }
+    onFileSelect(event.target.files);
+    // Reset the input value to allow re-uploading the same file
     if(event.target) {
         event.target.value = '';
     }
@@ -52,8 +50,8 @@ export function UploadArea({ onFileSelect, disabled, className, inputId = "file-
       e.stopPropagation();
       if(disabled) return;
       setIsDragging(false);
-      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-          onFileSelect(e.dataTransfer.files[0]);
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          onFileSelect(e.dataTransfer.files);
       }
   }, [onFileSelect, disabled]);
 
@@ -85,26 +83,26 @@ export function UploadArea({ onFileSelect, disabled, className, inputId = "file-
         onChange={handleFileChange}
         className="hidden"
         disabled={disabled}
+        multiple={multiple}
+        accept="image/*,video/*,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip"
       />
       
-      {/* Show placeholder icon and text only if there are no children (no image preview) */}
       {!children && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 transition-opacity duration-300 z-0">
             <IconUploadCloud className={cn("text-muted-foreground transition-colors group-hover:text-primary", isDragging && "text-primary", compact ? "h-8 w-8" : "h-10 w-10")} />
             {!compact && (
               <div className="text-center">
                 <p className="text-sm font-semibold text-foreground">
-                    {isDragging ? 'Suelta el archivo aquí' : 'Arrastra y suelta o haz clic'}
+                    {isDragging ? 'Suelta los archivos aquí' : 'Arrastra y suelta o haz clic'}
                 </p>
                  <p className="text-xs text-muted-foreground">
-                    Sube un archivo para adjuntar
+                    Sube uno o varios archivos
                 </p>
               </div>
             )}
         </div>
       )}
 
-      {/* Render children (image preview) if they exist */}
       {children && (
         <div className={cn("relative z-10 w-full h-full", isDragging && "opacity-20")}>
             {children}
