@@ -230,33 +230,35 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
                 </span>
                 <span className="text-white/80 text-xs">{timeSince(announcement.date)}</span>
              </div>
-              {canModify && (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-white/80 hover:bg-black/20 hover:text-white"><MoreVertical className="h-4 w-4"/></Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                         <DropdownMenuItem onSelect={() => onTogglePin?.(announcement)}>
-                            {announcement.isPinned ? <PinOff className="mr-2 h-4 w-4" /> : <Pin className="mr-2 h-4 w-4" />}
-                            {announcement.isPinned ? 'Desfijar Anuncio' : 'Fijar Anuncio'}
-                         </DropdownMenuItem>
-                         <DropdownMenuItem onSelect={() => onEdit?.(announcement)}>
-                            <Edit className="mr-2 h-4 w-4"/>Editar
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => onDelete?.(announcement.id)} className="text-destructive focus:bg-destructive/10">
-                            <Trash2 className="mr-2 h-4 w-4"/>Eliminar
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-             )}
+              <div className="flex items-center gap-1">
+                 {announcement.isPinned && <Pin className="h-4 w-4 text-white/80 fill-current" />}
+                 {canModify && (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-white/80 hover:bg-black/20 hover:text-white"><MoreVertical className="h-4 w-4"/></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                             <DropdownMenuItem onSelect={() => onTogglePin?.(announcement)}>
+                                {announcement.isPinned ? <PinOff className="mr-2 h-4 w-4" /> : <Pin className="mr-2 h-4 w-4" />}
+                                {announcement.isPinned ? 'Desfijar Anuncio' : 'Fijar Anuncio'}
+                             </DropdownMenuItem>
+                             <DropdownMenuItem onSelect={() => onEdit?.(announcement)}>
+                                <Edit className="mr-2 h-4 w-4"/>Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => onDelete?.(announcement.id)} className="text-destructive focus:bg-destructive/10">
+                                <Trash2 className="mr-2 h-4 w-4"/>Eliminar
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                 )}
+              </div>
           </div>
         </div>
       </CardHeader>
       
       <CardContent className="px-4 pb-3 pt-3">
         <div className="space-y-3">
-            {announcement.isPinned && <Pin className="h-4 w-4 text-primary fill-current mb-1" />}
             {announcement.title && (
               <CardTitle className="text-lg font-semibold">{announcement.title}</CardTitle>
             )}
