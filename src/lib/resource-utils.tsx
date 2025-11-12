@@ -1,7 +1,7 @@
 // src/lib/resource-utils.tsx
 import React from 'react';
 import type { AppResourceType } from '@/types';
-import { FolderIcon, FileQuestion, Video as VideoIcon, FileText as FileTextIcon, Info, Notebook, Shield, Link as LinkIcon, Archive as ZipIcon, FilePen } from 'lucide-react';
+import { FolderIcon, FileQuestion, Video as VideoIcon, FileText as FileTextIcon, Info, Notebook, Shield, Link as LinkIcon, Archive as ZipIcon, FilePen, Image as ImageIcon } from 'lucide-react';
 import { cn } from './utils';
 
 export interface FileTypeDetails {
@@ -15,10 +15,11 @@ const fileTypeMap: Record<string, FileTypeDetails> = {
   PDF: { label: 'PDF', bgColor: '#D94336' },
   PPT: { label: 'PPT', bgColor: '#D24726' },
   PPTX: { label: 'PPTX', bgColor: '#D24726' },
-  
+  YOUTUBE: { label: 'YT', bgColor: '#FF3D00' },
+
   // Azules y Grises
   ZIP: { label: 'ZIP', bgColor: '#607D8B' },
-  DOC: { label: 'DOCX', bgColor: '#2A5699' },
+  DOC: { label: 'DOC', bgColor: '#2A5699' },
   DOCX: { label: 'DOCX', bgColor: '#2A5699' },
   
   // Morado
@@ -28,8 +29,13 @@ const fileTypeMap: Record<string, FileTypeDetails> = {
   XLS: { label: 'XLS', bgColor: '#0F7D40' },
   XLSX: { label: 'XLSX', bgColor: '#0F7D40' },
   
-  // Amarillo/Naranja
-  YOUTUBE: { label: 'YT', bgColor: '#FF8F00' }, // Se usará un thumbnail, pero se define un color base.
+  // Naranja
+  JPG: { label: 'JPG', bgColor: '#F47C00' },
+  JPEG: { label: 'JPG', bgColor: '#F47C00' },
+  
+  // Cian
+  VIDEO: { label: 'VID', bgColor: '#00796B' }, // para MP4, etc.
+  MP4: { label: 'MP4', bgColor: '#00796B' },
 
   DEFAULT: { label: 'FILE', bgColor: '#757575' },
 };
@@ -53,7 +59,7 @@ export const getIconForType = (type: AppResourceType['type']): React.ComponentTy
         MANUAL: { icon: Notebook, color: 'text-indigo-500', gradient: 'from-indigo-500/10' },
         POLICY: { icon: Shield, color: 'text-gray-500', gradient: 'from-gray-500/10' },
         VIDEO: { icon: VideoIcon, color: 'text-red-500', gradient: 'from-red-500/10' },
-        EXTERNAL_LINK: { icon: LinkIcon, color: 'text-green-700', gradient: 'from-green-100' },
+        EXTERNAL_LINK: { icon: LinkIcon, color: 'text-green-600', gradient: 'bg-green-100' },
         OTHER: { icon: FileQuestion, color: 'text-slate-500', gradient: 'from-slate-500/10' }
     };
 

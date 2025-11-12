@@ -28,6 +28,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import type { Prisma } from '@prisma/client';
+import { getYoutubeVideoId } from '@/lib/resource-utils';
 import { VideoPlaylistView } from '@/components/resources/video-playlist-view';
 
 const getFileTypeFilter = (fileType: string): Prisma.EnterpriseResourceWhereInput => {
@@ -252,10 +253,11 @@ export default function ResourcesPage() {
     </div>
   );
 
-  const currentFolderIsVideoPlaylist = useMemo(() => {
-    if (files.length === 0) return false;
+  const isVideoFolder = useMemo(() => {
+    if (!files || files.length === 0) return false;
     const videoCount = files.filter(f => f.type === 'VIDEO' || getYoutubeVideoId(f.url)).length;
-    return (videoCount / files.length) >= 0.7; // 70% or more are videos
+    // Consider it a video folder if more than 70% of its direct children are videos
+    return (videoCount / files.length) >= 0.7;
   }, [files]);
   
   return (
@@ -322,12 +324,8 @@ export default function ResourcesPage() {
                 <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
             ) : error ? (
                 <div className="text-center py-10"><AlertTriangle className="mx-auto h-8 w-8 text-destructive" /><p className="mt-2 font-semibold text-destructive">{error}</p></div>
-            ) : currentFolderIsVideoPlaylist ? (
-                <VideoPlaylistView 
-                  resources={files} 
-                  onSelectResource={setSelectedResource}
-                  folderName={breadcrumbs[breadcrumbs.length - 1]?.title || 'Videos'}
-                />
+            ) : isVideoFolder ? (
+                 <VideoPlaylistView resources={files} folderName={breadcrumbs[breadcrumbs.length-1].title} />
             ) : (
                 <div className="space-y-8">
                     {folders.length > 0 && (
