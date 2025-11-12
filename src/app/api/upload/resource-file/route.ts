@@ -12,31 +12,32 @@ export async function POST(request: NextRequest) {
   if (!supabaseAdmin) {
     return NextResponse.json({ success: false, message: 'Cliente de Supabase no configurado.' }, { status: 500 });
   }
+  
+  const data = await request.formData();
+  const file: File | null = data.get('file') as unknown as File;
+
+  if (!file) {
+    return NextResponse.json({ success: false, message: 'No se ha subido ningún archivo.' }, { status: 400 });
+  }
 
   try {
-    const { filename, contentType } = await request.json();
-
-    if (!filename || !contentType) {
-      return NextResponse.json({ success: false, message: 'Nombre de archivo y tipo de contenido son requeridos.' }, { status: 400 });
-    }
-
-    const safeFileName = filename.replace(/[^a-zA-Z0-9-_\.]/g, '_');
+    const safeFileName = file.name.replace(/[^a-zA-Z0-9-_\.]/g, '_');
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
     const finalPath = `${uniqueSuffix}-${safeFileName}`;
 
-    const { data, error } = await supabaseAdmin.storage
+    const { data: uploadData, error } = await supabaseAdmin.storage
       .from('resource_library')
-      .createSignedUploadUrl(finalPath);
+      .upload(finalPath, file);
 
     if (error) {
-      throw new Error(`Error generando URL firmada: ${error.message}`);
+      throw new Error(`Error subiendo a Supabase: ${error.message}`);
     }
 
-    const publicUrl = supabaseAdmin.storage.from('resource_library').getPublicUrl(finalPath).data.publicUrl;
+    const publicUrl = supabaseAdmin.storage.from('resource_library').getPublicUrl(uploadData.path).data.publicUrl;
 
     return NextResponse.json({
-      uploadUrl: data.signedUrl,
-      url: publicUrl, // Aseguramos que la clave sea 'url'
+      success: true,
+      url: publicUrl,
     });
 
   } catch (e) {
