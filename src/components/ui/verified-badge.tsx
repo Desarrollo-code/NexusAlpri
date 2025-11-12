@@ -18,8 +18,16 @@ export const VerifiedBadge = ({ className, role }: VerifiedBadgeProps) => {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger>
+          {/* 
+            CORRECCIÓN: Se utiliza `fill` para el cuerpo del icono y `color` (que se traduce en `stroke`) 
+            para el borde, garantizando contraste en cualquier fondo.
+          */}
           <BadgeCheck
-            className={cn("h-5 w-5 text-accent drop-shadow-[0_1px_3px_rgba(0,0,0,0.2)]", className)}
+            className={cn(
+              "h-5 w-5 fill-primary/80 text-foreground drop-shadow-md", 
+              className
+            )}
+            strokeWidth={1.5}
           />
         </TooltipTrigger>
         <TooltipContent>
