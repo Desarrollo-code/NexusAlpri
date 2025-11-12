@@ -37,8 +37,6 @@ import { cn } from '@/lib/utils';
 import { Separator } from '../ui/separator';
 import { FileIcon } from '../ui/file-icon';
 import { RichTextEditor } from '../ui/rich-text-editor';
-import { getInitials } from '@/lib/utils';
-
 
 interface ResourceEditorModalProps {
   isOpen: boolean;
@@ -309,7 +307,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                       <div className="space-y-1.5"><Label>Compartir con</Label><Input placeholder="Buscar usuarios..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
                       <ScrollArea className="h-32 border rounded-md p-2">
                           {filteredUsers.filter(u => u.id !== user?.id).map(u => (
-                              <div key={u.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={(c) => setSharedWithUserIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(u.name)}</AvatarFallback></Avatar>{u.name}</Label></div>
+                              <div key={u.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={(c) => setSharedWithUserIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{u.name.substring(0,2)}</AvatarFallback></Avatar>{u.name}</Label></div>
                           ))}
                       </ScrollArea></div>
                   )}
@@ -321,10 +319,10 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                       {pin && <div className="relative"><Input type={showPin ? "text" : "password"} value={confirmPin} onChange={(e) => setConfirmPin(e.target.value)} placeholder="Confirmar nuevo PIN" disabled={!pin} autoComplete="new-password"/></div>}
                       {pin && confirmPin && pin !== confirmPin && <p className="text-xs text-destructive">Los PIN no coinciden.</p>}
                       <div className="flex gap-2">
-                          <Button type="button" onClick={handleSetPin} disabled={isSettingPin || !pin || pin.length < 4 || (pin !== confirmPin)} className="w-full">
+                          <Button type="button" onClick={()=>{}} disabled={isSettingPin || !pin || pin.length < 4 || (pin !== confirmPin)} className="w-full">
                               <Check className="mr-2 h-4 w-4" />Establecer PIN
                           </Button>
-                          <Button type="button" variant="destructive" onClick={handleRemovePin} disabled={isSettingPin} className="w-full">
+                          <Button type="button" variant="destructive" onClick={()=>{}} disabled={isSettingPin} className="w-full">
                               <X className="mr-2 h-4 w-4" />Quitar PIN
                           </Button>
                       </div>
@@ -345,4 +343,3 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     </Dialog>
   );
 }
-```
