@@ -18,7 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Save, UploadCloud, Link as LinkIcon, Image as ImageIcon, XCircle, Replace, Calendar as CalendarIcon, Eye, EyeOff, X, Globe, Users, FileText, Check } from 'lucide-react';
+import { Loader2, Save, UploadCloud, Link as LinkIcon, Image as ImageIcon, XCircle, Replace, Calendar as CalendarIcon, Eye, EyeOff, X, Globe, Users, FileText, Check, Archive, FilePen } from 'lucide-react';
 import type { AppResourceType, User as AppUser } from '@/types';
 import { UploadArea } from '../ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
@@ -51,7 +51,7 @@ interface UploadState {
   file: File;
   progress: number;
   error: string | null;
-  completed: boolean;
+  status: 'uploading' | 'processing' | 'completed';
 }
 
 export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSave }: ResourceEditorModalProps) {
@@ -128,7 +128,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     
     if (isEditing) {
         const file = files[0];
-        setUploads([{ id: file.name, file, progress: 0, error: null, completed: false }]);
+        setUploads([{ id: file.name, file, progress: 0, error: null, status: 'uploading' }]);
         if(!title) setTitle(file.name.split('.').slice(0,-1).join('.'));
     } else {
         const newUploads = Array.from(files).map(file => ({
@@ -136,7 +136,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             file,
             progress: 0,
             error: null,
-            completed: false,
+            status: 'uploading' as 'uploading',
         }));
         setUploads(prev => [...prev, ...newUploads]);
         
@@ -166,11 +166,14 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
 
         const fileToUpload = uploads[0];
         if (fileToUpload) {
-             setUploads(prev => prev.map(u => ({...u, progress: 0})));
+             setUploads(prev => prev.map(u => ({...u, progress: 0, status: 'uploading'})));
              try {
                 const uploadedFile = await uploadWithProgress('/api/upload/resource-file', fileToUpload.file, (p) => {
                    setUploads(prev => prev.map(u => u.id === fileToUpload.id ? {...u, progress: p} : u));
                 });
+                
+                setUploads(prev => prev.map(u => u.id === fileToUpload.id ? {...u, status: 'processing'} : u));
+
                 finalUrl = uploadedFile.url;
                 finalSize = fileToUpload.file.size;
                 finalFileType = fileToUpload.file.type;
@@ -205,6 +208,8 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                 const uploadedFile = await uploadWithProgress('/api/upload/resource-file', upload.file, (p) => {
                     setUploads(prev => prev.map(u => u.id === upload.id ? {...u, progress: p} : u));
                 });
+                
+                setUploads(prev => prev.map(u => u.id === upload.id ? {...u, status: 'processing'} : u));
 
                 const payload = {
                     title: uploads.length > 1 ? upload.file.name.split('.').slice(0,-1).join('.') : title,
@@ -216,7 +221,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
 
                 const response = await fetch('/api/resources', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 if (!response.ok) throw new Error(`Error al crear recurso para ${upload.file.name}`);
-                setUploads(prev => prev.map(u => u.id === upload.id ? {...u, completed: true} : u));
+                setUploads(prev => prev.map(u => u.id === upload.id ? {...u, status: 'completed'} : u));
                 successCount++;
 
             } catch (err) {
@@ -265,7 +270,12 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                             {uploads.map(upload => (
                                 <div key={upload.id} className="p-2 border rounded-md">
                                     <p className="text-sm font-medium truncate">{upload.file.name}</p>
-                                    <Progress value={upload.progress} className="h-1 mt-1"/>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <Progress value={upload.progress} className="h-1 flex-grow"/>
+                                        <span className="text-xs font-semibold w-10 text-right">{upload.progress}%</span>
+                                         {upload.status === 'processing' && <Loader2 className="h-4 w-4 animate-spin text-primary"/>}
+                                         {upload.status === 'completed' && <Check className="h-4 w-4 text-green-500"/>}
+                                    </div>
                                     {upload.error && <p className="text-xs text-destructive mt-1">{upload.error}</p>}
                                 </div>
                             ))}
@@ -334,3 +344,4 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     </Dialog>
   );
 }
+```
