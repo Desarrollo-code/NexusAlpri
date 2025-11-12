@@ -48,10 +48,20 @@ interface ResourceEditorModalProps {
   onSave: () => void;
 }
 
+// --- NUEVA INTERFAZ PARA EL ESTADO DE SUBIDA ---
+interface UploadState {
+  id: string;
+  file: File;
+  progress: number;
+  error: string | null;
+  completed: boolean;
+}
+
 export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSave }: ResourceEditorModalProps) {
   const { toast } = useToast();
   const { user, settings } = useAuth();
   
+  // Estado para la edición de un solo recurso
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [content, setContent] = useState('');
@@ -62,20 +72,19 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   const [expiresAt, setExpiresAt] = useState<Date | undefined>(undefined);
   const [resourceType, setResourceType] = useState<AppResourceType['type']>('DOCUMENT');
   const [externalLink, setExternalLink] = useState('');
-  const [currentUrl, setCurrentUrl] = useState<string | null>(null);
   
-  const [isSaving, setIsSaving] = useState(false);
+  // Estado para la subida de archivos (ahora maneja múltiples)
+  const [uploads, setUploads] = useState<UploadState[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [allUsers, setAllUsers] = useState<AppUser[]>([]);
   const [userSearch, setUserSearch] = useState('');
-  
-  const [localFile, setLocalFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
 
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [showPin, setShowPin] = useState(false);
   const [isSettingPin, setIsSettingPin] = useState(false);
+
+  const isEditing = !!resource;
 
   const resetForm = useCallback(() => {
     setTitle('');
@@ -88,8 +97,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     setExpiresAt(undefined);
     setResourceType('DOCUMENT');
     setExternalLink('');
-    setLocalFile(null);
-    setCurrentUrl(null);
+    setUploads([]);
     setPin('');
     setConfirmPin('');
   }, [settings?.resourceCategories]);
@@ -107,7 +115,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         setExpiresAt(resource.expiresAt ? new Date(resource.expiresAt) : undefined);
         setResourceType(resource.type);
         setExternalLink(resource.type === 'EXTERNAL_LINK' ? resource.url || '' : '');
-        setCurrentUrl(resource.url);
+        setUploads([]);
       } else {
         resetForm();
       }
@@ -120,103 +128,121 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     }
   }, [resource, isOpen, resetForm, settings, user]);
 
-  const handleFileSelect = (file: File | null) => {
-    setLocalFile(file);
-    if (file && !title) {
-      const fileNameWithoutExt = file.name.split('.').slice(0, -1).join('.');
-      setTitle(fileNameWithoutExt);
-    }
-  };
-
-  const handleSetPin = async () => {
-    if (!resource || !pin || pin.length < 4) {
-        toast({ title: 'Error de PIN', description: 'El PIN debe tener al menos 4 caracteres.', variant: 'destructive'});
-        return;
-    }
-     if (pin !== confirmPin && confirmPin) {
-        toast({ title: 'Error de PIN', description: 'Los PIN no coinciden.', variant: 'destructive'});
-        return;
-    }
-    setIsSettingPin(true);
-    try {
-      const res = await fetch(`/api/resources/${resource.id}/pin`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pin }) });
-      if(!res.ok) throw new Error((await res.json()).message);
-      toast({ title: "PIN actualizado correctamente" });
-      setPin('');
-      setConfirmPin('');
-      onSave();
-    } catch (err) {
-      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive'});
-    } finally {
-      setIsSettingPin(false);
+  const handleFileSelect = (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    
+    // Si es edición, solo se permite un archivo para reemplazar
+    if (isEditing) {
+        const file = files[0];
+        setUploads([{ id: file.name, file, progress: 0, error: null, completed: false }]);
+        if(!title) setTitle(file.name.split('.').slice(0,-1).join('.'));
+    } else {
+        // Para creación, se permite múltiples
+        const newUploads = Array.from(files).map(file => ({
+            id: `${file.name}-${Date.now()}`,
+            file,
+            progress: 0,
+            error: null,
+            completed: false,
+        }));
+        setUploads(prev => [...prev, ...newUploads]);
+        
+        // Si solo se sube un archivo y no hay título, se auto-rellena
+        if (newUploads.length === 1 && !title) {
+            setTitle(newUploads[0].file.name.split('.').slice(0,-1).join('.'));
+        }
     }
   };
   
-    const handleRemovePin = async () => {
-        if (!resource) return;
-        setIsSettingPin(true);
-        try {
-            await fetch(`/api/resources/${resource.id}/pin`, { method: 'DELETE' });
-            toast({ title: 'PIN Eliminado' });
-            onSave();
-        } catch (err) {
-            toast({ title: 'Error', description: 'No se pudo eliminar el PIN.', variant: 'destructive'});
-        } finally {
-            setIsSettingPin(false);
-        }
-    }
-
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title) {
+    if (!title && uploads.length <= 1) {
         toast({ title: 'Título requerido', variant: 'destructive'});
         return;
     }
-
-    setIsSaving(true);
-    let finalUrl = currentUrl;
-    let finalSize = resource?.size || 0;
-    let finalFileType = resource?.fileType || '';
     
-    if (resourceType === 'EXTERNAL_LINK') {
-        finalUrl = externalLink;
-    } else if (localFile) {
-        setIsUploading(true);
-        try {
-            const uploadedFile = await uploadWithProgress('/api/upload/resource-file', localFile, setUploadProgress);
-            finalUrl = uploadedFile.url;
-            finalSize = localFile.size;
-            finalFileType = localFile.type;
-        } catch (err) {
-            toast({ title: "Error de subida", description: (err as Error).message, variant: "destructive" });
-            setIsSaving(false); setIsUploading(false); return;
+    setIsSubmitting(true);
+    let successCount = 0;
+
+    // --- LÓGICA PARA CREAR/EDITAR ENLACE O DOCUMENTO EDITABLE (UNO A LA VEZ) ---
+    if (resourceType === 'EXTERNAL_LINK' || resourceType === 'DOCUMENTO_EDITABLE' || isEditing) {
+        let finalUrl = isEditing ? resource.url : null;
+        let finalSize = resource?.size || 0;
+        let finalFileType = resource?.fileType || '';
+
+        // Si es un enlace, la URL es el valor del input
+        if (resourceType === 'EXTERNAL_LINK') finalUrl = externalLink;
+
+        // Si hay un archivo local (solo en modo edición para reemplazar)
+        const fileToUpload = uploads[0];
+        if (fileToUpload) {
+             setUploads(prev => prev.map(u => ({...u, progress: 0})));
+             try {
+                const uploadedFile = await uploadWithProgress('/api/upload/resource-file', fileToUpload.file, (p) => {
+                   setUploads(prev => prev.map(u => u.id === fileToUpload.id ? {...u, progress: p} : u));
+                });
+                finalUrl = uploadedFile.url;
+                finalSize = fileToUpload.file.size;
+                finalFileType = fileToUpload.file.type;
+             } catch (err) {
+                 toast({ title: "Error de subida", description: (err as Error).message, variant: "destructive" });
+                 setIsSubmitting(false); return;
+             }
         }
-        setIsUploading(false);
-    }
-    
-    const payload = {
-        title, description, content, observations, category, isPublic, 
-        sharedWithUserIds: isPublic ? [] : sharedWithUserIds,
-        expiresAt: expiresAt ? expiresAt.toISOString() : null,
-        status: resource?.status || 'ACTIVE', type: resourceType, url: finalUrl,
-        size: finalSize, fileType: finalFileType, parentId: resource ? resource.parentId : parentId,
-    };
-    
-    const endpoint = resource ? `/api/resources/${resource.id}` : '/api/resources';
-    const method = resource ? 'PUT' : 'POST';
-
-    try {
-        const response = await fetch(endpoint, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        if (!response.ok) throw new Error((await response.json()).message || 'No se pudo guardar el recurso.');
         
-        toast({ title: 'Éxito', description: `Recurso ${resource ? 'actualizado' : 'creado'}.` });
+        const payload = {
+          title, description, content, observations, category, isPublic, 
+          sharedWithUserIds: isPublic ? [] : sharedWithUserIds,
+          expiresAt: expiresAt ? expiresAt.toISOString() : null,
+          status: resource?.status || 'ACTIVE', type: resourceType, url: finalUrl,
+          size: finalSize, fileType: finalFileType, parentId: resource ? resource.parentId : parentId,
+        };
+        
+        const endpoint = resource ? `/api/resources/${resource.id}` : '/api/resources';
+        const method = resource ? 'PUT' : 'POST';
+        
+        try {
+            const response = await fetch(endpoint, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            if (!response.ok) throw new Error((await response.json()).message || 'No se pudo guardar el recurso.');
+            successCount = 1;
+        } catch(err) {
+            toast({ title: 'Error al Guardar', description: (err as Error).message, variant: 'destructive' });
+        }
+    } 
+    // --- LÓGICA PARA CREAR MÚLTIPLES ARCHIVOS ---
+    else if (!isEditing && uploads.length > 0) {
+        for (const upload of uploads) {
+            try {
+                const uploadedFile = await uploadWithProgress('/api/upload/resource-file', upload.file, (p) => {
+                    setUploads(prev => prev.map(u => u.id === upload.id ? {...u, progress: p} : u));
+                });
+
+                const payload = {
+                    title: upload.file.name.split('.').slice(0,-1).join('.'), // Usar nombre de archivo como título
+                    description: '', category, isPublic, sharedWithUserIds: isPublic ? [] : sharedWithUserIds,
+                    expiresAt: expiresAt ? expiresAt.toISOString() : null,
+                    status: 'ACTIVE', type: 'DOCUMENT', url: uploadedFile.url,
+                    size: upload.file.size, fileType: upload.file.type, parentId,
+                };
+
+                const response = await fetch('/api/resources', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) throw new Error(`Error al crear recurso para ${upload.file.name}`);
+                setUploads(prev => prev.map(u => u.id === upload.id ? {...u, completed: true} : u));
+                successCount++;
+
+            } catch (err) {
+                 setUploads(prev => prev.map(u => u.id === upload.id ? {...u, error: (err as Error).message} : u));
+            }
+        }
+    }
+
+    if (successCount > 0) {
+        toast({ title: '¡Éxito!', description: `${successCount} recurso(s) se ha(n) ${isEditing ? 'actualizado' : 'creado'}.` });
         onSave();
         onClose();
-    } catch(err) {
-        toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
-    } finally {
-        setIsSaving(false);
     }
+    
+    setIsSubmitting(false);
   };
   
   const filteredUsers = allUsers.filter(u => u.name.toLowerCase().includes(userSearch.toLowerCase()));
@@ -226,14 +252,14 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         <DialogContent className="w-[95vw] sm:max-w-2xl p-0 gap-0 rounded-2xl">
           <div className="flex flex-col h-full max-h-[90vh]">
             <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
-              <DialogTitle>{resource ? 'Editar Recurso' : 'Subir Nuevo Recurso'}</DialogTitle>
-              <DialogDescription>{resource ? 'Modifica los detalles de tu recurso.' : 'Añade un nuevo archivo o enlace a la biblioteca.'}</DialogDescription>
+              <DialogTitle>{resource ? 'Editar Recurso' : 'Subir Nuevo(s) Recurso(s)'}</DialogTitle>
+              <DialogDescription>{resource ? 'Modifica los detalles de tu recurso.' : 'Añade archivos, enlaces o documentos a la biblioteca.'}</DialogDescription>
             </DialogHeader>
             <ScrollArea className="flex-1 min-h-0 thin-scrollbar">
               <form id="resource-form" onSubmit={handleSave} className="space-y-6 px-6 py-4">
-                  {!resource && (
-                      <RadioGroup defaultValue={resourceType} onValueChange={(v) => {setResourceType(v as any); setLocalFile(null); setExternalLink('');}} className="grid grid-cols-3 gap-4">
-                        <div><RadioGroupItem value="DOCUMENT" id="type-doc" className="peer sr-only"/><Label htmlFor="type-doc" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><UploadCloud className="mb-2 h-6 w-6"/>Archivo</Label></div>
+                  {!isEditing && (
+                      <RadioGroup value={resourceType} onValueChange={(v) => {setResourceType(v as any); setUploads([]); setExternalLink('');}} className="grid grid-cols-3 gap-4">
+                        <div><RadioGroupItem value="DOCUMENT" id="type-doc" className="peer sr-only"/><Label htmlFor="type-doc" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><UploadCloud className="mb-2 h-6 w-6"/>Archivo(s)</Label></div>
                         <div><RadioGroupItem value="EXTERNAL_LINK" id="type-link" className="peer sr-only"/><Label htmlFor="type-link" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><LinkIcon className="mb-2 h-6 w-6"/>Enlace</Label></div>
                          <div><RadioGroupItem value="DOCUMENTO_EDITABLE" id="type-editable" className="peer sr-only"/><Label htmlFor="type-editable" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><FileText className="mb-2 h-6 w-6"/>Doc. Editable</Label></div>
                       </RadioGroup>
@@ -241,35 +267,31 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
 
                   {resourceType !== 'EXTERNAL_LINK' && resourceType !== 'DOCUMENTO_EDITABLE' && (
                     <div className="space-y-2">
-                      <Label>Archivo</Label>
-                      {localFile || currentUrl ? (
-                        <>
-                          <div className="flex items-center justify-between p-2 rounded-lg border bg-background min-w-0">
-                            <div className="flex items-center gap-3 overflow-hidden">
-                              <FileIcon displayMode="list" type={localFile?.type || resource?.fileType || 'file'} />
-                              <span className="text-sm font-medium truncate">{localFile?.name || resource?.title}</span>
-                            </div>
-                            <Button type="button" variant="outline" size="sm" onClick={() => { setLocalFile(null); setCurrentUrl(null); }} className="flex-shrink-0">
-                              <Replace className="mr-2 h-4 w-4"/> Reemplazar
-                            </Button>
-                          </div>
-                          {isUploading && <div className="flex items-center gap-2 text-xs text-muted-foreground"><Progress value={uploadProgress} className="w-full h-1.5" /><span>{uploadProgress}%</span></div>}
-                        </>
-                      ) : (
-                         <UploadArea onFileSelect={handleFileSelect} disabled={isSaving || isUploading} />
-                      )}
+                      <Label>Archivo(s)</Label>
+                      <UploadArea onFileSelect={(files) => handleFileSelect(files)} multiple={!isEditing} disabled={isSubmitting}/>
                     </div>
                   )}
+                   {uploads.length > 0 && resourceType !== 'EXTERNAL_LINK' && resourceType !== 'DOCUMENTO_EDITABLE' && (
+                        <div className="space-y-2 max-h-48 overflow-y-auto pr-2 thin-scrollbar">
+                            {uploads.map(upload => (
+                                <div key={upload.id} className="p-2 border rounded-md">
+                                    <p className="text-sm font-medium truncate">{upload.file.name}</p>
+                                    <Progress value={upload.progress} className="h-1 mt-1"/>
+                                    {upload.error && <p className="text-xs text-destructive mt-1">{upload.error}</p>}
+                                </div>
+                            ))}
+                        </div>
+                    )}
 
                   {resourceType === 'EXTERNAL_LINK' && <div className="space-y-1.5"><Label htmlFor="url">URL del Enlace</Label><Input id="url" type="url" value={externalLink} onChange={e => setExternalLink(e.target.value)} required placeholder="https://..."/></div>}
                     
-                  <div className="space-y-1.5"><Label htmlFor="title">Título</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required autoComplete="off" /></div>
-                  <div className="space-y-1.5"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} placeholder="Un resumen breve del contenido del recurso..."/></div>
+                  { (isEditing || uploads.length <= 1) && <div className="space-y-1.5"><Label htmlFor="title">Título</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required autoComplete="off" /></div> }
+                  { (isEditing || uploads.length <= 1) && <div className="space-y-1.5"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} placeholder="Un resumen breve del contenido del recurso..."/></div> }
                   
                   {resourceType === 'DOCUMENTO_EDITABLE' && (
                      <div className="space-y-4">
                        <div className="space-y-1.5"><Label htmlFor="content-editor">Contenido</Label><RichTextEditor value={content} onChange={setContent} className="h-48" /></div>
-                       <div className="space-y-1.5"><Label htmlFor="observations-editor">Observaciones (Visible solo para administradores/instructores)</Label><Textarea id="observations-editor" value={observations} onChange={e => setObservations(e.target.value)} placeholder="Notas internas, no visibles para estudiantes..." /></div>
+                       <div className="space-y-1.5"><Label htmlFor="observations-editor">Observaciones (Privado)</Label><Textarea id="observations-editor" value={observations} onChange={e => setObservations(e.target.value)} placeholder="Notas internas, no visibles para estudiantes..." /></div>
                      </div>
                   )}
 
@@ -311,9 +333,9 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
               </form>
             </ScrollArea>
             <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex flex-row justify-center sm:justify-center gap-2">
-                <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
-                <Button type="submit" form="resource-form" disabled={isSaving || isUploading || !title || (resourceType === 'EXTERNAL_LINK' && !externalLink) || (resourceType !== 'EXTERNAL_LINK' && resourceType !== 'DOCUMENTO_EDITABLE' && !localFile && !currentUrl)}>
-                    {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                <Button variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
+                <Button type="submit" form="resource-form" disabled={isSubmitting}>
+                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                     <Save className="mr-2 h-4 w-4" />
                     Guardar
                 </Button>
@@ -323,3 +345,4 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     </Dialog>
   );
 }
+```
