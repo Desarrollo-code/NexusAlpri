@@ -157,12 +157,9 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
   
   const userReaction = useMemo(() => user && announcement.reactions?.find(r => r.userId === user.id)?.reaction || null, [announcement.reactions, user]);
 
-  const [bgColor, rotation] = useMemo(() => {
+  const bgColor = useMemo(() => {
     const hash = announcement.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return [
-      noteColors[hash % noteColors.length],
-      `${(hash % 4) - 2}deg` // -2, -1, 0, 1 deg
-    ];
+    return noteColors[hash % noteColors.length];
   }, [announcement.id]);
 
   useEffect(() => {
@@ -222,10 +219,9 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
     <Card 
         ref={cardRef} 
         className={cn(
-            "w-full overflow-hidden shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:rotate-0",
+            "w-full overflow-hidden shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-1",
             bgColor
         )}
-        style={{ transform: `rotate(${rotation})`}}
     >
       <CardHeader className="p-4 flex flex-row items-start gap-4 space-y-0">
          <Avatar className="h-10 w-10 border">
@@ -267,6 +263,7 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
       
       <CardContent className="px-4 pb-3 pt-0">
         <div className="space-y-3">
+            {announcement.isPinned && <Pin className="h-4 w-4 text-blue-500 fill-current mb-1" />}
             {announcement.title && (
               <CardTitle className="text-lg font-semibold">{announcement.title}</CardTitle>
             )}
