@@ -80,14 +80,7 @@ const ImageViewer = ({ isOpen, onClose, images, startIndex }: { isOpen: boolean,
     );
 };
 
-const chartColors = [
-  'bg-chart-1',
-  'bg-chart-2',
-  'bg-chart-3',
-  'bg-chart-4',
-  'bg-chart-5',
-];
-
+const chartColorVars = ['--chart-1', '--chart-2', '--chart-3', '--chart-4', '--chart-5'];
 
 interface AnnouncementCardProps {
   announcement: Announcement;
@@ -158,9 +151,10 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
   
   const userReaction = useMemo(() => user && announcement.reactions?.find(r => r.userId === user.id)?.reaction || null, [announcement.reactions, user]);
   
-  const headerColor = useMemo(() => {
+  const headerColorStyle = useMemo(() => {
     const hash = announcement.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return chartColors[hash % chartColors.length];
+    const colorVar = chartColorVars[hash % chartColorVars.length];
+    return { backgroundColor: `hsl(var(${colorVar}))` };
   }, [announcement.id]);
 
 
@@ -222,7 +216,7 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
         ref={cardRef} 
         className="w-full overflow-hidden shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-1"
     >
-      <CardHeader className={cn("p-4 flex flex-row items-start gap-4 space-y-0 text-white", headerColor)}>
+      <CardHeader className="p-4 flex flex-row items-start gap-4 space-y-0 text-white" style={headerColorStyle}>
          <Avatar className="h-10 w-10 border-2 border-white/50">
           <AvatarImage src={announcement.author?.avatar || undefined} />
           <AvatarFallback><Identicon userId={announcement.author?.id || ''} /></AvatarFallback>
