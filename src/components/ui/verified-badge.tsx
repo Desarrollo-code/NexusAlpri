@@ -18,7 +18,9 @@ export const VerifiedBadge = ({ className, role }: VerifiedBadgeProps) => {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger>
-          <BadgeCheck className={cn("h-5 w-5 text-primary", className)} />
+          <BadgeCheck
+            className={cn("h-5 w-5 text-accent drop-shadow-[0_1px_3px_rgba(0,0,0,0.2)]", className)}
+          />
         </TooltipTrigger>
         <TooltipContent>
           <p>Cuenta de Administrador</p>
