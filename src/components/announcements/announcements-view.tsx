@@ -18,15 +18,19 @@ import { es } from 'date-fns/locale';
 interface AnnouncementItemProps {
   announcement: AnnouncementType;
   onSelect: (announcement: AnnouncementType) => void;
+  isActive: boolean;
 }
 
-const AnnouncementItem: React.FC<AnnouncementItemProps> = ({ announcement, onSelect }) => {
+const AnnouncementItem: React.FC<AnnouncementItemProps> = ({ announcement, onSelect, isActive }) => {
   const formattedDate = announcement.date ? format(parseISO(announcement.date), 'd MMM, yyyy', { locale: es }) : '';
 
   return (
     <button
       onClick={() => onSelect(announcement)}
-      className="w-full text-left p-4 border-b hover:bg-muted/50 transition-colors flex flex-col gap-2"
+      className={cn(
+        "w-full text-left p-4 border-b hover:bg-muted/50 transition-colors flex flex-col gap-2",
+        isActive && "bg-primary/10"
+        )}
     >
       <div className="flex justify-between items-center w-full">
         <div className="flex items-center gap-2">
@@ -49,9 +53,10 @@ const AnnouncementItem: React.FC<AnnouncementItemProps> = ({ announcement, onSel
 
 interface AnnouncementsViewProps {
     onSelectAnnouncement: (announcement: AnnouncementType) => void;
+    activeAnnouncementId: string | null;
 }
 
-export function AnnouncementsView({ onSelectAnnouncement }: AnnouncementsViewProps) {
+export function AnnouncementsView({ onSelectAnnouncement, activeAnnouncementId }: AnnouncementsViewProps) {
   const [announcements, setAnnouncements] = useState<AnnouncementType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreatorOpen, setIsCreatorOpen] = useState(false);
@@ -63,13 +68,17 @@ export function AnnouncementsView({ onSelectAnnouncement }: AnnouncementsViewPro
       const response = await fetch('/api/announcements?filter=all&pageSize=50', { cache: 'no-store' });
       if (!response.ok) throw new Error(`Error al obtener los anuncios`);
       const data: { announcements: AnnouncementType[], totalAnnouncements: number } = await response.json();
-      setAnnouncements(data.announcements);
+      const sortedAnnouncements = data.announcements.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      setAnnouncements(sortedAnnouncements);
+      if (sortedAnnouncements.length > 0 && !activeAnnouncementId) {
+          onSelectAnnouncement(sortedAnnouncements[0]);
+      }
     } catch (err) {
       // Silently fail for this component
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [activeAnnouncementId, onSelectAnnouncement]);
 
   useEffect(() => {
     fetchAnnouncements();
@@ -97,6 +106,7 @@ export function AnnouncementsView({ onSelectAnnouncement }: AnnouncementsViewPro
                         key={announcement.id}
                         announcement={announcement}
                         onSelect={onSelectAnnouncement}
+                        isActive={activeAnnouncementId === announcement.id}
                     />
                  ))}
                </div>

@@ -8,7 +8,6 @@ import { useToast } from '@/hooks/use-toast';
 import type { Announcement as AnnouncementType, Reaction, CalendarEvent } from '@/types';
 import { Loader2, AlertTriangle, Edit, Trash2, Megaphone, PlusCircle, Pin, PinOff, Calendar } from 'lucide-react';
 import { AnnouncementCard } from '@/components/announcements/announcement-card';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import {
   AlertDialog,
@@ -116,7 +115,6 @@ export default function AnnouncementsPage() {
   }, [fetchData]);
 
   const handleRealtimeEvent = useCallback((payload: any) => {
-    // A simple re-fetch is the most robust way to handle multiple event types
     fetchData();
   }, [fetchData]);
 
@@ -177,9 +175,9 @@ export default function AnnouncementsPage() {
 
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
         {/* Main Feed Column */}
-        <div className="lg:col-span-2 xl:col-span-3 space-y-6">
+        <div className="lg:col-span-3 space-y-6">
             <div className="space-y-1">
               <h1 className="text-2xl font-semibold">Tablón de Anuncios</h1>
               <p className="text-muted-foreground">Las últimas noticias y comunicados de la organización.</p>
@@ -198,24 +196,25 @@ export default function AnnouncementsPage() {
                      </CardHeader>
                 </Card>
               ) : (
-                <div className="space-y-4">
+                <div className="masonry-grid">
                     {announcements.map(announcement => (
-                      <AnnouncementCard
-                        key={announcement.id}
-                        announcement={announcement}
-                        onEdit={setEditingAnnouncement}
-                        onDelete={() => setDeletingAnnouncement(announcement)}
-                        onReactionChange={handleReactionChange}
-                        onRead={handleMarkAsRead}
-                        onTogglePin={handleTogglePin}
-                      />
+                      <div key={announcement.id} className="break-inside-avoid">
+                         <AnnouncementCard
+                            announcement={announcement}
+                            onEdit={setEditingAnnouncement}
+                            onDelete={() => setDeletingAnnouncement(announcement)}
+                            onReactionChange={handleReactionChange}
+                            onRead={handleMarkAsRead}
+                            onTogglePin={handleTogglePin}
+                          />
+                      </div>
                     ))}
                 </div>
               )}
         </div>
         
         {/* Sidebar Column */}
-        <div className="lg:col-span-1 xl:col-span-1 space-y-6 lg:sticky lg:top-24">
+        <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
              {canCreate && (
                <Card>
                   <CardHeader>
@@ -269,6 +268,26 @@ export default function AnnouncementsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <style jsx>{`
+        .masonry-grid {
+          column-count: 1;
+          column-gap: 1.5rem; /* Equivalent to gap-6 */
+        }
+        @media (min-width: 768px) {
+          .masonry-grid {
+            column-count: 2;
+          }
+        }
+        @media (min-width: 1280px) {
+          .masonry-grid {
+            column-count: 3;
+          }
+        }
+        .break-inside-avoid {
+          break-inside: avoid;
+          padding-bottom: 1.5rem; /* Add space at the bottom of each item */
+        }
+      `}</style>
     </>
   );
 }

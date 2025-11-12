@@ -80,6 +80,13 @@ const ImageViewer = ({ isOpen, onClose, images, startIndex }: { isOpen: boolean,
     );
 };
 
+const noteColors = [
+  'bg-yellow-100 dark:bg-yellow-900/40 border-yellow-300 dark:border-yellow-700/60',
+  'bg-blue-100 dark:bg-blue-900/40 border-blue-300 dark:border-blue-700/60',
+  'bg-green-100 dark:bg-green-900/40 border-green-300 dark:border-green-700/60',
+  'bg-pink-100 dark:bg-pink-900/40 border-pink-300 dark:border-pink-700/60',
+  'bg-purple-100 dark:bg-purple-900/40 border-purple-300 dark:border-purple-700/60',
+];
 
 interface AnnouncementCardProps {
   announcement: Announcement;
@@ -150,6 +157,14 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
   
   const userReaction = useMemo(() => user && announcement.reactions?.find(r => r.userId === user.id)?.reaction || null, [announcement.reactions, user]);
 
+  const [bgColor, rotation] = useMemo(() => {
+    const hash = announcement.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return [
+      noteColors[hash % noteColors.length],
+      `${(hash % 4) - 2}deg` // -2, -1, 0, 1 deg
+    ];
+  }, [announcement.id]);
+
   useEffect(() => {
     if (isInView && user && onRead && !hasBeenRead) {
       onRead(announcement.id);
@@ -204,21 +219,27 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
   
   return (
     <>
-    <Card ref={cardRef} className="card-border-animated w-full bg-card overflow-hidden">
+    <Card 
+        ref={cardRef} 
+        className={cn(
+            "w-full overflow-hidden shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:rotate-0",
+            bgColor
+        )}
+        style={{ transform: `rotate(${rotation})`}}
+    >
       <CardHeader className="p-4 flex flex-row items-start gap-4 space-y-0">
-         <Avatar className="h-10 w-10">
+         <Avatar className="h-10 w-10 border">
           <AvatarImage src={announcement.author?.avatar || undefined} />
           <AvatarFallback><Identicon userId={announcement.author?.id || ''} /></AvatarFallback>
         </Avatar>
         <div className="w-full">
            <div className="flex items-center justify-between">
-             <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 text-sm">
+             <div className="flex flex-col text-sm">
                 <span className="font-bold text-foreground flex items-center gap-1.5">
                     {announcement.author?.name || 'Sistema'}
                     {announcement.author?.role === 'ADMINISTRATOR' && <VerifiedBadge role="ADMINISTRATOR" />}
-                    {announcement.isPinned && <Pin className="h-3.5 w-3.5 text-blue-500 fill-current" />}
                 </span>
-                <span className="text-muted-foreground text-xs sm:text-sm">{timeSince(announcement.date)}</span>
+                <span className="text-muted-foreground text-xs">{timeSince(announcement.date)}</span>
              </div>
               {canModify && (
                 <DropdownMenu>
@@ -228,7 +249,7 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
                     <DropdownMenuContent align="end">
                          <DropdownMenuItem onSelect={() => onTogglePin?.(announcement)}>
                             {announcement.isPinned ? <PinOff className="mr-2 h-4 w-4" /> : <Pin className="mr-2 h-4 w-4" />}
-                            {announcement.isPinned ? 'Desfijar' : 'Fijar Anuncio'}
+                            {announcement.isPinned ? 'Desfijar Anuncio' : 'Fijar Anuncio'}
                          </DropdownMenuItem>
                          <DropdownMenuItem onSelect={() => onEdit?.(announcement)}>
                             <Edit className="mr-2 h-4 w-4"/>Editar
@@ -241,16 +262,14 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
                 </DropdownMenu>
              )}
           </div>
-          {announcement.title && (
-              <div className="bg-primary/90 text-primary-foreground px-4 py-2 -ml-2 rounded-lg mt-2">
-                <CardTitle className="text-lg font-semibold">{announcement.title}</CardTitle>
-              </div>
-          )}
         </div>
       </CardHeader>
       
-      <CardContent className="px-4 pb-3 pt-0 pl-16">
-        <div className="pl-2 space-y-3">
+      <CardContent className="px-4 pb-3 pt-0">
+        <div className="space-y-3">
+            {announcement.title && (
+              <CardTitle className="text-lg font-semibold">{announcement.title}</CardTitle>
+            )}
             {announcement.content && (
                 <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: announcement.content }} />
             )}
@@ -272,7 +291,7 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
               )}
         </div>
       </CardContent>
-      <CardFooter className={cn("p-4 pt-0 flex items-center justify-between pl-16")}>
+      <CardFooter className={cn("p-4 pt-2 flex items-center justify-between")}>
            <div className="flex items-center text-muted-foreground -ml-2">
             <Popover>
                 <PopoverTrigger asChild>
