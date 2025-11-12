@@ -5,7 +5,7 @@ import * as React from 'react';
 import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from 'next-themes';
 import type { ThemeProviderProps } from 'next-themes/dist/types';
 import { useAuth } from '@/contexts/auth-context';
-import { colord } from 'colord';
+import { colord, getContrast } from 'colord';
 import { fontMap } from '@/lib/fonts';
 
 export const AVAILABLE_THEMES = [
@@ -68,8 +68,12 @@ function ThemeInjector() {
         
         // Determinar el color del texto del botón primario
         if (primaryColor) {
-            const primaryIsDark = colord(primaryColor).isDark();
-            varsToSet['--primary-foreground'] = primaryIsDark ? '0 0% 100%' : '0 0% 0%';
+            const contrastWithWhite = getContrast(primaryColor, '#FFFFFF');
+            const contrastWithBlack = getContrast(primaryColor, '#000000');
+            // Elegimos el color que ofrezca mayor contraste. Si el contraste es muy bajo con ambos,
+            // por defecto se usará blanco, pero esto ayuda en la mayoría de los casos.
+            // El ratio 4.5 es el mínimo para texto normal según WCAG AA.
+            varsToSet['--primary-foreground'] = contrastWithWhite > contrastWithBlack && contrastWithWhite >= 4.5 ? '0 0% 100%' : '0 0% 0%';
         }
 
         Object.entries(varsToSet).forEach(([property, value]) => {
