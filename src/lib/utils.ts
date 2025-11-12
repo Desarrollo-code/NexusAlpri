@@ -8,6 +8,86 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
+ * Convierte un color hexadecimal a un objeto RGB.
+ * @param hex El color en formato hexadecimal (ej. #RRGGBB).
+ * @returns Un objeto {r, g, b} o null si el formato es inválido.
+ */
+function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
+    : null;
+}
+
+/**
+ * Calcula el brillo relativo de un color según la fórmula de W3C.
+ * @param r Componente rojo (0-255).
+ * @param g Componente verde (0-255).
+ * @param b Componente azul (0-255).
+ * @returns El valor de luminancia (0-255).
+ */
+function getLuminance(r: number, g: number, b: number): number {
+  return (0.299 * r + 0.587 * g + 0.114 * b);
+}
+
+/**
+ * Elige blanco o negro como color de texto basado en el color de fondo para asegurar buen contraste.
+ * @param backgroundColor El color de fondo en formato hexadecimal.
+ * @returns 'white' o 'black'.
+ */
+export function getContrastingTextColor(backgroundColor?: string | null): 'white' | 'black' {
+  if (!backgroundColor) return 'black'; // Fallback
+  
+  const rgb = hexToRgb(backgroundColor);
+  if (!rgb) return 'black'; // Fallback
+
+  // El umbral de 128 es un punto medio común en el espacio de color de 0-255.
+  // Colores con luminancia > 128 se consideran "claros", y < 128 "oscuros".
+  const luminance = getLuminance(rgb.r, rgb.g, rgb.b);
+  return luminance > 128 ? 'black' : 'white';
+}
+
+/**
+ * Convierte un color hexadecimal a una cadena HSL para variables CSS.
+ * @param hex El color en formato hexadecimal.
+ * @returns Una cadena "H S% L%" o null.
+ */
+export function hexToHslString(hex?: string | null): string | null {
+    if (!hex) return null;
+    const rgb = hexToRgb(hex);
+    if (!rgb) return null;
+
+    let { r, g, b } = rgb;
+    r /= 255; g /= 255; b /= 255;
+
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h = 0, s = 0, l = (max + min) / 2;
+
+    if (max !== min) {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+    }
+
+    h = Math.round(h * 360);
+    s = Math.round(s * 100);
+    l = Math.round(l * 100);
+
+    return `${h} ${s}% ${l}%`;
+}
+
+
+/**
  * Get user initials from name or role.
  * @param name User's full name or role string
  * @returns User's initials

@@ -51,7 +51,6 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
-    "colord": "^2.9.3",
     "date-fns": "^3.6.0",
     "date-holidays": "^3.23.0",
     "dotenv": "^16.4.5",

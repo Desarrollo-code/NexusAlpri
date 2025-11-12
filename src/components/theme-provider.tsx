@@ -5,12 +5,8 @@ import * as React from 'react';
 import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from 'next-themes';
 import type { ThemeProviderProps } from 'next-themes/dist/types';
 import { useAuth } from '@/contexts/auth-context';
-import { colord } from "colord";
-import a11yPlugin from "colord/plugins/a11y";
 import { fontMap } from '@/lib/fonts';
-
-// Extender colord con el plugin de accesibilidad una sola vez
-colord.extend([a11yPlugin]);
+import { getContrastingTextColor, hexToHslString } from '@/lib/utils';
 
 
 export const AVAILABLE_THEMES = [
@@ -43,47 +39,36 @@ function ThemeInjector() {
     if (isAuthLoading || typeof window === 'undefined') return;
 
     const root = document.documentElement;
-
-    const hexToHslString = (hex: string | undefined | null): string | null => {
-      if (!hex || !colord(hex).isValid()) return null;
-      const { h, s, l } = colord(hex).toHsl();
-      return `${h} ${s}% ${l}%`;
-    };
-
     const isCustomizableTheme = theme === 'light' || theme === 'dark';
     
-    // Clear custom properties before applying new ones to avoid stale values
-    const propsToClean = [
-      '--primary', '--secondary', '--accent', '--background', 
-      '--font-headline', '--font-body', '--primary-foreground'
-    ];
-    propsToClean.forEach(prop => root.style.removeProperty(prop));
-
     if (settings) {
       if (isCustomizableTheme) {
         const primaryColor = theme === 'light' ? settings.primaryColor : settings.primaryColorDark;
         const backgroundColor = theme === 'light' ? settings.backgroundColorLight : settings.backgroundColorDark;
         
-        const varsToSet: Record<string, string | null> = {
-          '--primary': hexToHslString(primaryColor),
-          '--secondary': hexToHslString(settings.secondaryColor),
-          '--accent': hexToHslString(settings.accentColor),
-          '--background': hexToHslString(backgroundColor),
-        };
-        
-        if (primaryColor) {
-            const contrastWithWhite = colord(primaryColor).contrast('#FFFFFF');
-            const contrastWithBlack = colord(primaryColor).contrast('#000000');
-            // AA level requires a contrast ratio of at least 4.5
-            varsToSet['--primary-foreground'] = contrastWithWhite > contrastWithBlack && contrastWithWhite >= 4.5 ? '0 0% 100%' : '0 0% 0%';
+        const primaryHsl = hexToHslString(primaryColor);
+        if (primaryHsl) {
+            root.style.setProperty('--primary', primaryHsl);
+            // Determinar color de texto con buen contraste
+            const foregroundColor = getContrastingTextColor(primaryColor);
+            root.style.setProperty('--primary-foreground', foregroundColor === 'white' ? '0 0% 100%' : '0 0% 0%');
         }
 
-        Object.entries(varsToSet).forEach(([property, value]) => {
-          if (value) root.style.setProperty(property, value);
-        });
+        const backgroundHsl = hexToHslString(backgroundColor);
+        if(backgroundHsl) root.style.setProperty('--background', backgroundHsl);
+
+        const secondaryHsl = hexToHslString(settings.secondaryColor);
+        if(secondaryHsl) root.style.setProperty('--secondary', secondaryHsl);
+
+        const accentHsl = hexToHslString(settings.accentColor);
+        if(accentHsl) root.style.setProperty('--accent', accentHsl);
+
+      } else {
+         // Si no es un tema personalizable, limpiamos las variables para que el CSS base tome el control.
+         ['--primary', '--primary-foreground', '--secondary', '--accent', '--background'].forEach(prop => root.style.removeProperty(prop));
       }
 
-      // Always apply admin-selected fonts
+      // Siempre aplicar las fuentes seleccionadas por el admin
       const headlineFontFamily = fontMap[settings.fontHeadline || 'Space Grotesk']?.style.fontFamily || 'sans-serif';
       const bodyFontFamily = fontMap[settings.fontBody || 'Inter']?.style.fontFamily || 'sans-serif';
       
