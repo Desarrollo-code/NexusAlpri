@@ -156,11 +156,12 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
   const canModify = useMemo(() => user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && user.id === announcement.author?.id)), [user, announcement.author]);
   
   const userReaction = useMemo(() => user && announcement.reactions?.find(r => r.userId === user.id)?.reaction || null, [announcement.reactions, user]);
-
+  
   const bgColor = useMemo(() => {
     const hash = announcement.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return noteColors[hash % noteColors.length];
   }, [announcement.id]);
+
 
   useEffect(() => {
     if (isInView && user && onRead && !hasBeenRead) {
