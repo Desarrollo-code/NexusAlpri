@@ -123,12 +123,26 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     }
   }, [resource, isOpen, resetForm, settings, user]);
 
+  const uploadFile = async (upload: UploadState) => {
+    try {
+      const result = await uploadWithProgress('/api/upload/resource-file', upload.file, (p) => {
+        setUploads(prev => prev.map(u => u.id === upload.id ? { ...u, progress: p } : u));
+      });
+      return { ...upload, status: 'processing' as const, url: result.url };
+    } catch (err) {
+      const errorUpload = { ...upload, error: (err as Error).message };
+      setUploads(prev => prev.map(u => u.id === upload.id ? errorUpload : u));
+      throw err;
+    }
+  };
+
   const handleFileSelect = (files: FileList | null) => {
     if (!files || files.length === 0) return;
     
     if (isEditing) {
         const file = files[0];
-        setUploads([{ id: file.name, file, progress: 0, error: null, status: 'uploading' }]);
+        const newUpload = { id: file.name, file, progress: 0, error: null, status: 'uploading' as const };
+        setUploads([newUpload]);
         if(!title) setTitle(file.name.split('.').slice(0,-1).join('.'));
     } else {
         const newUploads = Array.from(files).map(file => ({
@@ -136,7 +150,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             file,
             progress: 0,
             error: null,
-            status: 'uploading' as 'uploading',
+            status: 'uploading' as const,
         }));
         setUploads(prev => [...prev, ...newUploads]);
         
@@ -148,7 +162,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    const hasTitleForSingleUpload = uploads.length === 1 && title.trim() !== '';
     if (uploads.length === 0 && resourceType === 'DOCUMENT' && !isEditing) {
         toast({ title: 'Faltan archivos', description: 'Por favor, selecciona al menos un archivo para subir.', variant: 'destructive'});
         return;
@@ -157,28 +170,22 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     setIsSubmitting(true);
     let successCount = 0;
 
-    if (resourceType === 'EXTERNAL_LINK' || resourceType === 'DOCUMENTO_EDITABLE' || isEditing) {
+    // Lógica para editar un recurso existente o crear uno no-archivo
+    if (isEditing || resourceType !== 'DOCUMENT') {
         let finalUrl = isEditing ? resource.url : null;
         let finalSize = resource?.size || 0;
         let finalFileType = resource?.fileType || '';
 
         if (resourceType === 'EXTERNAL_LINK') finalUrl = externalLink;
-
+        
         const fileToUpload = uploads[0];
         if (fileToUpload) {
-             setUploads(prev => prev.map(u => ({...u, progress: 0, status: 'uploading'})));
              try {
-                const uploadedFile = await uploadWithProgress('/api/upload/resource-file', fileToUpload.file, (p) => {
-                   setUploads(prev => prev.map(u => u.id === fileToUpload.id ? {...u, progress: p} : u));
-                });
-                
-                setUploads(prev => prev.map(u => u.id === fileToUpload.id ? {...u, status: 'processing'} : u));
-
+                const uploadedFile = await uploadFile(fileToUpload);
                 finalUrl = uploadedFile.url;
                 finalSize = fileToUpload.file.size;
                 finalFileType = fileToUpload.file.type;
              } catch (err) {
-                 toast({ title: "Error de subida", description: (err as Error).message, variant: "destructive" });
                  setIsSubmitting(false); return;
              }
         }
@@ -202,32 +209,31 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             toast({ title: 'Error al Guardar', description: (err as Error).message, variant: 'destructive' });
         }
     } 
+    // Lógica para crear múltiples recursos a partir de archivos
     else if (!isEditing && uploads.length > 0) {
-        for (const upload of uploads) {
-            try {
-                const uploadedFile = await uploadWithProgress('/api/upload/resource-file', upload.file, (p) => {
-                    setUploads(prev => prev.map(u => u.id === upload.id ? {...u, progress: p} : u));
-                });
-                
-                setUploads(prev => prev.map(u => u.id === upload.id ? {...u, status: 'processing'} : u));
+      for (const upload of uploads) {
+        try {
+          const uploadedFile = await uploadFile(upload);
 
-                const payload = {
-                    title: uploads.length > 1 ? upload.file.name.split('.').slice(0,-1).join('.') : title,
-                    description, category, isPublic, sharedWithUserIds: isPublic ? [] : sharedWithUserIds,
-                    expiresAt: expiresAt ? expiresAt.toISOString() : null,
-                    status: 'ACTIVE', type: 'DOCUMENT', url: uploadedFile.url,
-                    size: upload.file.size, fileType: upload.file.type, parentId,
-                };
+          setUploads(prev => prev.map(u => u.id === upload.id ? { ...u, status: 'processing' } : u));
+          
+          const payload = {
+              title: uploads.length > 1 ? upload.file.name.split('.').slice(0,-1).join('.') : title,
+              description, category, isPublic, sharedWithUserIds: isPublic ? [] : sharedWithUserIds,
+              expiresAt: expiresAt ? expiresAt.toISOString() : null,
+              status: 'ACTIVE', type: 'DOCUMENT', url: uploadedFile.url,
+              size: upload.file.size, fileType: upload.file.type, parentId,
+          };
 
-                const response = await fetch('/api/resources', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if (!response.ok) throw new Error(`Error al crear recurso para ${upload.file.name}`);
-                setUploads(prev => prev.map(u => u.id === upload.id ? {...u, status: 'completed'} : u));
-                successCount++;
-
-            } catch (err) {
-                 setUploads(prev => prev.map(u => u.id === upload.id ? {...u, error: (err as Error).message} : u));
-            }
+          const response = await fetch('/api/resources', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+          if (!response.ok) throw new Error(`Error al crear recurso para ${upload.file.name}`);
+          
+          setUploads(prev => prev.map(u => u.id === upload.id ? {...u, status: 'completed'} : u));
+          successCount++;
+        } catch (err) {
+           setUploads(prev => prev.map(u => u.id === upload.id ? {...u, error: (err as Error).message} : u));
         }
+      }
     }
 
     if (successCount > 0) {
