@@ -10,7 +10,6 @@ import { getYoutubeVideoId } from '@/lib/resource-utils';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { AspectRatio } from '../ui/aspect-ratio';
 
 interface PlaylistItemProps {
   resource: AppResourceType;
@@ -112,9 +111,9 @@ export const VideoPlaylistView: React.FC<{ resources: AppResourceType[], folderN
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
       <div className="lg:col-span-2">
          <Card className="shadow-lg overflow-hidden">
-             <AspectRatio ratio={16 / 9} className="bg-muted">
+             <div className="w-full aspect-video bg-muted">
                 <VideoPlayer resource={selectedVideo} />
-             </AspectRatio>
+             </div>
              <CardContent className="p-4">
                 <CardTitle>{selectedVideo?.title || "Selecciona un video"}</CardTitle>
                 <CardDescription>Subido por: {selectedVideo?.uploaderName}</CardDescription>
