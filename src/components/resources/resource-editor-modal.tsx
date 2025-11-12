@@ -139,25 +139,21 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   const handleFileSelect = (files: FileList | null) => {
     if (!files || files.length === 0) return;
     
-    if (isEditing) {
-        const file = files[0];
-        const newUpload = { id: file.name, file, progress: 0, error: null, status: 'uploading' as const };
-        setUploads([newUpload]);
-        if(!title) setTitle(file.name.split('.').slice(0,-1).join('.'));
-    } else {
-        const newUploads = Array.from(files).map(file => ({
-            id: `${file.name}-${Date.now()}`,
-            file,
-            progress: 0,
-            error: null,
-            status: 'uploading' as const,
-        }));
-        setUploads(prev => [...prev, ...newUploads]);
-        
-        if (newUploads.length === 1 && !title) {
-            setTitle(newUploads[0].file.name.split('.').slice(0,-1).join('.'));
-        }
+    const newUploads = Array.from(files).map(file => ({
+        id: `${file.name}-${Date.now()}`,
+        file,
+        progress: 0,
+        error: null,
+        status: 'uploading' as const,
+    }));
+    
+    setUploads(prev => [...prev, ...newUploads]);
+    
+    if (newUploads.length === 1 && !title) {
+        setTitle(newUploads[0].file.name.split('.').slice(0,-1).join('.'));
     }
+
+    newUploads.forEach(upload => uploadFile(upload));
   };
   
   const handleSave = async (e: React.FormEvent) => {
@@ -181,10 +177,15 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         const fileToUpload = uploads[0];
         if (fileToUpload) {
              try {
-                const uploadedFile = await uploadFile(fileToUpload);
-                finalUrl = uploadedFile.url;
-                finalSize = fileToUpload.file.size;
-                finalFileType = fileToUpload.file.type;
+                // The file is already being uploaded, we just need its final URL
+                const completedUpload = uploads.find(u => u.id === fileToUpload.id);
+                if (completedUpload?.status === 'completed' && completedUpload.url) {
+                    finalUrl = completedUpload.url;
+                    finalSize = fileToUpload.file.size;
+                    finalFileType = fileToUpload.file.type;
+                } else {
+                     throw new Error("La subida del archivo aún no ha finalizado o ha fallado.");
+                }
              } catch (err) {
                  setIsSubmitting(false); return;
              }
@@ -213,15 +214,27 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     else if (!isEditing && uploads.length > 0) {
       for (const upload of uploads) {
         try {
-          const uploadedFile = await uploadFile(upload);
+          // Wait for the upload to finish if it hasn't already
+          const finalUrl = await (async () => {
+             let currentUpload = uploads.find(u => u.id === upload.id);
+             while(currentUpload && currentUpload.status !== 'completed' && !currentUpload.error) {
+                 await new Promise(res => setTimeout(res, 200));
+                 currentUpload = uploads.find(u => u.id === upload.id);
+             }
+             if (currentUpload?.error) throw new Error(currentUpload.error);
+             return (currentUpload as any).url;
+          })();
+          
+          if(!finalUrl) throw new Error(`La subida del archivo ${upload.file.name} falló.`);
 
           setUploads(prev => prev.map(u => u.id === upload.id ? { ...u, status: 'processing' } : u));
           
           const payload = {
               title: uploads.length > 1 ? upload.file.name.split('.').slice(0,-1).join('.') : title,
+              filename: upload.file.name, // Pass the original filename
               description, category, isPublic, sharedWithUserIds: isPublic ? [] : sharedWithUserIds,
               expiresAt: expiresAt ? expiresAt.toISOString() : null,
-              status: 'ACTIVE', type: 'DOCUMENT', url: uploadedFile.url,
+              status: 'ACTIVE', type: 'DOCUMENT', url: finalUrl,
               size: upload.file.size, fileType: upload.file.type, parentId,
           };
 
@@ -231,7 +244,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
           setUploads(prev => prev.map(u => u.id === upload.id ? {...u, status: 'completed'} : u));
           successCount++;
         } catch (err) {
-           setUploads(prev => prev.map(u => u.id === upload.id ? {...u, error: (err as Error).message} : u));
+           setUploads(prev => prev.map(u => u.id === upload.id ? {...u, error: (err as Error).message, status: 'completed'} : u));
         }
       }
     }
@@ -265,13 +278,13 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                       </RadioGroup>
                   )}
 
-                  {resourceType !== 'EXTERNAL_LINK' && resourceType !== 'DOCUMENTO_EDITABLE' && (
+                  {resourceType === 'DOCUMENT' && (
                     <div className="space-y-2">
                       <Label>Archivo(s)</Label>
                       <UploadArea onFileSelect={handleFileSelect} multiple={!isEditing} disabled={isSubmitting}/>
                     </div>
                   )}
-                   {uploads.length > 0 && resourceType !== 'EXTERNAL_LINK' && resourceType !== 'DOCUMENTO_EDITABLE' && (
+                   {uploads.length > 0 && resourceType === 'DOCUMENT' && (
                         <div className="space-y-2 max-h-48 overflow-y-auto pr-2 thin-scrollbar">
                             {uploads.map(upload => (
                                 <div key={upload.id} className="p-2 border rounded-md">

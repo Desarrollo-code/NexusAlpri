@@ -111,9 +111,12 @@ export async function POST(req: NextRequest) {
     
     try {
         const body = await req.json();
-        const { title, type, url, category, tags, parentId, description, isPublic, sharedWithUserIds, expiresAt, status, size, fileType } = body;
+        const { title, type, url, category, tags, parentId, description, isPublic, sharedWithUserIds, expiresAt, status, size, fileType, filename } = body;
 
-        if (!title || !type) {
+        // Use the filename as a fallback for the title if title is not provided
+        const finalTitle = title || filename;
+
+        if (!finalTitle || !type) {
             return NextResponse.json({ message: 'Título y tipo son requeridos' }, { status: 400 });
         }
         
@@ -122,7 +125,7 @@ export async function POST(req: NextRequest) {
         }
 
         const data: any = {
-            title, type, description, url: url || null,
+            title: finalTitle, type, description, url: url || null,
             content: type === 'DOCUMENTO_EDITABLE' ? ' ' : null,
             category: category || 'General',
             tags: Array.isArray(tags) ? tags.join(',') : '',
