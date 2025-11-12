@@ -80,13 +80,14 @@ const ImageViewer = ({ isOpen, onClose, images, startIndex }: { isOpen: boolean,
     );
 };
 
-const noteColors = [
-  'bg-chart-1/10 border-chart-1/20',
-  'bg-chart-2/10 border-chart-2/20',
-  'bg-chart-3/10 border-chart-3/20',
-  'bg-chart-4/10 border-chart-4/20',
-  'bg-chart-5/10 border-chart-5/20',
+const chartColors = [
+  'bg-chart-1',
+  'bg-chart-2',
+  'bg-chart-3',
+  'bg-chart-4',
+  'bg-chart-5',
 ];
+
 
 interface AnnouncementCardProps {
   announcement: Announcement;
@@ -157,9 +158,9 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
   
   const userReaction = useMemo(() => user && announcement.reactions?.find(r => r.userId === user.id)?.reaction || null, [announcement.reactions, user]);
   
-  const bgColor = useMemo(() => {
+  const headerColor = useMemo(() => {
     const hash = announcement.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return noteColors[hash % noteColors.length];
+    return chartColors[hash % chartColors.length];
   }, [announcement.id]);
 
 
@@ -219,29 +220,26 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
     <>
     <Card 
         ref={cardRef} 
-        className={cn(
-            "w-full overflow-hidden shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-1",
-            bgColor
-        )}
+        className="w-full overflow-hidden shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-1"
     >
-      <CardHeader className="p-4 flex flex-row items-start gap-4 space-y-0">
-         <Avatar className="h-10 w-10 border">
+      <CardHeader className={cn("p-4 flex flex-row items-start gap-4 space-y-0 text-white", headerColor)}>
+         <Avatar className="h-10 w-10 border-2 border-white/50">
           <AvatarImage src={announcement.author?.avatar || undefined} />
           <AvatarFallback><Identicon userId={announcement.author?.id || ''} /></AvatarFallback>
         </Avatar>
         <div className="w-full">
-           <div className="flex items-center justify-between">
+           <div className="flex items-start justify-between">
              <div className="flex flex-col text-sm">
-                <span className="font-bold text-foreground flex items-center gap-1.5">
+                <span className="font-bold flex items-center gap-1.5">
                     {announcement.author?.name || 'Sistema'}
                     {announcement.author?.role === 'ADMINISTRATOR' && <VerifiedBadge role="ADMINISTRATOR" />}
                 </span>
-                <span className="text-muted-foreground text-xs">{timeSince(announcement.date)}</span>
+                <span className="text-white/80 text-xs">{timeSince(announcement.date)}</span>
              </div>
               {canModify && (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7"><MoreVertical className="h-4 w-4"/></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-white/80 hover:bg-black/20 hover:text-white"><MoreVertical className="h-4 w-4"/></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                          <DropdownMenuItem onSelect={() => onTogglePin?.(announcement)}>
@@ -262,9 +260,9 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
         </div>
       </CardHeader>
       
-      <CardContent className="px-4 pb-3 pt-0">
+      <CardContent className="px-4 pb-3 pt-3">
         <div className="space-y-3">
-            {announcement.isPinned && <Pin className="h-4 w-4 text-blue-500 fill-current mb-1" />}
+            {announcement.isPinned && <Pin className="h-4 w-4 text-primary fill-current mb-1" />}
             {announcement.title && (
               <CardTitle className="text-lg font-semibold">{announcement.title}</CardTitle>
             )}
