@@ -28,6 +28,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import type { Prisma } from '@prisma/client';
+import { VideoPlaylistView } from '@/components/resources/video-playlist-view';
 
 const getFileTypeFilter = (fileType: string): Prisma.EnterpriseResourceWhereInput => {
     const mimeMap: Record<string, string[]> = {
@@ -207,50 +208,56 @@ export default function ResourcesPage() {
   if (isAuthLoading) {
       return <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>
   }
-  
-    const ListView = () => (
-      <div className="flex flex-col w-full items-center">
-        {files.length > 0 && (
-          <Table className="hidden md:table">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[40%]">Nombre</TableHead>
-                <TableHead className="w-[15%] hidden md:table-cell">Propietario</TableHead>
-                <TableHead className="w-[15%] hidden lg:table-cell">Categoría</TableHead>
-                <TableHead className="w-[15%] hidden lg:table-cell">Fecha</TableHead>
-                <TableHead className="w-[10%] hidden md:table-cell">Estado</TableHead>
-                <TableHead className="w-[5%] text-right">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {files.map(res => (
-                <ResourceListItem 
-                  key={res.id} 
-                  resource={res} 
-                  onSelect={() => setSelectedResource(res)} 
-                  onEdit={setResourceToEdit} 
-                  onDelete={setResourceToDelete} 
-                  onRestore={handleRestore}
-                />
-              ))}
-            </TableBody>
-          </Table>
-        )}
-        <div className="w-full md:hidden space-y-3 flex flex-col items-center">
-          {files.map(res => (
-            <ResourceListItem 
-              key={res.id} 
-              resource={res} 
-              onSelect={() => setSelectedResource(res)} 
-              onEdit={setResourceToEdit} 
-              onDelete={setResourceToDelete} 
-              onRestore={handleRestore}
-            />
-          ))}
-        </div>
-      </div>
-    );
 
+  const ListView = () => (
+    <div className="flex flex-col w-full items-center">
+      {files.length > 0 && (
+        <Table className="hidden md:table">
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[40%]">Nombre</TableHead>
+              <TableHead className="w-[15%] hidden md:table-cell">Propietario</TableHead>
+              <TableHead className="w-[15%] hidden lg:table-cell">Categoría</TableHead>
+              <TableHead className="w-[15%] hidden lg:table-cell">Fecha</TableHead>
+              <TableHead className="w-[10%] hidden md:table-cell">Estado</TableHead>
+              <TableHead className="w-[5%] text-right">Acciones</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {files.map(res => (
+              <ResourceListItem 
+                key={res.id} 
+                resource={res} 
+                onSelect={() => setSelectedResource(res)} 
+                onEdit={setResourceToEdit} 
+                onDelete={setResourceToDelete} 
+                onRestore={handleRestore}
+              />
+            ))}
+          </TableBody>
+        </Table>
+      )}
+      <div className="w-full md:hidden space-y-3 flex flex-col items-center">
+        {files.map(res => (
+          <ResourceListItem 
+            key={res.id} 
+            resource={res} 
+            onSelect={() => setSelectedResource(res)} 
+            onEdit={setResourceToEdit} 
+            onDelete={setResourceToDelete} 
+            onRestore={handleRestore}
+          />
+        ))}
+      </div>
+    </div>
+  );
+
+  const currentFolderIsVideoPlaylist = useMemo(() => {
+    if (files.length === 0) return false;
+    const videoCount = files.filter(f => f.type === 'VIDEO' || getYoutubeVideoId(f.url)).length;
+    return (videoCount / files.length) >= 0.7; // 70% or more are videos
+  }, [files]);
+  
   return (
     <DndContext onDragEnd={handleDragEnd} sensors={useSensors(useSensor(MouseSensor), useSensor(TouchSensor))}>
     <div className="space-y-6">
@@ -315,6 +322,12 @@ export default function ResourcesPage() {
                 <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
             ) : error ? (
                 <div className="text-center py-10"><AlertTriangle className="mx-auto h-8 w-8 text-destructive" /><p className="mt-2 font-semibold text-destructive">{error}</p></div>
+            ) : currentFolderIsVideoPlaylist ? (
+                <VideoPlaylistView 
+                  resources={files} 
+                  onSelectResource={setSelectedResource}
+                  folderName={breadcrumbs[breadcrumbs.length - 1]?.title || 'Videos'}
+                />
             ) : (
                 <div className="space-y-8">
                     {folders.length > 0 && (
