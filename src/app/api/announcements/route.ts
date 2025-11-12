@@ -19,19 +19,17 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const pageParam = searchParams.get('page');
   const pageSizeParam = searchParams.get('pageSize');
-  const filter = searchParams.get('filter'); // all, by-me, by-others, pinned, trending
+  const filter = searchParams.get('filter'); // all, by-me, pinned, trending
   
   const page = pageParam ? parseInt(pageParam, 10) : 1;
-  const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 50; // Aumentado para la vista unificada
+  const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 50;
   
-  // Validar parámetros de paginación
   if (isNaN(page) || page < 1 || isNaN(pageSize) || pageSize < 1) {
     return NextResponse.json({ message: 'Parámetros de paginación inválidos' }, { status: 400 });
   }
 
   let whereClause: Prisma.AnnouncementWhereInput = {};
 
-  // 1. Filtro base de audiencia: El usuario solo debe ver lo que le corresponde.
   if (session.role !== 'ADMINISTRATOR') {
     whereClause.OR = [
       { audience: 'ALL' },
@@ -39,16 +37,12 @@ export async function GET(req: NextRequest) {
     ];
   }
 
-  // 2. Filtro de pestañas (si aplica)
   if (filter === 'by-me') {
     whereClause.authorId = session.id;
-  } else if (filter === 'by-others') {
-    whereClause.authorId = { not: session.id };
   } else if (filter === 'pinned') {
     whereClause.isPinned = true;
   }
   
-  // 3. Ordenamiento
   let orderBy: Prisma.AnnouncementOrderByWithRelationAndSearchRelevanceInput[] = [
     { isPinned: 'desc' },
     { date: 'desc' }
@@ -64,7 +58,6 @@ export async function GET(req: NextRequest) {
         include: { 
           author: { select: { id: true, name: true, avatar: true, role: true } },
           attachments: true,
-          // Optimization: Fetch only what's needed for display, not the whole user object
           reads: { 
               select: { 
                   user: { 
@@ -79,7 +72,6 @@ export async function GET(req: NextRequest) {
                   user: { select: { id: true, name: true, avatar: true }} 
               } 
           },
-          // Use _count for efficient counting
           _count: { select: { reads: true, reactions: true } },
         },
     };
@@ -93,7 +85,6 @@ export async function GET(req: NextRequest) {
         prisma.announcement.count({ where: whereClause })
     ]);
 
-    // Ordenar los anuncios si el filtro es "trending"
     let announcements = announcementsFromDb.map(ann => ({
         ...ann,
         reads: ann.reads.map(r => r.user),
@@ -171,7 +162,7 @@ export async function POST(req: NextRequest) {
           userId: user.id,
           title: `Nuevo Anuncio: ${title}`,
           description: description,
-          link: '/messages', // Link a la nueva página de mensajería
+          link: '/announcements',
           announcementId: newAnnouncement.id,
         }))
       });

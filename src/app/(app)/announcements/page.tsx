@@ -1,12 +1,12 @@
 // src/app/(app)/announcements/page.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import type { Announcement as AnnouncementType, Reaction, CalendarEvent } from '@/types';
-import { Loader2, AlertTriangle, Edit, Trash2, Megaphone, PlusCircle, Pin, PinOff, Calendar } from 'lucide-react';
+import type { Announcement as AnnouncementType, Reaction, CalendarEvent, UserRole } from '@/types';
+import { Loader2, AlertTriangle, Edit, Trash2, Megaphone, PlusCircle, Pin, PinOff, Calendar, TrendingUp } from 'lucide-react';
 import { AnnouncementCard } from '@/components/announcements/announcement-card';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import {
@@ -27,6 +27,8 @@ import { useRealtime } from '@/hooks/use-realtime';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Link from 'next/link';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useSearchParams, useRouter } from 'next/navigation';
 
 const UpcomingEventsWidget = ({ events }: { events: CalendarEvent[] }) => {
     return (
@@ -65,11 +67,12 @@ const UpcomingEventsWidget = ({ events }: { events: CalendarEvent[] }) => {
     )
 }
 
-
-export default function AnnouncementsPage() {
+function AnnouncementsPageComponent() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { setPageTitle } = useTitle();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [announcements, setAnnouncements] = useState<AnnouncementType[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<CalendarEvent[]>([]);
@@ -81,16 +84,18 @@ export default function AnnouncementsPage() {
   const [deletingAnnouncement, setDeletingAnnouncement] = useState<AnnouncementType | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const activeTab = searchParams.get('filter') || 'all';
+
   useEffect(() => {
     setPageTitle("Anuncios");
   }, [setPageTitle]);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (filter: string) => {
     setIsLoading(true);
     setError(null);
     try {
         const [announcementsRes, dashboardRes] = await Promise.all([
-             fetch('/api/announcements?pageSize=50', { cache: 'no-store' }),
+             fetch(`/api/announcements?pageSize=50&filter=${filter}`, { cache: 'no-store' }),
              fetch('/api/dashboard/data', { cache: 'no-store' })
         ]);
       
@@ -111,12 +116,16 @@ export default function AnnouncementsPage() {
   }, []);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchData(activeTab);
+  }, [fetchData, activeTab]);
+
+  const handleTabChange = (value: string) => {
+    router.push(`/announcements?filter=${value}`);
+  };
 
   const handleRealtimeEvent = useCallback((payload: any) => {
-    fetchData();
-  }, [fetchData]);
+    fetchData(activeTab);
+  }, [fetchData, activeTab]);
 
   useRealtime('announcements', handleRealtimeEvent);
   useRealtime('events', handleRealtimeEvent);
@@ -148,7 +157,7 @@ export default function AnnouncementsPage() {
         body: JSON.stringify({ isPinned: !announcement.isPinned }),
       });
       if (!response.ok) throw new Error('No se pudo actualizar el anclaje.');
-      fetchData();
+      fetchData(activeTab);
       toast({ description: `Anuncio ${!announcement.isPinned ? 'fijado' : 'desfijado'}.` });
     } catch(err) {
       toast({ title: 'Error', description: (err as Error).message, variant: 'destructive'});
@@ -162,7 +171,7 @@ export default function AnnouncementsPage() {
     try {
       await fetch(`/api/announcements/${deletingAnnouncement.id}`, { method: 'DELETE' });
       toast({ description: "Anuncio eliminado." });
-      fetchData();
+      fetchData(activeTab);
     } catch (error) {
       toast({ title: "Error", description: (error as Error).message, variant: "destructive" });
     } finally {
@@ -176,13 +185,21 @@ export default function AnnouncementsPage() {
   return (
     <>
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-        {/* Main Feed Column */}
         <div className="lg:col-span-3 space-y-6">
             <div className="space-y-1">
               <h1 className="text-2xl font-semibold">Tablón de Anuncios</h1>
               <p className="text-muted-foreground">Las últimas noticias y comunicados de la organización.</p>
             </div>
             
+            <Tabs value={activeTab} onValueChange={handleTabChange}>
+                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
+                    <TabsTrigger value="all">Todos</TabsTrigger>
+                    <TabsTrigger value="pinned"><Pin className="mr-2 h-4 w-4"/>Fijados</TabsTrigger>
+                    <TabsTrigger value="trending"><TrendingUp className="mr-2 h-4 w-4"/>Tendencias</TabsTrigger>
+                    {canCreate && <TabsTrigger value="by-me">Mis Anuncios</TabsTrigger>}
+                </TabsList>
+            </Tabs>
+
              {isLoading ? (
                 <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
               ) : error ? (
@@ -192,7 +209,7 @@ export default function AnnouncementsPage() {
                      <CardHeader>
                         <Megaphone className="mx-auto h-12 w-12 mb-4" />
                         <CardTitle>No hay anuncios por ahora</CardTitle>
-                        <CardDescription>Vuelve más tarde para ver las últimas noticias.</CardDescription>
+                        <CardDescription>Vuelve más tarde para ver las últimas noticias en esta sección.</CardDescription>
                      </CardHeader>
                 </Card>
               ) : (
@@ -213,7 +230,6 @@ export default function AnnouncementsPage() {
               )}
         </div>
         
-        {/* Sidebar Column */}
         <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
              {canCreate && (
                <Card>
@@ -239,7 +255,7 @@ export default function AnnouncementsPage() {
           onClose={() => setIsCreatorOpen(false)}
           onAnnouncementCreated={() => {
             setIsCreatorOpen(false);
-            fetchData();
+            fetchData(activeTab);
           }}
         />
       )}
@@ -249,7 +265,7 @@ export default function AnnouncementsPage() {
           isOpen={!!editingAnnouncement}
           onClose={() => setEditingAnnouncement(null)}
           announcement={editingAnnouncement}
-          onUpdateSuccess={fetchData}
+          onUpdateSuccess={() => fetchData(activeTab)}
         />
       )}
 
@@ -290,4 +306,12 @@ export default function AnnouncementsPage() {
       `}</style>
     </>
   );
+}
+
+export default function AnnouncementsPage() {
+    return (
+        <Suspense fallback={<div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
+            <AnnouncementsPageComponent />
+        </Suspense>
+    )
 }
