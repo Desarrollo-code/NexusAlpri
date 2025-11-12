@@ -53,7 +53,7 @@ export const getIconForType = (type: AppResourceType['type']): React.ComponentTy
         MANUAL: { icon: Notebook, color: 'text-indigo-500', gradient: 'from-indigo-500/10' },
         POLICY: { icon: Shield, color: 'text-gray-500', gradient: 'from-gray-500/10' },
         VIDEO: { icon: VideoIcon, color: 'text-red-500', gradient: 'from-red-500/10' },
-        EXTERNAL_LINK: { icon: LinkIcon, color: 'text-green-600', gradient: 'from-green-100' },
+        EXTERNAL_LINK: { icon: LinkIcon, color: 'text-green-700', gradient: 'from-green-100' },
         OTHER: { icon: FileQuestion, color: 'text-slate-500', gradient: 'from-slate-500/10' }
     };
 
