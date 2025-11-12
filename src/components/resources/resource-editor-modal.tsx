@@ -18,7 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Save, UploadCloud, Link as LinkIcon, Image as ImageIcon, XCircle, Replace, Calendar as CalendarIcon, Eye, EyeOff, X, Globe, Users, FileText, Check, Archive, FilePen } from 'lucide-react';
+import { Loader2, Save, UploadCloud, Link as LinkIcon, Image as ImageIcon, XCircle, Replace, Calendar as CalendarIcon, Eye, EyeOff, X, Globe, Users, FileText, Check, Archive, FilePen, RotateCcw } from 'lucide-react';
 import type { AppResourceType, User as AppUser } from '@/types';
 import { UploadArea } from '../ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
@@ -51,7 +51,8 @@ interface UploadState {
   file: File;
   progress: number;
   error: string | null;
-  status: 'uploading' | 'processing' | 'completed';
+  status: 'uploading' | 'processing' | 'completed' | 'error';
+  url?: string;
 }
 
 export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSave }: ResourceEditorModalProps) {
@@ -123,27 +124,60 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     }
   }, [resource, isOpen, resetForm, settings, user]);
 
-  const uploadFile = async (upload: UploadState) => {
+  const saveResourceToDb = async (payload: any): Promise<boolean> => {
+    const endpoint = isEditing ? `/api/resources/${resource!.id}` : '/api/resources';
+    const method = isEditing ? 'PUT' : 'POST';
+    
+    try {
+        const response = await fetch(endpoint, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Error al guardar en la base de datos.');
+        }
+        return true;
+    } catch(err) {
+        console.error("DB Save Error:", err);
+        toast({ title: 'Error de Sincronización', description: `No se pudo guardar "${payload.title}": ${(err as Error).message}`, variant: 'destructive'});
+        return false;
+    }
+  };
+
+  const uploadFileAndSave = async (upload: UploadState) => {
     try {
       const result = await uploadWithProgress('/api/upload/resource-file', upload.file, (p) => {
         setUploads(prev => prev.map(u => u.id === upload.id ? { ...u, progress: p } : u));
       });
-      return { ...upload, status: 'processing' as const, url: result.url };
+      
+      // OPTIMISTIC: Mark as completed immediately after upload finishes
+      setUploads(prev => prev.map(u => u.id === upload.id ? { ...u, progress: 100, status: 'completed', url: result.url } : u));
+
+      // Save to DB in background
+      const payload = {
+          title: uploads.length > 1 ? upload.file.name.split('.').slice(0,-1).join('.') : title,
+          filename: upload.file.name,
+          description, category, isPublic, sharedWithUserIds: isPublic ? [] : sharedWithUserIds,
+          expiresAt: expiresAt ? expiresAt.toISOString() : null,
+          status: 'ACTIVE', type: 'DOCUMENT', url: result.url,
+          size: upload.file.size, fileType: upload.file.type, parentId,
+      };
+      
+      const success = await saveResourceToDb(payload);
+      if (!success) {
+          // Mark as error if DB save fails
+          setUploads(prev => prev.map(u => u.id === upload.id ? { ...u, status: 'error', error: 'Fallo al guardar en la base de datos.' } : u));
+      }
+
     } catch (err) {
-      const errorUpload = { ...upload, error: (err as Error).message };
-      setUploads(prev => prev.map(u => u.id === upload.id ? errorUpload : u));
-      throw err;
+      setUploads(prev => prev.map(u => u.id === upload.id ? { ...u, status: 'error', error: (err as Error).message } : u));
     }
   };
-
+  
   const handleFileSelect = (files: FileList | null) => {
     if (!files || files.length === 0) return;
     
     const newUploads = Array.from(files).map(file => ({
         id: `${file.name}-${Date.now()}`,
-        file,
-        progress: 0,
-        error: null,
+        file, progress: 0, error: null,
         status: 'uploading' as const,
     }));
     
@@ -153,109 +187,39 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         setTitle(newUploads[0].file.name.split('.').slice(0,-1).join('.'));
     }
 
-    newUploads.forEach(upload => uploadFile(upload));
+    // Start uploads immediately
+    newUploads.forEach(uploadFileAndSave);
   };
   
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (uploads.length === 0 && resourceType === 'DOCUMENT' && !isEditing) {
-        toast({ title: 'Faltan archivos', description: 'Por favor, selecciona al menos un archivo para subir.', variant: 'destructive'});
-        return;
-    }
-
-    setIsSubmitting(true);
-    let successCount = 0;
-
-    // Lógica para editar un recurso existente o crear uno no-archivo
-    if (isEditing || resourceType !== 'DOCUMENT') {
-        let finalUrl = isEditing ? resource.url : null;
-        let finalSize = resource?.size || 0;
-        let finalFileType = resource?.fileType || '';
-
-        if (resourceType === 'EXTERNAL_LINK') finalUrl = externalLink;
-        
-        const fileToUpload = uploads[0];
-        if (fileToUpload) {
-             try {
-                // The file is already being uploaded, we just need its final URL
-                const completedUpload = uploads.find(u => u.id === fileToUpload.id);
-                if (completedUpload?.status === 'completed' && completedUpload.url) {
-                    finalUrl = completedUpload.url;
-                    finalSize = fileToUpload.file.size;
-                    finalFileType = fileToUpload.file.type;
-                } else {
-                     throw new Error("La subida del archivo aún no ha finalizado o ha fallado.");
-                }
-             } catch (err) {
-                 setIsSubmitting(false); return;
-             }
-        }
-        
+    if (resourceType !== 'DOCUMENT') {
+        setIsSubmitting(true);
         const payload = {
           title, description, content, observations, category, isPublic, 
           sharedWithUserIds: isPublic ? [] : sharedWithUserIds,
           expiresAt: expiresAt ? expiresAt.toISOString() : null,
-          status: resource?.status || 'ACTIVE', type: resourceType, url: finalUrl,
-          size: finalSize, fileType: finalFileType, parentId: resource ? resource.parentId : parentId,
+          status: resource?.status || 'ACTIVE', type: resourceType,
+          url: resourceType === 'EXTERNAL_LINK' ? externalLink : null,
         };
         
-        const endpoint = resource ? `/api/resources/${resource.id}` : '/api/resources';
-        const method = resource ? 'PUT' : 'POST';
-        
-        try {
-            const response = await fetch(endpoint, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            if (!response.ok) throw new Error((await response.json()).message || 'No se pudo guardar el recurso.');
-            successCount = 1;
-        } catch(err) {
-            toast({ title: 'Error al Guardar', description: (err as Error).message, variant: 'destructive' });
+        const success = await saveResourceToDb(payload);
+        if (success) {
+            toast({ title: '¡Éxito!', description: `Recurso ${isEditing ? 'actualizado' : 'creado'}.` });
+            onSave();
+            onClose();
         }
-    } 
-    // Lógica para crear múltiples recursos a partir de archivos
-    else if (!isEditing && uploads.length > 0) {
-      for (const upload of uploads) {
-        try {
-          // Wait for the upload to finish if it hasn't already
-          const finalUrl = await (async () => {
-             let currentUpload = uploads.find(u => u.id === upload.id);
-             while(currentUpload && currentUpload.status !== 'completed' && !currentUpload.error) {
-                 await new Promise(res => setTimeout(res, 200));
-                 currentUpload = uploads.find(u => u.id === upload.id);
-             }
-             if (currentUpload?.error) throw new Error(currentUpload.error);
-             return (currentUpload as any).url;
-          })();
-          
-          if(!finalUrl) throw new Error(`La subida del archivo ${upload.file.name} falló.`);
-
-          setUploads(prev => prev.map(u => u.id === upload.id ? { ...u, status: 'processing' } : u));
-          
-          const payload = {
-              title: uploads.length > 1 ? upload.file.name.split('.').slice(0,-1).join('.') : title,
-              filename: upload.file.name, // Pass the original filename
-              description, category, isPublic, sharedWithUserIds: isPublic ? [] : sharedWithUserIds,
-              expiresAt: expiresAt ? expiresAt.toISOString() : null,
-              status: 'ACTIVE', type: 'DOCUMENT', url: finalUrl,
-              size: upload.file.size, fileType: upload.file.type, parentId,
-          };
-
-          const response = await fetch('/api/resources', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-          if (!response.ok) throw new Error(`Error al crear recurso para ${upload.file.name}`);
-          
-          setUploads(prev => prev.map(u => u.id === upload.id ? {...u, status: 'completed'} : u));
-          successCount++;
-        } catch (err) {
-           setUploads(prev => prev.map(u => u.id === upload.id ? {...u, error: (err as Error).message, status: 'completed'} : u));
+        setIsSubmitting(false);
+    } else {
+        // For file uploads, the main save button just closes the modal if everything is done
+        const isStillUploading = uploads.some(u => u.status === 'uploading' || u.status === 'processing');
+        if (isStillUploading) {
+            toast({description: "Por favor, espera a que finalicen todas las subidas."});
+        } else {
+             onSave();
+             onClose();
         }
-      }
     }
-
-    if (successCount > 0) {
-        toast({ title: '¡Éxito!', description: `${successCount} recurso(s) se ha(n) ${isEditing ? 'actualizado' : 'creado'}.` });
-        onSave();
-        onClose();
-    }
-    
-    setIsSubmitting(false);
   };
   
   const filteredUsers = allUsers.filter(u => u.name.toLowerCase().includes(userSearch.toLowerCase()));
@@ -288,12 +252,24 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                         <div className="space-y-2 max-h-48 overflow-y-auto pr-2 thin-scrollbar">
                             {uploads.map(upload => (
                                 <div key={upload.id} className="p-2 border rounded-md">
-                                    <p className="text-sm font-medium truncate">{upload.file.name}</p>
+                                    <div className="flex justify-between items-start">
+                                        <p className="text-sm font-medium truncate pr-2">{upload.file.name}</p>
+                                         <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive shrink-0" onClick={() => setUploads(p => p.filter(item => item.id !== upload.id))}>
+                                            <XCircle className="h-4 w-4"/>
+                                        </Button>
+                                    </div>
                                     <div className="flex items-center gap-2 mt-1">
                                         <Progress value={upload.progress} className="h-1 flex-grow"/>
-                                        <span className="text-xs font-semibold w-10 text-right">{upload.progress}%</span>
-                                         {upload.status === 'processing' && <Loader2 className="h-4 w-4 animate-spin text-primary"/>}
-                                         {upload.status === 'completed' && <Check className="h-4 w-4 text-green-500"/>}
+                                        <div className="w-16 text-right">
+                                            {upload.status === 'uploading' && <span className="text-xs font-semibold">{upload.progress}%</span>}
+                                            {upload.status === 'processing' && <Loader2 className="h-4 w-4 animate-spin text-primary inline-block"/>}
+                                            {upload.status === 'completed' && <Check className="h-4 w-4 text-green-500 inline-block"/>}
+                                            {upload.status === 'error' && (
+                                              <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => uploadFileAndSave(upload)}>
+                                                  <RotateCcw className="h-4 w-4"/>
+                                              </Button>
+                                            )}
+                                        </div>
                                     </div>
                                     {upload.error && <p className="text-xs text-destructive mt-1">{upload.error}</p>}
                                 </div>
@@ -330,23 +306,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                               <div key={u.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={(c) => setSharedWithUserIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(u.name)}</AvatarFallback></Avatar>{u.name}</Label></div>
                           ))}
                       </ScrollArea></div>
-                  )}
-                  
-                  {resource && (
-                    <div className="space-y-4 pt-4 border-t">
-                      <Label className="font-semibold text-base">Seguridad con PIN</Label>
-                      <div className="relative"><Input type={showPin ? "text" : "password"} value={pin} onChange={(e) => setPin(e.target.value)} placeholder="Nuevo PIN (4-8 dígitos)" autoComplete="new-password"/><Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowPin(!showPin)}>{showPin ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}</Button></div>
-                      {pin && <div className="relative"><Input type={showPin ? "text" : "password"} value={confirmPin} onChange={(e) => setConfirmPin(e.target.value)} placeholder="Confirmar nuevo PIN" disabled={!pin} autoComplete="new-password"/></div>}
-                      {pin && confirmPin && pin !== confirmPin && <p className="text-xs text-destructive">Los PIN no coinciden.</p>}
-                      <div className="flex gap-2">
-                          <Button type="button" onClick={()=>{}} disabled={isSettingPin || !pin || pin.length < 4 || (pin !== confirmPin)} className="w-full">
-                              <Check className="mr-2 h-4 w-4" />Establecer PIN
-                          </Button>
-                          <Button type="button" variant="destructive" onClick={()=>{}} disabled={isSettingPin} className="w-full">
-                              <X className="mr-2 h-4 w-4" />Quitar PIN
-                          </Button>
-                      </div>
-                    </div>
                   )}
               </form>
             </ScrollArea>
