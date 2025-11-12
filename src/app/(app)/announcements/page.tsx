@@ -9,7 +9,7 @@ import type { Announcement as AnnouncementType, Reaction, CalendarEvent } from '
 import { Loader2, AlertTriangle, Edit, Trash2, Megaphone, PlusCircle, Pin, PinOff, Calendar } from 'lucide-react';
 import { AnnouncementCard } from '@/components/announcements/announcement-card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import {
   AlertDialog,
   AlertDialogAction,
