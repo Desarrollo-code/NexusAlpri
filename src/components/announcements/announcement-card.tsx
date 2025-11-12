@@ -81,11 +81,11 @@ const ImageViewer = ({ isOpen, onClose, images, startIndex }: { isOpen: boolean,
 };
 
 const noteColors = [
-  'bg-yellow-100 dark:bg-yellow-900/40 border-yellow-300 dark:border-yellow-700/60',
-  'bg-blue-100 dark:bg-blue-900/40 border-blue-300 dark:border-blue-700/60',
-  'bg-green-100 dark:bg-green-900/40 border-green-300 dark:border-green-700/60',
-  'bg-pink-100 dark:bg-pink-900/40 border-pink-300 dark:border-pink-700/60',
-  'bg-purple-100 dark:bg-purple-900/40 border-purple-300 dark:border-purple-700/60',
+  'bg-chart-1/10 border-chart-1/20',
+  'bg-chart-2/10 border-chart-2/20',
+  'bg-chart-3/10 border-chart-3/20',
+  'bg-chart-4/10 border-chart-4/20',
+  'bg-chart-5/10 border-chart-5/20',
 ];
 
 interface AnnouncementCardProps {
