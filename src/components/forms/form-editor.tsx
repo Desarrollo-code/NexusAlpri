@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { useTitle } from '@/contexts/title-context';
 import { useRouter } from 'next/navigation';
-import { Loader2, AlertTriangle, Save, PlusCircle, Trash2, GripVertical, Check, Eye, BarChart, Share2, FilePen, MoreVertical, Settings, Copy, Shield, X, CheckSquare, ChevronDown, Type, CaseUpper, MessageSquare, ListChecks, Info } from 'lucide-react';
+import { Loader2, AlertTriangle, Save, PlusCircle, Trash2, GripVertical, Check, Eye, BarChart, Share2, FilePen, MoreVertical, Settings, Copy, Shield, X, CheckSquare, ChevronDown, Type, CaseUpper, MessageSquare, ListChecks, Info, Palette, Image as ImageIcon } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -33,6 +33,10 @@ import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '../ui/alert';
 import { ScrollArea } from '../ui/scroll-area';
+import { UploadArea } from '../ui/upload-area';
+import { uploadWithProgress } from '@/lib/upload-with-progress';
+import { Progress } from '../ui/progress';
+import Image from 'next/image';
 
 const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
@@ -196,6 +200,12 @@ export function FormEditor({ formId }: { formId: string }) {
     const [isSaving, setIsSaving] = useState(false);
     const [isDirty, setIsDirty] = useState(false);
     
+    // State for image upload
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [localImagePreview, setLocalImagePreview] = useState<string | null>(null);
+
+    
     const handleFormUpdate = (updates: Partial<AppForm>) => {
         setForm(prev => prev ? { ...prev, ...updates } : null);
         setIsDirty(true);
@@ -301,6 +311,10 @@ export function FormEditor({ formId }: { formId: string }) {
                 description: form.description,
                 status: form.status,
                 isQuiz: form.isQuiz,
+                headerImageUrl: form.headerImageUrl,
+                themeColor: form.themeColor,
+                backgroundColor: form.backgroundColor,
+                fontStyle: form.fontStyle,
                 fields: form.fields.map((f, index) => ({...f, order: index}))
             };
             const res = await fetch(`/api/forms/${formId}`, {
@@ -311,7 +325,7 @@ export function FormEditor({ formId }: { formId: string }) {
             if (!res.ok) throw new Error((await res.json()).message || 'No se pudo guardar el formulario.');
             
             const updatedForm = await res.json();
-            setForm(updatedForm);
+            setForm(prev => prev ? { ...prev, ...updatedForm } : null);
             setIsDirty(false);
             toast({ title: '¡Guardado!', description: 'Tus cambios en el formulario han sido guardados.' });
         } catch (err) {
@@ -319,6 +333,32 @@ export function FormEditor({ formId }: { formId: string }) {
         } finally {
             setIsSaving(false);
         }
+    };
+    
+    const handleImageUpload = async (file: File | null) => {
+        if (!file) return;
+        
+        const previewUrl = URL.createObjectURL(file);
+        setLocalImagePreview(previewUrl);
+
+        setIsUploading(true);
+        setUploadProgress(0);
+        try {
+            const result = await uploadWithProgress('/api/upload/settings-image', file, setUploadProgress);
+            handleFormUpdate({ headerImageUrl: result.url });
+            toast({ title: 'Imagen Subida' });
+        } catch (err) {
+            toast({ title: 'Error de subida', description: (err as Error).message, variant: 'destructive' });
+            setLocalImagePreview(null);
+        } finally {
+            setIsUploading(false);
+        }
+    };
+    
+    const handleRemoveImage = () => {
+        if(localImagePreview) URL.revokeObjectURL(localImagePreview);
+        setLocalImagePreview(null);
+        handleFormUpdate({ headerImageUrl: null });
     };
 
 
@@ -345,6 +385,8 @@ export function FormEditor({ formId }: { formId: string }) {
     if (isLoading || !form) {
         return <div className="flex items-center justify-center h-full"><Loader2 className="animate-spin h-8 w-8"/></div>;
     }
+    
+    const finalImageUrl = localImagePreview || form.headerImageUrl;
 
     return (
         <div className="space-y-6">
@@ -416,17 +458,17 @@ export function FormEditor({ formId }: { formId: string }) {
                         <CardHeader><CardTitle className="text-base">Configuración</CardTitle></CardHeader>
                         <CardContent>
                            <Tabs defaultValue="properties">
-                             <TabsList className="grid w-full grid-cols-2">
+                             <TabsList className="grid w-full grid-cols-3">
                                <TabsTrigger value="properties">Propiedades</TabsTrigger>
+                               <TabsTrigger value="design">Diseño</TabsTrigger>
                                <TabsTrigger value="share">Compartir</TabsTrigger>
                              </TabsList>
                              <TabsContent value="properties" className="pt-4 space-y-4">
                                 <div className="space-y-3">
-                                     <div className="flex items-center justify-between space-x-2 p-2 border rounded-lg">
-                                         <Label htmlFor="quiz-mode" className="font-semibold">Habilitar Puntuación</Label>
+                                     <div className="flex items-center justify-between space-x-2 p-2.5 border rounded-lg">
+                                         <Label htmlFor="quiz-mode" className="font-semibold">Modo Evaluación (Quiz)</Label>
                                          <Switch id="quiz-mode" checked={!!form.isQuiz} onCheckedChange={(c) => handleFormUpdate({ isQuiz: c })}/>
                                      </div>
-                                     <p className="text-xs text-muted-foreground">Convierte este formulario en una evaluación con puntos por respuesta.</p>
                                      {form.isQuiz && (
                                          <Alert variant="default" className="text-xs">
                                              <Info className="h-4 w-4"/>
@@ -446,6 +488,34 @@ export function FormEditor({ formId }: { formId: string }) {
                                               <SelectItem value="ARCHIVED">Archivado</SelectItem>
                                           </SelectContent>
                                       </Select>
+                                 </div>
+                             </TabsContent>
+                             <TabsContent value="design" className="pt-4 space-y-4">
+                                <div className="space-y-2">
+                                     <Label>Imagen de Encabezado</Label>
+                                      {isUploading ? <div className="p-4 h-32 flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg"><Loader2 className="h-6 w-6 animate-spin"/><Progress value={uploadProgress} className="w-full h-1.5" /></div>
+                                      : finalImageUrl ? <div className="relative w-full aspect-video rounded-lg border overflow-hidden p-1 bg-muted/50"><Image src={finalImageUrl} alt="Encabezado" fill className="object-cover" /><Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={handleRemoveImage}><X className="h-4 w-4"/></Button></div>
+                                      : <UploadArea onFileSelect={handleImageUpload} compact />
+                                      }
+                                 </div>
+                                 <div className="space-y-2">
+                                     <Label>Color del Tema</Label>
+                                     <Input type="color" value={form.themeColor || '#6366f1'} onChange={e => handleFormUpdate({ themeColor: e.target.value })} className="w-full p-1 h-10"/>
+                                 </div>
+                                 <div className="space-y-2">
+                                     <Label>Color de Fondo</Label>
+                                     <Input type="color" value={form.backgroundColor || '#f8fafc'} onChange={e => handleFormUpdate({ backgroundColor: e.target.value })} className="w-full p-1 h-10"/>
+                                 </div>
+                                 <div className="space-y-2">
+                                     <Label>Estilo de Fuente</Label>
+                                     <Select value={form.fontStyle || 'default'} onValueChange={v => handleFormUpdate({ fontStyle: v })}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="default">Por Defecto</SelectItem>
+                                            <SelectItem value="serif">Serif</SelectItem>
+                                            <SelectItem value="mono">Monoespacio</SelectItem>
+                                        </SelectContent>
+                                     </Select>
                                  </div>
                              </TabsContent>
                              <TabsContent value="share" className="pt-4">

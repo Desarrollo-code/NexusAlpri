@@ -372,13 +372,17 @@ export type FormField = Omit<Prisma.FormFieldGetPayload<{}>, 'options'> & {
 
 export type AppForm = Prisma.FormGetPayload<{}> & {
     fields: FormField[];
-    _count: {
+    _count?: {
         responses: number;
-    };
+    } | null;
     creator?: {
         name: string | null;
     } | null;
     sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
+    headerImageUrl?: string | null;
+    themeColor?: string | null;
+    backgroundColor?: string | null;
+    fontStyle?: string | null;
     template?: string | null;
     timerStyle?: string | null;
 };

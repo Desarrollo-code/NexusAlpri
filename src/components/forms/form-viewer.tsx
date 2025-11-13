@@ -12,15 +12,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import type { Form, FormField as PrismaFormField } from '@prisma/client';
+import type { AppForm } from '@/types';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { Checkbox } from '../ui/checkbox';
-import type { FormFieldOption } from '@/types';
+import Image from 'next/image';
+import { cn } from '@/lib/utils';
+import { fontMap } from '@/lib/fonts';
 
-type FullForm = Form & { fields: (PrismaFormField & { options: FormFieldOption[] })[] };
 
-
-const FormFieldRenderer = ({ field, value, onChange }: { field: FullForm['fields'][0], value: any, onChange: (fieldId: string, value: any) => void }) => {
+const FormFieldRenderer = ({ field, value, onChange, fontStyle }: { field: AppForm['fields'][0], value: any, onChange: (fieldId: string, value: any) => void, fontStyle?: string | null }) => {
     const fieldId = `field-${field.id}`;
     
     const renderInput = () => {
@@ -33,7 +33,7 @@ const FormFieldRenderer = ({ field, value, onChange }: { field: FullForm['fields
                  return (
                     <RadioGroup id={fieldId} value={value} onValueChange={(val) => onChange(field.id, val)} className="space-y-2">
                         {(field.options || []).map((opt, i) => (
-                            <div key={opt.id} className="flex items-center space-x-2"><RadioGroupItem value={opt.id} id={`${fieldId}-${i}`} /><Label htmlFor={`${fieldId}-${i}`} className="font-normal">{opt.text}</Label></div>
+                            <div key={opt.id} className="flex items-center space-x-2"><RadioGroupItem value={opt.id} id={`${fieldId}-${i}`} /><Label htmlFor={`${fieldId}-${i}`} className={cn("font-normal", fontStyle && `font-${fontStyle}`)}>{opt.text}</Label></div>
                         ))}
                     </RadioGroup>
                 );
@@ -52,7 +52,7 @@ const FormFieldRenderer = ({ field, value, onChange }: { field: FullForm['fields
                                         onChange(field.id, Array.from(newValues));
                                     }}
                                 />
-                                <Label htmlFor={`${fieldId}-${i}`} className="font-normal">{opt.text}</Label>
+                                <Label htmlFor={`${fieldId}-${i}`} className={cn("font-normal", fontStyle && `font-${fontStyle}`)}>{opt.text}</Label>
                             </div>
                         ))}
                     </div>
@@ -63,9 +63,9 @@ const FormFieldRenderer = ({ field, value, onChange }: { field: FullForm['fields
     }
     
     return (
-        <Card className="bg-muted/30">
+        <Card className="bg-card/80 backdrop-blur-sm">
              <CardContent className="p-4">
-                <Label htmlFor={fieldId} className="text-base font-semibold">{field.label}{field.required && <span className="text-destructive ml-1">*</span>}</Label>
+                <Label htmlFor={fieldId} className={cn("text-base font-semibold", fontStyle && `font-${fontStyle}`)}>{field.label}{field.required && <span className="text-destructive ml-1">*</span>}</Label>
                 <div className="mt-3">{renderInput()}</div>
             </CardContent>
         </Card>
@@ -78,7 +78,7 @@ export function FormViewer({ formId }: { formId: string }) {
     const { toast } = useToast();
     const { setPageTitle } = useTitle();
 
-    const [form, setForm] = useState<FullForm | null>(null);
+    const [form, setForm] = useState<AppForm | null>(null);
     const [answers, setAnswers] = useState<Record<string, any>>({});
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -134,6 +134,8 @@ export function FormViewer({ formId }: { formId: string }) {
     if (error) return <Card className="m-auto mt-10 max-w-lg text-center p-8"><AlertTriangle className="mx-auto h-12 w-12 text-destructive mb-4"/><h2 className="text-xl font-semibold">Error al Cargar</h2><p className="text-muted-foreground">{error}</p><Button className="mt-4" onClick={() => router.back()}>Volver</Button></Card>;
     if (!form) return null;
     
+    const fontStyle = form.fontStyle === 'serif' ? 'font-serif' : form.fontStyle === 'mono' ? 'font-mono' : 'font-sans';
+
     if (isSubmitted) {
         return (
             <Card className="m-auto mt-10 max-w-lg text-center p-8">
@@ -152,24 +154,34 @@ export function FormViewer({ formId }: { formId: string }) {
     }
     
     return (
-        <Card className="max-w-3xl mx-auto my-8">
-            <CardHeader className="text-center">
-                <CardTitle className="text-3xl font-headline">{form.title}</CardTitle>
-                {form.description && <CardDescription className="text-base">{form.description}</CardDescription>}
-            </CardHeader>
-            <form onSubmit={handleSubmit}>
-                <CardContent className="space-y-6">
-                    {form.fields.map(field => (
-                        <FormFieldRenderer key={field.id} field={field} value={answers[field.id]} onChange={handleAnswerChange} />
-                    ))}
-                    <CardFooter className="p-0 pt-6">
-                        <Button type="submit" className="w-full h-12 text-lg" disabled={isSubmitting}>
-                            {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin"/> : <Send className="mr-2 h-5 w-5"/>}
-                             Enviar Respuesta
-                        </Button>
-                    </CardFooter>
-                </CardContent>
-            </form>
-        </Card>
+        <div style={{ backgroundColor: form.backgroundColor || undefined, fontFamily: form.fontStyle ? (fontMap[form.fontStyle as keyof typeof fontMap] as any)?.style.fontFamily : undefined }}>
+            <div className="max-w-3xl mx-auto my-8 p-4">
+                <Card className="shadow-2xl overflow-hidden" style={{'--form-theme-color': form.themeColor || 'hsl(var(--primary))'} as React.CSSProperties}>
+                    <div className="w-full h-4" style={{ backgroundColor: 'var(--form-theme-color)' }}/>
+                    {form.headerImageUrl && (
+                        <div className="w-full h-48 relative">
+                            <Image src={form.headerImageUrl} alt="Encabezado del formulario" fill className="object-cover" />
+                        </div>
+                    )}
+                    <CardHeader className="text-center pt-8">
+                        <CardTitle className={cn("text-4xl font-headline", fontStyle)}>{form.title}</CardTitle>
+                        {form.description && <CardDescription className={cn("text-base", fontStyle)}>{form.description}</CardDescription>}
+                    </CardHeader>
+                    <form onSubmit={handleSubmit}>
+                        <CardContent className="space-y-6">
+                            {form.fields.map(field => (
+                                <FormFieldRenderer key={field.id} field={field} value={answers[field.id]} onChange={handleAnswerChange} fontStyle={fontStyle} />
+                            ))}
+                        </CardContent>
+                        <CardFooter>
+                            <Button type="submit" className="w-full h-12 text-lg" disabled={isSubmitting} style={{ backgroundColor: 'var(--form-theme-color)' }}>
+                                {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin"/> : <Send className="mr-2 h-5 w-5"/>}
+                                 Enviar Respuesta
+                            </Button>
+                        </CardFooter>
+                    </form>
+                </Card>
+            </div>
+        </div>
     );
 }

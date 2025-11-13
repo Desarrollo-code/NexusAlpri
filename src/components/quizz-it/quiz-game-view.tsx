@@ -1,4 +1,3 @@
-
 // src/components/quizz-it/quiz-game-view.tsx
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
@@ -72,11 +71,12 @@ export function QuizGameView({ form, isEditorPreview = false, activeQuestionInde
   const renderQuestionTemplate = () => {
     if (!currentQuestion) return <div className="text-center">Fin del Quiz</div>;
     
-    switch (form.template) {
+    switch (currentQuestion.template) {
         case 'flip_card':
             return <FlipCardTemplate question={currentQuestion} onAnswer={handleAnswerSubmit}/>;
         case 'image':
         case 'true_false':
+        case 'image_options':
         case 'default':
         default:
              return (
@@ -87,7 +87,7 @@ export function QuizGameView({ form, isEditorPreview = false, activeQuestionInde
                   onTimeUp={handleTimeUp}
                   questionNumber={currentQuestionIndex + 1}
                   totalQuestions={questions.length}
-                  template={form.template}
+                  template={currentQuestion.template}
                   timerStyle={form.timerStyle}
                 />
             );

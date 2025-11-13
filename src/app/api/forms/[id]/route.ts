@@ -93,15 +93,20 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
   try {
     const body = await req.json();
-    const { title, description, status, isQuiz, fields, sharedWithUserIds, template, timerStyle } = body;
+    const { title, description, status, isQuiz, fields, sharedWithUserIds, headerImageUrl, themeColor, backgroundColor, fontStyle, template, timerStyle } = body;
 
     const dataToUpdate: any = {};
     if (title !== undefined) dataToUpdate.title = title;
     if (description !== undefined) dataToUpdate.description = description;
     if (status !== undefined) dataToUpdate.status = status;
     if (isQuiz !== undefined) dataToUpdate.isQuiz = isQuiz;
+    if (headerImageUrl !== undefined) dataToUpdate.headerImageUrl = headerImageUrl;
+    if (themeColor !== undefined) dataToUpdate.themeColor = themeColor;
+    if (backgroundColor !== undefined) dataToUpdate.backgroundColor = backgroundColor;
+    if (fontStyle !== undefined) dataToUpdate.fontStyle = fontStyle;
     if (template !== undefined) dataToUpdate.template = template;
     if (timerStyle !== undefined) dataToUpdate.timerStyle = timerStyle;
+
     if (sharedWithUserIds !== undefined) {
         dataToUpdate.sharedWith = {
             set: sharedWithUserIds.map((id: string) => ({ id }))
