@@ -300,8 +300,8 @@ export default function SettingsPageComponent() {
             <TabsContent value="appearance" className="mt-6 space-y-6">
                 <Card className="card-border-animated" id="settings-identity-card">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Building className="h-5 w-5 text-primary"/>Identidad y Marca</CardTitle>
-                        <CardDescription>Nombre de la plataforma, logo y marca de agua.</CardDescription>
+                        <CardTitle className="flex items-center gap-2"><Building className="h-5 w-5 text-primary"/>Identidad de Marca</CardTitle>
+                        <CardDescription>Define el nombre de tu plataforma, el logo principal y la marca de agua.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -315,7 +315,7 @@ export default function SettingsPageComponent() {
                             </div>
                         </div>
                         <Separator/>
-                        <div className="grid grid-cols-2 gap-6 place-items-center md:place-items-start">
+                        <div className="grid grid-cols-2 gap-6 pt-2">
                             <UploadWidget id="logo-upload" label="Logo (PNG/SVG)" currentImageUrl={formState.logoUrl} onUploadSuccess={(url) => handleImageUpload('logoUrl', url)} onRemove={() => handleRemoveImage('logoUrl')} disabled={isSaving} />
                             <UploadWidget id="watermark-upload" label="Marca de Agua (PNG)" currentImageUrl={formState.watermarkUrl} onUploadSuccess={(url) => handleImageUpload('watermarkUrl', url)} onRemove={() => handleRemoveImage('watermarkUrl')} disabled={isSaving} />
                         </div>
@@ -324,8 +324,8 @@ export default function SettingsPageComponent() {
 
                 <Card className="card-border-animated">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><ImageIcon className="h-5 w-5 text-primary"/>Imágenes Públicas y del Sistema</CardTitle>
-                        <CardDescription>Define las imágenes para las páginas públicas y elementos del sistema.</CardDescription>
+                        <CardTitle className="flex items-center gap-2"><ImageIcon className="h-5 w-5 text-primary"/>Imágenes de Navegación y Marca</CardTitle>
+                        <CardDescription>Personaliza las imágenes que aparecen en las páginas públicas y de acceso a la plataforma.</CardDescription>
                     </CardHeader>
                     <CardContent className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 place-items-center md:place-items-start">
                         <UploadWidget id="landing-img-upload" label="Página de Inicio" currentImageUrl={formState.landingImageUrl} onUploadSuccess={(url) => handleImageUpload('landingImageUrl', url)} onRemove={()=>handleRemoveImage('landingImageUrl')} disabled={isSaving} />
