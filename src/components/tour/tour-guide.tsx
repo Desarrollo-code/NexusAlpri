@@ -1,4 +1,3 @@
-
 // src/components/tour/tour-guide.tsx
 'use client';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
@@ -7,6 +6,8 @@ import { Card, CardFooter, CardHeader, CardTitle, CardDescription } from '@/comp
 import { Button } from '@/components/ui/button';
 import { ArrowRight, X } from 'lucide-react';
 import type { TourStep } from '@/lib/tour-steps';
+import { useAuth } from '@/contexts/auth-context';
+import Image from 'next/image';
 
 const getElementAndRect = (selector: string): { element: HTMLElement | null, rect: DOMRect | null } => {
   try {
@@ -27,6 +28,7 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: {
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
   const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
+  const { settings } = useAuth();
   
   const step = steps[currentStepIndex];
 
@@ -44,7 +46,6 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: {
 
       if (!isElementVisible) {
           element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-          // Esperamos un poco a que termine el scroll para obtener el nuevo rect
           setTimeout(() => {
               const newRect = element.getBoundingClientRect();
               setTargetRect(newRect);
@@ -53,7 +54,6 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: {
           setTargetRect(rect);
       }
     } else {
-      // Si el elemento no se encuentra, saltamos al siguiente paso.
       onNext();
     }
   }, [step, onNext]);
@@ -79,7 +79,6 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: {
         
         let top, left;
 
-        // Lógica de posicionamiento mejorada
         const placements = {
             bottom: { 
                 top: targetRect.bottom + spacing, 
@@ -101,7 +100,6 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: {
         
         let finalPosition: TourStep['placement'] = step.placement || 'bottom';
         
-        // Autodetección si no se especifica un `placement`
         if (!step.placement) {
             const canPlaceBottom = placements.bottom.top + popoverHeight < window.innerHeight;
             const canPlaceTop = placements.top.top > 0;
@@ -117,7 +115,6 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: {
         top = placements[finalPosition].top;
         left = placements[finalPosition].left;
         
-        // Ajustar para que no se salga de la pantalla
         if (left < spacing) left = spacing;
         if (left + popoverWidth > window.innerWidth - spacing) left = window.innerWidth - popoverWidth - spacing;
         if (top < spacing) top = spacing;
@@ -150,29 +147,45 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: {
         }}
       />
       
-      <motion.div
+      <div
         ref={popoverRef}
-        key={`tour-popover-${currentStepIndex}`}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
         className="fixed pointer-events-auto z-[9999]"
         style={{ top: popoverPosition.top, left: popoverPosition.left }}
       >
-        <Card className="w-80 shadow-2xl">
-          <CardHeader>
-            <CardTitle>{step.content.title}</CardTitle>
-            <CardDescription>{step.content.description}</CardDescription>
-          </CardHeader>
-          <CardFooter className="flex justify-between">
-            <Button variant="ghost" onClick={onStop}>Omitir</Button>
-            <Button onClick={onNext}>
-              {isLastStep ? 'Finalizar' : 'Siguiente'}
-              {!isLastStep && <ArrowRight className="ml-2 h-4 w-4" />}
-            </Button>
-          </CardFooter>
-        </Card>
-      </motion.div>
+        <motion.div 
+            className="flex items-start gap-0"
+            key={`tour-popover-${currentStepIndex}`}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+        >
+             {settings?.securityMascotUrl && (
+                 <motion.div
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.4, type: 'spring', stiffness: 400, damping: 15 }}
+                    className="relative -mr-5 mt-4 z-10"
+                 >
+                    <div className="w-20 h-20 rounded-full bg-card border-4 border-primary shadow-lg overflow-hidden">
+                       <Image src={settings.securityMascotUrl} alt="Mascota del Tour" width={80} height={80} className="object-cover"/>
+                    </div>
+                </motion.div>
+             )}
+            <Card className="w-80 shadow-2xl">
+              <CardHeader>
+                <CardTitle>{step.content.title}</CardTitle>
+                <CardDescription>{step.content.description}</CardDescription>
+              </CardHeader>
+              <CardFooter className="flex justify-between">
+                <Button variant="ghost" onClick={onStop}>Omitir</Button>
+                <Button onClick={onNext}>
+                  {isLastStep ? 'Finalizar' : 'Siguiente'}
+                  {!isLastStep && <ArrowRight className="ml-2 h-4 w-4" />}
+                </Button>
+              </CardFooter>
+            </Card>
+        </motion.div>
+      </div>
     </AnimatePresence>
   );
 }
