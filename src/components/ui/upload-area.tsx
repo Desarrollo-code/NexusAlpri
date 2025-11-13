@@ -1,11 +1,11 @@
 // src/components/ui/upload-area.tsx
 'use client';
 import { cn } from "@/lib/utils";
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, ChangeEvent } from 'react';
 import { IconUploadCloud } from '@/components/icons/icon-upload-cloud';
 
 interface UploadAreaProps {
-  onFileSelect: (files: FileList | null) => void;
+  onFileSelect: (file: File) => void;
   disabled?: boolean;
   className?: string;
   inputId?: string;
@@ -18,8 +18,14 @@ export function UploadArea({ onFileSelect, disabled, className, inputId = "file-
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    onFileSelect(event.target.files);
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      if (multiple) {
+        Array.from(event.target.files).forEach(file => onFileSelect(file));
+      } else {
+        onFileSelect(event.target.files[0]);
+      }
+    }
     // Reset the input value to allow re-uploading the same file
     if(event.target) {
         event.target.value = '';
@@ -51,13 +57,13 @@ export function UploadArea({ onFileSelect, disabled, className, inputId = "file-
       if(disabled) return;
       setIsDragging(false);
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-          onFileSelect(e.dataTransfer.files);
-          // Clear the input in case the same files are dropped again
-          if (inputRef.current) {
-            inputRef.current.value = '';
+          if (multiple) {
+            Array.from(e.dataTransfer.files).forEach(file => onFileSelect(file));
+          } else {
+            onFileSelect(e.dataTransfer.files[0]);
           }
       }
-  }, [onFileSelect, disabled]);
+  }, [onFileSelect, disabled, multiple]);
 
 
   const handleClick = () => {
