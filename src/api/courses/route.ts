@@ -10,11 +10,17 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   try {
     const session = await getCurrentUser();
+    
     const { searchParams } = new URL(req.url);
-    const manageView = searchParams.get('manageView') === 'true';
     const simpleView = searchParams.get('simple') === 'true';
-    const userId = searchParams.get('userId');
-    const userRole = searchParams.get('userRole') as UserRole;
+    
+    if (!session && !simpleView) {
+      return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
+    }
+    
+    const manageView = searchParams.get('manageView') === 'true';
+    const userId = session?.id;
+    const userRole = session?.role;
     
     const pageParam = searchParams.get('page');
     const pageSizeParam = searchParams.get('pageSize');
@@ -25,27 +31,18 @@ export async function GET(req: NextRequest) {
     const tab = searchParams.get('tab');
     const skip = (page - 1) * pageSize;
 
-    // --- Vista Simplificada para Selectores ---
     if (simpleView) {
         if (!session) {
              return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
         }
         const courses = await prisma.course.findMany({
-            where: {
-                status: 'PUBLISHED', // Solo se pueden asignar mensajes a cursos publicados
-            },
-            select: {
-                id: true,
-                title: true,
-            },
-            orderBy: {
-                title: 'asc',
-            },
+            where: { status: 'PUBLISHED' },
+            select: { id: true, title: true },
+            orderBy: { title: 'asc' },
         });
         return NextResponse.json({ courses });
     }
 
-    // --- Vistas de Gestión y Catálogo ---
     let whereClause: any = {};
     
     if (manageView) {
@@ -64,12 +61,21 @@ export async function GET(req: NextRequest) {
 
     const courseInclude = {
       instructor: { select: { id: true, name: true, avatar: true } },
-      prerequisite: { select: { id: true, title: true } }, // Incluir prerrequisito
+      prerequisite: { select: { id: true, title: true } },
       _count: {
         select: {
           modules: true,
-          ...(manageView && { enrollments: true }),
+          enrollments: true,
         },
+      },
+      modules: {
+        select: {
+          lessons: {
+            select: {
+              id: true
+            }
+          }
+        }
       },
       ...(manageView && {
         enrollments: {
@@ -82,13 +88,6 @@ export async function GET(req: NextRequest) {
           },
         },
       }),
-      // Si estamos en la vista de catálogo, obtener el progreso del usuario actual en los prerrequisitos
-      ...(!manageView && userId && {
-          userProgress: {
-              where: { userId },
-              select: { completedAt: true }
-          }
-      })
     };
 
     const coursesFromDb = await prisma.course.findMany({
@@ -98,21 +97,35 @@ export async function GET(req: NextRequest) {
         ...(isPaginated && { skip, take: pageSize }),
     });
 
-    const coursesWithPrereqCompletion = userId ? await Promise.all(coursesFromDb.map(async (course) => {
-        if (course.prerequisiteId) {
-            const prereqProgress = await prisma.courseProgress.findFirst({
-                where: {
-                    userId: userId,
-                    courseId: course.prerequisiteId,
-                    completedAt: { not: null },
-                },
-                select: { completedAt: true }
-            });
-            return { ...course, prerequisiteCompleted: !!prereqProgress };
-        }
-        return { ...course, prerequisiteCompleted: true }; // No prerequisite means it's "completed"
-    })) : coursesFromDb.map(c => ({...c, prerequisiteCompleted: true}));
+    let coursesWithPrereqCompletion;
 
+    if (userId) {
+      const prerequisiteIds = coursesFromDb
+        .map(course => course.prerequisiteId)
+        .filter((id): id is string => id !== null);
+
+      let completedPrereqs = new Set<string>();
+
+      if (prerequisiteIds.length > 0) {
+        const prereqProgress = await prisma.courseProgress.findMany({
+          where: {
+            userId: userId,
+            courseId: { in: prerequisiteIds },
+            completedAt: { not: null },
+          },
+          select: { courseId: true }
+        });
+        completedPrereqs = new Set(prereqProgress.map(p => p.courseId));
+      }
+
+      coursesWithPrereqCompletion = coursesFromDb.map(course => ({
+        ...course,
+        prerequisiteCompleted: !course.prerequisiteId || completedPrereqs.has(course.prerequisiteId),
+      }));
+
+    } else {
+        coursesWithPrereqCompletion = coursesFromDb.map(c => ({...c, prerequisiteCompleted: true}));
+    }
 
     const totalCourses = await prisma.course.count({ where: whereClause });
     
@@ -152,7 +165,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { title, description, category, prerequisiteId } = body;
+    const { title, description, category, prerequisiteId, isMandatory } = body;
     
     if (!title || !description) {
       return NextResponse.json({ message: 'Título y descripción son requeridos' }, { status: 400 });
@@ -166,8 +179,32 @@ export async function POST(req: NextRequest) {
         status: 'DRAFT',
         instructor: { connect: { id: session.id } },
         prerequisiteId: prerequisiteId || null,
+        isMandatory: isMandatory || false,
       },
       include: { instructor: true },
+    });
+
+    Promise.resolve().then(async () => {
+        try {
+            const ip = req.ip ?? req.headers.get('x-forwarded-for') ?? null;
+            const geo = req.geo;
+            const country = geo?.country ?? null;
+            const city = geo?.city ?? null;
+
+            await prisma.securityLog.create({
+              data: {
+                event: 'COURSE_CREATED',
+                ipAddress: ip,
+                userId: session.id,
+                details: `Curso creado: "${newCourse.title}" (ID: ${newCourse.id}).`,
+                userAgent: req.headers.get('user-agent'),
+                country,
+                city,
+              }
+            });
+        } catch (logError) {
+            console.error("Fallo al escribir el log de seguridad, pero el curso fue creado:", logError);
+        }
     });
 
     return NextResponse.json(newCourse, { status: 201 });
