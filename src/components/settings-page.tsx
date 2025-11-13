@@ -344,7 +344,7 @@ export default function SettingsPageComponent() {
                    <CardHeader>
                        <CardTitle className="flex items-center gap-2 text-lg"><ImagePlay className="h-5 w-5 text-primary"/>Imágenes de Navegación Pública</CardTitle>
                    </CardHeader>
-                   <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4 place-items-center">
+                   <CardContent className="grid grid-cols-2 md:grid-cols-6 gap-4 place-items-center">
                       <UploadWidget id="landing-img-upload" label="Página de Inicio" currentImageUrl={formState.landingImageUrl} onFileSelect={(url) => handleImageUpload('landingImageUrl', url)} onRemove={()=>handleRemoveImage('landingImageUrl')} disabled={isSaving}/>
                       <UploadWidget id="about-img-upload" label="Página 'Nosotros'" currentImageUrl={formState.aboutImageUrl} onFileSelect={(url) => handleImageUpload('aboutImageUrl', url)} onRemove={()=>handleRemoveImage('aboutImageUrl')} disabled={isSaving}/>
                       <UploadWidget id="benefits-img-upload" label="Beneficios (Inicio)" currentImageUrl={formState.benefitsImageUrl} onFileSelect={(url) => handleImageUpload('benefitsImageUrl', url)} onRemove={()=>handleRemoveImage('benefitsImageUrl')} disabled={isSaving}/>
