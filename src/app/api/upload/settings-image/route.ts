@@ -22,13 +22,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'No se ha subido ningún archivo.' }, { status: 400 });
     }
 
-    const safeFileName = file.name.replace(/[^a-zA-Z0-9-_\.]/g, '_');
+    // Corrección: Asegurar que el nombre del archivo siempre exista.
+    const fileName = file.name || 'archivo-sin-nombre';
+    const safeFileName = fileName.replace(/[^a-zA-Z0-9-_\.]/g, '_');
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
-    const filename = `${uniqueSuffix}-${safeFileName}`;
+    const finalFilename = `${uniqueSuffix}-${safeFileName}`;
 
     const { data: uploadData, error } = await supabaseAdmin.storage
       .from('settings_images')
-      .upload(filename, file);
+      .upload(finalFilename, file);
 
     if (error) {
       throw new Error(error.message);
