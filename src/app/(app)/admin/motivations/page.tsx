@@ -7,15 +7,19 @@ import { useTitle } from '@/contexts/title-context';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { MotivationalMessagesManager } from '@/components/motivations/motivational-messages-manager';
+import { useTour } from '@/contexts/tour-context';
+import { motivationsTour } from '@/lib/tour-steps';
 
 export default function MotivationsAdminPage() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const { setPageTitle } = useTitle();
   const router = useRouter();
+  const { startTour } = useTour();
 
   React.useEffect(() => {
     setPageTitle('Mensajes de Motivación');
-  }, [setPageTitle]);
+    startTour('motivations', motivationsTour);
+  }, [setPageTitle, startTour]);
 
   if (isAuthLoading) {
     return (
@@ -32,3 +36,5 @@ export default function MotivationsAdminPage() {
   
   return <MotivationalMessagesManager />;
 }
+
+    

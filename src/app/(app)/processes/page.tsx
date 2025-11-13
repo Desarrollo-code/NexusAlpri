@@ -2,7 +2,7 @@
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTitle } from '@/contexts/title-context';
-import { Loader2, AlertTriangle, Network, GripVertical, PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { Loader2, AlertTriangle, Network, GripVertical, PlusCircle, Edit, Trash2, HelpCircle } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import type { Process as PrismaProcess, User as PrismaUser } from '@prisma/client';
 import { useToast } from '@/hooks/use-toast';
@@ -34,6 +34,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
 import { getProcessColors } from '@/lib/utils';
 import { cn } from '@/lib/utils';
+import { useTour } from '@/contexts/tour-context';
+import { processesTour } from '@/lib/tour-steps';
 
 interface ProcessWithChildren extends PrismaProcess {
   children: ProcessWithChildren[];
@@ -41,7 +43,7 @@ interface ProcessWithChildren extends PrismaProcess {
 }
 
 const ProcessItem = ({ process, onEdit, onDelete }: { process: ProcessWithChildren, onEdit: (p: ProcessWithChildren) => void, onDelete: (p: ProcessWithChildren) => void }) => {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: process.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: process.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -103,7 +105,8 @@ export default function ProcessesPage() {
   const [error, setError] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   
-  // State para los modales
+  const { startTour, forceStartTour } = useTour();
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProcess, setEditingProcess] = useState<ProcessWithChildren | null>(null);
   const [processToDelete, setProcessToDelete] = useState<ProcessWithChildren | null>(null);
@@ -114,7 +117,8 @@ export default function ProcessesPage() {
 
   useEffect(() => {
     setPageTitle('Gestión de Procesos');
-  }, [setPageTitle]);
+    startTour('processes', processesTour);
+  }, [setPageTitle, startTour]);
 
   const fetchProcesses = useCallback(async () => {
     setIsLoading(true);
@@ -228,15 +232,22 @@ export default function ProcessesPage() {
   return (
     <>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-            <CardDescription>
-                Visualiza, organiza y gestiona los procesos y subprocesos de la empresa.
-            </CardDescription>
-            <Button onClick={openCreateModal}>
-              <PlusCircle className="mr-2 h-4 w-4" /> Crear Proceso
-            </Button>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div id="processes-header">
+                <CardDescription>
+                    Visualiza, organiza y gestiona los procesos y subprocesos de la empresa. Arrastra para reordenar.
+                </CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+                 <Button variant="outline" size="sm" onClick={() => forceStartTour('processes', processesTour)}>
+                    <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+                </Button>
+                <Button onClick={openCreateModal}>
+                  <PlusCircle className="mr-2 h-4 w-4" /> Crear Proceso
+                </Button>
+            </div>
         </div>
-        <Card>
+        <Card id="processes-structure">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Network /> Estructura Organizacional
@@ -316,3 +327,5 @@ export default function ProcessesPage() {
     </>
   );
 }
+
+    

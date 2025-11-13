@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { CourseCard } from '@/components/course-card';
 import { Input } from '@/components/ui/input';
 import type { Course as AppCourseType, EnrolledCourse, CourseStatus, UserRole } from '@/types'; 
-import { PackageX, Loader2, AlertTriangle, Filter, Search } from 'lucide-react'; 
+import { PackageX, Loader2, AlertTriangle, Filter, Search, HelpCircle } from 'lucide-react'; 
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -17,6 +17,8 @@ import { useTitle } from '@/contexts/title-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { mapApiCourseToAppCourse } from '@/lib/course-utils';
 import { EmptyState } from '@/components/empty-state';
+import { useTour } from '@/contexts/tour-context';
+import { coursesTour } from '@/lib/tour-steps';
 
 interface ApiCourse extends Omit<PrismaCourse, 'instructor' | '_count' | 'status'> {
   instructor: { id: string; name: string } | null;
@@ -31,6 +33,7 @@ export default function CoursesPage() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const { setPageTitle } = useTitle();
+  const { startTour, forceStartTour } = useTour();
   
   const [allApiCourses, setAllApiCourses] = useState<ApiCourse[]>([]);
   const [enrolledCourseIds, setEnrolledCourseIds] = useState<string[]>([]);
@@ -42,10 +45,10 @@ export default function CoursesPage() {
   
   useEffect(() => {
     setPageTitle('Catálogo de Cursos');
-  }, [setPageTitle]);
+    startTour('courses', coursesTour);
+  }, [setPageTitle, startTour]);
 
   const fetchCoursesAndEnrollments = useCallback(async () => {
-    // CORRECCIÓN: Guarda estricta para asegurar que 'user' existe.
     if (!user) {
         setIsLoading(false);
         return;
@@ -103,7 +106,6 @@ export default function CoursesPage() {
                             (course.description && course.description.toLowerCase().includes(searchTerm.toLowerCase()));
       
       const isPublished = course.status === 'PUBLISHED';
-      // CORRECCIÓN: Uso de encadenamiento opcional para prevenir errores.
       const isNotEnrolled = !enrolledCourseIds.includes(course?.id);
       const matchesCategory = activeCategory === 'all' || course.category === activeCategory;
 
@@ -153,11 +155,11 @@ export default function CoursesPage() {
     return (
       <div className="space-y-8">
         <div>
-          <Skeleton className="h-6 w-3/4" />
+          <Skeleton className="h-8 w-3/4" />
+          <Skeleton className="h-4 w-1/2 mt-2" />
         </div>
         <Card className="p-4 space-y-4 shadow">
           <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-4 w-40" />
         </Card>
         <div className="space-y-4">
             <Skeleton className="h-8 w-48" />
@@ -171,11 +173,16 @@ export default function CoursesPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <p className="text-muted-foreground">Explora nuestra oferta formativa y encuentra el curso perfecto para ti.</p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <p className="text-muted-foreground">Explora nuestra oferta formativa y encuentra el curso perfecto para ti.</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => forceStartTour('courses', coursesTour)}>
+            <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+        </Button>
       </div>
 
-      <Card className="p-4 space-y-4 shadow">
+      <Card className="p-4 space-y-4 shadow" id="courses-filters">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -249,3 +256,5 @@ export default function CoursesPage() {
     </div>
   );
 }
+
+    

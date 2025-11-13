@@ -1,10 +1,11 @@
+// src/app/(app)/my-courses/page.tsx
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { CourseCard } from '@/components/course-card';
 import type { EnrolledCourse, UserRole, Course as AppCourseType } from '@/types'; 
-import { GraduationCap, Loader2, AlertTriangle, Info, Search } from 'lucide-react';
+import { GraduationCap, Loader2, AlertTriangle, Info, Search, HelpCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -16,6 +17,8 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { useDebounce } from '@/hooks/use-debounce';
 import { EmptyState } from '@/components/empty-state';
+import { useTour } from '@/contexts/tour-context';
+import { myCoursesTour } from '@/lib/tour-steps';
 
 type FilterStatus = 'all' | 'in-progress' | 'completed';
 
@@ -23,6 +26,7 @@ export default function MyCoursesPage() {
   const { user, isLoading: isAuthLoading, settings } = useAuth();
   const { toast } = useToast();
   const { setPageTitle } = useTitle();
+  const { startTour, forceStartTour } = useTour();
   
   const [myEnrolledCourses, setMyEnrolledCourses] = useState<EnrolledCourse[]>([]);
   const [isFetchingPageData, setIsFetchingPageData] = useState(true); 
@@ -34,10 +38,10 @@ export default function MyCoursesPage() {
 
   useEffect(() => {
     setPageTitle('Mis Cursos');
-  }, [setPageTitle]);
+    startTour('myCourses', myCoursesTour);
+  }, [setPageTitle, startTour]);
 
   const fetchMyEnrollments = useCallback(async () => {
-    // CORRECCIÓN: Guarda estricta para asegurar que 'user' existe antes de continuar.
     if (!user) {
         setIsFetchingPageData(false);
         setMyEnrolledCourses([]);
@@ -53,9 +57,8 @@ export default function MyCoursesPage() {
         throw new Error(errorData.message || `Failed to fetch enrolled courses: ${response.statusText}`);
       }
       const data: any[] = await response.json(); 
-      // CORRECCIÓN: Mapeo seguro, verificando que 'item' y 'item.course' existan.
       const mappedCourses: EnrolledCourse[] = data
-        .filter(item => item && item.course) // Solo procesar elementos válidos
+        .filter(item => item && item.course) 
         .map(item => ({
             id: item.course.id,
             title: item.course.title,
@@ -87,14 +90,13 @@ export default function MyCoursesPage() {
   }, [user, toast]);
   
   useEffect(() => {
-    // Lógica simplificada: fetch solo cuando el usuario está definido.
-    if (user) {
+    if (user && !isAuthLoading) {
       fetchMyEnrollments();
-    } else if (!isAuthLoading) {
+    } else if (!user && !isAuthLoading) {
       setIsFetchingPageData(false);
       setMyEnrolledCourses([]);
     }
-}, [user, isAuthLoading, fetchMyEnrollments]);
+  }, [user, isAuthLoading, fetchMyEnrollments]);
 
   const { completedCourses, inProgressCourses } = useMemo(() => {
       const completed = myEnrolledCourses
@@ -149,16 +151,18 @@ export default function MyCoursesPage() {
     );
   }
 
-  const pageDescription = "Continúa tu aprendizaje y revisa tu progreso en los cursos a los que te has unido.";
-
-
   return (
     <div className="space-y-8">
-      <div>
-        <p className="text-muted-foreground">{pageDescription}</p>
+      <div id="my-courses-header" className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="space-y-1">
+          <p className="text-muted-foreground">Continúa tu aprendizaje y revisa tu progreso en los cursos a los que te has unido.</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => forceStartTour('myCourses', myCoursesTour)}>
+            <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+        </Button>
       </div>
 
-       <Card className="p-4 space-y-4 shadow">
+       <Card className="p-4 space-y-4 shadow" id="my-courses-filters">
         <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-grow">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -272,3 +276,5 @@ export default function MyCoursesPage() {
     </div>
   );
 }
+
+    
