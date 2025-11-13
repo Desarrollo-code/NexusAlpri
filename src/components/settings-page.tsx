@@ -51,16 +51,18 @@ const UploadWidget = ({
   label,
   id,
   currentImageUrl,
-  onUploadSuccess,
+  onFileSelect,
   onRemove,
   disabled,
 }: {
   label: string;
   id: string;
   currentImageUrl?: string | null;
-  onUploadSuccess: (url: string) => void;
+  onFileSelect: (file: File | null) => void;
   onRemove: () => void;
   disabled: boolean;
+  isUploading: boolean;
+  uploadProgress: number;
 }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -84,7 +86,7 @@ const UploadWidget = ({
 
     try {
         const result = await uploadWithProgress('/api/upload/settings-image', file, setUploadProgress);
-        onUploadSuccess(result.url); 
+        onFileSelect(result.url); 
         toast({ title: 'Imagen Subida' });
     } catch (err) {
         toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
@@ -94,7 +96,7 @@ const UploadWidget = ({
     }
   };
 
-  const handleFileSelect = (file: File | null) => {
+  const handleFileSelectInternal = (file: File | null) => {
       if (file) {
           handleUpload(file);
       }
@@ -119,7 +121,7 @@ const UploadWidget = ({
              <div className="relative w-full h-full group">
                 <Image src={displayUrl} alt={`Previsualización de ${label}`} fill className="object-contain p-2 rounded-lg border bg-muted/20" />
                 <div className="absolute top-1 right-1 flex flex-col gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                     <UploadArea onFileSelect={handleFileSelect} disabled={disabled} inputId={id} className="h-7 w-7 rounded-full shadow-md bg-secondary text-secondary-foreground hover:bg-secondary/80 p-0 border-0">
+                     <UploadArea onFileSelect={handleFileSelectInternal} disabled={disabled} inputId={id} className="h-7 w-7 rounded-full shadow-md bg-secondary text-secondary-foreground hover:bg-secondary/80 p-0 border-0">
                          <Replace className="h-4 w-4" />
                      </UploadArea>
                      <Button type="button" variant="destructive" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={onRemove} disabled={disabled}>
@@ -128,7 +130,7 @@ const UploadWidget = ({
                  </div>
             </div>
         ) : (
-             <UploadArea onFileSelect={handleFileSelect} disabled={disabled} inputId={id} className="h-full w-full"/>
+             <UploadArea onFileSelect={handleFileSelectInternal} disabled={disabled} inputId={id} className="h-full w-full"/>
         )}
       </div>
     </div>
@@ -296,9 +298,9 @@ export default function SettingsPageComponent() {
             </TabsList>
             
             <TabsContent value="appearance" className="mt-6 space-y-6">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                     <div className="lg:col-span-1 space-y-6">
-                        <Card id="settings-identity-card">
+                        <Card id="settings-identity-card" className="h-full">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-lg"><Building className="h-5 w-5 text-primary"/>Identidad de Marca</CardTitle>
                             </CardHeader>
@@ -322,7 +324,7 @@ export default function SettingsPageComponent() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <ScrollArea className="h-[420px] w-full">
+                                <ScrollArea className="h-[340px] w-full">
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pr-4">
                                         <UploadWidget id="auth-img-upload" label="Página de Acceso" currentImageUrl={formState.authImageUrl} onUploadSuccess={(url) => handleImageUpload('authImageUrl', url)} onRemove={()=>handleRemoveImage('authImageUrl')} disabled={isSaving}/>
                                         <UploadWidget id="announce-bg-upload" label="Fondo Anuncios" currentImageUrl={formState.announcementsImageUrl} onUploadSuccess={(url) => handleImageUpload('announcementsImageUrl', url)} onRemove={()=>handleRemoveImage('announcementsImageUrl')} disabled={isSaving} />
@@ -342,7 +344,7 @@ export default function SettingsPageComponent() {
                         </Card>
                     </div>
                 </div>
-                 <Card>
+                <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg"><ImagePlay className="h-5 w-5 text-primary"/>Imágenes de Navegación Pública</CardTitle>
                     </CardHeader>
