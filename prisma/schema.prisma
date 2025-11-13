@@ -587,6 +587,12 @@ model Form {
   responses   FormResponse[]
   sharedWith  User[]         @relation("SharedForms")
 
+headerImageUrl   String?
+  themeColor       String?
+  backgroundColor  String?
+  fontStyle        String?
+  template         String?
+  timerStyle       String?
   @@map("forms")
 }
 
