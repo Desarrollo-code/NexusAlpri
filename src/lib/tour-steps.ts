@@ -437,4 +437,20 @@ export const usersTour: TourStep[] = [
   },
 ];
 
-    
+export const processesTour: TourStep[] = [
+  {
+    target: '#processes-header',
+    content: {
+      title: 'Gestión de Procesos',
+      description: 'Organiza la estructura de tu empresa. Puedes crear nuevos procesos y subprocesos desde aquí.'
+    },
+  },
+   {
+    target: '#processes-structure',
+    content: {
+      title: 'Estructura Organizacional',
+      description: 'Visualiza la jerarquía de procesos. Puedes arrastrar y soltar para reordenarlos y usar el menú de acciones para editar o eliminar.'
+    },
+    placement: 'top',
+  },
+];
