@@ -1,3 +1,4 @@
+
 // src/app/(app)/profile/page.tsx
 'use client';
 
@@ -155,7 +156,7 @@ const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setC
                         <div className="relative">
                             <Input id="current-password" type={showCurrentPassword ? "text" : "password"} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required disabled={isSavingPassword} autoComplete="current-password" />
                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowCurrentPassword(!showCurrentPassword)}>
-                                {showCurrentPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
+                                {showCurrentPassword ? <Eye className="h-5 w-5"/> : <EyeOff className="h-5 w-5"/>}
                             </Button>
                         </div>
                     </div>
@@ -164,7 +165,7 @@ const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setC
                         <div className="relative">
                              <Input id="new-password" type={showNewPassword ? "text" : "password"} value={newPassword} onChange={e => setNewPassword(e.target.value)} required disabled={isSavingPassword} autoComplete="new-password"/>
                              <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowNewPassword(!showNewPassword)}>
-                                {showNewPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
+                                {showNewPassword ? <Eye className="h-5 w-5"/> : <EyeOff className="h-5 w-5"/>}
                             </Button>
                         </div>
                     </div>
@@ -174,7 +175,7 @@ const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setC
                          <div className="relative">
                             <Input id="confirm-password" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required disabled={isSavingPassword} autoComplete="new-password"/>
                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                                {showConfirmPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
+                                {showConfirmPassword ? <Eye className="h-5 w-5"/> : <EyeOff className="h-5 w-5"/>}
                             </Button>
                         </div>
                     </div>

@@ -1,3 +1,4 @@
+
 // src/components/users/user-form-modal.tsx
 'use client';
 
@@ -204,7 +205,7 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
                             <div className="relative">
                                 <Input id="password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} required={!user} autoComplete="new-password" />
                                 <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground" onClick={() => setShowPassword(!showPassword)}>
-                                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    {showPassword ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
                                 </Button>
                             </div>
                             {password && <PasswordStrengthIndicator password={password} isVisible={true} />}

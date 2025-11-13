@@ -1,3 +1,4 @@
+
 // src/components/auth/auth-form.tsx
 'use client';
 
@@ -143,7 +144,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                         autoComplete="current-password"
                     />
                      <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => setShowPassword(!showPassword)}>
-                        {showPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
+                        {showPassword ? <Eye className="h-5 w-5"/> : <EyeOff className="h-5 w-5"/>}
                     </Button>
                  </div>
                 <Button type="submit" className="w-full !mt-6 h-12 text-base" disabled={isLoading}>
@@ -180,7 +181,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                             autoComplete="new-password"
                         />
                          <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => setShowPassword(!showPassword)}>
-                            {showPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
+                            {showPassword ? <Eye className="h-5 w-5"/> : <EyeOff className="h-5 w-5"/>}
                         </Button>
                     </div>
                      <AnimatePresence>
