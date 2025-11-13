@@ -166,21 +166,35 @@ export default function SettingsPageComponent() {
   };
   
   const handleImageUpload = useCallback(async (field: ImageField, file: File | null) => {
-      if (!file) return;
-      setUploadStates(prev => ({ ...prev, [field]: { isUploading: true, progress: 0 }}));
-      
-      try {
-          const result = await uploadWithProgress('/api/upload/settings-image', file, (progress) => {
-             setUploadStates(prev => ({ ...prev, [field]: { ...prev[field], progress }}));
-          });
-          handleInputChange(field, result.url);
-          toast({ title: "Imagen Subida", description: "La imagen se ha subido correctamente."});
-      } catch (err) {
-          toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
-      } finally {
-          setUploadStates(prev => ({ ...prev, [field]: { isUploading: false, progress: 0 }}));
-      }
+    if (!file) return;
+    
+    setUploadStates(prev => ({ ...prev, [field]: { isUploading: true, progress: 0 }}));
+
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const response = await fetch('/api/upload/settings-image', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `Error al subir imagen: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        handleInputChange(field, result.url);
+        toast({ title: "Imagen Subida", description: "La imagen se ha subido correctamente."});
+
+    } catch (err) {
+        toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
+    } finally {
+        setUploadStates(prev => ({ ...prev, [field]: { isUploading: false, progress: 0 }}));
+    }
   }, [toast]);
+
 
   const handleRemoveImage = (field: ImageField) => {
       handleInputChange(field, null);
