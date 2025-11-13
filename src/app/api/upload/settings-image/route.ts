@@ -8,37 +8,36 @@ export async function POST(request: NextRequest) {
   if (!session || session.role !== 'ADMINISTRATOR') {
     return NextResponse.json({ success: false, message: 'No autorizado.' }, { status: 403 });
   }
-  
+
   if (!supabaseAdmin) {
     return NextResponse.json({ success: false, message: 'El cliente de administrador de Supabase no está configurado en el servidor.' }, { status: 500 });
   }
 
   try {
-    const data = await request.formData();
-    const file: File | null = data.get('file') as unknown as File;
+    const { filename, contentType } = await request.json();
 
-    if (!file) {
-      return NextResponse.json({ success: false, message: 'No se ha subido ningún archivo.' }, { status: 400 });
+    if (!filename || !contentType) {
+      return NextResponse.json({ success: false, message: 'Nombre de archivo y tipo de contenido son requeridos.' }, { status: 400 });
     }
-
-    const fileName = file.name || 'archivo-sin-nombre';
-    const safeFileName = fileName.replace(/[^a-zA-Z0-9-_\.]/g, '_');
+    
+    const safeFileName = filename.replace(/[^a-zA-Z0-9-_\.]/g, '_');
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
     const finalFilename = `${uniqueSuffix}-${safeFileName}`;
 
-    const { data: uploadData, error } = await supabaseAdmin.storage
+    const { data, error } = await supabaseAdmin.storage
       .from('settings_images')
-      .upload(finalFilename, file);
+      .createSignedUploadUrl(finalFilename);
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(`Error generando URL firmada: ${error.message}`);
     }
     
-    const { data: publicUrlData } = supabaseAdmin.storage
-      .from('settings_images')
-      .getPublicUrl(uploadData.path);
+    const publicUrl = supabaseAdmin.storage.from('settings_images').getPublicUrl(finalFilename).data.publicUrl;
       
-    return NextResponse.json({ success: true, url: publicUrlData.publicUrl });
+    return NextResponse.json({
+      uploadUrl: data.signedUrl,
+      url: publicUrl,
+    });
 
   } catch (e) {
     const errorMessage = e instanceof Error ? e.message : 'Error desconocido.';
