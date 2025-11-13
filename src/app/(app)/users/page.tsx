@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'reac
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, List, Grid, Filter, UserPlus, MoreVertical, Loader2, Briefcase, MessageSquare, Edit, Trash2, UserCog, UserX, Users as UsersIcon, Key } from 'lucide-react';
+import { PlusCircle, Search, List, Grid, Filter, UserPlus, MoreVertical, Loader2, Briefcase, MessageSquare, Edit, Trash2, UserCog, UserX, Users as UsersIcon, Key, HelpCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -37,6 +37,8 @@ import { getRoleInSpanish, getRoleBadgeVariant } from '@/lib/security-log-utils'
 import { getProcessColors } from '@/lib/utils';
 import { Identicon } from '@/components/ui/identicon';
 import { EmptyState } from '@/components/empty-state';
+import { useTour } from '@/contexts/tour-context';
+import { usersTour } from '@/lib/tour-steps';
 
 
 // --- TYPES & CONTEXT ---
@@ -48,7 +50,7 @@ interface UserWithProcess extends User {
     process: { id: string; name: string } | null;
 }
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 12;
 
 const DraggableUserPreview = ({ user }: { user: UserWithProcess }) => (
     <Card className="flex items-center gap-2 p-2 shadow-lg w-48">
@@ -96,6 +98,10 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
     onStatusChange: (user: User, status: boolean) => void
 }) => {
     const isMobile = useIsMobile();
+
+    const handleSelectAll = (checked: boolean) => {
+        onSelectionChange('all', checked);
+    };
 
     if (isMobile) {
         return (
@@ -158,9 +164,7 @@ const UserTable = ({ users, onSelectionChange, selectedUserIds, onEdit, onRoleCh
                         <TableHead className="w-[50px]">
                             <Checkbox 
                                 checked={users.length > 0 && users.every(u => selectedUserIds.has(u.id))}
-                                onCheckedChange={(checked) => {
-                                    onSelectionChange('all', !!checked);
-                                }}
+                                onCheckedChange={(checked) => handleSelectAll(!!checked)}
                             />
                         </TableHead>
                         <TableHead>Colaborador</TableHead>
@@ -237,6 +241,7 @@ function UsersPageComponent() {
     const { user: currentUser, settings } = useAuth();
     const { setPageTitle } = useTitle();
     const isMobile = useIsMobile();
+    const { startTour, forceStartTour } = useTour();
 
     const [usersList, setUsersList] = useState<UserWithProcess[]>([]);
     const [totalUsers, setTotalUsers] = useState(0);
@@ -275,6 +280,11 @@ function UsersPageComponent() {
     
     const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
     const [isBulkAssignModalOpen, setIsBulkAssignModalOpen] = useState(false);
+    
+    useEffect(() => {
+        setPageTitle('Control Central');
+        startTour('users', usersTour);
+    }, [setPageTitle, startTour]);
     
     const createQueryString = useCallback((paramsToUpdate: Record<string, string | number | null>) => {
       const params = new URLSearchParams(searchParams.toString());
@@ -324,10 +334,9 @@ function UsersPageComponent() {
     }, [currentUser, debouncedSearchTerm, currentPage, role, status, processId, toast]);
     
     useEffect(() => {
-        setPageTitle('Control Central');
         if (currentUser?.role !== 'ADMINISTRATOR') return;
         fetchData();
-    }, [currentUser, fetchData, setPageTitle]);
+    }, [currentUser, fetchData]);
     
     useEffect(() => {
         setSelectedUserIds(new Set());
@@ -446,7 +455,7 @@ function UsersPageComponent() {
     }
     
     const DesktopControls = () => (
-         <div className="flex items-center justify-between gap-4">
+         <div id="users-controls" className="flex items-center justify-between gap-4">
             <div className="relative flex-grow max-w-xs">
                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                  <Input placeholder="Buscar por nombre o email..." value={search} onChange={handleSearchChange} className="pl-10"/>
@@ -535,7 +544,7 @@ function UsersPageComponent() {
         if (selectedUserIds.size === 0) return null;
 
         return (
-             <div className="flex flex-wrap items-center justify-between gap-2 p-2 bg-background border rounded-lg shadow-lg">
+             <div id="bulk-actions-bar" className="flex flex-wrap items-center justify-between gap-2 p-2 bg-background border rounded-lg shadow-lg">
                 <p className="px-2 text-sm font-semibold">{selectedUserIds.size} seleccionado(s)</p>
                 <div className="flex items-center gap-2">
                     <Button size="sm" onClick={() => setIsBulkAssignModalOpen(true)}><Briefcase className="mr-2 h-4 w-4"/> Asignar Proceso</Button>
@@ -546,7 +555,7 @@ function UsersPageComponent() {
     }
 
     const GridView = () => (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {usersList.map(u => (
                 <DraggableUserCard 
                     key={u.id} 
@@ -564,14 +573,24 @@ function UsersPageComponent() {
     return (
         <DndContext sensors={sensors} onDragStart={(e) => setActiveDraggable(e.active)} onDragEnd={handleDragEnd}>
             <div className="space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div className="space-y-1">
+                        <h1 className="text-2xl font-semibold">Control Central de Colaboradores</h1>
+                        <p className="text-muted-foreground">Gestiona los usuarios, sus roles y sus procesos asignados en un solo lugar.</p>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => forceStartTour('users', usersTour)}>
+                        <HelpCircle className="mr-2 h-4 w-4"/>Ver Guía
+                    </Button>
+                </div>
+
                  {isMobile ? <MobileControls /> : <DesktopControls />}
 
                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-                    <div className="lg:col-span-3">
+                    <div id="users-main-view" className="lg:col-span-3">
                          <div className="mb-24 md:mb-4">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">{[...Array(10)].map((_,i) => <Skeleton key={i} className="h-48 w-full" />)}</div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">{[...Array(8)].map((_,i) => <Skeleton key={i} className="h-48 w-full" />)}</div>
                                 ) : (
                                     <Card><CardContent className="p-4"><Skeleton className="h-96 w-full"/></CardContent></Card>
                                 )
@@ -589,7 +608,7 @@ function UsersPageComponent() {
                          {totalPages > 1 && <SmartPagination className="mt-6" currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />}
                     </div>
 
-                    <aside className="hidden lg:block lg:col-span-1 lg:sticky lg:top-24 space-y-4">
+                    <aside id="users-sidebar" className="hidden lg:block lg:col-span-1 lg:sticky lg:top-24 space-y-4">
                         <ProcessTree processes={processes} onProcessUpdate={fetchData} onProcessClick={(id) => handleFilterChange('processId', id)} activeProcessId={processId}/>
                         <div className="md:bottom-4">
                            <BulkActionsBar />
