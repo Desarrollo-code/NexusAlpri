@@ -4,7 +4,6 @@ import { supabaseAdmin } from '@/lib/supabase-client';
 import { getCurrentUser } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
-  // Verificación de sesión para proteger la ruta
   const session = await getCurrentUser();
   if (!session || session.role !== 'ADMINISTRATOR') {
     return NextResponse.json({ success: false, message: 'No autorizado.' }, { status: 403 });
@@ -22,7 +21,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'No se ha subido ningún archivo.' }, { status: 400 });
     }
 
-    // Corrección: Asegurar que el nombre del archivo siempre exista.
     const fileName = file.name || 'archivo-sin-nombre';
     const safeFileName = fileName.replace(/[^a-zA-Z0-9-_\.]/g, '_');
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;

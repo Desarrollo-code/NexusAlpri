@@ -168,32 +168,28 @@ export default function SettingsPageComponent() {
   const handleImageUpload = useCallback(async (field: ImageField, file: File | null) => {
     if (!file) return;
     
+    // Anular temporalmente la imagen actual para mostrar el loader
+    const originalUrl = formState ? formState[field] : null;
+    handleInputChange(field, null);
+    
     setUploadStates(prev => ({ ...prev, [field]: { isUploading: true, progress: 0 }}));
-
-    const formData = new FormData();
-    formData.append('file', file);
     
     try {
-        const response = await fetch('/api/upload/settings-image', {
-            method: 'POST',
-            body: formData,
+        const result = await uploadWithProgress('/api/upload/settings-image', file, (progress) => {
+             setUploadStates(prev => ({ ...prev, [field]: { ...prev[field], progress }}));
         });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || `Error al subir imagen: ${response.statusText}`);
-        }
-
-        const result = await response.json();
+        
         handleInputChange(field, result.url);
         toast({ title: "Imagen Subida", description: "La imagen se ha subido correctamente."});
 
     } catch (err) {
         toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
+        // Revertir a la URL original si la subida falla
+        handleInputChange(field, originalUrl);
     } finally {
         setUploadStates(prev => ({ ...prev, [field]: { isUploading: false, progress: 0 }}));
     }
-  }, [toast]);
+  }, [toast, formState, handleInputChange]);
 
 
   const handleRemoveImage = (field: ImageField) => {
