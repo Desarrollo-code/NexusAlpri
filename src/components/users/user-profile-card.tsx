@@ -63,10 +63,10 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange, is
                 )}
                  {onSelectionChange && (
                     <div className="absolute top-2 left-2 z-20">
-                        <Checkbox
-                          checked={isSelected}
-                          onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)}
-                          className="data-[state=checked]:bg-accent data-[state=checked]:border-accent-foreground/50 border-accent/70 bg-background/80 backdrop-blur-sm"
+                         <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)}
+                            className="data-[state=checked]:bg-accent data-[state=checked]:border-accent-foreground/50 border-accent/70 bg-background/80 backdrop-blur-sm"
                         />
                     </div>
                  )}
