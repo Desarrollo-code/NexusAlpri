@@ -66,7 +66,7 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange, is
                         <Checkbox
                           checked={isSelected}
                           onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)}
-                          className="bg-background/80 backdrop-blur-sm border-primary"
+                          className="data-[state=checked]:bg-accent data-[state=checked]:border-accent-foreground/50 border-accent/70"
                         />
                     </div>
                  )}
