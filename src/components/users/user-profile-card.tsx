@@ -18,18 +18,27 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Checkbox } from '../ui/checkbox';
 
 interface UserProfileCardProps {
     user: User & { process?: { id: string; name: string } | null, processes?: { id: string; name: string }[] };
     onEdit?: (user: User) => void;
     onRoleChange?: (user: User) => void;
     onStatusChange?: (user: User, status: boolean) => void;
+    isSelected?: boolean;
+    onSelectionChange?: (id: string, selected: boolean) => void;
 }
 
-export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange }: UserProfileCardProps) => {
+export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange, isSelected, onSelectionChange }: UserProfileCardProps) => {
     const router = useRouter();
     const { user: currentUser } = useAuth();
 
+    const handleSendMessage = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        router.push(`/messages?new=${user.id}`);
+    };
+    
+    const showMessageButton = currentUser?.id !== user.id;
     const canModify = currentUser?.role === 'ADMINISTRATOR';
     
     const displayProcess = user.process ? [user.process] : (user.processes || []);
@@ -39,7 +48,7 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange }: 
         <Card className="flex flex-col h-full bg-card shadow-md hover:shadow-primary/20 transition-shadow duration-300 text-center overflow-hidden">
              <div className="h-16 w-full relative bg-primary">
                  {canModify && (
-                    <div className="absolute top-1 right-1">
+                    <div className="absolute top-1 right-1 z-20">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon" className="h-7 w-7 text-primary-foreground/70 hover:bg-black/20 hover:text-white"><MoreVertical className="h-4 w-4"/></Button>
@@ -52,7 +61,16 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange }: 
                         </DropdownMenu>
                     </div>
                 )}
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2">
+                 {onSelectionChange && (
+                    <div className="absolute top-2 left-2 z-20">
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)}
+                          className="bg-background/80 backdrop-blur-sm border-primary"
+                        />
+                    </div>
+                 )}
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
                     <Avatar className="h-20 w-20 border-4 border-card shadow-lg">
                         <AvatarImage src={user.avatar || undefined} />
                         <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
@@ -82,6 +100,14 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange }: 
                      )}
                 </div>
             </CardContent>
+
+            {showMessageButton && (
+                <CardFooter className="p-1 border-t mt-auto">
+                    <Button size="sm" variant="ghost" className="w-full h-7 text-xs" onClick={handleSendMessage}>
+                        <MessageSquare className="mr-1.5 h-3 w-3"/> Mensaje
+                    </Button>
+                </CardFooter>
+            )}
         </Card>
     );
 };
