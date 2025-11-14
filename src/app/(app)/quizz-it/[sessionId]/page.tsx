@@ -2,13 +2,28 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { QuizGameView } from '@/components/quizz-it/quiz-game-view';
 import type { AppForm } from '@/types';
 import { useTitle } from '@/contexts/title-context';
+import { ColorfulLoader } from '@/components/ui/colorful-loader';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const QuizSkeleton = () => (
+  <div className="flex flex-col items-center justify-center h-full min-h-[calc(100vh-10rem)] gap-8">
+      <Skeleton className="h-32 w-full max-w-2xl" />
+      <Skeleton className="h-64 w-full max-w-lg" />
+      <div className="grid grid-cols-2 gap-4 w-full max-w-2xl">
+          <Skeleton className="h-16 w-full" />
+          <Skeleton className="h-16 w-full" />
+          <Skeleton className="h-16 w-full" />
+          <Skeleton className="h-16 w-full" />
+      </div>
+  </div>
+);
 
 export default function QuizzITSessionPage({ params }: { params: { sessionId: string } }) {
     const { sessionId } = params;
@@ -51,11 +66,7 @@ export default function QuizzITSessionPage({ params }: { params: { sessionId: st
     }, [sessionId, toast, setPageTitle]);
     
     if (isLoading) {
-        return (
-            <div className="flex h-full min-h-[calc(100vh-10rem)] items-center justify-center">
-                <Loader2 className="h-12 w-12 animate-spin text-primary" />
-            </div>
-        );
+        return <QuizSkeleton />;
     }
     
     if (error) {

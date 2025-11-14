@@ -20,6 +20,7 @@ import { MonthView } from '@/components/calendar/month-view';
 import { WeekView } from '@/components/calendar/week-view';
 import { DayView } from '@/components/calendar/day-view';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export type CalendarView = 'month' | 'week' | 'day';
 
@@ -125,6 +126,19 @@ export default function CalendarPage() {
         default: return <MonthView {...viewProps} />;
     }
   }
+  
+  const CalendarSkeleton = () => (
+     <div className="flex flex-col md:flex-row h-full gap-6">
+        {!isMobile && (
+             <aside className="md:col-span-1 lg:col-span-1 w-full md:w-1/4">
+                <Skeleton className="h-full w-full rounded-lg" />
+             </aside>
+        )}
+        <div className="flex-1">
+             <Skeleton className="h-full w-full rounded-lg" />
+        </div>
+     </div>
+  );
 
   return (
     <div className={cn("flex flex-col h-[calc(100vh-8rem)] gap-4 md:gap-6")}>
@@ -148,28 +162,30 @@ export default function CalendarPage() {
         </div>
       </header>
 
-      <main className={cn("flex-grow min-h-0", isMobile ? 'flex flex-col gap-4' : 'grid grid-cols-1 md:grid-cols-4 gap-6')}>
-        {!isMobile && (
-             <aside className="md:col-span-1 lg:col-span-1" id="calendar-sidebar">
-                <DatePickerSidebar
-                    selectedDate={currentDate}
-                    onDateSelect={setCurrentDate}
-                    events={displayedEvents}
-                    onEventClick={handleOpenModal}
-                 />
-             </aside>
-        )}
-        <div className={cn("md:col-span-3 lg:col-span-3 flex flex-col min-h-0 bg-card rounded-lg border shadow-sm", isMobile ? "" : "p-0")} id="calendar-main-view">
+      <main className={cn("flex-grow min-h-0", isMobile ? 'flex flex-col gap-4' : '')}>
           {isLoading ? (
-            <div className="flex items-center justify-center h-full"><div className="w-8 h-8"><ColorfulLoader /></div></div>
+             <CalendarSkeleton />
           ) : error ? (
             <div className="flex flex-col items-center justify-center h-full text-destructive"><AlertTriangle className="h-8 w-8 mb-2" />Error al cargar: {error}</div>
           ) : (
-             <div className={cn("h-full w-full", view !== 'month' && "overflow-auto thin-scrollbar")}>
-                {renderView()}
-             </div>
+             <div className={cn("h-full w-full", isMobile ? 'flex flex-col gap-4' : 'grid grid-cols-1 md:grid-cols-4 gap-6')}>
+                 {!isMobile && (
+                     <aside className="md:col-span-1 lg:col-span-1" id="calendar-sidebar">
+                        <DatePickerSidebar
+                            selectedDate={currentDate}
+                            onDateSelect={setCurrentDate}
+                            events={displayedEvents}
+                            onEventClick={handleOpenModal}
+                         />
+                     </aside>
+                 )}
+                <div className={cn("md:col-span-3 lg:col-span-3 flex flex-col min-h-0 bg-card rounded-lg border shadow-sm", isMobile ? "" : "p-0")} id="calendar-main-view">
+                    <div className={cn("h-full w-full", view !== 'month' && "overflow-auto thin-scrollbar")}>
+                        {renderView()}
+                    </div>
+                </div>
+            </div>
           )}
-        </div>
       </main>
       
       <EventEditorModal

@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const { password: _, ...userToReturn } = newUser;
+    const { password: _, twoFactorSecret, ...userToReturn } = newUser;
 
     await createSession(newUser.id);
 

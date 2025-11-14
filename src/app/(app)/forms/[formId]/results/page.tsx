@@ -4,11 +4,22 @@ import { FormResultsView } from '@/components/forms/form-results-view';
 import { useTitle } from '@/contexts/title-context';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 
-export default function FormResultsPage({ params }: { params: { formId: string } }) {
-  const { formId } = params;
+const ResultsSkeleton = () => (
+    <div className="space-y-6">
+        <Skeleton className="h-24 w-full" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Skeleton className="h-64 w-full" />
+            <Skeleton className="h-64 w-full" />
+            <Skeleton className="h-64 w-full" />
+        </div>
+    </div>
+);
+
+function FormResultsPageComponent({ formId }: { formId: string }) {
   const { setPageTitle } = useTitle();
 
   useEffect(() => {
@@ -26,4 +37,13 @@ export default function FormResultsPage({ params }: { params: { formId: string }
         <FormResultsView formId={formId} />
     </div>
   );
+}
+
+export default function FormResultsPage({ params }: { params: { formId: string } }) {
+    const { formId } = params;
+    return (
+        <Suspense fallback={<ResultsSkeleton />}>
+            <FormResultsPageComponent formId={formId} />
+        </Suspense>
+    )
 }

@@ -30,6 +30,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { PdfViewer } from '@/components/pdf-viewer';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import { AnimatePresence, motion } from 'framer-motion';
+import { ColorfulLoader } from './ui/colorful-loader';
 
 const noteColors = [
   { value: 'yellow', bg: 'bg-yellow-100 dark:bg-yellow-900/40', border: 'border-yellow-200 dark:border-yellow-800/50' },
@@ -63,7 +64,7 @@ const DocxPreviewer = ({ url }: { url: string }) => {
         loadDocx();
     }, [url]);
 
-    if (isLoading) return <div className="p-4 text-center"><Loader2 className="animate-spin" /></div>;
+    if (isLoading) return <div className="p-4 text-center"><div className="w-6 h-6 mx-auto"><ColorfulLoader /></div></div>;
     if (error) return <div className="p-4 text-center text-destructive">{error}</div>;
     return <div className="prose prose-sm dark:prose-invert max-w-none my-4 p-3 border rounded-lg bg-card" dangerouslySetInnerHTML={{ __html: html || '' }} />;
 };
@@ -137,7 +138,7 @@ const LessonNotesPanel = ({ lessonId, isOpen, onClose }: { lessonId: string, isO
                     <span>Mis Apuntes</span>
                 </h3>
                 <div className="flex items-center gap-2">
-                    {isSaving && <p className="text-xs text-muted-foreground flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin"/>Guardando...</p>}
+                    {isSaving && <p className="text-xs text-muted-foreground flex items-center gap-1"><div className="w-3 h-3"><ColorfulLoader/></div>Guardando...</p>}
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-7 w-7"><Palette className="h-4 w-4"/></Button>
@@ -161,7 +162,7 @@ const LessonNotesPanel = ({ lessonId, isOpen, onClose }: { lessonId: string, isO
              <div className="flex-1 min-h-0">
                 {isLoading ? (
                     <div className="flex justify-center items-center h-full">
-                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                        <div className="w-6 h-6"><ColorfulLoader /></div>
                     </div>
                 ) : (
                     <RichTextEditor
@@ -724,7 +725,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                                 <CircularProgress value={courseProgress?.progressPercentage || 0} size={150} strokeWidth={12} />
                                 {completedLessonIds.size === totalLessonsCount && !courseProgress?.completedAt && (
                                     <Button onClick={handleConsolidateProgress} disabled={isConsolidating}>
-                                        {isConsolidating ? <Loader2 className="mr-2 animate-spin"/> : <CheckCircle className="mr-2 h-4 w-4"/>}
+                                        {isConsolidating ? <div className="w-4 h-4 mr-2"><ColorfulLoader/></div> : <CheckCircle className="mr-2 h-4 w-4"/>}
                                         Calcular Puntuación Final
                                     </Button>
                                 )}
@@ -744,13 +745,23 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
       );
   }
   
-  if (isLoading || !course) {
+  if (isLoading) {
     return (
         <div className="flex flex-col items-center justify-center h-full text-center p-6">
-            <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+            <div className="w-12 h-12 mb-4"><ColorfulLoader /></div>
             <h3 className="text-xl font-semibold">Cargando curso...</h3>
         </div>
     );
+  }
+
+  if(!course) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full text-center p-6">
+            <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
+            <h3 className="text-xl font-semibold">Error</h3>
+            <p className="text-muted-foreground">No se pudo cargar el curso.</p>
+        </div>
+      )
   }
 
   return (

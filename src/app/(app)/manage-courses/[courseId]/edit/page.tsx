@@ -1,16 +1,28 @@
 // src/app/(app)/manage-courses/[courseId]/edit/page.tsx
 import React from 'react';
 import dynamic from 'next/dynamic';
-import { Loader2 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
-// CourseEditor sigue siendo un Client Component, por lo que se carga dinámicamente.
 const CourseEditor = dynamic(
   () => import('@/components/course-editor-form').then(mod => mod.CourseEditor),
   { 
-    ssr: false, // Se mantiene la deshabilitación de SSR para el editor en sí.
+    ssr: false,
     loading: () => (
-        <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
-            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                <div className="lg:col-span-2 space-y-6">
+                    {/* General Info Skeleton */}
+                    <Skeleton className="h-64 w-full rounded-xl" />
+                    {/* Content Skeleton */}
+                    <Skeleton className="h-96 w-full rounded-xl" />
+                </div>
+                <div className="lg:col-span-1 space-y-6">
+                    {/* Publication Skeleton */}
+                    <Skeleton className="h-80 w-full rounded-xl" />
+                    {/* Category & Image Skeleton */}
+                    <Skeleton className="h-72 w-full rounded-xl" />
+                </div>
+            </div>
         </div>
     )
   }

@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, AlertTriangle, Notebook, BookOpen, Layers, HelpCircle } from 'lucide-react';
+import { AlertTriangle, Notebook, BookOpen, Layers, HelpCircle } from 'lucide-react';
 import type { UserNote } from '@/types';
 import { useTitle } from '@/contexts/title-context';
 import { StickyNoteCard } from '@/components/sticky-note-card';
@@ -12,6 +12,8 @@ import { useTour } from '@/contexts/tour-context';
 import { myNotesTour } from '@/lib/tour-steps';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/empty-state';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ColorfulLoader } from '@/components/ui/colorful-loader';
 
 interface NoteWithRelations extends UserNote {
   lesson: {
@@ -37,6 +39,26 @@ interface NotesByCourse {
     notes: NoteWithRelations[];
   }[];
 }
+
+const NotesSkeleton = () => (
+  <div className="space-y-12">
+    {[1, 2].map((i) => (
+      <div key={i}>
+        <Skeleton className="h-8 w-1/3 mb-6" />
+        <div className="space-y-8">
+          <div className="space-y-4">
+            <Skeleton className="h-5 w-1/4" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {[...Array(3)].map((_, j) => (
+                <Skeleton key={j} className="h-72 w-full rounded-lg" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+);
 
 export default function MyNotesPage() {
   const { user, isLoading: isAuthLoading, settings } = useAuth();
@@ -131,12 +153,8 @@ export default function MyNotesPage() {
       }));
   }, [notes]);
 
-  if (isAuthLoading || isLoading) {
-    return (
-      <div className="flex justify-center items-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+  if (isAuthLoading) {
+    return <div className="flex justify-center items-center py-12"><div className="w-8 h-8"><ColorfulLoader /></div></div>;
   }
 
   return (
@@ -151,7 +169,8 @@ export default function MyNotesPage() {
         </div>
 
       <div id="my-notes-board" className="space-y-12">
-        {error ? (
+        {isLoading ? <NotesSkeleton /> :
+        error ? (
           <div className="text-center py-12 text-destructive">
             <AlertTriangle className="mx-auto h-8 w-8 mb-2" />
             <p>Error al cargar: {error}</p>

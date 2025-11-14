@@ -1,11 +1,40 @@
 // src/app/(app)/courses/[courseId]/page.tsx
-import React from 'react';
+import React, { Suspense } from 'react';
 import { CourseViewer } from '@/components/course-viewer';
+import { Skeleton } from '@/components/ui/skeleton';
 
-// Este es un Server Component, por lo que los parámetros se reciben directamente.
-export default async function CourseDetailPage({ params }: { params: Promise<{ courseId: string }> }) {
-  const { courseId } = await params;
+const CourseViewerSkeleton = () => (
+    <div className="flex h-full">
+        <div className="hidden md:block w-80 flex-shrink-0 border-r bg-card p-4 space-y-4">
+             <Skeleton className="h-9 w-full" />
+             <div className="space-y-6 pt-4">
+                <div className="space-y-2">
+                    <Skeleton className="h-6 w-3/4" />
+                    <Skeleton className="h-5 w-full" />
+                    <Skeleton className="h-5 w-5/6" />
+                </div>
+                 <div className="space-y-2">
+                    <Skeleton className="h-6 w-1/2" />
+                    <Skeleton className="h-5 w-full" />
+                    <Skeleton className="h-5 w-4/5" />
+                    <Skeleton className="h-5 w-5/6" />
+                </div>
+             </div>
+        </div>
+        <div className="flex-1 p-8 space-y-6">
+            <Skeleton className="h-8 w-1/2" />
+            <Skeleton className="h-96 w-full rounded-xl" />
+            <Skeleton className="h-24 w-full" />
+        </div>
+    </div>
+)
 
-  // El CourseViewer es un Client Component que manejará la lógica de fetching.
-  return <CourseViewer courseId={courseId} />;
+export default function CourseDetailPage({ params }: { params: { courseId: string } }) {
+  const { courseId } = params;
+
+  return (
+      <Suspense fallback={<CourseViewerSkeleton />}>
+          <CourseViewer courseId={courseId} />
+      </Suspense>
+  );
 }

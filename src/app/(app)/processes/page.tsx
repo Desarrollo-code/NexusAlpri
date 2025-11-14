@@ -2,7 +2,7 @@
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTitle } from '@/contexts/title-context';
-import { Loader2, AlertTriangle, Network, GripVertical, PlusCircle, Edit, Trash2, HelpCircle } from 'lucide-react';
+import { AlertTriangle, Network, GripVertical, PlusCircle, Edit, Trash2, HelpCircle } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import type { Process as PrismaProcess, User as PrismaUser } from '@prisma/client';
 import { useToast } from '@/hooks/use-toast';
@@ -36,6 +36,8 @@ import { getProcessColors } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import { useTour } from '@/contexts/tour-context';
 import { processesTour } from '@/lib/tour-steps';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ColorfulLoader } from '@/components/ui/colorful-loader';
 
 interface ProcessWithChildren extends PrismaProcess {
   children: ProcessWithChildren[];
@@ -254,7 +256,10 @@ export default function ProcessesPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {isLoading ? ( <div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin" /></div>
+            {isLoading ? (
+                <div className="space-y-4">
+                    {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-lg" />)}
+                </div>
             ) : error ? ( <div className="flex flex-col items-center justify-center h-64 text-destructive bg-destructive/10 rounded-lg"><AlertTriangle className="h-8 w-8 mb-2" /><p className="font-semibold">Error al Cargar</p><p className="text-sm">{error}</p></div>
             ) : (
               <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -277,7 +282,7 @@ export default function ProcessesPage() {
                 <DialogHeader>
                     <DialogTitle>{editingProcess ? 'Editar Proceso' : 'Crear Nuevo Proceso'}</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleFormSubmit} className="space-y-4">
+                <form onSubmit={handleFormSubmit} className="space-y-4 py-4">
                     <div>
                         <Label htmlFor="process-name">Nombre del Proceso</Label>
                         <Input id="process-name" value={processName} onChange={(e) => setProcessName(e.target.value)} required disabled={isSubmitting}/>
@@ -299,7 +304,7 @@ export default function ProcessesPage() {
                     <DialogFooter>
                         <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
                         <Button type="submit" disabled={isSubmitting || !processName.trim()}>
-                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                            {isSubmitting && <div className="w-4 h-4 mr-2"><ColorfulLoader /></div>}
                             {editingProcess ? 'Guardar Cambios' : 'Crear Proceso'}
                         </Button>
                     </DialogFooter>
@@ -318,12 +323,11 @@ export default function ProcessesPage() {
                 <AlertDialogFooter>
                     <AlertDialogCancel>Cancelar</AlertDialogCancel>
                     <AlertDialogAction onClick={handleDeleteProcess} disabled={isSubmitting} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
-                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                        {isSubmitting && <div className="w-4 h-4 mr-2"><ColorfulLoader /></div>}
                         Eliminar
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
-        </AlertDialog>
-    </>
+        </>
   );
 }
