@@ -24,6 +24,23 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from '@/lib/utils';
 import { EmptyState } from '../empty-state';
+import { Skeleton } from '../ui/skeleton';
+
+const TemplateCardSkeleton = () => (
+    <Card className="flex flex-col">
+        <CardHeader>
+            <Skeleton className="h-5 w-3/4"/>
+        </CardHeader>
+        <CardContent className="flex-grow flex items-center justify-center">
+            <Skeleton className="w-full aspect-[1.414] rounded-md"/>
+        </CardContent>
+         <CardContent className="flex justify-end gap-2">
+            <Skeleton className="h-9 w-24"/>
+            <Skeleton className="h-9 w-20"/>
+            <Skeleton className="h-9 w-24"/>
+         </CardContent>
+    </Card>
+);
 
 const TemplateCard = ({ template, onEdit, onDelete, onPreview }: { template: CertificateTemplate, onEdit: (t: CertificateTemplate) => void, onDelete: (t: CertificateTemplate) => void, onPreview: (t: CertificateTemplate) => void }) => {
     return (
@@ -116,7 +133,20 @@ export function CertificateTemplateManager() {
     };
 
     if (isLoading) {
-        return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+        return (
+            <div className="space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div className="space-y-1">
+                        <Skeleton className="h-8 w-80" />
+                        <Skeleton className="h-5 w-96" />
+                    </div>
+                    <Skeleton className="h-10 w-48" />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(3)].map((_, i) => <TemplateCardSkeleton key={i} />)}
+                </div>
+            </div>
+        );
     }
 
     if (error) {
@@ -125,7 +155,7 @@ export function CertificateTemplateManager() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4" id="certificates-header">
                 <div className="space-y-1">
                     <h1 className="text-2xl font-semibold">Gestionar Plantillas de Certificados</h1>
                     <p className="text-muted-foreground">Crea y personaliza las plantillas que se usarán para generar los certificados de finalización.</p>
@@ -137,7 +167,7 @@ export function CertificateTemplateManager() {
             </div>
 
             {templates.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="certificate-card-example">
                     {templates.map(template => (
                         <TemplateCard key={template.id} template={template} onEdit={handleOpenEditor} onDelete={setDeletingTemplate} onPreview={setPreviewingTemplate}/>
                     ))}

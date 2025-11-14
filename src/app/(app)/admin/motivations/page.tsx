@@ -1,14 +1,13 @@
 // src/app/(app)/admin/motivations/page.tsx
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useTitle } from '@/contexts/title-context';
 import { useRouter } from 'next/navigation';
 import { MotivationalMessagesManager } from '@/components/motivations/motivational-messages-manager';
 import { useTour } from '@/contexts/tour-context';
 import { motivationsTour } from '@/lib/tour-steps';
-import { ColorfulLoader } from '@/components/ui/colorful-loader';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const MotivationsSkeleton = () => (
@@ -38,13 +37,23 @@ export default function MotivationsAdminPage() {
   const { setPageTitle } = useTitle();
   const router = useRouter();
   const { startTour } = useTour();
+  const [showSkeleton, setShowSkeleton] = useState(true);
 
   React.useEffect(() => {
     setPageTitle('Mensajes de Motivación');
     startTour('motivations', motivationsTour);
   }, [setPageTitle, startTour]);
 
-  if (isAuthLoading) {
+  // Sincronizar el esqueleto con la carga de autenticación y datos
+  useEffect(() => {
+    if (!isAuthLoading) {
+      // Un pequeño retraso para permitir que el componente hijo empiece a cargar
+      const timer = setTimeout(() => setShowSkeleton(false), 50); 
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthLoading]);
+
+  if (isAuthLoading || showSkeleton) {
     return <MotivationsSkeleton />;
   }
 

@@ -22,6 +22,23 @@ import {
 import { cn } from '@/lib/utils';
 import { getMotivationalTriggerLabel } from '@/lib/utils';
 import { EmptyState } from '../empty-state';
+import { Skeleton } from '../ui/skeleton';
+
+const MotivationCardSkeleton = () => (
+    <Card className="flex flex-col">
+        <CardHeader className="p-4">
+            <Skeleton className="h-5 w-3/4"/>
+            <Skeleton className="h-4 w-1/2"/>
+        </CardHeader>
+        <CardContent className="flex-grow flex items-center justify-center bg-muted">
+            <Skeleton className="w-full aspect-video"/>
+        </CardContent>
+        <CardFooter className="p-2 border-t flex justify-end gap-2">
+            <Skeleton className="h-9 w-24"/>
+            <Skeleton className="h-9 w-24"/>
+        </CardFooter>
+    </Card>
+);
 
 const MotivationCard = ({ message, onEdit, onDelete }: { message: MotivationalMessage & { triggerCourse?: { title: string } | null }, onEdit: (m: MotivationalMessage) => void, onDelete: (m: MotivationalMessage) => void }) => {
     return (
@@ -126,7 +143,20 @@ export function MotivationalMessagesManager() {
     };
 
     if (isLoading) {
-        return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+        return (
+            <div className="space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div className="space-y-1">
+                        <Skeleton className="h-8 w-80" />
+                        <Skeleton className="h-5 w-96" />
+                    </div>
+                    <Skeleton className="h-10 w-48" />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {[...Array(4)].map((_, i) => <MotivationCardSkeleton key={i} />)}
+                </div>
+            </div>
+        );
     }
 
     if (error) {
@@ -135,7 +165,7 @@ export function MotivationalMessagesManager() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4" id="motivations-header">
                 <div className="space-y-1">
                     <h1 className="text-2xl font-semibold">Gestionar Mensajes de Motivación</h1>
                     <p className="text-muted-foreground">Crea y personaliza las ventanas emergentes de felicitación para tus usuarios.</p>
@@ -147,7 +177,7 @@ export function MotivationalMessagesManager() {
             </div>
 
             {Array.isArray(messages) && messages.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="motivations-list">
                     {messages.map(msg => (
                         <MotivationCard key={msg.id} message={msg} onEdit={handleOpenEditor} onDelete={setDeletingMessage}/>
                     ))}
