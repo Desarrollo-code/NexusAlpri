@@ -78,7 +78,7 @@ const UploadWidget = ({
                  </div>
             </div>
       ) : isUploading ? (
-         <div className="w-full h-32 flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg bg-muted/50 p-2 relative">
+         <div className="w-full h-32 flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg bg-muted/80 p-2 relative">
             {currentImageUrl && <Image src={currentImageUrl} alt="Subiendo" fill className="object-contain opacity-30 p-2"/>}
             <div className="z-10 text-center space-y-2">
                 <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
@@ -242,7 +242,7 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-7xl h-[90vh] flex flex-col md:flex-row p-0 gap-0">
+            <DialogContent className="max-w-7xl h-[90vh] flex flex-col md:flex-row p-0 gap-0 rounded-2xl">
                 <div className="w-full md:w-1/3 min-w-[320px] flex flex-col bg-muted/50 border-r">
                     <DialogHeader className="p-4 border-b">
                         <DialogTitle className="flex items-center gap-2 text-xl font-bold"><Award className="h-5 w-5 text-primary"/>{template ? 'Editar Plantilla' : 'Nueva Plantilla'}</DialogTitle>

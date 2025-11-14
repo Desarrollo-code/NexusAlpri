@@ -37,7 +37,6 @@ import { useTour } from '@/contexts/tour-context';
 import { settingsTour } from '@/lib/tour-steps';
 import { UploadArea } from '@/components/ui/upload-area';
 import { ScrollArea } from './ui/scroll-area';
-import { ColorfulLoader } from './ui/colorful-loader';
 
 const availableFonts = [
     { value: 'Inter', label: 'Inter (Sans-serif)' },
@@ -112,7 +111,7 @@ const UploadWidget = ({
            <div className="w-full h-full flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg bg-muted/80 p-2 relative">
                 {localPreview && <Image src={localPreview} alt="Subiendo" fill className="object-contain opacity-30 p-2"/>}
                 <div className="z-10 text-center space-y-2">
-                    <div className="w-6 h-6 mx-auto"><ColorfulLoader/></div>
+                    <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
                     <p className="text-xs text-muted-foreground">Subiendo...</p>
                     <Progress value={uploadProgress} className="w-24 h-1.5" />
                 </div>
@@ -276,7 +275,7 @@ export default function SettingsPageComponent() {
 
   if (!user || user.role !== 'ADMINISTRATOR') {
     if (typeof window !== 'undefined') router.push('/dashboard');
-    return <div className="flex h-full items-center justify-center"><div className="w-8 h-8"><ColorfulLoader /></div></div>;
+    return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>;
   }
   
   return (
@@ -291,7 +290,7 @@ export default function SettingsPageComponent() {
                     <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
                 </Button>
                 <Button onClick={handleSaveSettings} disabled={isSaving || isLoading} size="sm">
-                    {isSaving ? <div className="w-4 h-4 mr-2"><ColorfulLoader /></div> : <Save className="mr-2 h-4 w-4" />}
+                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                     {isSaving ? 'Guardando...' : 'Guardar Configuración'}
                 </Button>
             </div>
@@ -512,7 +511,7 @@ export default function SettingsPageComponent() {
         <AlertDialog open={!!categoryToDelete} onOpenChange={(isOpen) => { if (!isOpen) setCategoryToDelete(null); }}>
           <AlertDialogContent>
               <AlertDialogHeader><AlertDialogTitle>¿Confirmar Eliminación?</AlertDialogTitle><AlertDialogDescription>Se verificará si la categoría "<strong>{categoryToDelete}</strong>" está en uso. Si no lo está, se eliminará de la lista (deberás guardar los cambios para confirmar). Si está en uso, se te notificará.</AlertDialogDescription></AlertDialogHeader>
-              <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><AlertDialogCancel disabled={isCheckingCategory}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDeleteCategory} disabled={isCheckingCategory} className={buttonVariants({ variant: "destructive" })}>{isCheckingCategory ? <div className="w-4 h-4 mr-2"><ColorfulLoader/></div> : <Trash2 className="mr-2 h-4 w-4" />}Sí, eliminar</AlertDialogAction></AlertDialogFooter>
+              <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><AlertDialogCancel disabled={isCheckingCategory}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDeleteCategory} disabled={isCheckingCategory} className={buttonVariants({ variant: "destructive" })}>{isCheckingCategory ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Trash2 className="mr-2 h-4 w-4" />}Sí, eliminar</AlertDialogAction></AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
     </div>

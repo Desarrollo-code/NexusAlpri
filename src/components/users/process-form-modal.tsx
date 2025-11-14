@@ -17,7 +17,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import type { Process } from '@/types';
-import { ColorfulLoader } from '../ui/colorful-loader';
 
 interface ProcessFormModalProps {
     isOpen: boolean;
@@ -49,9 +48,9 @@ export function ProcessFormModal({ isOpen, onClose, onSave, process, allProcesse
         }
     }, [process, isOpen]);
     
-    const flattenProcesses = (processes: Process[], level = 0): FlatProcess[] => {
+    const flattenProcesses = (processList: Process[], level = 0): FlatProcess[] => {
       let list: FlatProcess[] = [];
-      processes.forEach(p => {
+      processList.forEach(p => {
         list.push({ id: p.id, name: p.name, level });
         if (p.children && p.children.length > 0) {
           list.push(...flattenProcesses(p.children, level + 1));
@@ -130,7 +129,7 @@ export function ProcessFormModal({ isOpen, onClose, onSave, process, allProcesse
                 <DialogFooter>
                     <Button variant="outline" onClick={onClose}>Cancelar</Button>
                     <Button type="submit" form="process-form" disabled={isSaving || !name.trim()}>
-                        {isSaving && <div className="w-4 h-4 mr-2"><ColorfulLoader /></div>}
+                        {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                         {process ? 'Guardar Cambios' : 'Crear Proceso'}
                     </Button>
                 </DialogFooter>

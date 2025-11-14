@@ -215,7 +215,7 @@ export function MotivationEditorModal({ isOpen, onClose, message, onSave }: Moti
                                     </div>
                                 </div>
                             ) : isUploading ? (
-                                <div className="w-full aspect-video flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg bg-muted/50 p-2 relative">
+                                <div className="w-full aspect-video flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg bg-muted/80 p-2 relative">
                                     {localImagePreview && <Image src={localImagePreview} alt="Subiendo" fill className="object-contain opacity-30 p-2"/>}
                                     <div className="z-10 text-center space-y-2">
                                         <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
