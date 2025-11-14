@@ -37,12 +37,12 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange }: 
 
     return (
         <Card className="flex flex-col h-full bg-card shadow-md hover:shadow-primary/20 transition-shadow duration-300 text-center overflow-hidden">
-             <div className="h-16 w-full relative bg-gradient-to-br from-primary/10 to-accent/10">
+             <div className="h-16 w-full relative bg-primary">
                  {canModify && (
                     <div className="absolute top-1 right-1">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-7 w-7 text-foreground/70 hover:bg-black/20 hover:text-white"><MoreVertical className="h-4 w-4"/></Button>
+                                <Button variant="ghost" size="icon" className="h-7 w-7 text-primary-foreground/70 hover:bg-black/20 hover:text-white"><MoreVertical className="h-4 w-4"/></Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 <DropdownMenuItem onSelect={() => onEdit?.(user)}><Edit className="mr-2 h-4 w-4"/>Editar Perfil</DropdownMenuItem>
@@ -82,7 +82,6 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange }: 
                      )}
                 </div>
             </CardContent>
-
         </Card>
     );
 };
