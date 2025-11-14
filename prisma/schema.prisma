@@ -379,6 +379,7 @@ model PlatformSettings {
   emptyStateMotivationsUrl   String?
   emptyStateUsersUrl         String?
   emptyStateLeaderboardUrl   String?
+  emptyStateAnnouncementsUrl String?
   projectVersion             String? @default("1.0.0")
   updatedAt                  DateTime @updatedAt
 
