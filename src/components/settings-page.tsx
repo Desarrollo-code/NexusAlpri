@@ -54,6 +54,7 @@ const UploadWidget = ({
   onFileSelect,
   onRemove,
   disabled,
+  size = 'large'
 }: {
   label: string;
   id: string;
@@ -61,14 +62,19 @@ const UploadWidget = ({
   onFileSelect: (url: string) => void;
   onRemove: () => void;
   disabled: boolean;
+  size?: 'small' | 'large';
 }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [localPreview, setLocalPreview] = useState<string | null>(null);
   const { toast } = useToast();
+  
+  const sizeClasses = {
+      small: "w-24 h-24",
+      large: "w-40 h-32"
+  }
 
   useEffect(() => {
-    // Cuando la URL externa cambie (o al montar), limpiar el preview local
     setLocalPreview(null);
     if (localPreview) {
         URL.revokeObjectURL(localPreview); 
@@ -106,14 +112,14 @@ const UploadWidget = ({
   return (
     <div className="space-y-2 flex flex-col items-center">
       <Label className="text-xs text-muted-foreground">{label}</Label>
-      <div className="relative w-40 h-32">
+      <div className={cn("relative", sizeClasses[size])}>
         {isUploading ? (
            <div className="w-full h-full flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg bg-muted/80 p-2 relative">
                 {localPreview && <Image src={localPreview} alt="Subiendo" fill className="object-contain opacity-30 p-2"/>}
                 <div className="z-10 text-center space-y-2">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+                    <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto" />
                     <p className="text-xs text-muted-foreground">Subiendo...</p>
-                    <Progress value={uploadProgress} className="w-24 h-1.5" />
+                    <Progress value={uploadProgress} className="w-20 h-1" />
                 </div>
             </div>
         ) : displayUrl ? (
@@ -315,9 +321,9 @@ export default function SettingsPageComponent() {
                                  <div className="space-y-1.5"><Label htmlFor="platformName">Nombre de la Plataforma</Label><Input id="platformName" value={formState.platformName} onChange={(e) => handleInputChange('platformName', e.target.value)} disabled={isSaving}/></div>
                                  <div className="space-y-1.5"><Label htmlFor="projectVersion">Versión del Proyecto</Label><Input id="projectVersion" value={formState.projectVersion || ''} onChange={(e) => handleInputChange('projectVersion', e.target.value)} disabled={isSaving}/></div>
                                  <div className="grid grid-cols-3 gap-4 pt-2">
-                                   <UploadWidget id="logo-upload" label="Logo" currentImageUrl={formState.logoUrl} onFileSelect={(url) => handleImageUpload('logoUrl', url)} onRemove={() => handleRemoveImage('logoUrl')} disabled={isSaving} />
-                                   <UploadWidget id="favicon-upload" label="Favicon" currentImageUrl={formState.faviconUrl} onFileSelect={(url) => handleImageUpload('faviconUrl', url)} onRemove={() => handleRemoveImage('faviconUrl')} disabled={isSaving} />
-                                   <UploadWidget id="watermark-upload" label="Marca de Agua" currentImageUrl={formState.watermarkUrl} onFileSelect={(url) => handleImageUpload('watermarkUrl', url)} onRemove={() => handleRemoveImage('watermarkUrl')} disabled={isSaving} />
+                                   <UploadWidget id="logo-upload" label="Logo" size="small" currentImageUrl={formState.logoUrl} onFileSelect={(url) => handleImageUpload('logoUrl', url)} onRemove={() => handleRemoveImage('logoUrl')} disabled={isSaving} />
+                                   <UploadWidget id="favicon-upload" label="Favicon" size="small" currentImageUrl={formState.faviconUrl} onFileSelect={(url) => handleImageUpload('faviconUrl', url)} onRemove={() => handleRemoveImage('faviconUrl')} disabled={isSaving} />
+                                   <UploadWidget id="watermark-upload" label="Marca de Agua" size="small" currentImageUrl={formState.watermarkUrl} onFileSelect={(url) => handleImageUpload('watermarkUrl', url)} onRemove={() => handleRemoveImage('watermarkUrl')} disabled={isSaving} />
                                  </div>
                              </CardContent>
                          </Card>
