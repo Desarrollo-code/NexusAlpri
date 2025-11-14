@@ -7,7 +7,7 @@ import { getProcessColors } from '@/lib/utils';
 import { getRoleInSpanish, getRoleBadgeVariant } from '@/lib/security-log-utils';
 import type { User } from '@/types';
 import { Button } from '../ui/button';
-import { MessageSquare, Briefcase, MoreVertical, Edit, UserCog, UserX, Key } from 'lucide-react';
+import { MessageSquare, Briefcase, MoreVertical, Edit, UserCog, UserX, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { Badge } from '../ui/badge';
@@ -77,7 +77,7 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange }: 
                                 color: getProcessColors(displayProcess[0].id).raw.dark,
                             }}
                          >
-                             {displayProcess[0].name}
+                            <Briefcase className="mr-1 h-3 w-3"/> {displayProcess[0].name}
                         </Badge>
                      )}
                 </div>
