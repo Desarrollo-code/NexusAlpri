@@ -15,6 +15,33 @@ import { AdminDashboard } from '@/components/dashboard/admin-dashboard';
 import { InstructorDashboard } from '@/components/dashboard/instructor-dashboard';
 import { StudentDashboard } from '@/components/dashboard/student-dashboard';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const DashboardSkeleton = () => (
+    <div className="space-y-8">
+        <div className="space-y-1">
+            <Skeleton className="h-9 w-1/2" />
+            <Skeleton className="h-5 w-3/4" />
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Skeleton className="h-24 rounded-2xl" />
+            <Skeleton className="h-24 rounded-2xl" />
+            <Skeleton className="h-24 rounded-2xl" />
+            <Skeleton className="h-24 rounded-2xl" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+                <Skeleton className="h-96 rounded-2xl" />
+                <Skeleton className="h-64 rounded-2xl" />
+            </div>
+            <div className="lg:col-span-1 space-y-6">
+                <Skeleton className="h-48 rounded-2xl" />
+                <Skeleton className="h-72 rounded-2xl" />
+            </div>
+        </div>
+    </div>
+);
+
 
 // --- MAIN PAGE COMPONENT ---
 export default function DashboardPage() {
@@ -91,11 +118,7 @@ export default function DashboardPage() {
   };
   
   if (isAuthLoading || isLoading) {
-    return (
-      <div className="flex justify-center items-center py-16">
-          <div className="w-8 h-8"><ColorfulLoader /></div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (

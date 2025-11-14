@@ -27,7 +27,7 @@ import { cn } from '@/lib/utils';
 import { useTour } from '@/contexts/tour-context';
 import { enrollmentsTour } from '@/lib/tour-steps';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { ResponsiveContainer, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, Bar, TooltipProps, ComposedChart, Line } from 'recharts';
+import { ResponsiveContainer, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, Bar, TooltipProps, ComposedChart, Line, Cell } from 'recharts';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
@@ -35,6 +35,8 @@ import { startOfDay, subDays, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Link from 'next/link';
 import { QuizAnalyticsView } from '@/components/analytics/quiz-analytics-view';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ColorfulLoader } from '@/components/ui/colorful-loader';
 
 
 // --- TYPE DEFINITIONS ---
@@ -109,7 +111,7 @@ const CourseSelector = ({ courses, onSelect, selectedCourseId, isLoading }: { co
                     disabled={isLoading || courses.length === 0}
                     id="enrollments-course-selector"
                 >
-                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    {isLoading ? <div className="w-4 h-4 mr-2"><ColorfulLoader /></div> : null}
                     <span className="truncate">{isLoading ? "Cargando cursos..." : selectedCourseTitle}</span>
                     <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
@@ -226,6 +228,32 @@ const EnrolledStudentList = ({ enrollments, onAction }: {
         </div>
     );
 };
+
+const EnrollmentsSkeleton = () => (
+    <div className="space-y-6">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Skeleton className="h-24 rounded-lg" />
+            <Skeleton className="h-24 rounded-lg" />
+            <Skeleton className="h-24 rounded-lg" />
+        </div>
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <Skeleton className="xl:col-span-2 h-72 rounded-lg" />
+            <Skeleton className="h-72 rounded-lg" />
+        </div>
+        <Card>
+            <CardHeader>
+                <Skeleton className="h-8 w-1/2" />
+                <Skeleton className="h-10 w-full sm:w-80" />
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+                </div>
+            </CardContent>
+        </Card>
+    </div>
+);
+
 
 // --- MAIN PAGE COMPONENT ---
 function EnrollmentsPageComponent() {
@@ -400,7 +428,7 @@ function EnrollmentsPageComponent() {
   const totalPages = Math.ceil(filteredEnrollments.length / PAGE_SIZE);
 
   if (isAuthLoading) {
-    return <div className="flex items-center justify-center h-screen"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+    return <div className="flex items-center justify-center h-screen"><div className="w-8 h-8"><ColorfulLoader /></div></div>;
   }
 
   if (!currentUser || (currentUser.role !== 'ADMINISTRATOR' && currentUser.role !== 'INSTRUCTOR')) {
@@ -440,7 +468,7 @@ function EnrollmentsPageComponent() {
         {selectedCourseId && (
           <CardContent>
             {isLoadingDetails ? (
-                <div className="flex items-center justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+                <EnrollmentsSkeleton />
             ) : selectedCourseInfo ? (
                 <div className="space-y-6">
                     <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4" id="enrollments-stats-cards">
@@ -601,7 +629,7 @@ function EnrollmentsPageComponent() {
             <AlertDialogFooter>
                 <AlertDialogCancel>No, mantener</AlertDialogCancel>
                 <AlertDialogAction onClick={handleUnenrollStudent} disabled={isUnenrolling} className={cn(buttonVariants({ variant: 'destructive'}))}>
-                    {isUnenrolling && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>} Sí, cancelar inscripción
+                    {isUnenrolling && <div className="w-4 h-4 mr-2"><ColorfulLoader /></div>} Sí, cancelar inscripción
                 </AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
@@ -622,7 +650,7 @@ function EnrollmentsPageComponent() {
 
 export default function EnrollmentsPage() {
     return (
-        <Suspense fallback={<div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
+        <Suspense fallback={<div className="flex items-center justify-center h-full"><div className="w-8 h-8"><ColorfulLoader /></div></div>}>
             <EnrollmentsPageComponent />
         </Suspense>
     )
