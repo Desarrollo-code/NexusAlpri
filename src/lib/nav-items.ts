@@ -22,6 +22,7 @@ import {
   Award,
   Megaphone,
 } from 'lucide-react';
+import { GradientIcon } from '@/components/ui/gradient-icon';
 
 const NAVIGATION_ITEMS: NavItem[] = [
   // --- General Items ---

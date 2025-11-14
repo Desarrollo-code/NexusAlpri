@@ -275,7 +275,7 @@ export const SidebarFooter = () => {
                     isCollapsed ? 'justify-center p-0 h-10' : 'justify-start gap-3 p-3'
                 )}
             >
-                <LogOut className="h-5 w-5" />
+                <GradientIcon icon={LogOut} />
                 {!isCollapsed && <span className="font-semibold">Cerrar Sesión</span>}
             </Button>
             <Button
