@@ -24,9 +24,8 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning className={fontVariables}>
       <head>
-        {/* El favicon ahora se inyecta dinámicamente desde ThemeProvider, 
-            pero dejamos un fallback estático aquí. */}
-        <link rel="icon" href="/favicon.png" sizes="any" />
+        {/* CORRECCIÓN: Se añade 'sizes="any"' para instruir al navegador a usar una mejor resolución del ícono. */}
+        <link rel="icon" href="/favicon.png" type="image/png" sizes="any" />
       </head>
       <body className={cn("min-h-screen bg-background font-body antialiased")}>
         <AuthProvider>

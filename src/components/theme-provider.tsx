@@ -69,18 +69,14 @@ function DynamicStyleInjector() {
       root.style.setProperty('--font-body', bodyFontFamily);
       
       // --- Lógica del Favicon ---
+      // CORRECCIÓN: Buscamos la etiqueta existente en lugar de crear una nueva.
       let faviconLink = head.querySelector<HTMLLinkElement>('link[rel="icon"]');
-      if (!faviconLink) {
-        faviconLink = document.createElement('link');
-        faviconLink.rel = 'icon';
-        head.appendChild(faviconLink);
-      }
-      
-      // Actualizar el favicon si está en la configuración, de lo contrario, usar el por defecto.
-      if (settings.faviconUrl) {
-          faviconLink.href = settings.faviconUrl;
-      } else {
-          faviconLink.href = '/favicon.png'; // Fallback a un favicon estático
+      if (faviconLink) {
+        if (settings.faviconUrl) {
+            faviconLink.href = settings.faviconUrl;
+        } else {
+            faviconLink.href = '/favicon.png'; // Fallback
+        }
       }
     }
     
