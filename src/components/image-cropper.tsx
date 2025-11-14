@@ -5,8 +5,9 @@ import React, { useState, useCallback } from 'react';
 import Cropper, { type Area } from 'react-easy-crop';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
-import { Loader2, ZoomIn, ZoomOut, RotateCcw, Crop, Check, X } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, Crop, Check, X } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { ColorfulLoader } from './ui/colorful-loader';
 
 interface ImageCropperProps {
   image: string;
@@ -133,7 +134,7 @@ export function ImageCropper({ image, onCropComplete, onCropCancel }: ImageCropp
               <X className="h-6 w-6" />
            </Button>
            <Button type="button" size="icon" className="rounded-full h-12 w-12 shadow-lg flex items-center justify-center" onClick={handleCrop} disabled={isProcessing}>
-             {isProcessing ? <Loader2 className="h-6 w-6 animate-spin" /> : <Check className="h-6 w-6" />}
+             {isProcessing ? <div className="w-6 h-6"><ColorfulLoader /></div> : <Check className="h-6 w-6" />}
           </Button>
         </div>
       </div>

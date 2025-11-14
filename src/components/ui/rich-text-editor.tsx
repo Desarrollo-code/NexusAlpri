@@ -3,9 +3,9 @@
 import React from 'react';
 import dynamic from 'next/dynamic';
 import 'react-quill-new/dist/quill.snow.css';
-import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ReactQuillProps } from 'react-quill-new';
+import { ColorfulLoader } from './colorful-loader';
 
 // Importa react-quill-new de forma dinámica para evitar SSR.
 const ReactQuill = dynamic(
@@ -14,7 +14,7 @@ const ReactQuill = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex items-center justify-center h-40 border rounded-md bg-muted/50">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <div className="w-6 h-6"><ColorfulLoader /></div>
       </div>
     ),
   }

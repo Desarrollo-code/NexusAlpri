@@ -79,7 +79,7 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange, is
             </div>
 
             <CardContent className="pt-12 px-2 pb-3 flex-grow flex flex-col items-center">
-                <p className="font-semibold text-lg truncate max-w-[180px]">{user.name}</p>
+                <p className="font-semibold text-base truncate max-w-[180px]">{user.name}</p>
                 <p className="text-sm text-primary font-medium">{getRoleInSpanish(user.role)}</p>
                 
                  <div className="mt-2 flex items-center flex-wrap justify-center gap-1.5">

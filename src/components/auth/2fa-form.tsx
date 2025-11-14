@@ -90,7 +90,7 @@ export default function TwoFactorAuthForm() {
                 className="w-full h-11 text-base"
                 disabled={isLoading || token.length < 6}
             >
-                {isLoading ? <div className="w-5 h-5 mr-2"><ColorfulLoader/></div> : <ShieldCheck className="mr-2 h-5 w-5" />}
+                {isLoading ? <div className="w-6 h-6 mr-2"><ColorfulLoader/></div> : <ShieldCheck className="mr-2 h-5 w-5" />}
                 Verificar Código
             </Button>
         </form>
