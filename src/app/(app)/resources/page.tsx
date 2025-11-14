@@ -12,7 +12,7 @@ import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDow
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { ResourceListItem } from '@/components/resources/resource-list-item';
 import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
-import { DndContext, type DragEndEvent, MouseSensor, TouchSensor, useSensor, useSensors, useDroppable } from '@dnd-kit/core';
+import { DndContext, type DragEndEvent, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -21,7 +21,6 @@ import { ResourceEditorModal } from '@/components/resources/resource-editor-moda
 import { FolderCreatorModal } from '@/components/resources/folder-creator-modal';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Table, TableHeader, TableRow, TableHead, TableBody } from '@/components/ui/table';
-import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
@@ -30,6 +29,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import type { Prisma } from '@prisma/client';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import { VideoPlaylistView } from '@/components/resources/video-playlist-view';
+import { Skeleton } from '../ui/skeleton';
 
 const getFileTypeFilter = (fileType: string): Prisma.EnterpriseResourceWhereInput => {
     const mimeMap: Record<string, string[]> = {
@@ -80,7 +80,6 @@ export default function ResourcesPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
   const [filters, setFilters] = useState({
-      dateRange: { from: undefined, to: undefined },
       fileType: 'all',
       hasPin: false,
       hasExpiry: false,
@@ -110,8 +109,6 @@ export default function ResourcesPage() {
     if (currentFolderId) params.append('parentId', currentFolderId);
     if (debouncedSearchTerm) params.append('search', debouncedSearchTerm);
     
-    if (filters.dateRange.from) params.append('startDate', filters.dateRange.from.toISOString());
-    if (filters.dateRange.to) params.append('endDate', filters.dateRange.to.toISOString());
     if (filters.fileType !== 'all') params.append('fileType', filters.fileType);
     if (filters.hasPin) params.append('hasPin', 'true');
     if (filters.hasExpiry) params.append('hasExpiry', 'true');
@@ -281,7 +278,6 @@ export default function ResourcesPage() {
                         <PopoverContent className="w-screen max-w-sm p-4" align="end">
                            <div className="space-y-4">
                               <h4 className="font-medium text-center">Filtros Avanzados</h4>
-                              <div className="space-y-2"><Label>Fecha de Subida</Label><DateRangePicker date={filters.dateRange} onDateChange={(range) => setFilters(f => ({...f, dateRange: range || {from: undefined, to: undefined}}))} /></div>
                               <div className="space-y-2"><Label>Tipo de Archivo</Label><Select value={filters.fileType} onValueChange={(v) => setFilters(f => ({...f, fileType: v}))}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{FILE_TYPE_OPTIONS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent></Select></div>
                               <Separator/>
                               <div className="flex items-center justify-between"><Label htmlFor="has-pin">Protegido con PIN</Label><Switch id="has-pin" checked={filters.hasPin} onCheckedChange={(c) => setFilters(f => ({...f, hasPin: c}))} /></div>
@@ -321,7 +317,15 @@ export default function ResourcesPage() {
         
         <div>
             {isLoadingData ? (
-                <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                  {[...Array(12)].map((_, i) => (
+                    <div key={i} className="space-y-2">
+                        <Skeleton className="aspect-[3/2] w-full" />
+                        <Skeleton className="h-4 w-3/4" />
+                        <Skeleton className="h-3 w-1/2" />
+                    </div>
+                  ))}
+                </div>
             ) : error ? (
                 <div className="text-center py-10"><AlertTriangle className="mx-auto h-8 w-8 text-destructive" /><p className="mt-2 font-semibold text-destructive">{error}</p></div>
             ) : isVideoFolder ? (

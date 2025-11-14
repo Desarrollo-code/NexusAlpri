@@ -32,6 +32,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
 import { EmptyState } from '@/components/empty-state';
 import { Megaphone } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const UpcomingEventsWidget = ({ events }: { events: CalendarEvent[] }) => {
     return (
@@ -184,6 +185,31 @@ function AnnouncementsPageComponent() {
   };
 
   const canCreate = user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR';
+  
+  const AnnouncementSkeleton = () => (
+    <div className="break-inside-avoid">
+        <Card className="w-full">
+            <CardHeader className="p-4 flex flex-row items-start gap-4 space-y-0">
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <div className="w-full space-y-2">
+                    <div className="flex justify-between">
+                         <Skeleton className="h-4 w-24" />
+                         <Skeleton className="h-4 w-16" />
+                    </div>
+                    <Skeleton className="h-6 w-full rounded-lg" />
+                </div>
+            </CardHeader>
+            <CardContent className="px-4 pb-3 pt-0 pl-16">
+                 <Skeleton className="h-20 w-full" />
+            </CardContent>
+            <CardFooter className="p-4 pt-0 flex items-center justify-between pl-16">
+                 <Skeleton className="h-8 w-24" />
+                 <Skeleton className="h-4 w-10" />
+            </CardFooter>
+        </Card>
+    </div>
+  );
+
 
   return (
     <>
@@ -204,8 +230,8 @@ function AnnouncementsPageComponent() {
             </Tabs>
 
              {isLoading ? (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-64 w-full rounded-2xl"/>)}
+                <div className="masonry-grid">
+                  {[...Array(6)].map((_, i) => <AnnouncementSkeleton key={i} />)}
                 </div>
               ) : error ? (
                 <div className="text-center p-8 text-destructive"><AlertTriangle className="mx-auto h-8 w-8 mb-2" />{error}</div>
