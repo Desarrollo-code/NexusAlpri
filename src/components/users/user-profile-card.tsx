@@ -7,7 +7,7 @@ import { getProcessColors } from '@/lib/utils';
 import { getRoleInSpanish, getRoleBadgeVariant } from '@/lib/security-log-utils';
 import type { User } from '@/types';
 import { Button } from '../ui/button';
-import { MessageSquare, Briefcase, MoreVertical, Edit, UserCog, UserX, Loader2 } from 'lucide-react';
+import { MessageSquare, Briefcase, MoreVertical, Edit, UserCog, UserX } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { Badge } from '../ui/badge';
@@ -55,7 +55,7 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange }: 
                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2">
                     <Avatar className="h-20 w-20 border-4 border-card shadow-lg">
                         <AvatarImage src={user.avatar || undefined} />
-                        <AvatarFallback><Identicon userId={user.id} /></AvatarFallback>
+                        <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
                     </Avatar>
                 </div>
             </div>
