@@ -32,5 +32,5 @@ export function middleware(request: NextRequest) {
 export const config = {
   // El middleware solo se ejecutará en las rutas de la aplicación y de la API,
   // excluyendo las rutas de Next.js (_next), los archivos estáticos y las rutas de autenticación de la API.
-  matcher: ['/((?!api/auth|_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!api/auth|_next/static|_next/image|favicon.png).*)'],
 };
