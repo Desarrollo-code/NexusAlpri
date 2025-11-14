@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
+import { Skeleton } from '../ui/skeleton';
 
 export function PublicTopBar() {
   const pathname = usePathname();
@@ -18,7 +19,7 @@ export function PublicTopBar() {
     { href: '/about', label: 'Nosotros', icon: Info },
   ];
   
-  if (isLoading || user) {
+  if (user) {
       return null;
   }
 
@@ -28,14 +29,15 @@ export function PublicTopBar() {
         <div className="flex items-center justify-start flex-1">
           <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
             <div className="relative w-14 h-14 flex-shrink-0 drop-shadow-md">
-              {settings?.logoUrl ? (
+              {isLoading ? <Skeleton className="h-full w-full bg-white/20"/> :
+                settings?.logoUrl ? (
                   <Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" quality={100} className="object-contain" />
               ) : (
                   <div className="w-full h-full rounded-md bg-muted" />
               )}
             </div>
             <span className="text-2xl font-bold font-headline tracking-wide whitespace-nowrap text-white">
-              {settings?.platformName || 'NexusAlpri'}
+              {isLoading ? <Skeleton className="h-7 w-40 bg-white/20"/> : settings?.platformName || 'NexusAlpri'}
             </span>
           </Link>
         </div>

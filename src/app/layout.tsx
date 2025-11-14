@@ -9,6 +9,11 @@ import { TitleProvider } from '@/contexts/title-context';
 import { Toaster } from '@/components/ui/toaster';
 import { TourProvider } from '@/contexts/tour-context';
 
+export const metadata = {
+  title: 'NexusAlpri',
+  description: 'Plataforma E-learning Corporativa',
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{

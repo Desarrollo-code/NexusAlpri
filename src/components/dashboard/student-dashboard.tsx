@@ -15,6 +15,7 @@ import { VerifiedBadge } from "../ui/verified-badge";
 import { useMemo } from "react";
 import { InteractiveEventsWidget } from "./interactive-events-widget";
 import { MetricCard } from "../analytics/metric-card";
+import { Skeleton } from "../ui/skeleton";
 
 const calculateLevel = (xp: number) => {
     const baseXP = 250; const exponent = 1.5;

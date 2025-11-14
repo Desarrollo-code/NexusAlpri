@@ -7,12 +7,13 @@ import { LayoutGrid } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
+import { Skeleton } from '../ui/skeleton';
 
 export function AuthenticatedPublicHeader() {
-  const { settings, user } = useAuth();
+  const { settings, user, isLoading } = useAuth();
 
   // Solo mostrar esta barra si el usuario está autenticado
-  if (!user) {
+  if (!user && !isLoading) {
     return null;
   }
 
@@ -22,10 +23,12 @@ export function AuthenticatedPublicHeader() {
         <div className="flex items-center justify-start flex-1">
           <Link href="/dashboard" className="flex items-center justify-center gap-3" prefetch={false}>
             <div className={cn("w-12 h-12 flex items-center justify-center flex-shrink-0 rounded-lg relative overflow-hidden", !settings?.logoUrl && "p-2 bg-muted")}>
-              {settings?.logoUrl ? <div className="relative w-full h-full"><Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" quality={100} className="object-contain p-1" /></div> : <div className="w-full h-full rounded-md bg-muted" />}
+              {isLoading ? <Skeleton className="h-full w-full" /> : 
+                settings?.logoUrl ? <div className="relative w-full h-full"><Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" quality={100} className="object-contain p-1" /></div> : <div className="w-full h-full rounded-md bg-muted" />
+              }
             </div>
             <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-foreground">
-              {settings?.platformName || 'NexusAlpri'}
+              {isLoading ? <Skeleton className="h-6 w-32" /> : settings?.platformName || 'NexusAlpri'}
             </span>
           </Link>
         </div>

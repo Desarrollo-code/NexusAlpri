@@ -6,10 +6,11 @@ import { useAuth } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
+import { Skeleton } from "../ui/skeleton";
 
 export const SidebarHeader = () => {
   const { isCollapsed } = useSidebar();
-  const { settings } = useAuth();
+  const { settings, isLoading } = useAuth();
   
   return (
     <div className={cn(
@@ -22,9 +23,10 @@ export const SidebarHeader = () => {
              isCollapsed ? "h-12 w-12" : "h-14 w-14",
              !settings?.logoUrl && "p-2"
          )}>
-            {settings?.logoUrl ? 
+            {isLoading ? <Skeleton className="w-full h-full" /> : 
+             settings?.logoUrl ? 
               <div className="relative w-full h-full">
-                <Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" className={cn("object-contain", isCollapsed ? 'p-1.5' : 'p-1')} />
+                <Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" quality={100} className={cn("object-contain", isCollapsed ? 'p-1.5' : 'p-1')} />
               </div> 
               : <div className="w-full h-full rounded-md bg-muted" />
             }
@@ -32,7 +34,7 @@ export const SidebarHeader = () => {
         
         {!isCollapsed && (
             <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-sidebar-foreground">
-              {settings?.platformName || 'NexusAlpri'}
+              {isLoading ? <Skeleton className="h-6 w-32" /> : settings?.platformName || 'NexusAlpri'}
             </span>
         )}
       </Link>

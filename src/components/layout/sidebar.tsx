@@ -230,7 +230,7 @@ export const SidebarContent = () => {
 
     return (
         <TooltipProvider delayDuration={100}>
-            <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-1 thin-scrollbar border-t border-border/50">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-1 thin-scrollbar shadow-inner">
                 {navItems.map((item) => {
                     if (item.children && item.children.length > 0) {
                         return <SectionItem key={item.id} item={item} />;
@@ -244,14 +244,19 @@ export const SidebarContent = () => {
 
 
 export const SidebarFooter = () => {
-    const { logout } = useAuth();
+    const { logout, settings } = useAuth();
     const { isCollapsed, toggleSidebar, isMobile } = useSidebar();
     const { theme, setTheme } = useTheme();
 
     if (isMobile) return null;
 
     return (
-        <div className="p-3 border-t border-border/50 flex flex-col gap-2">
+        <div className="p-3 border-t border-border flex flex-col gap-2">
+             {!isCollapsed && settings?.projectVersion && (
+                <div className="px-3 py-2 text-center text-xs text-muted-foreground">
+                    Versión: {settings.projectVersion}
+                </div>
+             )}
              {!isCollapsed && (
                 <div className="flex items-center justify-between px-3 py-2">
                      <Label htmlFor="theme-toggle" className="text-muted-foreground text-sm">Modo Oscuro</Label>

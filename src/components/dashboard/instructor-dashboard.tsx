@@ -9,6 +9,7 @@ import { AnnouncementsWidget } from "./announcements-widget";
 import { CalendarWidget } from "./calendar-widget";
 import { CourseProgressCard } from "./course-progress-card";
 import { MetricCard } from "../analytics/metric-card";
+import { Skeleton } from "../ui/skeleton";
 
 interface InstructorDashboardProps {
   instructorStats: {

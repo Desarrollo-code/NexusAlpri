@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import type { Announcement as AnnouncementType, Reaction, CalendarEvent, UserRole } from '@/types';
-import { Loader2, AlertTriangle, Edit, Trash2, Megaphone, PlusCircle, Pin, PinOff, Calendar, TrendingUp } from 'lucide-react';
+import { AlertTriangle, PlusCircle, Pin, PinOff, Calendar, TrendingUp } from 'lucide-react';
 import { AnnouncementCard } from '@/components/announcements/announcement-card';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import {
@@ -30,6 +30,8 @@ import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useSearchParams, useRouter } from 'next/navigation';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
+import { EmptyState } from '@/components/empty-state';
+import { Megaphone } from 'lucide-react';
 
 const UpcomingEventsWidget = ({ events }: { events: CalendarEvent[] }) => {
     return (
@@ -69,7 +71,7 @@ const UpcomingEventsWidget = ({ events }: { events: CalendarEvent[] }) => {
 }
 
 function AnnouncementsPageComponent() {
-  const { user } = useAuth();
+  const { user, settings } = useAuth();
   const { toast } = useToast();
   const { setPageTitle } = useTitle();
   const router = useRouter();
@@ -202,17 +204,18 @@ function AnnouncementsPageComponent() {
             </Tabs>
 
              {isLoading ? (
-                <div className="flex justify-center p-8"><div className="w-8 h-8"><ColorfulLoader /></div></div>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-64 w-full rounded-2xl"/>)}
+                </div>
               ) : error ? (
                 <div className="text-center p-8 text-destructive"><AlertTriangle className="mx-auto h-8 w-8 mb-2" />{error}</div>
               ) : announcements.length === 0 ? (
-                <Card className="text-center py-16 text-muted-foreground">
-                     <CardHeader>
-                        <Megaphone className="mx-auto h-12 w-12 mb-4" />
-                        <CardTitle>No hay anuncios por ahora</CardTitle>
-                        <CardDescription>Vuelve más tarde para ver las últimas noticias en esta sección.</CardDescription>
-                     </CardHeader>
-                </Card>
+                 <EmptyState
+                    icon={Megaphone}
+                    title="No hay anuncios por ahora"
+                    description="Vuelve más tarde para ver las últimas noticias en esta sección."
+                    imageUrl={settings?.announcementsImageUrl}
+                />
               ) : (
                 <div className="masonry-grid">
                     {announcements.map(announcement => (

@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Briefcase } from 'lucide-react';
 import type { Process } from '@/types';
 import { ScrollArea } from '../ui/scroll-area';
+import { ColorfulLoader } from '../ui/colorful-loader';
 
 interface BulkAssignModalProps {
     isOpen: boolean;
@@ -100,7 +101,7 @@ export function BulkAssignModal({ isOpen, onClose, onSave, userIds, processes }:
                 <DialogFooter className="p-6 pt-4 border-t flex-shrink-0">
                     <Button variant="outline" onClick={onClose}>Cancelar</Button>
                     <Button onClick={handleBulkAssign} disabled={isSaving || !targetProcessId}>
-                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Briefcase className="mr-2 h-4 w-4" />}
+                        {isSaving ? <div className="w-4 h-4 mr-2"><ColorfulLoader /></div> : <Briefcase className="mr-2 h-4 w-4" />}
                         Asignar
                     </Button>
                 </DialogFooter>

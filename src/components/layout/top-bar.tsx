@@ -19,6 +19,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { getNavItemsForRole } from "@/lib/nav-items";
 import { GradientIcon } from "../ui/gradient-icon";
 import { timeSince } from "@/lib/utils";
+import { ColorfulLoader } from "../ui/colorful-loader";
 
 export const TopBar = () => {
     const { toggleSidebar } = useSidebar();
@@ -30,6 +31,7 @@ export const TopBar = () => {
     const [notifications, setNotifications] = useState<AppNotification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const { toast } = useToast();
+    const [isLoading, setIsLoading] = useState(true);
 
     // --- LÓGICA PARA OBTENER EL ÍCONO DE LA PÁGINA ACTUAL ---
     const { icon: currentPageIcon, title: currentPageTitle } = useMemo(() => {
@@ -58,6 +60,7 @@ export const TopBar = () => {
 
     const fetchNotifications = useCallback(async () => {
         if (!user) return;
+        setIsLoading(true);
         try {
             const response = await fetch('/api/notifications');
             if (response.ok) {
@@ -67,6 +70,8 @@ export const TopBar = () => {
             }
         } catch (error) {
             // Silently fail for polling
+        } finally {
+          setIsLoading(false);
         }
     }, [user]);
 
@@ -151,24 +156,25 @@ export const TopBar = () => {
                             <h4 className="font-medium text-sm">Notificaciones</h4>
                          </div>
                          <Separator />
-                         {notifications.length > 0 ? (
-                            <div className="max-h-80 overflow-y-auto">
-                                {notifications.map(n => (
-                                    <Link key={n.id} href={n.link || '#'} onClick={() => !n.read && markAsRead([n.id])}>
-                                      <div className={cn(
-                                        "p-4 border-b hover:bg-muted/50",
-                                        !n.read && "bg-primary/5"
-                                      )}>
-                                        <p className="text-sm font-semibold">{n.title}</p>
-                                        <p className="text-sm text-muted-foreground">{n.description}</p>
-                                        <p className="text-xs text-muted-foreground mt-1">{timeSince(new Date(n.date))}</p>
-                                      </div>
-                                    </Link>
-                                ))}
-                            </div>
-                         ) : (
-                            <p className="p-4 text-center text-sm text-muted-foreground">No hay notificaciones.</p>
-                         )}
+                          {isLoading ? <div className="flex justify-center p-4"><div className="w-6 h-6"><ColorfulLoader/></div></div> :
+                            notifications.length > 0 ? (
+                                <div className="max-h-80 overflow-y-auto">
+                                    {notifications.map(n => (
+                                        <Link key={n.id} href={n.link || '#'} onClick={() => !n.read && markAsRead([n.id])}>
+                                          <div className={cn(
+                                            "p-4 border-b hover:bg-muted/50",
+                                            !n.read && "bg-primary/5"
+                                          )}>
+                                            <p className="text-sm font-semibold">{n.title}</p>
+                                            <p className="text-sm text-muted-foreground">{n.description}</p>
+                                            <p className="text-xs text-muted-foreground mt-1">{timeSince(new Date(n.date))}</p>
+                                          </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="p-4 text-center text-sm text-muted-foreground">No hay notificaciones.</p>
+                            )}
                          <Separator />
                          <div className="p-2 flex justify-between items-center">
                             <Button variant="ghost" size="sm" onClick={() => markAsRead('all')} disabled={unreadCount === 0}>Marcar todas leídas</Button>

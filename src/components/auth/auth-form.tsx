@@ -17,6 +17,7 @@ import Image from 'next/image';
 import { PasswordStrengthIndicator } from '@/components/password-strength-indicator';
 import AuthFormContainer from './auth-form-container';
 import { ColorfulLoader } from '../ui/colorful-loader';
+import { Skeleton } from '../ui/skeleton';
 
 const formVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -198,8 +199,10 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
     return (
         <AuthFormContainer>
             <div className="text-center mb-6">
-                 {settings?.logoUrl && (
+                 {settings?.logoUrl ? (
                     <Image src={settings.logoUrl} alt="Logo" width={64} height={64} className="mx-auto mb-4" quality={100} />
+                 ) : (
+                    <Skeleton className="w-16 h-16 rounded-lg mx-auto mb-4"/>
                  )}
                 <h1 className="text-3xl font-bold font-headline text-foreground">
                     {view === 'signIn' ? 'Bienvenido de Nuevo' : 'Únete a la Plataforma'}
