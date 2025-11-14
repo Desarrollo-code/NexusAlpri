@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Camera, Save, Eye, EyeOff } from 'lucide-react';
+import { Camera, Save, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { PasswordStrengthIndicator } from '@/components/password-strength-indicator';
 import type { User, UserRole, Process } from '@/types';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
@@ -23,7 +23,6 @@ import { Identicon } from '../ui/identicon';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '../ui/progress';
 import { ScrollArea } from '../ui/scroll-area';
-import { ColorfulLoader } from '../ui/colorful-loader';
 
 interface UserFormModalProps {
     isOpen: boolean;
@@ -205,7 +204,7 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
                             <div className="relative">
                                 <Input id="password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} required={!user} autoComplete="new-password" />
                                 <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground" onClick={() => setShowPassword(!showPassword)}>
-                                    {showPassword ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
+                                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                 </Button>
                             </div>
                             {password && <PasswordStrengthIndicator password={password} isVisible={true} />}
@@ -246,7 +245,7 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
                     <DialogFooter className="p-6 pt-4 flex-col-reverse sm:flex-row sm:justify-end gap-2 border-t flex-shrink-0">
                         <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
                         <Button type="submit" form="user-form" disabled={isSaving || !name.trim() || !email.trim() || (!user && !password)}>
-                            {isSaving && <div className="w-4 h-4 mr-2"><ColorfulLoader /></div>}
+                            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                             <Save className="mr-2 h-4 w-4" />
                             {user ? 'Guardar Cambios' : 'Crear Colaborador'}
                         </Button>

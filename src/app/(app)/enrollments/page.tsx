@@ -36,7 +36,6 @@ import { es } from 'date-fns/locale';
 import Link from 'next/link';
 import { QuizAnalyticsView } from '@/components/analytics/quiz-analytics-view';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ColorfulLoader } from '@/components/ui/colorful-loader';
 
 
 // --- TYPE DEFINITIONS ---
@@ -111,7 +110,7 @@ const CourseSelector = ({ courses, onSelect, selectedCourseId, isLoading }: { co
                     disabled={isLoading || courses.length === 0}
                     id="enrollments-course-selector"
                 >
-                    {isLoading ? <div className="w-4 h-4 mr-2"><ColorfulLoader /></div> : null}
+                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                     <span className="truncate">{isLoading ? "Cargando cursos..." : selectedCourseTitle}</span>
                     <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
@@ -428,7 +427,7 @@ function EnrollmentsPageComponent() {
   const totalPages = Math.ceil(filteredEnrollments.length / PAGE_SIZE);
 
   if (isAuthLoading) {
-    return <div className="flex items-center justify-center h-screen"><div className="w-8 h-8"><ColorfulLoader /></div></div>;
+    return <div className="flex items-center justify-center h-screen"><Loader2 className="h-8 w-8 animate-spin" /></div>;
   }
 
   if (!currentUser || (currentUser.role !== 'ADMINISTRATOR' && currentUser.role !== 'INSTRUCTOR')) {
@@ -629,7 +628,7 @@ function EnrollmentsPageComponent() {
             <AlertDialogFooter>
                 <AlertDialogCancel>No, mantener</AlertDialogCancel>
                 <AlertDialogAction onClick={handleUnenrollStudent} disabled={isUnenrolling} className={cn(buttonVariants({ variant: 'destructive'}))}>
-                    {isUnenrolling && <div className="w-4 h-4 mr-2"><ColorfulLoader /></div>} Sí, cancelar inscripción
+                    {isUnenrolling && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>} Sí, cancelar inscripción
                 </AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
@@ -650,7 +649,7 @@ function EnrollmentsPageComponent() {
 
 export default function EnrollmentsPage() {
     return (
-        <Suspense fallback={<div className="flex items-center justify-center h-full"><div className="w-8 h-8"><ColorfulLoader /></div></div>}>
+        <Suspense fallback={<EnrollmentsSkeleton />}>
             <EnrollmentsPageComponent />
         </Suspense>
     )

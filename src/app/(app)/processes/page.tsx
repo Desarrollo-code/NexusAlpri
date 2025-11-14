@@ -1,4 +1,3 @@
-
 // src/app/(app)/processes/page.tsx
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
@@ -38,7 +37,7 @@ import { cn } from '@/lib/utils';
 import { useTour } from '@/contexts/tour-context';
 import { processesTour } from '@/lib/tour-steps';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ColorfulLoader } from '@/components/ui/colorful-loader';
+import { Loader2 } from 'lucide-react';
 
 interface ProcessWithChildren extends PrismaProcess {
   children: ProcessWithChildren[];
@@ -305,7 +304,7 @@ export default function ProcessesPage() {
                     <DialogFooter>
                         <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
                         <Button type="submit" disabled={isSubmitting || !processName.trim()}>
-                            {isSubmitting && <div className="w-4 h-4 mr-2"><ColorfulLoader /></div>}
+                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                             {editingProcess ? 'Guardar Cambios' : 'Crear Proceso'}
                         </Button>
                     </DialogFooter>
@@ -324,7 +323,7 @@ export default function ProcessesPage() {
                 <AlertDialogFooter>
                     <AlertDialogCancel>Cancelar</AlertDialogCancel>
                     <AlertDialogAction onClick={handleDeleteProcess} disabled={isSubmitting} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
-                        {isSubmitting && <div className="w-4 h-4 mr-2"><ColorfulLoader /></div>}
+                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                         Eliminar
                     </AlertDialogAction>
                 </AlertDialogFooter>
