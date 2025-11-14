@@ -29,9 +29,9 @@ export const AVAILABLE_THEMES = [
 
 /**
  * Componente interno que maneja la inyección de estilos CSS dinámicos
- * basados en la configuración del administrador y el tema actual.
+ * y el favicon, basados en la configuración del administrador y el tema actual.
  */
-function ThemeInjector() {
+function DynamicStyleInjector() {
   const { settings, isLoading: isAuthLoading } = useAuth();
   const { theme } = useNextTheme();
 
@@ -39,8 +39,10 @@ function ThemeInjector() {
     if (isAuthLoading || typeof window === 'undefined') return;
 
     const root = document.documentElement;
+    const head = document.head;
     const isCustomizableTheme = theme === 'light' || theme === 'dark';
     
+    // --- Inyección de Estilos y Fuentes ---
     if (settings) {
       if (isCustomizableTheme) {
         const primaryColor = theme === 'light' ? settings.primaryColor : settings.primaryColorDark;
@@ -49,31 +51,37 @@ function ThemeInjector() {
         const primaryHsl = hexToHslString(primaryColor);
         if (primaryHsl) {
             root.style.setProperty('--primary', primaryHsl);
-            // Determinar color de texto con buen contraste
             const foregroundColor = getContrastingTextColor(primaryColor);
             root.style.setProperty('--primary-foreground', foregroundColor === 'white' ? '0 0% 100%' : '0 0% 0%');
         }
 
         const backgroundHsl = hexToHslString(backgroundColor);
         if(backgroundHsl) root.style.setProperty('--background', backgroundHsl);
-
-        const secondaryHsl = hexToHslString(settings.secondaryColor);
-        if(secondaryHsl) root.style.setProperty('--secondary', secondaryHsl);
-
-        const accentHsl = hexToHslString(settings.accentColor);
-        if(accentHsl) root.style.setProperty('--accent', accentHsl);
-
+        if(hexToHslString(settings.secondaryColor)) root.style.setProperty('--secondary', hexToHslString(settings.secondaryColor));
+        if(hexToHslString(settings.accentColor)) root.style.setProperty('--accent', hexToHslString(settings.accentColor));
       } else {
-         // Si no es un tema personalizable, limpiamos las variables para que el CSS base tome el control.
          ['--primary', '--primary-foreground', '--secondary', '--accent', '--background'].forEach(prop => root.style.removeProperty(prop));
       }
 
-      // Siempre aplicar las fuentes seleccionadas por el admin
       const headlineFontFamily = fontMap[settings.fontHeadline || 'Space Grotesk']?.style.fontFamily || 'sans-serif';
       const bodyFontFamily = fontMap[settings.fontBody || 'Inter']?.style.fontFamily || 'sans-serif';
-      
       root.style.setProperty('--font-headline', headlineFontFamily);
       root.style.setProperty('--font-body', bodyFontFamily);
+      
+      // --- Lógica del Favicon ---
+      let faviconLink = head.querySelector<HTMLLinkElement>('link[rel="icon"]');
+      if (!faviconLink) {
+        faviconLink = document.createElement('link');
+        faviconLink.rel = 'icon';
+        head.appendChild(faviconLink);
+      }
+      
+      // Actualizar el favicon si está en la configuración, de lo contrario, usar el por defecto.
+      if (settings.faviconUrl) {
+          faviconLink.href = settings.faviconUrl;
+      } else {
+          faviconLink.href = '/favicon.png'; // Fallback a un favicon estático
+      }
     }
     
   }, [settings, theme, isAuthLoading]);
@@ -91,7 +99,7 @@ export function ThemeProvider({ children, ...props }: Omit<ThemeProviderProps, '
       disableTransitionOnChange={false}
       themes={AVAILABLE_THEMES.map(t => t.value)}
     >
-      <ThemeInjector />
+      <DynamicStyleInjector />
       {children}
     </NextThemesProvider>
   );
