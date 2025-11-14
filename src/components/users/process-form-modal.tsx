@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import type { Process } from '@/types';
+import { ColorfulLoader } from '../ui/colorful-loader';
 
 interface ProcessFormModalProps {
     isOpen: boolean;
@@ -129,7 +130,7 @@ export function ProcessFormModal({ isOpen, onClose, onSave, process, allProcesse
                 <DialogFooter>
                     <Button variant="outline" onClick={onClose}>Cancelar</Button>
                     <Button type="submit" form="process-form" disabled={isSaving || !name.trim()}>
-                        {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {isSaving && <div className="w-4 h-4 mr-2"><ColorfulLoader /></div>}
                         {process ? 'Guardar Cambios' : 'Crear Proceso'}
                     </Button>
                 </DialogFooter>

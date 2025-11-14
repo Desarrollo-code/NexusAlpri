@@ -11,7 +11,6 @@ import {
   UsersRound, 
   BookOpenCheck, 
   UserPlus,
-  Loader2, 
   AlertTriangle,
   GraduationCap,
   Library,
@@ -47,6 +46,7 @@ import { DateRange } from 'react-day-picker';
 import { Calendar } from '@/components/ui/calendar';
 import { MetricCard } from '@/components/analytics/metric-card';
 import { DonutChart } from '@/components/analytics/donut-chart';
+import { ColorfulLoader } from '@/components/ui/colorful-loader';
 
 
 const formatDateTick = (tick: string): string => {

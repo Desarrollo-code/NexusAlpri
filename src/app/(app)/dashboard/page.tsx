@@ -5,7 +5,6 @@ import { useAuth } from '@/contexts/auth-context';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Loader2 } from 'lucide-react';
 import React, { useEffect, useState, useCallback } from 'react';
 import type { UserRole } from '@/types';
 import { useTitle } from '@/contexts/title-context';
@@ -15,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AdminDashboard } from '@/components/dashboard/admin-dashboard';
 import { InstructorDashboard } from '@/components/dashboard/instructor-dashboard';
 import { StudentDashboard } from '@/components/dashboard/student-dashboard';
+import { ColorfulLoader } from '@/components/ui/colorful-loader';
 
 // --- MAIN PAGE COMPONENT ---
 export default function DashboardPage() {
@@ -93,7 +93,7 @@ export default function DashboardPage() {
   if (isAuthLoading || isLoading) {
     return (
       <div className="flex justify-center items-center py-16">
-          <Loader2 className="h-8 w-8 animate-spin text-primary"/>
+          <div className="w-8 h-8"><ColorfulLoader /></div>
       </div>
     );
   }

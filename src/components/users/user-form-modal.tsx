@@ -23,6 +23,7 @@ import { Identicon } from '../ui/identicon';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '../ui/progress';
 import { ScrollArea } from '../ui/scroll-area';
+import { ColorfulLoader } from '../ui/colorful-loader';
 
 interface UserFormModalProps {
     isOpen: boolean;
@@ -245,7 +246,7 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
                     <DialogFooter className="p-6 pt-4 flex-col-reverse sm:flex-row sm:justify-end gap-2 border-t flex-shrink-0">
                         <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
                         <Button type="submit" form="user-form" disabled={isSaving || !name.trim() || !email.trim() || (!user && !password)}>
-                            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            {isSaving && <div className="w-4 h-4 mr-2"><ColorfulLoader /></div>}
                             <Save className="mr-2 h-4 w-4" />
                             {user ? 'Guardar Cambios' : 'Crear Colaborador'}
                         </Button>

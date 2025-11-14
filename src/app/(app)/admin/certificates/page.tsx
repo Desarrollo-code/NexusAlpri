@@ -9,6 +9,7 @@ import { Loader2 } from 'lucide-react';
 import { CertificateTemplateManager } from '@/components/certificates/certificate-template-manager';
 import { useTour } from '@/contexts/tour-context';
 import { certificatesTour } from '@/lib/tour-steps';
+import { ColorfulLoader } from '@/components/ui/colorful-loader';
 
 export default function CertificatesAdminPage() {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -24,7 +25,7 @@ export default function CertificatesAdminPage() {
   if (isAuthLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <div className="w-8 h-8"><ColorfulLoader /></div>
       </div>
     );
   }
@@ -36,5 +37,3 @@ export default function CertificatesAdminPage() {
   
   return <CertificateTemplateManager />;
 }
-
-    

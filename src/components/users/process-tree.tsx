@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { getProcessColors } from '@/lib/utils';
 import { useDroppable } from '@dnd-kit/core';
 import type { Process } from '@/types';
+import { ColorfulLoader } from '../ui/colorful-loader';
 
 interface ProcessWithChildren extends Process {
     users: any[];
@@ -132,7 +133,7 @@ export function ProcessTree({ processes, onProcessUpdate, onProcessClick, active
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
                         <AlertDialogAction onClick={confirmDelete} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
-                            {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                            {isDeleting && <div className="w-4 h-4 mr-2"><ColorfulLoader /></div>}
                             Eliminar
                         </AlertDialogAction>
                     </AlertDialogFooter>

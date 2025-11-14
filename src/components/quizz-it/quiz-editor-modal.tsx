@@ -27,6 +27,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '.
 import { QuizGameView } from './quiz-game-view';
 import { Card, CardHeader, CardContent, CardTitle, CardFooter } from '../ui/card';
 import { Alert, AlertDescription } from '../ui/alert';
+import { ColorfulLoader } from '../ui/colorful-loader';
 
 const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
@@ -248,7 +249,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                              {activeQuestion.template === 'image' && (
                                                 <div className="w-full">
                                                     {isUploading ? (
-                                                        <div className="w-full p-4 h-48 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2"><Loader2 className="h-6 w-6 animate-spin text-primary"/><p className="text-sm text-muted-foreground">Subiendo...</p><Progress value={uploadProgress} className="w-full h-1.5"/></div>
+                                                        <div className="w-full p-4 h-48 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2"><div className="w-6 h-6"><ColorfulLoader/></div><p className="text-sm text-muted-foreground">Subiendo...</p><Progress value={uploadProgress} className="w-full h-1.5"/></div>
                                                     ) : activeQuestion.imageUrl ? (
                                                         <div className="relative w-full h-48 rounded-lg overflow-hidden border p-1 bg-background"><Image src={activeQuestion.imageUrl} alt="preview" fill className="object-contain" /><Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => handleQuestionChange('imageUrl', null)}><X className="h-4 w-4"/></Button></div>
                                                     ) : (
@@ -269,7 +270,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                                             {isImageOptionsTemplate ? (
                                                                 <div className="flex-grow space-y-2">
                                                                     <div className="relative">
-                                                                        <div className={cn("absolute inset-0 flex items-center justify-center z-10", optionIsUploading ? 'flex' : 'hidden')}><Loader2 className="h-6 w-6 animate-spin text-primary"/></div>
+                                                                        <div className={cn("absolute inset-0 flex items-center justify-center z-10", optionIsUploading ? 'flex' : 'hidden')}><div className="w-6 h-6"><ColorfulLoader/></div></div>
                                                                         {opt.imageUrl && (<Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6 z-20" onClick={() => handleOptionChange(index, 'imageUrl', null)}><X className="h-4 w-4"/></Button>)}
                                                                         <UploadArea onFileSelect={(file) => handleImageUpload(file, 'option', index)} inputId={`opt-img-upload-${opt.id}`} className={cn("h-24 w-full", opt.imageUrl && 'bg-cover bg-center')} style={{backgroundImage: opt.imageUrl ? `url(${opt.imageUrl})` : 'none'}} compact>
                                                                             {opt.imageUrl && <Image src={opt.imageUrl} alt={`Opción ${index + 1}`} fill className="object-contain" />}

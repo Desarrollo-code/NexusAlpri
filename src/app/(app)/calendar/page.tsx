@@ -19,7 +19,7 @@ import { DatePickerSidebar } from '@/components/calendar/date-picker-sidebar';
 import { MonthView } from '@/components/calendar/month-view';
 import { WeekView } from '@/components/calendar/week-view';
 import { DayView } from '@/components/calendar/day-view';
-import { expandRecurringEvents } from '@/lib/calendar-utils';
+import { ColorfulLoader } from '@/components/ui/colorful-loader';
 
 export type CalendarView = 'month' | 'week' | 'day';
 
@@ -161,7 +161,7 @@ export default function CalendarPage() {
         )}
         <div className={cn("md:col-span-3 lg:col-span-3 flex flex-col min-h-0 bg-card rounded-lg border shadow-sm", isMobile ? "" : "p-0")} id="calendar-main-view">
           {isLoading ? (
-            <div className="flex items-center justify-center h-full"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
+            <div className="flex items-center justify-center h-full"><div className="w-8 h-8"><ColorfulLoader /></div></div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center h-full text-destructive"><AlertTriangle className="h-8 w-8 mb-2" />Error al cargar: {error}</div>
           ) : (

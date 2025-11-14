@@ -29,6 +29,7 @@ import { es } from 'date-fns/locale';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useSearchParams, useRouter } from 'next/navigation';
+import { ColorfulLoader } from '@/components/ui/colorful-loader';
 
 const UpcomingEventsWidget = ({ events }: { events: CalendarEvent[] }) => {
     return (
@@ -201,7 +202,7 @@ function AnnouncementsPageComponent() {
             </Tabs>
 
              {isLoading ? (
-                <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+                <div className="flex justify-center p-8"><div className="w-8 h-8"><ColorfulLoader /></div></div>
               ) : error ? (
                 <div className="text-center p-8 text-destructive"><AlertTriangle className="mx-auto h-8 w-8 mb-2" />{error}</div>
               ) : announcements.length === 0 ? (
@@ -278,7 +279,7 @@ function AnnouncementsPageComponent() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} disabled={isProcessing} className={cn(buttonVariants({ variant: 'destructive' }))}>
-              {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isProcessing && <div className="w-4 h-4 mr-2"><ColorfulLoader /></div>}
               Sí, eliminar
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -310,7 +311,7 @@ function AnnouncementsPageComponent() {
 
 export default function AnnouncementsPage() {
     return (
-        <Suspense fallback={<div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
+        <Suspense fallback={<div className="flex justify-center p-8"><div className="w-8 h-8"><ColorfulLoader /></div></div>}>
             <AnnouncementsPageComponent />
         </Suspense>
     )
