@@ -1,4 +1,3 @@
-
 // src/app/(app)/users/page.tsx
 'use client';
 
@@ -263,7 +262,7 @@ function UsersPageComponent() {
                 }
             } else {
                 if (isSelected) newSet.add(userId);
-                else newSet.delete(id);
+                else newSet.delete(userId);
             }
             return newSet;
         });
@@ -485,7 +484,7 @@ function UsersPageComponent() {
     }
 
     const GridView = () => (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {usersList.map(u => (
                 <DraggableUserCard 
                     key={u.id} 
@@ -530,7 +529,7 @@ function UsersPageComponent() {
                          {totalPages > 1 && <SmartPagination className="mt-6" currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />}
                     </div>
 
-                    <aside className="hidden lg:block lg:col-span-1 lg:sticky lg:top-24 space-y-4">
+                    <aside className="hidden lg:block lg:col-span-1 lg:sticky lg:top-24 space-y-4" id="users-sidebar">
                         <ProcessTree processes={processes} onProcessUpdate={fetchData} onProcessClick={(id) => handleFilterChange('processId', id)} activeProcessId={processId}/>
                         <div className="md:bottom-4">
                            <BulkActionsBar />
@@ -593,5 +592,3 @@ export default function UsersPage() {
         </Suspense>
     )
 }
-
-    
