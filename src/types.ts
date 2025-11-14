@@ -58,6 +58,7 @@ export interface PlatformSettings {
     emptyStateMotivationsUrl?: string | null;
     emptyStateUsersUrl?: string | null;
     emptyStateLeaderboardUrl?: string | null;
+    emptyStateAnnouncementsUrl?: string | null;
 }
 
 // --- NAVIGATION ---

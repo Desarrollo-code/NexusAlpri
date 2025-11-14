@@ -7,6 +7,8 @@ import type { NextRequest } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
+// Este objeto define los valores por defecto que se usarán
+// si no hay ninguna configuración guardada en la base de datos.
 const DEFAULT_DB_SETTINGS = {
   platformName: "NexusAlpri",
   projectVersion: "1.0.0",
@@ -48,6 +50,7 @@ const DEFAULT_DB_SETTINGS = {
   emptyStateMotivationsUrl: null,
   emptyStateUsersUrl: null,
   emptyStateLeaderboardUrl: null,
+  emptyStateAnnouncementsUrl: null,
 };
 
 const getFallbackSettings = (): AppPlatformSettings => {
@@ -145,6 +148,7 @@ export async function POST(req: NextRequest) {
       emptyStateMotivationsUrl: dataFromClient.emptyStateMotivationsUrl,
       emptyStateUsersUrl: dataFromClient.emptyStateUsersUrl,
       emptyStateLeaderboardUrl: dataFromClient.emptyStateLeaderboardUrl,
+      emptyStateAnnouncementsUrl: dataFromClient.emptyStateAnnouncementsUrl,
     };
     
     const currentSettings = await prisma.platformSettings.findFirst();
