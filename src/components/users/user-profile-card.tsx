@@ -46,7 +46,7 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange, is
 
     return (
         <Card className="flex flex-col h-full bg-card shadow-md hover:shadow-primary/20 transition-shadow duration-300 text-center overflow-hidden">
-             <div className="h-16 w-full relative bg-primary">
+             <div className="h-14 w-full relative bg-primary">
                  {canModify && (
                     <div className="absolute top-1 right-1 z-20">
                         <DropdownMenu>
@@ -66,7 +66,7 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange, is
                         <Checkbox
                           checked={isSelected}
                           onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)}
-                          className="data-[state=checked]:bg-accent data-[state=checked]:border-accent-foreground/50 border-accent/70"
+                          className="data-[state=checked]:bg-accent data-[state=checked]:border-accent-foreground/50 border-accent/70 bg-background/80 backdrop-blur-sm"
                         />
                     </div>
                  )}
