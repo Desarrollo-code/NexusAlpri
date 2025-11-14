@@ -7,9 +7,8 @@ import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import { ColorfulLoader } from '../ui/colorful-loader';
 
 export default function TwoFactorAuthForm() {
     const { login } = useAuth();
@@ -90,7 +89,7 @@ export default function TwoFactorAuthForm() {
                 className="w-full h-11 text-base"
                 disabled={isLoading || token.length < 6}
             >
-                {isLoading ? <div className="w-6 h-6 mr-2"><ColorfulLoader/></div> : <ShieldCheck className="mr-2 h-5 w-5" />}
+                {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin"/> : <ShieldCheck className="mr-2 h-5 w-5" />}
                 Verificar Código
             </Button>
         </form>
