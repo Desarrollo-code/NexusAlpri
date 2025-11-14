@@ -4,10 +4,15 @@
 import { useAuth } from "@/contexts/auth-context";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { usePathname } from "next/navigation";
 
 export function AppWatermark() {
     const { settings, isLoading } = useAuth();
+    const pathname = usePathname();
     
+    // El "mundo público" se considera cualquier ruta que no empiece con /dashboard, /profile, etc.
+    const isPublicWorld = !/^\/(dashboard|profile|manage-courses|my-courses|my-notes|resources|announcements|calendar|forms|enrollments|analytics|security-audit|settings|notifications|leaderboard|messages|quizz-it|processes)/.test(pathname);
+
     // Don't render anything until we know if there is a watermark or not
     if (isLoading) {
         return null;
@@ -17,8 +22,10 @@ export function AppWatermark() {
       return (
         <div className={cn(
             "fixed z-[9999] pointer-events-none",
-             // En móvil, se posiciona en la parte inferior, consistente con el escritorio.
-            "bottom-4 right-4 opacity-30 md:opacity-50"
+            "right-4 opacity-30 md:opacity-50",
+            // Si estamos en el mundo público y en móvil, la subimos para que no choque con la bottom-nav.
+            // Si no, la dejamos abajo del todo.
+            isPublicWorld ? "bottom-20 md:bottom-4" : "bottom-4"
         )}>
           <Image 
             src={settings.watermarkUrl} 
