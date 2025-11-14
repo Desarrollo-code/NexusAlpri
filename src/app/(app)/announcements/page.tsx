@@ -240,7 +240,7 @@ function AnnouncementsPageComponent() {
                     icon={Megaphone}
                     title="No hay anuncios por ahora"
                     description="Vuelve más tarde para ver las últimas noticias en esta sección."
-                    imageUrl={settings?.announcementsImageUrl}
+                    imageUrl={settings?.emptyStateAnnouncementsUrl}
                 />
               ) : (
                 <div className="masonry-grid">
