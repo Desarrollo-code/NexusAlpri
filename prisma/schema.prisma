@@ -380,9 +380,9 @@ model PlatformSettings {
   emptyStateUsersUrl         String?
   emptyStateLeaderboardUrl   String?
   emptyStateAnnouncementsUrl String?
+  faviconUrl                 String?
   projectVersion             String? @default("1.0.0")
   updatedAt                  DateTime @updatedAt
-
   @@map("platform_settings")
 }
 
