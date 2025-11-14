@@ -1,3 +1,4 @@
+
 // src/app/(app)/processes/page.tsx
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
@@ -328,6 +329,7 @@ export default function ProcessesPage() {
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
-        </>
+        </AlertDialog>
+    </>
   );
 }
