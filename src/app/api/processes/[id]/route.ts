@@ -77,6 +77,8 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
             where: { processId: id },
             data: { processId: null }
         }),
+        // Eliminar notificaciones relacionadas si es necesario
+        // (No hay una relación directa, pero es un buen lugar para añadir si se implementa)
         // Finalmente, elimina el proceso
         prisma.process.delete({
             where: { id },
