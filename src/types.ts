@@ -41,6 +41,7 @@ export interface PlatformSettings {
     primaryColorDark?: string;
     backgroundColorDark?: string;
     logoUrl?: string | null;
+    faviconUrl?: string | null;
     watermarkUrl?: string | null;
     landingImageUrl?: string | null;
     authImageUrl?: string | null;

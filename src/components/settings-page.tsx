@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Palette, Bell, Shield, List, Tag, Trash2, Loader2, FileWarning, KeyRound, Clock, Save, ImageIcon, Paintbrush, Type, User, UploadCloud, XCircle, Replace, HelpCircle, ImagePlay, Building, FolderOpen } from 'lucide-react';
+import { Palette, Bell, Shield, List, Tag, Trash2, Loader2, FileWarning, KeyRound, Clock, Save, ImageIcon, Paintbrush, Type, User, UploadCloud, XCircle, Replace, HelpCircle, ImagePlay, Building, FolderOpen, MousePointer } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
@@ -153,7 +153,7 @@ export default function SettingsPageComponent() {
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const [isCheckingCategory, setIsCheckingCategory] = useState(false);
   
-  type ImageField = 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl' | 'announcementsImageUrl' | 'publicPagesBgUrl' | 'securityMascotUrl' | 'emptyStateCoursesUrl' | 'emptyStateMyCoursesUrl' | 'emptyStateFormsUrl' | 'emptyStateMyNotesUrl' | 'emptyStateResourcesUrl' | 'emptyStateCertificatesUrl' | 'emptyStateMotivationsUrl' | 'emptyStateUsersUrl' | 'emptyStateLeaderboardUrl' | 'emptyStateAnnouncementsUrl';
+  type ImageField = 'logoUrl' | 'faviconUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl' | 'announcementsImageUrl' | 'publicPagesBgUrl' | 'securityMascotUrl' | 'emptyStateCoursesUrl' | 'emptyStateMyCoursesUrl' | 'emptyStateFormsUrl' | 'emptyStateMyNotesUrl' | 'emptyStateResourcesUrl' | 'emptyStateCertificatesUrl' | 'emptyStateMotivationsUrl' | 'emptyStateUsersUrl' | 'emptyStateLeaderboardUrl' | 'emptyStateAnnouncementsUrl';
   
   useEffect(() => {
     setPageTitle('Configuración');
@@ -314,8 +314,9 @@ export default function SettingsPageComponent() {
                              <CardContent className="space-y-4">
                                  <div className="space-y-1.5"><Label htmlFor="platformName">Nombre de la Plataforma</Label><Input id="platformName" value={formState.platformName} onChange={(e) => handleInputChange('platformName', e.target.value)} disabled={isSaving}/></div>
                                  <div className="space-y-1.5"><Label htmlFor="projectVersion">Versión del Proyecto</Label><Input id="projectVersion" value={formState.projectVersion || ''} onChange={(e) => handleInputChange('projectVersion', e.target.value)} disabled={isSaving}/></div>
-                                 <div className="grid grid-cols-2 gap-4 pt-2">
-                                   <UploadWidget id="logo-upload" label="Logo (PNG/SVG)" currentImageUrl={formState.logoUrl} onFileSelect={(url) => handleImageUpload('logoUrl', url)} onRemove={() => handleRemoveImage('logoUrl')} disabled={isSaving} />
+                                 <div className="grid grid-cols-3 gap-4 pt-2">
+                                   <UploadWidget id="logo-upload" label="Logo" currentImageUrl={formState.logoUrl} onFileSelect={(url) => handleImageUpload('logoUrl', url)} onRemove={() => handleRemoveImage('logoUrl')} disabled={isSaving} />
+                                   <UploadWidget id="favicon-upload" label="Favicon" currentImageUrl={formState.faviconUrl} onFileSelect={(url) => handleImageUpload('faviconUrl', url)} onRemove={() => handleRemoveImage('faviconUrl')} disabled={isSaving} />
                                    <UploadWidget id="watermark-upload" label="Marca de Agua" currentImageUrl={formState.watermarkUrl} onFileSelect={(url) => handleImageUpload('watermarkUrl', url)} onRemove={() => handleRemoveImage('watermarkUrl')} disabled={isSaving} />
                                  </div>
                              </CardContent>
