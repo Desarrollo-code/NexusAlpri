@@ -9,7 +9,7 @@ import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Loader2 } from 'lucide-react';
+import { ColorfulLoader } from '@/components/ui/colorful-loader';
 
 function SignUpPageComponent() {
     const { settings, isLoading } = useAuth();
@@ -22,7 +22,7 @@ function SignUpPageComponent() {
     }, [settings, isLoading, router]);
 
     if (isLoading) {
-        return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+        return <div className="flex justify-center items-center h-full"><ColorfulLoader /></div>;
     }
     
     if (!settings?.allowPublicRegistration) {
@@ -46,7 +46,7 @@ function SignUpPageComponent() {
 
 export default function SignUpPage() {
     return (
-        <Suspense fallback={<div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
+        <Suspense fallback={<div className="flex justify-center items-center h-full"><ColorfulLoader /></div>}>
             <SignUpPageComponent />
         </Suspense>
     )

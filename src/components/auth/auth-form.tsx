@@ -1,4 +1,3 @@
-
 // src/components/auth/auth-form.tsx
 'use client';
 
@@ -6,7 +5,7 @@ import React from 'react';
 import { useState, type FormEvent, useEffect, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -17,6 +16,7 @@ import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import { PasswordStrengthIndicator } from '@/components/password-strength-indicator';
 import AuthFormContainer from './auth-form-container';
+import { ColorfulLoader } from '../ui/colorful-loader';
 
 const formVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -148,7 +148,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                     </Button>
                  </div>
                 <Button type="submit" className="w-full !mt-6 h-12 text-base" disabled={isLoading}>
-                    {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Ingresar'}
+                    {isLoading ? <div className="w-6 h-6 mr-2"><ColorfulLoader/></div> : 'Ingresar'}
                 </Button>
             </form>
         </motion.div>
@@ -189,7 +189,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                     </AnimatePresence>
                  </div>
                 <Button type="submit" className="w-full !mt-6 h-12 text-base" disabled={isLoading}>
-                    {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Crear Cuenta'}
+                    {isLoading ? <div className="w-6 h-6 mr-2"><ColorfulLoader/></div> : 'Crear Cuenta'}
                 </Button>
             </form>
         </motion.div>

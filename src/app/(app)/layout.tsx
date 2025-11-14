@@ -18,6 +18,7 @@ import { useTheme } from 'next-themes';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Clock } from 'lucide-react';
+import { ColorfulLoader } from '@/components/ui/colorful-loader';
 
 
 function IdleTimeoutDialog({ isOpen, onStay, countdown }: { isOpen: boolean, onStay: () => void, countdown: number }) {
