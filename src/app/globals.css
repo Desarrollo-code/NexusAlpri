@@ -344,47 +344,20 @@
     animation: aurora-3 18s ease-in-out infinite;
 }
 
-.loader {
-    width: 48px;
-    height: 48px;
-    position: relative;
-    animation: rotate 1.5s linear infinite;
-}
-.loader:before,
-.loader:after {
-    content: "";
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-}
-.loader:before {
-    left: 0;
-    top: 0;
-    background-color: #ef4444; /* Rojo */
-    animation: anim-before 1.5s ease-in-out infinite;
-}
-.loader:after {
-    left: auto;
-    right: 0;
-    top: auto;
-    bottom: 0;
-    background-color: #fff; /* Blanco */
-    animation: anim-after 1.5s ease-in-out infinite;
-}
-
-@keyframes rotate {
+@keyframes piller-push-up {
+  0%,
   100% {
-    transform: rotate(360deg);
+    transform: scaleY(0.2);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
   }
 }
-@keyframes anim-before {
-  0%, 100% { transform: scale(0.5); }
-  50% { transform: scale(1); }
-}
-@keyframes anim-after {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(0.5); }
+
+.animate-piller-push-up {
+  animation: piller-push-up 1s ease-in-out infinite;
 }
 
 
