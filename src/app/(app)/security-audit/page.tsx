@@ -37,6 +37,7 @@ import {
 import { cn } from '@/lib/utils';
 import { AtRiskUsersCard } from '@/components/security/at-risk-users-card';
 import { VisitorsByCountryCard } from '@/components/security/visitors-by-country-card';
+import { ColorfulLoader } from '@/components/ui/colorful-loader';
 
 
 const PAGE_SIZE = 10;
@@ -52,6 +53,35 @@ const ALL_EVENTS: { value: SecurityLogEvent | 'ALL' | 'COURSE_MODIFICATIONS', la
     { value: 'TWO_FACTOR_ENABLED', label: 'Activaciones de 2FA' },
     { value: 'TWO_FACTOR_DISABLED', label: 'Desactivaciones de 2FA' },
 ];
+
+const SecurityPageSkeleton = () => (
+    <div className="space-y-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="space-y-1">
+                <Skeleton className="h-8 w-64" />
+                <Skeleton className="h-5 w-96" />
+            </div>
+            <div className="flex items-center gap-2">
+                <Skeleton className="h-9 w-[260px]" />
+                <Skeleton className="h-9 w-[220px]" />
+                <Skeleton className="h-9 w-28" />
+            </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            <div className="lg:col-span-1 space-y-8">
+                <Skeleton className="h-96 rounded-2xl" />
+            </div>
+            <div className="lg:col-span-1 space-y-8">
+                <Skeleton className="h-80 rounded-2xl" />
+                <Skeleton className="h-48 rounded-2xl" />
+            </div>
+            <div className="lg:col-span-1 space-y-8">
+                <Skeleton className="h-64 rounded-2xl" />
+                <Skeleton className="h-64 rounded-2xl" />
+            </div>
+        </div>
+    </div>
+);
 
 function SecurityAuditPageComponent() {
     const { user: currentUser } = useAuth();
@@ -175,11 +205,13 @@ function SecurityAuditPageComponent() {
         }
     }
 
-    if (currentUser?.role !== 'ADMINISTRATOR') {
-        return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+    if (!currentUser || currentUser.role !== 'ADMINISTRATOR') {
+        return <div className="flex h-full items-center justify-center"><div className="w-8 h-8"><ColorfulLoader /></div></div>;
     }
 
     const totalPages = Math.ceil(totalLogs / PAGE_SIZE);
+    
+    if(isLoading) return <SecurityPageSkeleton />;
 
     return (
         <div className="space-y-8">
@@ -207,13 +239,13 @@ function SecurityAuditPageComponent() {
              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 {/* Columna Izquierda */}
                 <div className="lg:col-span-1 space-y-8">
-                    <Card>
+                    <Card id="security-log-timeline">
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-primary animate-pulse"/>Línea de Tiempo de Eventos</CardTitle>
                             <CardDescription className="text-xs">Es como la cámara de seguridad. Registra cada vez que alguien entra, sale o realiza una acción importante.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {isLoading ? <div className="text-center py-8"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>
+                            {isLoading ? <div className="text-center py-8"><div className="w-8 h-8 mx-auto"><ColorfulLoader/></div></div>
                             : error ? (
                                 <div className="text-center py-8 text-destructive flex flex-col items-center gap-2">
                                     <AlertTriangle className="h-6 w-6"/>
@@ -234,7 +266,7 @@ function SecurityAuditPageComponent() {
                 </div>
                  {/* Columna Central */}
                 <div className="lg:col-span-1 space-y-8">
-                    <Card>
+                    <Card id="security-stats-cards">
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-primary"/> Salud de Seguridad</CardTitle>
                              <CardDescription className="text-xs">Un "termómetro" que mide qué tan seguros son los inicios de sesión. Un puntaje alto es bueno.</CardDescription>
@@ -242,10 +274,10 @@ function SecurityAuditPageComponent() {
                         <CardContent className="flex flex-col items-center justify-center">
                             {isLoading ? <Skeleton className="h-48 w-full"/> : <GaugeChart value={stats.securityScore || 0}/>}
                              <div className="mt-4 grid grid-cols-2 gap-2 w-full">
-                                <MetricCard id="successful-logins-card" title="Exitosos" value={stats.successfulLogins || 0} icon={CheckCircle} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')} gradient="bg-gradient-green" />
-                                <MetricCard id="failed-logins-card" title="Fallidos" value={stats.failedLogins || 0} icon={AlertTriangle} onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')} gradient="bg-gradient-orange" />
-                                <MetricCard id="content-mods-card" title="Modif. Contenido" value={stats.courseModifications || 0} icon={BookMarked} onClick={() => handleFilterChange('event', 'COURSE_MODIFICATIONS')} gradient="bg-gradient-blue" />
-                                <MetricCard id="2fa-adoption-card" title="Adopción 2FA" value={stats.twoFactorAdoptionRate || 0} icon={Percent} suffix="%" gradient="bg-gradient-purple" />
+                                <MetricCard title="Exitosos" value={stats.successfulLogins || 0} icon={CheckCircle} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')} gradient="bg-gradient-green" />
+                                <MetricCard title="Fallidos" value={stats.failedLogins || 0} icon={AlertTriangle} onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')} gradient="bg-gradient-orange" />
+                                <MetricCard title="Modif. Contenido" value={stats.courseModifications || 0} icon={BookMarked} onClick={() => handleFilterChange('event', 'COURSE_MODIFICATIONS')} gradient="bg-gradient-blue" />
+                                <MetricCard title="Adopción 2FA" value={stats.twoFactorAdoptionRate || 0} icon={Percent} suffix="%" gradient="bg-gradient-purple" />
                             </div>
                         </CardContent>
                     </Card>
@@ -273,7 +305,7 @@ function SecurityAuditPageComponent() {
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isSuspending}>Cancelar</AlertDialogCancel>
                         <AlertDialogAction onClick={handleSuspendUser} disabled={isSuspending} className={cn(buttonVariants({ variant: 'destructive' }))}>
-                            {isSuspending && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}Suspender Usuario
+                            {isSuspending && <div className="w-4 h-4 mr-2"><ColorfulLoader/></div>}Suspender Usuario
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -284,7 +316,7 @@ function SecurityAuditPageComponent() {
 
 export default function SecurityAuditPageWrapper() {
     return (
-        <Suspense fallback={<div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
+        <Suspense fallback={<SecurityPageSkeleton />}>
             <SecurityAuditPageComponent />
         </Suspense>
     );

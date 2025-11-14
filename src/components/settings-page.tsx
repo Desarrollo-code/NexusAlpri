@@ -37,6 +37,7 @@ import { useTour } from '@/contexts/tour-context';
 import { settingsTour } from '@/lib/tour-steps';
 import { UploadArea } from '@/components/ui/upload-area';
 import { ScrollArea } from './ui/scroll-area';
+import { ColorfulLoader } from './ui/colorful-loader';
 
 const availableFonts = [
     { value: 'Inter', label: 'Inter (Sans-serif)' },
@@ -111,7 +112,7 @@ const UploadWidget = ({
            <div className="w-full h-full flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg bg-muted/80 p-2 relative">
                 {localPreview && <Image src={localPreview} alt="Subiendo" fill className="object-contain opacity-30 p-2"/>}
                 <div className="z-10 text-center space-y-2">
-                    <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto" />
+                    <div className="w-6 h-6 mx-auto"><ColorfulLoader/></div>
                     <p className="text-xs text-muted-foreground">Subiendo...</p>
                     <Progress value={uploadProgress} className="w-24 h-1.5" />
                 </div>
@@ -253,21 +254,29 @@ export default function SettingsPageComponent() {
   if (isLoading || !formState) {
     return (
         <div className="space-y-8">
-            <div>
-                <Skeleton className="h-8 w-1/2 mb-2" />
-                <Skeleton className="h-4 w-3/4" />
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div className="space-y-1">
+                <Skeleton className="h-8 w-64" />
+                <Skeleton className="h-5 w-96" />
+              </div>
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-9 w-28" />
+                <Skeleton className="h-9 w-40" />
+              </div>
             </div>
-            <div className="space-y-6">
-                <Skeleton className="h-12 w-full max-w-md" />
-                <Skeleton className="h-96 w-full" />
-            </div>
+            <Skeleton className="h-10 w-full max-w-lg" />
+            <Card>
+                <CardContent className="p-6">
+                    <Skeleton className="h-96 w-full" />
+                </CardContent>
+            </Card>
         </div>
     );
   }
 
   if (!user || user.role !== 'ADMINISTRATOR') {
     if (typeof window !== 'undefined') router.push('/dashboard');
-    return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>;
+    return <div className="flex h-full items-center justify-center"><div className="w-8 h-8"><ColorfulLoader /></div></div>;
   }
   
   return (
@@ -282,7 +291,7 @@ export default function SettingsPageComponent() {
                     <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
                 </Button>
                 <Button onClick={handleSaveSettings} disabled={isSaving || isLoading} size="sm">
-                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                    {isSaving ? <div className="w-4 h-4 mr-2"><ColorfulLoader /></div> : <Save className="mr-2 h-4 w-4" />}
                     {isSaving ? 'Guardando...' : 'Guardar Configuración'}
                 </Button>
             </div>
@@ -314,17 +323,16 @@ export default function SettingsPageComponent() {
                          </Card>
                     </div>
                     <div className="lg:col-span-2">
-                        <Card id="settings-images-card" className="h-full">
+                        <Card id="settings-empty-states-card" className="h-full">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-lg">
-                                <ImageIcon className="h-5 w-5 text-primary" />
-                                Imágenes del Sistema y Estados Vacíos
+                                <FolderOpen className="h-5 w-5 text-primary" />
+                                Imágenes de Estados Vacíos
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <ScrollArea className="h-[350px] w-full">
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pr-4">
-                                        <UploadWidget id="security-mascot-upload" label="Mascota de Seguridad" currentImageUrl={formState.securityMascotUrl} onFileSelect={(url) => handleImageUpload('securityMascotUrl', url)} onRemove={()=>handleRemoveImage('securityMascotUrl')} disabled={isSaving}/>
                                         <UploadWidget id="es-courses-upload" label="Catálogo Vacío" currentImageUrl={formState.emptyStateCoursesUrl} onFileSelect={(url) => handleImageUpload('emptyStateCoursesUrl', url)} onRemove={()=>handleRemoveImage('emptyStateCoursesUrl')} disabled={isSaving}/>
                                         <UploadWidget id="es-mycourses-upload" label="Mis Cursos Vacío" currentImageUrl={formState.emptyStateMyCoursesUrl} onFileSelect={(url) => handleImageUpload('emptyStateMyCoursesUrl', url)} onRemove={()=>handleRemoveImage('emptyStateMyCoursesUrl')} disabled={isSaving}/>
                                         <UploadWidget id="es-forms-upload" label="Formularios Vacío" currentImageUrl={formState.emptyStateFormsUrl} onFileSelect={(url) => handleImageUpload('emptyStateFormsUrl', url)} onRemove={()=>handleRemoveImage('emptyStateFormsUrl')} disabled={isSaving}/>
@@ -341,7 +349,7 @@ export default function SettingsPageComponent() {
                         </Card>
                     </div>
                 </div>
-                 <Card className="lg:col-span-3">
+                 <Card id="settings-images-card" className="lg:col-span-3">
                    <CardHeader>
                        <CardTitle className="flex items-center gap-2 text-lg"><ImagePlay className="h-5 w-5 text-primary"/>Imágenes de Navegación Pública</CardTitle>
                    </CardHeader>
@@ -504,7 +512,7 @@ export default function SettingsPageComponent() {
         <AlertDialog open={!!categoryToDelete} onOpenChange={(isOpen) => { if (!isOpen) setCategoryToDelete(null); }}>
           <AlertDialogContent>
               <AlertDialogHeader><AlertDialogTitle>¿Confirmar Eliminación?</AlertDialogTitle><AlertDialogDescription>Se verificará si la categoría "<strong>{categoryToDelete}</strong>" está en uso. Si no lo está, se eliminará de la lista (deberás guardar los cambios para confirmar). Si está en uso, se te notificará.</AlertDialogDescription></AlertDialogHeader>
-              <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><AlertDialogCancel disabled={isCheckingCategory}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDeleteCategory} disabled={isCheckingCategory} className={buttonVariants({ variant: "destructive" })}>{isCheckingCategory ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}Sí, eliminar</AlertDialogAction></AlertDialogFooter>
+              <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><AlertDialogCancel disabled={isCheckingCategory}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDeleteCategory} disabled={isCheckingCategory} className={buttonVariants({ variant: "destructive" })}>{isCheckingCategory ? <div className="w-4 h-4 mr-2"><ColorfulLoader/></div> : <Trash2 className="mr-2 h-4 w-4" />}Sí, eliminar</AlertDialogAction></AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
     </div>
