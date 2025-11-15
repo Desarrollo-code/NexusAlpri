@@ -90,29 +90,6 @@ const DraggableUserCard = ({ user, isSelected, onSelectionChange, onEdit, onRole
     )
 }
 
-const GridView = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleChange, onStatusChange }: {
-    users: UserWithProcess[];
-    selectedUserIds: Set<string>;
-    onSelectionChange: (id: string, selected: boolean) => void;
-    onEdit: (user: User) => void;
-    onRoleChange: (user: User) => void;
-    onStatusChange: (user: User, status: boolean) => void;
-}) => (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        {users.map(u => (
-            <DraggableUserCard 
-                key={u.id} 
-                user={u} 
-                isSelected={selectedUserIds.has(u.id)} 
-                onSelectionChange={onSelectionChange}
-                onEdit={onEdit}
-                onRoleChange={onRoleChange}
-                onStatusChange={onStatusChange}
-            />
-        ))}
-    </div>
-);
-
 const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleChange, onStatusChange }: {
     users: UserWithProcess[];
     selectedUserIds: Set<string>;
@@ -259,6 +236,30 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
         </Card>
     );
 };
+
+
+const GridView = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleChange, onStatusChange }: {
+    users: UserWithProcess[];
+    selectedUserIds: Set<string>;
+    onSelectionChange: (id: string, selected: boolean) => void;
+    onEdit: (user: User) => void;
+    onRoleChange: (user: User) => void;
+    onStatusChange: (user: User, status: boolean) => void;
+}) => (
+    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {users.map(u => (
+            <DraggableUserCard 
+                key={u.id} 
+                user={u} 
+                isSelected={selectedUserIds.has(u.id)} 
+                onSelectionChange={onSelectionChange}
+                onEdit={onEdit}
+                onRoleChange={onRoleChange}
+                onStatusChange={onStatusChange}
+            />
+        ))}
+    </div>
+);
 
 
 // --- MAIN PAGE COMPONENT ---
@@ -586,17 +587,16 @@ function UsersPageComponent() {
                  {isMobile ? <MobileControls /> : <DesktopControls />}
 
                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-                    <div className="lg:col-span-3" id="users-main-view">
-                         <div className="space-y-4">
+                    <div className="lg:col-span-3">
+                         <div className="pb-24 md:pb-4">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">{[...Array(8)].map((_,i) => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}</div>
+                                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">{[...Array(8)].map((_,i) => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}</div>
                                 ) : (
                                     <Card><CardContent className="p-4"><Skeleton className="h-96 w-full rounded-2xl"/></CardContent></Card>
                                 )
                             ) : usersList.length > 0 ? (
-                               viewMode === 'grid' ? 
-                                 <GridView users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} onEdit={handleOpenUserModal} onRoleChange={handleOpenUserModal} onStatusChange={handleStatusChange} /> 
+                               viewMode === 'grid' ? <GridView users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} onEdit={handleOpenUserModal} onRoleChange={handleOpenUserModal} onStatusChange={handleStatusChange} /> 
                                : <UserTable users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} onEdit={handleOpenUserModal} onRoleChange={handleOpenUserModal} onStatusChange={handleStatusChange} />
                             ) : (
                                <EmptyState
@@ -606,7 +606,6 @@ function UsersPageComponent() {
                                  imageUrl={settings?.emptyStateUsersUrl}
                                />
                             )}
-                            {isMobile && selectedUserIds.size > 0 && <div className="mt-4"><BulkActionsBar /></div>}
                          </div>
                          {totalPages > 1 && <SmartPagination className="mt-6" currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />}
                     </div>
@@ -619,6 +618,22 @@ function UsersPageComponent() {
                     </aside>
                 </div>
             </div>
+            
+            <AnimatePresence>
+                {selectedUserIds.size > 0 && isMobile && (
+                     <motion.div
+                        initial={{ y: 100, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 100, opacity: 0 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        className="fixed bottom-[4.5rem] left-4 right-4 z-50 pointer-events-none flex justify-center"
+                    >
+                       <div className="pointer-events-auto">
+                           <BulkActionsBar />
+                       </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <DragOverlay dropAnimation={null}>
                 {draggedUser ? 
@@ -641,7 +656,7 @@ function UsersPageComponent() {
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isDeactivating}>Cancelar</AlertDialogCancel>
                         <AlertDialogAction onClick={confirmStatusChange} disabled={isDeactivating} className={cn(!userToDeactivate?.isActive && 'bg-green-600 hover:bg-green-700', userToDeactivate?.isActive && 'bg-destructive hover:bg-destructive/90')}>
-                            {isDeactivating && <div className="w-4 h-4 mr-2"><ColorfulLoader /></div>}
+                            {isDeactivating ? <div className="w-4 h-4 mr-2"><ColorfulLoader /></div> : null}
                             Sí, {userToDeactivate?.isActive ? 'Inactivar' : 'Activar'}
                         </AlertDialogAction>
                     </AlertDialogFooter>
