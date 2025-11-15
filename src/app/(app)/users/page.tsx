@@ -81,38 +81,13 @@ const DraggableUserCard = ({ user, isSelected, onSelectionChange, onEdit, onRole
                     onEdit={onEdit}
                     onRoleChange={onRoleChange}
                     onStatusChange={onStatusChange}
+                    isSelected={isSelected} 
+                    onSelectionChange={onSelectionChange}
                 />
-                 <div className="absolute top-2 left-2 z-20">
-                    <Checkbox checked={isSelected} onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)} className="data-[state=checked]:bg-accent data-[state=checked]:border-accent-foreground/50 border-accent/70 bg-background/80 backdrop-blur-sm" />
-                </div>
             </div>
         </div>
     )
-}
-
-const GridView = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleChange, onStatusChange }: {
-    users: UserWithProcess[];
-    selectedUserIds: Set<string>;
-    onSelectionChange: (id: string, selected: boolean) => void;
-    onEdit: (user: User) => void;
-    onRoleChange: (user: User) => void;
-    onStatusChange: (user: User, status: boolean) => void;
-}) => (
-    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        {users.map(u => (
-            <DraggableUserCard 
-                key={u.id} 
-                user={u} 
-                isSelected={selectedUserIds.has(u.id)} 
-                onSelectionChange={onSelectionChange}
-                onEdit={onEdit}
-                onRoleChange={onRoleChange}
-                onStatusChange={onStatusChange}
-            />
-        ))}
-    </div>
-);
-
+};
 
 const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleChange, onStatusChange }: {
     users: UserWithProcess[];
@@ -260,6 +235,29 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
         </Card>
     );
 };
+
+const GridView = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleChange, onStatusChange }: {
+    users: UserWithProcess[];
+    selectedUserIds: Set<string>;
+    onSelectionChange: (id: string, selected: boolean) => void;
+    onEdit: (user: User) => void;
+    onRoleChange: (user: User) => void;
+    onStatusChange: (user: User, status: boolean) => void;
+}) => (
+    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        {users.map(u => (
+            <DraggableUserCard 
+                key={u.id} 
+                user={u} 
+                isSelected={selectedUserIds.has(u.id)} 
+                onSelectionChange={onSelectionChange}
+                onEdit={onEdit}
+                onRoleChange={onEdit} // Re-using edit for role change
+                onStatusChange={onStatusChange}
+            />
+        ))}
+    </div>
+);
 
 
 // --- MAIN PAGE COMPONENT ---
@@ -588,12 +586,12 @@ function UsersPageComponent() {
 
                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
                     <div className="lg:col-span-3" id="users-main-view">
-                         <div className="pb-24 md:pb-4">
+                         <div className={cn(isMobile && "pb-24")}>
                             {isLoading ? (
                                 viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">{[...Array(10)].map((_,i) => <Skeleton key={i} className="h-48 w-full" />)}</div>
+                                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">{[...Array(15)].map((_,i) => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}</div>
                                 ) : (
-                                    <Card><CardContent className="p-4"><Skeleton className="h-96 w-full"/></CardContent></Card>
+                                    <Card><CardContent className="p-4"><Skeleton className="h-96 w-full rounded-2xl"/></CardContent></Card>
                                 )
                             ) : usersList.length > 0 ? (
                                viewMode === 'grid' ? <GridView users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} onEdit={handleOpenUserModal} onRoleChange={handleOpenUserModal} onStatusChange={handleStatusChange} /> 
@@ -621,12 +619,12 @@ function UsersPageComponent() {
             
             <AnimatePresence>
                 {selectedUserIds.size > 0 && isMobile && (
-                    <motion.div
+                     <motion.div
                         initial={{ y: 100, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: 100, opacity: 0 }}
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        className="fixed bottom-[6rem] left-4 right-4 z-40"
+                        className="fixed bottom-20 left-4 right-4 z-40"
                     >
                        <BulkActionsBar />
                     </motion.div>
