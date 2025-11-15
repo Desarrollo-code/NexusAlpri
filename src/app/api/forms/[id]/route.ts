@@ -39,7 +39,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       include: {
         fields: {
           orderBy: { order: 'asc' },
-          select: { id: true, label: true, type: true, required: true, placeholder: true, order: true, options: true, imageUrl: true }
+          select: { id: true, label: true, type: true, required: true, placeholder: true, order: true, options: true }
         },
         sharedWith: {
             select: { id: true, name: true, avatar: true }
