@@ -51,6 +51,8 @@ interface UserWithProcess extends User {
     process: { id: string; name: string } | null;
 }
 
+const PAGE_SIZE = 12;
+
 const DraggableUserPreview = ({ user }: { user: UserWithProcess }) => (
     <Card className="flex items-center gap-2 p-2 shadow-lg w-48">
         <Avatar className="h-8 w-8">
@@ -94,8 +96,6 @@ function UsersPageComponent() {
     const { setPageTitle } = useTitle();
     const isMobile = useIsMobile();
     const { startTour, forceStartTour } = useTour();
-
-    const PAGE_SIZE = isMobile ? 14 : 15;
 
     const [usersList, setUsersList] = useState<UserWithProcess[]>([]);
     const [totalUsers, setTotalUsers] = useState(0);
@@ -310,39 +310,15 @@ function UsersPageComponent() {
     }
     
     const DesktopControls = () => (
-         <div id="users-controls" className="flex items-center justify-between gap-4">
-            <div className="relative flex-grow max-w-xs">
-                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                 <Input placeholder="Buscar por nombre o email..." value={search} onChange={handleSearchChange} className="pl-10"/>
+         <div id="users-controls" className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="space-y-1">
+                <h1 className="text-2xl font-semibold">Control Central de Colaboradores</h1>
+                <p className="text-muted-foreground">Gestiona colaboradores, asigna procesos y supervisa la estructura del equipo.</p>
             </div>
-             <div className="flex items-center gap-2">
-                <Popover>
-                    <PopoverTrigger asChild>
-                        <Button variant="outline">
-                            <Filter className="mr-2 h-4 w-4" />
-                            Filtros ({activeFiltersCount})
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-64 p-0" align="end">
-                        <div className="p-4 space-y-4">
-                             <div className="space-y-2"><Label>Rol</Label><Select value={role || 'ALL'} onValueChange={(v) => handleFilterChange('role', v as UserRole)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="ADMINISTRATOR">Admin</SelectItem><SelectItem value="INSTRUCTOR">Instructor</SelectItem><SelectItem value="STUDENT">Estudiante</SelectItem></SelectContent></Select></div>
-                             <div className="space-y-2"><Label>Estado</Label><Select value={status || 'ALL'} onValueChange={(v) => handleFilterChange('status', v)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="active">Activo</SelectItem><SelectItem value="inactive">Inactivo</SelectItem></SelectContent></Select></div>
-                             <div className="space-y-2"><Label>Proceso</Label><Select value={processId || 'ALL'} onValueChange={(v) => handleFilterChange('processId', v)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="unassigned">Sin Asignar</SelectItem><Separator/>{flattenedProcesses.map(p => (<SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem` }}>{p.name}</SelectItem>))}</SelectContent></Select></div>
-                        </div>
-                    </PopoverContent>
-                </Popover>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline">
-                            {viewMode === 'grid' ? <Grid className="mr-2 h-4 w-4" /> : <List className="mr-2 h-4 w-4" />}
-                            Vista
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuItem onSelect={() => setViewMode('grid')}><Grid className="mr-2 h-4 w-4"/>Cuadrícula</DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => setViewMode('table')}><List className="mr-2 h-4 w-4"/>Tabla</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+            <div className="flex items-center gap-2">
+                 <Button variant="outline" size="sm" onClick={() => forceStartTour('users', usersTour)}>
+                    <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+                </Button>
                 <Button onClick={() => handleOpenUserModal(null)}>
                     <UserPlus className="mr-2 h-4 w-4"/>Añadir Colaborador
                 </Button>
@@ -351,7 +327,7 @@ function UsersPageComponent() {
     );
 
     const MobileControls = () => (
-         <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
             <div className="relative flex-grow">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input placeholder="Buscar..." value={search} onChange={handleSearchChange} className="pl-10 h-10"/>
@@ -365,10 +341,21 @@ function UsersPageComponent() {
                 </PopoverTrigger>
                  <PopoverContent className="w-64 p-4 space-y-4" align="end">
                     <div className="space-y-2"><Label>Rol</Label><Select value={role || 'ALL'} onValueChange={(v) => handleFilterChange('role', v as UserRole)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="ADMINISTRATOR">Admin</SelectItem><SelectItem value="INSTRUCTOR">Instructor</SelectItem><SelectItem value="STUDENT">Estudiante</SelectItem></SelectContent></Select></div>
-                    <div className="space-y-2"><Label>Estado</Label><Select value={status || 'ALL'} onValueChange={(v) => handleFilterChange('status', v)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="active">Activo</SelectItem><SelectItem value="inactive">Inactivo</SelectItem></SelectContent></Select></div>
+                     <div className="space-y-2"><Label>Estado</Label><Select value={status || 'ALL'} onValueChange={(v) => handleFilterChange('status', v)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="active">Activo</SelectItem><SelectItem value="inactive">Inactivo</SelectItem></SelectContent></Select></div>
                     <div className="space-y-2"><Label>Proceso</Label><Select value={processId || 'ALL'} onValueChange={(v) => handleFilterChange('processId', v)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="ALL">Todos</SelectItem><SelectItem value="unassigned">Sin Asignar</SelectItem><Separator/>{flattenedProcesses.map(p => (<SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem` }}>{p.name}</SelectItem>))}</SelectContent></Select></div>
                 </PopoverContent>
             </Popover>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="h-10 w-10 flex-shrink-0">
+                        <Grid className="h-4 w-4"/>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onSelect={() => setViewMode('grid')}><Grid className="mr-2 h-4 w-4"/>Cuadrícula</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setViewMode('table')}><List className="mr-2 h-4 w-4"/>Tabla</DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
             <Button onClick={() => handleOpenUserModal(null)} size="icon" className="h-10 w-10 flex-shrink-0">
                 <UserPlus className="h-4 w-4"/>
             </Button>
@@ -377,7 +364,7 @@ function UsersPageComponent() {
     
     const BulkActionsBar = () => {
         if (selectedUserIds.size === 0) return null;
-        
+
         return (
              <div className="flex flex-wrap items-center justify-between gap-2 p-2 bg-background border rounded-lg shadow-lg">
                 <p className="px-2 text-sm font-semibold">{selectedUserIds.size} seleccionado(s)</p>
@@ -413,12 +400,10 @@ function UsersPageComponent() {
                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
                     <div className="lg:col-span-3" id="users-main-view">
                          <div className="space-y-4">
-                             <div className="md:hidden">
-                                <BulkActionsBar />
-                            </div>
+                            {!isMobile && <BulkActionsBar />}
                             {isLoading ? (
                                 viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">{[...Array(8)].map((_,i) => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}</div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">{[...Array(PAGE_SIZE)].map((_,i) => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}</div>
                                 ) : (
                                     <Card><CardContent className="p-4"><Skeleton className="h-96 w-full rounded-2xl"/></CardContent></Card>
                                 )
@@ -434,17 +419,31 @@ function UsersPageComponent() {
                             )}
                          </div>
                          {totalPages > 1 && <SmartPagination className="mt-6" currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />}
+                         <div className="h-24 md:hidden" />
                     </div>
 
                     <aside className="hidden lg:block lg:col-span-1 lg:sticky lg:top-24 space-y-4">
                         <ProcessTree processes={processes} onProcessUpdate={fetchData} onProcessClick={(id) => handleFilterChange('processId', id)} activeProcessId={processId}/>
-                        <div className="md:bottom-4">
-                           <BulkActionsBar />
-                        </div>
                     </aside>
                 </div>
             </div>
             
+            <AnimatePresence>
+                {selectedUserIds.size > 0 && isMobile && (
+                     <motion.div
+                        initial={{ y: 100, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 100, opacity: 0 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        className="fixed bottom-20 left-4 right-4 z-50 pointer-events-none flex justify-center"
+                    >
+                       <div className="pointer-events-auto">
+                           <BulkActionsBar />
+                       </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <DragOverlay dropAnimation={null}>
                 {draggedUser ? 
                   <DraggableUserPreview user={draggedUser} /> 
@@ -513,7 +512,7 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                                 </TableCell>
                                 <TableCell><Badge variant="secondary" className="text-xs" style={{backgroundColor: u.process ? getProcessColors(u.process.id).raw.light : undefined, color: u.process ? getProcessColors(u.process.id).raw.dark : undefined}}>{u.process?.name || 'Sin Asignar'}</Badge></TableCell>
                                 <TableCell><Badge variant={getRoleBadgeVariant(u.role)}>{getRoleInSpanish(u.role)}</Badge></TableCell>
-                                <TableCell><Badge variant={u.isActive ? 'default' : 'secondary'} className={cn("text-xs py-0.5 px-2", u.isActive ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-500/30" : "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300 border-gray-500/30")}>
+                                <TableCell><Badge variant={u.isActive ? "default" : "secondary"} className={cn("text-xs py-0.5 px-2", u.isActive ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-500/30" : "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300 border-gray-500/30")}>
                                     {u.isActive ? 'Activo' : 'Inactivo'}
                                 </Badge></TableCell>
                                 <TableCell className="text-right">
