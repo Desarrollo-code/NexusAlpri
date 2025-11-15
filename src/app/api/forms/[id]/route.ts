@@ -143,15 +143,19 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             required: fieldData.required || false,
             placeholder: fieldData.placeholder || null,
             order: index,
-            formId: formId,
             imageUrl: (fieldData as any).imageUrl || null,
             template: (fieldData as any).template || null,
+            form: {
+              connect: { id: formId }
+            }
           };
+          
+          const {form, ...updatePayload } = fieldPayload;
           
           await tx.formField.upsert({
             where: { id: isNew ? `__NEVER_FIND__${fieldData.id}` : fieldData.id },
             create: fieldPayload,
-            update: fieldPayload,
+            update: updatePayload,
           });
         }
       }
