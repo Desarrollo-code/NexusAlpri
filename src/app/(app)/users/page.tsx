@@ -1,4 +1,3 @@
-
 // src/app/(app)/users/page.tsx
 'use client';
 
@@ -37,10 +36,10 @@ import { UserProfileCard } from '@/components/users/user-profile-card';
 import { getRoleInSpanish, getRoleBadgeVariant } from '@/lib/security-log-utils';
 import { getProcessColors } from '@/lib/utils';
 import { Identicon } from '@/components/ui/identicon';
-import { EmptyState } from '@/components/empty-state';
+import { EmptyState } from '../empty-state';
 import { useTour } from '@/contexts/tour-context';
 import { usersTour } from '@/lib/tour-steps';
-import { ColorfulLoader } from '@/components/ui/colorful-loader';
+import { ColorfulLoader } from '../ui/colorful-loader';
 
 
 // --- TYPES & CONTEXT ---
@@ -432,8 +431,8 @@ function UsersPageComponent() {
                  {isMobile ? <MobileControls /> : <DesktopControls />}
 
                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-                    <div className="lg:col-span-3">
-                         <div className="mb-24 md:mb-4">
+                    <div className="lg:col-span-3" id="users-main-view">
+                        <div className="space-y-4">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
                                     <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">{[...Array(PAGE_SIZE)].map((_,i) => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}</div>
@@ -450,34 +449,18 @@ function UsersPageComponent() {
                                  imageUrl={settings?.emptyStateUsersUrl}
                                />
                             )}
-                         </div>
+                            
+                            {selectedUserIds.size > 0 && <div className="mt-4"><BulkActionsBar /></div>}
+                        </div>
+
                          {totalPages > 1 && <SmartPagination className="mt-6" currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />}
                     </div>
 
                     <aside className="hidden lg:block lg:col-span-1 lg:sticky lg:top-24 space-y-4">
                         <ProcessTree processes={processes} onProcessUpdate={fetchData} onProcessClick={(id) => handleFilterChange('processId', id)} activeProcessId={processId}/>
-                        <div className="md:bottom-4">
-                           <BulkActionsBar />
-                        </div>
                     </aside>
                 </div>
             </div>
-            
-            <AnimatePresence>
-                {selectedUserIds.size > 0 && isMobile && (
-                     <motion.div
-                        initial={{ y: 100, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        exit={{ y: 100, opacity: 0 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        className="fixed bottom-24 left-4 right-4 z-50 pointer-events-none flex justify-center"
-                    >
-                       <div className="pointer-events-auto">
-                           <BulkActionsBar />
-                       </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
 
             <DragOverlay dropAnimation={null}>
                 {draggedUser ? 
@@ -517,3 +500,4 @@ export default function UsersPage() {
         </Suspense>
     )
 }
+
