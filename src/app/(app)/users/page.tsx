@@ -36,10 +36,10 @@ import { UserProfileCard } from '@/components/users/user-profile-card';
 import { getRoleInSpanish, getRoleBadgeVariant } from '@/lib/security-log-utils';
 import { getProcessColors } from '@/lib/utils';
 import { Identicon } from '@/components/ui/identicon';
-import { EmptyState } from '@/components/empty-state';
+import { EmptyState } from '../empty-state';
 import { useTour } from '@/contexts/tour-context';
 import { usersTour } from '@/lib/tour-steps';
-import { ColorfulLoader } from '@/components/ui/colorful-loader';
+import { ColorfulLoader } from '../ui/colorful-loader';
 
 
 // --- TYPES & CONTEXT ---
@@ -209,7 +209,7 @@ function UsersPageComponent() {
                 }
             } else {
                 if (isSelected) newSet.add(userId);
-                else newSet.delete(userId);
+                else newSet.delete(id);
             }
             return newSet;
         });
@@ -301,7 +301,14 @@ function UsersPageComponent() {
     };
     const flattenedProcesses = flattenProcesses(processes);
 
-    const UserTable = () => {
+    const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleChange, onStatusChange }: {
+        users: UserWithProcess[];
+        selectedUserIds: Set<string>;
+        onSelectionChange: (id: string, selected: boolean) => void;
+        onEdit: (user: User) => void;
+        onRoleChange: (user: User) => void;
+        onStatusChange: (user: User, status: boolean) => void;
+    }) => {
         const isMobile = useIsMobile();
     
         const handleSelectAll = (checked: boolean) => {
@@ -311,7 +318,7 @@ function UsersPageComponent() {
         if (isMobile) {
             return (
                 <div className="space-y-3">
-                    {usersList.map(user => {
+                    {users.map(user => {
                         const processColors = user.process ? getProcessColors(user.process.id) : null;
                         return (
                             <Card key={user.id} className="p-3 overflow-hidden">
@@ -368,7 +375,7 @@ function UsersPageComponent() {
                         <TableRow>
                             <TableHead className="w-[50px]">
                                 <Checkbox 
-                                    checked={usersList.length > 0 && usersList.every(u => selectedUserIds.has(u.id))}
+                                    checked={users.length > 0 && users.every(u => selectedUserIds.has(u.id))}
                                     onCheckedChange={(checked) => handleSelectAll(!!checked)}
                                 />
                             </TableHead>
@@ -380,7 +387,7 @@ function UsersPageComponent() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {usersList.map(user => {
+                        {users.map(user => {
                             const processColors = user.process ? getProcessColors(user.process.id) : null;
                             return (
                             <TableRow key={user.id}>
@@ -440,6 +447,7 @@ function UsersPageComponent() {
             </Card>
         );
     };
+
 
     if (!currentUser || (currentUser.role !== 'ADMINISTRATOR')) {
         return <div className="text-center p-8"><AlertTriangle className="mx-auto h-12 w-12 text-destructive"/>Acceso Denegado</div>;
@@ -580,7 +588,7 @@ function UsersPageComponent() {
                                     <Card><CardContent className="p-4"><Skeleton className="h-96 w-full rounded-2xl"/></CardContent></Card>
                                 )
                             ) : usersList.length > 0 ? (
-                               viewMode === 'grid' ? <GridView /> : <UserTable />
+                               viewMode === 'grid' ? <GridView /> : <UserTable users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} onEdit={handleOpenUserModal} onRoleChange={handleOpenUserModal} onStatusChange={handleStatusChange} />
                             ) : (
                                <EmptyState
                                  icon={UsersIcon}
