@@ -90,6 +90,29 @@ const DraggableUserCard = ({ user, isSelected, onSelectionChange, onEdit, onRole
     )
 }
 
+const GridView = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleChange, onStatusChange }: {
+    users: UserWithProcess[];
+    selectedUserIds: Set<string>;
+    onSelectionChange: (id: string, selected: boolean) => void;
+    onEdit: (user: User) => void;
+    onRoleChange: (user: User) => void;
+    onStatusChange: (user: User, status: boolean) => void;
+}) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        {users.map(u => (
+            <DraggableUserCard 
+                key={u.id} 
+                user={u} 
+                isSelected={selectedUserIds.has(u.id)} 
+                onSelectionChange={onSelectionChange}
+                onEdit={onEdit}
+                onRoleChange={onRoleChange}
+                onStatusChange={onStatusChange}
+            />
+        ))}
+    </div>
+);
+
 const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleChange, onStatusChange }: {
     users: UserWithProcess[];
     selectedUserIds: Set<string>;
@@ -237,28 +260,6 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
     );
 };
 
-const GridView = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleChange, onStatusChange }: {
-    users: UserWithProcess[];
-    selectedUserIds: Set<string>;
-    onSelectionChange: (id: string, selected: boolean) => void;
-    onEdit: (user: User) => void;
-    onRoleChange: (user: User) => void;
-    onStatusChange: (user: User, status: boolean) => void;
-}) => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        {users.map(u => (
-            <DraggableUserCard 
-                key={u.id} 
-                user={u} 
-                isSelected={selectedUserIds.has(u.id)} 
-                onSelectionChange={onSelectionChange}
-                onEdit={onEdit}
-                onRoleChange={onRoleChange}
-                onStatusChange={onStatusChange}
-            />
-        ))}
-    </div>
-);
 
 // --- MAIN PAGE COMPONENT ---
 function UsersPageComponent() {
@@ -585,8 +586,8 @@ function UsersPageComponent() {
                  {isMobile ? <MobileControls /> : <DesktopControls />}
 
                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-                    <div className="lg:col-span-3">
-                         <div className="min-h-[400px]">
+                    <div className="lg:col-span-3" id="users-main-view">
+                         <div className="space-y-4">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">{[...Array(8)].map((_,i) => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}</div>
@@ -594,7 +595,9 @@ function UsersPageComponent() {
                                     <Card><CardContent className="p-4"><Skeleton className="h-96 w-full rounded-2xl"/></CardContent></Card>
                                 )
                             ) : usersList.length > 0 ? (
-                               viewMode === 'grid' ? <GridView users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} onEdit={handleOpenUserModal} onRoleChange={handleOpenUserModal} onStatusChange={handleStatusChange} /> : <UserTable users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} onEdit={handleOpenUserModal} onRoleChange={handleOpenUserModal} onStatusChange={handleStatusChange} />
+                               viewMode === 'grid' ? 
+                                 <GridView users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} onEdit={handleOpenUserModal} onRoleChange={handleOpenUserModal} onStatusChange={handleStatusChange} /> 
+                               : <UserTable users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} onEdit={handleOpenUserModal} onRoleChange={handleOpenUserModal} onStatusChange={handleStatusChange} />
                             ) : (
                                <EmptyState
                                  icon={UsersIcon}
@@ -603,11 +606,12 @@ function UsersPageComponent() {
                                  imageUrl={settings?.emptyStateUsersUrl}
                                />
                             )}
+                            {isMobile && selectedUserIds.size > 0 && <div className="mt-4"><BulkActionsBar /></div>}
                          </div>
                          {totalPages > 1 && <SmartPagination className="mt-6" currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />}
                     </div>
 
-                    <aside className="hidden lg:block lg:sticky lg:top-24 space-y-4">
+                    <aside className="hidden lg:block lg:col-span-1 lg:sticky lg:top-24 space-y-4">
                         <ProcessTree processes={processes} onProcessUpdate={fetchData} onProcessClick={(id) => handleFilterChange('processId', id)} activeProcessId={processId}/>
                         <div className="md:bottom-4">
                            <BulkActionsBar />
@@ -615,13 +619,6 @@ function UsersPageComponent() {
                     </aside>
                 </div>
             </div>
-            
-            {/* --- Mobile Fixed Footer --- */}
-            {isMobile && selectedUserIds.size > 0 && (
-                <div className="fixed bottom-16 left-0 right-0 p-4 z-40 bg-background/80 backdrop-blur-sm border-t">
-                    <BulkActionsBar />
-                </div>
-            )}
 
             <DragOverlay dropAnimation={null}>
                 {draggedUser ? 
