@@ -81,13 +81,14 @@ const DraggableUserCard = ({ user, isSelected, onSelectionChange, onEdit, onRole
                     onEdit={onEdit}
                     onRoleChange={onRoleChange}
                     onStatusChange={onStatusChange}
-                    isSelected={isSelected} 
-                    onSelectionChange={onSelectionChange}
                 />
+                 <div className="absolute top-2 left-2 z-20">
+                    <Checkbox checked={isSelected} onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)} className="data-[state=checked]:bg-accent data-[state=checked]:border-accent-foreground/50 border-accent/70 bg-background/80 backdrop-blur-sm" />
+                </div>
             </div>
         </div>
     )
-};
+}
 
 const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleChange, onStatusChange }: {
     users: UserWithProcess[];
@@ -258,7 +259,6 @@ const GridView = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCha
         ))}
     </div>
 );
-
 
 // --- MAIN PAGE COMPONENT ---
 function UsersPageComponent() {
@@ -585,11 +585,12 @@ function UsersPageComponent() {
                  {isMobile ? <MobileControls /> : <DesktopControls />}
 
                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-                    <div className="lg:col-span-3" id="users-main-view">
-                         <div className={cn(isMobile && "pb-24")}>
+                    <div className="lg:col-span-3">
+                         <div className="space-y-4">
+                            {isMobile && <BulkActionsBar />}
                             {isLoading ? (
                                 viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">{[...Array(15)].map((_,i) => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}</div>
+                                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">{[...Array(8)].map((_,i) => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}</div>
                                 ) : (
                                     <Card><CardContent className="p-4"><Skeleton className="h-96 w-full rounded-2xl"/></CardContent></Card>
                                 )
@@ -616,20 +617,6 @@ function UsersPageComponent() {
                     </aside>
                 </div>
             </div>
-            
-            <AnimatePresence>
-                {selectedUserIds.size > 0 && isMobile && (
-                     <motion.div
-                        initial={{ y: 100, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        exit={{ y: 100, opacity: 0 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        className="fixed bottom-20 left-4 right-4 z-40"
-                    >
-                       <BulkActionsBar />
-                    </motion.div>
-                )}
-            </AnimatePresence>
 
             <DragOverlay dropAnimation={null}>
                 {draggedUser ? 
@@ -669,3 +656,52 @@ export default function UsersPage() {
         </Suspense>
     )
 }
+
+```
+- src/app/layout.tsx:
+```tsx
+// src/app/layout.tsx
+import './globals.css';
+import React from 'react';
+import { cn } from '@/lib/utils';
+import { getFontVariables } from '@/lib/fonts';
+import { AuthProvider } from '@/contexts/auth-context';
+import { ThemeProvider } from '@/components/theme-provider';
+import { TitleProvider } from '@/contexts/title-context';
+import { Toaster } from '@/components/ui/toaster';
+import { TourProvider } from '@/contexts/tour-context';
+
+export const metadata = {
+  title: 'NexusAlpri',
+  description: 'Plataforma E-learning Corporativa',
+}
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  const fontVariables = getFontVariables();
+  
+  return (
+    <html lang="es" suppressHydrationWarning className={fontVariables}>
+      <head>
+        <link rel="icon" href="/favicon.png" type="image/png" sizes="any" />
+      </head>
+      <body className={cn("min-h-screen bg-background font-body antialiased")}>
+        <AuthProvider>
+          <ThemeProvider>
+            <TitleProvider>
+              <TourProvider>
+                {children}
+                <Toaster />
+              </TourProvider>
+            </TitleProvider>
+          </ThemeProvider>
+        </AuthProvider>
+      </body>
+    </html>
+  );
+}
+
+```
