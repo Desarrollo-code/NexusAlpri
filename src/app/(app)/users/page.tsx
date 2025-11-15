@@ -36,10 +36,10 @@ import { UserProfileCard } from '@/components/users/user-profile-card';
 import { getRoleInSpanish, getRoleBadgeVariant } from '@/lib/security-log-utils';
 import { getProcessColors } from '@/lib/utils';
 import { Identicon } from '@/components/ui/identicon';
-import { EmptyState } from '../empty-state';
+import { EmptyState } from '@/components/empty-state';
 import { useTour } from '@/contexts/tour-context';
 import { usersTour } from '@/lib/tour-steps';
-import { ColorfulLoader } from '../ui/colorful-loader';
+import { ColorfulLoader } from '@/components/ui/colorful-loader';
 
 
 // --- TYPES & CONTEXT ---
@@ -209,7 +209,7 @@ function UsersPageComponent() {
                 }
             } else {
                 if (isSelected) newSet.add(userId);
-                else newSet.delete(id);
+                else newSet.delete(userId); // CORRECCIÓN: usaba `id` en lugar de `userId`
             }
             return newSet;
         });
@@ -428,11 +428,20 @@ function UsersPageComponent() {
     return (
         <DndContext sensors={sensors} onDragStart={(e) => setActiveDraggable(e.active)} onDragEnd={handleDragEnd}>
             <div className="space-y-6">
-                 {isMobile ? <MobileControls /> : <DesktopControls />}
+                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div className="space-y-1">
+                        <h2 className="text-2xl font-semibold">Control Central de Colaboradores</h2>
+                        <p className="text-muted-foreground">Gestiona los usuarios, sus roles y sus procesos asignados.</p>
+                    </div>
+                     <Button variant="outline" size="sm" onClick={() => forceStartTour('users', usersTour)}>
+                        <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+                    </Button>
+                </div>
+                {isMobile ? <MobileControls /> : <DesktopControls />}
 
                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
                     <div className="lg:col-span-3" id="users-main-view">
-                        <div className="space-y-4">
+                         <div className="space-y-4">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
                                     <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">{[...Array(PAGE_SIZE)].map((_,i) => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}</div>
@@ -450,18 +459,23 @@ function UsersPageComponent() {
                                />
                             )}
                             
-                            {selectedUserIds.size > 0 && <div className="mt-4"><BulkActionsBar /></div>}
+                            <div className="md:hidden mt-4">
+                                <BulkActionsBar />
+                            </div>
                         </div>
 
                          {totalPages > 1 && <SmartPagination className="mt-6" currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />}
                     </div>
 
-                    <aside className="hidden lg:block lg:col-span-1 lg:sticky lg:top-24 space-y-4">
+                    <aside className="hidden lg:block lg:col-span-1 lg:sticky lg:top-24 space-y-4" id="users-sidebar">
                         <ProcessTree processes={processes} onProcessUpdate={fetchData} onProcessClick={(id) => handleFilterChange('processId', id)} activeProcessId={processId}/>
+                        <div className="md:bottom-4">
+                           <BulkActionsBar />
+                        </div>
                     </aside>
                 </div>
             </div>
-
+            
             <DragOverlay dropAnimation={null}>
                 {draggedUser ? 
                   <DraggableUserPreview user={draggedUser} /> 
@@ -501,3 +515,51 @@ export default function UsersPage() {
     )
 }
 
+const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleChange, onStatusChange }: any) => {
+    const isAllOnPageSelected = users.length > 0 && users.every((u: User) => selectedUserIds.has(u.id));
+
+    return (
+        <Card>
+            <div className="overflow-x-auto">
+                 <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="w-12"><Checkbox checked={isAllOnPageSelected} onCheckedChange={(checked) => onSelectionChange('all', !!checked)}/></TableHead>
+                            <TableHead>Colaborador</TableHead>
+                            <TableHead>Proceso</TableHead>
+                            <TableHead>Rol</TableHead>
+                            <TableHead>Estado</TableHead>
+                            <TableHead className="text-right">Acciones</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {users.map((u: UserWithProcess) => (
+                             <TableRow key={u.id}>
+                                <TableCell><Checkbox checked={selectedUserIds.has(u.id)} onCheckedChange={(checked) => onSelectionChange(u.id, !!checked)} /></TableCell>
+                                <TableCell>
+                                    <div className="flex items-center gap-3">
+                                        <Avatar className="h-9 w-9"><AvatarImage src={u.avatar || undefined} /><AvatarFallback><Identicon userId={u.id}/></AvatarFallback></Avatar>
+                                        <div><p className="font-medium">{u.name}</p><p className="text-xs text-muted-foreground">{u.email}</p></div>
+                                    </div>
+                                </TableCell>
+                                <TableCell><Badge variant="secondary" className="text-xs" style={{backgroundColor: u.process ? getProcessColors(u.process.id).raw.light : undefined, color: u.process ? getProcessColors(u.process.id).raw.dark : undefined}}>{u.process?.name || 'Sin Asignar'}</Badge></TableCell>
+                                <TableCell><Badge variant={getRoleBadgeVariant(u.role)}>{getRoleInSpanish(u.role)}</Badge></TableCell>
+                                <TableCell><Badge variant={u.isActive ? 'default' : 'secondary'} className={cn(u.isActive && 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-500/30')}>{u.isActive ? 'Activo' : 'Inactivo'}</Badge></TableCell>
+                                <TableCell className="text-right">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4"/></Button></DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onSelect={() => onEdit(u)}>Editar</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => onRoleChange(u)}>Cambiar Rol</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => onStatusChange(u, !u.isActive)}>{u.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                 </Table>
+            </div>
+        </Card>
+    )
+}
