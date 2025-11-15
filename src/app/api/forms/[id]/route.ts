@@ -39,7 +39,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       include: {
         fields: {
           orderBy: { order: 'asc' },
-          select: { id: true, label: true, type: true, required: true, placeholder: true, order: true, options: true }
+          select: { id: true, label: true, type: true, required: true, placeholder: true, order: true, options: true, imageUrl: true, template: true }
         },
         sharedWith: {
             select: { id: true, name: true, avatar: true }
@@ -93,7 +93,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
   try {
     const body = await req.json();
-    const { title, description, status, isQuiz, fields, sharedWithUserIds, headerImageUrl, themeColor, backgroundColor, fontStyle, template, timerStyle } = body;
+    const { title, description, status, isQuiz, fields, sharedWithUserIds, headerImageUrl, themeColor, backgroundColor, fontStyle } = body;
 
     const dataToUpdate: any = {};
     if (title !== undefined) dataToUpdate.title = title;
@@ -104,8 +104,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     if (themeColor !== undefined) dataToUpdate.themeColor = themeColor;
     if (backgroundColor !== undefined) dataToUpdate.backgroundColor = backgroundColor;
     if (fontStyle !== undefined) dataToUpdate.fontStyle = fontStyle;
-    if (template !== undefined) dataToUpdate.template = template;
-    if (timerStyle !== undefined) dataToUpdate.timerStyle = timerStyle;
 
     if (sharedWithUserIds !== undefined) {
         dataToUpdate.sharedWith = {
@@ -146,8 +144,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             placeholder: fieldData.placeholder || null,
             order: index,
             formId: formId,
-            imageUrl: (fieldData as any).imageUrl,
-            template: (fieldData as any).template,
+            imageUrl: (fieldData as any).imageUrl || null,
+            template: (fieldData as any).template || null,
           };
           
           await tx.formField.upsert({
