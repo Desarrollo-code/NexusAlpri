@@ -39,7 +39,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       include: {
         fields: {
           orderBy: { order: 'asc' },
-          select: { id: true, label: true, type: true, required: true, placeholder: true, order: true, options: true, template: true }
+          select: { id: true, label: true, type: true, required: true, placeholder: true, order: true, options: true, imageUrl: true }
         },
         sharedWith: {
             select: { id: true, name: true, avatar: true }
@@ -146,8 +146,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             placeholder: fieldData.placeholder || null,
             order: index,
             formId: formId,
-            imageUrl: fieldData.imageUrl,
-            template: fieldData.template,
+            imageUrl: (fieldData as any).imageUrl,
+            template: (fieldData as any).template,
           };
           
           await tx.formField.upsert({
