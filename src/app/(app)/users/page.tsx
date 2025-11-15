@@ -98,7 +98,7 @@ const GridView = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCha
     onRoleChange: (user: User) => void;
     onStatusChange: (user: User, status: boolean) => void;
 }) => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {users.map(u => (
             <DraggableUserCard 
                 key={u.id} 
@@ -376,7 +376,7 @@ function UsersPageComponent() {
                 if (isSelected) {
                     pageUserIds.forEach(id => newSet.add(id));
                 } else {
-                    pageUserIds.forEach(id => newSet.delete(id));
+                    pageUserIds.forEach(uId => newSet.delete(uId));
                 }
             } else {
                 if (isSelected) newSet.add(userId);
@@ -590,7 +590,7 @@ function UsersPageComponent() {
                          <div className="space-y-4">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">{[...Array(8)].map((_,i) => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}</div>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">{[...Array(8)].map((_,i) => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}</div>
                                 ) : (
                                     <Card><CardContent className="p-4"><Skeleton className="h-96 w-full rounded-2xl"/></CardContent></Card>
                                 )
@@ -641,7 +641,7 @@ function UsersPageComponent() {
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isDeactivating}>Cancelar</AlertDialogCancel>
                         <AlertDialogAction onClick={confirmStatusChange} disabled={isDeactivating} className={cn(!userToDeactivate?.isActive && 'bg-green-600 hover:bg-green-700', userToDeactivate?.isActive && 'bg-destructive hover:bg-destructive/90')}>
-                            {isDeactivating ? <div className="w-4 h-4 mr-2"><ColorfulLoader /></div> : null}
+                            {isDeactivating && <div className="w-4 h-4 mr-2"><ColorfulLoader /></div>}
                             Sí, {userToDeactivate?.isActive ? 'Inactivar' : 'Activar'}
                         </AlertDialogAction>
                     </AlertDialogFooter>
