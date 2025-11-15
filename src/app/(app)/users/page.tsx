@@ -75,17 +75,14 @@ const DraggableUserCard = ({ user, isSelected, onSelectionChange, onEdit, onRole
     
     return (
         <div ref={setNodeRef} {...attributes} {...listeners} className={cn("touch-none", isDragging && "opacity-50")}>
-            <div className="relative">
-                <UserProfileCard 
-                    user={user}
-                    onEdit={onEdit}
-                    onRoleChange={onRoleChange}
-                    onStatusChange={onStatusChange}
-                />
-                 <div className="absolute top-2 left-2 z-20">
-                    <Checkbox checked={isSelected} onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)} className="data-[state=checked]:bg-accent data-[state=checked]:border-accent-foreground/50 border-accent/70 bg-background/80 backdrop-blur-sm" />
-                </div>
-            </div>
+            <UserProfileCard 
+                user={user}
+                onEdit={onEdit}
+                onRoleChange={onRoleChange}
+                onStatusChange={onStatusChange}
+                isSelected={isSelected}
+                onSelectionChange={onSelectionChange}
+            />
         </div>
     )
 }
@@ -237,28 +234,6 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
     );
 };
 
-const GridView = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleChange, onStatusChange }: {
-    users: UserWithProcess[];
-    selectedUserIds: Set<string>;
-    onSelectionChange: (id: string, selected: boolean) => void;
-    onEdit: (user: User) => void;
-    onRoleChange: (user: User) => void;
-    onStatusChange: (user: User, status: boolean) => void;
-}) => (
-    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        {users.map(u => (
-            <DraggableUserCard 
-                key={u.id} 
-                user={u} 
-                isSelected={selectedUserIds.has(u.id)} 
-                onSelectionChange={onSelectionChange}
-                onEdit={onEdit}
-                onRoleChange={onEdit} // Re-using edit for role change
-                onStatusChange={onStatusChange}
-            />
-        ))}
-    </div>
-);
 
 // --- MAIN PAGE COMPONENT ---
 function UsersPageComponent() {
@@ -579,6 +554,22 @@ function UsersPageComponent() {
         )
     }
 
+    const GridView = () => (
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {usersList.map(u => (
+                <DraggableUserCard 
+                    key={u.id} 
+                    user={u} 
+                    isSelected={selectedUserIds.has(u.id)} 
+                    onSelectionChange={handleSelectionChange}
+                    onEdit={handleOpenUserModal}
+                    onRoleChange={handleOpenUserModal}
+                    onStatusChange={handleStatusChange}
+                />
+            ))}
+        </div>
+    );
+
     return (
         <DndContext sensors={sensors} onDragStart={(e) => setActiveDraggable(e.active)} onDragEnd={handleDragEnd}>
             <div className="space-y-6">
@@ -586,17 +577,15 @@ function UsersPageComponent() {
 
                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
                     <div className="lg:col-span-3">
-                         <div className="space-y-4">
-                            {isMobile && <BulkActionsBar />}
+                         <div className="pb-24">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">{[...Array(8)].map((_,i) => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}</div>
+                                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">{[...Array(15)].map((_,i) => <Skeleton key={i} className="h-48 w-full" />)}</div>
                                 ) : (
-                                    <Card><CardContent className="p-4"><Skeleton className="h-96 w-full rounded-2xl"/></CardContent></Card>
+                                    <Card><CardContent className="p-4"><Skeleton className="h-96 w-full"/></CardContent></Card>
                                 )
                             ) : usersList.length > 0 ? (
-                               viewMode === 'grid' ? <GridView users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} onEdit={handleOpenUserModal} onRoleChange={handleOpenUserModal} onStatusChange={handleStatusChange} /> 
-                               : <UserTable users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} onEdit={handleOpenUserModal} onRoleChange={handleOpenUserModal} onStatusChange={handleStatusChange} />
+                               viewMode === 'grid' ? <GridView /> : <UserTable users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} onEdit={handleOpenUserModal} onRoleChange={handleOpenUserModal} onStatusChange={handleStatusChange} />
                             ) : (
                                <EmptyState
                                  icon={UsersIcon}
@@ -617,6 +606,22 @@ function UsersPageComponent() {
                     </aside>
                 </div>
             </div>
+            
+            <AnimatePresence>
+                {selectedUserIds.size > 0 && isMobile && (
+                     <motion.div
+                        initial={{ y: 100, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 100, opacity: 0 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        className="fixed bottom-20 left-4 right-4 z-50 pointer-events-none flex justify-center"
+                    >
+                       <div className="pointer-events-auto">
+                           <BulkActionsBar />
+                       </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <DragOverlay dropAnimation={null}>
                 {draggedUser ? 
@@ -657,51 +662,3 @@ export default function UsersPage() {
     )
 }
 
-```
-- src/app/layout.tsx:
-```tsx
-// src/app/layout.tsx
-import './globals.css';
-import React from 'react';
-import { cn } from '@/lib/utils';
-import { getFontVariables } from '@/lib/fonts';
-import { AuthProvider } from '@/contexts/auth-context';
-import { ThemeProvider } from '@/components/theme-provider';
-import { TitleProvider } from '@/contexts/title-context';
-import { Toaster } from '@/components/ui/toaster';
-import { TourProvider } from '@/contexts/tour-context';
-
-export const metadata = {
-  title: 'NexusAlpri',
-  description: 'Plataforma E-learning Corporativa',
-}
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  const fontVariables = getFontVariables();
-  
-  return (
-    <html lang="es" suppressHydrationWarning className={fontVariables}>
-      <head>
-        <link rel="icon" href="/favicon.png" type="image/png" sizes="any" />
-      </head>
-      <body className={cn("min-h-screen bg-background font-body antialiased")}>
-        <AuthProvider>
-          <ThemeProvider>
-            <TitleProvider>
-              <TourProvider>
-                {children}
-                <Toaster />
-              </TourProvider>
-            </TitleProvider>
-          </ThemeProvider>
-        </AuthProvider>
-      </body>
-    </html>
-  );
-}
-
-```
