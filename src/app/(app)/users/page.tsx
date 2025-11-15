@@ -51,8 +51,6 @@ interface UserWithProcess extends User {
     process: { id: string; name: string } | null;
 }
 
-const PAGE_SIZE = 15;
-
 const DraggableUserPreview = ({ user }: { user: UserWithProcess }) => (
     <Card className="flex items-center gap-2 p-2 shadow-lg w-48">
         <Avatar className="h-8 w-8">
@@ -75,14 +73,17 @@ const DraggableUserCard = ({ user, isSelected, onSelectionChange, onEdit, onRole
     
     return (
         <div ref={setNodeRef} {...attributes} {...listeners} className={cn("touch-none", isDragging && "opacity-50")}>
-            <UserProfileCard 
-                user={user}
-                onEdit={onEdit}
-                onRoleChange={onRoleChange}
-                onStatusChange={onStatusChange}
-                isSelected={isSelected}
-                onSelectionChange={onSelectionChange}
-            />
+            <div className="relative">
+                <UserProfileCard 
+                    user={user}
+                    onEdit={onEdit}
+                    onRoleChange={onRoleChange}
+                    onStatusChange={onStatusChange}
+                />
+                 <div className="absolute top-2 left-2 z-20">
+                    <Checkbox checked={isSelected} onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)} className="data-[state=checked]:bg-accent data-[state=checked]:border-accent-foreground/50 border-accent/70 bg-background/80 backdrop-blur-sm" />
+                </div>
+            </div>
         </div>
     )
 }
@@ -242,6 +243,8 @@ function UsersPageComponent() {
     const isMobile = useIsMobile();
     const { startTour, forceStartTour } = useTour();
 
+    const PAGE_SIZE = isMobile ? 14 : 15;
+
     const [usersList, setUsersList] = useState<UserWithProcess[]>([]);
     const [totalUsers, setTotalUsers] = useState(0);
     const [processes, setProcesses] = useState<ProcessWithChildren[]>([]);
@@ -330,7 +333,7 @@ function UsersPageComponent() {
         } finally {
             setIsLoading(false);
         }
-    }, [currentUser, debouncedSearchTerm, currentPage, role, status, processId, toast]);
+    }, [currentUser, debouncedSearchTerm, currentPage, role, status, processId, toast, PAGE_SIZE]);
     
     useEffect(() => {
         setPageTitle('Control Central');
@@ -547,7 +550,7 @@ function UsersPageComponent() {
              <div className="flex flex-wrap items-center justify-between gap-2 p-2 bg-background border rounded-lg shadow-lg">
                 <p className="px-2 text-sm font-semibold">{selectedUserIds.size} seleccionado(s)</p>
                 <div className="flex items-center gap-2">
-                    <Button size="sm" onClick={() => setIsBulkAssignModalOpen(true)}><Briefcase className="mr-2 h-4 w-4"/> Asignar Proceso</Button>
+                    <Button size="sm" onClick={()={() => setIsBulkAssignModalOpen(true)}}><Briefcase className="mr-2 h-4 w-4"/> Asignar Proceso</Button>
                     <Button size="sm" variant="ghost" onClick={() => setSelectedUserIds(new Set())}>Limpiar</Button>
                 </div>
             </div>
@@ -580,9 +583,9 @@ function UsersPageComponent() {
                          <div className="pb-24">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">{[...Array(15)].map((_,i) => <Skeleton key={i} className="h-48 w-full" />)}</div>
+                                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">{[...Array(PAGE_SIZE)].map((_,i) => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}</div>
                                 ) : (
-                                    <Card><CardContent className="p-4"><Skeleton className="h-96 w-full"/></CardContent></Card>
+                                    <Card><CardContent className="p-4"><Skeleton className="h-96 w-full rounded-2xl"/></CardContent></Card>
                                 )
                             ) : usersList.length > 0 ? (
                                viewMode === 'grid' ? <GridView /> : <UserTable users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} onEdit={handleOpenUserModal} onRoleChange={handleOpenUserModal} onStatusChange={handleStatusChange} />
@@ -598,7 +601,7 @@ function UsersPageComponent() {
                          {totalPages > 1 && <SmartPagination className="mt-6" currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />}
                     </div>
 
-                    <aside className="hidden lg:block lg:col-span-1 lg:sticky lg:top-24 space-y-4">
+                    <aside className="hidden lg:block lg:col-span-1 lg:sticky lg:top-24 space-y-4" id="users-sidebar">
                         <ProcessTree processes={processes} onProcessUpdate={fetchData} onProcessClick={(id) => handleFilterChange('processId', id)} activeProcessId={processId}/>
                         <div className="md:bottom-4">
                            <BulkActionsBar />
@@ -614,7 +617,7 @@ function UsersPageComponent() {
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: 100, opacity: 0 }}
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        className="fixed bottom-20 left-4 right-4 z-50 pointer-events-none flex justify-center"
+                        className="fixed bottom-20 left-4 right-4 z-50 pointer-events-auto"
                     >
                        <div className="pointer-events-auto">
                            <BulkActionsBar />
