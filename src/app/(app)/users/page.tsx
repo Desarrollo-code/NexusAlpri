@@ -51,7 +51,7 @@ interface UserWithProcess extends User {
     process: { id: string; name: string } | null;
 }
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 15;
 
 const DraggableUserPreview = ({ user }: { user: UserWithProcess }) => (
     <Card className="flex items-center gap-2 p-2 shadow-lg w-48">
@@ -89,59 +89,6 @@ const DraggableUserCard = ({ user, isSelected, onSelectionChange, onEdit, onRole
         </div>
     )
 }
-
-// --- Skeleton Components ---
-const UserProfileCardSkeleton = () => (
-    <Card className="flex flex-col h-full">
-        <div className="h-14 w-full relative bg-secondary/50" />
-        <CardContent className="pt-12 px-2 pb-3 flex-grow flex flex-col items-center">
-            <Skeleton className="h-5 w-3/4 mb-1" />
-            <Skeleton className="h-4 w-1/2 mb-2" />
-            <Skeleton className="h-4 w-2/3" />
-        </CardContent>
-        <CardFooter className="p-1 border-t mt-auto">
-            <Skeleton className="h-7 w-full" />
-        </CardFooter>
-    </Card>
-);
-
-const UserTableSkeleton = () => (
-    <Card>
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead className="w-[50px]"><Skeleton className="h-4 w-4" /></TableHead>
-                    <TableHead>Colaborador</TableHead>
-                    <TableHead>Rol</TableHead>
-                    <TableHead>Proceso</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {[...Array(PAGE_SIZE)].map((_, i) => (
-                    <TableRow key={i}>
-                        <TableCell><Skeleton className="h-4 w-4" /></TableCell>
-                        <TableCell>
-                            <div className="flex items-center gap-3">
-                                <Skeleton className="h-9 w-9 rounded-full" />
-                                <div>
-                                    <Skeleton className="h-4 w-24 mb-1" />
-                                    <Skeleton className="h-3 w-32" />
-                                </div>
-                            </div>
-                        </TableCell>
-                        <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-16" /></TableCell>
-                        <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
-                    </TableRow>
-                ))}
-            </TableBody>
-        </Table>
-    </Card>
-);
-
 
 // --- MAIN PAGE COMPONENT ---
 function UsersPageComponent() {
@@ -354,33 +301,152 @@ function UsersPageComponent() {
     };
     const flattenedProcesses = flattenProcesses(processes);
 
+    const UserTable = () => {
+        const isMobile = useIsMobile();
+    
+        const handleSelectAll = (checked: boolean) => {
+            onSelectionChange('all', checked);
+        };
+    
+        if (isMobile) {
+            return (
+                <div className="space-y-3">
+                    {usersList.map(user => {
+                        const processColors = user.process ? getProcessColors(user.process.id) : null;
+                        return (
+                            <Card key={user.id} className="p-3 overflow-hidden">
+                                <div className="flex items-start gap-3">
+                                    <Checkbox
+                                        className="mt-1"
+                                        checked={selectedUserIds.has(user.id)}
+                                        onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)}
+                                    />
+                                    <Avatar className="h-10 w-10">
+                                        <AvatarImage src={user.avatar || undefined} />
+                                        <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-grow overflow-hidden">
+                                        <p className="font-semibold truncate">{user.name}</p>
+                                        <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                                         <div className="flex items-center flex-wrap gap-1.5 mt-2">
+                                            <Badge variant={getRoleBadgeVariant(user.role)} className="text-xs">{getRoleInSpanish(user.role)}</Badge>
+                                            {user.process && processColors && (
+                                                <Badge 
+                                                    className="text-xs"
+                                                    style={{
+                                                        backgroundColor: processColors.raw.light,
+                                                        color: processColors.raw.dark,
+                                                    }}
+                                                >
+                                                    {user.process.name}
+                                                </Badge>
+                                            )}
+                                         </div>
+                                    </div>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 flex-shrink-0"><MoreVertical className="h-4 w-4"/></Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            <DropdownMenuItem onSelect={() => onEdit(user)}><Edit className="mr-2 h-4 w-4"/>Editar Perfil</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => onRoleChange(user)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => onStatusChange(user, !user.isActive)} className={user.isActive ? "text-destructive" : ""}><UserX className="mr-2 h-4 w-4"/>{user.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                            </Card>
+                        );
+                    })}
+                </div>
+            )
+        }
+    
+        return (
+             <Card>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="w-[50px]">
+                                <Checkbox 
+                                    checked={usersList.length > 0 && usersList.every(u => selectedUserIds.has(u.id))}
+                                    onCheckedChange={(checked) => handleSelectAll(!!checked)}
+                                />
+                            </TableHead>
+                            <TableHead>Colaborador</TableHead>
+                            <TableHead>Rol</TableHead>
+                            <TableHead>Proceso</TableHead>
+                            <TableHead>Estado</TableHead>
+                            <TableHead className="text-right">Acciones</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {usersList.map(user => {
+                            const processColors = user.process ? getProcessColors(user.process.id) : null;
+                            return (
+                            <TableRow key={user.id}>
+                                <TableCell>
+                                    <Checkbox
+                                        checked={selectedUserIds.has(user.id)}
+                                        onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)}
+                                    />
+                                </TableCell>
+                                <TableCell>
+                                     <div className="flex items-center gap-3">
+                                        <Avatar className="h-9 w-9">
+                                            <AvatarImage src={user.avatar || undefined} />
+                                            <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
+                                        </Avatar>
+                                        <div>
+                                            <div className="font-medium">{user.name}</div>
+                                            <div className="text-xs text-muted-foreground">{user.email}</div>
+                                        </div>
+                                    </div>
+                                </TableCell>
+                                <TableCell><Badge variant={getRoleBadgeVariant(user.role)}>{getRoleInSpanish(user.role)}</Badge></TableCell>
+                                <TableCell>
+                                    {user.process && processColors ? (
+                                        <Badge 
+                                            className="text-xs"
+                                            style={{
+                                                backgroundColor: processColors.raw.light,
+                                                color: processColors.raw.dark,
+                                            }}
+                                        >
+                                            {user.process.name}
+                                        </Badge>
+                                    ) : (
+                                        <span className="text-xs text-muted-foreground">Sin asignar</span>
+                                    )}
+                                </TableCell>
+                                <TableCell><Badge variant={user.isActive ? "default" : "secondary"} className={cn("text-xs py-0.5 px-1.5", user.isActive ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300" : "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300")}>{user.isActive ? 'Activo' : 'Inactivo'}</Badge></TableCell>
+                                <TableCell className="text-right">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4"/></Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            <DropdownMenuItem onSelect={() => onEdit(user)}><Edit className="mr-2 h-4 w-4"/>Editar Perfil</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => onRoleChange(user)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => onStatusChange(user, !user.isActive)} className={user.isActive ? "text-destructive" : ""}>
+                                                <UserX className="mr-2 h-4 w-4"/>{user.isActive ? 'Inactivar' : 'Activar'}
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </TableCell>
+                            </TableRow>
+                        )})}
+                    </TableBody>
+                </Table>
+            </Card>
+        );
+    };
+
     if (!currentUser || (currentUser.role !== 'ADMINISTRATOR')) {
         return <div className="text-center p-8"><AlertTriangle className="mx-auto h-12 w-12 text-destructive"/>Acceso Denegado</div>;
     }
 
     if (isLoading && usersList.length === 0) {
-        return (
-             <div className="space-y-6">
-                <div className="flex items-center justify-between gap-4">
-                    <Skeleton className="h-10 w-64" />
-                    <div className="flex items-center gap-2">
-                        <Skeleton className="h-10 w-24" />
-                        <Skeleton className="h-10 w-24" />
-                        <Skeleton className="h-10 w-40" />
-                    </div>
-                </div>
-                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-                     <div className="lg:col-span-3">
-                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                             {[...Array(8)].map((_, i) => <UserProfileCardSkeleton key={i} />)}
-                         </div>
-                     </div>
-                     <aside className="hidden lg:block lg:col-span-1">
-                         <Skeleton className="h-[500px] w-full" />
-                     </aside>
-                 </div>
-            </div>
-        )
+        return <div className="flex justify-center items-center h-full"><div className="w-8 h-8"><ColorfulLoader /></div></div>
     }
     
     const DesktopControls = () => (
@@ -509,14 +575,12 @@ function UsersPageComponent() {
                          <div className="mb-24 md:mb-4">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                        {[...Array(8)].map((_,i) => <UserProfileCardSkeleton key={i} />)}
-                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">{[...Array(8)].map((_,i) => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}</div>
                                 ) : (
-                                    <UserTableSkeleton />
+                                    <Card><CardContent className="p-4"><Skeleton className="h-96 w-full rounded-2xl"/></CardContent></Card>
                                 )
                             ) : usersList.length > 0 ? (
-                               viewMode === 'grid' ? <GridView /> : <UserTable users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} onEdit={handleOpenUserModal} onRoleChange={handleOpenUserModal} onStatusChange={handleStatusChange} />
+                               viewMode === 'grid' ? <GridView /> : <UserTable />
                             ) : (
                                <EmptyState
                                  icon={UsersIcon}
@@ -529,7 +593,7 @@ function UsersPageComponent() {
                          {totalPages > 1 && <SmartPagination className="mt-6" currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />}
                     </div>
 
-                    <aside className="hidden lg:block lg:col-span-1 lg:sticky lg:top-24 space-y-4" id="users-sidebar">
+                    <aside className="hidden lg:block lg:col-span-1 lg:sticky lg:top-24 space-y-4">
                         <ProcessTree processes={processes} onProcessUpdate={fetchData} onProcessClick={(id) => handleFilterChange('processId', id)} activeProcessId={processId}/>
                         <div className="md:bottom-4">
                            <BulkActionsBar />
@@ -575,7 +639,7 @@ function UsersPageComponent() {
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isDeactivating}>Cancelar</AlertDialogCancel>
                         <AlertDialogAction onClick={confirmStatusChange} disabled={isDeactivating} className={cn(!userToDeactivate?.isActive && 'bg-green-600 hover:bg-green-700', userToDeactivate?.isActive && 'bg-destructive hover:bg-destructive/90')}>
-                            {isDeactivating && <div className="w-4 h-4 mr-2"><ColorfulLoader /></div>}
+                            {isDeactivating ? <div className="w-4 h-4 mr-2"><ColorfulLoader /></div> : null}
                             Sí, {userToDeactivate?.isActive ? 'Inactivar' : 'Activar'}
                         </AlertDialogAction>
                     </AlertDialogFooter>
