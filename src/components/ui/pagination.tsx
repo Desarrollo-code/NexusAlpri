@@ -128,31 +128,14 @@ interface SmartPaginationProps {
 
 export const SmartPagination: React.FC<SmartPaginationProps> = ({ currentPage, totalPages, onPageChange, className }) => {
   const getPageNumbers = () => {
+    const pagesPerGroup = 4;
+    const currentGroup = Math.floor((currentPage - 1) / pagesPerGroup);
+    const startPage = currentGroup * pagesPerGroup + 1;
+    const endPage = Math.min(startPage + pagesPerGroup - 1, totalPages);
+
     const pageNumbers = [];
-    const maxPagesToShow = 5;
-    const ellipsis = '...';
-
-    if (totalPages <= maxPagesToShow + 2) {
-      for (let i = 1; i <= totalPages; i++) {
+    for (let i = startPage; i <= endPage; i++) {
         pageNumbers.push(i);
-      }
-    } else {
-      pageNumbers.push(1);
-      if (currentPage > 3) {
-        pageNumbers.push(ellipsis);
-      }
-      
-      const startPage = Math.max(2, currentPage - 1);
-      const endPage = Math.min(totalPages - 1, currentPage + 1);
-
-      for (let i = startPage; i <= endPage; i++) {
-        pageNumbers.push(i);
-      }
-
-      if (currentPage < totalPages - 2) {
-        pageNumbers.push(ellipsis);
-      }
-      pageNumbers.push(totalPages);
     }
     return pageNumbers;
   };
@@ -160,22 +143,38 @@ export const SmartPagination: React.FC<SmartPaginationProps> = ({ currentPage, t
   if (totalPages <= 1) {
     return null;
   }
+  
+  const handlePreviousGroup = () => {
+    const pagesPerGroup = 4;
+    const currentGroup = Math.floor((currentPage - 1) / pagesPerGroup);
+    const newPage = Math.max(1, (currentGroup - 1) * pagesPerGroup + 1);
+    onPageChange(newPage);
+  }
+
+  const handleNextGroup = () => {
+    const pagesPerGroup = 4;
+    const currentGroup = Math.floor((currentPage - 1) / pagesPerGroup);
+    const newPage = Math.min(totalPages, (currentGroup + 1) * pagesPerGroup + 1);
+    onPageChange(newPage);
+  }
+  
+  const isFirstGroup = currentPage <= 4;
+  const isLastGroup = Math.floor((currentPage - 1) / 4) === Math.floor((totalPages - 1) / 4);
 
   return (
     <Pagination className={className}>
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
-            onClick={(e) => { e.preventDefault(); onPageChange(currentPage - 1); }}
-            disabled={currentPage === 1}
+            onClick={handlePreviousGroup}
+            disabled={isFirstGroup}
           />
         </PaginationItem>
         
         <div className="flex flex-col items-center">
             <div className="flex items-center gap-1">
-                {getPageNumbers().map((page, index) => (
-                  <PaginationItem key={`num-${index}`}>
-                    {typeof page === 'number' ? (
+                {getPageNumbers().map((page) => (
+                  <PaginationItem key={`num-${page}`}>
                       <PaginationLink
                         href="#"
                         onClick={(e) => { e.preventDefault(); onPageChange(page); }}
@@ -183,9 +182,6 @@ export const SmartPagination: React.FC<SmartPaginationProps> = ({ currentPage, t
                       >
                         {page}
                       </PaginationLink>
-                    ) : (
-                      <PaginationEllipsis />
-                    )}
                   </PaginationItem>
                 ))}
             </div>
@@ -204,8 +200,8 @@ export const SmartPagination: React.FC<SmartPaginationProps> = ({ currentPage, t
 
         <PaginationItem>
           <PaginationNext
-            onClick={(e) => { e.preventDefault(); onPageChange(currentPage + 1); }}
-            disabled={currentPage === totalPages}
+            onClick={handleNextGroup}
+            disabled={isLastGroup}
           />
         </PaginationItem>
       </PaginationContent>
