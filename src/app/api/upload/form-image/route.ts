@@ -29,6 +29,10 @@ export async function POST(request: NextRequest) {
       .createSignedUploadUrl(finalFilename);
 
     if (error) {
+        // CORRECCIÓN: Capturar el error específico de "recurso no encontrado" (bucket)
+        if (error.message.includes("The related resource does not exist")) {
+             return NextResponse.json({ success: false, message: "Error de configuración de Supabase: El bucket 'form_images' no existe." }, { status: 500 });
+        }
         if (error.message.includes("Project not found")) {
             return NextResponse.json({ success: false, message: 'Error de configuración de Supabase: Proyecto no encontrado o clave inválida.' }, { status: 500 });
         }
