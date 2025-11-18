@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'reac
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, List, Grid, Filter, UserPlus, MoreVertical, Loader2, Briefcase, MessageSquare, Edit, Trash2, UserCog, UserX, Users as UsersIcon, Key, HelpCircle, GraduationCap, ShieldCheck } from 'lucide-react';
+import { PlusCircle, Search, List, Grid, Filter, UserPlus, MoreVertical, Loader2, Briefcase, MessageSquare, Edit, Trash2, UserCog, UserX, Users as UsersIcon, Key, HelpCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -158,12 +158,12 @@ function UsersPageComponent() {
         setIsLoading(true);
         
         const params = new URLSearchParams();
-        if (debouncedSearchTerm) params.set('search', debouncedSearchTerm);
         params.set('page', String(currentPage));
-        if(role && role !== 'ALL') params.set('role', role);
-        if(status && status !== 'ALL') params.set('status', status);
-        if(processId) params.set('processId', processId);
         params.set('pageSize', String(PAGE_SIZE));
+        if (debouncedSearchTerm) params.set('search', debouncedSearchTerm);
+        if (role && role !== 'ALL') params.set('role', role);
+        if (status && status !== 'ALL') params.set('status', status);
+        if (processId) params.set('processId', processId);
 
         try {
             const [usersRes, processesRes] = await Promise.all([
@@ -188,10 +188,9 @@ function UsersPageComponent() {
     }, [currentUser, debouncedSearchTerm, currentPage, role, status, processId, toast, PAGE_SIZE]);
     
     useEffect(() => {
-        setPageTitle('Control Central');
         if (currentUser?.role !== 'ADMINISTRATOR') return;
         fetchData();
-    }, [currentUser, fetchData, setPageTitle]);
+    }, [fetchData, currentUser?.role]);
     
     useEffect(() => {
         setSelectedUserIds(new Set());
@@ -216,11 +215,11 @@ function UsersPageComponent() {
     }, [usersList]);
     
     const handleFilterChange = (key: string, value: string | null) => {
-        router.push(`${pathname}?${createQueryString({ [key]: value, page: 1 })}`);
+        router.push(`${pathname}?${createQueryString({ [key]: value, page: '1' })}`);
     };
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      router.push(`${pathname}?${createQueryString({ search: e.target.value, page: 1 })}`);
+      router.push(`${pathname}?${createQueryString({ search: e.target.value, page: '1' })}`);
     };
 
     const handlePageChange = (page: number) => {
@@ -435,7 +434,7 @@ function UsersPageComponent() {
                          <div className="mb-24 md:mb-4">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">{[...Array(10)].map((_,i) => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}</div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">{[...Array(10)].map((_,i) => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}</div>
                                 ) : (
                                     <Card><CardContent className="p-4"><Skeleton className="h-96 w-full rounded-2xl"/></CardContent></Card>
                                 )
@@ -499,7 +498,7 @@ function UsersPageComponent() {
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isDeactivating}>Cancelar</AlertDialogCancel>
                         <AlertDialogAction onClick={confirmStatusChange} disabled={isDeactivating} className={cn(!userToDeactivate?.isActive && 'bg-green-600 hover:bg-green-700', userToDeactivate?.isActive && 'bg-destructive hover:bg-destructive/90')}>
-                            {isDeactivating ? <div className="w-4 h-4 mr-2"><ColorfulLoader /></div> : null}
+                            {isDeactivating && <div className="w-4 h-4 mr-2"><ColorfulLoader /></div>}
                             Sí, {userToDeactivate?.isActive ? 'Inactivar' : 'Activar'}
                         </AlertDialogAction>
                     </AlertDialogFooter>
@@ -576,7 +575,7 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                             </TableCell>
                             <TableCell><Badge variant="secondary" className="text-xs" style={{backgroundColor: u.process ? getProcessColors(u.process.id).raw.light : undefined, color: u.process ? getProcessColors(u.process.id).raw.dark : undefined}}>{u.process?.name || 'Sin Asignar'}</Badge></TableCell>
                             <TableCell className="text-center"><Badge variant={getRoleBadgeVariant(u.role)}>{getRoleInSpanish(u.role)}</Badge></TableCell>
-                            <TableCell className="text-center"><Badge variant={u.isActive ? "default" : "secondary"} className={cn("text-xs py-1 px-3", u.isActive ? "bg-[#E6F4EA] text-[#198754] border border-[#198754]/30 hover:bg-[#E6F4EA]" : "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300 border-gray-500/30")}>
+                            <TableCell className="text-center"><Badge variant={u.isActive ? "default" : "secondary"} className={cn("text-xs py-1 px-3", u.isActive ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-500/30" : "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300 border-gray-500/30")}>
                                 {u.isActive ? 'Activo' : 'Inactivo'}
                             </Badge></TableCell>
                             <TableCell className="text-right px-4">
@@ -596,3 +595,5 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
         </Card>
     )
 }
+
+```
