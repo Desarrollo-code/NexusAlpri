@@ -74,8 +74,8 @@ const DraggableUserCard = ({ user, isSelected, onSelectionChange, onEdit, onRole
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: user.id });
     
     return (
-        <div ref={setNodeRef} {...attributes} {...listeners} className={cn("touch-none", isDragging && "opacity-50")}>
-            <div className="relative">
+        <div ref={setNodeRef} {...attributes} {...listeners} className={cn("touch-none h-full", isDragging && "opacity-50")}>
+            <div className="relative h-full">
                 <UserProfileCard 
                     user={user}
                     onEdit={onEdit}
@@ -410,7 +410,7 @@ function UsersPageComponent() {
     }
 
     const GridView = () => (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 grid-auto-rows-[1fr]">
             {usersList.map(u => (
                 <DraggableUserCard 
                     key={u.id} 
@@ -435,9 +435,9 @@ function UsersPageComponent() {
                          <div className="mb-4">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">{[...Array(8)].map((_,i) => <Skeleton key={i} className="h-48 w-full" />)}</div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">{[...Array(10)].map((_,i) => <Skeleton key={i} className="h-56 w-full rounded-2xl" />)}</div>
                                 ) : (
-                                    <Card><CardContent className="p-4"><Skeleton className="h-96 w-full"/></CardContent></Card>
+                                    <Card><CardContent className="p-4"><Skeleton className="h-96 w-full rounded-2xl"/></CardContent></Card>
                                 )
                             ) : usersList.length > 0 ? (
                                viewMode === 'grid' ? <GridView /> : <UserTable users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} onEdit={handleOpenUserModal} onRoleChange={handleOpenUserModal} onStatusChange={handleStatusChange} />
@@ -453,7 +453,7 @@ function UsersPageComponent() {
                          {totalPages > 1 && <SmartPagination className="mt-6" currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />}
                     </div>
 
-                    <aside className="hidden lg:block lg:col-span-1 lg:sticky lg:top-24 space-y-4">
+                    <aside className="hidden lg:block lg:col-span-1 lg:sticky lg:top-24 space-y-4" id="users-sidebar">
                         <ProcessTree processes={processes} onProcessUpdate={fetchData} onProcessClick={(id) => handleFilterChange('processId', id)} activeProcessId={processId}/>
                         <div className="md:bottom-4">
                            <BulkActionsBar />

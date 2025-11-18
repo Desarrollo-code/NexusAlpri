@@ -55,15 +55,6 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange, is
                         </DropdownMenu>
                     </div>
                 )}
-                 {onSelectionChange && (
-                    <div className="absolute top-2 left-2 z-20">
-                         <Checkbox
-                            checked={isSelected}
-                            onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)}
-                            className="data-[state=checked]:bg-accent data-[state=checked]:border-accent-foreground/50 border-accent/70 bg-background/80 backdrop-blur-sm"
-                        />
-                    </div>
-                 )}
                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
                     <Avatar className="h-20 w-20 border-4 border-card shadow-lg">
                         <AvatarImage src={user.avatar || undefined} />
@@ -83,7 +74,7 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange, is
                      {displayProcess.length > 0 && displayProcess[0] && (
                          <Badge 
                             key={displayProcess[0].id} 
-                            className="text-xs py-0.5 px-2"
+                            className="text-xs py-0.5 px-2 truncate max-w-[140px]"
                             style={{
                                 backgroundColor: getProcessColors(displayProcess[0].id).raw.light,
                                 color: getProcessColors(displayProcess[0].id).raw.dark,
