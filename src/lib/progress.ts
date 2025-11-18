@@ -1,4 +1,3 @@
-
 // src/lib/progress.ts
 import prisma from '@/lib/prisma';
 import type { LessonCompletionRecord as AppLessonCompletionRecord } from '@/types';
@@ -44,6 +43,12 @@ export async function recordLessonInteraction({ userId, courseId, lessonId, type
             data: { progressId, lessonId, type, score }
         });
         wasNewInteraction = true;
+
+        // --- MOTIVATION TRIGGER ---
+        // Trigger a motivational message if one is set for this specific lesson
+        await triggerMotivationalMessage(userId, 'LESSON_COMPLETION', lessonId);
+        // --------------------------
+        
     } else if (type === 'quiz' && score !== null && existingRecord.score !== score) {
         // If it's a quiz, update the score, but it's not a "new" interaction for progress calculation.
         await prisma.lessonCompletionRecord.update({
