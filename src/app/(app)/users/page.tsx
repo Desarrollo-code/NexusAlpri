@@ -410,7 +410,7 @@ function UsersPageComponent() {
     }
 
     const GridView = () => (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {usersList.map(u => (
                 <DraggableUserCard 
                     key={u.id} 
@@ -435,7 +435,7 @@ function UsersPageComponent() {
                          <div className="mb-24 md:mb-4">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">{[...Array(PAGE_SIZE)].map((_,i) => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}</div>
+                                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">{[...Array(8)].map((_,i) => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}</div>
                                 ) : (
                                     <Card><CardContent className="p-4"><Skeleton className="h-96 w-full rounded-2xl"/></CardContent></Card>
                                 )
@@ -518,7 +518,37 @@ export default function UsersPage() {
 }
 
 const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleChange, onStatusChange }: any) => {
+    const isMobile = useIsMobile();
     const isAllOnPageSelected = users.length > 0 && users.every((u: User) => selectedUserIds.has(u.id));
+
+    if (isMobile) {
+        return (
+            <div className="space-y-3">
+                 <div className="flex items-center p-2 border-b">
+                    <Checkbox id="select-all-mobile" checked={isAllOnPageSelected} onCheckedChange={(checked) => onSelectionChange('all', !!checked)} />
+                    <Label htmlFor="select-all-mobile" className="ml-3 font-semibold">Seleccionar todos en esta página</Label>
+                 </div>
+                {users.map((u: UserWithProcess) => (
+                    <Card key={u.id} className="flex items-center p-3 gap-3">
+                         <Checkbox checked={selectedUserIds.has(u.id)} onCheckedChange={(checked) => onSelectionChange(u.id, !!checked)} />
+                         <Avatar className="h-10 w-10"><AvatarImage src={u.avatar || undefined} /><AvatarFallback><Identicon userId={u.id}/></AvatarFallback></Avatar>
+                        <div className="flex-grow min-w-0">
+                            <p className="font-semibold truncate">{u.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">{u.email}</p>
+                        </div>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4"/></Button></DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onSelect={() => onEdit(u)}>Editar</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => onRoleChange(u)}>Cambiar Rol</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => onStatusChange(u, !u.isActive)} className={u.isActive ? "text-destructive" : ""}>{u.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </Card>
+                ))}
+            </div>
+        )
+    }
 
     return (
         <Card>
@@ -553,9 +583,9 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4"/></Button></DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onSelect={() => onEdit(u)}>Editar</DropdownMenuItem>
-                                            <DropdownMenuItem onSelect={() => onRoleChange(u)}>Cambiar Rol</DropdownMenuItem>
-                                            <DropdownMenuItem onSelect={() => onStatusChange(u, !u.isActive)}>{u.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => onEdit(u)}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => onRoleChange(u)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => onStatusChange(u, !u.isActive)} className={u.isActive ? "text-destructive focus:bg-destructive/10" : ""}><UserX className="mr-2 h-4 w-4"/>{u.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </TableCell>
