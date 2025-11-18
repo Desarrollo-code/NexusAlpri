@@ -51,7 +51,7 @@ interface UserWithProcess extends User {
     process: { id: string; name: string } | null;
 }
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 15;
 
 const DraggableUserPreview = ({ user }: { user: UserWithProcess }) => (
     <Card className="flex items-center gap-2 p-2 shadow-lg w-48">
