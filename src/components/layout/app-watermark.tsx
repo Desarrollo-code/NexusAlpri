@@ -13,7 +13,7 @@ export function AppWatermark() {
     // El "mundo público" se considera cualquier ruta que no empiece con /dashboard, /profile, etc.
     const isPublicWorld = !/^\/(dashboard|profile|manage-courses|my-courses|my-notes|resources|announcements|calendar|forms|enrollments|analytics|security-audit|settings|notifications|leaderboard|messages|quizz-it|processes)/.test(pathname);
 
-    // Don't render anything until we know if there is a watermark or not
+    // No renderizar nada hasta saber si hay una marca de agua.
     if (isLoading) {
         return null;
     }
@@ -23,9 +23,12 @@ export function AppWatermark() {
         <div className={cn(
             "fixed z-[9999] pointer-events-none",
             "right-4 opacity-30 md:opacity-50",
-            // Si estamos en el mundo público y en móvil, la subimos para que no choque con la bottom-nav.
-            // Si no, la dejamos abajo del todo.
-            isPublicWorld ? "bottom-20 md:bottom-4" : "bottom-4"
+            // En el mundo público móvil, la subimos para no chocar con la bottom-nav.
+            // En el mundo de la app móvil, la movemos a la parte superior.
+            // En pantallas más grandes (sm:), vuelve a la parte inferior.
+            isPublicWorld 
+                ? "bottom-20 md:bottom-4" 
+                : "bottom-auto top-20 sm:bottom-4 sm:top-auto"
         )}>
           <Image 
             src={settings.watermarkUrl} 
