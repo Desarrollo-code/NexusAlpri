@@ -36,10 +36,10 @@ import { UserProfileCard } from '@/components/users/user-profile-card';
 import { getRoleInSpanish, getRoleBadgeVariant } from '@/lib/security-log-utils';
 import { getProcessColors } from '@/lib/utils';
 import { Identicon } from '@/components/ui/identicon';
-import { EmptyState } from '@/components/empty-state';
+import { EmptyState } from '../empty-state';
 import { useTour } from '@/contexts/tour-context';
 import { usersTour } from '@/lib/tour-steps';
-import { ColorfulLoader } from '@/components/ui/colorful-loader';
+import { ColorfulLoader } from '../ui/colorful-loader';
 
 
 // --- TYPES & CONTEXT ---
@@ -50,6 +50,8 @@ interface ProcessWithChildren extends Process {
 interface UserWithProcess extends User {
     process: { id: string; name: string } | null;
 }
+
+const PAGE_SIZE = 12;
 
 const DraggableUserPreview = ({ user }: { user: UserWithProcess }) => (
     <Card className="flex items-center gap-2 p-2 shadow-lg w-48">
@@ -81,7 +83,7 @@ const DraggableUserCard = ({ user, isSelected, onSelectionChange, onEdit, onRole
                     onStatusChange={onStatusChange}
                 />
                  <div className="absolute top-2 left-2 z-20">
-                    <Checkbox checked={isSelected} onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)} className="bg-background border-primary" />
+                    <Checkbox checked={isSelected} onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)} className="data-[state=checked]:bg-accent data-[state=checked]:border-accent-foreground/50 border-accent/70 bg-background/80 backdrop-blur-sm" />
                 </div>
             </div>
         </div>
@@ -120,8 +122,6 @@ function UsersPageComponent() {
 
     const debouncedSearchTerm = useDebounce(search, 300);
     const currentPage = Number(searchParams.get('page')) || 1;
-    
-    const PAGE_SIZE = isMobile ? 8 : 15;
     const totalPages = Math.ceil(totalUsers / PAGE_SIZE);
     
     const [activeDraggable, setActiveDraggable] = useState<Active | null>(null);
@@ -158,12 +158,12 @@ function UsersPageComponent() {
         setIsLoading(true);
         
         const params = new URLSearchParams();
-        params.set('page', String(currentPage));
-        params.set('pageSize', String(PAGE_SIZE));
         if (debouncedSearchTerm) params.set('search', debouncedSearchTerm);
-        if (role && role !== 'ALL') params.set('role', role);
-        if (status && status !== 'ALL') params.set('status', status);
-        if (processId) params.set('processId', processId);
+        params.set('page', String(currentPage));
+        if(role && role !== 'ALL') params.set('role', role);
+        if(status && status !== 'ALL') params.set('status', status);
+        if(processId) params.set('processId', processId);
+        params.set('pageSize', String(PAGE_SIZE));
 
         try {
             const [usersRes, processesRes] = await Promise.all([
@@ -185,7 +185,7 @@ function UsersPageComponent() {
         } finally {
             setIsLoading(false);
         }
-    }, [currentUser, debouncedSearchTerm, currentPage, role, status, processId, toast, PAGE_SIZE]);
+    }, [currentUser, debouncedSearchTerm, currentPage, role, status, processId, toast]);
     
     useEffect(() => {
         setPageTitle('Control Central');
@@ -216,15 +216,15 @@ function UsersPageComponent() {
     }, [usersList]);
     
     const handleFilterChange = (key: string, value: string | null) => {
-        router.push(`${pathname}?${createQueryString({ [key]: value, page: 1 })}`, { scroll: false });
+        router.push(`${pathname}?${createQueryString({ [key]: value, page: 1 })}`);
     };
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      router.push(`${pathname}?${createQueryString({ search: e.target.value, page: 1 })}`, { scroll: false });
+      router.push(`${pathname}?${createQueryString({ search: e.target.value, page: 1 })}`);
     };
 
     const handlePageChange = (page: number) => {
-        router.push(`${pathname}?${createQueryString({ page: String(page) })}`, { scroll: false });
+        router.push(`${pathname}?${createQueryString({ page: String(page) })}`);
     };
 
     const handleOpenUserModal = (user: User | null = null) => {
@@ -410,7 +410,7 @@ function UsersPageComponent() {
     }
 
     const GridView = () => (
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {usersList.map(u => (
                 <DraggableUserCard 
                     key={u.id} 
@@ -431,11 +431,11 @@ function UsersPageComponent() {
                  {isMobile ? <MobileControls /> : <DesktopControls />}
 
                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-                    <div className="lg:col-span-3">
-                         <div className="mb-24 md:mb-4">
+                    <div className="lg:col-span-3" id="users-main-view">
+                         <div className="mb-4">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">{[...Array(10)].map((_,i) => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}</div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">{[...Array(8)].map((_,i) => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}</div>
                                 ) : (
                                     <Card><CardContent className="p-4"><Skeleton className="h-96 w-full rounded-2xl"/></CardContent></Card>
                                 )
