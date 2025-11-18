@@ -344,7 +344,7 @@ export function FormEditor({ formId }: { formId: string }) {
         setIsUploading(true);
         setUploadProgress(0);
         try {
-            const result = await uploadWithProgress('/api/upload/settings-image', file, setUploadProgress);
+            const result = await uploadWithProgress('/api/upload/form-image', file, setUploadProgress);
             handleFormUpdate({ headerImageUrl: result.url });
             toast({ title: 'Imagen Subida' });
         } catch (err) {
