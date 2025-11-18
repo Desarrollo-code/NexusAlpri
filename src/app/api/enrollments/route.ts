@@ -2,7 +2,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
-import { addXp, checkAndAwardFirstEnrollment, XP_CONFIG } from '@/lib/gamification';
+import { addXp, checkAndAwardFirstEnrollment, XP_CONFIG, triggerMotivationalMessage } from '@/lib/gamification';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-        const { courseId, userId } = await req.json();
+        const { courseId, userId, enroll } = await req.json();
         const finalUserId = userId || session.id;
 
         if (!courseId) {
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
                 where: {
                     userId: finalUserId,
                     courseId: courseToEnroll.prerequisiteId,
-                    completedAt: { not: null } // El curso debe estar completado
+                    progressPercentage: 100 // El curso debe estar completado
                 }
             });
 
@@ -80,6 +80,7 @@ export async function POST(req: NextRequest) {
 
         await addXp(finalUserId, XP_CONFIG.ENROLL_COURSE);
         await checkAndAwardFirstEnrollment(finalUserId);
+        await triggerMotivationalMessage(finalUserId, 'COURSE_ENROLLMENT', courseId);
 
         return NextResponse.json({ message: 'Inscripción exitosa' }, { status: 201 });
 
