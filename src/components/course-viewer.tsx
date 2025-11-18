@@ -359,7 +359,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         }
         
         const lesson = allLessons.find(l => l.id === lessonId);
-        if (lesson) {
+        if (lesson && type !== 'video') { // Don't toast for video end to avoid being intrusive
             toast({ description: `Progreso guardado: "${lesson.title}"`, duration: 2000 });
         }
         // No need to fetchProgress here, optimistic update is enough for the frontend
@@ -444,8 +444,11 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
       
     const isVideoLesson = lesson.contentBlocks.some(b => b.type === 'VIDEO');
       
-    if (user && isEnrolled && !isCreatorViewingCourse && !isVideoLesson && lessonToSelect && !completedLessonIds.has(lessonToSelect)) {
-      recordInteraction(lessonToSelect, 'view');
+    if (user && isEnrolled && !isCreatorViewingCourse && !isVideoLesson && lessonToSelect) {
+        // Record interaction only if lesson is not already completed
+        if (!completedLessonIds.has(lessonToSelect)) {
+            recordInteraction(lessonToSelect, 'view');
+        }
     }
   }, [isLoading, course, lessonIdFromQuery, firstLessonId, user, isEnrolled, recordInteraction, isCreatorViewingCourse, selectedLessonId, allLessons, setPageTitle, completedLessonIds]);
   

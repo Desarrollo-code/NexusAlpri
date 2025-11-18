@@ -57,8 +57,10 @@ export async function recordLessonInteraction({ userId, courseId, lessonId, type
         });
     }
 
-    // Always recalculate progress after an interaction is recorded or updated
-    await recalculateProgress({ userId, courseId, progressId, oldPercentage });
+    // Always recalculate progress after an interaction is recorded or updated, if it was a new interaction.
+    if (wasNewInteraction) {
+        await recalculateProgress({ userId, courseId, progressId, oldPercentage });
+    }
 
     return wasNewInteraction;
 }

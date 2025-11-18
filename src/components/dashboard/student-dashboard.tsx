@@ -97,7 +97,7 @@ export function StudentDashboard({ studentStats, myDashboardCourses, assignedCou
           )}
 
           {myDashboardCourses && myDashboardCourses.length > 0 && (
-            <section>
+            <section id="continue-learning-section">
               <h2 className="text-2xl font-semibold mb-4">Continuar Aprendiendo</h2>
               <CourseCarousel courses={myDashboardCourses} userRole="STUDENT" onEnrollmentChange={onEnrollmentChange} />
             </section>

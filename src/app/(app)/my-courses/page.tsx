@@ -122,7 +122,7 @@ export default function MyCoursesPage() {
         fetchMyEnrollments();
     }
   };
-
+  
   if (isAuthLoading || isFetchingPageData) {
     return (
       <div className="space-y-8">
@@ -276,5 +276,3 @@ export default function MyCoursesPage() {
     </div>
   );
 }
-
-    
