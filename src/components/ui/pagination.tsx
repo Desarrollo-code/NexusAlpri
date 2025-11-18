@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -6,10 +5,12 @@ import {
   ChevronLeft,
   ChevronRight,
   MoreHorizontal,
+  ChevronsLeft,
+  ChevronsRight
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { ButtonProps, buttonVariants } from "@/components/ui/button"
+import { ButtonProps, Button } from "@/components/ui/button"
 
 const Pagination = ({ className, ...props }: React.ComponentProps<"nav">) => (
   <nav
@@ -49,16 +50,18 @@ type PaginationLinkProps = {
 const PaginationLink = ({
   className,
   isActive,
-  size = "icon",
+  size,
   ...props
 }: PaginationLinkProps) => (
   <a
     aria-current={isActive ? "page" : undefined}
     className={cn(
-      buttonVariants({
-        variant: isActive ? "secondary" : "ghost",
-        size,
-      }),
+      "h-10 w-10 p-0 text-sm",
+      "transition-colors duration-200 ease-in-out",
+      "flex items-center justify-center rounded-full",
+      isActive
+        ? "bg-primary text-primary-foreground font-bold shadow-md"
+        : "hover:bg-muted",
       className
     )}
     {...props}
@@ -69,32 +72,34 @@ PaginationLink.displayName = "PaginationLink"
 const PaginationPrevious = ({
   className,
   ...props
-}: React.ComponentProps<typeof PaginationLink>) => (
-  <PaginationLink
+}: React.ComponentProps<typeof Button>) => (
+  <Button
     aria-label="Ir a la página anterior"
-    size="default"
-    className={cn("gap-1 pl-2.5", className)}
+    size="icon"
+    variant="ghost"
+    className={cn("h-12 w-12 rounded-full", className)}
     {...props}
   >
-    <ChevronLeft className="h-4 w-4" />
-    <span>Anterior</span>
-  </PaginationLink>
+    <ChevronsLeft className="h-6 w-6" />
+    <span className="sr-only">Anterior</span>
+  </Button>
 )
 PaginationPrevious.displayName = "PaginationPrevious"
 
 const PaginationNext = ({
   className,
   ...props
-}: React.ComponentProps<typeof PaginationLink>) => (
-  <PaginationLink
+}: React.ComponentProps<typeof Button>) => (
+  <Button
     aria-label="Ir a la página siguiente"
-    size="default"
-    className={cn("gap-1 pr-2.5", className)}
+    size="icon"
+    variant="ghost"
+    className={cn("h-12 w-12 rounded-full", className)}
     {...props}
   >
-    <span>Siguiente</span>
-    <ChevronRight className="h-4 w-4" />
-  </PaginationLink>
+    <ChevronsRight className="h-6 w-6" />
+    <span className="sr-only">Siguiente</span>
+  </Button>
 )
 PaginationNext.displayName = "PaginationNext"
 
@@ -161,31 +166,46 @@ export const SmartPagination: React.FC<SmartPaginationProps> = ({ currentPage, t
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
-            href="#"
             onClick={(e) => { e.preventDefault(); onPageChange(currentPage - 1); }}
-            className={currentPage === 1 ? "pointer-events-none opacity-50" : undefined}
+            disabled={currentPage === 1}
           />
         </PaginationItem>
-        {getPageNumbers().map((page, index) => (
-          <PaginationItem key={index}>
-            {typeof page === 'number' ? (
-              <PaginationLink
-                href="#"
-                onClick={(e) => { e.preventDefault(); onPageChange(page); }}
-                isActive={currentPage === page}
-              >
-                {page}
-              </PaginationLink>
-            ) : (
-              <PaginationEllipsis />
-            )}
-          </PaginationItem>
-        ))}
+        
+        <div className="flex flex-col items-center">
+            <div className="flex items-center gap-1">
+                {getPageNumbers().map((page, index) => (
+                  <PaginationItem key={`num-${index}`}>
+                    {typeof page === 'number' ? (
+                      <PaginationLink
+                        href="#"
+                        onClick={(e) => { e.preventDefault(); onPageChange(page); }}
+                        isActive={currentPage === page}
+                      >
+                        {page}
+                      </PaginationLink>
+                    ) : (
+                      <PaginationEllipsis />
+                    )}
+                  </PaginationItem>
+                ))}
+            </div>
+             <div className="mt-2 flex items-center justify-center gap-1.5">
+                {Array.from({ length: totalPages }).map((_, index) => (
+                    <div 
+                        key={`dot-${index}`}
+                        className={cn(
+                            "h-1.5 w-1.5 rounded-full transition-all duration-300",
+                            currentPage === index + 1 ? 'w-4 bg-primary' : 'bg-muted-foreground/30'
+                        )}
+                    />
+                ))}
+            </div>
+        </div>
+
         <PaginationItem>
           <PaginationNext
-            href="#"
             onClick={(e) => { e.preventDefault(); onPageChange(currentPage + 1); }}
-            className={currentPage === totalPages ? "pointer-events-none opacity-50" : undefined}
+            disabled={currentPage === totalPages}
           />
         </PaginationItem>
       </PaginationContent>
