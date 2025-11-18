@@ -74,14 +74,14 @@ const PaginationPrevious = ({
   ...props
 }: React.ComponentProps<typeof Button>) => (
   <Button
-    aria-label="Ir a la página anterior"
+    aria-label="Ir a la primera página"
     size="icon"
     variant="ghost"
     className={cn("h-12 w-12 rounded-full", className)}
     {...props}
   >
     <ChevronsLeft className="h-6 w-6" />
-    <span className="sr-only">Anterior</span>
+    <span className="sr-only">Primera</span>
   </Button>
 )
 PaginationPrevious.displayName = "PaginationPrevious"
@@ -91,14 +91,14 @@ const PaginationNext = ({
   ...props
 }: React.ComponentProps<typeof Button>) => (
   <Button
-    aria-label="Ir a la página siguiente"
+    aria-label="Ir a la última página"
     size="icon"
     variant="ghost"
     className={cn("h-12 w-12 rounded-full", className)}
     {...props}
   >
     <ChevronsRight className="h-6 w-6" />
-    <span className="sr-only">Siguiente</span>
+    <span className="sr-only">Última</span>
   </Button>
 )
 PaginationNext.displayName = "PaginationNext"
@@ -143,31 +143,14 @@ export const SmartPagination: React.FC<SmartPaginationProps> = ({ currentPage, t
   if (totalPages <= 1) {
     return null;
   }
-  
-  const handlePreviousGroup = () => {
-    const pagesPerGroup = 4;
-    const currentGroup = Math.floor((currentPage - 1) / pagesPerGroup);
-    const newPage = Math.max(1, (currentGroup - 1) * pagesPerGroup + 1);
-    onPageChange(newPage);
-  }
-
-  const handleNextGroup = () => {
-    const pagesPerGroup = 4;
-    const currentGroup = Math.floor((currentPage - 1) / pagesPerGroup);
-    const newPage = Math.min(totalPages, (currentGroup + 1) * pagesPerGroup + 1);
-    onPageChange(newPage);
-  }
-  
-  const isFirstGroup = currentPage <= 4;
-  const isLastGroup = Math.floor((currentPage - 1) / 4) === Math.floor((totalPages - 1) / 4);
 
   return (
     <Pagination className={className}>
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
-            onClick={handlePreviousGroup}
-            disabled={isFirstGroup}
+            onClick={() => onPageChange(1)}
+            disabled={currentPage === 1}
           />
         </PaginationItem>
         
@@ -200,8 +183,8 @@ export const SmartPagination: React.FC<SmartPaginationProps> = ({ currentPage, t
 
         <PaginationItem>
           <PaginationNext
-            onClick={handleNextGroup}
-            disabled={isLastGroup}
+            onClick={() => onPageChange(totalPages)}
+            disabled={currentPage === totalPages}
           />
         </PaginationItem>
       </PaginationContent>
