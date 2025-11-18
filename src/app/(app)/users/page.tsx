@@ -81,7 +81,7 @@ const DraggableUserCard = ({ user, isSelected, onSelectionChange, onEdit, onRole
                     onStatusChange={onStatusChange}
                 />
                  <div className="absolute top-2 left-2 z-20">
-                    <Checkbox checked={isSelected} onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)} className="data-[state=checked]:bg-accent data-[state=checked]:border-accent-foreground/50 border-accent/70 bg-background/80 backdrop-blur-sm" />
+                    <Checkbox checked={isSelected} onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)} className="bg-background border-primary" />
                 </div>
             </div>
         </div>
@@ -188,9 +188,10 @@ function UsersPageComponent() {
     }, [currentUser, debouncedSearchTerm, currentPage, role, status, processId, toast, PAGE_SIZE]);
     
     useEffect(() => {
+        setPageTitle('Control Central');
         if (currentUser?.role !== 'ADMINISTRATOR') return;
         fetchData();
-    }, [fetchData, currentUser?.role]);
+    }, [currentUser, fetchData, setPageTitle]);
     
     useEffect(() => {
         setSelectedUserIds(new Set());
@@ -215,15 +216,15 @@ function UsersPageComponent() {
     }, [usersList]);
     
     const handleFilterChange = (key: string, value: string | null) => {
-        router.push(`${pathname}?${createQueryString({ [key]: value, page: '1' })}`);
+        router.push(`${pathname}?${createQueryString({ [key]: value, page: 1 })}`, { scroll: false });
     };
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      router.push(`${pathname}?${createQueryString({ search: e.target.value, page: '1' })}`);
+      router.push(`${pathname}?${createQueryString({ search: e.target.value, page: 1 })}`, { scroll: false });
     };
 
     const handlePageChange = (page: number) => {
-        router.push(`${pathname}?${createQueryString({ page: String(page) })}`);
+        router.push(`${pathname}?${createQueryString({ page: String(page) })}`, { scroll: false });
     };
 
     const handleOpenUserModal = (user: User | null = null) => {
@@ -409,7 +410,7 @@ function UsersPageComponent() {
     }
 
     const GridView = () => (
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {usersList.map(u => (
                 <DraggableUserCard 
                     key={u.id} 
@@ -430,11 +431,11 @@ function UsersPageComponent() {
                  {isMobile ? <MobileControls /> : <DesktopControls />}
 
                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-                    <div className="lg:col-span-3" id="users-main-view">
+                    <div className="lg:col-span-3">
                          <div className="mb-24 md:mb-4">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">{[...Array(10)].map((_,i) => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}</div>
+                                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">{[...Array(10)].map((_,i) => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}</div>
                                 ) : (
                                     <Card><CardContent className="p-4"><Skeleton className="h-96 w-full rounded-2xl"/></CardContent></Card>
                                 )
@@ -508,14 +509,6 @@ function UsersPageComponent() {
     );
 }
 
-export default function UsersPage() {
-    return (
-        <Suspense fallback={<div className="flex items-center justify-center h-full"><div className="w-8 h-8"><ColorfulLoader /></div></div>}>
-            <UsersPageComponent />
-        </Suspense>
-    )
-}
-
 const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleChange, onStatusChange }: any) => {
     const isMobile = useIsMobile();
     const isAllOnPageSelected = users.length > 0 && users.every((u: User) => selectedUserIds.has(u.id));
@@ -523,25 +516,23 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
     if (isMobile) {
         return (
             <div className="space-y-3">
-                 <div className="flex items-center p-2 border-b">
-                    <Checkbox id="select-all-mobile" checked={isAllOnPageSelected} onCheckedChange={(checked) => onSelectionChange('all', !!checked)} />
-                    <Label htmlFor="select-all-mobile" className="ml-3 font-semibold">Seleccionar todos en esta página</Label>
-                 </div>
                 {users.map((u: UserWithProcess) => (
                     <Card key={u.id} className="flex items-center p-3 gap-3">
                          <Checkbox checked={selectedUserIds.has(u.id)} onCheckedChange={(checked) => onSelectionChange(u.id, !!checked)} />
                          <Avatar className="h-10 w-10"><AvatarImage src={u.avatar || undefined} /><AvatarFallback><Identicon userId={u.id}/></AvatarFallback></Avatar>
                         <div className="flex-grow min-w-0">
                             <p className="font-semibold truncate">{u.name}</p>
-                            <p className="text-xs text-muted-foreground truncate">{u.email}</p>
-                             <Badge variant={getRoleBadgeVariant(u.role)} className="mt-1">{getRoleInSpanish(u.role)}</Badge>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                               <p className="text-xs text-muted-foreground truncate">{u.email}</p>
+                               <Badge variant={getRoleBadgeVariant(u.role)} className="text-xs py-0.5 px-1.5">{getRoleInSpanish(u.role)}</Badge>
+                            </div>
                         </div>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4"/></Button></DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <DropdownMenuItem onSelect={() => onEdit(u)}>Editar</DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => onRoleChange(u)}>Cambiar Rol</DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => onStatusChange(u, !u.isActive)} className={u.isActive ? "text-destructive" : ""}>{u.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => onEdit(u)}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => onRoleChange(u)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => onStatusChange(u, !u.isActive)} className={u.isActive ? "text-destructive focus:bg-destructive/10" : ""}><UserX className="mr-2 h-4 w-4"/>{u.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </Card>
@@ -553,13 +544,13 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
     return (
         <Card>
             <Table>
-                <TableHeader className="bg-muted/80">
+                <TableHeader className="bg-muted/50">
                     <TableRow>
                         <TableHead className="w-12 px-4"><Checkbox checked={isAllOnPageSelected} onCheckedChange={(checked) => onSelectionChange('all', !!checked)}/></TableHead>
-                        <TableHead className="w-[35%]"><div className="flex items-center gap-2"><UsersIcon className="h-4 w-4"/>Colaborador</div></TableHead>
-                        <TableHead><div className="flex items-center gap-2"><Briefcase className="h-4 w-4"/>Proceso</div></TableHead>
-                        <TableHead className="text-center"><div className="flex items-center justify-center gap-2"><GraduationCap className="h-4 w-4"/>Rol</div></TableHead>
-                        <TableHead className="text-center"><div className="flex items-center justify-center gap-2"><ShieldCheck className="h-4 w-4"/>Estado</div></TableHead>
+                        <TableHead className="w-[35%]"><div className="flex items-center gap-2 font-medium text-muted-foreground"><UsersIcon className="h-4 w-4"/>Colaborador</div></TableHead>
+                        <TableHead><div className="flex items-center gap-2 font-medium text-muted-foreground"><Briefcase className="h-4 w-4"/>Proceso</div></TableHead>
+                        <TableHead className="text-center"><div className="flex items-center justify-center gap-2 font-medium text-muted-foreground"><Key className="h-4 w-4"/>Rol</div></TableHead>
+                        <TableHead className="text-center"><div className="flex items-center justify-center gap-2 font-medium text-muted-foreground"><HelpCircle className="h-4 w-4"/>Estado</div></TableHead>
                         <TableHead className="text-right px-4"><span className="sr-only">Acciones</span></TableHead>
                     </TableRow>
                 </TableHeader>
@@ -596,4 +587,10 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
     )
 }
 
-```
+export default function UsersPage() {
+    return (
+        <Suspense fallback={<div className="flex items-center justify-center h-full"><div className="w-8 h-8"><ColorfulLoader /></div></div>}>
+            <UsersPageComponent />
+        </Suspense>
+    )
+}
