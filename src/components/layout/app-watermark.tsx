@@ -23,12 +23,9 @@ export function AppWatermark() {
         <div className={cn(
             "fixed z-[9999] pointer-events-none",
             "right-4 opacity-30 md:opacity-50",
-            // En el mundo público móvil, la subimos para no chocar con la bottom-nav.
-            // En el mundo de la app móvil, la movemos a la parte superior.
-            // En pantallas más grandes (sm:), vuelve a la parte inferior.
-            isPublicWorld 
-                ? "bottom-20 md:bottom-4" 
-                : "bottom-auto top-20 sm:bottom-4 sm:top-auto"
+            // En el mundo público (con bottom nav), se le da más espacio en la parte inferior en móviles.
+            // En el mundo de la app (sin bottom nav), siempre está en la misma posición inferior.
+            isPublicWorld ? "bottom-20 md:bottom-4" : "bottom-4"
         )}>
           <Image 
             src={settings.watermarkUrl} 
