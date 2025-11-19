@@ -1,4 +1,5 @@
-// src/app/api/courses/[id]/route.ts
+
+// src/app/api/courses/[courseId]/route.ts
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
@@ -11,9 +12,9 @@ export const dynamic = "force-dynamic";
 // GET a specific course by ID
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { courseId: string } }
 ) {
-  const { id: courseId } = params;
+  const { courseId } = params;
   try {
     const course = await prisma.course.findUnique({
       where: { id: courseId },
@@ -54,7 +55,11 @@ export async function GET(
         { status: 404 }
       );
     }
-    return NextResponse.json(course);
+    
+    // Asegurarse de que `modules` sea siempre un array
+    const courseWithSafeModules = { ...course, modules: course.modules || [] };
+    
+    return NextResponse.json(courseWithSafeModules);
   } catch (error) {
     console.error(`[GET_COURSE_ID: ${courseId}]`, error);
     return NextResponse.json(
@@ -67,14 +72,14 @@ export async function GET(
 // UPDATE course by ID
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { courseId: string } }
 ) {
   const session = await getCurrentUser();
   if (!session) {
     return NextResponse.json({ message: "No autenticado" }, { status: 401 });
   }
 
-  const { id: courseId } = params;
+  const { courseId } = params;
   
   if (!(await checkCourseOwnership(session, courseId))) {
       return NextResponse.json({ message: 'No tienes permiso para actualizar este curso' }, { status: 403 });
@@ -95,6 +100,8 @@ export async function PUT(
           category: courseData.category,
           status: courseData.status,
           publicationDate: courseData.publicationDate ? new Date(courseData.publicationDate) : null,
+          startDate: courseData.startDate ? new Date(courseData.startDate) : null,
+          endDate: courseData.endDate ? new Date(courseData.endDate) : null,
           certificateTemplateId: courseData.certificateTemplateId,
           isMandatory: courseData.isMandatory,
           prerequisiteId: courseData.prerequisiteId,
@@ -105,7 +112,7 @@ export async function PUT(
       await tx.module.deleteMany({ where: { courseId } });
 
       // 3. Re-create all modules, lessons, and content blocks from scratch
-      for (const [moduleIndex, moduleData] of modules.entries()) {
+      for (const [moduleIndex, moduleData] of (modules || []).entries()) {
         const newModule = await tx.module.create({
           data: {
             title: moduleData.title,
@@ -114,7 +121,7 @@ export async function PUT(
           },
         });
 
-        for (const [lessonIndex, lessonData] of moduleData.lessons.entries()) {
+        for (const [lessonIndex, lessonData] of (moduleData.lessons || []).entries()) {
           const newLesson = await tx.lesson.create({
             data: {
               title: lessonData.title,
@@ -123,7 +130,7 @@ export async function PUT(
             },
           });
 
-          for (const [blockIndex, blockData] of lessonData.contentBlocks.entries()) {
+          for (const [blockIndex, blockData] of (lessonData.contentBlocks || []).entries()) {
             const newBlock = await tx.contentBlock.create({
               data: {
                 type: blockData.type,
@@ -134,21 +141,24 @@ export async function PUT(
             });
 
             if (blockData.type === 'QUIZ' && blockData.quiz) {
+              const quizData = blockData.quiz;
               const newQuiz = await tx.quiz.create({
                 data: {
-                  title: blockData.quiz.title,
-                  description: blockData.quiz.description || '',
-                  maxAttempts: blockData.quiz.maxAttempts,
+                  title: quizData.title,
+                  description: quizData.description || '',
+                  maxAttempts: quizData.maxAttempts,
                   contentBlockId: newBlock.id,
                 },
               });
 
-              for (const [qIndex, questionData] of blockData.quiz.questions.entries()) {
+              for (const [qIndex, questionData] of (quizData.questions || []).entries()) {
                 const newQuestion = await tx.question.create({
                   data: {
                     text: questionData.text,
                     order: qIndex,
-                    type: 'SINGLE_CHOICE',
+                    type: questionData.type,
+                    imageUrl: questionData.imageUrl,
+                    template: questionData.template,
                     quizId: newQuiz.id,
                   },
                 });
@@ -160,6 +170,7 @@ export async function PUT(
                       isCorrect: opt.isCorrect,
                       feedback: opt.feedback || null,
                       points: opt.points || 0,
+                      imageUrl: opt.imageUrl || null,
                       questionId: newQuestion.id,
                     })),
                   });
@@ -194,14 +205,14 @@ export async function PUT(
 // DELETE course by ID
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { courseId: string } }
 ) {
   const session = await getCurrentUser();
   if (!session) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
   }
 
-  const { id: courseId } = params;
+  const { courseId } = params;
   
   if (!(await checkCourseOwnership(session, courseId))) {
       return NextResponse.json({ message: 'No tienes permiso para eliminar este curso' }, { status: 403 });
