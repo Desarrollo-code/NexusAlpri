@@ -2,7 +2,7 @@
 'use client';
 import React, { useRef, useState } from 'react';
 import { DndContext, useDraggable } from '@dnd-kit/core';
-import type { CertificateTemplate } from '@prisma/client';
+import type { CertificateTemplate } from '@/types';
 import Image from 'next/image';
 import { fontMap } from '@/lib/fonts';
 
@@ -10,33 +10,43 @@ interface InteractableElementProps {
   id: string;
   position: { x: number, y: number, fontSize: number, fontWeight: string, textAlign: 'center' | 'left' | 'right' };
   children: React.ReactNode;
-  onDragEnd: (id: string, delta: { x: number, y: number }) => void;
   containerRef: React.RefObject<HTMLDivElement>;
   fontFamily: any;
   color: string;
+  isLogo?: boolean;
 }
 
-const DraggableElement = ({ id, position, children, onDragEnd, containerRef, fontFamily, color }: InteractableElementProps) => {
+const DraggableElement = ({ id, position, children, containerRef, fontFamily, color, isLogo = false }: InteractableElementProps) => {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({ id });
 
-  const style = {
-    position: 'absolute' as 'absolute',
+  const style: React.CSSProperties = {
+    position: 'absolute',
     left: `${position.x}%`,
     top: `${position.y}%`,
     transform: 'translate(-50%, -50%)',
-    fontSize: `${position.fontSize}px`,
-    fontWeight: position.fontWeight,
-    textAlign: position.textAlign,
     cursor: 'move',
     fontFamily: fontFamily,
     color: color,
-    width: '100%',
-    padding: '0 20px',
   };
   
-   if (transform) {
-    style.transform = `translate3d(${transform.x}px, ${transform.y}px, 0) translate(-50%, -50%)`;
+  if (isLogo) {
+      style.width = `${position.width}%`;
+      style.height = `${position.height}%`;
+      style.transform = 'translate(0, 0)'; // Logos se posicionan desde la esquina superior izquierda
+  } else {
+      style.fontSize = `${position.fontSize}px`;
+      style.fontWeight = position.fontWeight;
+      style.textAlign = position.textAlign;
+      style.width = '100%';
+      style.padding = '0 20px';
   }
+
+  if (transform) {
+    style.transform = isLogo 
+      ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+      : `translate3d(${transform.x}px, ${transform.y}px, 0) translate(-50%, -50%)`;
+  }
+
 
   return (
     <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
@@ -95,11 +105,27 @@ export function CertificateInteractablePreview({ template, positions, onPosition
                 priority
             />
         )}
+        {template.watermarkUrl && (
+            <div className="absolute inset-0 pointer-events-none" style={{ opacity: template.watermarkOpacity || 0.1 }}>
+                <Image src={template.watermarkUrl} alt="Marca de agua" layout="fill" className="object-cover" />
+            </div>
+        )}
         <DndContext onDragEnd={handleDragEnd}>
+             {template.logoUrl && (
+                <DraggableElement 
+                    id="logo"
+                    position={positions.logo}
+                    containerRef={containerRef}
+                    fontFamily="" color="" isLogo={true}
+                >
+                    <div className="relative w-full h-full border-2 border-dashed border-primary/50">
+                        <Image src={template.logoUrl} alt="Logo" fill className="object-contain p-1"/>
+                    </div>
+                </DraggableElement>
+             )}
             <DraggableElement 
                 id="studentName" 
                 position={positions.studentName} 
-                onDragEnd={handleDragEnd} 
                 containerRef={containerRef}
                 fontFamily={headlineFont}
                 color={template.textColor || '#000000'}
@@ -109,7 +135,6 @@ export function CertificateInteractablePreview({ template, positions, onPosition
             <DraggableElement 
                 id="courseName" 
                 position={positions.courseName} 
-                onDragEnd={handleDragEnd} 
                 containerRef={containerRef}
                 fontFamily={bodyFont}
                 color={template.textColor || '#000000'}
@@ -119,18 +144,25 @@ export function CertificateInteractablePreview({ template, positions, onPosition
             <DraggableElement 
                 id="date" 
                 position={positions.date} 
-                onDragEnd={handleDragEnd} 
                 containerRef={containerRef}
                 fontFamily={bodyFont}
                 color={template.textColor || '#000000'}
             >
                 Completado el 1 de Enero de 2025
             </DraggableElement>
+            <DraggableElement
+                id="footerText"
+                position={positions.footerText}
+                containerRef={containerRef}
+                fontFamily={bodyFont}
+                color={template.textColor || '#000000'}
+            >
+                {template.footerText || "Certificado Interno de Capacitación"}
+            </DraggableElement>
              {showScore && (
                  <DraggableElement 
                     id="score" 
                     position={positions.score} 
-                    onDragEnd={handleDragEnd} 
                     containerRef={containerRef}
                     fontFamily={bodyFont}
                     color={template.textColor || '#000000'}

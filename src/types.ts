@@ -344,7 +344,17 @@ export interface AdminDashboardStats {
 
 // --- TEMPLATES ---
 export type TemplateType = 'SYSTEM' | 'USER';
-export { type LessonTemplate, type TemplateBlock, type CertificateTemplate } from '@prisma/client';
+export { type LessonTemplate, type TemplateBlock } from '@prisma/client';
+
+export type CertificateTemplate = Omit<Prisma.CertificateTemplateGetPayload<{}>, 'studentNamePosition' | 'courseNamePosition' | 'datePosition' | 'scorePosition' | 'logoPosition' | 'footerTextPosition'> & {
+    studentNamePosition?: any;
+    courseNamePosition?: any;
+    datePosition?: any;
+    scorePosition?: any;
+    logoPosition?: any;
+    footerTextPosition?: any;
+};
+
 
 // --- GAMIFICATION ---
 export type UserAchievement = Prisma.UserAchievementGetPayload<{

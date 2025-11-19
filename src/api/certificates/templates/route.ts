@@ -35,7 +35,12 @@ export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
         // Expandimos para aceptar todas las propiedades de personalización.
-        const { name, backgroundImageUrl, textColor, studentNamePosition, courseNamePosition, datePosition, scorePosition } = body;
+        const { 
+            name, backgroundImageUrl, textColor, 
+            studentNamePosition, courseNamePosition, datePosition, scorePosition,
+            logoUrl, watermarkUrl, footerText, logoPosition, footerTextPosition, watermarkOpacity,
+            fontFamilyHeadline, fontFamilyBody
+        } = body;
 
         if (!name || !backgroundImageUrl) {
             return NextResponse.json({ message: 'El nombre y la imagen de fondo son requeridos' }, { status: 400 });
@@ -45,11 +50,19 @@ export async function POST(req: NextRequest) {
             data: {
                 name,
                 backgroundImageUrl,
-                textColor: textColor || '#000000', // Valor por defecto si no se proporciona
+                textColor: textColor || '#000000',
                 studentNamePosition: studentNamePosition || { x: 50, y: 45, fontSize: 48, fontWeight: 'bold', textAlign: 'center' },
                 courseNamePosition: courseNamePosition || { x: 50, y: 60, fontSize: 24, fontWeight: 'normal', textAlign: 'center' },
                 datePosition: datePosition || { x: 50, y: 75, fontSize: 18, fontWeight: 'normal', textAlign: 'center' },
                 scorePosition: scorePosition || null,
+                logoUrl,
+                watermarkUrl,
+                footerText,
+                logoPosition: logoPosition || { x: 5, y: 5, width: 20, height: 15 },
+                footerTextPosition: footerTextPosition || { x: 50, y: 90, fontSize: 14, fontWeight: 'normal', textAlign: 'center' },
+                watermarkOpacity: watermarkOpacity === null || watermarkOpacity === undefined ? 0.1 : watermarkOpacity,
+                fontFamilyHeadline,
+                fontFamilyBody
             },
         });
 

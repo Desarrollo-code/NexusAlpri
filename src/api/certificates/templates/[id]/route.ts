@@ -33,7 +33,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     try {
         const body = await req.json();
-        const { name, backgroundImageUrl, textColor, studentNamePosition, courseNamePosition, datePosition, scorePosition } = body;
+        const { 
+            name, backgroundImageUrl, textColor, 
+            studentNamePosition, courseNamePosition, datePosition, scorePosition,
+            logoUrl, watermarkUrl, footerText, logoPosition, footerTextPosition, watermarkOpacity,
+            fontFamilyHeadline, fontFamilyBody
+        } = body;
         
         if (!name || !backgroundImageUrl) {
             return NextResponse.json({ message: 'Nombre e imagen son requeridos' }, { status: 400 });
@@ -49,6 +54,14 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 courseNamePosition,
                 datePosition,
                 scorePosition,
+                logoUrl,
+                watermarkUrl,
+                footerText,
+                logoPosition,
+                footerTextPosition,
+                watermarkOpacity: watermarkOpacity === null || watermarkOpacity === undefined ? 0.1 : watermarkOpacity,
+                fontFamilyHeadline,
+                fontFamilyBody
             },
         });
 

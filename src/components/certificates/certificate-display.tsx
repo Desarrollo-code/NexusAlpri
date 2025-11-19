@@ -1,12 +1,12 @@
 // src/components/certificates/certificate-display.tsx
 'use client';
 import React from 'react';
-import type { CertificateTemplate, Course, User } from '@prisma/client';
+import type { CertificateTemplate } from '@/types';
 import Image from 'next/image';
 import { fontMap } from '@/lib/fonts';
 
 interface CertificateDisplayProps {
-  template: CertificateTemplate;
+  template: Partial<CertificateTemplate>;
   studentName: string;
   courseName: string;
   completionDate: Date;
@@ -22,6 +22,8 @@ const parsePosition = (jsonPos: any, defaults: any) => {
     fontSize: `${pos.fontSize || defaults.fontSize}px`,
     fontWeight: pos.fontWeight || defaults.fontWeight,
     textAlign: pos.textAlign || defaults.textAlign,
+    width: pos.width ? `${pos.width}%` : 'auto',
+    height: pos.height ? `${pos.height}%` : 'auto',
   };
 };
 
@@ -40,8 +42,9 @@ export function CertificateDisplay({
   const courseStyle = parsePosition(template.courseNamePosition, { x: 50, y: 60, fontSize: 24, fontWeight: 'normal', textAlign: 'center' });
   const dateStyle = parsePosition(template.datePosition, { x: 50, y: 75, fontSize: 18, fontWeight: 'normal', textAlign: 'center' });
   const scoreStyle = template.scorePosition && score !== undefined && score !== null ? parsePosition(template.scorePosition, { x: 80, y: 85, fontSize: 20, fontWeight: 'bold', textAlign: 'center' }) : null;
+  const logoStyle = template.logoPosition ? parsePosition(template.logoPosition, { x: 15, y: 15, width: 20, height: 15 }) : null;
+  const footerTextStyle = template.footerTextPosition ? parsePosition(template.footerTextPosition, { x: 50, y: 90, fontSize: 14, fontWeight: 'normal', textAlign: 'center'}) : null;
 
-  // Define los estilos de fuente
   const headlineFont = (fontMap[template.fontFamilyHeadline || 'Space Grotesk'] as any)?.style.fontFamily || 'serif';
   const bodyFont = (fontMap[template.fontFamilyBody || 'Inter'] as any)?.style.fontFamily || 'sans-serif';
   
@@ -49,20 +52,34 @@ export function CertificateDisplay({
     <div className="relative w-full aspect-[1.414] bg-muted/30 print:shadow-none print:border-0" id="certificate-to-print">
       <Image
         src={template.backgroundImageUrl}
-        alt={template.name}
+        alt={template.name || 'Fondo de Certificado'}
         fill
         className="object-contain"
         quality={100}
         priority
       />
+      {template.watermarkUrl && (
+        <div className="absolute inset-0" style={{ opacity: template.watermarkOpacity || 0.1 }}>
+            <Image src={template.watermarkUrl} alt="Marca de agua" layout="fill" className="object-cover" />
+        </div>
+      )}
+
+      {template.logoUrl && logoStyle && (
+         <div className="absolute" style={{...logoStyle, transform: 'translate(0, 0)'}}>
+            <div className="relative w-full h-full">
+                <Image src={template.logoUrl} alt="Logo" fill className="object-contain"/>
+            </div>
+        </div>
+      )}
+
       <div
-        className="absolute w-full"
+        className="absolute w-[90%]"
         style={{ color: template.textColor || '#000000', fontFamily: headlineFont, ...nameStyle }}
       >
         {studentName}
       </div>
       <div
-        className="absolute w-full"
+        className="absolute w-[90%]"
         style={{ color: template.textColor || '#000000', fontFamily: bodyFont, ...courseStyle }}
       >
         Por completar exitosamente el curso
@@ -81,6 +98,14 @@ export function CertificateDisplay({
           style={{ color: template.textColor || '#000000', fontFamily: bodyFont, ...scoreStyle }}
         >
           Calificación: {score}%
+        </div>
+      )}
+      {footerTextStyle && template.footerText && (
+        <div
+            className="absolute w-[90%]"
+            style={{ color: template.textColor || '#000000', fontFamily: bodyFont, ...footerTextStyle}}
+        >
+            {template.footerText}
         </div>
       )}
     </div>
