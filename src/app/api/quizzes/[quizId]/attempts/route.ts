@@ -18,17 +18,20 @@ export async function GET(req: NextRequest, { params }: { params: { quizId: stri
     const { quizId } = params;
 
     try {
-        const count = await prisma.quizAttempt.count({
+        const attempts = await prisma.quizAttempt.findMany({
             where: {
                 quizId,
                 userId,
+            },
+            orderBy: {
+                attemptNumber: 'asc'
             }
         });
 
-        return NextResponse.json({ count });
+        return NextResponse.json({ attempts });
 
     } catch (error) {
-        console.error(`[QUIZ_ATTEMPTS_COUNT_ERROR]`, error);
-        return NextResponse.json({ message: 'Error al contar los intentos del quiz' }, { status: 500 });
+        console.error(`[QUIZ_ATTEMPTS_GET_ERROR]`, error);
+        return NextResponse.json({ message: 'Error al obtener los intentos del quiz' }, { status: 500 });
     }
 }

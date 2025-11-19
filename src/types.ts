@@ -59,7 +59,6 @@ export interface PlatformSettings {
     emptyStateMotivationsUrl?: string | null;
     emptyStateUsersUrl?: string | null;
     emptyStateLeaderboardUrl?: string | null;
-    emptyStateAnnouncementsUrl?: string | null;
 }
 
 // --- NAVIGATION ---
@@ -104,6 +103,7 @@ export interface Quiz {
     title: string;
     description?: string;
     maxAttempts?: number | null;
+    remedialContent?: string | null;
     questions: Question[];
 }
 
@@ -328,6 +328,9 @@ export interface AdminDashboardStats {
     totalCourses: number;
     totalPublishedCourses: number;
     totalEnrollments: number;
+    totalResources: number;
+    totalAnnouncements: number;
+    totalForms: number;
     averageCompletionRate: number;
     userRegistrationTrend: TrendData[];
     contentActivityTrend: { date: string, newCourses: number, newEnrollments: number }[];
@@ -344,17 +347,7 @@ export interface AdminDashboardStats {
 
 // --- TEMPLATES ---
 export type TemplateType = 'SYSTEM' | 'USER';
-export { type LessonTemplate, type TemplateBlock } from '@prisma/client';
-
-export type CertificateTemplate = Omit<Prisma.CertificateTemplateGetPayload<{}>, 'studentNamePosition' | 'courseNamePosition' | 'datePosition' | 'scorePosition' | 'logoPosition' | 'footerTextPosition'> & {
-    studentNamePosition?: any;
-    courseNamePosition?: any;
-    datePosition?: any;
-    scorePosition?: any;
-    logoPosition?: any;
-    footerTextPosition?: any;
-};
-
+export { type LessonTemplate, type TemplateBlock, type CertificateTemplate } from '@prisma/client';
 
 // --- GAMIFICATION ---
 export type UserAchievement = Prisma.UserAchievementGetPayload<{
@@ -390,8 +383,8 @@ export type AppForm = Omit<Prisma.FormGetPayload<{
   }
 }>, 'fields'> & {
   fields: AppQuestion[];
+  timerStyle?: string | null;
 };
-
 
 // --- PROCESSES ---
 export type Process = Prisma.ProcessGetPayload<{

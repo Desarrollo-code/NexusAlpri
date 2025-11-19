@@ -592,6 +592,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                     description: '', 
                     questions: [],
                     maxAttempts: null,
+                    remedialContent: null,
                 } : undefined
             };
             if (!prev.modules[moduleIndex].lessons[lessonIndex].contentBlocks) {
