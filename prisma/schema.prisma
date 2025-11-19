@@ -154,6 +154,7 @@ model User {
   resourceVersions ResourceVersion[] @relation("ResourceVersionAuthor")
   processId String?
   process   Process?  @relation(fields: [processId], references: [id])
+  courseComments CourseComment[]
   @@map("users")
 }
 
@@ -171,9 +172,13 @@ model Course {
   updatedAt       DateTime        @updatedAt
   publicationDate DateTime?
   enrollments     Enrollment[]
-  assignments CourseAssignment[]
+  assignments     CourseAssignment[]
   isMandatory     Boolean         @default(false)
   progress        CourseProgress[]
+  startDate       DateTime?
+  endDate         DateTime?
+  comments CourseComment[]
+
     // Relación para cursos con prerrequisitos
   prerequisite   Course?  @relation("CoursePrerequisites", fields: [prerequisiteId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   prerequisiteId String?   @map("prerequisite_id")
@@ -231,6 +236,10 @@ model Quiz {
   contentBlockId   String          @unique
   questions        Question[]
   attempts         QuizAttempt[]
+  remedialContent String?
+  resourceId String? @unique
+  resource   EnterpriseResource? @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
 
   @@map("quizzes")
 }
@@ -337,6 +346,29 @@ model UserNote {
   @@unique([userId, lessonId])
   @@map("user_notes")
 }
+
+model CourseComment {
+  id          String   @id @default(cuid())
+  content     String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  attachments CommentAttachment[]
+}
+
+model CommentAttachment {
+  id        String   @id @default(cuid())
+  name      String
+  url       String
+  type      String
+  size      Int
+  commentId String
+  comment   CourseComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+}
+
 
 model PlatformSettings {
   id                         String   @id @default("cl-nexus-settings-default")
@@ -481,6 +513,7 @@ model EnterpriseResource {
   observations String?           @db.Text
   version      Int               @default(1)
   versions     ResourceVersion[]
+  quiz Quiz?
 
   @@map("enterprise_resources")
 }
@@ -713,14 +746,21 @@ model CertificateTemplate {
   name                 String    @unique
   backgroundImageUrl   String    @map("background_image_url")
   textColor            String    @default("#000000")
-    fontFamilyHeadline  String?  @default("Space Grotesk")
-  fontFamilyBody      String?  @default("Inter")
+  fontFamilyHeadline   String?  @default("Space Grotesk")
+  fontFamilyBody       String?  @default("Inter")
+  logoUrl              String?
+  watermarkUrl         String?
+  watermarkOpacity     Float?    @default(0.1)
+  footerText           String?
 
   // JSON para las coordenadas de los textos dinámicos
   studentNamePosition  Json      @default("{\"x\": 100, \"y\": 200, \"fontSize\": 32, \"fontWeight\": \"bold\"}") @map("student_name_position")
   courseNamePosition   Json      @default("{\"x\": 100, \"y\": 300, \"fontSize\": 24, \"fontWeight\": \"normal\"}") @map("course_name_position")
   datePosition         Json      @default("{\"x\": 100, \"y\": 400, \"fontSize\": 18, \"fontWeight\": \"normal\"}") @map("date_position")
   scorePosition        Json?     @map("score_position") // Opcional
+  logoPosition       Json?       @default("{\"x\":5,\"y\":5,\"width\":20,\"height\":15}")
+  footerTextPosition Json?       @default("{\"x\":50,\"y\":90,\"fontSize\":14,\"fontWeight\":\"normal\",\"textAlign\":\"center\"}")
+
 
   createdAt            DateTime  @default(now()) @map("created_at")
   updatedAt            DateTime  @updatedAt @map("updated_at")
