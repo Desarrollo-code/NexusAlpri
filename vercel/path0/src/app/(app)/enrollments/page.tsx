@@ -1,4 +1,3 @@
-{// src/app/(app)/enrollments/page.tsx
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
@@ -38,6 +37,12 @@ import Link from 'next/link';
 import { QuizAnalyticsView } from '@/components/analytics/quiz-analytics-view';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PDFDownloadLink } from '@react-pdf/renderer';
+
+// Carga dinámica del componente PDF para evitar problemas de SSR
+const EnrollmentReportPDF = dynamic(() =>
+  import('@/components/reports/enrollment-report-pdf').then(mod => mod.EnrollmentReportPDF),
+  { ssr: false }
+);
 
 
 // --- TYPE DEFINITIONS ---
@@ -82,13 +87,6 @@ interface CourseEnrollmentInfo extends AppCourse {
 }
 
 const PAGE_SIZE = 10;
-
-// Carga dinámica del componente PDF para evitar problemas de SSR
-const EnrollmentReportPDF = dynamic(() =>
-  import('@/components/reports/enrollment-report-pdf').then(mod => mod.EnrollmentReportPDF),
-  { ssr: false }
-);
-
 
 // --- REUSABLE COMPONENTS ---
 
