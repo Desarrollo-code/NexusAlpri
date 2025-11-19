@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'reac
 import { useAuth } from '@/contexts/auth-context';
 import type { Course as AppCourse, User, CourseProgress, Quiz as AppQuiz, Question as AppQuestion } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, AlertTriangle, UsersRound, Filter, MoreVertical, BookOpen, LineChart, TrendingDown, Search, CheckCircle, Percent, HelpCircle, UserX, BarChartHorizontal, ArrowRight, Download, MessageSquare, User as UserIcon, BarChart3 } from 'lucide-react';
+import { Loader2, AlertTriangle, UsersRound, Filter, MoreVertical, BookOpen, LineChart, TrendingDown, Search, CheckCircle, Percent, HelpCircle, UserX, BarChartHorizontal, ArrowRight, Download, MessageSquare, User as UserIcon, BarChart3, FileText } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -36,6 +36,8 @@ import { es } from 'date-fns/locale';
 import Link from 'next/link';
 import { QuizAnalyticsView } from '@/components/analytics/quiz-analytics-view';
 import { Skeleton } from '@/components/ui/skeleton';
+import { EnrollmentReportPDF } from '@/components/reports/enrollment-report-pdf';
+import { PDFDownloadLink } from '@react-pdf/renderer';
 
 
 // --- TYPE DEFINITIONS ---
@@ -256,7 +258,7 @@ const EnrollmentsSkeleton = () => (
 
 // --- MAIN PAGE COMPONENT ---
 function EnrollmentsPageComponent() {
-  const { user: currentUser, isLoading: isAuthLoading } = useAuth();
+  const { user: currentUser, settings, isLoading: isAuthLoading } = useAuth();
   const { toast } = useToast();
   const { setPageTitle } = useTitle();
   const router = useRouter();
@@ -390,26 +392,6 @@ function EnrollmentsPageComponent() {
     }
   }
 
-  const handleExport = () => {
-    if (!selectedCourseInfo || !selectedCourseInfo.enrollments) return;
-    const headers = "Nombre,Email,Progreso (%),Calificación Quizzes (%),Estado,Fecha Inscripción,Fecha Completado\n";
-    const rows = selectedCourseInfo.enrollments.map(e => {
-        const name = `"${e.user.name || ''}"`; const email = e.user.email;
-        const progress = e.progress?.progressPercentage?.toFixed(0) || 0;
-        const quizScore = e.progress?.avgQuizScore?.toFixed(0) || 'N/A';
-        const isCompleted = Number(progress) === 100; const status = isCompleted ? 'Completado' : 'En Progreso';
-        const enrolledDate = new Date(e.enrolledAt).toLocaleDateString('es-CO');
-        const completedDate = e.progress?.completedAt ? new Date(e.progress.completedAt).toLocaleDateString('es-CO') : 'N/A';
-        return [name, email, progress, quizScore, status, enrolledDate, completedDate].join(',');
-    }).join('\n');
-
-    const csvContent = "data:text/csv;charset=utf-8," + headers + rows;
-    const encodedUri = encodeURI(csvContent); const link = document.createElement("a");
-    link.setAttribute("href", encodedUri); link.setAttribute("download", `progreso_${selectedCourseInfo.title.replace(/\s+/g, '_').toLowerCase()}.csv`);
-    document.body.appendChild(link); link.click(); document.body.removeChild(link);
-    toast({title: "Exportación Iniciada", description: "La descarga de tu reporte ha comenzado."})
-  }
-
   const filteredEnrollments = useMemo(() => {
     if (!selectedCourseInfo) return [];
     return selectedCourseInfo.enrollments.filter(e => 
@@ -457,9 +439,18 @@ function EnrollmentsPageComponent() {
                 </div>
                 <div className="w-full sm:w-auto flex items-center gap-2">
                     <CourseSelector courses={courses} onSelect={handleCourseSelection} selectedCourseId={selectedCourseId} isLoading={isLoadingCourses} />
-                    <Button variant="outline" size="sm" onClick={handleExport} disabled={!selectedCourseInfo || selectedCourseInfo.enrollments.length === 0}>
-                        <Download className="mr-2 h-4 w-4" /> Reporte
-                    </Button>
+                     {selectedCourseInfo && (
+                        <PDFDownloadLink
+                            document={<EnrollmentReportPDF course={selectedCourseInfo} platformLogo={settings?.logoUrl} />}
+                            fileName={`reporte_${selectedCourseInfo.title.replace(/\s+/g, '_')}.pdf`}
+                            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), !selectedCourseInfo || selectedCourseInfo.enrollments.length === 0 ? 'pointer-events-none opacity-50' : '')}
+                        >
+                            {({ blob, url, loading, error }) => (
+                                loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <FileText className="mr-2 h-4 w-4" />
+                            )}
+                            Reporte PDF
+                        </PDFDownloadLink>
+                    )}
                 </div>
             </div>
         </CardHeader>
