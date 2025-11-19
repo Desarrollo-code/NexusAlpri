@@ -105,8 +105,6 @@ export interface Quiz {
     description?: string;
     maxAttempts?: number | null;
     questions: Question[];
-    template?: string | null;
-    timerStyle?: string | null;
 }
 
 export interface ContentBlock {
@@ -136,7 +134,7 @@ export type CoursePrerequisiteInfo = {
   title: string;
 } | null;
 
-export interface Course extends Omit<Prisma.CourseGetPayload<{}>, 'instructor' | 'prerequisite' | 'isMandatory'> {
+export interface Course extends Omit<Prisma.CourseGetPayload<{}>, 'instructor' | 'prerequisite' | 'isMandatory' | 'startDate' | 'endDate'> {
   instructor: {
       id: string;
       name: string;
@@ -149,6 +147,8 @@ export interface Course extends Omit<Prisma.CourseGetPayload<{}>, 'instructor' |
   enrollmentsCount?: number;
   averageCompletion?: number;
   publicationDate?: Date | null;
+  startDate?: Date | string | null;
+  endDate?: Date | string | null;
   prerequisite: CoursePrerequisiteInfo;
   userProgress?: {
       completedAt: Date | null;
@@ -370,34 +370,28 @@ export { type MotivationalMessageTriggerType } from '@prisma/client';
 
 
 // --- FORMS ---
-export interface FormFieldOption {
-  id: string;
-  text: string;
-  isCorrect: boolean;
-  points: number;
-  imageUrl?: string | null;
-}
-
-export type FormField = Omit<Prisma.FormFieldGetPayload<{}>, 'options'> & {
-  options: FormFieldOption[];
+export type FormFieldOption = Omit<Prisma.FormFieldOptionGetPayload<{}>, 'id'> & {
+  id: string; // Ensure id is always a string on the client
 };
 
-export type AppForm = Prisma.FormGetPayload<{}> & {
-    fields: FormField[];
-    _count?: {
-        responses: number;
-    } | null;
-    creator?: {
-        name: string | null;
-    } | null;
-    sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
-    headerImageUrl?: string | null;
-    themeColor?: string | null;
-    backgroundColor?: string | null;
-    fontStyle?: string | null;
-    template?: string | null;
-    timerStyle?: string | null;
+export type AppQuestion = Omit<Prisma.FormFieldGetPayload<{
+  include: { options: true }
+}>, 'options'> & {
+    options: FormFieldOption[];
 };
+
+
+export type AppForm = Omit<Prisma.FormGetPayload<{
+  include: {
+    fields: { include: { options: true } },
+    _count: { select: { responses: true } },
+    creator: { select: { name: true } },
+    sharedWith: { select: { id: true, name: true, avatar: true } }
+  }
+}>, 'fields'> & {
+  fields: AppQuestion[];
+};
+
 
 // --- PROCESSES ---
 export type Process = Prisma.ProcessGetPayload<{

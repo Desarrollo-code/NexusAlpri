@@ -54,7 +54,10 @@ export async function GET(
         { status: 404 }
       );
     }
-    return NextResponse.json(course);
+    // Asegurarse de que `modules` sea siempre un array
+    const courseWithSafeModules = { ...course, modules: course.modules || [] };
+    
+    return NextResponse.json(courseWithSafeModules);
   } catch (error) {
     console.error(`[GET_COURSE_ID: ${courseId}]`, error);
     return NextResponse.json(
@@ -95,6 +98,8 @@ export async function PUT(
           category: courseData.category,
           status: courseData.status,
           publicationDate: courseData.publicationDate ? new Date(courseData.publicationDate) : null,
+          startDate: courseData.startDate ? new Date(courseData.startDate) : null,
+          endDate: courseData.endDate ? new Date(courseData.endDate) : null,
           certificateTemplateId: courseData.certificateTemplateId,
           isMandatory: courseData.isMandatory,
           prerequisiteId: courseData.prerequisiteId,
@@ -105,7 +110,7 @@ export async function PUT(
       await tx.module.deleteMany({ where: { courseId } });
 
       // 3. Re-create all modules, lessons, and content blocks from scratch
-      for (const [moduleIndex, moduleData] of modules.entries()) {
+      for (const [moduleIndex, moduleData] of (modules || []).entries()) {
         const newModule = await tx.module.create({
           data: {
             title: moduleData.title,
@@ -114,7 +119,7 @@ export async function PUT(
           },
         });
 
-        for (const [lessonIndex, lessonData] of moduleData.lessons.entries()) {
+        for (const [lessonIndex, lessonData] of (moduleData.lessons || []).entries()) {
           const newLesson = await tx.lesson.create({
             data: {
               title: lessonData.title,
@@ -123,7 +128,7 @@ export async function PUT(
             },
           });
 
-          for (const [blockIndex, blockData] of lessonData.contentBlocks.entries()) {
+          for (const [blockIndex, blockData] of (lessonData.contentBlocks || []).entries()) {
             const newBlock = await tx.contentBlock.create({
               data: {
                 type: blockData.type,
@@ -134,21 +139,24 @@ export async function PUT(
             });
 
             if (blockData.type === 'QUIZ' && blockData.quiz) {
+              const quizData = blockData.quiz;
               const newQuiz = await tx.quiz.create({
                 data: {
-                  title: blockData.quiz.title,
-                  description: blockData.quiz.description || '',
-                  maxAttempts: blockData.quiz.maxAttempts,
+                  title: quizData.title,
+                  description: quizData.description || '',
+                  maxAttempts: quizData.maxAttempts,
                   contentBlockId: newBlock.id,
                 },
               });
 
-              for (const [qIndex, questionData] of blockData.quiz.questions.entries()) {
+              for (const [qIndex, questionData] of (quizData.questions || []).entries()) {
                 const newQuestion = await tx.question.create({
                   data: {
                     text: questionData.text,
                     order: qIndex,
-                    type: 'SINGLE_CHOICE',
+                    type: questionData.type,
+                    imageUrl: questionData.imageUrl,
+                    template: questionData.template,
                     quizId: newQuiz.id,
                   },
                 });
@@ -160,6 +168,7 @@ export async function PUT(
                       isCorrect: opt.isCorrect,
                       feedback: opt.feedback || null,
                       points: opt.points || 0,
+                      imageUrl: opt.imageUrl || null,
                       questionId: newQuestion.id,
                     })),
                   });
@@ -208,17 +217,36 @@ export async function DELETE(
   }
 
   try {
-    await prisma.$transaction([
-        prisma.notification.deleteMany({
+    await prisma.$transaction(async (tx) => {
+        // 1. Encontrar todos los anuncios que mencionan este curso para obtener sus IDs
+        const announcementsToDelete = await tx.announcement.findMany({
+            where: { content: { contains: `/courses/${courseId}` } },
+            select: { id: true }
+        });
+        const announcementIds = announcementsToDelete.map(a => a.id);
+
+        // 2. Eliminar todas las notificaciones relacionadas
+        await tx.notification.deleteMany({
             where: {
                 OR: [
                     { link: `/courses/${courseId}` },
-                    { link: `/manage-courses/${courseId}/edit` }
+                    { link: `/manage-courses/${courseId}/edit` },
+                    { announcementId: { in: announcementIds } }
                 ]
             }
-        }),
-        prisma.course.delete({ where: { id: courseId } })
-    ]);
+        });
+
+        // 3. Eliminar los anuncios en sí
+        if (announcementIds.length > 0) {
+            await tx.announcement.deleteMany({ where: { id: { in: announcementIds } } });
+        }
+
+        // 4. Eliminar asignaciones de cursos
+        await tx.courseAssignment.deleteMany({ where: { courseId: courseId } });
+
+        // 5. Finalmente, eliminar el curso
+        await tx.course.delete({ where: { id: courseId } });
+    });
     
     if (supabaseAdmin) {
         const channel = supabaseAdmin.channel('courses');

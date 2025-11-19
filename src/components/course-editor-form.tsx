@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, XCircle, Replace, Pencil, Eye, MoreVertical, Archive, Crop, Copy, FilePlus2, ChevronDown, BookOpenText, Video, FileText, Lightbulb, File as FileGenericIcon, BarChart3, Star, Layers3, SaveIcon, Sparkles, Award, Check } from 'lucide-react';
+import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, XCircle, Replace, Pencil, Eye, MoreVertical, Archive, Crop, Copy, FilePlus2, ChevronDown, BookOpenText, Video, FileText, Lightbulb, File as FileGenericIcon, BarChart3, Star, Layers3, SaveIcon, Sparkles, Award, Check, Calendar as CalendarIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState, ChangeEvent, useCallback, useMemo } from 'react';
@@ -32,7 +32,7 @@ import { Badge } from '@/components/ui/badge';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Progress } from '@/components/ui/progress';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -49,7 +49,7 @@ import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Switch } from '@/components/ui/switch';
 import { CourseAssignmentModal } from '@/components/course-assignment-modal';
-import { QuizEditorModal, optionShapes, optionColors } from '@/components/quizz-it/quiz-editor-modal';
+import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
 
 // === TIPOS E INTERFACES ===
 interface ApiTemplate extends LessonTemplate {
@@ -102,7 +102,7 @@ const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdat
                                                         onAddBlock={(type) => onAddBlock(lessonIndex, type)}
                                                         onBlockUpdate={(blockIndex, field, value) => onBlockUpdate(lessonIndex, blockIndex, field, value)}
                                                         onBlockDelete={(blockIndex) => onBlockDelete(lessonIndex, blockIndex)}
-                                                        onEditQuiz={(quiz) => onEditQuiz(quiz)}
+                                                        onEditQuiz={onEditQuiz}
                                                         isSaving={isSaving}
                                                         ref={provided.innerRef}
                                                         {...provided.draggableProps}
@@ -381,11 +381,11 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         setIsSaving(true);
         
         const payload = { ...course };
-        payload.modules.forEach((mod, mIdx) => {
+        (payload.modules || []).forEach((mod, mIdx) => {
             mod.order = mIdx;
-            mod.lessons.forEach((les, lIdx) => {
+            (mod.lessons || []).forEach((les, lIdx) => {
                 les.order = lIdx;
-                les.contentBlocks.forEach((block, bIdx) => {
+                (les.contentBlocks || []).forEach((block, bIdx) => {
                     block.order = bIdx;
                 });
             });
@@ -505,9 +505,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const handleEditQuiz = (quizToEdit: AppQuiz) => {
         const handleSave = (updatedQuiz: AppQuiz) => {
             handleStateUpdate(prev => {
-                for (const mod of prev.modules) {
-                    for (const les of mod.lessons) {
-                        const blockIndex = les.contentBlocks.findIndex(b => b.quiz?.id === quizToEdit.id);
+                for (const mod of (prev.modules || [])) {
+                    for (const les of (mod.lessons || [])) {
+                        const blockIndex = (les.contentBlocks || []).findIndex(b => b.quiz?.id === quizToEdit.id);
                         if (blockIndex !== -1) {
                             les.contentBlocks[blockIndex].quiz = updatedQuiz;
                             break;
@@ -527,9 +527,10 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             const newModule: AppModule = {
                 id: generateUniqueId('module'),
                 title: 'Nuevo Módulo',
-                order: prev.modules.length,
+                order: (prev.modules || []).length,
                 lessons: [],
             };
+            if (!prev.modules) prev.modules = [];
             prev.modules.push(newModule);
             return prev;
         });
@@ -566,10 +567,11 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             const newLesson: AppLesson = {
                 id: generateUniqueId('lesson'),
                 title: template ? `Lección de "${template.name}"` : 'Nueva Lección',
-                order: prev.modules[moduleIndex].lessons.length,
+                order: (prev.modules?.[moduleIndex]?.lessons || []).length,
                 contentBlocks: newBlocks,
             };
             
+            if (!prev.modules[moduleIndex].lessons) prev.modules[moduleIndex].lessons = [];
             prev.modules[moduleIndex].lessons.push(newLesson);
             return prev;
         });
@@ -592,6 +594,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                     maxAttempts: null,
                 } : undefined
             };
+            if (!prev.modules[moduleIndex].lessons[lessonIndex].contentBlocks) {
+                prev.modules[moduleIndex].lessons[lessonIndex].contentBlocks = [];
+            }
             prev.modules[moduleIndex].lessons[lessonIndex].contentBlocks.push(newBlock);
             return prev;
         });
@@ -599,7 +604,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
     const handleRemoveModule = (moduleIndex: number) => {
          setItemToDeleteDetails({
-            name: course?.modules[moduleIndex].title,
+            name: course?.modules?.[moduleIndex]?.title,
             onDelete: () => handleStateUpdate(prev => {
                 prev.modules.splice(moduleIndex, 1);
                 return prev;
@@ -609,7 +614,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
     const handleRemoveLesson = (moduleIndex: number, lessonIndex: number) => {
          setItemToDeleteDetails({
-            name: course?.modules[moduleIndex].lessons[lessonIndex].title,
+            name: course?.modules?.[moduleIndex]?.lessons?.[lessonIndex]?.title,
             onDelete: () => {
                 handleStateUpdate(prev => {
                     prev.modules[moduleIndex].lessons.splice(lessonIndex, 1);
@@ -701,6 +706,26 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         }
     };
 
+    const handleDateChange = (field: 'startDate' | 'endDate', value: string) => {
+        if (!value) {
+            updateCourseField(field, null);
+            return;
+        }
+        const date = new Date(value);
+        if (isValid(date)) {
+            updateCourseField(field, date.toISOString());
+        }
+    };
+
+    const getLocalDateValue = (dateString?: string | Date | null) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        if (!isValid(date)) return '';
+        // Formato para datetime-local input: YYYY-MM-DDTHH:mm
+        return format(date, "yyyy-MM-dd'T'HH:mm");
+    };
+
+
     if (isLoading || isAuthLoading || !course) {
         return <div className="flex items-center justify-center min-h-[calc(100vh-80px)]"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
     }
@@ -746,7 +771,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                                             onAddBlock={(lessonIndex, type) => handleAddBlock(moduleIndex, lessonIndex, type)}
                                                             onBlockUpdate={(lessonIndex, blockIndex, field, value) => updateBlockField(moduleIndex, lessonIndex, blockIndex, field, value)}
                                                             onBlockDelete={(lessonIndex, blockIndex) => handleRemoveBlock(moduleIndex, lessonIndex, blockIndex)}
-                                                            onEditQuiz={(quiz) => handleEditQuiz(quiz)}
+                                                            onEditQuiz={handleEditQuiz}
                                                             isSaving={isSaving}
                                                             provided={provided}
                                                             ref={provided.innerRef}
@@ -759,7 +784,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                     )}
                                 </Droppable>
                             </DragDropContext>
-                            {course.modules.length === 0 && <p className="text-center text-muted-foreground py-8">No hay módulos.</p>}
+                            {(course.modules || []).length === 0 && <p className="text-center text-muted-foreground py-8">No hay módulos.</p>}
                         </CardContent>
                     </Card>
                 </div>
@@ -778,6 +803,18 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                         <SelectItem value="ARCHIVED">Archivado</SelectItem>
                                     </SelectContent>
                                 </Select>
+                            </div>
+                            <Separator/>
+                            <div className="space-y-3">
+                                <Label className="font-semibold">Vigencia del Curso</Label>
+                                <div className="space-y-2">
+                                    <Label htmlFor="start-date" className="text-xs font-medium">Apertura</Label>
+                                    <Input id="start-date" type="datetime-local" value={getLocalDateValue(course.startDate)} onChange={e => handleDateChange('startDate', e.target.value)} disabled={isSaving} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="end-date" className="text-xs font-medium">Cierre</Label>
+                                    <Input id="end-date" type="datetime-local" value={getLocalDateValue(course.endDate)} onChange={e => handleDateChange('endDate', e.target.value)} disabled={isSaving} />
+                                </div>
                             </div>
                             <Separator/>
                             <div className="space-y-2">

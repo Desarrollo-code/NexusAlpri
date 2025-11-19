@@ -11,9 +11,9 @@ export async function GET(req: NextRequest) {
   try {
     const session = await getCurrentUser();
     
+    // Si no hay sesión, no se puede continuar con la lógica que depende del usuario.
     const { searchParams } = new URL(req.url);
     const simpleView = searchParams.get('simple') === 'true';
-    
     if (!session && !simpleView) {
       return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
@@ -31,8 +31,9 @@ export async function GET(req: NextRequest) {
     const tab = searchParams.get('tab');
     const skip = (page - 1) * pageSize;
 
+    // --- Vista Simplificada para Selectores ---
     if (simpleView) {
-        if (!session) {
+        if (!session) { // La vista simple también debe estar protegida.
              return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
         }
         const courses = await prisma.course.findMany({
@@ -43,6 +44,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ courses });
     }
 
+    // --- Vistas de Gestión y Catálogo (requieren sesión) ---
     let whereClause: any = {};
     
     if (manageView) {
@@ -68,6 +70,7 @@ export async function GET(req: NextRequest) {
           enrollments: true,
         },
       },
+      // THIS IS THE KEY: Include nested lesson count
       modules: {
         select: {
           lessons: {
@@ -165,7 +168,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { title, description, category, prerequisiteId, isMandatory } = body;
+    const { title, description, category, prerequisiteId, isMandatory, startDate, endDate } = body;
     
     if (!title || !description) {
       return NextResponse.json({ message: 'Título y descripción son requeridos' }, { status: 400 });
@@ -180,10 +183,13 @@ export async function POST(req: NextRequest) {
         instructor: { connect: { id: session.id } },
         prerequisiteId: prerequisiteId || null,
         isMandatory: isMandatory || false,
+        startDate: startDate ? new Date(startDate) : null,
+        endDate: endDate ? new Date(endDate) : null,
       },
       include: { instructor: true },
     });
 
+    // --- SECURITY LOG (NON-BLOCKING) ---
     Promise.resolve().then(async () => {
         try {
             const ip = req.ip ?? req.headers.get('x-forwarded-for') ?? null;
