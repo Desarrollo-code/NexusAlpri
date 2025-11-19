@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
+import type { Quiz } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,7 +15,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
             where: { id },
             include: {
                 uploader: { select: { id: true, name: true } },
-                sharedWith: { select: { id: true, name: true, avatar: true } }
+                sharedWith: { select: { id: true, name: true, avatar: true } },
+                quiz: { include: { questions: { include: { options: true }, orderBy: { order: 'asc' } } } },
             },
         });
         if (!resource) {
@@ -49,54 +51,82 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
              return NextResponse.json({ message: 'No tienes permiso para editar este recurso' }, { status: 403 });
         }
 
-        const { title, category, description, isPublic, sharedWithUserIds, expiresAt, status, content, observations } = await req.json();
+        const { title, category, description, isPublic, sharedWithUserIds, expiresAt, status, content, observations, quiz } = await req.json();
 
-        // Lógica de versionado: se crea una versión si el contenido cambia.
         const createVersion = resourceToUpdate.type === 'DOCUMENTO_EDITABLE' && resourceToUpdate.content !== content;
+        
+        await prisma.$transaction(async (tx) => {
+            const updateData: any = {
+                title, category, content, observations, description, status,
+                expiresAt: expiresAt ? new Date(expiresAt) : null,
+                ispublic: isPublic,
+                sharedWith: isPublic ? { set: [] } : { set: sharedWithUserIds.map((id: string) => ({ id })) }
+            };
 
-        const updateData: any = {
-            title,
-            category,
-            content, // Guardar el nuevo contenido del editor
-            observations, // Guardar las observaciones
-            description,
-            status,
-            expiresAt: expiresAt ? new Date(expiresAt) : null,
-            ispublic: isPublic,
-            sharedWith: isPublic ? { set: [] } : { set: sharedWithUserIds.map((id: string) => ({ id })) }
-        };
-
-        if (createVersion) {
-            await prisma.$transaction([
-                // Crear la nueva versión con el contenido ANTERIOR
-                prisma.resourceVersion.create({
+            if (createVersion) {
+                updateData.version = { increment: 1 };
+                await tx.resourceVersion.create({
                     data: {
                         resourceId: resourceToUpdate.id,
-                        version: resourceToUpdate.version, // Guardamos la versión que se está reemplazando
+                        version: resourceToUpdate.version,
                         content: resourceToUpdate.content,
-                        authorId: session.id, // El usuario que realiza el cambio
+                        authorId: session.id,
                     }
-                }),
-                // Actualizar el recurso principal con el nuevo contenido y una nueva versión
-                prisma.enterpriseResource.update({
-                    where: { id },
-                    data: {
-                        ...updateData,
-                        version: {
-                            increment: 1
-                        }
-                    },
-                })
-            ]);
-        } else {
-             // Si no hay cambio de contenido, solo actualizar metadata
-            await prisma.enterpriseResource.update({
+                });
+            }
+            
+            // --- Lógica del Quiz ---
+            if (category === 'Formación Interna' && quiz) {
+                 const quizData = {
+                    title: quiz.title || 'Evaluación del Recurso',
+                    description: quiz.description,
+                    maxAttempts: quiz.maxAttempts,
+                    resourceId: id,
+                    questions: {
+                        deleteMany: {},
+                        create: quiz.questions.map((q: any, qIndex: number) => ({
+                            text: q.text,
+                            order: qIndex,
+                            type: q.type,
+                            template: q.template,
+                            imageUrl: q.imageUrl,
+                            options: {
+                                create: q.options.map((opt: any) => ({
+                                    text: opt.text,
+                                    isCorrect: opt.isCorrect,
+                                    points: opt.points,
+                                    imageUrl: opt.imageUrl
+                                }))
+                            }
+                        }))
+                    }
+                 };
+
+                 updateData.quiz = {
+                     upsert: {
+                         create: quizData,
+                         update: quizData,
+                     }
+                 };
+            } else {
+                // Si la categoría no es "Formación Interna" o no hay quiz, nos aseguramos de que se elimine
+                const existingQuiz = await tx.quiz.findFirst({ where: { resourceId: id } });
+                if (existingQuiz) {
+                    updateData.quiz = { disconnect: true };
+                }
+            }
+            // --------------------
+
+            await tx.enterpriseResource.update({
                 where: { id },
                 data: updateData,
             });
-        }
+        });
         
-        const updatedResource = await prisma.enterpriseResource.findUnique({ where: {id} });
+        const updatedResource = await prisma.enterpriseResource.findUnique({ 
+            where: { id },
+            include: { quiz: { include: { questions: { include: { options: true }}}}} 
+        });
 
         return NextResponse.json(updatedResource);
     } catch (error) {

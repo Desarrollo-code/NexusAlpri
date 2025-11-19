@@ -59,6 +59,7 @@ export interface PlatformSettings {
     emptyStateMotivationsUrl?: string | null;
     emptyStateUsersUrl?: string | null;
     emptyStateLeaderboardUrl?: string | null;
+    emptyStateAnnouncementsUrl?: string | null;
 }
 
 // --- NAVIGATION ---
@@ -105,7 +106,10 @@ export interface Quiz {
     maxAttempts?: number | null;
     remedialContent?: string | null;
     questions: Question[];
+    contentBlockId?: string | null; // From original schema
+    resourceId?: string | null; // New for resource quizzes
 }
+
 
 export interface ContentBlock {
   id: string;
@@ -196,14 +200,16 @@ export type CourseAssignment = Prisma.CourseAssignmentGetPayload<{}>;
 export type ResourceType = 'FOLDER' | 'DOCUMENT' | 'GUIDE' | 'MANUAL' | 'POLICY' | 'VIDEO' | 'EXTERNAL_LINK' | 'OTHER' | 'DOCUMENTO_EDITABLE';
 export type ResourceStatus = 'ACTIVE' | 'ARCHIVED';
 
-export interface EnterpriseResource extends Omit<Prisma.EnterpriseResourceGetPayload<{}>, 'tags' | 'status'> {
+export interface AppResourceType extends Omit<Prisma.EnterpriseResourceGetPayload<{ include: { quiz: { include: { questions: { include: { options: true }}}}}}>, 'tags' | 'status'> {
     tags: string[];
     uploaderName: string;
     hasPin: boolean;
     status: ResourceStatus;
     uploader?: { id: string, name: string | null, avatar: string | null } | null;
     sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
+    quiz?: Quiz | null;
 }
+
 
 
 // --- ANNOUNCEMENTS ---
@@ -414,4 +420,4 @@ export interface Message {
 }
 
 
-export { type FormStatus, type FormFieldType, type AnnouncementAttachment, type RecurrenceType, type ChatAttachment } from '@prisma/client';
+export { type FormStatus, type FormFieldType, type AnnouncementAttachment, type RecurrenceType, type ChatAttachment, type QuizAttempt } from '@prisma/client';
