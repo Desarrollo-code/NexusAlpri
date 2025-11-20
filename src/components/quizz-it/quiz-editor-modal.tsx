@@ -69,27 +69,27 @@ const ImageUploadWidget = ({ imageUrl, onUpload, onRemove, disabled, inputId, is
     
     return (
         <div className={cn(
-            "relative w-full h-full aspect-square rounded-lg border-2 bg-muted/50 transition-all", 
+            "relative w-full aspect-square rounded-lg border-2 bg-muted/50 transition-all", 
             isCorrect ? "border-primary ring-2 ring-primary/50" : "border-dashed hover:border-primary/50"
         )}>
             {isUploading ? (
-                <div className="w-full h-full flex flex-col items-center justify-center gap-2 p-2">
-                    <ColorfulLoader className="h-8 w-8"/>
-                    <Progress value={uploadProgress} className="w-full h-1.5" />
+                <div className="w-full h-full flex flex-col items-center justify-center gap-2 p-1">
+                    <ColorfulLoader className="h-6 w-6"/>
+                    <Progress value={uploadProgress} className="w-full h-1" />
                 </div>
             ) : imageUrl ? (
                  <div className="relative w-full h-full group">
                     <Image src={imageUrl} alt="preview" fill className="object-contain p-1" />
-                    <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                         <Button type="button" variant="destructive" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={(e) => {e.stopPropagation(); onRemove();}} disabled={disabled}>
-                             <XCircle className="h-4 w-4"/>
+                    <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                         <Button type="button" variant="destructive" size="icon" className="h-6 w-6 rounded-full shadow-md" onClick={(e) => {e.stopPropagation(); onRemove();}} disabled={disabled}>
+                             <XCircle className="h-3 w-3"/>
                          </Button>
                     </div>
                 </div>
             ) : (
                 <UploadArea onFileSelect={handleFileSelect} disabled={disabled} inputId={inputId} className="h-full border-0 bg-transparent">
                     <div className="text-center text-muted-foreground p-1">
-                        <ImageIcon className="mx-auto h-6 w-6"/>
+                        <ImageIcon className="mx-auto h-5 w-5"/>
                     </div>
                 </UploadArea>
             )}
