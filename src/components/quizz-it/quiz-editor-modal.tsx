@@ -69,27 +69,27 @@ const ImageUploadWidget = ({ imageUrl, onUpload, onRemove, disabled, inputId, is
     
     return (
         <div className={cn(
-            "relative w-full aspect-square rounded-lg border-2 bg-muted/50 transition-all",
+            "relative w-full aspect-square rounded-lg border-2 bg-muted/50 transition-all flex items-center justify-center",
             isCorrect ? "border-primary ring-2 ring-primary/50" : "border-dashed hover:border-primary/50"
         )}>
             {isUploading ? (
-                <div className="w-full h-full flex flex-col items-center justify-center gap-2 p-1">
-                    <ColorfulLoader className="h-6 w-6"/>
+                <div className="w-full h-full flex flex-col items-center justify-center gap-1 p-1">
+                    <ColorfulLoader className="h-5 w-5"/>
                     <Progress value={uploadProgress} className="w-full h-1" />
                 </div>
             ) : imageUrl ? (
                  <div className="relative w-full h-full group">
                     <Image src={imageUrl} alt="preview" fill className="object-contain p-1" />
-                    <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                         <Button type="button" variant="destructive" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={(e) => {e.stopPropagation(); onRemove();}} disabled={disabled}>
-                             <XCircle className="h-4 w-4"/>
+                    <div className="absolute -top-1.5 -right-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                         <Button type="button" variant="destructive" size="icon" className="h-6 w-6 rounded-full shadow-md" onClick={(e) => {e.stopPropagation(); onRemove();}} disabled={disabled}>
+                             <XCircle className="h-3 w-3"/>
                          </Button>
                     </div>
                 </div>
             ) : (
-                <UploadArea onFileSelect={handleFileSelect} disabled={disabled} inputId={inputId} className="h-full border-0 bg-transparent">
-                    <div className="text-center text-muted-foreground p-1">
-                        <ImageIcon className="mx-auto h-6 w-6"/>
+                <UploadArea onFileSelect={handleFileSelect} disabled={disabled} inputId={inputId} className="h-full border-0 bg-transparent p-0">
+                    <div className="text-center text-muted-foreground">
+                        <ImageIcon className="mx-auto h-5 w-5"/>
                     </div>
                 </UploadArea>
             )}
@@ -117,7 +117,7 @@ const QuestionEditor = ({ question, isQuiz, onQuestionChange, onOptionChange, on
             )
         }
         if (question.template === 'true_false') {
-             return <Button className="w-full h-16 justify-start text-lg" variant={opt.isCorrect ? 'default' : 'outline'} onClick={() => onSetCorrect(opt.id)}>{opt.text}</Button>
+             return <Button type="button" className="w-full h-16 justify-start text-lg" variant={opt.isCorrect ? 'default' : 'outline'} onClick={() => onSetCorrect(opt.id)}>{opt.text}</Button>
         }
         return <Input value={opt.text} onChange={e => onOptionChange(index, 'text', e.target.value)} placeholder={`Opción ${index + 1}`}/>
     };
@@ -152,23 +152,23 @@ const QuestionEditor = ({ question, isQuiz, onQuestionChange, onOptionChange, on
 
             <Card>
                 <CardHeader><CardTitle className="text-base">Opciones de Respuesta</CardTitle></CardHeader>
-                 <CardContent className={cn("grid gap-3", isImageOptionsTemplate ? "grid-cols-2" : "grid-cols-1 md:grid-cols-2")}>
+                 <CardContent className={cn("grid gap-2", isImageOptionsTemplate ? "grid-cols-2" : "grid-cols-1 md:grid-cols-2")}>
                     {question.options.slice(0, 4).map((opt, index) => (
                         <div key={opt.id} className="flex items-center gap-2">
                             <div className="flex-grow">{renderOptionEditor(opt, index)}</div>
-                            <div className="flex flex-col gap-1">
-                                {(!isImageOptionsTemplate) && (
-                                  <Button variant={opt.isCorrect ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => onSetCorrect(opt.id)}>
-                                      <Check className="h-4 w-4"/>
-                                  </Button>
-                                )}
-                                {(question.options.length > (question.template === 'true_false' ? 2 : 1)) && (<Button variant="ghost" size="icon" className="h-8 w-8 text-destructive/70 hover:text-destructive" onClick={() => onOptionDelete(index)}><X className="h-4 w-4"/></Button>)}
-                            </div>
+                            {!isImageOptionsTemplate && (
+                                <div className="flex flex-col gap-1">
+                                    <Button type="button" variant={opt.isCorrect ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => onSetCorrect(opt.id)}>
+                                        <Check className="h-4 w-4"/>
+                                    </Button>
+                                    {(question.options.length > (question.template === 'true_false' ? 2 : 1)) && (<Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive/70 hover:text-destructive" onClick={() => onOptionDelete(index)}><X className="h-4 w-4"/></Button>)}
+                                </div>
+                            )}
                         </div>
                     ))}
                 </CardContent>
                 <CardFooter>
-                    {question.options.length < 4 && !isImageOptionsTemplate && question.template !== 'true_false' && (<Button variant="outline" size="sm" onClick={onOptionAdd}>+ Añadir opción</Button>)}
+                    {question.options.length < 4 && !isImageOptionsTemplate && question.template !== 'true_false' && (<Button type="button" variant="outline" size="sm" onClick={onOptionAdd}>+ Añadir opción</Button>)}
                 </CardFooter>
             </Card>
         </div>
