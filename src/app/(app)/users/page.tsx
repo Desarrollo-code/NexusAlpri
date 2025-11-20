@@ -14,8 +14,6 @@ import { Badge } from "@/components/ui/badge";
 import type { User, UserRole, Process } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SmartPagination } from '@/components/ui/pagination';
 import { useTitle } from '@/contexts/title-context';
@@ -38,10 +36,10 @@ import { UserProfileCard } from '@/components/users/user-profile-card';
 import { getRoleInSpanish, getRoleBadgeVariant } from '@/lib/security-log-utils';
 import { getProcessColors } from '@/lib/utils';
 import { Identicon } from '@/components/ui/identicon';
-import { EmptyState } from '../empty-state';
+import { EmptyState } from '@/components/empty-state';
 import { useTour } from '@/contexts/tour-context';
 import { usersTour } from '@/lib/tour-steps';
-import { ColorfulLoader } from '../ui/colorful-loader';
+import { ColorfulLoader } from '@/components/ui/colorful-loader';
 
 
 // --- TYPES & CONTEXT ---
@@ -502,7 +500,7 @@ function UsersPageComponent() {
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isDeactivating}>Cancelar</AlertDialogCancel>
                         <AlertDialogAction onClick={confirmStatusChange} disabled={isDeactivating} className={cn(!userToDeactivate?.isActive && 'bg-green-600 hover:bg-green-700', userToDeactivate?.isActive && 'bg-destructive hover:bg-destructive/90')}>
-                            {isDeactivating ? <div className="w-4 h-4 mr-2"><ColorfulLoader /></div> : null}
+                            {isDeactivating && <div className="w-4 h-4 mr-2"><ColorfulLoader /></div>}
                             Sí, {userToDeactivate?.isActive ? 'Inactivar' : 'Activar'}
                         </AlertDialogAction>
                     </AlertDialogFooter>
@@ -569,7 +567,7 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                                 </div>
                             </TableCell>
                             <TableCell><Badge variant="secondary" className="text-xs" style={{backgroundColor: u.process ? getProcessColors(u.process.id).raw.light : undefined, color: u.process ? getProcessColors(u.process.id).raw.dark : undefined}}>{u.process?.name || 'Sin Asignar'}</Badge></TableCell>
-                             <TableCell className="text-sm text-muted-foreground">{format(new Date(u.updatedAt), "dd MMM, yyyy", { locale: es })}</TableCell>
+                             <TableCell className="text-sm text-muted-foreground">{format(new Date(u.updatedAt), "dd MMM yyyy", { locale: es })}</TableCell>
                             <TableCell className="text-center"><Badge variant={getRoleBadgeVariant(u.role)}>{getRoleInSpanish(u.role)}</Badge></TableCell>
                             <TableCell className="text-center"><Badge variant={u.isActive ? "default" : "secondary"} className={cn("text-xs py-1 px-3", u.isActive ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-500/30" : "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300 border-gray-500/30")}>
                                 {u.isActive ? 'Activo' : 'Inactivo'}
@@ -580,7 +578,7 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                                     <DropdownMenuContent align="end">
                                         <DropdownMenuItem onSelect={() => onEdit(u)}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
                                         <DropdownMenuItem onSelect={() => onRoleChange(u)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol</DropdownMenuItem>
-                                        <DropdownMenuItem onSelect={() => onStatusChange(u, !u.isActive)} className={u.isActive ? "text-destructive" : ""}><UserX className="mr-2 h-4 w-4"/>{u.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => onStatusChange(u, !u.isActive)} className={u.isActive ? "text-destructive" : ""}>{u.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </TableCell>
