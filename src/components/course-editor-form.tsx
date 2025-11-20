@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 'use client';
 
@@ -11,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, XCircle, Replace, Pencil, Eye, MoreVertical, Archive, Crop, Copy, FilePlus2, ChevronDown, BookOpenText, Video, FileText, Lightbulb, File as FileGenericIcon, BarChart3, Star, Layers3, SaveIcon, Sparkles, Award, Check, Calendar as CalendarIcon, Info, Users, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useState, ChangeEvent, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import type { Course as AppCourse, Module as AppModule, Lesson as AppLesson, LessonType, CourseStatus, Quiz as AppQuiz, Question as AppQuestion, AnswerOption as AppAnswerOption, ContentBlock } from '@/types';
 import Image from 'next/image';
 import { useToast } from "@/hooks/use-toast";
@@ -721,7 +720,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
     return (
         <div className="space-y-6 pb-24 md:pb-6">
-            <Accordion type="multiple" defaultValue={['item-1', 'item-2']} className="w-full space-y-4">
+            <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4']} className="w-full space-y-4">
                 <AccordionItem value="item-1" className="border-b-0">
                      <Card>
                         <AccordionTrigger className="p-6 text-lg hover:no-underline">
@@ -731,10 +730,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                              <div className="space-y-4">
                                 <div><Label htmlFor="title">Título del Curso</Label><Input id="title" value={course.title} onChange={e => updateCourseField('title', e.target.value)} placeholder="Título atractivo" disabled={isSaving} /></div>
                                 <div><Label htmlFor="description">Descripción <span className="text-muted-foreground">(Opcional)</span></Label><Textarea id="description" value={course.description} onChange={e => updateCourseField('description', e.target.value)} placeholder="Describe el contenido y objetivos." rows={4} disabled={isSaving} /></div>
-                                 <div className="flex items-center justify-between space-x-2 p-3 border rounded-lg">
-                                    <Label htmlFor="isMandatory" className="flex flex-col space-y-1"><span>Curso Obligatorio</span><span className="font-normal leading-snug text-muted-foreground text-xs">Permite asignar este curso a usuarios específicos.</span></Label>
-                                    <Switch id="isMandatory" checked={course.isMandatory} onCheckedChange={handleMandatorySwitchChange} disabled={isSaving}/>
-                                </div>
                             </div>
                         </AccordionContent>
                     </Card>
@@ -801,27 +796,29 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                         <AccordionTrigger className="p-6 text-lg hover:no-underline">
                            <div className="flex items-center gap-3"><CalendarIcon className="h-5 w-5 text-primary"/> Configuración de Publicación</div>
                         </AccordionTrigger>
-                        <AccordionContent className="px-6 pb-6 space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="status">Estado</Label>
-                                <Select value={course.status} onValueChange={v => updateCourseField('status', v as CourseStatus)} disabled={isSaving}>
-                                    <SelectTrigger id="status"><SelectValue /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="DRAFT">Borrador</SelectItem>
-                                        <SelectItem value="PUBLISHED">Publicado</SelectItem>
-                                        <SelectItem value="ARCHIVED">Archivado</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Vigencia del Curso <span className="text-muted-foreground">(Opcional)</span></Label>
-                                <DateRangePicker
-                                  date={{ from: course.startDate ? new Date(course.startDate) : undefined, to: course.endDate ? new Date(course.endDate) : undefined }}
-                                  onDateChange={(range) => {
-                                      updateCourseField('startDate', range?.from?.toISOString());
-                                      updateCourseField('endDate', range?.to?.toISOString());
-                                  }}
-                                />
+                        <AccordionContent className="px-6 pb-6">
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <Label htmlFor="status">Estado</Label>
+                                    <Select value={course.status} onValueChange={v => updateCourseField('status', v as CourseStatus)} disabled={isSaving}>
+                                        <SelectTrigger id="status"><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="DRAFT">Borrador</SelectItem>
+                                            <SelectItem value="PUBLISHED">Publicado</SelectItem>
+                                            <SelectItem value="ARCHIVED">Archivado</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Vigencia del Curso <span className="text-muted-foreground">(Opcional)</span></Label>
+                                    <DateRangePicker
+                                      date={{ from: course.startDate ? new Date(course.startDate) : undefined, to: course.endDate ? new Date(course.endDate) : undefined }}
+                                      onDateChange={(range) => {
+                                          updateCourseField('startDate', range?.from?.toISOString());
+                                          updateCourseField('endDate', range?.to?.toISOString());
+                                      }}
+                                    />
+                                </div>
                             </div>
                         </AccordionContent>
                     </Card>
@@ -831,35 +828,61 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                         <AccordionTrigger className="p-6 text-lg hover:no-underline">
                            <div className="flex items-center gap-3"><Layers3 className="h-5 w-5 text-primary"/> Metadatos y Personalización</div>
                         </AccordionTrigger>
-                        <AccordionContent className="px-6 pb-6 space-y-4">
-                           <div><Label htmlFor="category">Categoría</Label>
-                                <Select value={course.category || ''} onValueChange={v => updateCourseField('category', v)} disabled={isSaving}>
-                                <SelectTrigger id="category"><SelectValue placeholder="Selecciona" /></SelectTrigger>
-                                <SelectContent>{(settings?.resourceCategories || []).sort().map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Imagen de Portada <span className="text-muted-foreground">(Opcional)</span></Label>
-                                {isUploadingImage && <div className="w-full space-y-2"><Progress value={uploadProgress} /><p className="text-xs text-center text-muted-foreground">Subiendo...</p></div>}
-                                {(localCoverImagePreview || course.imageUrl) && !isUploadingImage ? (
-                                    <div className="relative aspect-video w-full rounded-md border overflow-hidden p-2 bg-muted/20">
-                                        <Image src={localCoverImagePreview || course.imageUrl!} alt="Imagen del Curso" fill className="object-contain p-2" />
-                                        <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 rounded-full h-7 w-7" onClick={() => { updateCourseField('imageUrl', null); setLocalCoverImagePreview(null); }} disabled={isSaving}><XCircle className="h-4 w-4" /></Button>
+                        <AccordionContent className="px-6 pb-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-4">
+                                     <div className="flex items-center justify-between space-x-2 p-3 border rounded-lg">
+                                        <Label htmlFor="isMandatory" className="flex flex-col space-y-1"><span>Curso Obligatorio</span><span className="font-normal leading-snug text-muted-foreground text-xs">Permite asignar este curso a usuarios.</span></Label>
+                                        <Switch id="isMandatory" checked={course.isMandatory} onCheckedChange={handleMandatorySwitchChange} disabled={isSaving}/>
                                     </div>
-                                ) : !isUploadingImage && <UploadArea onFileSelect={(file) => { if(file) handleFileChange({ target: { files: [file] } } as any) }} disabled={isSaving || isUploadingImage} />}
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="certificateTemplate">Plantilla de Certificado <span className="text-muted-foreground">(Opcional)</span></Label>
-                                <Select value={course.certificateTemplateId || 'none'} onValueChange={v => updateCourseField('certificateTemplateId', v === 'none' ? null : v)} disabled={isSaving}>
-                                    <SelectTrigger id="certificateTemplate"><SelectValue placeholder="Sin certificado"/></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="none">Sin certificado</SelectItem>
-                                        <Separator/>
-                                        {certificateTemplates.map(t => (
-                                            <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="category">Categoría</Label>
+                                        <Select value={course.category || ''} onValueChange={v => updateCourseField('category', v)} disabled={isSaving}>
+                                        <SelectTrigger id="category"><SelectValue placeholder="Selecciona" /></SelectTrigger>
+                                        <SelectContent>{(settings?.resourceCategories || []).sort().map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="certificateTemplate">Plantilla de Certificado <span className="text-muted-foreground">(Opcional)</span></Label>
+                                        <Select value={course.certificateTemplateId || 'none'} onValueChange={v => updateCourseField('certificateTemplateId', v === 'none' ? null : v)} disabled={isSaving}>
+                                            <SelectTrigger id="certificateTemplate"><SelectValue placeholder="Sin certificado"/></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="none">Sin certificado</SelectItem>
+                                                <Separator/>
+                                                {certificateTemplates.map(t => (
+                                                    <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Imagen de Portada <span className="text-muted-foreground">(Opcional)</span></Label>
+                                    <div className="w-full relative aspect-video rounded-md border bg-muted/20 flex items-center justify-center">
+                                      {isUploadingImage && <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/80 z-20"><Loader2 className="h-8 w-8 animate-spin text-primary"/><Progress value={uploadProgress} className="w-3/4 h-2"/></div>}
+                                      {(localCoverImagePreview || course.imageUrl) && !isUploadingImage ? (
+                                        <>
+                                            <Image src={localCoverImagePreview || course.imageUrl!} alt="Imagen del Curso" fill className="object-cover p-1" />
+                                            <div className="absolute top-2 right-2 z-10 flex gap-1">
+                                                <Button type="button" variant="secondary" size="icon" className="h-8 w-8" onClick={() => document.getElementById('cover-image-upload')?.click()} disabled={isSaving || isUploadingImage}>
+                                                    <Replace className="h-4 w-4"/>
+                                                </Button>
+                                                <Button type="button" variant="destructive" size="icon" className="h-8 w-8" onClick={() => { updateCourseField('imageUrl', null); setLocalCoverImagePreview(null); }} disabled={isSaving || isUploadingImage}>
+                                                    <XCircle className="h-4 w-4"/>
+                                                </Button>
+                                            </div>
+                                        </>
+                                      ) : (
+                                        <UploadArea onFileSelect={(file) => { if(file) handleFileChange({ target: { files: [file] } } as any) }} inputId="cover-image-upload" disabled={isSaving || isUploadingImage}>
+                                            <div className="text-center text-muted-foreground">
+                                                <ImagePlus className="mx-auto h-8 w-8 mb-2" />
+                                                <p className="text-sm font-semibold">Subir imagen</p>
+                                                <p className="text-xs">Recomendado: 16:9</p>
+                                            </div>
+                                        </UploadArea>
+                                      )}
+                                    </div>
+                                </div>
                             </div>
                         </AccordionContent>
                     </Card>
