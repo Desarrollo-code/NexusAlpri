@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 'use client';
 
@@ -50,8 +51,8 @@ import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Switch } from '@/components/ui/switch';
 import { CourseAssignmentModal } from '@/components/course-assignment-modal';
 import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
-import { DateRangePicker } from '../ui/date-range-picker';
-import { DateRange } from 'react-day-picker';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
+import type { DateRange } from 'react-day-picker';
 
 // === TIPOS E INTERFACES ===
 interface ApiTemplate extends LessonTemplate {
