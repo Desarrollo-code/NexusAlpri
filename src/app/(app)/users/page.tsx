@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'reac
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, List, Grid, Filter, UserPlus, MoreVertical, Loader2, Briefcase, MessageSquare, Edit, Trash2, UserCog, UserX, Users as UsersIcon, Key, HelpCircle } from 'lucide-react';
+import { PlusCircle, Search, List, Grid, Filter, UserPlus, MoreVertical, Loader2, Briefcase, MessageSquare, Edit, Trash2, UserCog, UserX, Users as UsersIcon, Key, HelpCircle, Calendar, Clock } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -14,6 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import type { User, UserRole, Process } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SmartPagination } from '@/components/ui/pagination';
 import { useTitle } from '@/contexts/title-context';
@@ -36,10 +38,10 @@ import { UserProfileCard } from '@/components/users/user-profile-card';
 import { getRoleInSpanish, getRoleBadgeVariant } from '@/lib/security-log-utils';
 import { getProcessColors } from '@/lib/utils';
 import { Identicon } from '@/components/ui/identicon';
-import { EmptyState } from '@/components/empty-state';
+import { EmptyState } from '../empty-state';
 import { useTour } from '@/contexts/tour-context';
 import { usersTour } from '@/lib/tour-steps';
-import { ColorfulLoader } from '@/components/ui/colorful-loader';
+import { ColorfulLoader } from '../ui/colorful-loader';
 
 
 // --- TYPES & CONTEXT ---
@@ -49,9 +51,10 @@ interface ProcessWithChildren extends Process {
 }
 interface UserWithProcess extends User {
     process: { id: string; name: string } | null;
+    updatedAt: string | Date;
 }
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 12;
 
 const DraggableUserPreview = ({ user }: { user: UserWithProcess }) => (
     <Card className="flex items-center gap-2 p-2 shadow-lg w-48">
@@ -432,10 +435,10 @@ function UsersPageComponent() {
 
                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
                     <div className="lg:col-span-3" id="users-main-view">
-                         <div className="mb-4">
+                         <div className="mb-24 md:mb-4">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">{[...Array(10)].map((_,i) => <Skeleton key={i} className="h-56 w-full rounded-2xl" />)}</div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">{[...Array(10)].map((_,i) => <Skeleton key={i} className="h-56 w-full rounded-2xl" />)}</div>
                                 ) : (
                                     <Card><CardContent className="p-4"><Skeleton className="h-96 w-full rounded-2xl"/></CardContent></Card>
                                 )
@@ -453,7 +456,7 @@ function UsersPageComponent() {
                          {totalPages > 1 && <SmartPagination className="mt-6" currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />}
                     </div>
 
-                    <aside className="hidden lg:block lg:col-span-1 lg:sticky lg:top-24 space-y-4" id="users-sidebar">
+                    <aside className="hidden lg:block lg:col-span-1 lg:sticky lg:top-24 space-y-4">
                         <ProcessTree processes={processes} onProcessUpdate={fetchData} onProcessClick={(id) => handleFilterChange('processId', id)} activeProcessId={processId}/>
                         <div className="md:bottom-4">
                            <BulkActionsBar />
@@ -547,8 +550,9 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                 <TableHeader className="bg-muted/50">
                     <TableRow>
                         <TableHead className="w-12 px-4"><Checkbox checked={isAllOnPageSelected} onCheckedChange={(checked) => onSelectionChange('all', !!checked)}/></TableHead>
-                        <TableHead className="w-[35%]"><div className="flex items-center gap-2 font-medium text-muted-foreground"><UsersIcon className="h-4 w-4"/>Colaborador</div></TableHead>
+                        <TableHead className="w-[25%]"><div className="flex items-center gap-2 font-medium text-muted-foreground"><UsersIcon className="h-4 w-4"/>Colaborador</div></TableHead>
                         <TableHead><div className="flex items-center gap-2 font-medium text-muted-foreground"><Briefcase className="h-4 w-4"/>Proceso</div></TableHead>
+                        <TableHead><div className="flex items-center gap-2 font-medium text-muted-foreground"><Clock className="h-4 w-4" />Última Modificación</div></TableHead>
                         <TableHead className="text-center"><div className="flex items-center justify-center gap-2 font-medium text-muted-foreground"><Key className="h-4 w-4"/>Rol</div></TableHead>
                         <TableHead className="text-center"><div className="flex items-center justify-center gap-2 font-medium text-muted-foreground"><HelpCircle className="h-4 w-4"/>Estado</div></TableHead>
                         <TableHead className="text-right px-4"><span className="sr-only">Acciones</span></TableHead>
@@ -565,6 +569,7 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                                 </div>
                             </TableCell>
                             <TableCell><Badge variant="secondary" className="text-xs" style={{backgroundColor: u.process ? getProcessColors(u.process.id).raw.light : undefined, color: u.process ? getProcessColors(u.process.id).raw.dark : undefined}}>{u.process?.name || 'Sin Asignar'}</Badge></TableCell>
+                             <TableCell className="text-sm text-muted-foreground">{format(new Date(u.updatedAt), "dd MMM, yyyy", { locale: es })}</TableCell>
                             <TableCell className="text-center"><Badge variant={getRoleBadgeVariant(u.role)}>{getRoleInSpanish(u.role)}</Badge></TableCell>
                             <TableCell className="text-center"><Badge variant={u.isActive ? "default" : "secondary"} className={cn("text-xs py-1 px-3", u.isActive ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-500/30" : "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300 border-gray-500/30")}>
                                 {u.isActive ? 'Activo' : 'Inactivo'}

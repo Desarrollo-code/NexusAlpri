@@ -7,11 +7,13 @@ import { getProcessColors } from '@/lib/utils';
 import { getRoleInSpanish, getRoleBadgeVariant } from '@/lib/security-log-utils';
 import type { User } from '@/types';
 import { Button } from '../ui/button';
-import { MessageSquare, Briefcase, MoreVertical, Edit, UserCog, UserX } from 'lucide-react';
+import { MessageSquare, Briefcase, MoreVertical, Edit, UserCog, UserX, Calendar, Clock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { Badge } from '../ui/badge';
 import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,7 +23,7 @@ import {
 import { Checkbox } from '../ui/checkbox';
 
 interface UserProfileCardProps {
-    user: User & { process?: { id: string; name: string } | null, processes?: { id: string; name: string }[] };
+    user: User & { process?: { id: string; name: string } | null, processes?: { id: string; name: string }[], updatedAt?: string | Date };
     onEdit?: (user: User) => void;
     onRoleChange?: (user: User) => void;
     onStatusChange?: (user: User, status: boolean) => void;
@@ -32,7 +34,13 @@ interface UserProfileCardProps {
 export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange, isSelected, onSelectionChange }: UserProfileCardProps) => {
     const router = useRouter();
     const { user: currentUser } = useAuth();
+
+    const handleSendMessage = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        router.push(`/messages?new=${user.id}`);
+    };
     
+    const showMessageButton = currentUser?.id !== user.id;
     const canModify = currentUser?.role === 'ADMINISTRATOR';
     
     const displayProcess = user.process ? [user.process] : (user.processes || []);
@@ -84,7 +92,19 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange, is
                         </Badge>
                      )}
                 </div>
+                 <div className="text-xs text-muted-foreground mt-3 space-y-1">
+                    {user.registeredDate && <p className="flex items-center justify-center gap-1.5"><Calendar className="h-3 w-3"/> Creado: {format(new Date(user.registeredDate), 'dd MMM yyyy', {locale: es})}</p>}
+                    {user.updatedAt && <p className="flex items-center justify-center gap-1.5"><Clock className="h-3 w-3"/> Modif.: {format(new Date(user.updatedAt), 'dd MMM yyyy', {locale: es})}</p>}
+                 </div>
             </CardContent>
+
+            {showMessageButton && (
+                <CardFooter className="p-1 border-t mt-auto">
+                    <Button size="sm" variant="ghost" className="w-full h-7 text-xs" onClick={handleSendMessage}>
+                        <MessageSquare className="mr-1.5 h-3 w-3"/> Mensaje
+                    </Button>
+                </CardFooter>
+            )}
         </Card>
     );
 };

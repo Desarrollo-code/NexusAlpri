@@ -68,6 +68,7 @@ export async function GET(req: NextRequest) {
                     avatar: true,
                     isTwoFactorEnabled: true,
                     registeredDate: true,
+                    updatedAt: true, // Añadido
                     isActive: true,
                     process: true,
                 },
@@ -148,6 +149,7 @@ export async function POST(req: NextRequest) {
                 avatar: true,
                 isTwoFactorEnabled: true,
                 registeredDate: true,
+                updatedAt: true,
                 isActive: true,
                 process: true,
             }
