@@ -505,12 +505,13 @@ model EnterpriseResource {
   uploadDate  DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
   expiresAt   DateTime?
- uploaderId  String
+  uploaderId  String
   parentId    String?
   content      String?           @db.Text
   observations String?           @db.Text
   version      Int               @default(1)
   versions     ResourceVersion[]
+  filetype String?
   quiz Quiz?
   size         Int?
   uploader    User               @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
