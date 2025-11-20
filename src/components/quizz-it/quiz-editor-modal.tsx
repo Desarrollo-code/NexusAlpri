@@ -302,5 +302,3 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
       </>
     );
 }
-
-```
