@@ -1,7 +1,12 @@
 // src/lib/utils.ts
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
-import type { MotivationalMessageTriggerType } from "@/types";
+import type { MotivationalMessageTriggerType } from '@/types';
+import { colord, extend } from "colord";
+import lchPlugin from "colord/plugins/lch";
+
+extend([lchPlugin]);
+
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -131,50 +136,51 @@ export const getMotivationalTriggerLabel = (
   return baseLabel.replace(':', '');
 };
 
-
-// --- Process Color Utils ---
-const PALETTES = [
-    ["#fde047", "#facc15", "#eab308"], // Yellow
-    ["#a7f3d0", "#4ade80", "#22c55e"], // Green
-    ["#93c5fd", "#60a5fa", "#3b82f6"], // Blue
-    ["#f87171", "#ef4444", "#dc2626"], // Red
-    ["#a5b4fc", "#818cf8", "#6366f1"], // Indigo
-    ["#d8b4fe", "#c084fc", "#a855f7"], // Purple
-    ["#f9a8d4", "#f472b6", "#ec4899"], // Pink
-    ["#6ee7b7", "#34d399", "#10b981"], // Emerald
-    ["#5eead4", "#2dd4bf", "#14b8a6"], // Teal
-];
-
 const stringToHash = (str: string): number => {
-    if (!str) return 0;
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i);
-        hash = (hash << 5) - hash + char;
-        hash = hash & hash;
-    }
-    return Math.abs(hash);
+    if (!str) return 0;
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = (hash << 5) - hash + char;
+        hash = hash & hash;
+    }
+    return Math.abs(hash);
 };
 
 export const getProcessColors = (id: string) => {
-    const hash = stringToHash(id);
-    const palette = PALETTES[hash % PALETTES.length];
-    const lightColor = palette[0];
-    const mediumColor = palette[1];
+    const hash = stringToHash(id);
+
+    // Obtener el color primario del tema actual desde las variables CSS
+    const rootStyle = typeof window !== 'undefined' ? getComputedStyle(document.documentElement) : null;
+    const primaryColorHsl = rootStyle?.getPropertyValue('--primary').trim() || '223 90% 55%';
+    const [h, s, l] = primaryColorHsl.split(' ').map(parseFloat);
+    const primaryColor = colord(`hsl(${h}, ${s}%, ${l}%)`);
+
+    // Rotar el tono (hue) para obtener un color análogo
+    const hueRotation = (hash % 12) * 15; // Múltiplos de 15 para colores distintos pero relacionados
+    const generatedColor = primaryColor.rotate(hueRotation);
+
+    // Convertir a LCH para un ajuste de luminosidad y croma más predecible
+    const lchColor = generatedColor.toLch();
+
+    // Asegurar que el color claro para el fondo sea legible
+    const lightBgL = Math.max(90, lchColor.l + (95 - lchColor.l) * 0.5);
+    const lightBgC = Math.max(20, lchColor.c * 0.4);
+    const lightColor = colord({ l: lightBgL, c: lightBgC, h: lchColor.h }).toHex();
     
-    // Ahora usamos la función de contraste para decidir el color del texto.
+    // El color de texto se decide en base al fondo claro
     const textColor = getContrastingTextColor(lightColor);
 
-    return {
-        bgColor: `bg-[${lightColor}]`,
-        textColor: textColor === 'white' ? 'text-white' : 'text-black',
-        borderColor: `border-[${mediumColor}]`,
-        raw: {
-            light: lightColor,
-            medium: mediumColor,
-            dark: textColor, // Usamos el color de texto calculado como 'dark'
-        }
-    };
+    return {
+        bgColor: `bg-[${lightColor}]`,
+        textColor: textColor === 'white' ? 'text-white' : 'text-black',
+        borderColor: `border-[${generatedColor.toHex()}]`,
+        raw: {
+            light: lightColor,
+            medium: generatedColor.toHex(),
+            dark: textColor === 'white' ? '#FFFFFF' : '#000000',
+        }
+    };
 };
 
 export const parseUserAgent = (userAgent: string | null | undefined): { browser: string; os: string } => {
@@ -213,7 +219,7 @@ export const getEventColorClass = (color?: string): string => {
 /**
  * Formats a date into a "time since" string.
  * @param date The date to format.
- * @returns A string like "Ahora", "Hace 5 seg.", "Hace 10 min.", "Ayer", etc.
+ * @returns A string like "Ahora", "Hace 5 seg.", "Hace 10 min.", etc.
  */
 export const timeSince = (date: Date): string => {
   const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);

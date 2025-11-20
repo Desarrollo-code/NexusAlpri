@@ -18,11 +18,11 @@ const getFileTypeFilter = (fileType: string): Prisma.EnterpriseResourceWhereInpu
     };
     const mimeTypes = mimeMap[fileType];
     if (mimeTypes) {
-        return { fileType: { in: mimeTypes } };
+        return { filetype: { in: mimeTypes } };
     }
     if (fileType === 'other') {
         const allKnownMimes = Object.values(mimeMap).flat();
-        return { fileType: { notIn: allKnownMimes } };
+        return { filetype: { notIn: allKnownMimes } };
     }
     return {};
 }
@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
             tags: Array.isArray(tags) ? tags.join(',') : '',
             ispublic: isPublic === true, status: status || 'ACTIVE',
             expiresAt: expiresAt ? new Date(expiresAt) : null,
-            size, fileType,
+            size, filetype: fileType, // CORRECCIÓN: Usar 'filetype' en minúsculas
             uploader: { connect: { id: session.id } },
         };
         
