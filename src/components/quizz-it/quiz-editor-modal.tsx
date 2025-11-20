@@ -157,7 +157,7 @@ const QuestionEditor = ({ question, isQuiz, onQuestionChange, onOptionChange, on
                         <div key={opt.id} className="flex items-center gap-2">
                             <div className="flex-grow">{renderOptionEditor(opt, index)}</div>
                             <div className="flex flex-col gap-1">
-                                {!(isImageOptionsTemplate) && (
+                                {(!isImageOptionsTemplate) && (
                                   <Button variant={opt.isCorrect ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => onSetCorrect(opt.id)}>
                                       <Check className="h-4 w-4"/>
                                   </Button>
@@ -288,6 +288,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                 {/* Columna Central: Editor de Pregunta */}
                 <div className="md:col-span-6 flex flex-col h-full">
                    <ScrollArea className="flex-grow">
+                        <div className="p-4">
                         {activeQuestion ? (
                              <QuestionEditor
                                 question={activeQuestion}
@@ -301,6 +302,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                         ) : (
                             <div className="flex items-center justify-center h-full text-muted-foreground"><p>Selecciona una pregunta para editarla.</p></div>
                         )}
+                        </div>
                     </ScrollArea>
                 </div>
 
@@ -348,4 +350,3 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
       </>
     );
 }
-```
