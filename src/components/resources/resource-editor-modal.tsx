@@ -148,10 +148,8 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         setUploads(prev => prev.map(u => u.id === upload.id ? { ...u, progress: p } : u));
       });
       
-      // OPTIMISTIC: Mark as completed immediately after upload finishes
       setUploads(prev => prev.map(u => u.id === upload.id ? { ...u, progress: 100, status: 'completed', url: result.url } : u));
 
-      // Save to DB in background
       const payload = {
           title: uploads.length > 1 ? upload.file.name.split('.').slice(0,-1).join('.') : title,
           filename: upload.file.name,
@@ -163,7 +161,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
       
       const success = await saveResourceToDb(payload);
       if (!success) {
-          // Mark as error if DB save fails
           setUploads(prev => prev.map(u => u.id === upload.id ? { ...u, status: 'error', error: 'Fallo al guardar en la base de datos.' } : u));
       }
 
@@ -187,7 +184,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         setTitle(newUploads[0].file.name.split('.').slice(0,-1).join('.'));
     }
 
-    // Start uploads immediately
     newUploads.forEach(uploadFileAndSave);
   };
   
@@ -211,7 +207,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         }
         setIsSubmitting(false);
     } else {
-        // For file uploads, the main save button just closes the modal if everything is done
         const isStillUploading = uploads.some(u => u.status === 'uploading' || u.status === 'processing');
         if (isStillUploading) {
             toast({description: "Por favor, espera a que finalicen todas las subidas."});
@@ -245,7 +240,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                   {resourceType === 'DOCUMENT' && (
                     <div className="space-y-2">
                       <Label>Archivo(s)</Label>
-                      <UploadArea onFileSelect={handleFileSelect} multiple={!isEditing} disabled={isSubmitting}/>
+                      <UploadArea onFileSelect={(file) => handleFileSelect(file ? { 0: file, length: 1, item: () => file } as FileList : null)} multiple={!isEditing} disabled={isSubmitting}/>
                     </div>
                   )}
                    {uploads.length > 0 && resourceType === 'DOCUMENT' && (
@@ -302,7 +297,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                   {!isPublic && (
                       <div className="space-y-1.5"><Label>Compartir con</Label><Input placeholder="Buscar usuarios..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
                       <ScrollArea className="h-32 border rounded-md p-2">
-                          {filteredUsers.filter(u => u.id !== user?.id).map(u => (
+                          {allUsers.filter(u => u.name.toLowerCase().includes(userSearch.toLowerCase())).map(u => (
                               <div key={u.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={(c) => setSharedWithUserIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(u.name)}</AvatarFallback></Avatar>{u.name}</Label></div>
                           ))}
                       </ScrollArea></div>
