@@ -43,14 +43,13 @@ import { QuizGameView } from '@/components/quizz-it/quiz-game-view';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "@/components/ui/dropdown-menu";
 import { useTitle } from '@/contexts/title-context';
 import { QuizAnalyticsView } from '@/components/analytics/quiz-analytics-view';
-import { Calendar } from '@/components/ui/calendar';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Switch } from '@/components/ui/switch';
 import { CourseAssignmentModal } from '@/components/course-assignment-modal';
 import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
-import { DateRangePicker } from '@/components/ui/date-range-picker';
 import type { DateRange } from 'react-day-picker';
 
 // === TIPOS E INTERFACES ===
@@ -719,176 +718,109 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     }
 
     return (
-        <div className="space-y-6 pb-24 md:pb-6">
-            <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4']} className="w-full space-y-4">
-                <AccordionItem value="item-1" className="border-b-0">
-                     <Card>
-                        <AccordionTrigger className="p-6 text-lg hover:no-underline">
-                           <div className="flex items-center gap-3"><Info className="h-5 w-5 text-primary"/> Información Básica</div>
-                        </AccordionTrigger>
-                        <AccordionContent className="px-6 pb-6">
-                             <div className="space-y-4">
-                                <div><Label htmlFor="title">Título del Curso</Label><Input id="title" value={course.title} onChange={e => updateCourseField('title', e.target.value)} placeholder="Título atractivo" disabled={isSaving} /></div>
-                                <div><Label htmlFor="description">Descripción <span className="text-muted-foreground">(Opcional)</span></Label><Textarea id="description" value={course.description} onChange={e => updateCourseField('description', e.target.value)} placeholder="Describe el contenido y objetivos." rows={4} disabled={isSaving} /></div>
-                            </div>
-                        </AccordionContent>
-                    </Card>
-                </AccordionItem>
-                <AccordionItem value="item-2" className="border-b-0">
-                     <Card>
-                        <AccordionTrigger className="p-6 text-lg hover:no-underline">
-                           <div className="flex items-center gap-3"><BookOpen className="h-5 w-5 text-primary"/> Contenido y Estructura</div>
-                        </AccordionTrigger>
-                        <AccordionContent className="px-6 pb-6 space-y-4">
-                             <div className="space-y-2">
-                                <Label htmlFor="prerequisite">Prerrequisito del Curso <span className="text-muted-foreground">(Opcional)</span></Label>
-                                <Select value={course.prerequisiteId || 'none'} onValueChange={v => updateCourseField('prerequisiteId', v === 'none' ? null : v)} disabled={isSaving}>
-                                    <SelectTrigger id="prerequisite"><SelectValue placeholder="Ninguno"/></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="none">Ninguno</SelectItem>
-                                        <Separator/>
-                                        {allCoursesForPrereq.map(c => (
-                                            <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <Separator />
-                            <div className="space-y-2">
-                                <Label>Módulos y Lecciones</Label>
-                                 <DragDropContext onDragEnd={onDragEnd}>
-                                    <Droppable droppableId="course-modules" type="MODULES">
-                                        {(provided) => (
-                                            <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
-                                                {course.modules.map((moduleItem, moduleIndex) => (
-                                                    <Draggable key={moduleItem.id} draggableId={moduleItem.id} index={moduleIndex}>
-                                                        {(provided) => (
-                                                            <ModuleItem
-                                                                module={moduleItem} moduleIndex={moduleIndex}
-                                                                onDelete={() => handleRemoveModule(moduleIndex)}
-                                                                onUpdate={(field, value) => updateModuleField(moduleIndex, field, value)}
-                                                                onAddLesson={(type) => handleAddLessonAction(moduleIndex, type)}
-                                                                onLessonUpdate={(lessonIndex, field, value) => updateLessonField(moduleIndex, lessonIndex, field, value)}
-                                                                onLessonDelete={(lessonIndex) => handleRemoveLesson(moduleIndex, lessonIndex)}
-                                                                onSaveLessonAsTemplate={(lessonIndex) => setLessonToSaveAsTemplate(course.modules[moduleIndex].lessons[lessonIndex])}
-                                                                onAddBlock={(lessonIndex, type) => handleAddBlock(moduleIndex, lessonIndex, type)}
-                                                                onBlockUpdate={(lessonIndex, blockIndex, field, value) => updateBlockField(moduleIndex, lessonIndex, blockIndex, field, value)}
-                                                                onBlockDelete={(lessonIndex, blockIndex) => handleRemoveBlock(moduleIndex, lessonIndex, blockIndex)}
-                                                                onEditQuiz={handleEditQuiz}
-                                                                isSaving={isSaving} provided={provided} ref={provided.innerRef}
-                                                            />
-                                                        )}
-                                                    </Draggable>
-                                                ))}
-                                                {provided.placeholder}
-                                            </div>
-                                        )}
-                                    </Droppable>
-                                </DragDropContext>
-                                {(course.modules || []).length === 0 && <p className="text-center text-muted-foreground py-8">No hay módulos.</p>}
-                                 <Button type="button" onClick={handleAddModule} disabled={isSaving} className="mt-4"><PlusCircle className="mr-2 h-4 w-4" /> Añadir Módulo</Button>
-                            </div>
-                        </AccordionContent>
-                    </Card>
-                </AccordionItem>
-                <AccordionItem value="item-3" className="border-b-0">
-                    <Card>
-                        <AccordionTrigger className="p-6 text-lg hover:no-underline">
-                           <div className="flex items-center gap-3"><CalendarIcon className="h-5 w-5 text-primary"/> Configuración de Publicación</div>
-                        </AccordionTrigger>
-                        <AccordionContent className="px-6 pb-6">
-                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <Label htmlFor="status">Estado</Label>
-                                    <Select value={course.status} onValueChange={v => updateCourseField('status', v as CourseStatus)} disabled={isSaving}>
-                                        <SelectTrigger id="status"><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="DRAFT">Borrador</SelectItem>
-                                            <SelectItem value="PUBLISHED">Publicado</SelectItem>
-                                            <SelectItem value="ARCHIVED">Archivado</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Vigencia del Curso <span className="text-muted-foreground">(Opcional)</span></Label>
-                                    <DateRangePicker
-                                      date={{ from: course.startDate ? new Date(course.startDate) : undefined, to: course.endDate ? new Date(course.endDate) : undefined }}
-                                      onDateChange={(range) => {
-                                          updateCourseField('startDate', range?.from?.toISOString());
-                                          updateCourseField('endDate', range?.to?.toISOString());
-                                      }}
-                                    />
-                                </div>
-                            </div>
-                        </AccordionContent>
-                    </Card>
-                </AccordionItem>
-                 <AccordionItem value="item-4" className="border-b-0">
-                    <Card>
-                        <AccordionTrigger className="p-6 text-lg hover:no-underline">
-                           <div className="flex items-center gap-3"><Layers3 className="h-5 w-5 text-primary"/> Metadatos y Personalización</div>
-                        </AccordionTrigger>
-                        <AccordionContent className="px-6 pb-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-4">
-                                     <div className="flex items-center justify-between space-x-2 p-3 border rounded-lg">
-                                        <Label htmlFor="isMandatory" className="flex flex-col space-y-1"><span>Curso Obligatorio</span><span className="font-normal leading-snug text-muted-foreground text-xs">Permite asignar este curso a usuarios.</span></Label>
-                                        <Switch id="isMandatory" checked={course.isMandatory} onCheckedChange={handleMandatorySwitchChange} disabled={isSaving}/>
+        <div className="grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-5 gap-6 items-start">
+            {/* Columna Izquierda */}
+            <div className="lg:col-span-1 xl:col-span-1 space-y-6 lg:sticky lg:top-24">
+                <Card>
+                    <CardHeader><CardTitle className="text-lg">Información Básica</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-1.5"><Label htmlFor="title">Título del Curso</Label><Input id="title" value={course.title} onChange={e => updateCourseField('title', e.target.value)} placeholder="Título atractivo" disabled={isSaving} /></div>
+                        <div className="space-y-1.5"><Label htmlFor="description">Descripción <span className="text-muted-foreground">(Opcional)</span></Label><Textarea id="description" value={course.description} onChange={e => updateCourseField('description', e.target.value)} placeholder="Describe el contenido y objetivos." rows={4} disabled={isSaving} /></div>
+                        <div className="space-y-1.5"><Label htmlFor="category">Categoría</Label><Select value={course.category || ''} onValueChange={v => updateCourseField('category', v)} disabled={isSaving}><SelectTrigger id="category"><SelectValue placeholder="Selecciona" /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).sort().map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select></div>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader><CardTitle className="text-lg">Imagen de Portada</CardTitle></CardHeader>
+                    <CardContent>
+                        <div className="w-full relative aspect-video rounded-md border bg-muted/20 flex items-center justify-center">
+                            {isUploadingImage && <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/80 z-20"><Loader2 className="h-8 w-8 animate-spin text-primary"/><Progress value={uploadProgress} className="w-3/4 h-2"/></div>}
+                            {(localCoverImagePreview || course.imageUrl) && !isUploadingImage ? (
+                                <>
+                                    <Image src={localCoverImagePreview || course.imageUrl!} alt="Imagen del Curso" fill className="object-cover p-1" />
+                                    <div className="absolute top-2 right-2 z-10 flex gap-1">
+                                        <Button type="button" variant="secondary" size="icon" className="h-8 w-8" onClick={() => document.getElementById('cover-image-upload')?.click()} disabled={isSaving || isUploadingImage}><Replace className="h-4 w-4"/></Button>
+                                        <Button type="button" variant="destructive" size="icon" className="h-8 w-8" onClick={() => { updateCourseField('imageUrl', null); setLocalCoverImagePreview(null); }} disabled={isSaving || isUploadingImage}><XCircle className="h-4 w-4"/></Button>
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="category">Categoría</Label>
-                                        <Select value={course.category || ''} onValueChange={v => updateCourseField('category', v)} disabled={isSaving}>
-                                        <SelectTrigger id="category"><SelectValue placeholder="Selecciona" /></SelectTrigger>
-                                        <SelectContent>{(settings?.resourceCategories || []).sort().map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="certificateTemplate">Plantilla de Certificado <span className="text-muted-foreground">(Opcional)</span></Label>
-                                        <Select value={course.certificateTemplateId || 'none'} onValueChange={v => updateCourseField('certificateTemplateId', v === 'none' ? null : v)} disabled={isSaving}>
-                                            <SelectTrigger id="certificateTemplate"><SelectValue placeholder="Sin certificado"/></SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="none">Sin certificado</SelectItem>
-                                                <Separator/>
-                                                {certificateTemplates.map(t => (
-                                                    <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Imagen de Portada <span className="text-muted-foreground">(Opcional)</span></Label>
-                                    <div className="w-full relative aspect-video rounded-md border bg-muted/20 flex items-center justify-center">
-                                      {isUploadingImage && <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/80 z-20"><Loader2 className="h-8 w-8 animate-spin text-primary"/><Progress value={uploadProgress} className="w-3/4 h-2"/></div>}
-                                      {(localCoverImagePreview || course.imageUrl) && !isUploadingImage ? (
-                                        <>
-                                            <Image src={localCoverImagePreview || course.imageUrl!} alt="Imagen del Curso" fill className="object-cover p-1" />
-                                            <div className="absolute top-2 right-2 z-10 flex gap-1">
-                                                <Button type="button" variant="secondary" size="icon" className="h-8 w-8" onClick={() => document.getElementById('cover-image-upload')?.click()} disabled={isSaving || isUploadingImage}>
-                                                    <Replace className="h-4 w-4"/>
-                                                </Button>
-                                                <Button type="button" variant="destructive" size="icon" className="h-8 w-8" onClick={() => { updateCourseField('imageUrl', null); setLocalCoverImagePreview(null); }} disabled={isSaving || isUploadingImage}>
-                                                    <XCircle className="h-4 w-4"/>
-                                                </Button>
-                                            </div>
-                                        </>
-                                      ) : (
-                                        <UploadArea onFileSelect={(file) => { if(file) handleFileChange({ target: { files: [file] } } as any) }} inputId="cover-image-upload" disabled={isSaving || isUploadingImage}>
-                                            <div className="text-center text-muted-foreground">
-                                                <ImagePlus className="mx-auto h-8 w-8 mb-2" />
-                                                <p className="text-sm font-semibold">Subir imagen</p>
-                                                <p className="text-xs">Recomendado: 16:9</p>
-                                            </div>
-                                        </UploadArea>
-                                      )}
-                                    </div>
-                                </div>
-                            </div>
-                        </AccordionContent>
-                    </Card>
-                </AccordionItem>
-            </Accordion>
+                                </>
+                            ) : (
+                                <UploadArea onFileSelect={(file) => { if(file) handleFileChange({ target: { files: [file] } } as any) }} inputId="cover-image-upload" disabled={isSaving || isUploadingImage}>
+                                    <div className="text-center text-muted-foreground"><ImagePlus className="mx-auto h-8 w-8 mb-2" /><p className="text-sm font-semibold">Subir imagen</p><p className="text-xs">Recomendado: 16:9</p></div>
+                                </UploadArea>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
             
+            {/* Columna Central */}
+            <div className="lg:col-span-2 xl:col-span-3 space-y-6">
+                <Card>
+                    <CardHeader><CardTitle className="text-lg">Contenido y Estructura</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                        <DragDropContext onDragEnd={onDragEnd}>
+                            <Droppable droppableId="course-modules" type="MODULES">
+                                {(provided) => (
+                                    <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
+                                        {course.modules.map((moduleItem, moduleIndex) => (
+                                            <Draggable key={moduleItem.id} draggableId={moduleItem.id} index={moduleIndex}>
+                                                {(provided) => (
+                                                    <ModuleItem
+                                                        module={moduleItem} moduleIndex={moduleIndex}
+                                                        onDelete={() => handleRemoveModule(moduleIndex)}
+                                                        onUpdate={(field, value) => updateModuleField(moduleIndex, field, value)}
+                                                        onAddLesson={(type) => handleAddLessonAction(moduleIndex, type)}
+                                                        onLessonUpdate={(lessonIndex, field, value) => updateLessonField(moduleIndex, lessonIndex, field, value)}
+                                                        onLessonDelete={(lessonIndex) => handleRemoveLesson(moduleIndex, lessonIndex)}
+                                                        onSaveLessonAsTemplate={(lessonIndex) => setLessonToSaveAsTemplate(course.modules[moduleIndex].lessons[lessonIndex])}
+                                                        onAddBlock={(lessonIndex, type) => handleAddBlock(moduleIndex, lessonIndex, type)}
+                                                        onBlockUpdate={(lessonIndex, blockIndex, field, value) => updateBlockField(moduleIndex, lessonIndex, blockIndex, field, value)}
+                                                        onBlockDelete={(lessonIndex, blockIndex) => handleRemoveBlock(moduleIndex, lessonIndex, blockIndex)}
+                                                        onEditQuiz={handleEditQuiz}
+                                                        isSaving={isSaving} provided={provided} ref={provided.innerRef}
+                                                    />
+                                                )}
+                                            </Draggable>
+                                        ))}
+                                        {provided.placeholder}
+                                    </div>
+                                )}
+                            </Droppable>
+                        </DragDropContext>
+                        {(course.modules || []).length === 0 && <p className="text-center text-muted-foreground py-8">No hay módulos.</p>}
+                         <Button type="button" onClick={handleAddModule} disabled={isSaving} className="mt-4"><PlusCircle className="mr-2 h-4 w-4" /> Añadir Módulo</Button>
+                    </CardContent>
+                </Card>
+            </div>
+            
+            {/* Columna Derecha */}
+            <div className="lg:col-span-1 xl:col-span-1 space-y-6 lg:sticky lg:top-24">
+                <Card>
+                    <CardHeader><CardTitle className="text-lg">Configuración de Publicación</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-1.5"><Label htmlFor="status">Estado</Label><Select value={course.status} onValueChange={v => updateCourseField('status', v as CourseStatus)} disabled={isSaving}><SelectTrigger id="status"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="DRAFT">Borrador</SelectItem><SelectItem value="PUBLISHED">Publicado</SelectItem><SelectItem value="ARCHIVED">Archivado</SelectItem></SelectContent></Select></div>
+                         <div className="space-y-1.5">
+                            <Label>Vigencia del Curso <span className="text-muted-foreground">(Opcional)</span></Label>
+                            <DateRangePicker
+                              date={{ from: course.startDate ? new Date(course.startDate) : undefined, to: course.endDate ? new Date(course.endDate) : undefined }}
+                              onDateChange={(range) => {
+                                  updateCourseField('startDate', range?.from?.toISOString());
+                                  updateCourseField('endDate', range?.to?.toISOString());
+                              }}
+                            />
+                        </div>
+                        <Separator/>
+                        <div className="space-y-1.5"><Label htmlFor="prerequisite">Prerrequisito <span className="text-muted-foreground">(Opcional)</span></Label><Select value={course.prerequisiteId || 'none'} onValueChange={v => updateCourseField('prerequisiteId', v === 'none' ? null : v)} disabled={isSaving}><SelectTrigger id="prerequisite"><SelectValue placeholder="Ninguno"/></SelectTrigger><SelectContent><SelectItem value="none">Ninguno</SelectItem><Separator/>{allCoursesForPrereq.map(c => (<SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>))}</SelectContent></Select></div>
+                        <div className="space-y-1.5"><Label htmlFor="certificateTemplate">Plantilla de Certificado <span className="text-muted-foreground">(Opcional)</span></Label><Select value={course.certificateTemplateId || 'none'} onValueChange={v => updateCourseField('certificateTemplateId', v === 'none' ? null : v)} disabled={isSaving}><SelectTrigger id="certificateTemplate"><SelectValue placeholder="Sin certificado"/></SelectTrigger><SelectContent><SelectItem value="none">Sin certificado</SelectItem><Separator/>{certificateTemplates.map(t => (<SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>))}</SelectContent></Select></div>
+                        <Separator/>
+                        <div className="flex items-center justify-between space-x-2 p-2.5 border rounded-lg">
+                           <Label htmlFor="isMandatory" className="flex flex-col space-y-1"><span>Curso Obligatorio</span><span className="font-normal leading-snug text-muted-foreground text-xs">Permite asignar este curso a usuarios.</span></Label>
+                           <Switch id="isMandatory" checked={course.isMandatory} onCheckedChange={handleMandatorySwitchChange} disabled={isSaving}/>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+            
+            {/* Modales */}
             <AlertDialog open={!!itemToDeleteDetails} onOpenChange={(isOpen) => !isOpen && setItemToDeleteDetails(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader><AlertDialogTitle>Confirmar eliminación</AlertDialogTitle><AlertDialogDescription>¿Estás seguro? Esta acción eliminará "{itemToDeleteDetails?.name}" y su contenido.</AlertDialogDescription></AlertDialogHeader>
