@@ -59,7 +59,7 @@ const ImageUploadWidget = ({ imageUrl, onUpload, onRemove, disabled, inputId, is
         setUploadProgress(0);
         try {
             const result = await uploadWithProgress('/api/upload/lesson-file', file, setUploadProgress);
-            onUpload(result.url); 
+            onUpload(result.url);
         } catch (err) {
             toast({ title: "Error de subida", description: (err as Error).message, variant: "destructive" });
         } finally {
@@ -69,7 +69,7 @@ const ImageUploadWidget = ({ imageUrl, onUpload, onRemove, disabled, inputId, is
     
     return (
         <div className={cn(
-            "relative w-full aspect-square rounded-lg border-2 bg-muted/50 transition-all", 
+            "relative w-full aspect-square rounded-lg border-2 bg-muted/50 transition-all",
             isCorrect ? "border-primary ring-2 ring-primary/50" : "border-dashed hover:border-primary/50"
         )}>
             {isUploading ? (
@@ -143,7 +143,7 @@ const QuestionEditor = ({ question, isQuiz, onQuestionChange, onOptionChange, on
                                 </SelectContent>
                             </Select>
                         </div>
-                        {question.template === 'image' && <ImageUploadWidget inputId={`q-img-${question.id}`} imageUrl={question.imageUrl} onUpload={(url) => onQuestionChange('imageUrl', url)} onRemove={() => onQuestionChange('imageUrl', null)} disabled={false} />}
+                        {question.template === 'image' && <ImageUploadWidget inputId={`q-img-${question.id}`} imageUrl={question.imageUrl} onUpload={(url) => onQuestionChange('imageUrl', url)} onRemove={() => onQuestionChange('imageUrl', null)} disabled={false} isCorrect={false} />}
                     </div>
                     <Separator/>
                     <Textarea value={question.text} onChange={(e) => onQuestionChange('text', e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-lg font-semibold h-auto resize-none" rows={3}/>
