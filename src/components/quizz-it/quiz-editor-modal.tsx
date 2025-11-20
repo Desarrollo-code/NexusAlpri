@@ -81,15 +81,15 @@ const ImageUploadWidget = ({ imageUrl, onUpload, onRemove, disabled, inputId, is
                  <div className="relative w-full h-full group">
                     <Image src={imageUrl} alt="preview" fill className="object-contain p-1" />
                     <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                         <Button type="button" variant="destructive" size="icon" className="h-6 w-6 rounded-full shadow-md" onClick={(e) => {e.stopPropagation(); onRemove();}} disabled={disabled}>
-                             <XCircle className="h-3 w-3"/>
+                         <Button type="button" variant="destructive" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={(e) => {e.stopPropagation(); onRemove();}} disabled={disabled}>
+                             <XCircle className="h-4 w-4"/>
                          </Button>
                     </div>
                 </div>
             ) : (
                 <UploadArea onFileSelect={handleFileSelect} disabled={disabled} inputId={inputId} className="h-full border-0 bg-transparent">
                     <div className="text-center text-muted-foreground p-1">
-                        <ImageIcon className="mx-auto h-5 w-5"/>
+                        <ImageIcon className="mx-auto h-6 w-6"/>
                     </div>
                 </UploadArea>
             )}
