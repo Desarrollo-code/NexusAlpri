@@ -10,21 +10,21 @@ import { getContrastingTextColor, hexToHslString } from '@/lib/utils';
 
 
 export const AVAILABLE_THEMES = [
-  { value: 'light', label: 'Claro (Personalizado)', previewClass: 'bg-gradient-to-br from-slate-100 to-slate-300' },
-  { value: 'dark', label: 'Oscuro (Personalizado)', previewClass: 'bg-gradient-to-br from-slate-800 to-slate-900' },
-  { value: 'terminal', label: 'Terminal', previewClass: 'bg-gradient-to-br from-emerald-500 to-emerald-900' },
-  { value: 'sunset', label: 'Atardecer', previewClass: 'bg-gradient-to-br from-orange-400 via-red-500 to-purple-600' },
-  { value: 'ocean', label: 'Océano', previewClass: 'bg-gradient-to-br from-sky-400 to-blue-600' },
-  { value: 'forest', label: 'Bosque', previewClass: 'bg-gradient-to-br from-lime-500 to-green-800' },
-  { value: 'rose', label: 'Cuarzo Rosa', previewClass: 'bg-gradient-to-br from-rose-300 to-fuchsia-500' },
-  { value: 'neon', label: 'Neón', previewClass: 'bg-gradient-to-br from-fuchsia-500 to-cyan-400' },
-  { value: 'dracula', label: 'Noche Púrpura', previewClass: 'bg-gradient-to-br from-purple-500 to-violet-800' },
-  { value: 'coffee', label: 'Café', previewClass: 'bg-gradient-to-br from-amber-700 to-stone-900' },
-  { value: 'mint', label: 'Menta', previewClass: 'bg-gradient-to-br from-emerald-300 to-teal-500' },
-  { value: 'lavender', label: 'Lavanda', previewClass: 'bg-gradient-to-br from-indigo-400 to-purple-500' },
-  { value: 'solarized-light', label: 'Solarizado Claro', previewClass: 'bg-gradient-to-br from-[#fdf6e3] to-[#eee8d5]' },
-  { value: 'solarized-dark', label: 'Solarizado Oscuro', previewClass: 'bg-gradient-to-br from-[#002b36] to-[#073642]' },
-  { value: 'imperial-gold', label: 'Dorado Imperial', previewClass: 'bg-gradient-to-br from-[#0a192f] to-[#ffaf00]' },
+  { value: 'light', label: 'Claro (Personalizado)', colors: ['#f8fafc', '#6366f1'] },
+  { value: 'dark', label: 'Oscuro (Personalizado)', colors: ['#020617', '#a5b4fc'] },
+  { value: 'terminal', label: 'Terminal', colors: ['#1A241F', '#4ade80'] },
+  { value: 'sunset', label: 'Atardecer', colors: ['#301934', '#FF5F6D'] },
+  { value: 'ocean', label: 'Océano', colors: ['#F0F9FF', '#0EA5E9'] },
+  { value: 'forest', label: 'Bosque', colors: ['#F0FFF4', '#228B22'] },
+  { value: 'rose', label: 'Cuarzo Rosa', colors: ['#FFF1F2', '#F43F5E'] },
+  { value: 'neon', label: 'Neón', colors: ['#1E1B4B', '#BE185D'] },
+  { value: 'dracula', label: 'Noche Púrpura', colors: ['#282a36', '#bd93f9'] },
+  { value: 'coffee', label: 'Café', colors: ['#f5f2eb', '#7f5539'] },
+  { value: 'mint', label: 'Menta', colors: ['#F0FDF4', '#10B981'] },
+  { value: 'lavender', label: 'Lavanda', colors: ['#2E2B54', '#A78BFA'] },
+  { value: 'solarized-light', label: 'Solarizado Claro', colors: ['#fdf6e3', '#268bd2'] },
+  { value: 'solarized-dark', label: 'Solarizado Oscuro', colors: ['#002b36', '#b58900'] },
+  { value: 'imperial-gold', label: 'Dorado Imperial', colors: ['#0a192f', '#ffaf00'] },
 ];
 
 /**
@@ -68,14 +68,12 @@ function DynamicStyleInjector() {
       root.style.setProperty('--font-headline', headlineFontFamily);
       root.style.setProperty('--font-body', bodyFontFamily);
       
-      // --- Lógica del Favicon ---
-      // CORRECCIÓN: Buscamos la etiqueta existente en lugar de crear una nueva.
       let faviconLink = head.querySelector<HTMLLinkElement>('link[rel="icon"]');
       if (faviconLink) {
         if (settings.faviconUrl) {
             faviconLink.href = settings.faviconUrl;
         } else {
-            faviconLink.href = '/favicon.png'; // Fallback
+            faviconLink.href = '/favicon.png'; 
         }
       }
     }

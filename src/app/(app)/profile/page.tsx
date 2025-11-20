@@ -377,6 +377,28 @@ const ProfileCard = ({ user, onAvatarChange, onAvatarRemove, isUploading, upload
     </Card>
 )};
 
+const ThemeSwatch = ({ colors, onClick, isSelected }: { colors: string[], onClick: () => void, isSelected: boolean }) => {
+  const gradient = colors.length > 1
+    ? `linear-gradient(to top right, ${colors[0]} 50%, ${colors[1]} 50%)`
+    : colors[0];
+
+  return (
+    <div
+      onClick={onClick}
+      className={cn(
+        "w-full h-12 rounded-full cursor-pointer border-2 transition-all duration-200 flex items-center justify-center",
+        isSelected ? 'border-primary ring-2 ring-primary/50' : 'border-transparent hover:border-primary/50'
+      )}
+    >
+      <div
+        className="w-10 h-10 rounded-full shadow-inner"
+        style={{ background: gradient }}
+      />
+    </div>
+  );
+};
+
+
 const ThemeSelectorCard = ({ className }: { className?: string }) => {
     const { theme, setTheme } = useTheme();
     const { user, updateUser } = useAuth();
@@ -404,22 +426,16 @@ const ThemeSelectorCard = ({ className }: { className?: string }) => {
           <CardDescription>Elige tu paleta de colores preferida.</CardDescription>
         </CardHeader>
         <CardContent>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-6 gap-3">
               {AVAILABLE_THEMES.map((t) => (
                 <TooltipProvider key={t.value} delayDuration={100}>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                             <div onClick={() => handleThemeChange(t.value)} className="cursor-pointer group flex flex-col items-center gap-2">
-                                <div
-                                    className={cn(
-                                        'h-16 w-full rounded-lg flex items-center justify-center border-2 transition-all',
-                                        theme === t.value ? 'border-primary ring-2 ring-primary/50' : 'border-border group-hover:border-primary/70'
-                                    )}
-                                >
-                                    <div className={cn('h-14 w-full mx-1 rounded-md', t.previewClass)} />
-                                </div>
-                                <p className="text-xs font-medium text-muted-foreground">{t.label}</p>
-                            </div>
+                             <ThemeSwatch
+                                colors={t.colors}
+                                onClick={() => handleThemeChange(t.value)}
+                                isSelected={theme === t.value}
+                             />
                         </TooltipTrigger>
                         <TooltipContent><p>{t.label}</p></TooltipContent>
                     </Tooltip>
