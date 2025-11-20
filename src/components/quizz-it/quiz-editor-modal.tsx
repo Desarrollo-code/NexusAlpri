@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '../ui/textarea';
-import { PlusCircle, Trash2, Pencil, Check, X, Image as ImageIcon, UploadCloud, Timer, LayoutTemplate, FlipVertical, CheckSquare, ImagePlay, BrainCircuit, Info, Eye, Save } from 'lucide-react';
+import { PlusCircle, Trash2, Pencil, Check, X, Image as ImageIcon, UploadCloud, Timer, LayoutTemplate, FlipVertical, CheckSquare, ImagePlay, BrainCircuit, Info, Eye, Save, Replace, XCircle } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
 import type { AppQuiz, AppQuestion, FormFieldOption } from '@/types';
@@ -28,6 +28,8 @@ import { QuizGameView } from './quiz-game-view';
 import { Card, CardHeader, CardContent, CardTitle, CardFooter } from '../ui/card';
 import { Alert, AlertDescription } from '../ui/alert';
 import { ColorfulLoader } from '../ui/colorful-loader';
+import { Separator } from '../ui/separator';
+import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 
 const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
@@ -46,16 +48,40 @@ const templateOptions = [
     { value: 'image_options', label: 'Respuestas con Imágenes', icon: LayoutTemplate, description: 'Usa imágenes como opciones de respuesta.' },
 ];
 
+const ImageUploadWidget = ({ imageUrl, onUpload, onRemove, disabled, inputId }: { imageUrl: string | null, onUpload: (file: File) => void, onRemove: () => void, disabled: boolean, inputId: string }) => {
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const { toast } = useToast();
+
+    const handleFileSelect = async (file: File | null) => {
+        if (!file) return;
+        setIsUploading(true);
+        setUploadProgress(0);
+        try {
+            const result = await uploadWithProgress('/api/upload/lesson-file', file, setUploadProgress);
+            onUpload(result.url); // Call onUpload with the final URL
+        } catch (err) {
+            toast({ title: "Error de subida", description: (err as Error).message, variant: "destructive" });
+        } finally {
+            setIsUploading(false);
+        }
+    };
+    
+    if (isUploading) {
+        return <div className="w-full p-4 h-32 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2"><ColorfulLoader className="h-8 w-8"/><p className="text-sm text-muted-foreground">Subiendo...</p><Progress value={uploadProgress} className="w-full h-1.5" /></div>;
+    }
+    if (imageUrl) {
+        return <div className="relative w-full h-32 rounded-lg border overflow-hidden group"><Image src={imageUrl} alt="preview" fill className="object-contain p-1" /><div className="absolute top-1 right-1 flex flex-col gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity"><Button type="button" variant="destructive" size="icon" className="h-7 w-7" onClick={onRemove}><XCircle className="h-4 w-4"/></Button></div></div>
+    }
+    return <UploadArea onFileSelect={handleFileSelect} disabled={disabled} inputId={inputId} />;
+};
+
+
 export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, onClose: () => void, quiz: AppQuiz, onSave: (updatedQuiz: AppQuiz) => void }) {
     const { toast } = useToast();
     const [localQuiz, setLocalQuiz] = useState<AppQuiz>(quiz);
     const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
-    const [isUploading, setIsUploading] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState(0);
-    const [isSaving, setIsSaving] = useState(false);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-    const [isOptionUploading, setIsOptionUploading] = useState<Record<string, boolean>>({});
-    const [optionUploadProgress, setOptionUploadProgress] = useState<Record<string, number>>({});
 
     useEffect(() => {
         setLocalQuiz(JSON.parse(JSON.stringify(quiz)));
@@ -102,7 +128,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
         const newQuestions = [...localQuiz.questions];
         const question = newQuestions[activeQuestionIndex];
         question.options = question.options.map(opt => {
-            if (question.type === 'SINGLE_CHOICE') {
+            if (question.template === 'true_false' || question.type === 'SINGLE_CHOICE') {
                 return { ...opt, isCorrect: opt.id === optionId };
             }
             if (opt.id === optionId) {
@@ -111,7 +137,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
             return opt;
         });
         
-        if (question.type === 'SINGLE_CHOICE' && !question.options.some(o => o.isCorrect)) {
+        if (question.template === 'true_false' && !question.options.some(o => o.isCorrect)) {
             const clickedOption = question.options.find(o => o.id === optionId);
             if (clickedOption) clickedOption.isCorrect = true;
         }
@@ -122,15 +148,8 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
     const addQuestion = () => {
         const newQuestion: AppQuestion = {
             id: generateUniqueId('question'),
-            text: 'Nueva Pregunta',
-            order: localQuiz.questions.length,
-            type: 'SINGLE_CHOICE',
-            imageUrl: null,
-            template: 'default',
-            options: [
-                { id: generateUniqueId('option'), text: '', imageUrl: null, isCorrect: true, points: 10 },
-                { id: generateUniqueId('option'), text: '', imageUrl: null, isCorrect: false, points: 0 }
-            ]
+            text: 'Nueva Pregunta', order: localQuiz.questions.length, type: 'SINGLE_CHOICE', imageUrl: null, template: 'default',
+            options: [{ id: generateUniqueId('option'), text: 'Opción Correcta', imageUrl: null, isCorrect: true, points: 10 }, { id: generateUniqueId('option'), text: 'Opción Incorrecta', imageUrl: null, isCorrect: false, points: 0 }]
         };
         setLocalQuiz(prev => ({ ...prev, questions: [...prev.questions, newQuestion] }));
         setActiveQuestionIndex(localQuiz.questions.length);
@@ -148,7 +167,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
     const deleteOption = (optionIndex: number) => {
         const newQuestions = [...localQuiz.questions];
         const currentOptions = newQuestions[activeQuestionIndex].options;
-        if (currentOptions.length > 1) {
+        if (currentOptions.length > (activeQuestion.template === 'true_false' ? 2 : 1)) {
             currentOptions.splice(optionIndex, 1);
             if (!currentOptions.some(opt => opt.isCorrect) && currentOptions.length > 0) {
                 currentOptions[0].isCorrect = true;
@@ -158,44 +177,32 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
     };
 
     const deleteQuestion = (indexToDelete: number) => {
-         if (localQuiz.questions.length <= 1) return;
+         if (localQuiz.questions.length <= 1) {
+            toast({ title: 'Acción no permitida', description: 'Un quiz debe tener al menos una pregunta.', variant: 'destructive'});
+            return;
+         };
          setLocalQuiz(prev => ({ ...prev, questions: prev.questions.filter((_, i) => i !== indexToDelete) }));
          setActiveQuestionIndex(prev => Math.max(0, prev - 1));
     };
 
-    const handleImageUpload = async (file: File | null, type: 'question' | 'option', optionIndex?: number) => {
-        if (!file) return;
-        if (type === 'question') {
-            setIsUploading(true);
-            setUploadProgress(0);
-        } else if (optionIndex !== undefined) {
-             setIsOptionUploading(prev => ({ ...prev, [optionIndex]: true }));
-             setOptionUploadProgress(prev => ({ ...prev, [optionIndex]: 0 }));
-        }
-        try {
-            const result = await uploadWithProgress('/api/upload/lesson-file', file, (progress) => {
-                if (type === 'question') setUploadProgress(progress);
-                else if (optionIndex !== undefined) setOptionUploadProgress(prev => ({ ...prev, [optionIndex]: progress }));
-            });
-            if (type === 'question') handleQuestionChange('imageUrl', result.url);
-            else if (optionIndex !== undefined) handleOptionChange(optionIndex, 'imageUrl', result.url);
-            toast({ title: 'Imagen subida' });
-        } catch (err) {
-            toast({ title: 'Error de subida', description: (err as Error).message, variant: 'destructive' });
-        } finally {
-            if (type === 'question') setIsUploading(false);
-            else if (optionIndex !== undefined) setIsOptionUploading(prev => ({ ...prev, [optionIndex]: false }));
-        }
-    };
-
     const handleSaveChanges = () => { onSave(localQuiz); };
-
+    
     if (!localQuiz || !localQuiz.questions) return null;
     const activeQuestion = localQuiz.questions[activeQuestionIndex];
 
     const quizPreviewForm = { ...localQuiz, fields: localQuiz.questions.map(q => ({ ...q, label: q.text })) };
     
     const isImageOptionsTemplate = activeQuestion?.template === 'image_options';
+
+    const renderOptionEditor = (opt: FormFieldOption, index: number) => {
+        if (isImageOptionsTemplate) {
+            return <ImageUploadWidget inputId={`opt-img-${opt.id}`} imageUrl={opt.imageUrl} onUpload={(url) => handleOptionChange(index, 'imageUrl', url)} onRemove={() => handleOptionChange(index, 'imageUrl', null)} disabled={false}/>
+        }
+        if (activeQuestion.template === 'true_false') {
+             return <Button className="w-full h-16 justify-start text-lg" variant={opt.isCorrect ? 'default' : 'outline'} onClick={() => handleSetCorrect(opt.id)}>{opt.text}</Button>
+        }
+        return <Input value={opt.text} onChange={e => handleOptionChange(index, 'text', e.target.value)} placeholder={`Opción ${index + 1}`}/>
+    };
 
     return (
       <>
@@ -227,69 +234,46 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                             {activeQuestion ? (
                                     <div className="p-4 space-y-4">
                                         <Card>
-                                            <CardHeader><CardTitle className="text-base flex items-center gap-2"><LayoutTemplate className="h-4 w-4" /> Plantilla de Pregunta</CardTitle></CardHeader>
-                                            <CardContent>
-                                                <Select value={activeQuestion.template || 'default'} onValueChange={handleTemplateChange}>
-                                                    <SelectTrigger><SelectValue placeholder="Selecciona una plantilla..." /></SelectTrigger>
-                                                    <SelectContent>
-                                                        {templateOptions.map((opt) => (
-                                                            <SelectItem key={opt.value} value={opt.value}>
-                                                                <div className="flex items-center gap-2"><opt.icon className="h-4 w-4"/>{opt.label}</div>
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </CardContent>
-                                        </Card>
-                                        
-                                        <Card>
-                                          <CardHeader><CardTitle className="text-base">Contenido de la Pregunta</CardTitle></CardHeader>
-                                          <CardContent className="space-y-4">
-                                            <Textarea value={activeQuestion.text} onChange={(e) => handleQuestionChange('text', e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-lg font-semibold h-auto resize-none" rows={3}/>
-                                             {activeQuestion.template === 'image' && (
-                                                <div className="w-full">
-                                                    {isUploading ? (
-                                                        <div className="w-full p-4 h-48 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2"><div className="w-6 h-6"><ColorfulLoader/></div><p className="text-sm text-muted-foreground">Subiendo...</p><Progress value={uploadProgress} className="w-full h-1.5"/></div>
-                                                    ) : activeQuestion.imageUrl ? (
-                                                        <div className="relative w-full h-48 rounded-lg overflow-hidden border p-1 bg-background"><Image src={activeQuestion.imageUrl} alt="preview" fill className="object-contain" /><Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => handleQuestionChange('imageUrl', null)}><X className="h-4 w-4"/></Button></div>
-                                                    ) : (
-                                                        <UploadArea onFileSelect={(file) => handleImageUpload(file, 'question')} inputId={`img-upload-${activeQuestion.id}`} />
-                                                    )}
+                                            <CardHeader><CardTitle className="text-base flex items-center gap-2"><LayoutTemplate className="h-4 w-4" /> Plantilla y Contenido</CardTitle></CardHeader>
+                                            <CardContent className="space-y-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                                                    <div className="space-y-2">
+                                                        <Label>Plantilla de Pregunta</Label>
+                                                        <Select value={activeQuestion.template || 'default'} onValueChange={handleTemplateChange}>
+                                                            <SelectTrigger><SelectValue/></SelectTrigger>
+                                                            <SelectContent>
+                                                                {templateOptions.map((opt) => (
+                                                                    <SelectItem key={opt.value} value={opt.value}>
+                                                                        <div className="flex items-center gap-2"><opt.icon className="h-4 w-4"/>{opt.label}</div>
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    {activeQuestion.template === 'image' && <ImageUploadWidget inputId={`q-img-${activeQuestion.id}`} imageUrl={activeQuestion.imageUrl} onUpload={(url) => handleQuestionChange('imageUrl', url)} onRemove={() => handleQuestionChange('imageUrl', null)} disabled={false} />}
                                                 </div>
-                                            )}
-                                          </CardContent>
+                                                <Separator/>
+                                                <Textarea value={activeQuestion.text} onChange={(e) => handleQuestionChange('text', e.target.value)} placeholder="Escribe tu pregunta aquí..." className="text-lg font-semibold h-auto resize-none" rows={3}/>
+                                            </CardContent>
                                         </Card>
 
                                         <Card>
                                             <CardHeader><CardTitle className="text-base">Opciones de Respuesta</CardTitle></CardHeader>
-                                            <CardContent className={cn("grid gap-2", isImageOptionsTemplate ? "grid-cols-2" : "grid-cols-1")}>
-                                                {activeQuestion.options.slice(0, 4).map((opt, index) => {
-                                                    const optionIsUploading = isOptionUploading[index];
-                                                    return (
-                                                        <div key={opt.id} className="flex items-center gap-2 p-2 rounded-md shadow-sm border bg-background">
-                                                            {isImageOptionsTemplate ? (
-                                                                <div className="flex-grow space-y-2">
-                                                                    <div className="relative">
-                                                                        <div className={cn("absolute inset-0 flex items-center justify-center z-10", optionIsUploading ? 'flex' : 'hidden')}><div className="w-6 h-6"><ColorfulLoader/></div></div>
-                                                                        {opt.imageUrl && (<Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6 z-20" onClick={() => handleOptionChange(index, 'imageUrl', null)}><X className="h-4 w-4"/></Button>)}
-                                                                        <UploadArea onFileSelect={(file) => handleImageUpload(file, 'option', index)} inputId={`opt-img-upload-${opt.id}`} className={cn("h-24 w-full", opt.imageUrl && 'bg-cover bg-center')} style={{backgroundImage: opt.imageUrl ? `url(${opt.imageUrl})` : 'none'}} compact>
-                                                                            {opt.imageUrl && <Image src={opt.imageUrl} alt={`Opción ${index + 1}`} fill className="object-contain" />}
-                                                                        </UploadArea>
-                                                                    </div>
-                                                                </div>
-                                                            ) : (
-                                                                <Input value={opt.text} onChange={(e) => handleOptionChange(index, 'text', e.target.value)} placeholder={`Opción ${index + 1}`} disabled={activeQuestion.template === 'true_false'}/>
-                                                            )}
-                                                            <Button variant={opt.isCorrect ? 'default' : 'outline'} size="icon" onClick={() => handleSetCorrect(opt.id)}>
-                                                                {opt.isCorrect ? <Check className="h-5 w-5"/> : <X className="h-5 w-5"/>}
+                                            <CardContent className={cn("grid gap-3", isImageOptionsTemplate ? "grid-cols-2" : "grid-cols-1 md:grid-cols-2")}>
+                                                {activeQuestion.options.slice(0, 4).map((opt, index) => (
+                                                    <div key={opt.id} className="flex items-center gap-2 p-2 rounded-lg border bg-card shadow-sm">
+                                                        <div className="flex-grow">{renderOptionEditor(opt, index)}</div>
+                                                        <div className="flex flex-col gap-1">
+                                                            <Button variant={opt.isCorrect ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => handleSetCorrect(opt.id)}>
+                                                                <Check className="h-4 w-4"/>
                                                             </Button>
-                                                            {activeQuestion.options.length > (activeQuestion.template === 'true_false' ? 2 : 1) && <Button variant="ghost" size="icon" onClick={() => deleteOption(index)} className="text-destructive/70 hover:text-destructive"><X className="h-4 w-4"/></Button>}
+                                                            {(activeQuestion.options.length > (activeQuestion.template === 'true_false' ? 2 : 1)) && (<Button variant="ghost" size="icon" className="h-8 w-8 text-destructive/70 hover:text-destructive" onClick={() => deleteOption(index)}><X className="h-4 w-4"/></Button>)}
                                                         </div>
-                                                    );
-                                                })}
+                                                    </div>
+                                                ))}
                                             </CardContent>
                                             <CardFooter>
-                                                {activeQuestion.options.length < 4 && !isImageOptionsTemplate && activeQuestion.template !== 'true_false' && (<Button variant="outline" size="sm" onClick={addOption} className="mt-2 self-start">+ Añadir opción</Button>)}
+                                                {activeQuestion.options.length < 4 && !isImageOptionsTemplate && activeQuestion.template !== 'true_false' && (<Button variant="outline" size="sm" onClick={addOption}>+ Añadir opción</Button>)}
                                             </CardFooter>
                                         </Card>
                                     </div>
@@ -303,7 +287,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                         <Button variant="outline" onClick={() => setIsPreviewOpen(true)}><Eye className="mr-2 h-4 w-4" />Previsualizar</Button>
                         <div className="flex-grow"/>
                         <Button variant="outline" onClick={onClose}>Cancelar</Button>
-                        <Button onClick={handleSaveChanges}>Guardar Cambios del Quiz</Button>
+                        <Button onClick={handleSaveChanges}><Save className="mr-2 h-4 w-4"/>Guardar Cambios del Quiz</Button>
                     </DialogFooter>
                 </div>
             </DialogContent>
@@ -318,3 +302,5 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
       </>
     );
 }
+
+```
