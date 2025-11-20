@@ -68,7 +68,10 @@ const ImageUploadWidget = ({ imageUrl, onUpload, onRemove, disabled, inputId, is
     };
     
     return (
-        <div className={cn("relative w-full h-full aspect-square rounded-lg border-2 bg-muted/50 transition-all", isCorrect ? "border-primary ring-2 ring-primary/50" : "border-dashed hover:border-primary/50")}>
+        <div className={cn(
+            "relative w-full h-full aspect-square rounded-lg border-2 bg-muted/50 transition-all", 
+            isCorrect ? "border-primary ring-2 ring-primary/50" : "border-dashed hover:border-primary/50"
+        )}>
             {isUploading ? (
                 <div className="w-full h-full flex flex-col items-center justify-center gap-2 p-2">
                     <ColorfulLoader className="h-8 w-8"/>
@@ -86,8 +89,7 @@ const ImageUploadWidget = ({ imageUrl, onUpload, onRemove, disabled, inputId, is
             ) : (
                 <UploadArea onFileSelect={handleFileSelect} disabled={disabled} inputId={inputId} className="h-full border-0 bg-transparent">
                     <div className="text-center text-muted-foreground p-1">
-                        <UploadCloud className="mx-auto h-6 w-6"/>
-                        <p className="text-xs mt-1">Subir imagen</p>
+                        <ImageIcon className="mx-auto h-6 w-6"/>
                     </div>
                 </UploadArea>
             )}
