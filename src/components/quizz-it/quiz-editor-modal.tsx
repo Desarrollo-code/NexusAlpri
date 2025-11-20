@@ -48,7 +48,7 @@ const templateOptions = [
     { value: 'image_options', label: 'Respuestas con Imágenes', icon: LayoutTemplate, description: 'Usa imágenes como opciones de respuesta.' },
 ];
 
-const ImageUploadWidget = ({ imageUrl, onUpload, onRemove, disabled, inputId }: { imageUrl: string | null, onUpload: (file: File) => void, onRemove: () => void, disabled: boolean, inputId: string }) => {
+const ImageUploadWidget = ({ imageUrl, onUpload, onRemove, disabled, inputId }: { imageUrl: string | null, onUpload: (url: string) => void, onRemove: () => void, disabled: boolean, inputId: string }) => {
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const { toast } = useToast();
@@ -59,7 +59,7 @@ const ImageUploadWidget = ({ imageUrl, onUpload, onRemove, disabled, inputId }: 
         setUploadProgress(0);
         try {
             const result = await uploadWithProgress('/api/upload/lesson-file', file, setUploadProgress);
-            onUpload(result.url); // Call onUpload with the final URL
+            onUpload(result.url); 
         } catch (err) {
             toast({ title: "Error de subida", description: (err as Error).message, variant: "destructive" });
         } finally {
@@ -68,10 +68,10 @@ const ImageUploadWidget = ({ imageUrl, onUpload, onRemove, disabled, inputId }: 
     };
     
     if (isUploading) {
-        return <div className="w-full p-4 h-32 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2"><ColorfulLoader className="h-8 w-8"/><p className="text-sm text-muted-foreground">Subiendo...</p><Progress value={uploadProgress} className="w-full h-1.5" /></div>;
+        return <div className="w-full p-4 h-full aspect-square border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2"><ColorfulLoader className="h-8 w-8"/><p className="text-sm text-muted-foreground">Subiendo...</p><Progress value={uploadProgress} className="w-full h-1.5" /></div>;
     }
     if (imageUrl) {
-        return <div className="relative w-full h-32 rounded-lg border overflow-hidden group"><Image src={imageUrl} alt="preview" fill className="object-contain p-1" /><div className="absolute top-1 right-1 flex flex-col gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity"><Button type="button" variant="destructive" size="icon" className="h-7 w-7" onClick={onRemove}><XCircle className="h-4 w-4"/></Button></div></div>
+        return <div className="relative w-full h-full aspect-square rounded-lg border overflow-hidden group"><Image src={imageUrl} alt="preview" fill className="object-contain p-1" /><div className="absolute top-1 right-1 flex flex-col gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity"><Button type="button" variant="destructive" size="icon" className="h-7 w-7" onClick={onRemove}><XCircle className="h-4 w-4"/></Button></div></div>
     }
     return <UploadArea onFileSelect={handleFileSelect} disabled={disabled} inputId={inputId} />;
 };
