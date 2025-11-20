@@ -34,13 +34,7 @@ interface UserProfileCardProps {
 export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange, isSelected, onSelectionChange }: UserProfileCardProps) => {
     const router = useRouter();
     const { user: currentUser } = useAuth();
-
-    const handleSendMessage = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        router.push(`/messages?new=${user.id}`);
-    };
     
-    const showMessageButton = currentUser?.id !== user.id;
     const canModify = currentUser?.role === 'ADMINISTRATOR';
     
     const displayProcess = user.process ? [user.process] : (user.processes || []);
@@ -97,14 +91,6 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange, is
                     {user.updatedAt && <p className="flex items-center justify-center gap-1.5"><Clock className="h-3 w-3"/> Modif.: {format(new Date(user.updatedAt), 'dd MMM yyyy', {locale: es})}</p>}
                  </div>
             </CardContent>
-
-            {showMessageButton && (
-                <CardFooter className="p-1 border-t mt-auto">
-                    <Button size="sm" variant="ghost" className="w-full h-7 text-xs" onClick={handleSendMessage}>
-                        <MessageSquare className="mr-1.5 h-3 w-3"/> Mensaje
-                    </Button>
-                </CardFooter>
-            )}
         </Card>
     );
 };

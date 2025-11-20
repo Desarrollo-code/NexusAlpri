@@ -68,7 +68,7 @@ export async function GET(req: NextRequest) {
                     avatar: true,
                     isTwoFactorEnabled: true,
                     registeredDate: true,
-                    updatedAt: true, // Añadido
+                    updatedAt: true,
                     isActive: true,
                     process: true,
                 },
