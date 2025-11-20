@@ -48,7 +48,7 @@ const templateOptions = [
     { value: 'image_options', label: 'Respuestas con Imágenes', icon: LayoutTemplate, description: 'Usa imágenes como opciones de respuesta.' },
 ];
 
-const ImageUploadWidget = ({ imageUrl, onUpload, onRemove, disabled, inputId }: { imageUrl: string | null, onUpload: (url: string) => void, onRemove: () => void, disabled: boolean, inputId: string }) => {
+const ImageUploadWidget = ({ imageUrl, onUpload, onRemove, disabled, inputId, isCorrect }: { imageUrl: string | null, onUpload: (url: string) => void, onRemove: () => void, disabled: boolean, inputId: string, isCorrect?: boolean }) => {
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const { toast } = useToast();
@@ -67,13 +67,32 @@ const ImageUploadWidget = ({ imageUrl, onUpload, onRemove, disabled, inputId }: 
         }
     };
     
-    if (isUploading) {
-        return <div className="w-full p-4 h-full aspect-square border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2"><ColorfulLoader className="h-8 w-8"/><p className="text-sm text-muted-foreground">Subiendo...</p><Progress value={uploadProgress} className="w-full h-1.5" /></div>;
-    }
-    if (imageUrl) {
-        return <div className="relative w-full h-full aspect-square rounded-lg border overflow-hidden group"><Image src={imageUrl} alt="preview" fill className="object-contain p-1" /><div className="absolute top-1 right-1 flex flex-col gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity"><Button type="button" variant="destructive" size="icon" className="h-7 w-7" onClick={onRemove}><XCircle className="h-4 w-4"/></Button></div></div>
-    }
-    return <UploadArea onFileSelect={handleFileSelect} disabled={disabled} inputId={inputId} />;
+    return (
+        <div className={cn("relative w-full h-full aspect-square rounded-lg border-2 bg-muted/50 transition-all", isCorrect ? "border-primary ring-2 ring-primary/50" : "border-dashed hover:border-primary/50")}>
+            {isUploading ? (
+                <div className="w-full h-full flex flex-col items-center justify-center gap-2 p-2">
+                    <ColorfulLoader className="h-8 w-8"/>
+                    <Progress value={uploadProgress} className="w-full h-1.5" />
+                </div>
+            ) : imageUrl ? (
+                 <div className="relative w-full h-full group">
+                    <Image src={imageUrl} alt="preview" fill className="object-contain p-1" />
+                    <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                         <Button type="button" variant="destructive" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={(e) => {e.stopPropagation(); onRemove();}} disabled={disabled}>
+                             <XCircle className="h-4 w-4"/>
+                         </Button>
+                    </div>
+                </div>
+            ) : (
+                <UploadArea onFileSelect={handleFileSelect} disabled={disabled} inputId={inputId} className="h-full border-0 bg-transparent">
+                    <div className="text-center text-muted-foreground p-1">
+                        <UploadCloud className="mx-auto h-6 w-6"/>
+                        <p className="text-xs mt-1">Subir imagen</p>
+                    </div>
+                </UploadArea>
+            )}
+        </div>
+    );
 };
 
 
@@ -196,7 +215,11 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
 
     const renderOptionEditor = (opt: FormFieldOption, index: number) => {
         if (isImageOptionsTemplate) {
-            return <ImageUploadWidget inputId={`opt-img-${opt.id}`} imageUrl={opt.imageUrl} onUpload={(url) => handleOptionChange(index, 'imageUrl', url)} onRemove={() => handleOptionChange(index, 'imageUrl', null)} disabled={false}/>
+            return (
+                 <div className="w-full h-full cursor-pointer" onClick={() => handleSetCorrect(opt.id)}>
+                    <ImageUploadWidget inputId={`opt-img-${opt.id}`} imageUrl={opt.imageUrl} onUpload={(url) => handleOptionChange(index, 'imageUrl', url)} onRemove={() => handleOptionChange(index, 'imageUrl', null)} disabled={false} isCorrect={opt.isCorrect}/>
+                 </div>
+            )
         }
         if (activeQuestion.template === 'true_false') {
              return <Button className="w-full h-16 justify-start text-lg" variant={opt.isCorrect ? 'default' : 'outline'} onClick={() => handleSetCorrect(opt.id)}>{opt.text}</Button>
@@ -259,14 +282,16 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
 
                                         <Card>
                                             <CardHeader><CardTitle className="text-base">Opciones de Respuesta</CardTitle></CardHeader>
-                                            <CardContent className={cn("grid gap-3", isImageOptionsTemplate ? "grid-cols-2" : "grid-cols-1 md:grid-cols-2")}>
+                                             <CardContent className={cn("grid gap-3", isImageOptionsTemplate ? "grid-cols-2" : "grid-cols-1 md:grid-cols-2")}>
                                                 {activeQuestion.options.slice(0, 4).map((opt, index) => (
-                                                    <div key={opt.id} className="flex items-center gap-2 p-2 rounded-lg border bg-card shadow-sm">
+                                                    <div key={opt.id} className="flex items-center gap-2">
                                                         <div className="flex-grow">{renderOptionEditor(opt, index)}</div>
                                                         <div className="flex flex-col gap-1">
-                                                            <Button variant={opt.isCorrect ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => handleSetCorrect(opt.id)}>
-                                                                <Check className="h-4 w-4"/>
-                                                            </Button>
+                                                            {!(isImageOptionsTemplate) && (
+                                                              <Button variant={opt.isCorrect ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => handleSetCorrect(opt.id)}>
+                                                                  <Check className="h-4 w-4"/>
+                                                              </Button>
+                                                            )}
                                                             {(activeQuestion.options.length > (activeQuestion.template === 'true_false' ? 2 : 1)) && (<Button variant="ghost" size="icon" className="h-8 w-8 text-destructive/70 hover:text-destructive" onClick={() => deleteOption(index)}><X className="h-4 w-4"/></Button>)}
                                                         </div>
                                                     </div>
