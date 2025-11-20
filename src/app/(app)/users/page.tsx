@@ -40,7 +40,8 @@ import { EmptyState } from '@/components/empty-state';
 import { useTour } from '@/contexts/tour-context';
 import { usersTour } from '@/lib/tour-steps';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
-
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 // --- TYPES & CONTEXT ---
 interface ProcessWithChildren extends Process {
@@ -51,8 +52,6 @@ interface UserWithProcess extends User {
     process: { id: string; name: string } | null;
     updatedAt: string | Date;
 }
-
-const PAGE_SIZE = 12;
 
 const DraggableUserPreview = ({ user }: { user: UserWithProcess }) => (
     <Card className="flex items-center gap-2 p-2 shadow-lg w-48">
@@ -97,6 +96,8 @@ function UsersPageComponent() {
     const { setPageTitle } = useTitle();
     const isMobile = useIsMobile();
     const { startTour, forceStartTour } = useTour();
+
+    const PAGE_SIZE = isMobile ? 14 : 15;
 
     const [usersList, setUsersList] = useState<UserWithProcess[]>([]);
     const [totalUsers, setTotalUsers] = useState(0);
@@ -186,7 +187,7 @@ function UsersPageComponent() {
         } finally {
             setIsLoading(false);
         }
-    }, [currentUser, debouncedSearchTerm, currentPage, role, status, processId, toast]);
+    }, [currentUser, debouncedSearchTerm, currentPage, role, status, processId, toast, PAGE_SIZE]);
     
     useEffect(() => {
         setPageTitle('Control Central');
@@ -307,7 +308,7 @@ function UsersPageComponent() {
     }
 
     if (isLoading && usersList.length === 0) {
-        return <div className="flex justify-center items-center h-full"><div className="w-8 h-8"><ColorfulLoader /></div></div>
+        return <div className="flex justify-center items-center h-full"><ColorfulLoader /></div>
     }
     
     const DesktopControls = () => (
@@ -411,7 +412,7 @@ function UsersPageComponent() {
     }
 
     const GridView = () => (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 grid-auto-rows-[1fr]">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 grid-auto-rows-[1fr]">
             {usersList.map(u => (
                 <DraggableUserCard 
                     key={u.id} 
@@ -500,7 +501,7 @@ function UsersPageComponent() {
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isDeactivating}>Cancelar</AlertDialogCancel>
                         <AlertDialogAction onClick={confirmStatusChange} disabled={isDeactivating} className={cn(!userToDeactivate?.isActive && 'bg-green-600 hover:bg-green-700', userToDeactivate?.isActive && 'bg-destructive hover:bg-destructive/90')}>
-                            {isDeactivating && <div className="w-4 h-4 mr-2"><ColorfulLoader /></div>}
+                            {isDeactivating ? <ColorfulLoader className="mr-2 h-4 w-4"/> : null}
                             Sí, {userToDeactivate?.isActive ? 'Inactivar' : 'Activar'}
                         </AlertDialogAction>
                     </AlertDialogFooter>
@@ -533,7 +534,7 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                             <DropdownMenuContent align="end">
                                 <DropdownMenuItem onSelect={() => onEdit(u)}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
                                 <DropdownMenuItem onSelect={() => onRoleChange(u)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol</DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => onStatusChange(u, !u.isActive)} className={u.isActive ? "text-destructive" : ""}><UserX className="mr-2 h-4 w-4"/>{u.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => onStatusChange(u, !u.isActive)} className={u.isActive ? "text-destructive" : ""}>{u.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </Card>
@@ -592,7 +593,7 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
 
 export default function UsersPage() {
     return (
-        <Suspense fallback={<div className="flex items-center justify-center h-full"><div className="w-8 h-8"><ColorfulLoader /></div></div>}>
+        <Suspense fallback={<div className="flex items-center justify-center h-full"><ColorfulLoader /></div>}>
             <UsersPageComponent />
         </Suspense>
     )
