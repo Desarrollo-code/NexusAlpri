@@ -1,7 +1,6 @@
 import 'server-only';
 import { cookies } from 'next/headers';
 import { SignJWT, jwtVerify } from 'jose';
-import { cache } from 'react';
 import type { User as PrismaUser } from '@prisma/client';
 import prisma from '@/lib/prisma';
 
@@ -53,7 +52,7 @@ export async function deleteSession() {
   cookies().set('session', '', { expires: new Date(0), path: '/' });
 }
 
-export const getUserFromSession = cache(async (): Promise<PrismaUser | null> => {
+export const getUserFromSession = async (): Promise<PrismaUser | null> => {
   try {
     const sessionCookie = cookies().get('session')?.value;
     
@@ -79,14 +78,14 @@ export const getUserFromSession = cache(async (): Promise<PrismaUser | null> => 
     console.error("Error in getUserFromSession, returning null:", error);
     return null;
   }
-});
+};
 
 
-export const getCurrentUser = cache(async () => {
+export const getCurrentUser = async () => {
     try {
         return await getUserFromSession();
     } catch(error) {
         console.error("Error in getCurrentUser, likely DB connection issue:", error);
         return null;
     }
-});
+};
