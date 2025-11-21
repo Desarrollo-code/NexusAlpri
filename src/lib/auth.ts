@@ -31,6 +31,7 @@ async function decrypt(input: string): Promise<any> {
     const { payload } = await jwtVerify(input, key, { algorithms: ['HS256'] });
     return payload;
   } catch (error) {
+    // This can happen if the token is invalid, expired, etc.
     return null;
   }
 }
@@ -52,21 +53,30 @@ export async function deleteSession() {
   cookies().set('session', '', { expires: new Date(0), path: '/' });
 }
 
-export const getUserFromSession = async (): Promise<PrismaUser | null> => {
-  try {
+/**
+ * For use in Edge runtime (Middleware).
+ * Decrypts the session cookie without hitting the database.
+ */
+export async function getUserIdFromSession(): Promise<string | null> {
     const sessionCookie = cookies().get('session')?.value;
-    
-    if (!sessionCookie) {
-      return null;
-    }
+    if (!sessionCookie) return null;
 
     const session = await decrypt(sessionCookie);
-    if (!session?.userId) {
-      return null;
-    }
+    return session?.userId || null;
+}
+
+
+/**
+ * For use in Server Components and API Routes (Node.js runtime).
+ * Decrypts the session and fetches the full user object from the database.
+ */
+export async function getCurrentUser(): Promise<PrismaUser | null> {
+  try {
+    const userId = await getUserIdFromSession();
+    if (!userId) return null;
     
     const user = await prisma.user.findUnique({
-      where: { id: session.userId },
+      where: { id: userId },
     });
 
     if (user && !user.isActive) {
@@ -75,17 +85,7 @@ export const getUserFromSession = async (): Promise<PrismaUser | null> => {
 
     return user || null;
   } catch (error) {
-    console.error("Error in getUserFromSession, returning null:", error);
+    console.error("Error in getCurrentUser:", error);
     return null;
   }
-};
-
-
-export const getCurrentUser = async () => {
-    try {
-        return await getUserFromSession();
-    } catch(error) {
-        console.error("Error in getCurrentUser, likely DB connection issue:", error);
-        return null;
-    }
 };
