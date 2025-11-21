@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'reac
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, List, Grid, Filter, UserPlus, MoreVertical, Loader2, Briefcase, MessageSquare, Edit, Trash2, UserCog, UserX, Users as UsersIcon, Key, HelpCircle, Calendar, Clock, Lock } from 'lucide-react';
+import { PlusCircle, Search, List, Grid, Filter, UserPlus, MoreVertical, Loader2, Briefcase, MessageSquare, Edit, Trash2, UserCog, UserX, Users as UsersIcon, Key, HelpCircle, Clock } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -53,7 +53,7 @@ interface UserWithProcess extends User {
     updatedAt: string | Date;
 }
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 15;
 
 const DraggableUserPreview = ({ user }: { user: UserWithProcess }) => (
     <Card className="flex items-center gap-2 p-2 shadow-lg w-48">
@@ -187,7 +187,7 @@ function UsersPageComponent() {
         } finally {
             setIsLoading(false);
         }
-    }, [currentUser, debouncedSearchTerm, currentPage, role, status, processId, toast, PAGE_SIZE]);
+    }, [currentUser, debouncedSearchTerm, currentPage, role, status, processId, toast]);
     
     useEffect(() => {
         setPageTitle('Control Central');
@@ -437,7 +437,7 @@ function UsersPageComponent() {
                          <div className="mb-24 md:mb-4">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">{[...Array(10)].map((_,i) => <Skeleton key={i} className="h-56 w-full rounded-2xl" />)}</div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">{[...Array(10)].map((_,i) => <Skeleton key={i} className="h-56 w-full rounded-2xl" />)}</div>
                                 ) : (
                                     <Card><CardContent className="p-4"><Skeleton className="h-96 w-full rounded-2xl"/></CardContent></Card>
                                 )
@@ -501,7 +501,7 @@ function UsersPageComponent() {
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isDeactivating}>Cancelar</AlertDialogCancel>
                         <AlertDialogAction onClick={confirmStatusChange} disabled={isDeactivating} className={cn(!userToDeactivate?.isActive && 'bg-green-600 hover:bg-green-700', userToDeactivate?.isActive && 'bg-destructive hover:bg-destructive/90')}>
-                            {isDeactivating ? <div className="w-4 h-4 mr-2"><ColorfulLoader /></div> : null}
+                            {isDeactivating && <div className="w-4 h-4 mr-2"><ColorfulLoader /></div>}
                             Sí, {userToDeactivate?.isActive ? 'Inactivar' : 'Activar'}
                         </AlertDialogAction>
                     </AlertDialogFooter>
@@ -551,7 +551,7 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                         <TableHead className="w-12 px-4"><Checkbox checked={isAllOnPageSelected} onCheckedChange={(checked) => onSelectionChange('all', !!checked)}/></TableHead>
                         <TableHead className="w-[25%]"><div className="flex items-center gap-2 font-medium text-muted-foreground"><UsersIcon className="h-4 w-4"/>Colaborador</div></TableHead>
                         <TableHead><div className="flex items-center gap-2 font-medium text-muted-foreground"><Briefcase className="h-4 w-4"/>Rol y Proceso</div></TableHead>
-                        <TableHead><div className="flex items-center gap-2 font-medium text-muted-foreground"><Lock className="h-4 w-4" />Acceso</div></TableHead>
+                        <TableHead><div className="flex items-center gap-2 font-medium text-muted-foreground"><Key className="h-4 w-4" />Acceso</div></TableHead>
                         <TableHead><div className="flex items-center gap-2 font-medium text-muted-foreground"><Clock className="h-4 w-4" />Última Actividad</div></TableHead>
                         <TableHead className="text-center"><div className="flex items-center justify-center gap-2 font-medium text-muted-foreground"><HelpCircle className="h-4 w-4"/>Estado</div></TableHead>
                         <TableHead className="text-right px-4"><span className="sr-only">Acciones</span></TableHead>
@@ -573,7 +573,13 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                                     <div className="flex flex-col gap-1">
                                         <Badge variant={getRoleBadgeVariant(u.role)} className="w-fit">{getRoleInSpanish(u.role)}</Badge>
                                         {u.process && (
-                                            <Badge variant="secondary" className="text-xs w-fit" style={{backgroundColor: getProcessColors(u.process.id).raw.light, color: getProcessColors(u.process.id).raw.dark}}>
+                                            <Badge 
+                                                className="text-xs w-fit"
+                                                style={{
+                                                    backgroundColor: getProcessColors(u.process.id).raw.light,
+                                                    color: getProcessColors(u.process.id).raw.dark,
+                                                }}
+                                            >
                                                 {u.process.name}
                                             </Badge>
                                         )}
@@ -582,7 +588,7 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                                 <TableCell className="text-sm">
                                     {totalPermissions} página{totalPermissions !== 1 && 's'}
                                 </TableCell>
-                                 <TableCell className="text-sm text-muted-foreground">{format(new Date(u.updatedAt), "dd MMM yyyy", { locale: es })}</TableCell>
+                                 <TableCell className="text-sm text-muted-foreground">{format(new Date(u.updatedAt!), "dd MMM yyyy", { locale: es })}</TableCell>
                                 <TableCell className="text-center"><Badge variant={u.isActive ? "default" : "secondary"} className={cn("text-xs py-1 px-3", u.isActive ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-500/30" : "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300 border-gray-500/30")}>
                                     {u.isActive ? 'Activo' : 'Inactivo'}
                                 </Badge></TableCell>
@@ -612,4 +618,3 @@ export default function UsersPage() {
         </Suspense>
     )
 }
-

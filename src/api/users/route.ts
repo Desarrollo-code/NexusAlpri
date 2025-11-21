@@ -71,6 +71,7 @@ export async function GET(req: NextRequest) {
                     updatedAt: true,
                     isActive: true,
                     process: true,
+                    customPermissions: true, // Incluir permisos personalizados
                 },
                 orderBy: {
                     registeredDate: 'desc'
