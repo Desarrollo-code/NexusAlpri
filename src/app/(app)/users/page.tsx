@@ -11,7 +11,7 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import type { User, UserRole, Process } from '@/types';
+import type { User, UserRole, Process, NavItem } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -33,7 +33,7 @@ import { Label } from '@/components/ui/label';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { UserProfileCard } from '@/components/users/user-profile-card';
-import { getRoleInSpanish, getRoleBadgeVariant } from '@/lib/security-log-utils';
+import { getRoleInSpanish, getRoleBadgeVariant, getUserNavItems } from '@/lib/security-log-utils';
 import { getProcessColors } from '@/lib/utils';
 import { Identicon } from '@/components/ui/identicon';
 import { EmptyState } from '@/components/empty-state';
@@ -108,7 +108,7 @@ function UsersPageComponent() {
     const [userToEdit, setUserToEdit] = useState<User | null>(null);
     const [showUserModal, setShowUserModal] = useState(false);
     
-    const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+    const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
     
     const [userToDeactivate, setUserToDeactivate] = useState<User | null>(null);
     const [isDeactivating, setIsDeactivating] = useState(false);
@@ -551,10 +551,11 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                     <TableRow>
                         <TableHead className="w-12 px-4"><Checkbox checked={isAllOnPageSelected} onCheckedChange={(checked) => onSelectionChange('all', !!checked)}/></TableHead>
                         <TableHead className="w-[30%]"><div className="flex items-center gap-2 font-medium text-muted-foreground"><UsersIcon className="h-4 w-4"/>Colaborador</div></TableHead>
-                        <TableHead><div className="flex items-center gap-2 font-medium text-muted-foreground"><Briefcase className="h-4 w-4"/>Rol y Proceso</div></TableHead>
+                        <TableHead><div className="flex items-center gap-2 font-medium text-muted-foreground"><UserCog className="h-4 w-4"/>Rol</div></TableHead>
+                        <TableHead><div className="flex items-center gap-2 font-medium text-muted-foreground"><Briefcase className="h-4 w-4"/>Proceso</div></TableHead>
                         <TableHead><div className="flex items-center gap-2 font-medium text-muted-foreground"><Key className="h-4 w-4" />Acceso</div></TableHead>
                         <TableHead><div className="flex items-center gap-2 font-medium text-muted-foreground"><Clock className="h-4 w-4" />Última Actividad</div></TableHead>
-                        <TableHead className="text-center"><div className="flex items-center justify-center gap-2 font-medium text-muted-foreground"><HelpCircle className="h-4 w-4"/>Estado</div></TableHead>
+                        <TableHead className="w-20 text-center"><div className="flex items-center justify-center gap-2 font-medium text-muted-foreground"><HelpCircle className="h-4 w-4"/>Estado</div></TableHead>
                         <TableHead className="text-right px-4"><span className="sr-only">Acciones</span></TableHead>
                     </TableRow>
                 </TableHeader>
@@ -567,8 +568,11 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                             if (differenceInSeconds(updatedAt, registeredDate) < 10) {
                                 return "Pendiente de primer ingreso";
                             }
-                            return format(updatedAt, "dd MMM yyyy", { locale: es });
+                            return format(updatedAt, "dd MMM yyyy, HH:mm", { locale: es });
                         }, [u.updatedAt, u.registeredDate]);
+                        
+                        const navItems = getUserNavItems(u);
+                        const accessCount = navItems.reduce((acc, item) => acc + (item.children ? item.children.length : 1), 0);
 
                         return (
                             <TableRow key={u.id} className="even:bg-muted/50 hover:bg-primary/5">
@@ -576,42 +580,38 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                                 <TableCell className="py-3">
                                     <div className="flex items-center gap-3">
                                         <Avatar className="h-9 w-9"><AvatarImage src={u.avatar || undefined} /><AvatarFallback><Identicon userId={u.id}/></AvatarFallback></Avatar>
-                                        <div><p className="font-medium">{u.name}</p><p className="text-xs text-muted-foreground">{u.email}</p></div>
+                                        <div><p className="font-semibold">{u.name}</p><p className="text-xs text-muted-foreground">{u.email}</p></div>
                                     </div>
                                 </TableCell>
                                 <TableCell>
-                                    <div className="flex flex-col gap-1">
-                                        <Badge variant={getRoleBadgeVariant(u.role)} className="w-fit">{getRoleInSpanish(u.role)}</Badge>
-                                        {u.process && (
-                                            <Badge 
-                                                className="text-xs w-fit"
-                                                style={{
-                                                    backgroundColor: getProcessColors(u.process.id).raw.light,
-                                                    color: getProcessColors(u.process.id).raw.dark,
-                                                }}
-                                            >
-                                                {u.process.name}
-                                            </Badge>
-                                        )}
-                                    </div>
+                                    <Badge variant={getRoleBadgeVariant(u.role)}>{getRoleInSpanish(u.role)}</Badge>
                                 </TableCell>
-                                 <TableCell className="text-sm">
-                                    {u.customPermissions && u.customPermissions.length > 0
-                                        ? `${u.customPermissions.length} permisos`
-                                        : 'Rol estándar'
-                                    }
+                                <TableCell>
+                                    {u.process ? (
+                                        <Badge 
+                                            style={{
+                                                backgroundColor: getProcessColors(u.process.id).raw.light,
+                                                color: getProcessColors(u.process.id).raw.dark,
+                                            }}
+                                        >
+                                            {u.process.name}
+                                        </Badge>
+                                    ) : <span className="text-xs text-muted-foreground">N/A</span>}
                                 </TableCell>
-                                 <TableCell className="text-sm text-muted-foreground">{lastActivityText}</TableCell>
-                                <TableCell className="text-center"><Badge variant={u.isActive ? "default" : "secondary"} className={cn("text-xs py-1 px-3", u.isActive ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-500/30" : "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300 border-gray-500/30")}>
-                                    {u.isActive ? 'Activo' : 'Inactivo'}
-                                </Badge></TableCell>
+                                <TableCell className="text-sm text-muted-foreground">{u.customPermissions && u.customPermissions.length > 0 ? `${accessCount} páginas` : 'Rol estándar'}</TableCell>
+                                <TableCell className="text-sm text-muted-foreground">{lastActivityText}</TableCell>
+                                <TableCell className="text-center">
+                                    <div className={cn("h-2.5 w-2.5 rounded-full mx-auto", u.isActive ? 'bg-green-500' : 'bg-red-500')} />
+                                </TableCell>
                                 <TableCell className="text-right px-4">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4"/></Button></DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                             <DropdownMenuItem onSelect={() => onEdit(u)}><Edit className="mr-2 h-4 w-4"/>Editar Perfil</DropdownMenuItem>
                                             <DropdownMenuItem onSelect={() => onRoleChange(u)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol/Permisos</DropdownMenuItem>
-                                            <DropdownMenuItem onSelect={() => onStatusChange(u, !u.isActive)} className={u.isActive ? "text-destructive" : ""}>{u.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => onStatusChange(u, !u.isActive)} className={u.isActive ? "text-destructive focus:bg-destructive/10" : ""}>
+                                                <UserX className="mr-2 h-4 w-4"/>{u.isActive ? 'Inactivar' : 'Activar'}
+                                            </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </TableCell>
