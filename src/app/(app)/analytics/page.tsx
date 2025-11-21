@@ -159,7 +159,7 @@ function AdminAnalyticsPage() {
             role: role,
             label: userRolesChartConfig[role as 'STUDENT' | 'INSTRUCTOR' | 'ADMINISTRATOR']?.label || role,
             count: stats.usersByRole.find(item => item.role === role)?.count || 0,
-            fill: userRolesChartConfig[role as 'STUDENT' | 'INSTRUCTOR' | 'ADMINISTRATOR']?.color || 'hsl(var(--muted))'
+            fill: `hsl(var(--chart-${(['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'].indexOf(role) + 1)}))`,
         })).filter(item => item.count > 0);
     }, [stats?.usersByRole]);
     
@@ -169,7 +169,7 @@ function AdminAnalyticsPage() {
             status: status,
             label: courseStatusChartConfig[status as 'DRAFT' | 'PUBLISHED' | 'ARCHIVED']?.label || status,
             count: stats.coursesByStatus.find(item => item.status === status)?.count || 0,
-            fill: courseStatusChartConfig[status as 'DRAFT' | 'PUBLISHED' | 'ARCHIVED']?.color || 'hsl(var(--muted))'
+            fill: `hsl(var(--chart-${(['PUBLISHED', 'DRAFT', 'ARCHIVED'].indexOf(status) + 1)}))`
         })).filter(item => item.count > 0);
     }, [stats?.coursesByStatus]);
 
@@ -228,14 +228,14 @@ function AdminAnalyticsPage() {
              </div>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-8 gap-4 mt-4" id="analytics-metric-cards">
-            <MetricCard title="Total Usuarios" value={stats?.totalUsers || 0} icon={UsersRound} gradient="bg-gradient-blue" />
-            <MetricCard title="Total Cursos" value={stats?.totalCourses || 0} icon={Library} gradient="bg-gradient-green"/>
-            <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={GraduationCap} gradient="bg-gradient-purple" />
-            <MetricCard title="Cursos Publicados" value={stats?.totalPublishedCourses || 0} icon={BookOpenCheck} gradient="bg-gradient-orange" />
-            <MetricCard title="Recursos" value={stats?.totalResources || 0} icon={Folder} gradient="bg-gradient-pink" />
-            <MetricCard title="Anuncios" value={stats?.totalAnnouncements || 0} icon={Megaphone} gradient="bg-gradient-blue" />
-            <MetricCard title="Formularios" value={stats?.totalForms || 0} icon={FileText} gradient="bg-gradient-green" />
-            <MetricCard title="Finalización" value={stats?.averageCompletionRate || 0} icon={BadgePercent} suffix="%" description="Promedio" gradient="bg-gradient-purple" />
+            <MetricCard title="Total Usuarios" value={stats?.totalUsers || 0} icon={UsersRound} index={0}/>
+            <MetricCard title="Total Cursos" value={stats?.totalCourses || 0} icon={Library} index={1}/>
+            <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={GraduationCap} index={2} />
+            <MetricCard title="Cursos Publicados" value={stats?.totalPublishedCourses || 0} icon={BookOpenCheck} index={3} />
+            <MetricCard title="Recursos" value={stats?.totalResources || 0} icon={Folder} index={4}/>
+            <MetricCard title="Anuncios" value={stats?.totalAnnouncements || 0} icon={Megaphone} index={5}/>
+            <MetricCard title="Formularios" value={stats?.totalForms || 0} icon={FileText} index={6}/>
+            <MetricCard title="Finalización" value={stats?.averageCompletionRate || 0} icon={BadgePercent} suffix="%" description="Promedio" index={7}/>
         </div>
         
         <Separator />
@@ -251,7 +251,7 @@ function AdminAnalyticsPage() {
                         <ResponsiveContainer>
                            <ComposedChart data={stats?.userRegistrationTrend || []} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                <XAxis dataKey="date" tickLine={false} axisLine={true} tickMargin={10} tickFormatter={formatDateTick} interval={0} />
+                                <XAxis dataKey="date" tickLine={false} axisLine={true} tickMargin={10} tickFormatter={formatDateTick} interval="preserveStartEnd" />
                                 <YAxis allowDecimals={false} tickLine={false} axisLine={true} tickMargin={10} width={30}/>
                                 <ChartTooltip cursor={{ fill: 'hsl(var(--muted))', radius: 4 }} content={<ChartTooltipContent indicator="dot" labelFormatter={formatDateTooltip} />} />
                                 <Legend />

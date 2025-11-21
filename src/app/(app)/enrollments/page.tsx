@@ -36,8 +36,9 @@ import { es } from 'date-fns/locale';
 import Link from 'next/link';
 import { QuizAnalyticsView } from '@/components/analytics/quiz-analytics-view';
 import { Skeleton } from '@/components/ui/skeleton';
-import { EnrollmentReportPDF } from '@/components/reports/enrollment-report-pdf';
 import { PDFDownloadLink } from '@react-pdf/renderer';
+import { EnrollmentReportPDF } from '@/components/reports/enrollment-report-pdf';
+import { MetricCard } from '@/components/analytics/metric-card';
 
 
 // --- TYPE DEFINITIONS ---
@@ -84,18 +85,6 @@ interface CourseEnrollmentInfo extends AppCourse {
 const PAGE_SIZE = 10;
 
 // --- REUSABLE COMPONENTS ---
-
-const StatCard = ({ icon: Icon, title, value, unit = '' }: { icon: React.ElementType, title: string, value: number, unit?: string }) => (
-    <Card className="flex-1 bg-muted/30">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-            <Icon className="h-4 w-4 text-primary" />
-        </CardHeader>
-        <CardContent>
-            <div className="text-2xl font-bold">{value.toFixed(0)}{unit}</div>
-        </CardContent>
-    </Card>
-);
 
 const CourseSelector = ({ courses, onSelect, selectedCourseId, isLoading }: { courses: AppCourse[], onSelect: (id: string) => void, selectedCourseId: string, isLoading: boolean }) => {
     const [open, setOpen] = useState(false);
@@ -233,9 +222,9 @@ const EnrolledStudentList = ({ enrollments, onAction }: {
 const EnrollmentsSkeleton = () => (
     <div className="space-y-6">
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Skeleton className="h-24 rounded-lg" />
-            <Skeleton className="h-24 rounded-lg" />
-            <Skeleton className="h-24 rounded-lg" />
+            <Skeleton className="h-28 rounded-lg" />
+            <Skeleton className="h-28 rounded-lg" />
+            <Skeleton className="h-28 rounded-lg" />
         </div>
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <Skeleton className="xl:col-span-2 h-72 rounded-lg" />
@@ -462,9 +451,9 @@ function EnrollmentsPageComponent() {
             ) : selectedCourseInfo ? (
                 <div className="space-y-6">
                     <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4" id="enrollments-stats-cards">
-                       <StatCard icon={UsersRound} title="Total Inscritos" value={selectedCourseInfo._count.enrollments} />
-                       <StatCard icon={Percent} title="Finalización Promedio" value={selectedCourseInfo.avgProgress || 0} unit="%" />
-                       <StatCard icon={CheckCircle} title="Nota Quizzes Promedio" value={selectedCourseInfo.avgQuizScore || 0} unit="%" />
+                       <MetricCard title="Total Inscritos" value={selectedCourseInfo._count.enrollments} icon={UsersRound} index={0} />
+                       <MetricCard title="Finalización Promedio" value={selectedCourseInfo.avgProgress || 0} icon={Percent} suffix="%" index={1} />
+                       <MetricCard title="Nota Quizzes Promedio" value={selectedCourseInfo.avgQuizScore || 0} icon={CheckCircle} suffix="%" index={2} />
                     </div>
                     
                     <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -479,7 +468,7 @@ function EnrollmentsPageComponent() {
                                         <XAxis dataKey="date" tickFormatter={(str) => format(new Date(str), 'd MMM', {locale: es})} fontSize={12} />
                                         <YAxis allowDecimals={false} width={30}/>
                                         <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
-                                        <Bar dataKey="count" fill="hsl(var(--primary))" barSize={20} radius={[4, 4, 0, 0]} name="Finalizados"/>
+                                        <Bar dataKey="count" fill="hsl(var(--chart-1))" barSize={20} radius={[4, 4, 0, 0]} name="Finalizados"/>
                                     </ComposedChart>
                                 </ResponsiveContainer>
                             </CardContent>

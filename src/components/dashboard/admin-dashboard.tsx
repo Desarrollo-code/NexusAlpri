@@ -2,7 +2,7 @@
 'use client';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, BookOpenCheck, GraduationCap, Percent, PlusCircle, BarChart3, Settings, ShieldAlert, Monitor, Database, ArrowRight } from "lucide-react";
+import { Users, BookOpenCheck, GraduationCap, Percent, PlusCircle, BarChart3, Settings, ShieldAlert, Monitor, Database, ArrowRight, Folder, Megaphone, FileText } from "lucide-react";
 import type { AdminDashboardStats, SecurityLog as AppSecurityLog } from '@/types';
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -108,11 +108,15 @@ export function AdminDashboard({ adminStats, securityLogs }: {
             <p className="text-muted-foreground">Una vista general y accionable del estado de tu plataforma.</p>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4" id="admin-stats-cards">
-            <MetricCard title="Usuarios Totales" value={adminStats.totalUsers} icon={Users} gradient="bg-gradient-blue" />
-            <MetricCard title="Cursos Publicados" value={adminStats.totalPublishedCourses} icon={BookOpenCheck} gradient="bg-gradient-green" />
-            <MetricCard title="Inscripciones Totales" value={adminStats.totalEnrollments} icon={GraduationCap} gradient="bg-gradient-purple" />
-            <MetricCard title="Finalización Promedio" value={Math.round(adminStats.averageCompletionRate)} icon={Percent} suffix="%" gradient="bg-gradient-pink" />
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-8 gap-4" id="admin-stats-cards">
+            <MetricCard title="Total Usuarios" value={adminStats.totalUsers} icon={Users} index={0} />
+            <MetricCard title="Total Cursos" value={adminStats.totalCourses} icon={BookOpenCheck} index={1} />
+            <MetricCard title="Inscripciones" value={adminStats.totalEnrollments} icon={GraduationCap} index={2}/>
+            <MetricCard title="Cursos Publicados" value={adminStats.totalPublishedCourses} icon={BookOpenCheck} index={3} />
+            <MetricCard title="Recursos" value={adminStats.totalResources} icon={Folder} index={4} />
+            <MetricCard title="Anuncios" value={adminStats.totalAnnouncements} icon={Megaphone} index={5} />
+            <MetricCard title="Formularios" value={adminStats.totalForms} icon={FileText} index={6} />
+            <MetricCard title="Finalización" value={Math.round(adminStats.averageCompletionRate)} icon={Percent} suffix="%" description="Promedio" index={7} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
