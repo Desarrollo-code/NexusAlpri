@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Mail, Lock, User, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -111,7 +111,8 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
             if (!response.ok) throw new Error(data.message || 'Ocurrió un error inesperado.');
             
             if (data.twoFactorRequired) {
-                 const redirectPath = `/sign-in/2fa?userId=${data.userId}&redirectedFrom=${encodeURIComponent(searchParams.get('redirectedFrom') || '/dashboard')}`;
+                 const redirectedFrom = searchParams.get('redirectedFrom');
+                 const redirectPath = `/sign-in/2fa?userId=${data.userId}${redirectedFrom ? `&redirectedFrom=${encodeURIComponent(redirectedFrom)}` : ''}`;
                  router.push(redirectPath);
             } else {
                 toast({ title: '¡Bienvenido de nuevo!' });
