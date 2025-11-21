@@ -31,7 +31,7 @@ interface UserProfileCardProps {
 export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange }: UserProfileCardProps) => {
     const router = useRouter();
     const { user: currentUser } = useAuth();
-    
+
     const canModify = currentUser?.role === 'ADMINISTRATOR';
     
     const process = user.process;
@@ -48,7 +48,7 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange }: 
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 <DropdownMenuItem onSelect={() => onEdit?.(user)}><Edit className="mr-2 h-4 w-4"/>Editar Perfil</DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => onRoleChange?.(user)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => onRoleChange?.(user)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol/Permisos</DropdownMenuItem>
                                 <DropdownMenuItem onSelect={() => onStatusChange?.(user, !user.isActive)} className={user.isActive ? "text-destructive" : ""}>
                                   <UserX className="mr-2 h-4 w-4"/>
                                   {user.isActive ? 'Inactivar' : 'Activar'}
@@ -71,7 +71,7 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange }: 
                 </div>
             </div>
 
-            <CardContent className="pt-12 px-2 pb-4 flex-grow flex flex-col items-center">
+            <CardContent className="pt-12 px-2 pb-3 flex-grow flex flex-col items-center">
                 <p className="font-semibold text-base truncate max-w-[180px]">{user.name}</p>
                 <p className="text-sm text-primary font-medium">{getRoleInSpanish(user.role)}</p>
                 
@@ -90,6 +90,13 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange }: 
                      )}
                 </div>
             </CardContent>
+
+             <CardFooter className="p-2 border-t mt-auto text-xs text-muted-foreground justify-center">
+                <div className="flex items-center gap-1.5">
+                    <Clock className="h-3 w-3"/>
+                    <span>Últ. Actividad: {format(new Date(user.updatedAt!), "dd MMM yyyy", { locale: es })}</span>
+                </div>
+            </CardFooter>
         </Card>
     );
 };
