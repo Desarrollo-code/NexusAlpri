@@ -308,7 +308,7 @@ function UsersPageComponent() {
     }
 
     if (isLoading && usersList.length === 0) {
-        return <div className="flex justify-center items-center h-full"><div className="w-8 h-8"><ColorfulLoader /></div></div>
+        return <div className="flex justify-center items-center h-full"><ColorfulLoader /></div>
     }
     
     const DesktopControls = () => (
@@ -501,7 +501,7 @@ function UsersPageComponent() {
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isDeactivating}>Cancelar</AlertDialogCancel>
                         <AlertDialogAction onClick={confirmStatusChange} disabled={isDeactivating} className={cn(!userToDeactivate?.isActive && 'bg-green-600 hover:bg-green-700', userToDeactivate?.isActive && 'bg-destructive hover:bg-destructive/90')}>
-                            {isDeactivating ? <div className="w-4 h-4 mr-2"><ColorfulLoader /></div> : null}
+                            {isDeactivating ? <ColorfulLoader className="mr-2 h-4 w-4"/> : null}
                             Sí, {userToDeactivate?.isActive ? 'Inactivar' : 'Activar'}
                         </AlertDialogAction>
                     </AlertDialogFooter>
@@ -593,7 +593,7 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
 
 export default function UsersPage() {
     return (
-        <Suspense fallback={<div className="flex items-center justify-center h-full"><div className="w-8 h-8"><ColorfulLoader /></div></div>}>
+        <Suspense fallback={<div className="flex items-center justify-center h-full"><ColorfulLoader /></div>}>
             <UsersPageComponent />
         </Suspense>
     )

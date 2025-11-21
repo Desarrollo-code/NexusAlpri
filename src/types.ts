@@ -16,6 +16,7 @@ export interface User {
   xp?: number | null;
   isActive?: boolean;
   showInLeaderboard?: boolean;
+  customPermissions?: string[]; // Para permisos granulares
 }
 
 export interface PlatformSettings {
@@ -61,6 +62,7 @@ export interface PlatformSettings {
     emptyStateUsersUrl?: string | null;
     emptyStateLeaderboardUrl?: string | null;
     emptyStateAnnouncementsUrl?: string | null;
+    roadmapVisibleTo?: UserRole[];
 }
 
 // --- NAVIGATION ---
@@ -139,7 +141,7 @@ export type CoursePrerequisiteInfo = {
   title: string;
 } | null;
 
-export interface Course extends Omit<Prisma.CourseGetPayload<{}>, 'instructor' | 'prerequisite' | 'isMandatory' | 'startDate' | 'endDate'> {
+export interface Course extends Omit<Prisma.CourseGetPayload<{}>, 'instructor' | 'prerequisite' | 'isMandatory' | 'startDate' | 'endDate' | 'certificateTemplateId'> {
   instructor: {
       id: string;
       name: string;
@@ -160,6 +162,7 @@ export interface Course extends Omit<Prisma.CourseGetPayload<{}>, 'instructor' |
   }[] | null;
   prerequisiteCompleted?: boolean;
   isMandatory: boolean;
+  certificateTemplateId?: string | null;
 }
 
 
@@ -420,6 +423,9 @@ export interface Message {
     attachments: Attachment[];
     conversationId: string;
 }
+
+// --- ROADMAP ---
+export type RoadmapItem = Prisma.RoadmapItemGetPayload<{}>;
 
 
 export { type FormStatus, type FormFieldType, type AnnouncementAttachment, type RecurrenceType, type ChatAttachment, type QuizAttempt } from '@prisma/client';
