@@ -10,21 +10,13 @@ import { getContrastingTextColor, hexToHslString } from '@/lib/utils';
 
 
 export const AVAILABLE_THEMES = [
-  { value: 'light', label: 'Claro (Personalizado)', colors: ['#f8fafc', '#6366f1'] },
-  { value: 'dark', label: 'Oscuro (Personalizado)', colors: ['#020617', '#a5b4fc'] },
-  { value: 'terminal', label: 'Terminal', colors: ['#1A241F', '#4ade80'] },
-  { value: 'sunset', label: 'Atardecer', colors: ['#301934', '#FF5F6D'] },
-  { value: 'ocean', label: 'Océano', colors: ['#F0F9FF', '#0EA5E9'] },
-  { value: 'forest', label: 'Bosque', colors: ['#F0FFF4', '#228B22'] },
-  { value: 'rose', label: 'Cuarzo Rosa', colors: ['#FFF1F2', '#F43F5E'] },
-  { value: 'neon', label: 'Neón', colors: ['#1E1B4B', '#BE185D'] },
-  { value: 'dracula', label: 'Noche Púrpura', colors: ['#282a36', '#bd93f9'] },
-  { value: 'coffee', label: 'Café', colors: ['#f5f2eb', '#7f5539'] },
-  { value: 'mint', label: 'Menta', colors: ['#F0FDF4', '#10B981'] },
-  { value: 'lavender', label: 'Lavanda', colors: ['#2E2B54', '#A78BFA'] },
-  { value: 'solarized-light', label: 'Solarizado Claro', colors: ['#fdf6e3', '#268bd2'] },
-  { value: 'solarized-dark', label: 'Solarizado Oscuro', colors: ['#002b36', '#b58900'] },
-  { value: 'imperial-gold', label: 'Dorado Imperial', colors: ['#0a192f', '#ffaf00'] },
+  { value: 'light', label: 'Claro (Personalizado)', colors: ['#f8fafc', '#6366f1'], previewClass: 'bg-[#f8fafc] border border-slate-200' },
+  { value: 'dark', label: 'Oscuro (Personalizado)', colors: ['#020617', '#a5b4fc'], previewClass: 'bg-[#020617] border border-slate-800' },
+  { value: 'mint', label: 'Menta Fresca', colors: ['#f0fdfa', '#10b981'], previewClass: 'bg-[#f0fdfa] border border-emerald-200' },
+  { value: 'sunset', label: 'Atardecer Suave', colors: ['#fff7ed', '#fb923c'], previewClass: 'bg-[#fff7ed] border border-orange-200' },
+  { value: 'lavender', label: 'Cielo Lavanda', colors: ['#f5f3ff', '#8b5cf6'], previewClass: 'bg-[#f5f3ff] border border-violet-200' },
+  { value: 'ocean', label: 'Océano Tranquilo', colors: ['#eff6ff', '#3b82f6'], previewClass: 'bg-[#eff6ff] border border-blue-200' },
+  { value: 'rose', label: 'Pétalo de Rosa', colors: ['#fff1f2', '#f43f5e'], previewClass: 'bg-[#fff1f2] border border-rose-200' },
 ];
 
 /**
