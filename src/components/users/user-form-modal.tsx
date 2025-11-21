@@ -126,7 +126,7 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
         setCustomPermissions(prev => 
             checked ? [...prev, path] : prev.filter(p => p !== path)
         );
-    }
+    };
 
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -269,7 +269,6 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
                         {user ? 'Guardar Cambios' : 'Crear Colaborador'}
                     </Button>
                 </DialogFooter>
-                 </div>
             </DialogContent>
         </Dialog>
     );
