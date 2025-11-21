@@ -1,3 +1,4 @@
+
 // src/components/users/user-form-modal.tsx
 'use client';
 
@@ -25,7 +26,7 @@ import { Progress } from '../ui/progress';
 import { ScrollArea } from '../ui/scroll-area';
 import { getNavItemsForRole } from '@/lib/nav-items';
 import { Checkbox } from '../ui/checkbox';
-import { Card, CardContent } from '../ui/card';
+import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '../ui/card';
 import { Separator } from '../ui/separator';
 
 interface UserFormModalProps {
