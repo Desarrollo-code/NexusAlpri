@@ -2,14 +2,14 @@
 'use client';
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Code, Database, Paintbrush, Rocket, CheckCircle, Lightbulb, MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { Code, Database, Paintbrush, Rocket, CheckCircle, Lightbulb, MoreVertical, Edit, Trash2, Award, Sparkles, UsersRound, FileText, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { RoadmapItem } from '@/types';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useAuth } from '@/contexts/auth-context';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../ui/dropdown-menu';
-import { Button } from '../ui/button';
+import { Button, buttonVariants } from '../ui/button';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -21,14 +21,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-
-const ICONS: Record<string, React.ElementType> = {
-    Lightbulb, Code, Database, Paintbrush, Rocket, CheckCircle, Award: Rocket, Sparkles: Rocket, UsersRound: Rocket, FileText: Rocket, Shield: Rocket
-};
+import * as LucideIcons from 'lucide-react';
 
 const RoadmapItemCard = ({ item, onEdit, onDelete }: { item: RoadmapItem, onEdit: () => void, onDelete: () => void }) => {
     const { user } = useAuth();
-    const Icon = ICONS[item.icon] || Lightbulb;
+    const Icon = (LucideIcons as any)[item.icon] || Lightbulb;
     
     return (
         <Card className="relative shadow-lg hover:shadow-2xl transition-shadow duration-300">
@@ -129,7 +126,7 @@ export const RoadmapView = ({ items, onEdit, onDelete }: { items: RoadmapItem[],
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDelete} className={buttonVariants({ variant: 'destructive'})}>
+                        <AlertDialogAction onClick={handleDelete} variant="destructive">
                            <Trash2 className="mr-2 h-4 w-4"/> Sí, eliminar
                         </AlertDialogAction>
                     </AlertDialogFooter>
