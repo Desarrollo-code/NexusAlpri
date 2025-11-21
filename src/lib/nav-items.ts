@@ -21,6 +21,7 @@ import {
   Sparkles,
   Award,
   Megaphone,
+  Rocket,
 } from 'lucide-react';
 import { GradientIcon } from '@/components/ui/gradient-icon';
 
@@ -170,6 +171,13 @@ const NAVIGATION_ITEMS: NavItem[] = [
         icon: BarChart3,
         path: '/analytics',
         roles: ['ADMINISTRATOR']
+      },
+      {
+        id: 'roadmap',
+        label: 'Ruta del Proyecto',
+        icon: Rocket,
+        path: '/roadmap',
+        roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
       },
       {
         id: 'security-audit',
