@@ -66,9 +66,10 @@ Una vez establecida la base sólida, el proyecto entró en una fase de mejora co
     *   **Mensajes de Motivación:** Se creó un sistema para configurar mensajes emergentes (toasts) que felicitan al usuario al alcanzar hitos específicos, como completar un curso o subir de nivel.
     *   **Pausas Activas Interactivas:** Se introdujeron eventos recurrentes que permiten a los usuarios confirmar su participación para ganar puntos de experiencia, fomentando el bienestar.
 
-2.  **Mejoras en la Gestión de Cursos:**
+2.  **Mejoras en la Gestión de Contenido:**
     *   **Vigencia de Cursos:** Se añadió la funcionalidad de establecer **fechas de inicio y cierre** para los cursos, permitiendo a los instructores programar su disponibilidad.
     *   **Restricción de Lecciones:** Se implementó una lógica de progresión lineal, donde el estudiante debe completar una lección para desbloquear la siguiente.
+    *   **Quizzes en Recursos:** Se habilitó la capacidad de crear y adjuntar un **quiz directamente a un recurso de la biblioteca**, transformando materiales de lectura o videos en evaluaciones interactivas.
 
 3.  **Interactividad en Tiempo Real y Herramientas Colaborativas:**
     *   **Quizz-IT:** Se desarrolló un modo de juego en tiempo real que permite a los instructores lanzar un quiz y a los participantes unirse con un PIN para competir en vivo.
@@ -77,7 +78,8 @@ Una vez establecida la base sólida, el proyecto entró en una fase de mejora co
 4.  **Mejoras en la Experiencia de Usuario y la Interfaz:**
     *   **Módulo de Continuidad (Roadmap):** Se creó esta misma página dedicada a mostrar la hoja de ruta y la evolución del proyecto, haciendo transparente el proceso de desarrollo.
     *   **Renovación de Interfaz Pública:** Se rediseñó la página de inicio y se introdujo una **barra de navegación inferior** en la vista móvil para mejorar la usabilidad.
-    *   **Personalización de Temas:** Se refinó y amplió la paleta de colores, añadiendo temas como "Bosque Profundo" y "Cielo Despejado" para una mayor personalización.
+    *   **Personalización de Temas:** Se refinó y amplió la paleta de colores, añadiendo nuevos temas para una mayor personalización.
+    *   **Privacidad en Ranking:** Se añadió un parámetro de privacidad para que los usuarios puedan decidir si aparecen o no en la tabla de clasificación.
 
 5.  **Refinamiento y Pruebas Continuas:**
     *   Se realizaron ajustes finos a la interfaz basados en la usabilidad.
