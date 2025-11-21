@@ -111,10 +111,10 @@ export async function POST(req: NextRequest) {
     
     try {
         const body = await req.json();
-        const { title, type, url, category, tags, parentId, description, isPublic, sharedWithUserIds, expiresAt, status, size, fileType, filename } = body;
+        const { title, type, url, category, tags, parentId, description, isPublic, sharedWithUserIds, expiresAt, status, size } = body;
 
         // Use the filename as a fallback for the title if title is not provided
-        const finalTitle = title || filename;
+        const finalTitle = title || body.filename;
 
         if (!finalTitle || !type) {
             return NextResponse.json({ message: 'Título y tipo son requeridos' }, { status: 400 });
@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
             tags: Array.isArray(tags) ? tags.join(',') : '',
             ispublic: isPublic === true, status: status || 'ACTIVE',
             expiresAt: expiresAt ? new Date(expiresAt) : null,
-            size, filetype: fileType, // CORRECCIÓN: Usar 'filetype' en minúsculas
+            size, filetype: body.fileType, // CORRECCIÓN: Usar el `fileType` del body y asignarlo a `filetype`.
             uploader: { connect: { id: session.id } },
         };
         
