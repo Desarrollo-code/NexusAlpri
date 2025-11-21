@@ -20,10 +20,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  // --- REGLA 2: Si el usuario NO tiene sesión y va a una ruta protegida, lo redirigimos al login. ---
+  // --- REGLA 2: Si el usuario NO tiene sesión y va a una ruta protegida, lo redirigimos al login, AÑADIENDO el parámetro de redirección. ---
   const isProtectedRoute = PROTECTED_ROUTE_PREFIXES.some(prefix => pathname.startsWith(prefix));
   if (!user && isProtectedRoute) {
     const signInUrl = new URL('/sign-in', request.url);
+    // **LA CORRECCIÓN CLAVE ESTÁ AQUÍ**
     signInUrl.searchParams.set('redirectedFrom', pathname);
     return NextResponse.redirect(signInUrl);
   }
