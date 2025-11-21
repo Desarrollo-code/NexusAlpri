@@ -30,9 +30,9 @@ Antes de escribir una sola línea de código, se crearon los documentos fundamen
 
 1.  **Inicialización del Proyecto:** Se creó un nuevo proyecto Next.js utilizando el App Router y TypeScript.
 2.  **Configuración de Estilos:** Se instaló y configuró Tailwind CSS y ShadCN UI, estableciendo la base para el sistema de diseño.
-3.  **Modelado de la Base de Datos:** Se escribió el `schema.prisma` basado en los requisitos definidos en los manuales, incluyendo todas las tablas (User, Course, Module, Lesson, Resource, etc.) y sus relaciones, para ser usado con Supabase.
-4.  **Configuración de Despliegue:** Se configuró Vercel para conectarse a Supabase y se ajustó el script de `build` para sincronizar automáticamente el esquema de la base de datos en cada despliegue.
-5.  **Estructura de Carpetas:** Se organizó el proyecto siguiendo la arquitectura definida en el manual técnico, separando las rutas públicas, las de autenticación y las protegidas de la aplicación.
+3.  **Modelado de la Base de Datos:** Se escribió el `schema.prisma` basado en los requisitos definidos en los manuales, incluyendo todas las tablas (User, Course, Module, Lesson, Resource, etc.) y sus relaciones.
+4.  **Configuración de Despliegue:** Se configuró Vercel para conectarse a Supabase y se ajustó el script de `build` para sincronizar automáticamente el esquema de la base de datos.
+5.  **Estructura de Carpetas:** Se organizó el proyecto siguiendo la arquitectura definida, separando las rutas públicas, las de autenticación y las protegidas de la aplicación.
 
 ---
 
@@ -40,16 +40,9 @@ Antes de escribir una sola línea de código, se crearon los documentos fundamen
 
 Esta fase se centró en construir el "cerebro" de la aplicación a través de los API Endpoints.
 
-1.  **Autenticación y Sesiones:** Se implementó la lógica de autenticación con JWT en cookies (`/api/auth/...`). Se creó el `middleware.ts` para proteger las rutas.
-2.  **CRUD de Entidades:** Se desarrollaron los endpoints para las operaciones básicas (Crear, Leer, Actualizar, Eliminar) de las entidades principales:
-    *   `/api/users`: Gestión de usuarios.
-    *   `/api/courses`: Gestión de cursos y su contenido.
-    *   `/api/resources`: Gestión de la biblioteca de recursos.
-    *   `/api/enrollments`: Gestión de inscripciones.
-3.  **Lógicas de Negocio Clave:** Se implementaron las lógicas más complejas definidas en el manual técnico:
-    *   Sistema de progreso automático (`/api/progress/...`).
-    *   Sistema de notificaciones (`/api/notifications/...`).
-    *   Sistema de eventos del calendario con audiencias (`/api/events/...`).
+1.  **Autenticación y Sesiones:** Se implementó la lógica de autenticación con JWT en cookies (`/api/auth/...`) y el `middleware` para proteger las rutas.
+2.  **CRUD de Entidades:** Se desarrollaron los endpoints para las operaciones básicas (Crear, Leer, Actualizar, Eliminar) de las entidades principales: Cursos, Usuarios, Recursos, etc.
+3.  **Lógicas de Negocio Clave:** Se implementaron las lógicas más complejas, como el sistema de progreso automático, las notificaciones y la gestión de permisos.
 
 ---
 
@@ -58,20 +51,26 @@ Esta fase se centró en construir el "cerebro" de la aplicación a través de lo
 Con el backend funcional, el enfoque se trasladó a la experiencia del usuario.
 
 1.  **Layout Principal:** Se construyó el layout principal de la aplicación (`/src/app/(app)/layout.tsx`), incluyendo la barra lateral de navegación y la barra superior.
-2.  **Contextos Globales:** Se crearon los contextos de React para gestionar el estado global, como `AuthContext` y `TitleContext`.
-3.  **Construcción de Páginas:** Se desarrollaron las páginas para cada una de las funcionalidades, conectándolas con los endpoints de la API correspondientes:
-    *   Páginas de autenticación (`/sign-in`, `/sign-up`).
-    *   Dashboard dinámico según el rol.
-    *   Páginas de gestión (usuarios, cursos, etc.).
-    *   Páginas de consumo (detalle del curso, biblioteca, etc.).
-4.  **Componentes Reutilizables:** Se crearon componentes especializados como `CourseCard`, `AnnouncementCard` y `QuizViewer` para encapsular la lógica y mantener un código limpio.
-5.  **Estilización y Tema:** Se aplicaron los estilos visuales utilizando Tailwind CSS y se configuró el sistema de temas (claro/oscuro) en `globals.css`.
+2.  **Construcción de Páginas:** Se desarrollaron las páginas para cada una de las funcionalidades, conectándolas con los endpoints de la API.
+3.  **Componentes Reutilizables:** Se crearon componentes especializados como `CourseCard`, `AnnouncementCard` y `QuizViewer`.
+4.  **Estilización y Tema:** Se aplicaron los estilos visuales utilizando Tailwind CSS y se configuró el sistema de temas.
 
 ---
 
-### Fase 6: Refinamiento, Pruebas y Despliegue
+### Fase 6: Evolución y Funcionalidades Avanzadas
 
-1.  **Pruebas Funcionales:** Se utilizó la `MATRIZ_TRAZABILIDAD.md` como una lista de verificación para probar cada una de las funcionalidades desde la perspectiva de cada rol.
-2.  **Iteración y Feedback:** Se realizaron ajustes finos a la interfaz y a la experiencia de usuario basados en la usabilidad y la coherencia visual (ej. mejora de colores en gráficos, ajuste de la tarjeta de perfil).
-3.  **Optimización:** Se revisó el código para mejorar el rendimiento, especialmente en la carga de datos y las interacciones del usuario.
-4.  **Preparación para Despliegue:** Se configuró el proyecto para un entorno de producción, asegurando que las variables de entorno y los scripts de construcción fueran correctos.
+Una vez establecida la base sólida, el proyecto entró en una fase de mejora continua y adición de características de alto valor.
+
+1.  **Gamificación Avanzada:**
+    *   **Certificados Personalizables:** Se implementó un gestor de plantillas para que los administradores pudieran diseñar y personalizar los certificados de finalización de curso.
+    *   **Mensajes de Motivación:** Se creó un sistema para configurar mensajes emergentes (toasts) que felicitan al usuario al alcanzar hitos específicos, como completar un curso o subir de nivel.
+2.  **Interactividad en Tiempo Real:**
+    *   **Quizz-IT:** Se desarrolló un modo de juego en tiempo real que permite a los instructores lanzar un quiz y a los participantes unirse con un PIN para competir en vivo.
+3.  **Mejoras en la Gestión y Experiencia de Usuario:**
+    *   **Módulo de Continuidad (Roadmap):** Se creó una página dedicada a mostrar la hoja de ruta y la evolución del proyecto, haciendo transparente el proceso de desarrollo.
+    *   **Preferencias de Privacidad:** Se añadió la opción para que los usuarios puedan ocultar su perfil de la tabla de clasificación pública.
+    *   **Renovación de Temas:** Se refinó la paleta de colores, reemplazando los temas iniciales por una selección curada de temas pastel para una estética más profesional y cohesiva.
+4.  **Refinamiento y Pruebas Continuas:**
+    *   Se realizaron ajustes finos a la interfaz basados en la usabilidad.
+    *   Se optimizó el código para mejorar el rendimiento, especialmente en la carga de datos y las interacciones del usuario.
+    *   Se preparó el proyecto para despliegues continuos, asegurando la estabilidad en cada actualización.
