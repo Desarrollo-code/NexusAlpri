@@ -61,16 +61,25 @@ Con el backend funcional, el enfoque se trasladó a la experiencia del usuario.
 
 Una vez establecida la base sólida, el proyecto entró en una fase de mejora continua y adición de características de alto valor.
 
-1.  **Gamificación Avanzada:**
-    *   **Certificados Personalizables:** Se implementó un gestor de plantillas para que los administradores pudieran diseñar y personalizar los certificados de finalización de curso.
+1.  **Gamificación y Reconocimiento Avanzado:**
+    *   **Certificados de Finalización:** Se implementó un sistema completo de certificaciones, incluyendo un **gestor de plantillas personalizables** para administradores, la **generación automática de PDFs** para los estudiantes y la opción de **compartir los certificados en redes sociales** como LinkedIn.
     *   **Mensajes de Motivación:** Se creó un sistema para configurar mensajes emergentes (toasts) que felicitan al usuario al alcanzar hitos específicos, como completar un curso o subir de nivel.
-2.  **Interactividad en Tiempo Real:**
+    *   **Pausas Activas Interactivas:** Se introdujeron eventos recurrentes que permiten a los usuarios confirmar su participación para ganar puntos de experiencia, fomentando el bienestar.
+
+2.  **Mejoras en la Gestión de Cursos:**
+    *   **Vigencia de Cursos:** Se añadió la funcionalidad de establecer **fechas de inicio y cierre** para los cursos, permitiendo a los instructores programar su disponibilidad.
+    *   **Restricción de Lecciones:** Se implementó una lógica de progresión lineal, donde el estudiante debe completar una lección para desbloquear la siguiente.
+
+3.  **Interactividad en Tiempo Real y Herramientas Colaborativas:**
     *   **Quizz-IT:** Se desarrolló un modo de juego en tiempo real que permite a los instructores lanzar un quiz y a los participantes unirse con un PIN para competir en vivo.
-3.  **Mejoras en la Gestión y Experiencia de Usuario:**
-    *   **Módulo de Continuidad (Roadmap):** Se creó una página dedicada a mostrar la hoja de ruta y la evolución del proyecto, haciendo transparente el proceso de desarrollo.
-    *   **Preferencias de Privacidad:** Se añadió la opción para que los usuarios puedan ocultar su perfil de la tabla de clasificación pública.
-    *   **Renovación de Temas:** Se refinó la paleta de colores, reemplazando los temas iniciales por una selección curada de temas pastel para una estética más profesional y cohesiva.
-4.  **Refinamiento y Pruebas Continuas:**
+    *   **Módulo de Comentarios en Cursos:** Se habilitó una sección de discusión dentro de cada curso para que los estudiantes puedan hacer preguntas y colaborar entre sí.
+
+4.  **Mejoras en la Experiencia de Usuario y la Interfaz:**
+    *   **Módulo de Continuidad (Roadmap):** Se creó esta misma página dedicada a mostrar la hoja de ruta y la evolución del proyecto, haciendo transparente el proceso de desarrollo.
+    *   **Renovación de Interfaz Pública:** Se rediseñó la página de inicio y se introdujo una **barra de navegación inferior** en la vista móvil para mejorar la usabilidad.
+    *   **Personalización de Temas:** Se refinó y amplió la paleta de colores, añadiendo temas como "Bosque Profundo" y "Cielo Despejado" para una mayor personalización.
+
+5.  **Refinamiento y Pruebas Continuas:**
     *   Se realizaron ajustes finos a la interfaz basados en la usabilidad.
     *   Se optimizó el código para mejorar el rendimiento, especialmente en la carga de datos y las interacciones del usuario.
     *   Se preparó el proyecto para despliegues continuos, asegurando la estabilidad en cada actualización.
