@@ -15,6 +15,7 @@ export interface User {
   theme?: string | null;
   xp?: number | null;
   isActive?: boolean;
+  showInLeaderboard?: boolean;
 }
 
 export interface PlatformSettings {

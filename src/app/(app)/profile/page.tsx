@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Camera, User, KeyRound, Shield, Eye, EyeOff, Save, CheckCircle, Award, Star, HelpCircle, Trophy, Palette, Briefcase, Replace, XCircle } from 'lucide-react';
+import { Loader2, Camera, User, KeyRound, Shield, Eye, EyeOff, Save, CheckCircle, Award, Star, HelpCircle, Trophy, Palette, Briefcase, Replace, XCircle, EyeIcon, BarChart } from 'lucide-react';
 import React, { useState, ChangeEvent, FormEvent, useEffect, useCallback, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { PasswordStrengthIndicator } from '@/components/password-strength-indicator';
@@ -32,6 +32,7 @@ import { useTheme } from 'next-themes';
 import { AVAILABLE_THEMES } from '@/components/theme-provider';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { UploadArea } from '@/components/ui/upload-area';
+import { Switch } from '@/components/ui/switch';
 
 
 // Gamification Level Calculation
@@ -109,6 +110,55 @@ const InfoCard = ({ user, updateUser }: { user: AppUser, updateUser: (data: Part
         </Card>
     );
 };
+
+const PrivacyCard = ({ user, updateUser }: { user: AppUser, updateUser: (data: Partial<AppUser>) => void }) => {
+    const { toast } = useToast();
+    const [showInLeaderboard, setShowInLeaderboard] = useState(user.showInLeaderboard !== false);
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handlePrivacyChange = async (checked: boolean) => {
+        setShowInLeaderboard(checked);
+        setIsSaving(true);
+        try {
+            const response = await fetch(`/api/users/${user.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ showInLeaderboard: checked }),
+            });
+            if (!response.ok) throw new Error((await response.json()).message);
+            updateUser({ showInLeaderboard: checked });
+            toast({ title: 'Preferencia guardada', description: 'Tu visibilidad en el ranking ha sido actualizada.' });
+        } catch (error) {
+            toast({ title: 'Error', description: (error as Error).message, variant: 'destructive' });
+            setShowInLeaderboard(!checked); // Revert on error
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Preferencias de Privacidad</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                        <Label htmlFor="show-leaderboard" className="text-base font-medium">Visibilidad en Ranking</Label>
+                        <p className="text-sm text-muted-foreground">Controla si tu nombre y puntuación aparecen en la tabla de clasificación.</p>
+                    </div>
+                     <Switch
+                        id="show-leaderboard"
+                        checked={showInLeaderboard}
+                        onCheckedChange={handlePrivacyChange}
+                        disabled={isSaving}
+                    />
+                </div>
+            </CardContent>
+        </Card>
+    );
+};
+
 
 const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setConfirmPassword, currentPassword, setCurrentPassword }: 
 { user: AppUser, newPassword: any, setNewPassword: any, confirmPassword: any, setConfirmPassword: any, currentPassword: any, setCurrentPassword: any }) => {
@@ -377,28 +427,6 @@ const ProfileCard = ({ user, onAvatarChange, onAvatarRemove, isUploading, upload
     </Card>
 )};
 
-const ThemeSwatch = ({ colors, onClick, isSelected }: { colors: string[], onClick: () => void, isSelected: boolean }) => {
-  const gradient = colors.length > 1
-    ? `linear-gradient(to top right, ${colors[0]} 50%, ${colors[1]} 50%)`
-    : colors[0];
-
-  return (
-    <div
-      onClick={onClick}
-      className={cn(
-        "w-full h-12 rounded-full cursor-pointer border-2 transition-all duration-200 flex items-center justify-center",
-        isSelected ? 'border-primary ring-2 ring-primary/50' : 'border-transparent hover:border-primary/50'
-      )}
-    >
-      <div
-        className="w-10 h-10 rounded-full shadow-inner"
-        style={{ background: gradient }}
-      />
-    </div>
-  );
-};
-
-
 const ThemeSelectorCard = ({ className }: { className?: string }) => {
     const { theme, setTheme } = useTheme();
     const { user, updateUser } = useAuth();
@@ -431,11 +459,17 @@ const ThemeSelectorCard = ({ className }: { className?: string }) => {
                 <TooltipProvider key={t.value} delayDuration={100}>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                             <ThemeSwatch
-                                colors={t.colors}
-                                onClick={() => handleThemeChange(t.value)}
-                                isSelected={theme === t.value}
-                             />
+                             <div onClick={() => handleThemeChange(t.value)} className="cursor-pointer group flex flex-col items-center gap-2">
+                                <div
+                                    className={cn(
+                                        'h-16 w-full rounded-lg flex items-center justify-center border-2 transition-all',
+                                        theme === t.value ? 'border-primary ring-2 ring-primary/50' : 'border-border group-hover:border-primary/70'
+                                    )}
+                                >
+                                    <div className={cn('h-14 w-full mx-1 rounded-md', t.previewClass)} />
+                                </div>
+                                <p className="text-xs font-medium text-muted-foreground">{t.label}</p>
+                            </div>
                         </TooltipTrigger>
                         <TooltipContent><p>{t.label}</p></TooltipContent>
                     </Tooltip>
@@ -540,6 +574,7 @@ function ProfilePageContent() {
                         </div>
                         <div className="lg:col-span-2 space-y-6">
                             <InfoCard user={user} updateUser={updateUser} />
+                            <PrivacyCard user={user} updateUser={updateUser} />
                             <ThemeSelectorCard />
                             <SecurityCard 
                                 user={user} 
