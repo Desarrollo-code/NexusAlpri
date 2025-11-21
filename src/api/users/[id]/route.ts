@@ -56,6 +56,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         if ('theme' in body) dataToUpdate.theme = body.theme;
         if ('processId' in body) dataToUpdate.processId = body.processId;
         if ('showInLeaderboard' in body) dataToUpdate.showInLeaderboard = body.showInLeaderboard;
+        if ('customPermissions' in body) dataToUpdate.customPermissions = body.customPermissions;
 
         // --- Admin-only privileged updates ---
         if (session.role === 'ADMINISTRATOR') {

@@ -16,6 +16,7 @@ export interface User {
   xp?: number | null;
   isActive?: boolean;
   showInLeaderboard?: boolean;
+  customPermissions?: string[]; // Para permisos granulares
 }
 
 export interface PlatformSettings {
@@ -161,6 +162,7 @@ export interface Course extends Omit<Prisma.CourseGetPayload<{}>, 'instructor' |
   }[] | null;
   prerequisiteCompleted?: boolean;
   isMandatory: boolean;
+  certificateTemplateId?: string | null;
 }
 
 
@@ -424,5 +426,6 @@ export interface Message {
 
 // --- ROADMAP ---
 export type RoadmapItem = Prisma.RoadmapItemGetPayload<{}>;
+
 
 export { type FormStatus, type FormFieldType, type AnnouncementAttachment, type RecurrenceType, type ChatAttachment, type QuizAttempt } from '@prisma/client';
