@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 interface UserProfileCardProps {
-    user: User & { process?: { id: string; name: string } | null, processes?: { id: string; name: string }[], updatedAt?: string | Date };
+    user: User & { process?: { id: string; name: string } | null, updatedAt?: string | Date };
     onEdit?: (user: User) => void;
     onRoleChange?: (user: User) => void;
     onStatusChange?: (user: User, status: boolean) => void;
@@ -40,8 +40,8 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange }: 
     const showMessageButton = currentUser?.id !== user.id;
     const canModify = currentUser?.role === 'ADMINISTRATOR';
     
-    const displayProcess = user.process ? [user.process] : (user.processes || []);
-    const processColors = user.process ? getProcessColors(user.process.id) : null;
+    const process = user.process;
+    const processColors = process ? getProcessColors(process.id) : null;
 
     return (
         <Card className="flex flex-col h-full bg-card shadow-md hover:shadow-primary/20 transition-shadow duration-300 text-center overflow-hidden">
@@ -76,16 +76,16 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange }: 
                      <Badge variant={user.isActive ? "default" : "secondary"} className={cn("text-xs py-0.5 px-2", user.isActive ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-500/30" : "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300 border-gray-500/30")}>
                         {user.isActive ? 'Activo' : 'Inactivo'}
                      </Badge>
-                     {displayProcess.length > 0 && displayProcess[0] && (
+                     {process && (
                          <Badge 
-                            key={displayProcess[0].id} 
+                            key={process.id} 
                             className="text-xs py-0.5 px-2 truncate max-w-[140px]"
                             style={{
-                                backgroundColor: getProcessColors(displayProcess[0].id).raw.light,
-                                color: getProcessColors(displayProcess[0].id).raw.dark,
+                                backgroundColor: processColors?.raw.light,
+                                color: processColors?.raw.dark,
                             }}
                          >
-                            <Briefcase className="mr-1 h-3 w-3"/> {displayProcess[0].name}
+                            <Briefcase className="mr-1 h-3 w-3"/> {process.name}
                         </Badge>
                      )}
                 </div>
