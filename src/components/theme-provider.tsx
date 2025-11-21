@@ -17,6 +17,9 @@ export const AVAILABLE_THEMES = [
   { value: 'lavender', label: 'Cielo Lavanda', colors: ['#f5f3ff', '#8b5cf6'], previewClass: 'bg-[#f5f3ff] border border-violet-200' },
   { value: 'ocean', label: 'Océano Tranquilo', colors: ['#eff6ff', '#3b82f6'], previewClass: 'bg-[#eff6ff] border border-blue-200' },
   { value: 'rose', label: 'Pétalo de Rosa', colors: ['#fff1f2', '#f43f5e'], previewClass: 'bg-[#fff1f2] border border-rose-200' },
+  { value: 'forest', label: 'Bosque Profundo', colors: ['#f0fff4', '#228b22'], previewClass: 'bg-[#f0fff4] border border-green-200' },
+  { value: 'sky', label: 'Cielo Despejado', colors: ['#f0f9ff', '#0ea5e9'], previewClass: 'bg-[#f0f9ff] border border-sky-200' },
+  { value: 'ruby', label: 'Rubí Intenso', colors: ['#fff1f2', '#e11d48'], previewClass: 'bg-[#fff1f2] border border-red-200' },
 ];
 
 /**

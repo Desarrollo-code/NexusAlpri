@@ -26,12 +26,12 @@
     --ring: 223 80% 55%;
     --radius: 0.75rem;
 
-    /* Colores para gráficos con progresión armónica */
-    --chart-1: 223 80% 80%;
+    /* Progresión armónica del tema principal */
+    --chart-1: 223 80% 80%; /* Más claro */
     --chart-2: 223 80% 75%;
     --chart-3: 223 80% 70%;
-    --chart-4: 223 80% 65%;
-    --chart-5: 223 80% 60%;
+    --chart-4: 223 80% 65%; /* Principal */
+    --chart-5: 223 80% 60%; /* Más oscuro */
     
     /* Colores para eventos del calendario */
     --event-blue: 210 80% 55%;
@@ -204,6 +204,87 @@
     --chart-3: 340 70% 75%;
     --chart-4: 340 70% 70%;
     --chart-5: 340 70% 65%;
+  }
+
+  [data-theme="forest"] {
+    --background: 100 10% 97%;
+    --foreground: 95 25% 20%;
+    --card: 0 0% 100%;
+    --card-foreground: 95 25% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 95 25% 20%;
+    --primary: 100 35% 45%;
+    --primary-foreground: 100 20% 98%;
+    --secondary: 100 15% 92%;
+    --secondary-foreground: 100 15% 25%;
+    --muted: 100 15% 96%;
+    --muted-foreground: 95 10% 50%;
+    --accent: 40 70% 60%;
+    --accent-foreground: 40 30% 10%;
+    --destructive: 0 60% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 100 10% 88%;
+    --input: 100 10% 94%;
+    --ring: 100 35% 50%;
+    --chart-1: 100 35% 75%;
+    --chart-2: 100 35% 65%;
+    --chart-3: 100 35% 55%;
+    --chart-4: 100 35% 45%;
+    --chart-5: 100 35% 35%;
+  }
+
+  [data-theme="sky"] {
+    --background: 205 90% 96%;
+    --foreground: 215 40% 25%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 40% 25%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 40% 25%;
+    --primary: 205 80% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 205 60% 93%;
+    --secondary-foreground: 205 30% 30%;
+    --muted: 205 60% 96%;
+    --muted-foreground: 215 20% 55%;
+    --accent: 250 80% 70%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 70% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 205 30% 90%;
+    --input: 205 30% 94%;
+    --ring: 205 80% 65%;
+    --chart-1: 205 80% 85%;
+    --chart-2: 205 80% 80%;
+    --chart-3: 205 80% 75%;
+    --chart-4: 205 80% 70%;
+    --chart-5: 205 80% 65%;
+  }
+  
+  [data-theme="ruby"] {
+    --background: 355 50% 98%;
+    --foreground: 350 40% 25%;
+    --card: 0 0% 100%;
+    --card-foreground: 350 40% 25%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 350 40% 25%;
+    --primary: 350 70% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 355 40% 94%;
+    --secondary-foreground: 355 25% 30%;
+    --muted: 355 40% 97%;
+    --muted-foreground: 350 15% 55%;
+    --accent: 40 80% 65%;
+    --accent-foreground: 40 30% 15%;
+    --destructive: 0 70% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 355 25% 90%;
+    --input: 355 25% 95%;
+    --ring: 350 70% 60%;
+    --chart-1: 350 70% 80%;
+    --chart-2: 350 70% 70%;
+    --chart-3: 350 70% 60%;
+    --chart-4: 350 70% 50%;
+    --chart-5: 350 70% 40%;
   }
 }
  
