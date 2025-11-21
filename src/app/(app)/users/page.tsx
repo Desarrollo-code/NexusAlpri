@@ -502,7 +502,7 @@ function UsersPageComponent() {
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isDeactivating}>Cancelar</AlertDialogCancel>
                         <AlertDialogAction onClick={confirmStatusChange} disabled={isDeactivating} className={cn(!userToDeactivate?.isActive && 'bg-green-600 hover:bg-green-700', userToDeactivate?.isActive && 'bg-destructive hover:bg-destructive/90')}>
-                            {isDeactivating && <div className="w-4 h-4 mr-2"><ColorfulLoader /></div>}
+                            {isDeactivating ? <div className="w-4 h-4 mr-2"><ColorfulLoader /></div> : null}
                             Sí, {userToDeactivate?.isActive ? 'Inactivar' : 'Activar'}
                         </AlertDialogAction>
                     </AlertDialogFooter>
@@ -534,7 +534,7 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                             <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4"/></Button></DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 <DropdownMenuItem onSelect={() => onEdit(u)}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => onRoleChange(u)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => onRoleChange(u)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol/Permisos</DropdownMenuItem>
                                 <DropdownMenuItem onSelect={() => onStatusChange(u, !u.isActive)} className={u.isActive ? "text-destructive" : ""}>{u.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -550,19 +550,19 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                 <TableHeader className="bg-muted/50">
                     <TableRow>
                         <TableHead className="w-12 px-4"><Checkbox checked={isAllOnPageSelected} onCheckedChange={(checked) => onSelectionChange('all', !!checked)}/></TableHead>
-                        <TableHead className="w-[30%]"><div className="flex items-center gap-2 font-medium text-muted-foreground"><UsersIcon className="h-4 w-4"/>Colaborador</div></TableHead>
+                        <TableHead className="w-[25%]"><div className="flex items-center gap-2 font-medium text-muted-foreground"><UsersIcon className="h-4 w-4"/>Colaborador</div></TableHead>
                         <TableHead><div className="flex items-center gap-2 font-medium text-muted-foreground"><UserCog className="h-4 w-4"/>Rol</div></TableHead>
                         <TableHead><div className="flex items-center gap-2 font-medium text-muted-foreground"><Briefcase className="h-4 w-4"/>Proceso</div></TableHead>
                         <TableHead><div className="flex items-center gap-2 font-medium text-muted-foreground"><Key className="h-4 w-4" />Acceso</div></TableHead>
                         <TableHead><div className="flex items-center gap-2 font-medium text-muted-foreground"><Clock className="h-4 w-4" />Última Actividad</div></TableHead>
-                        <TableHead className="w-20 text-center"><div className="flex items-center justify-center gap-2 font-medium text-muted-foreground"><HelpCircle className="h-4 w-4"/>Estado</div></TableHead>
+                        <TableHead className="w-20 text-center">Estado</TableHead>
                         <TableHead className="text-right px-4"><span className="sr-only">Acciones</span></TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {users.map((u: UserWithProcess) => {
                         const lastActivityText = useMemo(() => {
-                            if (!u.updatedAt || !u.registeredDate) return "Pendiente de primer ingreso";
+                            if (!u.updatedAt || !u.registeredDate) return "Pendiente";
                             const updatedAt = new Date(u.updatedAt);
                             const registeredDate = new Date(u.registeredDate);
                             if (differenceInSeconds(updatedAt, registeredDate) < 10) {
@@ -583,9 +583,7 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                                         <div><p className="font-semibold">{u.name}</p><p className="text-xs text-muted-foreground">{u.email}</p></div>
                                     </div>
                                 </TableCell>
-                                <TableCell>
-                                    <Badge variant={getRoleBadgeVariant(u.role)}>{getRoleInSpanish(u.role)}</Badge>
-                                </TableCell>
+                                <TableCell><p className="font-medium">{getRoleInSpanish(u.role)}</p></TableCell>
                                 <TableCell>
                                     {u.process ? (
                                         <Badge 
@@ -601,7 +599,10 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                                 <TableCell className="text-sm text-muted-foreground">{u.customPermissions && u.customPermissions.length > 0 ? `${accessCount} páginas` : 'Rol estándar'}</TableCell>
                                 <TableCell className="text-sm text-muted-foreground">{lastActivityText}</TableCell>
                                 <TableCell className="text-center">
-                                    <div className={cn("h-2.5 w-2.5 rounded-full mx-auto", u.isActive ? 'bg-green-500' : 'bg-red-500')} />
+                                    <div className="flex items-center justify-center gap-2">
+                                        <div className={cn("h-2.5 w-2.5 rounded-full", u.isActive ? 'bg-green-500' : 'bg-red-500')} />
+                                        <span className="hidden xl:inline">{u.isActive ? 'Activo' : 'Inactivo'}</span>
+                                    </div>
                                 </TableCell>
                                 <TableCell className="text-right px-4">
                                     <DropdownMenu>
@@ -631,3 +632,4 @@ export default function UsersPage() {
         </Suspense>
     )
 }
+
