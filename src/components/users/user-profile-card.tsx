@@ -31,13 +31,7 @@ interface UserProfileCardProps {
 export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange }: UserProfileCardProps) => {
     const router = useRouter();
     const { user: currentUser } = useAuth();
-
-    const handleSendMessage = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        router.push(`/messages?new=${user.id}`);
-    };
     
-    const showMessageButton = currentUser?.id !== user.id;
     const canModify = currentUser?.role === 'ADMINISTRATOR';
     
     const process = user.process;
@@ -55,27 +49,33 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange }: 
                             <DropdownMenuContent align="end">
                                 <DropdownMenuItem onSelect={() => onEdit?.(user)}><Edit className="mr-2 h-4 w-4"/>Editar Perfil</DropdownMenuItem>
                                 <DropdownMenuItem onSelect={() => onRoleChange?.(user)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol</DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => onStatusChange?.(user, !user.isActive)} className={user.isActive ? "text-destructive" : ""}>{user.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => onStatusChange?.(user, !user.isActive)} className={user.isActive ? "text-destructive" : ""}>
+                                  <UserX className="mr-2 h-4 w-4"/>
+                                  {user.isActive ? 'Inactivar' : 'Activar'}
+                                </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
                 )}
                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
-                    <Avatar className="h-20 w-20 border-4 border-card shadow-lg">
-                        <AvatarImage src={user.avatar || undefined} />
-                        <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
-                    </Avatar>
+                    <div className="relative">
+                        <Avatar className="h-20 w-20 border-4 border-card shadow-lg">
+                            <AvatarImage src={user.avatar || undefined} />
+                            <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
+                        </Avatar>
+                        <span className={cn(
+                            "absolute bottom-1 right-1 block h-4 w-4 rounded-full border-2 border-card",
+                            user.isActive ? "bg-green-500" : "bg-red-500"
+                         )} />
+                    </div>
                 </div>
             </div>
 
-            <CardContent className="pt-12 px-2 pb-3 flex-grow flex flex-col items-center">
+            <CardContent className="pt-12 px-2 pb-4 flex-grow flex flex-col items-center">
                 <p className="font-semibold text-base truncate max-w-[180px]">{user.name}</p>
                 <p className="text-sm text-primary font-medium">{getRoleInSpanish(user.role)}</p>
                 
                  <div className="mt-2 flex items-center flex-wrap justify-center gap-1.5">
-                     <Badge variant={user.isActive ? "default" : "secondary"} className={cn("text-xs py-0.5 px-2", user.isActive ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-500/30" : "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300 border-gray-500/30")}>
-                        {user.isActive ? 'Activo' : 'Inactivo'}
-                     </Badge>
                      {process && (
                          <Badge 
                             key={process.id} 
@@ -89,19 +89,7 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange }: 
                         </Badge>
                      )}
                 </div>
-                 <div className="text-xs text-muted-foreground mt-3 space-y-1">
-                    {user.registeredDate && <p className="flex items-center justify-center gap-1.5"><Calendar className="h-3 w-3"/> Creado: {format(new Date(user.registeredDate), 'dd MMM yyyy', {locale: es})}</p>}
-                    {user.updatedAt && <p className="flex items-center justify-center gap-1.5"><Clock className="h-3 w-3"/> Modif.: {format(new Date(user.updatedAt), 'dd MMM yyyy', {locale: es})}</p>}
-                 </div>
             </CardContent>
-
-            {showMessageButton && (
-                <CardFooter className="p-1 border-t mt-auto">
-                    <Button size="sm" variant="ghost" className="w-full h-7 text-xs" onClick={handleSendMessage}>
-                        <MessageSquare className="mr-1.5 h-3 w-3"/> Mensaje
-                    </Button>
-                </CardFooter>
-            )}
         </Card>
     );
 };
