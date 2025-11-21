@@ -145,6 +145,8 @@ model User {
   formResponses         FormResponse[]
   quizAttempts          QuizAttempt[]
   achievements          UserAchievement[]
+  showInLeaderboard     Boolean?     @default(true)
+  customPermissions       Json?
   sharedForms           Form[]              @relation("SharedForms") // <--- FIX 2: Added opposite relation
   motivationalMessages MotivationalMessage[]
   eventParticipations EventParticipation[]
@@ -416,6 +418,7 @@ model PlatformSettings {
   faviconUrl                 String?
   projectVersion             String? @default("1.0.0")
   updatedAt                  DateTime @updatedAt
+  roadmapVisibleTo           UserRole[] @default([ADMINISTRATOR, INSTRUCTOR, STUDENT])
   @@map("platform_settings")
 }
 
@@ -862,4 +865,16 @@ enum SecurityLogEvent {
   COURSE_UPDATED          // <--- Añadido
   COURSE_DELETED          // <--- Añadido
   USER_SUSPENDED          // <--- Añadido
+}
+
+model RoadmapItem {
+  id          String   @id @default(cuid())
+  phase       String
+  date        DateTime
+  title       String
+  description String
+  icon        String   @default("Lightbulb")
+  color       String   @default("#3b82f6")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
