@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const ICONS: Record<string, React.ElementType> = {
-    Lightbulb, Code, Database, Paintbrush, Rocket, CheckCircle
+    Lightbulb, Code, Database, Paintbrush, Rocket, CheckCircle, Award: Rocket, Sparkles: Rocket, UsersRound: Rocket, FileText: Rocket, Shield: Rocket
 };
 
 const RoadmapItemCard = ({ item, onEdit, onDelete }: { item: RoadmapItem, onEdit: () => void, onDelete: () => void }) => {
@@ -40,7 +40,7 @@ const RoadmapItemCard = ({ item, onEdit, onDelete }: { item: RoadmapItem, onEdit
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuItem onSelect={onEdit}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
-                            <DropdownMenuItem onSelect={onDelete} className="text-destructive focus:text-destructive/10"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={onDelete} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

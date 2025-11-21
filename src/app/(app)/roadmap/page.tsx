@@ -51,7 +51,7 @@ export default function RoadmapPage() {
     setIsEditorOpen(false);
   };
   
-  const canView = user && (settings?.roadmapVisibleTo?.includes(user.role) || user.role === 'ADMINISTRATOR');
+  const canView = user && ((settings?.roadmapVisibleTo && settings.roadmapVisibleTo.includes(user.role)) || user.role === 'ADMINISTRATOR');
   
   if (isLoading) {
     return <div className="flex justify-center items-center h-full"><ColorfulLoader /></div>
