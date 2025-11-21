@@ -1,3 +1,4 @@
+
 // src/app/(app)/users/page.tsx
 'use client';
 
@@ -308,7 +309,7 @@ function UsersPageComponent() {
     }
 
     if (isLoading && usersList.length === 0) {
-        return <div className="flex justify-center items-center h-full"><ColorfulLoader /></div>
+        return <div className="flex justify-center items-center h-full"><div className="w-8 h-8"><ColorfulLoader /></div></div>
     }
     
     const DesktopControls = () => (
@@ -412,7 +413,7 @@ function UsersPageComponent() {
     }
 
     const GridView = () => (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 grid-auto-rows-[1fr]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 grid-auto-rows-[1fr]">
             {usersList.map(u => (
                 <DraggableUserCard 
                     key={u.id} 
@@ -501,7 +502,7 @@ function UsersPageComponent() {
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isDeactivating}>Cancelar</AlertDialogCancel>
                         <AlertDialogAction onClick={confirmStatusChange} disabled={isDeactivating} className={cn(!userToDeactivate?.isActive && 'bg-green-600 hover:bg-green-700', userToDeactivate?.isActive && 'bg-destructive hover:bg-destructive/90')}>
-                            {isDeactivating ? <ColorfulLoader className="mr-2 h-4 w-4"/> : null}
+                            {isDeactivating ? <div className="w-4 h-4 mr-2"><ColorfulLoader /></div> : null}
                             Sí, {userToDeactivate?.isActive ? 'Inactivar' : 'Activar'}
                         </AlertDialogAction>
                     </AlertDialogFooter>
@@ -593,7 +594,7 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
 
 export default function UsersPage() {
     return (
-        <Suspense fallback={<div className="flex items-center justify-center h-full"><ColorfulLoader /></div>}>
+        <Suspense fallback={<div className="flex items-center justify-center h-full"><div className="w-8 h-8"><ColorfulLoader /></div></div>}>
             <UsersPageComponent />
         </Suspense>
     )
