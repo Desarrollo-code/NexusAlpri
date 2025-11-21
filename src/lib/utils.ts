@@ -150,25 +150,21 @@ const stringToHash = (str: string): number => {
 export const getProcessColors = (id: string) => {
     const hash = stringToHash(id);
 
-    // Obtener el color primario del tema actual desde las variables CSS
     const rootStyle = typeof window !== 'undefined' ? getComputedStyle(document.documentElement) : null;
     const primaryColorHsl = rootStyle?.getPropertyValue('--primary').trim() || '223 90% 55%';
     const [h, s, l] = primaryColorHsl.split(' ').map(parseFloat);
     const primaryColor = colord(`hsl(${h}, ${s}%, ${l}%)`);
+    
+    // Generar una paleta armónica de colores análogos
+    const analogousPalette = primaryColor.analogous(6);
+    const generatedColor = analogousPalette[hash % analogousPalette.length];
 
-    // Rotar el tono (hue) para obtener un color análogo
-    const hueRotation = (hash % 12) * 15; // Múltiplos de 15 para colores distintos pero relacionados
-    const generatedColor = primaryColor.rotate(hueRotation);
-
-    // Convertir a LCH para un ajuste de luminosidad y croma más predecible
     const lchColor = generatedColor.toLch();
 
-    // Asegurar que el color claro para el fondo sea legible
     const lightBgL = Math.max(90, lchColor.l + (95 - lchColor.l) * 0.5);
     const lightBgC = Math.max(20, lchColor.c * 0.4);
     const lightColor = colord({ l: lightBgL, c: lightBgC, h: lchColor.h }).toHex();
     
-    // El color de texto se decide en base al fondo claro
     const textColor = getContrastingTextColor(lightColor);
 
     return {
