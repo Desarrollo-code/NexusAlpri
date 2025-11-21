@@ -15,10 +15,12 @@ export interface User {
   theme?: string | null;
   xp?: number | null;
   isActive?: boolean;
+  showInLeaderboard?: boolean;
 }
 
 export interface PlatformSettings {
     platformName: string;
+    projectVersion?: string | null;
     allowPublicRegistration: boolean;
     enableEmailNotifications: boolean;
     emailWhitelist: string;
@@ -40,6 +42,7 @@ export interface PlatformSettings {
     primaryColorDark?: string;
     backgroundColorDark?: string;
     logoUrl?: string | null;
+    faviconUrl?: string | null;
     watermarkUrl?: string | null;
     landingImageUrl?: string | null;
     authImageUrl?: string | null;
@@ -57,6 +60,8 @@ export interface PlatformSettings {
     emptyStateMotivationsUrl?: string | null;
     emptyStateUsersUrl?: string | null;
     emptyStateLeaderboardUrl?: string | null;
+    emptyStateAnnouncementsUrl?: string | null;
+    roadmapVisibleTo?: UserRole[];
 }
 
 // --- NAVIGATION ---
@@ -101,10 +106,12 @@ export interface Quiz {
     title: string;
     description?: string;
     maxAttempts?: number | null;
+    remedialContent?: string | null;
     questions: Question[];
-    template?: string | null;
-    timerStyle?: string | null;
+    contentBlockId?: string | null; // From original schema
+    resourceId?: string | null; // New for resource quizzes
 }
+
 
 export interface ContentBlock {
   id: string;
@@ -133,7 +140,7 @@ export type CoursePrerequisiteInfo = {
   title: string;
 } | null;
 
-export interface Course extends Omit<Prisma.CourseGetPayload<{}>, 'instructor' | 'prerequisite' | 'isMandatory'> {
+export interface Course extends Omit<Prisma.CourseGetPayload<{}>, 'instructor' | 'prerequisite' | 'isMandatory' | 'startDate' | 'endDate'> {
   instructor: {
       id: string;
       name: string;
@@ -146,6 +153,8 @@ export interface Course extends Omit<Prisma.CourseGetPayload<{}>, 'instructor' |
   enrollmentsCount?: number;
   averageCompletion?: number;
   publicationDate?: Date | null;
+  startDate?: Date | string | null;
+  endDate?: Date | string | null;
   prerequisite: CoursePrerequisiteInfo;
   userProgress?: {
       completedAt: Date | null;
@@ -193,14 +202,17 @@ export type CourseAssignment = Prisma.CourseAssignmentGetPayload<{}>;
 export type ResourceType = 'FOLDER' | 'DOCUMENT' | 'GUIDE' | 'MANUAL' | 'POLICY' | 'VIDEO' | 'EXTERNAL_LINK' | 'OTHER' | 'DOCUMENTO_EDITABLE';
 export type ResourceStatus = 'ACTIVE' | 'ARCHIVED';
 
-export interface EnterpriseResource extends Omit<Prisma.EnterpriseResourceGetPayload<{}>, 'tags' | 'status'> {
+export interface AppResourceType extends Omit<Prisma.EnterpriseResourceGetPayload<{ include: { quiz: { include: { questions: { include: { options: true }}}}}}>, 'tags' | 'status' | 'fileType'> {
     tags: string[];
     uploaderName: string;
     hasPin: boolean;
     status: ResourceStatus;
+    fileType: string | null;
     uploader?: { id: string, name: string | null, avatar: string | null } | null;
     sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
+    quiz?: Quiz | null;
 }
+
 
 
 // --- ANNOUNCEMENTS ---
@@ -277,6 +289,7 @@ export interface CalendarEvent {
     recurrenceEndDate?: string | null;
     parentId?: string | null;
     isInteractive: boolean;
+    imageUrl?: string | null;
 }
 
 // --- SECURITY ---
@@ -324,6 +337,9 @@ export interface AdminDashboardStats {
     totalCourses: number;
     totalPublishedCourses: number;
     totalEnrollments: number;
+    totalResources: number;
+    totalAnnouncements: number;
+    totalForms: number;
     averageCompletionRate: number;
     userRegistrationTrend: TrendData[];
     contentActivityTrend: { date: string, newCourses: number, newEnrollments: number }[];
@@ -356,29 +372,27 @@ export { type MotivationalMessageTriggerType } from '@prisma/client';
 
 
 // --- FORMS ---
-export interface FormFieldOption {
-  id: string;
-  text: string;
-  isCorrect: boolean;
-  points: number;
-  imageUrl?: string | null;
-}
-
-export type FormField = Omit<Prisma.FormFieldGetPayload<{}>, 'options'> & {
-  options: FormFieldOption[];
+export type FormFieldOption = Omit<Prisma.FormFieldOptionGetPayload<{}>, 'id'> & {
+  id: string; // Ensure id is always a string on the client
 };
 
-export type AppForm = Prisma.FormGetPayload<{}> & {
-    fields: FormField[];
-    _count: {
-        responses: number;
-    };
-    creator?: {
-        name: string | null;
-    } | null;
-    sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
-    template?: string | null;
-    timerStyle?: string | null;
+export type AppQuestion = Omit<Prisma.FormFieldGetPayload<{
+  include: { options: true }
+}>, 'options'> & {
+    options: FormFieldOption[];
+};
+
+
+export type AppForm = Omit<Prisma.FormGetPayload<{
+  include: {
+    fields: { include: { options: true } },
+    _count: { select: { responses: true } },
+    creator: { select: { name: true } },
+    sharedWith: { select: { id: true, name: true, avatar: true } }
+  }
+}>, 'fields'> & {
+  fields: AppQuestion[];
+  timerStyle?: string | null;
 };
 
 // --- PROCESSES ---
@@ -408,5 +422,7 @@ export interface Message {
     conversationId: string;
 }
 
+// --- ROADMAP ---
+export type RoadmapItem = Prisma.RoadmapItemGetPayload<{}>;
 
-export { type FormStatus, type FormFieldType, type AnnouncementAttachment, type RecurrenceType, type ChatAttachment } from '@prisma/client';
+export { type FormStatus, type FormFieldType, type AnnouncementAttachment, type RecurrenceType, type ChatAttachment, type QuizAttempt } from '@prisma/client';
