@@ -6,14 +6,26 @@ import type { Prisma, ResourceStatus } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
-const getFileType = (mimeType: string | null): string => {
-    if (!mimeType) return 'Other';
-    if (mimeType.startsWith('image/')) return 'Images';
-    if (mimeType.startsWith('video/')) return 'Videos';
-    if (mimeType === 'application/pdf' || mimeType.includes('word') || mimeType.includes('excel') || mimeType.includes('presentation')) return 'Documents';
-    if (mimeType.includes('zip') || mimeType.includes('archive')) return 'Archives';
-    return 'Other';
-};
+const getFileTypeFilter = (fileType: string): Prisma.EnterpriseResourceWhereInput => {
+    const mimeMap: Record<string, string[]> = {
+        image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+        video: ['video/mp4', 'video/webm', 'video/ogg'],
+        pdf: ['application/pdf'],
+        doc: ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+        xls: ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+        ppt: ['application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'],
+        zip: ['application/zip', 'application/x-rar-compressed', 'application/x-7z-compressed'],
+    };
+    const mimeTypes = mimeMap[fileType];
+    if (mimeTypes) {
+        return { fileType: { in: mimeTypes } };
+    }
+    if (fileType === 'other') {
+        const allKnownMimes = Object.values(mimeMap).flat();
+        return { fileType: { notIn: allKnownMimes } };
+    }
+    return {};
+}
 
 // GET resources
 export async function GET(req: NextRequest) {
@@ -28,8 +40,14 @@ export async function GET(req: NextRequest) {
         let parentId = searchParams.get('parentId');
         const status = (searchParams.get('status') as ResourceStatus) || 'ACTIVE';
         const searchTerm = searchParams.get('search');
-        const calculateStats = searchParams.get('stats') === 'true';
         
+        // Advanced filters
+        const startDate = searchParams.get('startDate');
+        const endDate = searchParams.get('endDate');
+        const fileType = searchParams.get('fileType');
+        const hasPin = searchParams.get('hasPin') === 'true';
+        const hasExpiry = searchParams.get('hasExpiry') === 'true';
+
         if (parentId === '') parentId = null;
         
         const baseWhere: Prisma.EnterpriseResourceWhereInput = { parentId, status };
@@ -39,6 +57,20 @@ export async function GET(req: NextRequest) {
         if (searchTerm) {
             baseWhere.title = { contains: searchTerm, mode: 'insensitive' };
         }
+        
+        // Apply advanced filters
+        if (startDate) baseWhere.uploadDate = { ...baseWhere.uploadDate, gte: new Date(startDate) };
+        if (endDate) baseWhere.uploadDate = { ...baseWhere.uploadDate, lte: new Date(endDate) };
+        if (fileType && fileType !== 'all') {
+            const fileTypeFilter = getFileTypeFilter(fileType);
+            if (baseWhere.AND) {
+                (baseWhere.AND as any[]).push(fileTypeFilter);
+            } else {
+                baseWhere.AND = [fileTypeFilter];
+            }
+        }
+        if (hasPin) baseWhere.pin = { not: null };
+        if (hasExpiry) baseWhere.expiresAt = { not: null };
 
         let whereClause: Prisma.EnterpriseResourceWhereInput = {};
         if (session.role === 'ADMINISTRATOR') {
@@ -60,43 +92,8 @@ export async function GET(req: NextRequest) {
             ...resource, uploader, tags: tags ? tags.split(',').filter(Boolean) : [], 
             hasPin: !!pin, uploaderName: uploader ? uploader.name || 'Sistema' : 'Sistema', 
         }));
-        
-        let stats: any = {};
 
-        if (calculateStats) {
-            const allFiles = await prisma.enterpriseResource.findMany({
-                where: { type: { not: 'FOLDER' } },
-                select: { type: true, size: true, fileType: true, uploadDate: true, title: true, id: true, uploader: { select: {name: true} } }
-            });
-            
-            const storageStats = allFiles.reduce((acc, file) => {
-                const fileType = getFileType(file.fileType);
-                if (!acc[fileType]) {
-                    acc[fileType] = { type: fileType, count: 0, size: 0 };
-                }
-                acc[fileType].count += 1;
-                acc[fileType].size += file.size || 0;
-                return acc;
-            }, {} as Record<string, { type: string, count: number, size: number }>);
-            
-            const categoryCounts = allFiles.reduce((acc, file) => {
-                const fileType = getFileType(file.fileType);
-                if (!acc[fileType]) acc[fileType] = 0;
-                acc[fileType]++;
-                return acc;
-            }, {} as Record<string, number>);
-
-            const recentFiles = allFiles
-                .sort((a,b) => new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime())
-                .slice(0, 5)
-                .map(f => ({ ...f, uploaderName: f.uploader?.name || 'Sistema' }));
-                
-            stats.storageStats = Object.values(storageStats);
-            stats.categoryCounts = categoryCounts;
-            stats.recentFiles = recentFiles;
-        }
-
-        return NextResponse.json({ resources: safeResources, ...stats });
+        return NextResponse.json({ resources: safeResources });
 
     } catch (error) {
         console.error('[RESOURCES_GET_ERROR]', (error as Error).message);
@@ -114,9 +111,12 @@ export async function POST(req: NextRequest) {
     
     try {
         const body = await req.json();
-        const { title, type, url, category, tags, parentId, description, isPublic, sharedWithUserIds, expiresAt, status, size, fileType } = body;
+        const { title, type, url, category, tags, parentId, description, isPublic, sharedWithUserIds, expiresAt, status, size, fileType, filename } = body;
 
-        if (!title || !type) {
+        // Use the filename as a fallback for the title if title is not provided
+        const finalTitle = title || filename;
+
+        if (!finalTitle || !type) {
             return NextResponse.json({ message: 'Título y tipo son requeridos' }, { status: 400 });
         }
         
@@ -125,13 +125,13 @@ export async function POST(req: NextRequest) {
         }
 
         const data: any = {
-            title, type, description, url: url || null,
+            title: finalTitle, type, description, url: url || null,
             content: type === 'DOCUMENTO_EDITABLE' ? ' ' : null,
             category: category || 'General',
             tags: Array.isArray(tags) ? tags.join(',') : '',
             ispublic: isPublic === true, status: status || 'ACTIVE',
             expiresAt: expiresAt ? new Date(expiresAt) : null,
-            size, fileType,
+            size, fileType: fileType,
             uploader: { connect: { id: session.id } },
         };
         
