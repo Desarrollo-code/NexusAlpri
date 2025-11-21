@@ -141,7 +141,7 @@ export type CoursePrerequisiteInfo = {
   title: string;
 } | null;
 
-export interface Course extends Omit<Prisma.CourseGetPayload<{}>, 'instructor' | 'prerequisite' | 'isMandatory' | 'startDate' | 'endDate'> {
+export interface Course extends Omit<Prisma.CourseGetPayload<{}>, 'instructor' | 'prerequisite' | 'isMandatory' | 'startDate' | 'endDate' | 'certificateTemplateId'> {
   instructor: {
       id: string;
       name: string;
@@ -204,12 +204,12 @@ export type CourseAssignment = Prisma.CourseAssignmentGetPayload<{}>;
 export type ResourceType = 'FOLDER' | 'DOCUMENT' | 'GUIDE' | 'MANUAL' | 'POLICY' | 'VIDEO' | 'EXTERNAL_LINK' | 'OTHER' | 'DOCUMENTO_EDITABLE';
 export type ResourceStatus = 'ACTIVE' | 'ARCHIVED';
 
-export interface AppResourceType extends Omit<Prisma.EnterpriseResourceGetPayload<{ include: { quiz: { include: { questions: { include: { options: true }}}}}}>, 'tags' | 'status' | 'fileType'> {
+export interface AppResourceType extends Omit<Prisma.EnterpriseResourceGetPayload<{ include: { quiz: { include: { questions: { include: { options: true }}}}}}>, 'tags' | 'status' | 'filetype'> {
     tags: string[];
     uploaderName: string;
     hasPin: boolean;
     status: ResourceStatus;
-    fileType: string | null;
+    filetype: string | null;
     uploader?: { id: string, name: string | null, avatar: string | null } | null;
     sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
     quiz?: Quiz | null;

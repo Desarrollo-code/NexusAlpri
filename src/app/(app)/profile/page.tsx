@@ -1,4 +1,3 @@
-
 // src/app/(app)/profile/page.tsx
 'use client';
 
@@ -8,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Camera, User, KeyRound, Shield, Eye, EyeOff, Save, CheckCircle, Award, Star, HelpCircle, Trophy, Palette, Briefcase, Replace, XCircle, EyeIcon, BarChart } from 'lucide-react';
+import { Loader2, Camera, User, KeyRound, Shield, Eye, EyeOff, Save, CheckCircle, Award, Star, HelpCircle, Trophy, Palette, Briefcase, Replace, XCircle } from 'lucide-react';
 import React, { useState, ChangeEvent, FormEvent, useEffect, useCallback, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { PasswordStrengthIndicator } from '@/components/password-strength-indicator';

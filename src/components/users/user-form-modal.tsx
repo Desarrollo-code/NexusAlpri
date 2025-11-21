@@ -15,14 +15,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Camera, Save, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Camera, Save, Eye, EyeOff, Loader2, ListTree, UserCheck } from 'lucide-react';
 import { PasswordStrengthIndicator } from '@/components/password-strength-indicator';
-import type { User, UserRole, Process } from '@/types';
+import type { User, UserRole, Process, NavItem } from '@/types';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
 import { Identicon } from '../ui/identicon';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '../ui/progress';
 import { ScrollArea } from '../ui/scroll-area';
+import { getNavItemsForRole } from '@/lib/nav-items';
+import { Checkbox } from '../ui/checkbox';
+import { Card, CardContent } from '../ui/card';
+import { Separator } from '../ui/separator';
 
 interface UserFormModalProps {
     isOpen: boolean;
@@ -54,6 +58,10 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
     const [localAvatarPreview, setLocalAvatarPreview] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
 
+    const [customPermissions, setCustomPermissions] = useState<string[]>([]);
+
+    const allNavItems = getNavItemsForRole('ADMINISTRATOR'); // Obtenemos todos los items posibles
+
     useEffect(() => {
         if (user) {
             setName(user.name || '');
@@ -62,6 +70,7 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
             setPassword('');
             setProcessId((user as any).process?.id || (user as any).processId || null);
             setAvatarUrl(user.avatar || null);
+            setCustomPermissions(user.customPermissions || []);
         } else {
             // Reset for new user
             setName('');
@@ -70,6 +79,7 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
             setRole('STUDENT');
             setProcessId(null);
             setAvatarUrl(null);
+            setCustomPermissions([]);
         }
          setLocalAvatarPreview(null);
     }, [user, isOpen]);
@@ -111,6 +121,12 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
             }
         }
     };
+    
+    const handlePermissionChange = (path: string, checked: boolean) => {
+        setCustomPermissions(prev => 
+            checked ? [...prev, path] : prev.filter(p => p !== path)
+        );
+    }
 
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -118,11 +134,7 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
         setIsSaving(true);
         try {
             const body: any = {
-                name,
-                email,
-                role,
-                processId,
-                avatar: avatarUrl,
+                name, email, role, processId, avatar: avatarUrl, customPermissions
             };
             
             if (password.trim() !== '') {
@@ -163,17 +175,15 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="w-[95vw] sm:max-w-md p-0 gap-0 rounded-2xl">
-                 <div className="flex flex-col h-full max-h-[90vh]">
-                    <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
-                        <DialogTitle>{user ? 'Editar Colaborador' : 'Añadir Nuevo Colaborador'}</DialogTitle>
-                        <DialogDescription>
-                            {user ? 'Modifica la información del colaborador.' : 'Completa los datos para registrar un nuevo colaborador en la plataforma.'}
-                        </DialogDescription>
-                    </DialogHeader>
-                    <ScrollArea className="flex-1 min-h-0">
-                      <form id="user-form" onSubmit={handleSubmit} className="space-y-4 px-6 py-4">
-                          <div className="flex flex-col items-center gap-4">
+            <DialogContent className="w-[95vw] sm:max-w-3xl p-0 gap-0 rounded-2xl max-h-[90vh] flex flex-col">
+                 <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
+                    <DialogTitle>{user ? 'Editar Colaborador' : 'Añadir Nuevo Colaborador'}</DialogTitle>
+                </DialogHeader>
+                <ScrollArea className="flex-1 min-h-0">
+                  <form id="user-form" onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 px-6 py-4">
+                      {/* Columna Izquierda */}
+                      <div className="space-y-4">
+                           <div className="flex flex-col items-center gap-4">
                             <div className="relative">
                                  <Avatar className="h-24 w-24">
                                     <AvatarImage src={localAvatarPreview || avatarUrl || undefined}/>
@@ -191,7 +201,7 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
                                 </div>
                             )}
                         </div>
-                        <div className="space-y-2">
+                         <div className="space-y-2">
                             <Label htmlFor="name">Nombre Completo</Label>
                             <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required autoComplete="off" />
                         </div>
@@ -213,43 +223,52 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
                           <div className="space-y-2">
                               <Label htmlFor="role">Rol</Label>
                               <Select value={role} onValueChange={(value) => setRole(value as UserRole)}>
-                                  <SelectTrigger id="role">
-                                      <SelectValue placeholder="Seleccionar rol" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                      <SelectItem value="STUDENT">Estudiante</SelectItem>
-                                      <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
-                                      <SelectItem value="ADMINISTRATOR">Administrador</SelectItem>
-                                  </SelectContent>
+                                  <SelectTrigger id="role"><SelectValue placeholder="Seleccionar rol" /></SelectTrigger>
+                                  <SelectContent><SelectItem value="STUDENT">Estudiante</SelectItem><SelectItem value="INSTRUCTOR">Instructor</SelectItem><SelectItem value="ADMINISTRATOR">Administrador</SelectItem></SelectContent>
                               </Select>
                           </div>
                            <div className="space-y-2">
                                 <Label htmlFor="process">Proceso Asignado</Label>
                                  <Select value={processId || 'unassigned'} onValueChange={(value) => setProcessId(value === 'unassigned' ? null : value)}>
-                                  <SelectTrigger id="process">
-                                      <SelectValue placeholder="Sin asignar" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                      <SelectItem value="unassigned">Sin Asignar</SelectItem>
-                                      {flattenedProcesses.map(p => (
-                                          <SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem` }}>
-                                              {p.name}
-                                          </SelectItem>
-                                      ))}
-                                  </SelectContent>
+                                  <SelectTrigger id="process"><SelectValue placeholder="Sin asignar" /></SelectTrigger>
+                                  <SelectContent><SelectItem value="unassigned">Sin Asignar</SelectItem>{flattenedProcesses.map(p => (<SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem` }}>{p.name}</SelectItem>))}</SelectContent>
                               </Select>
                           </div>
                         </div>
-                      </form>
-                    </ScrollArea>
-                    <DialogFooter className="p-6 pt-4 flex-col-reverse sm:flex-row sm:justify-end gap-2 border-t flex-shrink-0">
-                        <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
-                        <Button type="submit" form="user-form" disabled={isSaving || !name.trim() || !email.trim() || (!user && !password)}>
-                            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                            <Save className="mr-2 h-4 w-4" />
-                            {user ? 'Guardar Cambios' : 'Crear Colaborador'}
-                        </Button>
-                    </DialogFooter>
+                      </div>
+                      {/* Columna Derecha */}
+                       <div className="space-y-4">
+                            <Card>
+                                <CardHeader><CardTitle className="text-base flex items-center gap-2"><UserCheck className="h-4 w-4"/>Permisos Granulares</CardTitle><CardDescription className="text-xs">Sobreescribe los permisos del rol y concede acceso a páginas específicas.</CardDescription></CardHeader>
+                                <CardContent>
+                                    <ScrollArea className="h-72 border rounded-md">
+                                        <div className="p-4 space-y-2">
+                                        {allNavItems.map(item => (
+                                            <React.Fragment key={item.id}>
+                                                <p className="font-semibold text-sm pt-2">{item.label}</p>
+                                                {(item.children || [item]).filter(child => child.path).map(child => (
+                                                     <div key={child.id} className="flex items-center space-x-3 ml-2">
+                                                         <Checkbox id={`perm-${child.id}`} checked={customPermissions.includes(child.path!)} onCheckedChange={checked => handlePermissionChange(child.path!, !!checked)}/>
+                                                         <Label htmlFor={`perm-${child.id}`} className="font-normal">{child.label}</Label>
+                                                     </div>
+                                                ))}
+                                            </React.Fragment>
+                                        ))}
+                                        </div>
+                                    </ScrollArea>
+                                </CardContent>
+                            </Card>
+                       </div>
+                  </form>
+                </ScrollArea>
+                <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2">
+                    <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
+                    <Button type="submit" form="user-form" disabled={isSaving || !name.trim() || !email.trim() || (!user && !password)}>
+                        {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                        <Save className="mr-2 h-4 w-4" />
+                        {user ? 'Guardar Cambios' : 'Crear Colaborador'}
+                    </Button>
+                </DialogFooter>
                  </div>
             </DialogContent>
         </Dialog>
