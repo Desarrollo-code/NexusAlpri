@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { Badge } from '../ui/badge';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { format, differenceInSeconds } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
   DropdownMenu,
@@ -20,9 +20,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import React, { useMemo } from 'react';
+
 
 interface UserProfileCardProps {
-    user: User & { process?: { id: string; name: string } | null, updatedAt?: string | Date };
+    user: User & { process?: { id: string; name: string } | null, updatedAt?: string | Date, registeredDate?: string | Date };
     onEdit?: (user: User) => void;
     onRoleChange?: (user: User) => void;
     onStatusChange?: (user: User, status: boolean) => void;
@@ -36,6 +38,20 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange }: 
     
     const process = user.process;
     const processColors = process ? getProcessColors(process.id) : null;
+    
+    const lastActivityText = useMemo(() => {
+        if (!user.updatedAt || !user.registeredDate) return "Pendiente de primer ingreso";
+        const updatedAt = new Date(user.updatedAt);
+        const registeredDate = new Date(user.registeredDate);
+        
+        // Si la diferencia es menor a 10 segundos, asumimos que es el momento de la creación.
+        if (differenceInSeconds(updatedAt, registeredDate) < 10) {
+            return "Pendiente de primer ingreso";
+        }
+        
+        return format(updatedAt, "dd MMM yyyy", { locale: es });
+    }, [user.updatedAt, user.registeredDate]);
+
 
     return (
         <Card className="flex flex-col h-full bg-card shadow-md hover:shadow-primary/20 transition-shadow duration-300 text-center overflow-hidden">
@@ -94,7 +110,7 @@ export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange }: 
              <CardFooter className="p-2 border-t mt-auto text-xs text-muted-foreground justify-center">
                 <div className="flex items-center gap-1.5">
                     <Clock className="h-3 w-3"/>
-                    <span>Últ. Actividad: {format(new Date(user.updatedAt!), "dd MMM yyyy", { locale: es })}</span>
+                    <span>{lastActivityText}</span>
                 </div>
             </CardFooter>
         </Card>

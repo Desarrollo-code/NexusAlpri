@@ -33,14 +33,14 @@ import { Label } from '@/components/ui/label';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { UserProfileCard } from '@/components/users/user-profile-card';
-import { getRoleInSpanish, getRoleBadgeVariant, getUserNavItems } from '@/lib/security-log-utils';
+import { getRoleInSpanish, getRoleBadgeVariant } from '@/lib/security-log-utils';
 import { getProcessColors } from '@/lib/utils';
 import { Identicon } from '@/components/ui/identicon';
 import { EmptyState } from '@/components/empty-state';
 import { useTour } from '@/contexts/tour-context';
 import { usersTour } from '@/lib/tour-steps';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
-import { format } from 'date-fns';
+import { format, differenceInSeconds } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 // --- TYPES & CONTEXT ---
@@ -51,6 +51,7 @@ interface ProcessWithChildren extends Process {
 interface UserWithProcess extends User {
     process: { id: string; name: string } | null;
     updatedAt: string | Date;
+    registeredDate: string | Date;
 }
 
 const PAGE_SIZE = 15;
@@ -549,7 +550,7 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                 <TableHeader className="bg-muted/50">
                     <TableRow>
                         <TableHead className="w-12 px-4"><Checkbox checked={isAllOnPageSelected} onCheckedChange={(checked) => onSelectionChange('all', !!checked)}/></TableHead>
-                        <TableHead className="w-[25%]"><div className="flex items-center gap-2 font-medium text-muted-foreground"><UsersIcon className="h-4 w-4"/>Colaborador</div></TableHead>
+                        <TableHead className="w-[30%]"><div className="flex items-center gap-2 font-medium text-muted-foreground"><UsersIcon className="h-4 w-4"/>Colaborador</div></TableHead>
                         <TableHead><div className="flex items-center gap-2 font-medium text-muted-foreground"><Briefcase className="h-4 w-4"/>Rol y Proceso</div></TableHead>
                         <TableHead><div className="flex items-center gap-2 font-medium text-muted-foreground"><Key className="h-4 w-4" />Acceso</div></TableHead>
                         <TableHead><div className="flex items-center gap-2 font-medium text-muted-foreground"><Clock className="h-4 w-4" />Última Actividad</div></TableHead>
@@ -559,7 +560,16 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                 </TableHeader>
                 <TableBody>
                     {users.map((u: UserWithProcess) => {
-                        const totalPermissions = getUserNavItems(u).flatMap(item => item.children || [item]).length;
+                        const lastActivityText = useMemo(() => {
+                            if (!u.updatedAt || !u.registeredDate) return "Pendiente de primer ingreso";
+                            const updatedAt = new Date(u.updatedAt);
+                            const registeredDate = new Date(u.registeredDate);
+                            if (differenceInSeconds(updatedAt, registeredDate) < 10) {
+                                return "Pendiente de primer ingreso";
+                            }
+                            return format(updatedAt, "dd MMM yyyy", { locale: es });
+                        }, [u.updatedAt, u.registeredDate]);
+
                         return (
                             <TableRow key={u.id} className="even:bg-muted/50 hover:bg-primary/5">
                                 <TableCell className="px-4"><Checkbox checked={selectedUserIds.has(u.id)} onCheckedChange={(checked) => onSelectionChange(u.id, !!checked)} /></TableCell>
@@ -585,10 +595,13 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                                         )}
                                     </div>
                                 </TableCell>
-                                <TableCell className="text-sm">
-                                    {totalPermissions} página{totalPermissions !== 1 && 's'}
+                                 <TableCell className="text-sm">
+                                    {u.customPermissions && u.customPermissions.length > 0
+                                        ? `${u.customPermissions.length} permisos`
+                                        : 'Rol estándar'
+                                    }
                                 </TableCell>
-                                 <TableCell className="text-sm text-muted-foreground">{format(new Date(u.updatedAt!), "dd MMM yyyy", { locale: es })}</TableCell>
+                                 <TableCell className="text-sm text-muted-foreground">{lastActivityText}</TableCell>
                                 <TableCell className="text-center"><Badge variant={u.isActive ? "default" : "secondary"} className={cn("text-xs py-1 px-3", u.isActive ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-500/30" : "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300 border-gray-500/30")}>
                                     {u.isActive ? 'Activo' : 'Inactivo'}
                                 </Badge></TableCell>
