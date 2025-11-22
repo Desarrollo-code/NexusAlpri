@@ -419,6 +419,7 @@ model PlatformSettings {
   projectVersion             String? @default("1.0.0")
   updatedAt                  DateTime @updatedAt
   roadmapVisibleTo           UserRole[] @default([ADMINISTRATOR, INSTRUCTOR, STUDENT])
+  roadmapPhases              String[]   @default([])
   @@map("platform_settings")
 }
 
