@@ -16,8 +16,9 @@ async function checkPermissions(session: any) {
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
     const permission = await checkPermissions(session);
-    if (!permission.authorized || !permission.error) {
-        // CORRECCIÓN: Si no está autorizado, devolver el error, no continuar.
+    // CORRECCIÓN: La condición '!permission.error' era incorrecta y causaba el fallo.
+    // La comprobación correcta es simplemente si no está autorizado.
+    if (!permission.authorized) {
         return permission.error || NextResponse.json({ message: 'Error de permisos desconocido' }, { status: 500 });
     }
 
@@ -43,7 +44,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             },
         });
 
-        // CORRECCIÓN: Devolver el objeto actualizado como JSON
         return NextResponse.json(updatedItem);
 
     } catch (error) {
@@ -57,7 +57,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
     const permission = await checkPermissions(session);
-    if (!permission.authorized || !permission.error) {
+    if (!permission.authorized) {
         return permission.error || NextResponse.json({ message: 'Error de permisos desconocido' }, { status: 500 });
     }
     
@@ -68,7 +68,6 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
             where: { id },
         });
 
-        // CORRECCIÓN: Devolver una respuesta vacía con el status correcto para operaciones DELETE.
         return new NextResponse(null, { status: 204 });
 
     } catch (error) {
