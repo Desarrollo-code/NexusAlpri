@@ -2,11 +2,6 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import type { MotivationalMessageTriggerType } from '@/types';
-import { colord, extend } from "colord";
-import lchPlugin from "colord/plugins/lch";
-
-extend([lchPlugin]);
-
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -147,37 +142,26 @@ const stringToHash = (str: string): number => {
     return Math.abs(hash);
 };
 
+const PALETTE = [
+    { light: '#e0f2f1', medium: '#4db6ac', dark: '#004d40' },
+    { light: '#e3f2fd', medium: '#64b5f6', dark: '#1e88e5' },
+    { light: '#f3e5f5', medium: '#ba68c8', dark: '#6a1b9a' },
+    { light: '#fff3e0', medium: '#ffb74d', dark: '#e65100' },
+    { light: '#e8f5e9', medium: '#81c784', dark: '#2e7d32' },
+];
+
 export const getProcessColors = (id: string) => {
     const hash = stringToHash(id);
-
-    const rootStyle = typeof window !== 'undefined' ? getComputedStyle(document.documentElement) : null;
-    const primaryColorHsl = rootStyle?.getPropertyValue('--primary').trim() || '223 90% 55%';
-    const [h, s, l] = primaryColorHsl.split(' ').map(parseFloat);
-    const primaryColor = colord(`hsl(${h}, ${s}%, ${l}%)`);
-    
-    // Generar una paleta armónica de colores análogos
-    const analogousPalette = primaryColor.analogous(6);
-    const generatedColor = analogousPalette[hash % analogousPalette.length];
-
-    const lchColor = generatedColor.toLch();
-
-    const lightBgL = Math.max(90, lchColor.l + (95 - lchColor.l) * 0.5);
-    const lightBgC = Math.max(20, lchColor.c * 0.4);
-    const lightColor = colord({ l: lightBgL, c: lightBgC, h: lchColor.h }).toHex();
-    
-    const textColor = getContrastingTextColor(lightColor);
+    const colors = PALETTE[hash % PALETTE.length];
 
     return {
-        bgColor: `bg-[${lightColor}]`,
-        textColor: textColor === 'white' ? 'text-white' : 'text-black',
-        borderColor: `border-[${generatedColor.toHex()}]`,
-        raw: {
-            light: lightColor,
-            medium: generatedColor.toHex(),
-            dark: textColor === 'white' ? '#FFFFFF' : '#000000',
-        }
+        bgColor: `bg-[${colors.light}]`,
+        textColor: 'text-black', // Assuming all light backgrounds have enough contrast with black
+        borderColor: `border-[${colors.medium}]`,
+        raw: colors
     };
 };
+
 
 export const parseUserAgent = (userAgent: string | null | undefined): { browser: string; os: string } => {
     if (!userAgent) return { browser: 'Desconocido', os: 'Desconocido' };
