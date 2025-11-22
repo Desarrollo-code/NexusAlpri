@@ -1,4 +1,3 @@
-
 // src/components/users/user-form-modal.tsx
 'use client';
 
@@ -63,24 +62,42 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
 
     const allNavItems = getNavItemsForRole('ADMINISTRATOR'); // Obtenemos todos los items posibles
 
+    const getPathsForRole = (role: UserRole) => {
+        const items = getNavItemsForRole(role);
+        const paths = new Set<string>();
+        const extractPaths = (navItems: NavItem[]) => {
+            navItems.forEach(item => {
+                if(item.path) paths.add(item.path);
+                if(item.children) extractPaths(item.children);
+            })
+        }
+        extractPaths(items);
+        return Array.from(paths);
+    };
+
     useEffect(() => {
         if (user) {
+            const defaultRolePermissions = getPathsForRole(user.role);
+            const userCustomPermissions = user.customPermissions || [];
+            const allPermissions = Array.from(new Set([...defaultRolePermissions, ...userCustomPermissions]));
+
             setName(user.name || '');
             setEmail(user.email || '');
             setRole(user.role || 'STUDENT');
             setPassword('');
             setProcessId((user as any).process?.id || (user as any).processId || null);
             setAvatarUrl(user.avatar || null);
-            setCustomPermissions(user.customPermissions || []);
+            setCustomPermissions(allPermissions);
         } else {
             // Reset for new user
+            const defaultStudentPermissions = getPathsForRole('STUDENT');
             setName('');
             setEmail('');
             setPassword('');
             setRole('STUDENT');
             setProcessId(null);
             setAvatarUrl(null);
-            setCustomPermissions([]);
+            setCustomPermissions(defaultStudentPermissions);
         }
          setLocalAvatarPreview(null);
     }, [user, isOpen]);
@@ -129,13 +146,23 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
         );
     };
 
+    const handleRoleChange = (newRole: UserRole) => {
+        setRole(newRole);
+        const defaultPermissionsForNewRole = getPathsForRole(newRole);
+        setCustomPermissions(defaultPermissionsForNewRole);
+    };
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSaving(true);
         try {
+            const defaultPermissionsForCurrentRole = getPathsForRole(role);
+            // Solo guardamos como 'custom' los permisos que NO vienen por defecto con el rol.
+            const permissionsToSave = customPermissions.filter(p => !defaultPermissionsForCurrentRole.includes(p));
+
             const body: any = {
-                name, email, role, processId, avatar: avatarUrl, customPermissions
+                name, email, role, processId, avatar: avatarUrl, customPermissions: permissionsToSave
             };
             
             if (password.trim() !== '') {
@@ -223,7 +250,7 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
                               <Label htmlFor="role">Rol</Label>
-                              <Select value={role} onValueChange={(value) => setRole(value as UserRole)}>
+                              <Select value={role} onValueChange={(value) => handleRoleChange(value as UserRole)}>
                                   <SelectTrigger id="role"><SelectValue placeholder="Seleccionar rol" /></SelectTrigger>
                                   <SelectContent><SelectItem value="STUDENT">Estudiante</SelectItem><SelectItem value="INSTRUCTOR">Instructor</SelectItem><SelectItem value="ADMINISTRATOR">Administrador</SelectItem></SelectContent>
                               </Select>
