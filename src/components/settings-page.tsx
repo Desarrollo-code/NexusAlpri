@@ -6,13 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Palette, Bell, Shield, List, Tag, Trash2, Loader2, FileWarning, KeyRound, Clock, Save, ImageIcon, Paintbrush, Type, User, UploadCloud, XCircle, Replace, HelpCircle, ImagePlay, Building, FolderOpen, MousePointer } from 'lucide-react';
+import { Palette, Bell, Shield, List, Tag, Trash2, Loader2, FileWarning, KeyRound, Clock, Save, ImageIcon, Paintbrush, Type, User, UploadCloud, XCircle, Replace, HelpCircle, ImagePlay, Building, FolderOpen, MousePointer, Rocket, Eye } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
 import React, { useState, useEffect, useCallback, ChangeEvent } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import type { PlatformSettings as AppPlatformSettings } from '@/types';
+import type { PlatformSettings as AppPlatformSettings, UserRole } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -37,6 +37,7 @@ import { useTour } from '@/contexts/tour-context';
 import { settingsTour } from '@/lib/tour-steps';
 import { UploadArea } from '@/components/ui/upload-area';
 import { ScrollArea } from './ui/scroll-area';
+import { Checkbox } from './ui/checkbox';
 
 const availableFonts = [
     { value: 'Inter', label: 'Inter (Sans-serif)' },
@@ -93,7 +94,7 @@ const UploadWidget = ({
         onFileSelect(result.url); 
         toast({ title: 'Imagen Subida' });
     } catch (err) {
-        toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
+        toast({ title: 'Error de subida', description: (err as Error).message, variant: 'destructive' });
         URL.revokeObjectURL(preview);
         setLocalPreview(null);
     } finally {
@@ -159,6 +160,8 @@ export default function SettingsPageComponent() {
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const [isCheckingCategory, setIsCheckingCategory] = useState(false);
   
+  const [newPhase, setNewPhase] = useState('');
+  
   type ImageField = 'logoUrl' | 'faviconUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl' | 'announcementsImageUrl' | 'publicPagesBgUrl' | 'securityMascotUrl' | 'emptyStateCoursesUrl' | 'emptyStateMyCoursesUrl' | 'emptyStateFormsUrl' | 'emptyStateMyNotesUrl' | 'emptyStateResourcesUrl' | 'emptyStateCertificatesUrl' | 'emptyStateMotivationsUrl' | 'emptyStateUsersUrl' | 'emptyStateLeaderboardUrl' | 'emptyStateAnnouncementsUrl';
   
   useEffect(() => {
@@ -170,6 +173,8 @@ export default function SettingsPageComponent() {
     if (globalSettings) {
       const settingsWithDefaults = {
         ...globalSettings,
+        roadmapPhases: globalSettings.roadmapPhases || [],
+        roadmapVisibleTo: globalSettings.roadmapVisibleTo || ['ADMINISTRATOR'],
       };
       setFormState(settingsWithDefaults);
       setIsLoading(false);
@@ -223,6 +228,29 @@ export default function SettingsPageComponent() {
         setIsCheckingCategory(false);
     }
   };
+
+  const handleAddPhase = () => {
+    if (formState && newPhase.trim() && !formState.roadmapPhases?.includes(newPhase.trim())) {
+      const updatedPhases = [...(formState.roadmapPhases || []), newPhase.trim()];
+      handleInputChange('roadmapPhases', updatedPhases);
+      setNewPhase('');
+    }
+  };
+  
+  const handleDeletePhase = (phaseToDelete: string) => {
+    if (formState) {
+      const updatedPhases = formState.roadmapPhases?.filter(p => p !== phaseToDelete);
+      handleInputChange('roadmapPhases', updatedPhases);
+    }
+  };
+  
+  const handleVisibilityChange = (role: UserRole, checked: boolean) => {
+      if (formState) {
+          const currentRoles = formState.roadmapVisibleTo || [];
+          const newRoles = checked ? [...currentRoles, role] : currentRoles.filter(r => r !== role);
+          handleInputChange('roadmapVisibleTo', [...new Set(newRoles)]);
+      }
+  }
 
 
   const handleSaveSettings = async () => {
@@ -365,7 +393,7 @@ export default function SettingsPageComponent() {
                       <UploadWidget id="benefits-img-upload" label="Beneficios (Inicio)" currentImageUrl={formState.benefitsImageUrl} onFileSelect={(url) => handleImageUpload('benefitsImageUrl', url)} onRemove={()=>handleRemoveImage('benefitsImageUrl')} disabled={isSaving}/>
                       <UploadWidget id="auth-img-upload" label="Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(url) => handleImageUpload('authImageUrl', url)} onRemove={()=>handleRemoveImage('authImageUrl')} disabled={isSaving}/>
                       <UploadWidget id="public-bg-upload" label="Fondo Público" currentImageUrl={formState.publicPagesBgUrl} onFileSelect={(url) => handleImageUpload('publicPagesBgUrl', url)} onRemove={()=>handleRemoveImage('publicPagesBgUrl')} disabled={isSaving}/>
-                       <UploadWidget id="announce-bg-upload" label="Fondo Anuncios" currentImageUrl={formState.announcementsImageUrl} onFileSelect={(url) => handleImageUpload('announcementsImageUrl', url)} onRemove={()=>handleRemoveImage('announcementsImageUrl')} disabled={isSaving}/>
+                       <UploadWidget id="announce-bg-upload" label="Fondo Anuncios" currentImageUrl={formState.announcementsImageUrl} onFileSelect={(url) => handleImageUpload('announcementsImageUrl', url)} onRemove={() => handleRemoveImage('announcementsImageUrl')} disabled={isSaving} />
                    </CardContent>
                </Card>
             </TabsContent>
@@ -483,7 +511,7 @@ export default function SettingsPageComponent() {
                     </CardContent>
                 </Card>
             </TabsContent>
-             <TabsContent value="general" className="mt-6">
+             <TabsContent value="general" className="mt-6 space-y-6">
                 <Card className="card-border-animated">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><List className="h-5 w-5 text-primary" />Categorías de Recursos</CardTitle>
@@ -510,6 +538,41 @@ export default function SettingsPageComponent() {
                             </div>
                             ) : ( <p className="text-sm text-muted-foreground text-center py-4">No hay categorías.</p> )}
                         </div>
+                    </CardContent>
+                </Card>
+                <Card className="card-border-animated">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Rocket className="h-5 w-5 text-primary" />Hoja de Ruta (Roadmap)</CardTitle>
+                        <CardDescription>Configura las fases y la visibilidad de la página de la hoja de ruta del proyecto.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                       <div>
+                            <h4 className="text-sm font-medium mb-3">Fases de la Hoja de Ruta</h4>
+                            <div className="space-y-2">
+                                {(formState.roadmapPhases || []).map(phase => (
+                                    <div key={phase} className="flex items-center gap-2">
+                                        <Input value={phase} disabled className="bg-muted"/>
+                                        <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive" onClick={() => handleDeletePhase(phase)} disabled={isSaving}><Trash2 className="h-4 w-4"/></Button>
+                                    </div>
+                                ))}
+                                <div className="flex gap-2 pt-2">
+                                    <Input value={newPhase} onChange={e => setNewPhase(e.target.value)} placeholder="Nombre de la nueva fase"/>
+                                    <Button onClick={handleAddPhase} disabled={isSaving || !newPhase.trim()}>Añadir Fase</Button>
+                                </div>
+                            </div>
+                       </div>
+                       <Separator/>
+                       <div>
+                            <h4 className="text-sm font-medium mb-3">Visibilidad por Rol</h4>
+                            <div className="space-y-2">
+                                {(['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'] as UserRole[]).map(role => (
+                                    <div key={role} className="flex items-center justify-between rounded-lg border p-3">
+                                        <Label htmlFor={`visibility-${role}`} className="font-semibold">{role}</Label>
+                                        <Checkbox id={`visibility-${role}`} checked={(formState.roadmapVisibleTo || []).includes(role)} onCheckedChange={checked => handleVisibilityChange(role, !!checked)} disabled={isSaving} />
+                                    </div>
+                                ))}
+                            </div>
+                       </div>
                     </CardContent>
                 </Card>
              </TabsContent>
