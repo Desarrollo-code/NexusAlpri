@@ -16,7 +16,10 @@ async function checkPermissions(session: any) {
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
     const permission = await checkPermissions(session);
-    if (!permission.authorized) return permission.error;
+    if (!permission.authorized || !permission.error) {
+        // CORRECCIÓN: Si no está autorizado, devolver el error, no continuar.
+        return permission.error || NextResponse.json({ message: 'Error de permisos desconocido' }, { status: 500 });
+    }
 
     const { id } = params;
 
@@ -40,6 +43,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             },
         });
 
+        // CORRECCIÓN: Devolver el objeto actualizado como JSON
         return NextResponse.json(updatedItem);
 
     } catch (error) {
@@ -53,7 +57,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
     const permission = await checkPermissions(session);
-    if (!permission.authorized) return permission.error;
+    if (!permission.authorized || !permission.error) {
+        return permission.error || NextResponse.json({ message: 'Error de permisos desconocido' }, { status: 500 });
+    }
     
     const { id } = params;
 
@@ -62,11 +68,12 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
             where: { id },
         });
 
+        // CORRECCIÓN: Devolver una respuesta vacía con el status correcto para operaciones DELETE.
         return new NextResponse(null, { status: 204 });
 
     } catch (error) {
         if ((error as any).code === 'P2025') { // Prisma error for record not found
-            return new NextResponse(null, { status: 204 }); // Already deleted, success.
+             return new NextResponse(null, { status: 204 }); // Already deleted, success.
         }
         console.error(`[ROADMAP_DELETE_ERROR: ${id}]`, error);
         return NextResponse.json({ message: 'Error al eliminar el hito' }, { status: 500 });
