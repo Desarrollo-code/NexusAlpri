@@ -62,6 +62,7 @@ export interface PlatformSettings {
     emptyStateUsersUrl?: string | null;
     emptyStateLeaderboardUrl?: string | null;
     emptyStateAnnouncementsUrl?: string | null;
+    roadmapPhases?: string[];
     roadmapVisibleTo?: UserRole[];
 }
 

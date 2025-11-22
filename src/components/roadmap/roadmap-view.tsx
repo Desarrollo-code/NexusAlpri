@@ -61,19 +61,13 @@ const RoadmapItemCard = ({ item, onEdit, onDelete }: { item: RoadmapItem, onEdit
 export const RoadmapView = ({ items, onEdit, onDelete }: { items: RoadmapItem[], onEdit: (item: RoadmapItem) => void, onDelete: () => void }) => {
     const [itemToDelete, setItemToDelete] = React.useState<RoadmapItem | null>(null);
     const { toast } = useToast();
-
-    const phases = ['FASE_1', 'FASE_2', 'FASE_3', 'FASE_4', 'FASE_5'];
-    const phaseLabels: Record<string, string> = {
-        'FASE_1': 'Fase 1: Concepción y Planificación',
-        'FASE_2': 'Fase 2: Arquitectura y Backend',
-        'FASE_3': 'Fase 3: Interfaz de Usuario',
-        'FASE_4': 'Fase 4: Refinamiento y Despliegue',
-        'FASE_5': 'Fase 5: Evolución Continua',
-    };
-
+    const { settings } = useAuth();
+    
+    const phases = settings?.roadmapPhases || [];
+    
     const groupedItems = phases.map(phase => ({
         phase,
-        label: phaseLabels[phase],
+        label: phase,
         items: items.filter(item => item.phase === phase).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
     })).filter(group => group.items.length > 0);
     
@@ -81,7 +75,7 @@ export const RoadmapView = ({ items, onEdit, onDelete }: { items: RoadmapItem[],
         if(!itemToDelete) return;
         try {
             const res = await fetch(`/api/roadmap/${itemToDelete.id}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error("No se pudo eliminar el hito.");
+            if (res.status !== 204) throw new Error("No se pudo eliminar el hito.");
             toast({ title: 'Hito eliminado' });
             onDelete(); // Callback to refresh data
         } catch(err) {
@@ -96,7 +90,7 @@ export const RoadmapView = ({ items, onEdit, onDelete }: { items: RoadmapItem[],
             <div className="absolute left-6 md:left-1/2 top-0 h-full w-0.5 bg-border -translate-x-1/2" />
 
             <div className="space-y-12">
-                {groupedItems.map((group, groupIndex) => (
+                {groupedItems.map((group) => (
                     <div key={group.phase} className="space-y-8">
                          <h2 className="text-center md:text-left md:pl-16 text-2xl font-bold font-headline sticky top-16 bg-background/80 backdrop-blur-sm py-2 z-10">{group.label}</h2>
                         {group.items.map((item, itemIndex) => {
@@ -126,7 +120,7 @@ export const RoadmapView = ({ items, onEdit, onDelete }: { items: RoadmapItem[],
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDelete} variant="destructive">
+                        <AlertDialogAction onClick={handleDelete} className={buttonVariants({ variant: "destructive" })}>
                            <Trash2 className="mr-2 h-4 w-4"/> Sí, eliminar
                         </AlertDialogAction>
                     </AlertDialogFooter>

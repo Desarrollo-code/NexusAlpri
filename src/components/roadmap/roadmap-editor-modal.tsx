@@ -22,6 +22,7 @@ import { es } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import type { RoadmapItem } from '@/types';
 import * as LucideIcons from 'lucide-react';
+import { useAuth } from '@/contexts/auth-context';
 
 const ICONS = ['Lightbulb', 'Code', 'Database', 'Paintbrush', 'Rocket', 'CheckCircle', 'Award', 'Sparkles', 'UsersRound', 'FileText', 'Shield'];
 
@@ -34,13 +35,17 @@ interface RoadmapEditorModalProps {
 
 export function RoadmapEditorModal({ isOpen, onClose, item, onSave }: RoadmapEditorModalProps) {
     const { toast } = useToast();
+    const { settings } = useAuth(); // Usar el contexto de autenticación para obtener las fases
+
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [date, setDate] = useState<Date | undefined>(new Date());
-    const [phase, setPhase] = useState('FASE_5');
+    const [phase, setPhase] = useState('');
     const [icon, setIcon] = useState('Lightbulb');
     const [color, setColor] = useState('#3b82f6');
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const roadmapPhases = settings?.roadmapPhases || [];
 
     useEffect(() => {
         if (item) {
@@ -54,11 +59,11 @@ export function RoadmapEditorModal({ isOpen, onClose, item, onSave }: RoadmapEdi
             setTitle('');
             setDescription('');
             setDate(new Date());
-            setPhase('FASE_5');
+            setPhase(roadmapPhases[roadmapPhases.length - 1] || ''); // Default to last phase
             setIcon('Lightbulb');
             setColor('#3b82f6');
         }
-    }, [item, isOpen]);
+    }, [item, isOpen, roadmapPhases]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -120,11 +125,9 @@ export function RoadmapEditorModal({ isOpen, onClose, item, onSave }: RoadmapEdi
                             <Select value={phase} onValueChange={setPhase}>
                                 <SelectTrigger><SelectValue/></SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="FASE_1">Fase 1: Planificación</SelectItem>
-                                    <SelectItem value="FASE_2">Fase 2: Backend</SelectItem>
-                                    <SelectItem value="FASE_3">Fase 3: Interfaz</SelectItem>
-                                    <SelectItem value="FASE_4">Fase 4: Despliegue</SelectItem>
-                                    <SelectItem value="FASE_5">Fase 5: Evolución</SelectItem>
+                                    {roadmapPhases.map(phaseName => (
+                                        <SelectItem key={phaseName} value={phaseName}>{phaseName}</SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                         </div>
