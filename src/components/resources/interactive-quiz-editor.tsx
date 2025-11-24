@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import type { AppResourceType, AppQuiz, AppQuestion } from '@/types';
-import { Loader2, AlertTriangle, PlayCircle, PlusCircle, Trash2, GripVertical, Save, Video, BrainCircuit, Edit } from 'lucide-react';
+import { Loader2, AlertTriangle, PlayCircle, PlusCircle, Trash2, GripVertical, Save, Video, BrainCircuit, Edit, Folder } from 'lucide-react';
 import { Button, buttonVariants } from '../ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../ui/card';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
@@ -132,15 +132,13 @@ export const InteractiveQuizEditor: React.FC<{ folderId: string }> = ({ folderId
         
         let allBlocks = [...videoBlocks];
 
-        // Solo buscar quiz si el recurso principal (la playlist) tiene un quiz asociado.
         if (folderData.quiz) {
             const quizBlock: ContentBlock = {
                 id: folderData.quiz.id,
                 type: 'QUIZ',
                 quiz: folderData.quiz,
             };
-             // En lugar de añadir, buscamos si ya existe para reemplazarlo, o lo añadimos.
-            const quizIndex = allBlocks.findIndex(b => b.id === quizBlock.id);
+            const quizIndex = allBlocks.findIndex(b => b.quiz?.id === quizBlock.quiz?.id);
             if (quizIndex > -1) {
                 allBlocks[quizIndex] = quizBlock;
             } else {
@@ -148,10 +146,8 @@ export const InteractiveQuizEditor: React.FC<{ folderId: string }> = ({ folderId
             }
         }
         
-        // No se reordena aquí, se respeta el orden que venga de la DB.
-        
         setContentBlocks(allBlocks);
-        if (allBlocks.length > 0) {
+        if (allBlocks.length > 0 && !activeBlockId) {
             setActiveBlockId(allBlocks[0].id);
         }
 
@@ -160,7 +156,7 @@ export const InteractiveQuizEditor: React.FC<{ folderId: string }> = ({ folderId
       } finally {
         setIsLoading(false);
       }
-    }, [folderId]);
+    }, [folderId, activeBlockId]);
 
     useEffect(() => {
         fetchContent();
@@ -239,7 +235,7 @@ export const InteractiveQuizEditor: React.FC<{ folderId: string }> = ({ folderId
           if (!res.ok) throw new Error('No se pudo guardar el quiz.');
           
           toast({ title: 'Guardado', description: 'La estructura y el quiz han sido guardados.' });
-          fetchContent(); // Recargar para obtener IDs reales de la DB
+          fetchContent();
 
       } catch(err) {
           toast({ title: 'Error', description: (err as Error).message, variant: 'destructive'});
