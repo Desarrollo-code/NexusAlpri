@@ -149,17 +149,23 @@ export const VideoPlaylistView: React.FC<{ resources: AppResourceType[], folder:
           <Separator />
           <CardContent className="p-0">
             <ScrollArea className={playlistHeight}>
-              <div className="p-2 space-y-1">
-                {resources.map((resource, index) => (
-                  <PlaylistItem
-                    key={resource.id}
-                    resource={resource}
-                    index={index}
-                    onSelect={() => setSelectedVideo(resource)}
-                    isActive={selectedVideo?.id === resource.id}
-                  />
-                ))}
-              </div>
+                {resources.length > 0 ? (
+                    <div className="p-2 space-y-1">
+                        {resources.map((resource, index) => (
+                        <PlaylistItem
+                            key={resource.id}
+                            resource={resource}
+                            index={index}
+                            onSelect={() => setSelectedVideo(resource)}
+                            isActive={selectedVideo?.id === resource.id}
+                        />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center p-8 text-muted-foreground text-sm">
+                        Esta lista de reproducción no contiene videos.
+                    </div>
+                )}
             </ScrollArea>
           </CardContent>
         </Card>
