@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import type { AppResourceType } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
 import { Card } from '@/components/ui/card';
-import { Edit, MoreVertical, Trash2, Lock, Download, Globe, Users, Move, Grip, ArchiveRestore, Pin, BrainCircuit, FileText } from 'lucide-react';
+import { Edit, MoreVertical, Trash2, Lock, Download, Globe, Users, Move, Grip, ArchiveRestore, Pin, BrainCircuit, FileText, ListVideo } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -75,6 +75,12 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                     {isOver && (
                         <div className="absolute inset-0 bg-primary/20 border-2 border-dashed border-primary flex items-center justify-center">
                             <Move className="h-8 w-8 text-primary/80 animate-pulse" />
+                        </div>
+                    )}
+                    {resource.type === 'VIDEO_PLAYLIST' && (
+                        <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs font-semibold px-2 py-1 rounded-md flex items-center gap-1">
+                            <ListVideo className="h-3 w-3"/>
+                            <span>Playlist</span>
                         </div>
                     )}
                 </div>
