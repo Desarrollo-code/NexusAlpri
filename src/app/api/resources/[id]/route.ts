@@ -53,7 +53,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });
         }
         
-        const { title, category, description, isPublic, sharedWithUserIds, expiresAt, status, content, observations, quiz, collaboratorIds } = await req.json();
+        const body = await req.json();
+        const { title, category, description, isPublic, sharedWithUserIds, expiresAt, status, content, observations, quiz, collaboratorIds } = body;
 
         const createVersion = resourceToUpdate.type === 'DOCUMENTO_EDITABLE' && resourceToUpdate.content !== content;
         
@@ -62,8 +63,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 title, category, content, observations, description, status,
                 expiresAt: expiresAt ? new Date(expiresAt) : null,
                 ispublic: isPublic,
-                sharedWith: isPublic ? { set: [] } : { set: sharedWithUserIds.map((id: string) => ({ id })) },
-                collaborators: collaboratorIds ? { set: collaboratorIds.map((id: string) => ({ id })) } : undefined,
+                // SOLUCIÓN: Usar ?? [] para asegurar que siempre sea un array.
+                sharedWith: isPublic ? { set: [] } : { set: (sharedWithUserIds ?? []).map((id: string) => ({ id })) },
+                collaborators: { set: (collaboratorIds ?? []).map((id: string) => ({ id })) },
             };
 
             if (createVersion) {
@@ -78,21 +80,18 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 });
             }
             
-            // --- LÓGICA DEL QUIZ REFORZADA ---
             const existingQuiz = await tx.quiz.findUnique({ where: { resourceId: id } });
 
             if (quiz) {
-                // Prepara la data del quiz y de las preguntas de forma segura
-                const questionsData = (Array.isArray(quiz.questions))
+                const questionsData = Array.isArray(quiz.questions)
                     ? {
-                        deleteMany: {}, // Limpia preguntas antiguas
+                        deleteMany: {},
                         create: quiz.questions.map((q: any, qIndex: number) => ({
                             text: q.text,
                             order: qIndex,
                             type: q.type,
                             template: q.template,
                             imageUrl: q.imageUrl,
-                            // Verifica que las opciones sean un array antes de mapear
                             options: Array.isArray(q.options) ? {
                                 create: q.options.map((opt: any) => ({
                                     text: opt.text,
@@ -100,10 +99,10 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                                     points: opt.points || 0,
                                     imageUrl: opt.imageUrl
                                 }))
-                            } : undefined, // Si no hay opciones, no se crea nada
+                            } : undefined,
                         }))
                     }
-                    : undefined; // Si no hay array de preguntas, no se hace nada
+                    : undefined;
                 
                 const quizPayload = {
                     title: quiz.title || 'Evaluación del Recurso',
@@ -120,10 +119,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                     }
                 };
             } else if (existingQuiz) {
-                // Si no se envía un quiz en el payload pero existe uno, se elimina.
                 await tx.quiz.delete({ where: { id: existingQuiz.id } });
             }
-            // --------------------
 
             await tx.enterpriseResource.update({
                 where: { id },
