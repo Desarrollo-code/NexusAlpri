@@ -67,7 +67,7 @@ interface VideoPlayerProps {
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ resource }) => {
     if (!resource || !resource.url) {
         return (
-            <div className="w-full h-full bg-muted flex flex-col items-center justify-center text-muted-foreground">
+            <div className="w-full h-full bg-black flex flex-col items-center justify-center text-muted-foreground">
                 <PlayCircle className="h-16 w-16 mb-4"/>
                 <p>Selecciona un video para reproducir</p>
             </div>
@@ -116,7 +116,7 @@ export const VideoPlaylistView: React.FC<{ resources: AppResourceType[], folder:
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
       <div className="lg:col-span-2">
          <Card className="shadow-lg overflow-hidden">
-             <div className="w-full aspect-video bg-muted">
+             <div className="w-full aspect-video bg-black">
                 <VideoPlayer resource={selectedVideo} />
              </div>
              <CardContent className="p-4">
