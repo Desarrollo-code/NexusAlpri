@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { AppResourceType, AppQuiz, AppQuestion } from '@/types';
 import { Loader2, AlertTriangle, PlayCircle, PlusCircle, Trash2, GripVertical, Save, Video, BrainCircuit, Edit } from 'lucide-react';
 import { Button, buttonVariants } from '../ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../ui/card';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import YouTube from 'react-youtube';
 import { DndContext, DragEndEvent, closestCenter } from '@dnd-kit/core';
@@ -109,59 +109,57 @@ export const InteractiveQuizEditor: React.FC<{ folderId: string }> = ({ folderId
     
     const activeBlock = contentBlocks.find(b => b.id === activeBlockId);
 
-    useEffect(() => {
-        const fetchContent = async () => {
-            setIsLoading(true);
-            setError(null);
-            try {
-                const folderRes = await fetch(`/api/resources/${folderId}`);
-                if (!folderRes.ok) throw new Error('No se pudo cargar la lista.');
-                const folderData: AppResourceType = await folderRes.json();
-                setPlaylistInfo({ title: folderData.title });
+    const fetchContent = useCallback(async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const folderRes = await fetch(`/api/resources/${folderId}`);
+        if (!folderRes.ok) throw new Error('No se pudo cargar la lista.');
+        const folderData: AppResourceType = await folderRes.json();
+        setPlaylistInfo({ title: folderData.title });
 
-                const childrenRes = await fetch(`/api/resources?parentId=${folderId}`);
-                if (!childrenRes.ok) throw new Error('No se pudieron cargar los videos.');
-                const childrenData = await childrenRes.json();
+        const childrenRes = await fetch(`/api/resources?parentId=${folderId}`);
+        if (!childrenRes.ok) throw new Error('No se pudieron cargar los videos.');
+        const childrenData = await childrenRes.json();
 
-                const videoBlocks: ContentBlock[] = (childrenData.resources || [])
-                    .filter((r: AppResourceType) => r.type === 'VIDEO')
-                    .map((r: AppResourceType) => ({
-                        id: r.id,
-                        type: 'VIDEO',
-                        resource: r,
-                    }));
-                
-                let allBlocks = [...videoBlocks];
+        const videoBlocks: ContentBlock[] = (childrenData.resources || [])
+            .filter((r: AppResourceType) => r.type === 'VIDEO')
+            .map((r: AppResourceType) => ({
+                id: r.id,
+                type: 'VIDEO',
+                resource: r,
+            }));
+        
+        let allBlocks = [...videoBlocks];
 
-                const quizRes = await fetch(`/api/quizzes/resource/${folderId}`);
-                if (quizRes.ok) {
-                    const quizData: AppQuiz = await quizRes.json();
-                    const quizBlock: ContentBlock = {
-                        id: quizData.id,
-                        type: 'QUIZ',
-                        quiz: quizData,
-                    };
-                    allBlocks.push(quizBlock);
-                }
-                
-                // This sorting logic needs to be replaced when `order` is available
-                // For now, we'll just put quizzes after videos
-                allBlocks.sort((a,b) => a.type === 'VIDEO' ? -1 : 1);
-                
-                setContentBlocks(allBlocks);
-                if (allBlocks.length > 0) {
-                    setActiveBlockId(allBlocks[0].id);
-                }
+        const quizRes = await fetch(`/api/quizzes/resource/${folderId}`);
+        if (quizRes.ok) {
+            const quizData: AppQuiz = await quizRes.json();
+            const quizBlock: ContentBlock = {
+                id: quizData.id,
+                type: 'QUIZ',
+                quiz: quizData,
+            };
+            allBlocks.push(quizBlock);
+        }
+        
+        allBlocks.sort((a,b) => (a.resource?.order || 0) - (b.resource?.order || 0));
+        
+        setContentBlocks(allBlocks);
+        if (allBlocks.length > 0) {
+            setActiveBlockId(allBlocks[0].id);
+        }
 
-            } catch (err) {
-                setError((err as Error).message);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchContent();
+      } catch (err) {
+        setError((err as Error).message);
+      } finally {
+        setIsLoading(false);
+      }
     }, [folderId]);
+
+    useEffect(() => {
+        fetchContent();
+    }, [fetchContent]);
 
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
