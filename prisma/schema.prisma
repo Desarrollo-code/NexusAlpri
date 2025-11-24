@@ -157,6 +157,7 @@ model User {
   resourceVersions ResourceVersion[] @relation("ResourceVersionAuthor")
   processId String?
   process   Process?  @relation(fields: [processId], references: [id])
+  collaboratingResources EnterpriseResource[] @relation("Collaborators")
   courseComments CourseComment[]
   @@map("users")
 }
@@ -514,6 +515,7 @@ model EnterpriseResource {
   content      String?           @db.Text
   observations String?           @db.Text
   version      Int               @default(1)
+  order        Int?
   versions     ResourceVersion[]
   filetype String?
   quiz Quiz?
@@ -524,6 +526,7 @@ model EnterpriseResource {
   children    EnterpriseResource[] @relation("FolderChildren")
   sharedWith  User[]             @relation("SharedWithUsers")
   sharedWithProcesses Process[] @relation("ProcessResourceShares")
+  collaborators          User[]             @relation("Collaborators")
 
   @@map("enterprise_resources")
 }
