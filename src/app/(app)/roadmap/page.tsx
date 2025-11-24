@@ -1,7 +1,7 @@
 // src/app/(app)/roadmap/page.tsx
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useTitle } from '@/contexts/title-context';
 import { RoadmapView } from '@/components/roadmap/roadmap-view';
@@ -21,22 +21,24 @@ export default function RoadmapPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<RoadmapItem | null>(null);
+  
+  const isMountedRef = useRef(true);
 
-  const fetchItems = useCallback(async (isMounted: { current: boolean }) => {
+  const fetchItems = useCallback(async () => {
     setIsLoading(true);
     try {
         const res = await fetch('/api/roadmap');
         if (!res.ok) throw new Error("No se pudo cargar la hoja de ruta.");
         const data = await res.json();
-        if (isMounted.current) {
+        if (isMountedRef.current) {
             setItems(data);
         }
     } catch(err) {
-        if (isMounted.current) {
+        if (isMountedRef.current) {
             toast({ title: "Error", description: (err as Error).message, variant: "destructive"});
         }
     } finally {
-        if (isMounted.current) {
+        if (isMountedRef.current) {
             setIsLoading(false);
         }
     }
@@ -44,10 +46,10 @@ export default function RoadmapPage() {
 
   useEffect(() => {
     setPageTitle('Ruta del Proyecto');
-    const isMounted = { current: true };
-    fetchItems(isMounted);
+    isMountedRef.current = true;
+    fetchItems();
     return () => {
-      isMounted.current = false;
+      isMountedRef.current = false;
     };
   }, [setPageTitle, fetchItems]);
 
@@ -57,11 +59,11 @@ export default function RoadmapPage() {
   };
 
   const handleSaveSuccess = () => {
-    const isMounted = { current: true };
-    fetchItems(isMounted);
+    fetchItems();
     setIsEditorOpen(false);
   };
   
+  // CORRECCIÓN: Verificar si `settings` y `roadmapVisibleTo` existen antes de usarlos.
   const canView = user && ((settings?.roadmapVisibleTo && settings.roadmapVisibleTo.includes(user.role)) || user.role === 'ADMINISTRATOR');
   
   if (isLoading) {

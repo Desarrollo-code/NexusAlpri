@@ -35,7 +35,7 @@ interface RoadmapEditorModalProps {
 
 export function RoadmapEditorModal({ isOpen, onClose, item, onSave }: RoadmapEditorModalProps) {
     const { toast } = useToast();
-    const { settings } = useAuth(); // Usar el contexto de autenticación para obtener las fases
+    const { settings } = useAuth();
 
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -45,6 +45,7 @@ export function RoadmapEditorModal({ isOpen, onClose, item, onSave }: RoadmapEdi
     const [color, setColor] = useState('#3b82f6');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // CORRECCIÓN: Usar un array vacío como fallback si settings o roadmapPhases son nulos.
     const roadmapPhases = settings?.roadmapPhases || [];
 
     useEffect(() => {
@@ -59,7 +60,8 @@ export function RoadmapEditorModal({ isOpen, onClose, item, onSave }: RoadmapEdi
             setTitle('');
             setDescription('');
             setDate(new Date());
-            setPhase(roadmapPhases[roadmapPhases.length - 1] || ''); // Default to last phase
+            // CORRECCIÓN: Asegurarse de que roadmapPhases existe antes de acceder a él.
+            setPhase(roadmapPhases.length > 0 ? roadmapPhases[roadmapPhases.length - 1] : '');
             setIcon('Lightbulb');
             setColor('#3b82f6');
         }

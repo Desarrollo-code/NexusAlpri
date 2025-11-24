@@ -63,17 +63,18 @@ export const RoadmapView = ({ items, onEdit, onDelete }: { items: RoadmapItem[],
     const { toast } = useToast();
     const { settings } = useAuth();
     
+    // CORRECCIÓN: Usar un array vacío como fallback si settings o roadmapPhases son nulos.
     const phases = settings?.roadmapPhases || [];
     
     const groupedItems = phases.map(phase => {
         const phaseItems = items.filter(item => item.phase === phase).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-        if (phaseItems.length === 0) return null; // Devolver null si no hay items
+        if (phaseItems.length === 0) return null;
         return {
             phase,
             label: phase,
             items: phaseItems,
         };
-    }).filter((group): group is { phase: string; label: string; items: RoadmapItem[] } => group !== null); // Filtrar los grupos nulos
+    }).filter((group): group is { phase: string; label: string; items: RoadmapItem[] } => group !== null);
     
     const handleDelete = async () => {
         if(!itemToDelete) return;
