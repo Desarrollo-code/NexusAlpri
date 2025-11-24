@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
             });
 
             if (videos && videos.length > 0) {
-                 for (const [index, video] of videos.entries()) {
+                 for (const video of videos) {
                     await prisma.enterpriseResource.create({
                         data: {
                             title: video.title,
@@ -147,7 +147,6 @@ export async function POST(req: NextRequest) {
                             ispublic: true,
                             category,
                             status: 'ACTIVE',
-                            order: index
                         }
                     })
                  }
