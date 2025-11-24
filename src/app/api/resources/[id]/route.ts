@@ -63,8 +63,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 title, category, content, observations, description, status,
                 expiresAt: expiresAt ? new Date(expiresAt) : null,
                 ispublic: isPublic,
-                // SOLUCIÓN: Usar ?? [] para asegurar que siempre sea un array.
-                sharedWith: isPublic ? { set: [] } : { set: (sharedWithUserIds ?? []).map((id: string) => ({ id })) },
+                sharedWith: { set: (sharedWithUserIds ?? []).map((id: string) => ({ id })) },
                 collaborators: { set: (collaboratorIds ?? []).map((id: string) => ({ id })) },
             };
 
@@ -108,13 +107,13 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                     title: quiz.title || 'Evaluación del Recurso',
                     description: quiz.description,
                     maxAttempts: quiz.maxAttempts,
-                    resourceId: id,
                     questions: questionsData,
                 };
                 
                 updateData.quiz = {
                     upsert: {
-                        create: quizPayload,
+                        where: { resourceId: id },
+                        create: { ...quizPayload, resource: { connect: { id } } },
                         update: quizPayload,
                     }
                 };
