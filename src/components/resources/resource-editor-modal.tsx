@@ -267,17 +267,24 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
           <ScrollArea className="flex-1 min-h-0">
             <form id="resource-form" onSubmit={handleSave} className="space-y-6 px-6 py-4">
               {!isEditing && (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="sm:col-span-1">
-                     <h3 className="font-semibold mb-2">Enlace</h3>
-                      <div className="space-y-1.5"><Input id="url" type="url" value={externalLink} onChange={e => {setExternalLink(e.target.value); setResourceType('EXTERNAL_LINK');}} placeholder="https://..."/></div>
-                  </div>
-                  <div className="sm:col-span-2">
-                    <h3 className="font-semibold mb-2">Archivo(s)</h3>
-                    {renderUploadArea()}
-                  </div>
-                  <div className="sm:col-span-3 text-center">
-                    <Button type="button" variant="secondary" onClick={() => setResourceType('DOCUMENTO_EDITABLE')}>Crear Documento Editable</Button>
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg text-center">Selecciona el tipo de recurso a crear</h3>
+                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="p-4 border rounded-lg space-y-2">
+                        <Label className="font-semibold flex items-center gap-2"><UploadCloud/> Subir Archivo(s)</Label>
+                        <p className="text-xs text-muted-foreground">Sube documentos, imágenes o videos desde tu dispositivo.</p>
+                        {renderUploadArea()}
+                      </div>
+                      <div className="p-4 border rounded-lg space-y-2">
+                        <Label className="font-semibold flex items-center gap-2"><LinkIcon/> Enlace Externo</Label>
+                        <p className="text-xs text-muted-foreground">Añade una URL a un sitio web o recurso externo.</p>
+                        <Input type="url" value={externalLink} onChange={e => {setExternalLink(e.target.value); setResourceType('EXTERNAL_LINK');}} placeholder="https://..."/>
+                      </div>
+                       <div className="p-4 border rounded-lg space-y-2 flex flex-col items-center justify-center">
+                        <Label className="font-semibold flex items-center gap-2"><FilePen/> Documento Editable</Label>
+                        <p className="text-xs text-muted-foreground text-center">Crea y edita un documento directamente en la plataforma.</p>
+                        <Button type="button" variant="secondary" onClick={() => setResourceType('DOCUMENTO_EDITABLE')}>Crear Documento</Button>
+                      </div>
                   </div>
                 </div>
               )}
@@ -326,8 +333,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
               Guardar
             </Button>
           </DialogFooter>
-        </div>
-      </DialogContent>
+        </DialogContent>
     </Dialog>
   );
 }
