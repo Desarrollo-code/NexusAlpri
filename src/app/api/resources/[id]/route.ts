@@ -78,11 +78,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 });
             }
             
-            // --- Lógica del Quiz Reforzada ---
+            // --- LÓGICA DEL QUIZ REFORZADA ---
             const existingQuiz = await tx.quiz.findUnique({ where: { resourceId: id } });
 
             if (quiz) {
-                 const questionsData = (Array.isArray(quiz.questions)) 
+                // Prepara la data del quiz y de las preguntas de forma segura
+                const questionsData = (Array.isArray(quiz.questions))
                     ? {
                         deleteMany: {}, // Limpia preguntas antiguas
                         create: quiz.questions.map((q: any, qIndex: number) => ({
@@ -91,36 +92,36 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                             type: q.type,
                             template: q.template,
                             imageUrl: q.imageUrl,
-                            // A su vez, verificamos que las opciones sean un array antes de mapear
+                            // Verifica que las opciones sean un array antes de mapear
                             options: Array.isArray(q.options) ? {
                                 create: q.options.map((opt: any) => ({
                                     text: opt.text,
                                     isCorrect: opt.isCorrect,
-                                    points: opt.points,
+                                    points: opt.points || 0,
                                     imageUrl: opt.imageUrl
                                 }))
-                            } : undefined,
+                            } : undefined, // Si no hay opciones, no se crea nada
                         }))
-                    } 
-                    : undefined;
-
-                 const quizData = {
+                    }
+                    : undefined; // Si no hay array de preguntas, no se hace nada
+                
+                const quizPayload = {
                     title: quiz.title || 'Evaluación del Recurso',
                     description: quiz.description,
                     maxAttempts: quiz.maxAttempts,
                     resourceId: id,
                     questions: questionsData,
-                 };
-
-                 updateData.quiz = {
-                     upsert: {
-                         create: quizData,
-                         update: quizData,
-                     }
-                 };
-            } else if(existingQuiz) {
-                 // Si no se manda un quiz pero existe uno, se elimina.
-                await tx.quiz.delete({ where: { id: existingQuiz.id }});
+                };
+                
+                updateData.quiz = {
+                    upsert: {
+                        create: quizPayload,
+                        update: quizPayload,
+                    }
+                };
+            } else if (existingQuiz) {
+                // Si no se envía un quiz en el payload pero existe uno, se elimina.
+                await tx.quiz.delete({ where: { id: existingQuiz.id } });
             }
             // --------------------
 
