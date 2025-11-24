@@ -87,7 +87,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                     description: quiz.description,
                     maxAttempts: quiz.maxAttempts,
                     resourceId: id,
-                    questions: {
+                    questions: quiz.questions && Array.isArray(quiz.questions) ? { // CORRECCIÓN: Verificar que questions sea un array
                         deleteMany: {}, // Limpia preguntas antiguas
                         create: quiz.questions.map((q: any, qIndex: number) => ({
                             text: q.text,
@@ -95,16 +95,16 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                             type: q.type,
                             template: q.template,
                             imageUrl: q.imageUrl,
-                            options: {
+                            options: q.options && Array.isArray(q.options) ? { // CORRECCIÓN: Verificar que options sea un array
                                 create: q.options.map((opt: any) => ({
                                     text: opt.text,
                                     isCorrect: opt.isCorrect,
                                     points: opt.points,
                                     imageUrl: opt.imageUrl
                                 }))
-                            }
+                            } : undefined,
                         }))
-                    }
+                    } : undefined,
                  };
 
                  updateData.quiz = {
