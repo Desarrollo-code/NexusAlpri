@@ -16,12 +16,6 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Folder, ListVideo, GripVertical } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
-import { getYoutubeVideoId } from '@/lib/resource-utils';
-import Image from 'next/image';
-import { DndContext, DragEndEvent } from '@dnd-kit/core';
-import { SortableContext, useSortable, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 
 interface FolderCreatorModalProps {
   isOpen: boolean;
@@ -29,7 +23,6 @@ interface FolderCreatorModalProps {
   onSave: () => void;
   parentId: string | null;
 }
-
 
 export function FolderCreatorModal({ isOpen, onClose, onSave, parentId }: FolderCreatorModalProps) {
   const { toast } = useToast();

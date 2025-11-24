@@ -19,12 +19,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { EmptyState } from '@/components/empty-state';
 import { ResourceEditorModal } from '@/components/resources/resource-editor-modal';
 import { FolderCreatorModal } from '@/components/resources/folder-creator-modal';
+import { PlaylistCreatorModal } from '@/components/resources/playlist-creator-modal';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Table, TableHeader, TableRow, TableHead, TableBody } from '@/components/ui/table';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import { VideoPlaylistView } from '@/components/resources/video-playlist-view';
@@ -44,24 +40,22 @@ export default function ResourcesPage() {
   
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
-  const [activeTab, setActiveTab] = useState<'all' | 'folders' | 'files'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [currentFolder, setCurrentFolder] = useState<AppResourceType | null>(null);
   const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; title: string }[]>([{ id: null, title: 'Principal' }]);
   
-  // Vista de reproducción de video en lugar de modal
   const [isPlaylistView, setIsPlaylistView] = useState(false);
 
-  // Estados para modales de edición y borrado
   const [resourceToEdit, setResourceToEdit] = useState<AppResourceType | null>(null);
   const [resourceToDelete, setResourceToDelete] = useState<AppResourceType | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
   const [isFolderCreatorOpen, setIsFolderCreatorOpen] = useState(false);
+  const [isPlaylistCreatorOpen, setIsPlaylistCreatorOpen] = useState(false);
   const [isUploaderOpen, setIsUploaderOpen] = useState(false);
 
-  // State for bulk actions
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { setNodeRef: setRootDroppableRef, isOver: isOverRoot } = useDroppable({ id: 'root' });
@@ -74,7 +68,7 @@ export default function ResourcesPage() {
     if (!user) return;
     setIsLoadingData(true);
     setError(null);
-    setIsPlaylistView(false); // Reset view on fetch
+    setIsPlaylistView(false);
     
     const params = new URLSearchParams({ status: 'ACTIVE' });
     if (currentFolderId) params.append('parentId', currentFolderId);
@@ -94,8 +88,7 @@ export default function ResourcesPage() {
         if (!folderDataRes.ok) throw new Error('No se pudo cargar la carpeta actual.');
         const folderData = await folderDataRes.json();
         setCurrentFolder(folderData);
-        // Si la carpeta es una lista de videos, activar la vista de playlist
-        if (isVideoFolder) {
+        if (folderData.type === 'VIDEO_PLAYLIST') {
             setIsPlaylistView(true);
         }
       } else {
@@ -111,20 +104,15 @@ export default function ResourcesPage() {
 
   useEffect(() => {
     fetchResources();
-    setSelectedIds(new Set()); // Reset selection on data change
+    setSelectedIds(new Set());
   }, [fetchResources]);
 
   const filteredResources = useMemo(() => {
-    switch (activeTab) {
-      case 'folders': return allApiResources.filter(r => r.type === 'FOLDER');
-      case 'files': return allApiResources.filter(r => r.type !== 'FOLDER');
-      case 'all':
-      default: return allApiResources;
-    }
-  }, [allApiResources, activeTab]);
+    return allApiResources;
+  }, [allApiResources]);
 
-  const folders = useMemo(() => filteredResources.filter(r => r.type === 'FOLDER'), [filteredResources]);
-  const files = useMemo(() => filteredResources.filter(r => r.type !== 'FOLDER'), [filteredResources]);
+  const folders = useMemo(() => filteredResources.filter(r => r.type === 'FOLDER' || r.type === 'VIDEO_PLAYLIST'), [filteredResources]);
+  const files = useMemo(() => filteredResources.filter(r => r.type !== 'FOLDER' && r.type !== 'VIDEO_PLAYLIST'), [filteredResources]);
 
   const handleNavigateFolder = (resource: AppResourceType) => {
     setCurrentFolderId(resource.id);
@@ -157,9 +145,10 @@ export default function ResourcesPage() {
     }
   };
 
-  const handleResourceSave = () => {
+  const handleSaveSuccess = () => {
     setResourceToEdit(null);
     setIsFolderCreatorOpen(false);
+    setIsPlaylistCreatorOpen(false);
     setIsUploaderOpen(false);
     fetchResources();
   };
@@ -271,15 +260,11 @@ export default function ResourcesPage() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem onSelect={() => setIsFolderCreatorOpen(true)}><FolderIcon className="mr-2 h-4 w-4"/>Nueva Lista de Reproducción</DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => setIsUploaderOpen(true)}><UploadCloud className="mr-2 h-4 w-4"/>Subir Archivo</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => setIsFolderCreatorOpen(true)}><FolderIcon className="mr-2 h-4 w-4"/>Nueva Carpeta</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => setIsPlaylistCreatorOpen(true)}><ListVideo className="mr-2 h-4 w-4"/>Nueva Lista de Reproducción</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => setIsUploaderOpen(true)}><UploadCloud className="mr-2 h-4 w-4"/>Subir Archivo/Enlace</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
-                     <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
-                        <Button variant={activeTab === 'all' ? 'secondary' : 'ghost'} size="sm" onClick={() => setActiveTab('all')}>Todos</Button>
-                        <Button variant={activeTab === 'folders' ? 'secondary' : 'ghost'} size="sm" onClick={() => setActiveTab('folders')}><FolderIcon className="mr-2 h-4 w-4"/>Listas</Button>
-                        <Button variant={activeTab === 'files' ? 'secondary' : 'ghost'} size="sm" onClick={() => setActiveTab('files')}><FileText className="mr-2 h-4 w-4"/>Archivos</Button>
-                    </div>
                 </div>
             </div>
         </Card>
@@ -315,7 +300,7 @@ export default function ResourcesPage() {
                 <div className="space-y-8">
                     {folders.length > 0 && (
                         <section>
-                            <h3 className="text-lg font-semibold mb-3">Listas de Reproducción</h3>
+                            <h3 className="text-lg font-semibold mb-3">Carpetas y Listas</h3>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                                 {folders.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={true} onNavigate={handleNavigateFolder} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onSelect={()=>{}} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
                             </div>
@@ -377,13 +362,21 @@ export default function ResourcesPage() {
             onClose={() => { setResourceToEdit(null); setIsUploaderOpen(false); }}
             resource={resourceToEdit}
             parentId={currentFolderId}
-            onSave={handleResourceSave}
+            onSave={handleSaveSuccess}
         />
 
         <FolderCreatorModal
              isOpen={isFolderCreatorOpen}
              onClose={() => setIsFolderCreatorOpen(false)}
-             onSave={handleResourceSave}
+             onSave={handleSaveSuccess}
+             parentId={currentFolderId}
+        />
+        
+        <PlaylistCreatorModal
+            isOpen={isPlaylistCreatorOpen}
+            onClose={() => setIsPlaylistCreatorOpen(false)}
+            onSave={handleSaveSuccess}
+            parentId={currentFolderId}
         />
 
          <AlertDialog open={!!resourceToDelete} onOpenChange={(open) => !open && setResourceToDelete(null)}>

@@ -111,31 +111,63 @@ export async function POST(req: NextRequest) {
     
     try {
         const body = await req.json();
-        const { title, type, url, category, tags, parentId, description, isPublic, sharedWithUserIds, expiresAt, status, size } = body;
+        const { title, type, url, category, tags, parentId, description, isPublic, sharedWithUserIds, expiresAt, status, size, fileType, filename, videos } = body;
 
-        // Use the filename as a fallback for the title if title is not provided
-        const finalTitle = title || body.filename;
+        const finalTitle = title || filename;
 
         if (!finalTitle || !type) {
             return NextResponse.json({ message: 'Título y tipo son requeridos' }, { status: 400 });
         }
         
-        if (type !== 'FOLDER' && type !== 'EXTERNAL_LINK' && type !== 'DOCUMENTO_EDITABLE' && !url) {
+        if (type !== 'FOLDER' && type !== 'VIDEO_PLAYLIST' && type !== 'EXTERNAL_LINK' && type !== 'DOCUMENTO_EDITABLE' && !url) {
             return NextResponse.json({ message: 'URL es requerida para este tipo de recurso' }, { status: 400 });
         }
+        
+        if (type === 'VIDEO_PLAYLIST') {
+            const playlist = await prisma.enterpriseResource.create({
+                data: {
+                    title: finalTitle,
+                    type, description, category,
+                    ispublic: true, // Playlists are public by default for simplicity
+                    uploader: { connect: { id: session.id } },
+                    parentId,
+                    status: 'ACTIVE'
+                }
+            });
 
-        const data: any = {
+            if (videos && videos.length > 0) {
+                 for (const [index, video] of videos.entries()) {
+                    await prisma.enterpriseResource.create({
+                        data: {
+                            title: video.title,
+                            type: 'VIDEO',
+                            url: video.url,
+                            uploader: { connect: { id: session.id } },
+                            parent: { connect: { id: playlist.id } },
+                            ispublic: true,
+                            category,
+                            status: 'ACTIVE',
+                            order: index
+                        }
+                    })
+                 }
+            }
+            return NextResponse.json(playlist, { status: 201 });
+        }
+
+        const data: Prisma.EnterpriseResourceCreateInput = {
             title: finalTitle, type, description, url: url || null,
             content: type === 'DOCUMENTO_EDITABLE' ? ' ' : null,
             category: category || 'General',
             tags: Array.isArray(tags) ? tags.join(',') : '',
             ispublic: isPublic === true, status: status || 'ACTIVE',
             expiresAt: expiresAt ? new Date(expiresAt) : null,
-            size, filetype: body.fileType, // CORRECCIÓN: Usar el `fileType` del body y asignarlo a `filetype`.
+            size, filetype: fileType,
             uploader: { connect: { id: session.id } },
         };
         
         if (parentId) data.parent = { connect: { id: parentId } };
+
         if (isPublic === false && sharedWithUserIds && Array.isArray(sharedWithUserIds)) {
             data.sharedWith = { connect: sharedWithUserIds.map((id:string) => ({ id })) };
         }
