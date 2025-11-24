@@ -11,7 +11,6 @@ import YouTube from 'react-youtube';
 import { DndContext, DragEndEvent, closestCenter } from '@dnd-kit/core';
 import { SortableContext, useSortable, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { QuizQuestionForm } from './quiz-question-form';
 import { ScrollArea } from '../ui/scroll-area';
 import { QuizEditorModal } from '../quizz-it/quiz-editor-modal';
 import Image from 'next/image';
@@ -108,6 +107,7 @@ export const InteractiveQuizEditor: React.FC<{ folderId: string }> = ({ folderId
     const { toast } = useToast();
     
     const activeBlock = contentBlocks.find(b => b.id === activeBlockId);
+    const existingQuizBlock = contentBlocks.find(b => b.type === 'QUIZ');
 
     const fetchContent = useCallback(async () => {
       setIsLoading(true);
@@ -132,18 +132,23 @@ export const InteractiveQuizEditor: React.FC<{ folderId: string }> = ({ folderId
         
         let allBlocks = [...videoBlocks];
 
-        const quizRes = await fetch(`/api/quizzes/resource/${folderId}`);
-        if (quizRes.ok) {
-            const quizData: AppQuiz = await quizRes.json();
+        // Solo buscar quiz si el recurso principal (la playlist) tiene un quiz asociado.
+        if (folderData.quiz) {
             const quizBlock: ContentBlock = {
-                id: quizData.id,
+                id: folderData.quiz.id,
                 type: 'QUIZ',
-                quiz: quizData,
+                quiz: folderData.quiz,
             };
-            allBlocks.push(quizBlock);
+             // En lugar de añadir, buscamos si ya existe para reemplazarlo, o lo añadimos.
+            const quizIndex = allBlocks.findIndex(b => b.id === quizBlock.id);
+            if (quizIndex > -1) {
+                allBlocks[quizIndex] = quizBlock;
+            } else {
+                allBlocks.push(quizBlock);
+            }
         }
         
-        allBlocks.sort((a,b) => (a.resource?.order || 0) - (b.resource?.order || 0));
+        // No se reordena aquí, se respeta el orden que venga de la DB.
         
         setContentBlocks(allBlocks);
         if (allBlocks.length > 0) {
@@ -172,21 +177,26 @@ export const InteractiveQuizEditor: React.FC<{ folderId: string }> = ({ folderId
         }
     };
     
-    const addBlock = (type: 'QUIZ', index: number) => {
-      const newBlock: ContentBlock = {
-        id: `new-${type.toLowerCase()}-${Date.now()}`,
-        type,
-        quiz: {
-            id: `new-quiz-${Date.now()}`,
-            title: "Nuevo Quiz de Repaso",
-            description: "Evalúa lo aprendido en los videos anteriores.",
-            questions: [],
-            maxAttempts: null
+    const handleCreateAndEditQuiz = () => {
+        if (existingQuizBlock) {
+            handleEditQuiz(existingQuizBlock.quiz!);
+            return;
         }
-      };
-      const newBlocks = [...contentBlocks];
-      newBlocks.splice(index, 0, newBlock);
-      setContentBlocks(newBlocks);
+
+        const newQuizBlock: ContentBlock = {
+            id: `new-quiz-${Date.now()}`,
+            type: 'QUIZ',
+            quiz: {
+                id: `new-quiz-obj-${Date.now()}`,
+                title: `Evaluación para ${playlistInfo?.title || 'la lista'}`,
+                description: "Evalúa lo aprendido en los videos.",
+                questions: [],
+                maxAttempts: null,
+            }
+        };
+        setContentBlocks(prev => [...prev, newQuizBlock]);
+        setActiveBlockId(newQuizBlock.id);
+        handleEditQuiz(newQuizBlock.quiz!);
     };
 
     const handleDelete = (blockId: string) => {
@@ -197,7 +207,7 @@ export const InteractiveQuizEditor: React.FC<{ folderId: string }> = ({ folderId
         if (!blockToDelete) return;
         setContentBlocks(prev => prev.filter(b => b.id !== blockToDelete.id));
         if(activeBlockId === blockToDelete.id) {
-            setActiveBlockId(null);
+            setActiveBlockId(contentBlocks.length > 1 ? contentBlocks.find(b => b.id !== blockToDelete.id)!.id : null);
         }
         setBlockToDelete(null);
     };
@@ -208,7 +218,7 @@ export const InteractiveQuizEditor: React.FC<{ folderId: string }> = ({ folderId
 
     const handleSaveQuiz = (updatedQuiz: AppQuiz) => {
         setContentBlocks(prev => prev.map(block => 
-            block.quiz?.id === updatedQuiz.id ? { ...block, quiz: updatedQuiz } : block
+            block.quiz?.id === updatedQuiz.id || (block.id === updatedQuiz.id.replace('-obj', '')) ? { ...block, quiz: updatedQuiz } : block
         ));
         setQuizToEdit(null);
     };
@@ -217,15 +227,20 @@ export const InteractiveQuizEditor: React.FC<{ folderId: string }> = ({ folderId
       setIsSaving(true);
       const quizBlock = contentBlocks.find(b => b.type === 'QUIZ');
       try {
-          if (quizBlock && quizBlock.quiz) {
-             const res = await fetch(`/api/quizzes/resource/${folderId}`, {
-                 method: 'POST',
-                 headers: { 'Content-Type': 'application/json' },
-                 body: JSON.stringify(quizBlock.quiz)
-             });
-             if (!res.ok) throw new Error('No se pudo guardar el quiz.');
+          const payload = {
+              title: playlistInfo?.title,
+              quiz: quizBlock ? quizBlock.quiz : null,
           }
+           const res = await fetch(`/api/resources/${folderId}`, {
+                 method: 'PUT',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify(payload)
+           });
+          if (!res.ok) throw new Error('No se pudo guardar el quiz.');
+          
           toast({ title: 'Guardado', description: 'La estructura y el quiz han sido guardados.' });
+          fetchContent(); // Recargar para obtener IDs reales de la DB
+
       } catch(err) {
           toast({ title: 'Error', description: (err as Error).message, variant: 'destructive'});
       } finally {
@@ -254,25 +269,33 @@ export const InteractiveQuizEditor: React.FC<{ folderId: string }> = ({ folderId
             <div className="lg:col-span-1">
                 <Card className="h-full flex flex-col">
                     <CardHeader>
-                        <CardTitle>{playlistInfo?.title || 'Contenido de la Lista'}</CardTitle>
-                        <CardDescription>Arrastra los bloques para reordenar la secuencia.</CardDescription>
+                        <div className="flex justify-between items-start">
+                          <div className="flex-grow">
+                            <CardTitle className="flex items-center gap-2 text-xl font-bold font-headline">
+                              <Folder className="h-6 w-6 text-amber-500" />
+                              {playlistInfo?.title || 'Contenido de la Lista'}
+                            </CardTitle>
+                            <CardDescription>Arrastra los bloques para reordenar la secuencia.</CardDescription>
+                          </div>
+                          <Button variant="secondary" size="sm" onClick={handleCreateAndEditQuiz}>
+                            {existingQuizBlock ? <Edit className="mr-2 h-4 w-4"/> : <PlusCircle className="mr-2 h-4 w-4"/>}
+                            {existingQuizBlock ? 'Editar Quiz' : 'Crear Quiz'}
+                          </Button>
+                        </div>
                     </CardHeader>
                     <CardContent className="flex-grow p-2">
                         <ScrollArea className="h-[calc(100vh-300px)]">
                             <div className="space-y-2 pr-3">
-                                <div className="flex justify-center"><Button variant="outline" size="sm" onClick={() => addBlock('QUIZ', 0)}><PlusCircle className="mr-2 h-4"/>Añadir Quiz</Button></div>
                                 <SortableContext items={contentBlocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
-                                    {contentBlocks.map((block, index) => (
-                                        <React.Fragment key={block.id}>
-                                            <SortableItem 
-                                                block={block} 
-                                                isActive={block.id === activeBlockId}
-                                                onSelect={() => setActiveBlockId(block.id)}
-                                                onDelete={() => handleDelete(block.id)}
-                                                onEditQuiz={handleEditQuiz}
-                                            />
-                                            <div className="flex justify-center"><Button variant="outline" size="sm" onClick={() => addBlock('QUIZ', index + 1)}><PlusCircle className="mr-2 h-4"/>Añadir Quiz</Button></div>
-                                        </React.Fragment>
+                                    {contentBlocks.map((block) => (
+                                        <SortableItem 
+                                            key={block.id}
+                                            block={block} 
+                                            isActive={block.id === activeBlockId}
+                                            onSelect={() => setActiveBlockId(block.id)}
+                                            onDelete={() => handleDelete(block.id)}
+                                            onEditQuiz={handleEditQuiz}
+                                        />
                                     ))}
                                 </SortableContext>
                             </div>
