@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu';
-import { MoreVertical, Edit, Trash2, Lock, Download, Globe, Users, ExternalLink, User, Grip, ArchiveRestore, Tag, Calendar } from 'lucide-react';
+import { MoreVertical, Edit, Trash2, Lock, Download, Globe, Users, Grip, ArchiveRestore, Tag, Calendar, Pin } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { DownloadButton } from '../ui/download-button';
 import { Identicon } from '../ui/identicon';
@@ -15,25 +15,99 @@ import { useDraggable } from '@dnd-kit/core';
 import { FileIcon } from '../ui/file-icon';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import { Badge } from '../ui/badge';
-import { formatFileSize } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '../ui/card';
+import { Card, CardHeader, CardContent } from '../ui/card';
 import { TableRow, TableCell } from '../ui/table';
+import { Checkbox } from '../ui/checkbox';
 
 interface ResourceListItemProps {
-    resource: AppResourceType;
-    onSelect: () => void;
+    resources: AppResourceType[];
+    onSelect: (resource: AppResourceType) => void;
     onEdit: (resource: AppResourceType) => void;
     onDelete: (resource: AppResourceType) => void;
     onRestore: (resource: AppResourceType) => void;
+    onTogglePin: (resource: AppResourceType) => void;
+    selectedIds: Set<string>;
+    onSelectionChange: (id: string, checked: boolean) => void;
 }
 
 
-export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDelete, onRestore }: ResourceListItemProps) => {
+export const ResourceListItem = React.memo(({ resources, onSelect, onEdit, onDelete, onRestore, onTogglePin, selectedIds, onSelectionChange }: ResourceListItemProps) => {
     const { user } = useAuth();
     const isMobile = useIsMobile();
-    const canModify = user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && resource.uploaderId === user.id));
+    const isAllSelected = resources.length > 0 && resources.every(r => selectedIds.has(r.id));
     
+    const canModifyAny = user && (user.role === 'ADMINISTRATOR' || resources.some(r => user.role === 'INSTRUCTOR' && r.uploaderId === user.id));
+
+    if (isMobile) {
+        return (
+            <div className="w-full space-y-3">
+                {resources.map(resource => {
+                    const youtubeId = getYoutubeVideoId(resource.url);
+                    const fileExtension = youtubeId ? 'youtube' : (resource.fileType?.split('/')[1] || resource.url?.split('.').pop() || 'file');
+                    const canModify = user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && resource.uploaderId === user.id));
+
+                    return (
+                        <Card key={resource.id} onClick={() => onSelect(resource)} className="w-full flex flex-col shadow-sm">
+                            <CardHeader className="flex flex-row items-center gap-4 p-3 relative">
+                                <Checkbox checked={selectedIds.has(resource.id)} onCheckedChange={(checked) => onSelectionChange(resource.id, !!checked)} onClick={e => e.stopPropagation()} className="shrink-0" />
+                                <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : resource.url} />
+                                <div className="flex-grow min-w-0">
+                                   <p className="font-semibold truncate text-foreground">{resource.title}</p>
+                                   <p className="text-xs text-muted-foreground">{resource.description || 'Sin descripción'}</p>
+                                </div>
+                                {canModify && (
+                                    <div className="absolute top-1 right-1">
+                                         <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4"/></Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
+                                                <DropdownMenuItem onSelect={() => onTogglePin(resource)}><Pin className="mr-2 h-4 w-4"/>{resource.isPinned ? 'Desfijar' : 'Fijar'}</DropdownMenuItem>
+                                                <DropdownMenuItem onSelect={() => onEdit(resource)}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
+                                                <DropdownMenuItem onSelect={() => onDelete(resource)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+                                )}
+                            </CardHeader>
+                            <CardContent className="px-3 pb-3 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                                <div className="flex items-center gap-2"><User className="h-4 w-4 text-muted-foreground"/> <span>{resource.uploaderName}</span></div>
+                                <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-muted-foreground"/> <span>{new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</span></div>
+                                <div className="flex items-center gap-2"><Tag className="h-4 w-4 text-muted-foreground"/> <Badge variant="outline">{resource.category}</Badge></div>
+                                <div className="flex items-center gap-2">{resource.ispublic ? <><Globe className="h-4 w-4 text-green-500"/><span>Público</span></> : <><Users className="h-4 w-4 text-blue-500"/><span>Compartido</span></>}</div>
+                            </CardContent>
+                        </Card>
+                    );
+                })}
+            </div>
+        );
+    }
+
+    return (
+        <Table>
+            <TableHeader>
+                <TableRow>
+                    <TableHead className="w-12 px-4"><Checkbox checked={isAllSelected} onCheckedChange={(checked) => onSelectionChange('all', !!checked)} /></TableHead>
+                    <TableHead className="w-[40%]">Nombre</TableHead>
+                    <TableHead className="w-[15%] hidden md:table-cell">Propietario</TableHead>
+                    <TableHead className="w-[15%] hidden lg:table-cell">Categoría</TableHead>
+                    <TableHead className="w-[15%] hidden lg:table-cell">Fecha</TableHead>
+                    <TableHead className="w-[10%] hidden md:table-cell">Estado</TableHead>
+                    <TableHead className="w-[5%] text-right">Acciones</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {resources.map(resource => <SingleRowItem key={resource.id} resource={resource} onSelect={onSelect} onEdit={onEdit} onDelete={onDelete} onRestore={onRestore} onTogglePin={onTogglePin} isSelected={selectedIds.has(resource.id)} onSelectionChange={onSelectionChange} />)}
+            </TableBody>
+        </Table>
+    );
+});
+ResourceListItem.displayName = 'ResourceListItem';
+
+const SingleRowItem = ({ resource, onSelect, onEdit, onDelete, onRestore, onTogglePin, isSelected, onSelectionChange }: Omit<ResourceListItemProps, 'resources' | 'selectedIds'> & { isSelected: boolean }) => {
+    const { user } = useAuth();
+    const canModify = user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && resource.uploaderId === user.id));
     const youtubeId = getYoutubeVideoId(resource.url);
     const fileExtension = youtubeId ? 'youtube' : (resource.fileType?.split('/')[1] || resource.url?.split('.').pop() || 'file');
 
@@ -47,52 +121,21 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
         e.stopPropagation();
         action();
     }
-    
-     if (isMobile) {
-        return (
-            <div className="w-full flex justify-center">
-                <Card onClick={onSelect} className="w-full max-w-md flex flex-col shadow-sm">
-                    <CardHeader className="flex flex-row items-center gap-4 p-3 relative">
-                        <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null} />
-                        <div className="flex-grow min-w-0">
-                           <p className="font-semibold truncate text-foreground">{resource.title}</p>
-                           <p className="text-xs text-muted-foreground">{resource.description || 'Sin descripción'}</p>
-                        </div>
-                        {canModify && (
-                            <div className="absolute top-1 right-1">
-                                 <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4"/></Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
-                                        <DropdownMenuItem onSelect={(e) => handleAction(e, () => onEdit(resource))}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
-                                        <DropdownMenuItem onSelect={(e) => handleAction(e, () => onDelete(resource))} className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
-                        )}
-                    </CardHeader>
-                    <CardContent className="px-3 pb-3 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
-                        <div className="flex items-center gap-2"><User className="h-4 w-4 text-muted-foreground"/> <span>{resource.uploaderName}</span></div>
-                        <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-muted-foreground"/> <span>{new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</span></div>
-                        <div className="flex items-center gap-2"><Tag className="h-4 w-4 text-muted-foreground"/> <Badge variant="outline">{resource.category}</Badge></div>
-                        <div className="flex items-center gap-2">{resource.ispublic ? <><Globe className="h-4 w-4 text-green-500"/><span>Público</span></> : <><Users className="h-4 w-4 text-blue-500"/><span>Compartido</span></>}</div>
-                    </CardContent>
-                </Card>
-            </div>
-        )
-    }
 
     return (
-        <TableRow ref={setNodeRef} onClick={onSelect} className={cn("cursor-pointer", isDragging && 'opacity-50')}>
+        <TableRow ref={setNodeRef} onClick={() => onSelect(resource)} className={cn("cursor-pointer", isDragging && 'opacity-50', isSelected && 'bg-primary/10')}>
+             <TableCell className="px-4" onClick={(e) => e.stopPropagation()}><Checkbox checked={isSelected} onCheckedChange={(checked) => onSelectionChange(resource.id, !!checked)} /></TableCell>
              <TableCell className="w-[40%]">
                 <div className="flex items-center gap-4">
                     <div {...listeners} {...attributes} className="p-1 cursor-grab touch-none">
                         <Grip className="h-4 w-4 text-muted-foreground/50"/>
                     </div>
-                    <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null} />
+                    <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : resource.url} />
                     <div className="min-w-0">
-                        <p className="font-semibold truncate text-foreground">{resource.title}</p>
+                        <p className="font-semibold truncate text-foreground flex items-center gap-1.5">
+                            {resource.title}
+                            {resource.isPinned && <Pin className="h-3.5 w-3.5 text-blue-500 fill-blue-500" />}
+                        </p>
                         <p className="text-xs text-muted-foreground truncate">{resource.description || 'Sin descripción'}</p>
                     </div>
                 </div>
@@ -133,6 +176,7 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
                             <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
                                  {resource.status === 'ACTIVE' ? (
                                     <>
+                                      <DropdownMenuItem onSelect={(e) => handleAction(e, () => onTogglePin(resource))}><Pin className="mr-2 h-4 w-4"/>{resource.isPinned ? 'Desfijar' : 'Fijar'}</DropdownMenuItem>
                                       <DropdownMenuItem onSelect={(e) => handleAction(e, () => onEdit(resource))}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
                                       <DropdownMenuSeparator />
                                       <DropdownMenuItem onSelect={(e) => handleAction(e, () => onDelete(resource))} className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
@@ -146,7 +190,5 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
                 </div>
             </TableCell>
         </TableRow>
-    );
-});
-
-ResourceListItem.displayName = 'ResourceListItem';
+    )
+}

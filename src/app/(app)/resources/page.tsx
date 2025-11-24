@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { useTitle } from '@/contexts/title-context';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Move, Trash2, FolderOpen, Filter, ChevronRight } from 'lucide-react';
+import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Move, Trash2, FolderOpen, Filter, ChevronRight, Pin } from 'lucide-react';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { ResourceListItem } from '@/components/resources/resource-list-item';
 import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
@@ -30,6 +30,8 @@ import type { Prisma } from '@prisma/client';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import { VideoPlaylistView } from '@/components/resources/video-playlist-view';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Checkbox } from '../ui/checkbox';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const getFileTypeFilter = (fileType: string): Prisma.EnterpriseResourceWhereInput => {
     const mimeMap: Record<string, string[]> = {
@@ -94,6 +96,9 @@ export default function ResourcesPage() {
   const [isFolderCreatorOpen, setIsFolderCreatorOpen] = useState(false);
   const [isUploaderOpen, setIsUploaderOpen] = useState(false);
 
+  // State for bulk actions
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
   const { setNodeRef: setRootDroppableRef, isOver: isOverRoot } = useDroppable({ id: 'root' });
 
   useEffect(() => {
@@ -127,6 +132,7 @@ export default function ResourcesPage() {
 
   useEffect(() => {
     fetchResources();
+    setSelectedIds(new Set()); // Reset selection on data change
   }, [fetchResources]);
 
   const folders = useMemo(() => allApiResources.filter(r => r.type === 'FOLDER'), [allApiResources]);
@@ -187,6 +193,20 @@ export default function ResourcesPage() {
         setIsDeleting(false);
     }
   };
+  
+   const handleTogglePin = async (resource: AppResourceType) => {
+        try {
+            await fetch(`/api/resources/${resource.id}/pin`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isPinned: !resource.isPinned }),
+            });
+            toast({ description: `Recurso ${resource.isPinned ? 'desfijado' : 'fijado'}.`});
+            fetchResources();
+        } catch (err) {
+            toast({ title: "Error", description: (err as Error).message, variant: "destructive" });
+        }
+    };
 
   const handleRestore = async (resource: AppResourceType) => {
     try {
@@ -202,63 +222,57 @@ export default function ResourcesPage() {
         toast({ title: "Error", description: (err as Error).message, variant: "destructive" });
     }
   }
+
+  const handleBulkDelete = async () => {
+      setIsDeleting(true);
+      try {
+          const res = await fetch('/api/resources/bulk-delete', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ ids: Array.from(selectedIds) }),
+          });
+          if (!res.ok) throw new Error((await res.json()).message || "Error al eliminar.");
+          toast({ description: `${selectedIds.size} elemento(s) eliminados.` });
+          fetchResources();
+      } catch (err) {
+          toast({ title: "Error", description: (err as Error).message, variant: 'destructive' });
+      } finally {
+          setIsDeleting(false);
+          setResourceToDelete(null); // Reuse for bulk delete confirmation
+      }
+  }
+
+  const handleSelectionChange = useCallback((id: string, checked: boolean) => {
+    setSelectedIds(prev => {
+        const newSet = new Set(prev);
+        if(id === 'all') {
+            if (checked) {
+                allApiResources.forEach(r => newSet.add(r.id));
+            } else {
+                allApiResources.forEach(r => newSet.delete(r.id));
+            }
+        } else {
+            if (checked) newSet.add(id);
+            else newSet.delete(id);
+        }
+        return newSet;
+    });
+  }, [allApiResources]);
     
   if (isAuthLoading) {
       return <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>
   }
 
-  const ListView = () => (
-    <div className="flex flex-col w-full items-center">
-      {files.length > 0 && (
-        <Table className="hidden md:table">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[40%]">Nombre</TableHead>
-              <TableHead className="w-[15%] hidden md:table-cell">Propietario</TableHead>
-              <TableHead className="w-[15%] hidden lg:table-cell">Categoría</TableHead>
-              <TableHead className="w-[15%] hidden lg:table-cell">Fecha</TableHead>
-              <TableHead className="w-[10%] hidden md:table-cell">Estado</TableHead>
-              <TableHead className="w-[5%] text-right">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {files.map(res => (
-              <ResourceListItem 
-                key={res.id} 
-                resource={res} 
-                onSelect={() => setSelectedResource(res)} 
-                onEdit={setResourceToEdit} 
-                onDelete={setResourceToDelete} 
-                onRestore={handleRestore}
-              />
-            ))}
-          </TableBody>
-        </Table>
-      )}
-      <div className="w-full md:hidden space-y-3 flex flex-col items-center">
-        {files.map(res => (
-          <ResourceListItem 
-            key={res.id} 
-            resource={res} 
-            onSelect={() => setSelectedResource(res)} 
-            onEdit={setResourceToEdit} 
-            onDelete={setResourceToDelete} 
-            onRestore={handleRestore}
-          />
-        ))}
-      </div>
-    </div>
-  );
-
   const isVideoFolder = useMemo(() => {
     if (!files || files.length === 0) return false;
     const videoCount = files.filter(f => f.type === 'VIDEO' || getYoutubeVideoId(f.url)).length;
-    // Consider it a video folder if more than 70% of its direct children are videos
     return (videoCount / files.length) >= 0.7;
   }, [files]);
   
+  const sensors = useSensors(useSensor(MouseSensor), useSensor(TouchSensor));
+
   return (
-    <DndContext onDragEnd={handleDragEnd} sensors={useSensors(useSensor(MouseSensor), useSensor(TouchSensor))}>
+    <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
     <div className="space-y-6">
        <p className="text-muted-foreground">Gestiona y comparte documentos importantes, guías y materiales de formación para toda la organización.</p>
        <Card className="p-4 bg-card shadow-sm">
@@ -336,7 +350,7 @@ export default function ResourcesPage() {
                         <section>
                             <h3 className="text-lg font-semibold mb-3">Carpetas</h3>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                                {folders.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={true} onNavigate={handleNavigateFolder} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onSelect={() => {}}/>)}
+                                {folders.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={true} onNavigate={handleNavigateFolder} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onSelect={() => {}} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
                             </div>
                         </section>
                     )}
@@ -346,10 +360,10 @@ export default function ResourcesPage() {
                              <h3 className="text-lg font-semibold mb-3">Archivos</h3>
                             {viewMode === 'grid' ? (
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                                    {files.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={false} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onNavigate={() => {}} />)}
+                                    {files.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={false} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onNavigate={() => {}} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
                                 </div>
                             ) : (
-                               <ListView />
+                                <ResourceListItem resources={files} onSelect={setSelectedResource} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onTogglePin={handleTogglePin} selectedIds={selectedIds} onSelectionChange={handleSelectionChange} />
                             )}
                         </section>
                     )}
@@ -364,6 +378,26 @@ export default function ResourcesPage() {
                 </div>
             )}
         </div>
+        
+        <AnimatePresence>
+            {selectedIds.size > 0 && (
+                 <motion.div
+                    initial={{ y: 100, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 100, opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 pointer-events-auto"
+                >
+                   <div className="flex items-center justify-between gap-4 p-2 bg-card border rounded-lg shadow-lg">
+                        <p className="px-2 text-sm font-semibold">{selectedIds.size} seleccionado(s)</p>
+                        <div className="flex items-center gap-2">
+                           <Button variant="destructive" size="sm" onClick={() => setResourceToDelete({ id: 'bulk' } as any)}><Trash2 className="mr-2 h-4 w-4"/>Eliminar</Button>
+                           <Button variant="ghost" size="sm" onClick={() => setSelectedIds(new Set())}>Limpiar</Button>
+                        </div>
+                   </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
 
          <ResourcePreviewModal
             resource={selectedResource}
@@ -391,12 +425,15 @@ export default function ResourcesPage() {
                 <AlertDialogHeader>
                     <AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        El recurso "<strong>{resourceToDelete?.title}</strong>" será eliminado permanentemente. Si es una carpeta, debe estar vacía. Esta acción no se puede deshacer.
+                         {resourceToDelete?.id === 'bulk'
+                            ? `Se eliminarán permanentemente los ${selectedIds.size} elementos seleccionados. Esta acción no se puede deshacer.`
+                            : `El recurso "${resourceToDelete?.title}" será eliminado permanentemente. Si es una carpeta, debe estar vacía. Esta acción no se puede deshacer.`
+                         }
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction onClick={confirmDelete} disabled={isDeleting} className={cn(buttonVariants({ variant: "destructive" }))}>
+                    <AlertDialogAction onClick={() => resourceToDelete?.id === 'bulk' ? handleBulkDelete() : confirmDelete()} disabled={isDeleting} className={cn(buttonVariants({ variant: "destructive" }))}>
                         {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                         <Trash2 className="mr-2 h-4 w-4"/>Sí, eliminar
                     </AlertDialogAction>

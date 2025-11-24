@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import type { AppResourceType } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
 import { Card } from '@/components/ui/card';
-import { Edit, MoreVertical, Trash2, Lock, Download, Globe, Users, Move, Grip, ArchiveRestore } from 'lucide-react';
+import { Edit, MoreVertical, Trash2, Lock, Download, Globe, Users, Move, Grip, ArchiveRestore, Pin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -22,9 +22,21 @@ import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '../ui/
 import { FileIcon } from '../ui/file-icon';
 import { DecorativeFolder } from './decorative-folder';
 import { ExternalLink } from 'lucide-react';
+import { Checkbox } from '../ui/checkbox';
 
 // --- Sub-components for Page ---
-const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onDelete, onNavigate, onRestore }: { resource: AppResourceType, isFolder: boolean, onSelect: () => void, onEdit: (r: AppResourceType) => void, onDelete: (r: AppResourceType) => void, onNavigate: (r: AppResourceType) => void, onRestore: (r:AppResourceType) => void }) => {
+const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onDelete, onNavigate, onRestore, onTogglePin, isSelected, onSelectionChange }: { 
+    resource: AppResourceType, 
+    isFolder: boolean, 
+    onSelect: () => void, 
+    onEdit: (r: AppResourceType) => void, 
+    onDelete: (r: AppResourceType) => void, 
+    onNavigate: (r: AppResourceType) => void, 
+    onRestore: (r:AppResourceType) => void,
+    onTogglePin: (r: AppResourceType) => void,
+    isSelected: boolean,
+    onSelectionChange: (id: string, checked: boolean) => void,
+}) => {
     const { user } = useAuth();
     const canModify = user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && resource.uploaderId === user.id));
 
@@ -40,6 +52,9 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
     });
 
     const handleClick = (e: React.MouseEvent) => {
+        if (e.target instanceof HTMLButtonElement || e.target instanceof HTMLInputElement || e.target.closest('button, a, input[type="checkbox"]')) {
+            return;
+        }
         e.stopPropagation();
         if (isFolder) {
             if (resource.status === 'ACTIVE') onNavigate(resource);
@@ -68,7 +83,7 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
         const youtubeId = getYoutubeVideoId(resource.url);
         const fileExtension = youtubeId ? 'youtube' : (resource.fileType?.split('/')[1] || resource.url?.split('.').pop() || 'file');
         
-        return <FileIcon displayMode="grid" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null} />;
+        return <FileIcon displayMode="grid" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : resource.url} />;
     };
 
     const setNodeRef = (node: HTMLElement | null) => {
@@ -82,17 +97,30 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
         <div ref={setNodeRef} className={cn("w-full touch-none", isDragging && 'opacity-50 z-10')}>
             <Card 
                 className={cn(
-                    "group w-full h-full transition-all duration-200 bg-card hover:border-primary/50 hover:shadow-lg",
+                    "group w-full h-full transition-all duration-200 bg-card hover:border-primary/50 hover:shadow-lg relative",
                     isFolder ? "hover:-translate-y-1" : "",
                     isOver && "ring-2 ring-primary ring-offset-2",
-                    resource.status === 'ARCHIVED' && 'opacity-60 bg-muted/50'
+                    resource.status === 'ARCHIVED' && 'opacity-60 bg-muted/50',
+                    isSelected && "ring-2 ring-primary ring-offset-2 border-primary/80"
                 )}
             >
+                <div className="absolute top-2 left-2 z-20">
+                     <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={(checked) => onSelectionChange(resource.id, !!checked)}
+                        className="bg-background/80 backdrop-blur-sm data-[state=checked]:bg-primary"
+                    />
+                </div>
                 <div className="aspect-[3/2] w-full flex items-center justify-center relative border-b overflow-hidden rounded-t-lg bg-muted cursor-pointer" onClick={handleClick}>
                     <Thumbnail />
                      {resource.hasPin && !isFolder && (
                         <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1 rounded-full">
                             <Lock className="h-3 w-3 text-amber-400" />
+                        </div>
+                    )}
+                    {resource.isPinned && (
+                         <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1 rounded-full">
+                            <Pin className="h-3 w-3 text-blue-500 fill-blue-500" />
                         </div>
                     )}
                 </div>
@@ -116,39 +144,15 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                                 <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                                     {resource.status === 'ACTIVE' && (
                                         <>
-                                            {!isFolder && resource.url && (
-                                                resource.type === 'EXTERNAL_LINK' ? (
-                                                    <DropdownMenuItem asChild>
-                                                        <a href={resource.url} target="_blank" rel="noopener noreferrer">
-                                                            <ExternalLink className="mr-2 h-4 w-4" /> Visitar Enlace
-                                                        </a>
-                                                    </DropdownMenuItem>
-                                                ) : (
-                                                    <DropdownMenuItem asChild>
-                                                       <DownloadButton
-                                                            url={resource.url}
-                                                            resourceId={resource.id}
-                                                            hasPin={resource.hasPin}
-                                                            className="w-full justify-start font-normal h-auto py-1.5 px-2"
-                                                            variant="ghost"
-                                                        >
-                                                             <Download className="mr-2 h-4 w-4" /> Descargar
-                                                        </DownloadButton>
-                                                    </DropdownMenuItem>
-                                                )
-                                            )}
-                                            <DropdownMenuItem onClick={()=> onEdit(resource)}>
-                                                <Edit className="mr-2 h-4 w-4" /> Editar / Compartir
-                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => onTogglePin(resource)}><Pin className="mr-2 h-4 w-4"/>{resource.isPinned ? 'Desfijar' : 'Fijar'}</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={()=> onEdit(resource)}><Edit className="mr-2 h-4 w-4" /> Editar / Compartir</DropdownMenuItem>
                                         </>
                                     )}
                                     {resource.status === 'ARCHIVED' && (
-                                        <DropdownMenuItem onClick={() => onRestore(resource)}>
-                                            <ArchiveRestore className="mr-2 h-4 w-4" /> Restaurar
-                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => onRestore(resource)}><ArchiveRestore className="mr-2 h-4 w-4" /> Restaurar</DropdownMenuItem>
                                     )}
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem onClick={() => onDelete(resource)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar Permanentemente</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => onDelete(resource)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         )}
