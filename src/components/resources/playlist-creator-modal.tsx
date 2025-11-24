@@ -40,6 +40,7 @@ interface VideoItem {
     thumbnail: string | null;
     uploadProgress?: number;
     error?: string;
+    file?: File; // Keep the original file for retries
 }
 
 const SortableVideoItem = ({ video, onDelete }: { video: VideoItem; onDelete: () => void }) => {
@@ -127,20 +128,21 @@ export function PlaylistCreatorModal({ isOpen, onClose, onSave, parentId }: Play
           title: file.name,
           thumbnail: null,
           uploadProgress: 0,
+          file,
       }));
       
       setVideos(prev => [...prev, ...newUploads]);
       
-      for (const upload of newUploads) {
+      newUploads.forEach(async (upload) => {
           try {
-              const result = await uploadWithProgress('/api/upload/resource-file', upload.title, (progress) => {
+              const result = await uploadWithProgress('/api/upload/resource-file', upload.file!, (progress) => {
                   setVideos(prev => prev.map(v => v.id === upload.id ? { ...v, uploadProgress: progress } : v));
               });
               setVideos(prev => prev.map(v => v.id === upload.id ? { ...v, url: result.url, uploadProgress: 100 } : v));
           } catch (err) {
               setVideos(prev => prev.map(v => v.id === upload.id ? { ...v, error: (err as Error).message } : v));
           }
-      }
+      });
   }
 
 
@@ -193,18 +195,20 @@ export function PlaylistCreatorModal({ isOpen, onClose, onSave, parentId }: Play
           </DialogDescription>
         </DialogHeader>
         <form id="playlist-form" onSubmit={handleCreatePlaylist} className="space-y-4 py-4">
-            <div className="space-y-1.5">
-                <Label htmlFor="playlist-name">Nombre de la Lista</Label>
-                <Input id="playlist-name" value={playlistName} onChange={(e) => setPlaylistName(e.target.value)} required />
-            </div>
-             <div className="space-y-1.5">
-              <Label htmlFor="category-playlist">Categoría</Label>
-              <Select name="category-playlist" required value={category} onValueChange={setCategory}>
-                <SelectTrigger id="category-playlist"><SelectValue placeholder="Selecciona..." /></SelectTrigger>
-                <SelectContent>
-                  {(settings?.resourceCategories || []).sort().map((cat) => ( <SelectItem key={cat} value={cat}>{cat}</SelectItem> ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                    <Label htmlFor="playlist-name">Nombre de la Lista</Label>
+                    <Input id="playlist-name" value={playlistName} onChange={(e) => setPlaylistName(e.target.value)} required />
+                </div>
+                <div className="space-y-1.5">
+                    <Label htmlFor="category-playlist">Categoría</Label>
+                    <Select name="category-playlist" required value={category} onValueChange={setCategory}>
+                        <SelectTrigger id="category-playlist"><SelectValue placeholder="Selecciona..." /></SelectTrigger>
+                        <SelectContent>
+                        {(settings?.resourceCategories || []).sort().map((cat) => ( <SelectItem key={cat} value={cat}>{cat}</SelectItem> ))}
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
             
             <div className="space-y-3 pt-2">
@@ -224,7 +228,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, onSave, parentId }: Play
                         </Button>
                     </div>
                 ) : (
-                    <UploadArea onFileSelect={handleFileUpload} multiple compact disabled={isAddingVideo} className="h-28">
+                    <UploadArea onFileSelect={handleFileUpload} multiple compact disabled={isAddingVideo} className="h-28" accept="video/*">
                        <div className="text-center text-muted-foreground p-2">
                             <UploadCloud className="mx-auto h-6 w-6"/>
                             <p className="text-sm font-semibold">Sube uno o varios videos</p>
