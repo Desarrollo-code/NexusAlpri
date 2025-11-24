@@ -54,6 +54,51 @@ const QuestionItem = ({ question, isActive, onSelect, onDelete }: {
     );
 };
 
+const VideoPlayer: React.FC<{ resource: AppResourceType | null, onReady: (event: any) => void }> = ({ resource, onReady }) => {
+    if (!resource || !resource.url) {
+        return (
+            <div className="w-full h-full bg-black flex flex-col items-center justify-center text-muted-foreground">
+                <PlayCircle className="h-16 w-16 mb-4"/>
+                <p>Selecciona un video para reproducir</p>
+            </div>
+        );
+    }
+    
+    const youtubeId = getYoutubeVideoId(resource.url);
+
+    if (youtubeId) {
+        return (
+            <YouTube
+                videoId={youtubeId}
+                onReady={(e) => onReady(e.target)}
+                className="w-full h-full"
+                iframeClassName="w-full h-full"
+                opts={{
+                  height: '100%',
+                  width: '100%',
+                  playerVars: {
+                    autoplay: 0,
+                    controls: 1,
+                  },
+                }}
+            />
+        );
+    }
+
+    // Para videos subidos directamente (MP4, etc.)
+    return (
+        <video
+            key={resource.id}
+            ref={onReady} // Esto podría no funcionar igual que con youtube-player. El ref es para el elemento video.
+            src={resource.url}
+            controls
+            className="w-full h-full object-contain bg-black"
+        >
+            Tu navegador no soporta la etiqueta de video.
+        </video>
+    );
+};
+
 export const InteractiveQuizEditor: React.FC<InteractiveQuizEditorProps> = ({ folderId }) => {
     const [playlist, setPlaylist] = useState<AppResourceType[] | null>(null);
     const [quiz, setQuiz] = useState<AppQuiz | null>(null);
@@ -73,8 +118,7 @@ export const InteractiveQuizEditor: React.FC<InteractiveQuizEditorProps> = ({ fo
             const res = await fetch(`/api/resources?parentId=${folderId}`);
             if (!res.ok) throw new Error("No se pudo cargar la lista de reproducción.");
             const data = await res.json();
-            // CORRECCIÓN: Se elimina el filtro que solo permitía videos de YouTube.
-            const videos = data.resources;
+            const videos = data.resources.filter((r: AppResourceType) => r.type === 'VIDEO');
             setPlaylist(videos);
 
             // Fetch or initialize quiz data
@@ -100,26 +144,44 @@ export const InteractiveQuizEditor: React.FC<InteractiveQuizEditorProps> = ({ fo
     useEffect(() => {
         fetchPlaylistAndQuiz();
     }, [fetchPlaylistAndQuiz]);
+    
+    const handlePlayerReady = (event: any) => {
+        // En el caso de react-youtube, el evento es el target.
+        // Para el tag de video, el ref es el elemento mismo.
+        if (event.target) {
+            playerRef.current = event.target;
+        } else {
+            // Adaptador simple para el tag de <video>
+            playerRef.current = {
+                getCurrentTime: () => event.currentTime,
+                seekTo: (seconds: number) => { event.currentTime = seconds; }
+            };
+        }
+    };
+
 
     const handleAddTimePoint = async () => {
-        if (playerRef.current) {
+        if (playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
             const timestamp = await playerRef.current.getCurrentTime();
             setQuiz(prev => {
+                if (!prev) return null;
                 const newQuestion: AppQuestion = {
                     id: `new-q-${Date.now()}`,
                     text: 'Nueva Pregunta',
-                    order: prev ? prev.questions.length : 0,
+                    order: prev.questions.length,
                     type: 'SINGLE_CHOICE',
                     options: [{id: `new-o-1`, text: 'Opción Correcta', isCorrect: true, points: 10}, {id: `new-o-2`, text: 'Opción Incorrecta', isCorrect: false, points: 0}],
                     timestamp: Math.round(timestamp)
                 };
-                const newQuestions = [...(prev?.questions || []), newQuestion].sort((a,b) => (a.timestamp || 0) - (b.timestamp || 0));
+                const newQuestions = [...prev.questions, newQuestion].sort((a,b) => (a.timestamp || 0) - (b.timestamp || 0));
                 
                 return {
-                    ...prev!,
+                    ...prev,
                     questions: newQuestions
                 }
             });
+        } else {
+            toast({ title: "Error", description: "El reproductor de video no está listo o no soporta esta función.", variant: "destructive"})
         }
     };
     
@@ -169,14 +231,7 @@ export const InteractiveQuizEditor: React.FC<InteractiveQuizEditorProps> = ({ fo
                 <div className="lg:col-span-2 space-y-4">
                     <Card className="overflow-hidden shadow-lg">
                         <div className="aspect-video bg-black">
-                            {activeVideo && (
-                                <YouTube
-                                    videoId={getYoutubeVideoId(activeVideo.url)}
-                                    onReady={(e) => playerRef.current = e.target}
-                                    className="w-full h-full"
-                                    iframeClassName="w-full h-full"
-                                />
-                            )}
+                            <VideoPlayer resource={activeVideo} onReady={handlePlayerReady} />
                         </div>
                     </Card>
                     <div className="flex items-center gap-4">
@@ -209,7 +264,7 @@ export const InteractiveQuizEditor: React.FC<InteractiveQuizEditorProps> = ({ fo
                                             isActive={q.id === activeQuestionId}
                                             onSelect={() => {
                                                 setActiveQuestionId(q.id);
-                                                if(playerRef.current && q.timestamp) {
+                                                if(playerRef.current && q.timestamp && typeof playerRef.current.seekTo === 'function') {
                                                     playerRef.current.seekTo(q.timestamp, true);
                                                 }
                                             }}
