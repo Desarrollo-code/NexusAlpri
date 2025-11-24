@@ -50,7 +50,11 @@ export default function ResourcesPage() {
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [currentFolder, setCurrentFolder] = useState<AppResourceType | null>(null);
   const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; title: string }[]>([{ id: null, title: 'Principal' }]);
-  const [selectedResource, setSelectedResource] = useState<AppResourceType | null>(null);
+  
+  // Vista de reproducción de video en lugar de modal
+  const [isPlaylistView, setIsPlaylistView] = useState(false);
+
+  // Estados para modales de edición y borrado
   const [resourceToEdit, setResourceToEdit] = useState<AppResourceType | null>(null);
   const [resourceToDelete, setResourceToDelete] = useState<AppResourceType | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -70,6 +74,7 @@ export default function ResourcesPage() {
     if (!user) return;
     setIsLoadingData(true);
     setError(null);
+    setIsPlaylistView(false); // Reset view on fetch
     
     const params = new URLSearchParams({ status: 'ACTIVE' });
     if (currentFolderId) params.append('parentId', currentFolderId);
@@ -79,11 +84,20 @@ export default function ResourcesPage() {
       const response = await fetch(`/api/resources?${params.toString()}`, { cache: 'no-store' });
       if (!response.ok) throw new Error((await response.json()).message || 'Failed to fetch resources');
       const data = await response.json();
-      setAllApiResources(data.resources || []);
+      const fetchedResources: AppResourceType[] = data.resources || [];
+      setAllApiResources(fetchedResources);
+      
+      const isVideoFolder = fetchedResources.length > 0 && fetchedResources.every(r => r.type === 'VIDEO' || getYoutubeVideoId(r.url));
       
       if (currentFolderId) {
-        const folderData = await fetch(`/api/resources/${currentFolderId}`).then(res => res.json());
+        const folderDataRes = await fetch(`/api/resources/${currentFolderId}`);
+        if (!folderDataRes.ok) throw new Error('No se pudo cargar la carpeta actual.');
+        const folderData = await folderDataRes.json();
         setCurrentFolder(folderData);
+        // Si la carpeta es una lista de videos, activar la vista de playlist
+        if (isVideoFolder) {
+            setIsPlaylistView(true);
+        }
       } else {
         setCurrentFolder(null);
       }
@@ -113,10 +127,8 @@ export default function ResourcesPage() {
   const files = useMemo(() => filteredResources.filter(r => r.type !== 'FOLDER'), [filteredResources]);
 
   const handleNavigateFolder = (resource: AppResourceType) => {
-    if (resource.type === 'FOLDER') {
-        setCurrentFolderId(resource.id);
-        setBreadcrumbs(prev => [...prev, { id: resource.id, title: resource.title }]);
-    }
+    setCurrentFolderId(resource.id);
+    setBreadcrumbs(prev => [...prev, { id: resource.id, title: resource.title }]);
   };
 
   const handleBreadcrumbClick = (folderId: string | null, index: number) => {
@@ -236,12 +248,6 @@ export default function ResourcesPage() {
   if (!user) {
       return <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>
   }
-
-  const isVideoFolder = useMemo(() => {
-    if (!currentFolder || files.length === 0) return false;
-    const videoCount = files.filter(f => f.type === 'VIDEO' || getYoutubeVideoId(f.url)).length;
-    return (videoCount / files.length) >= 0.7;
-  }, [files, currentFolder]);
   
   const sensors = useSensors(useSensor(MouseSensor), useSensor(TouchSensor));
 
@@ -249,7 +255,9 @@ export default function ResourcesPage() {
     <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
     <div className="space-y-6">
        <p className="text-muted-foreground">Gestiona y comparte documentos importantes, guías y materiales de formación para toda la organización.</p>
-       <Card className="p-4 bg-card shadow-sm">
+       
+       {!isPlaylistView && (
+         <Card className="p-4 bg-card shadow-sm">
              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                  <div className="relative w-full flex-grow">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -275,6 +283,7 @@ export default function ResourcesPage() {
                 </div>
             </div>
         </Card>
+       )}
 
         <nav aria-label="Breadcrumb">
             <ol ref={setRootDroppableRef} className={cn("flex items-center gap-1.5 text-sm font-medium text-muted-foreground p-2 rounded-lg", isOverRoot && "bg-primary/20")}>
@@ -300,7 +309,7 @@ export default function ResourcesPage() {
                 </div>
             ) : error ? (
                 <div className="text-center py-10"><AlertTriangle className="mx-auto h-8 w-8 text-destructive" /><p className="mt-2 font-semibold text-destructive">{error}</p></div>
-            ) : isVideoFolder && currentFolder ? (
+            ) : isPlaylistView && currentFolder ? (
                 <VideoPlaylistView resources={files} folder={currentFolder} />
             ) : (
                 <div className="space-y-8">
@@ -308,7 +317,7 @@ export default function ResourcesPage() {
                         <section>
                             <h3 className="text-lg font-semibold mb-3">Listas de Reproducción</h3>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                                {folders.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={true} onNavigate={handleNavigateFolder} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onSelect={() => {}} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
+                                {folders.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={true} onNavigate={handleNavigateFolder} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onSelect={()=>{}} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
                             </div>
                         </section>
                     )}
@@ -324,10 +333,10 @@ export default function ResourcesPage() {
                              </div>
                             {viewMode === 'grid' ? (
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                                    {files.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={false} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onNavigate={() => {}} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
+                                    {files.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={false} onSelect={() => {}} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onNavigate={() => {}} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
                                 </div>
                             ) : (
-                                <ResourceListItem resources={files} onSelect={setSelectedResource} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onTogglePin={handleTogglePin} selectedIds={selectedIds} onSelectionChange={handleSelectionChange} />
+                                <ResourceListItem resources={files} onSelect={()=>{}} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onTogglePin={handleTogglePin} selectedIds={selectedIds} onSelectionChange={handleSelectionChange} />
                             )}
                         </section>
                     )}
@@ -362,12 +371,6 @@ export default function ResourcesPage() {
                 </motion.div>
             )}
         </AnimatePresence>
-
-         <ResourcePreviewModal
-            resource={selectedResource}
-            onClose={() => setSelectedResource(null)}
-            onNavigate={(dir) => {}}
-        />
         
         <ResourceEditorModal
             isOpen={isUploaderOpen || !!resourceToEdit}
