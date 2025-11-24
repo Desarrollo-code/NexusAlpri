@@ -26,11 +26,10 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({ resource, index, onSelect, 
     <div
       onClick={onSelect}
       className={cn(
-        "flex items-center gap-4 p-2 rounded-lg cursor-pointer hover:bg-muted transition-colors group",
-        isActive && "bg-primary/10"
+        "flex items-center gap-4 p-2 rounded-lg cursor-pointer transition-colors group",
+        isActive ? "bg-primary/10 border-l-4 border-primary" : "hover:bg-muted"
       )}
     >
-      <div className="text-muted-foreground font-semibold w-6 text-center shrink-0">{index + 1}</div>
       <div className="relative w-32 h-20 bg-muted rounded-md overflow-hidden flex-shrink-0">
         {thumbnailUrl ? (
           <Image
@@ -50,7 +49,7 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({ resource, index, onSelect, 
         </div>
       </div>
       <div className="flex-grow min-w-0">
-        <p className="font-semibold truncate">{resource.title}</p>
+        <p className={cn("font-semibold truncate", isActive ? "text-primary" : "text-foreground")}>{resource.title}</p>
         <p className="text-sm text-muted-foreground truncate">{resource.uploaderName}</p>
       </div>
     </div>
@@ -78,7 +77,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ resource }) => {
         return (
             <iframe
                 className="w-full h-full"
-                src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1`}
+                src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0`}
                 title={resource.title}
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
