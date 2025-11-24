@@ -176,7 +176,6 @@ const QuestionEditor = ({ question, isQuiz, onQuestionChange, onOptionChange, on
 };
 
 export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, onClose: () => void, quiz: AppQuiz, onSave: (updatedQuiz: AppQuiz) => void }) {
-    const { toast } = useToast();
     const [localQuiz, setLocalQuiz] = useState<AppQuiz>(quiz);
     const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -249,7 +248,6 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
 
     const deleteQuestion = (indexToDelete: number) => {
         if (localQuiz.questions.length <= 1) {
-            toast({ title: 'Acción no permitida', description: 'Un quiz debe tener al menos una pregunta.', variant: 'destructive'});
             return;
         }
         setLocalQuiz(prev => ({ ...prev, questions: prev.questions.filter((_, i) => i !== indexToDelete) }));
@@ -350,3 +348,5 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
       </>
     );
 }
+
+```
