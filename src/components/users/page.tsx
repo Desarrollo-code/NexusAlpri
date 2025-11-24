@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'reac
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, List, Grid, Filter, UserPlus, MoreVertical, Loader2, Briefcase, MessageSquare, Edit, Trash2, UserCog, UserX, Users as UsersIcon, Key } from 'lucide-react';
+import { PlusCircle, Search, List, Grid, Filter, UserPlus, MoreVertical, Loader2, Briefcase, MessageSquare, Edit, Trash2, UserCog, UserX, Users as UsersIcon, Key, HelpCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -37,6 +37,9 @@ import { getRoleInSpanish, getRoleBadgeVariant } from '@/lib/security-log-utils'
 import { getProcessColors } from '@/lib/utils';
 import { Identicon } from '@/components/ui/identicon';
 import { EmptyState } from '../empty-state';
+import { useTour } from '@/contexts/tour-context';
+import { usersTour } from '@/lib/tour-steps';
+import { ColorfulLoader } from '../ui/colorful-loader';
 
 // --- TYPES & CONTEXT ---
 interface ProcessWithChildren extends Process {
@@ -79,7 +82,7 @@ const DraggableUserCard = ({ user, isSelected, onSelectionChange, onEdit, onRole
                     onStatusChange={onStatusChange}
                 />
                  <div className="absolute top-2 left-2 z-20">
-                    <Checkbox checked={isSelected} onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)} className="bg-background border-primary" />
+                    <Checkbox checked={isSelected} onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)} className="data-[state=checked]:bg-accent data-[state=checked]:border-accent-foreground/50 border-accent/70 bg-background/80 backdrop-blur-sm" />
                 </div>
             </div>
         </div>
@@ -91,6 +94,7 @@ function UsersPageComponent() {
     const { user: currentUser, settings } = useAuth();
     const { setPageTitle } = useTitle();
     const isMobile = useIsMobile();
+    const { startTour, forceStartTour } = useTour();
 
     const [usersList, setUsersList] = useState<UserWithProcess[]>([]);
     const [totalUsers, setTotalUsers] = useState(0);
@@ -129,6 +133,11 @@ function UsersPageComponent() {
     
     const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
     const [isBulkAssignModalOpen, setIsBulkAssignModalOpen] = useState(false);
+    
+    useEffect(() => {
+        setPageTitle('Control Central');
+        startTour('users', usersTour);
+    }, [setPageTitle, startTour]);
     
     const createQueryString = useCallback((paramsToUpdate: Record<string, string | number | null>) => {
       const params = new URLSearchParams(searchParams.toString());
@@ -296,11 +305,11 @@ function UsersPageComponent() {
     }
 
     if (isLoading && usersList.length === 0) {
-        return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin"/></div>
+        return <div className="flex justify-center items-center h-full"><div className="w-8 h-8"><ColorfulLoader /></div></div>
     }
     
     const DesktopControls = () => (
-         <div className="flex items-center justify-between gap-4">
+         <div id="users-controls" className="flex items-center justify-between gap-4">
             <div className="relative flex-grow max-w-xs">
                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                  <Input placeholder="Buscar por nombre o email..." value={search} onChange={handleSearchChange} className="pl-10"/>
@@ -400,7 +409,7 @@ function UsersPageComponent() {
     }
 
     const GridView = () => (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {usersList.map(u => (
                 <DraggableUserCard 
                     key={u.id} 
@@ -421,13 +430,13 @@ function UsersPageComponent() {
                  {isMobile ? <MobileControls /> : <DesktopControls />}
 
                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-                    <div className="lg:col-span-3">
+                    <div className="lg:col-span-3" id="users-main-view">
                          <div className="mb-24 md:mb-4">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">{[...Array(8)].map((_,i) => <Skeleton key={i} className="h-48 w-full" />)}</div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">{[...Array(8)].map((_,i) => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}</div>
                                 ) : (
-                                    <Card><CardContent className="p-4"><Skeleton className="h-96 w-full"/></CardContent></Card>
+                                    <Card><CardContent className="p-4"><Skeleton className="h-96 w-full rounded-2xl"/></CardContent></Card>
                                 )
                             ) : usersList.length > 0 ? (
                                viewMode === 'grid' ? <GridView /> : <UserTable users={usersList} selectedUserIds={selectedUserIds} onSelectionChange={handleSelectionChange} onEdit={handleOpenUserModal} onRoleChange={handleOpenUserModal} onStatusChange={handleStatusChange} />
@@ -489,7 +498,7 @@ function UsersPageComponent() {
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isDeactivating}>Cancelar</AlertDialogCancel>
                         <AlertDialogAction onClick={confirmStatusChange} disabled={isDeactivating} className={cn(!userToDeactivate?.isActive && 'bg-green-600 hover:bg-green-700', userToDeactivate?.isActive && 'bg-destructive hover:bg-destructive/90')}>
-                            {isDeactivating ? <Loader2 className="animate-spin mr-2"/> : null}
+                            {isDeactivating ? <div className="w-4 h-4 mr-2"><ColorfulLoader /></div> : null}
                             Sí, {userToDeactivate?.isActive ? 'Inactivar' : 'Activar'}
                         </AlertDialogAction>
                     </AlertDialogFooter>
@@ -499,9 +508,76 @@ function UsersPageComponent() {
     );
 }
 
+const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleChange, onStatusChange }: any) => {
+    const isAllOnPageSelected = users.length > 0 && users.every((u: User) => selectedUserIds.has(u.id));
+
+    return (
+        <Card>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead className="w-12 px-4"><Checkbox checked={isAllOnPageSelected} onCheckedChange={(checked) => onSelectionChange('all', !!checked)}/></TableHead>
+                        <TableHead className="w-[30%]">Colaborador</TableHead>
+                        <TableHead>Rol</TableHead>
+                        <TableHead>Proceso</TableHead>
+                        <TableHead>Acceso</TableHead>
+                        <TableHead className="text-center">Estado</TableHead>
+                        <TableHead className="text-right px-4"><span className="sr-only">Acciones</span></TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {users.map((u: UserWithProcess) => (
+                        <TableRow key={u.id} className="hover:bg-muted/50">
+                            <TableCell className="px-4"><Checkbox checked={selectedUserIds.has(u.id)} onCheckedChange={(checked) => onSelectionChange(u.id, !!checked)} /></TableCell>
+                            <TableCell className="py-2">
+                                <div className="flex items-center gap-3">
+                                    <Avatar className="h-9 w-9"><AvatarImage src={u.avatar || undefined} /><AvatarFallback><Identicon userId={u.id}/></AvatarFallback></Avatar>
+                                    <div><p className="font-semibold">{u.name}</p><p className="text-xs text-muted-foreground">{u.email}</p></div>
+                                </div>
+                            </TableCell>
+                            <TableCell><Badge variant={getRoleBadgeVariant(u.role)}>{getRoleInSpanish(u.role)}</Badge></TableCell>
+                            <TableCell>
+                                {u.process ? (
+                                    <Badge 
+                                        style={{
+                                            backgroundColor: getProcessColors(u.process.id).raw.light,
+                                            color: getProcessColors(u.process.id).raw.dark,
+                                        }}
+                                    >
+                                        {u.process.name}
+                                    </Badge>
+                                ) : <span className="text-xs text-muted-foreground">N/A</span>}
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">Rol estándar</TableCell>
+                            <TableCell className="text-center">
+                                <div className="flex items-center justify-center gap-2">
+                                    <div className={cn("h-2.5 w-2.5 rounded-full", u.isActive ? 'bg-green-500' : 'bg-red-500')} />
+                                    <span className="hidden xl:inline">{u.isActive ? 'Activo' : 'Inactivo'}</span>
+                                </div>
+                            </TableCell>
+                            <TableCell className="text-right px-4">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4"/></Button></DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onSelect={() => onEdit(u)}><Edit className="mr-2 h-4 w-4"/>Editar Perfil</DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => onRoleChange(u)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol/Permisos</DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => onStatusChange(u, !u.isActive)} className={u.isActive ? "text-destructive" : ""}>
+                                            <UserX className="mr-2 h-4 w-4"/>{u.isActive ? 'Inactivar' : 'Activar'}
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </Card>
+    )
+}
+
 export default function UsersPage() {
     return (
-        <Suspense fallback={<div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
+        <Suspense fallback={<div className="flex items-center justify-center h-full"><div className="w-8 h-8"><ColorfulLoader /></div></div>}>
             <UsersPageComponent />
         </Suspense>
     )

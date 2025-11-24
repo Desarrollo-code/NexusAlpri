@@ -37,29 +37,25 @@ export default function MotivationsAdminPage() {
   const { setPageTitle } = useTitle();
   const router = useRouter();
   const { startTour } = useTour();
-  const [showSkeleton, setShowSkeleton] = useState(true);
-
+  
   React.useEffect(() => {
     setPageTitle('Mensajes de Motivación');
     startTour('motivations', motivationsTour);
   }, [setPageTitle, startTour]);
 
-  // Sincronizar el esqueleto con la carga de autenticación y datos
+  // Redirección del lado del cliente después de verificar el estado de carga
   useEffect(() => {
-    if (!isAuthLoading) {
-      // Un pequeño retraso para permitir que el componente hijo empiece a cargar
-      const timer = setTimeout(() => setShowSkeleton(false), 50); 
-      return () => clearTimeout(timer);
+    if (!isAuthLoading && (!user || (user.role !== 'ADMINISTRATOR' && user.role !== 'INSTRUCTOR'))) {
+      router.push('/dashboard');
     }
-  }, [isAuthLoading]);
+  }, [isAuthLoading, user, router]);
 
-  if (isAuthLoading || showSkeleton) {
+  if (isAuthLoading) {
     return <MotivationsSkeleton />;
   }
 
   if (!user || (user.role !== 'ADMINISTRATOR' && user.role !== 'INSTRUCTOR')) {
-    router.push('/dashboard');
-    return null;
+    return null; // O un skeleton/loader mientras se redirige
   }
   
   return <MotivationalMessagesManager />;

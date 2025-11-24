@@ -22,23 +22,33 @@ export default function RoadmapPage() {
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<RoadmapItem | null>(null);
 
-  const fetchItems = useCallback(async () => {
+  const fetchItems = useCallback(async (isMounted: { current: boolean }) => {
     setIsLoading(true);
     try {
         const res = await fetch('/api/roadmap');
         if (!res.ok) throw new Error("No se pudo cargar la hoja de ruta.");
         const data = await res.json();
-        setItems(data);
+        if (isMounted.current) {
+            setItems(data);
+        }
     } catch(err) {
-        toast({ title: "Error", description: (err as Error).message, variant: "destructive"});
+        if (isMounted.current) {
+            toast({ title: "Error", description: (err as Error).message, variant: "destructive"});
+        }
     } finally {
-        setIsLoading(false);
+        if (isMounted.current) {
+            setIsLoading(false);
+        }
     }
   }, [toast]);
 
   useEffect(() => {
     setPageTitle('Ruta del Proyecto');
-    fetchItems();
+    const isMounted = { current: true };
+    fetchItems(isMounted);
+    return () => {
+      isMounted.current = false;
+    };
   }, [setPageTitle, fetchItems]);
 
   const handleOpenEditor = (item: RoadmapItem | null = null) => {
@@ -47,7 +57,8 @@ export default function RoadmapPage() {
   };
 
   const handleSaveSuccess = () => {
-    fetchItems();
+    const isMounted = { current: true };
+    fetchItems(isMounted);
     setIsEditorOpen(false);
   };
   
@@ -87,7 +98,7 @@ export default function RoadmapPage() {
             </div>
         )}
 
-        <RoadmapView items={items} onEdit={handleOpenEditor} onDelete={fetchItems}/>
+        <RoadmapView items={items} onEdit={handleOpenEditor} onDelete={handleSaveSuccess}/>
 
         {isEditorOpen && (
             <RoadmapEditorModal 

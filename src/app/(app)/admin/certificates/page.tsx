@@ -47,8 +47,15 @@ export default function CertificatesAdminPage() {
     return <CertificatesSkeleton />;
   }
 
+  // Redirección del lado del cliente después de verificar el estado de carga
+  useEffect(() => {
+    if (!isAuthLoading && (!user || user.role !== 'ADMINISTRATOR')) {
+      router.push('/dashboard');
+    }
+  }, [isAuthLoading, user, router]);
+
+
   if (!user || user.role !== 'ADMINISTRATOR') {
-    router.push('/dashboard');
     return null;
   }
   

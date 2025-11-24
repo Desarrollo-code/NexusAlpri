@@ -33,10 +33,10 @@ const MotivationCardSkeleton = () => (
         <CardContent className="flex-grow flex items-center justify-center bg-muted">
             <Skeleton className="w-full aspect-video"/>
         </CardContent>
-        <CardFooter className="p-2 border-t flex justify-end gap-2">
+         <CardFooter className="p-2 border-t flex justify-end gap-2">
             <Skeleton className="h-9 w-24"/>
             <Skeleton className="h-9 w-24"/>
-        </CardFooter>
+         </CardFooter>
     </Card>
 );
 
@@ -82,7 +82,7 @@ export function MotivationalMessagesManager() {
     const [isDeleting, setIsDeleting] = useState(false);
 
 
-    const fetchMessages = useCallback(async () => {
+    const fetchMessages = useCallback(async (isMountedRef: { current: boolean }) => {
         setIsLoading(true);
         setError(null);
         try {
@@ -92,23 +92,29 @@ export function MotivationalMessagesManager() {
                 throw new Error(errorData.message);
             }
             const data = await response.json();
-            
-            setMessages(Array.isArray(data) ? data : []);
-            
+            if (isMountedRef.current) {
+                setMessages(Array.isArray(data) ? data : []);
+            }
         } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Ocurrió un error desconocido';
-            setError(errorMessage);
-            setMessages([]);
+            if(isMountedRef.current) {
+                const errorMessage = err instanceof Error ? err.message : 'Ocurrió un error desconocido';
+                setError(errorMessage);
+                setMessages([]);
+            }
         } finally {
-            setIsLoading(false);
+            if (isMountedRef.current) {
+                setIsLoading(false);
+            }
         }
     }, []);
 
 
     useEffect(() => {
+        const isMountedRef = { current: true };
         if (user) {
-            fetchMessages();
+            fetchMessages(isMountedRef);
         }
+        return () => { isMountedRef.current = false };
     }, [user, fetchMessages]);
 
     const handleOpenEditor = (message: MotivationalMessage | null = null) => {
@@ -117,7 +123,8 @@ export function MotivationalMessagesManager() {
     };
 
     const handleSaveChanges = () => {
-        fetchMessages();
+        const isMountedRef = { current: true };
+        fetchMessages(isMountedRef);
         setIsEditorOpen(false);
     }
     
@@ -133,7 +140,8 @@ export function MotivationalMessagesManager() {
                 throw new Error(errorData.message || 'No se pudo eliminar el mensaje.');
             }
             toast({ title: "Mensaje Eliminado", description: `El mensaje "${deletingMessage.title}" ha sido eliminado.` });
-            fetchMessages();
+            const isMountedRef = { current: true };
+            fetchMessages(isMountedRef);
         } catch (err) {
              toast({ title: 'Error al Eliminar', description: (err as Error).message, variant: 'destructive' });
         } finally {
