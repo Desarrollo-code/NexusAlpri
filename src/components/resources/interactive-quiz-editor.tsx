@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import type { AppResourceType, AppQuiz, AppQuestion } from '@/types';
-import { Loader2, AlertTriangle, PlayCircle, PlusCircle, Trash2, GripVertical, Save, Video, BrainCircuit } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Loader2, AlertTriangle, PlayCircle, PlusCircle, Trash2, GripVertical, Save, Video, BrainCircuit, Edit } from 'lucide-react';
+import { Button, buttonVariants } from '../ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import YouTube from 'react-youtube';
@@ -95,7 +95,7 @@ const VideoPlayer: React.FC<{ resource: AppResourceType | null | undefined }> = 
 };
 
 
-export const InteractiveQuizEditor: React.FC<InteractiveQuizEditorProps> = ({ folderId }) => {
+export const InteractiveQuizEditor: React.FC<{ folderId: string }> = ({ folderId }) => {
     const [playlistInfo, setPlaylistInfo] = useState<{ title: string } | null>(null);
     const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -109,17 +109,63 @@ export const InteractiveQuizEditor: React.FC<InteractiveQuizEditorProps> = ({ fo
     
     const activeBlock = contentBlocks.find(b => b.id === activeBlockId);
 
-    const fetchContent = useCallback(async () => {
-      // ... (fetch logic remains the same)
-    }, [folderId]);
-
     useEffect(() => {
+        const fetchContent = async () => {
+            setIsLoading(true);
+            setError(null);
+            try {
+                const folderRes = await fetch(`/api/resources/${folderId}`);
+                if (!folderRes.ok) throw new Error('No se pudo cargar la lista.');
+                const folderData: AppResourceType = await folderRes.json();
+                setPlaylistInfo({ title: folderData.title });
+
+                const childrenRes = await fetch(`/api/resources?parentId=${folderId}`);
+                if (!childrenRes.ok) throw new Error('No se pudieron cargar los videos.');
+                const childrenData = await childrenRes.json();
+
+                const videoBlocks: ContentBlock[] = (childrenData.resources || [])
+                    .filter((r: AppResourceType) => r.type === 'VIDEO')
+                    .map((r: AppResourceType) => ({
+                        id: r.id,
+                        type: 'VIDEO',
+                        resource: r,
+                    }));
+                
+                let allBlocks = [...videoBlocks];
+
+                const quizRes = await fetch(`/api/quizzes/resource/${folderId}`);
+                if (quizRes.ok) {
+                    const quizData: AppQuiz = await quizRes.json();
+                    const quizBlock: ContentBlock = {
+                        id: quizData.id,
+                        type: 'QUIZ',
+                        quiz: quizData,
+                    };
+                    allBlocks.push(quizBlock);
+                }
+                
+                // This sorting logic needs to be replaced when `order` is available
+                // For now, we'll just put quizzes after videos
+                allBlocks.sort((a,b) => a.type === 'VIDEO' ? -1 : 1);
+                
+                setContentBlocks(allBlocks);
+                if (allBlocks.length > 0) {
+                    setActiveBlockId(allBlocks[0].id);
+                }
+
+            } catch (err) {
+                setError((err as Error).message);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
         fetchContent();
-    }, [fetchContent]);
+    }, [folderId]);
 
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
-        if (active.id !== over?.id) {
+        if (over && active.id !== over.id) {
             setContentBlocks((items) => {
                 const oldIndex = items.findIndex(item => item.id === active.id);
                 const newIndex = items.findIndex(item => item.id === over!.id);
@@ -128,17 +174,17 @@ export const InteractiveQuizEditor: React.FC<InteractiveQuizEditorProps> = ({ fo
         }
     };
     
-    const addBlock = (type: 'VIDEO' | 'QUIZ', index: number) => {
+    const addBlock = (type: 'QUIZ', index: number) => {
       const newBlock: ContentBlock = {
         id: `new-${type.toLowerCase()}-${Date.now()}`,
         type,
-        quiz: type === 'QUIZ' ? {
+        quiz: {
             id: `new-quiz-${Date.now()}`,
             title: "Nuevo Quiz de Repaso",
             description: "Evalúa lo aprendido en los videos anteriores.",
             questions: [],
             maxAttempts: null
-        } : undefined
+        }
       };
       const newBlocks = [...contentBlocks];
       newBlocks.splice(index, 0, newBlock);
@@ -152,6 +198,9 @@ export const InteractiveQuizEditor: React.FC<InteractiveQuizEditorProps> = ({ fo
     const confirmDelete = () => {
         if (!blockToDelete) return;
         setContentBlocks(prev => prev.filter(b => b.id !== blockToDelete.id));
+        if(activeBlockId === blockToDelete.id) {
+            setActiveBlockId(null);
+        }
         setBlockToDelete(null);
     };
     
@@ -167,7 +216,23 @@ export const InteractiveQuizEditor: React.FC<InteractiveQuizEditorProps> = ({ fo
     };
 
     const handleSaveChanges = async () => {
-      // Implement save logic here
+      setIsSaving(true);
+      const quizBlock = contentBlocks.find(b => b.type === 'QUIZ');
+      try {
+          if (quizBlock && quizBlock.quiz) {
+             const res = await fetch(`/api/quizzes/resource/${folderId}`, {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify(quizBlock.quiz)
+             });
+             if (!res.ok) throw new Error('No se pudo guardar el quiz.');
+          }
+          toast({ title: 'Guardado', description: 'La estructura y el quiz han sido guardados.' });
+      } catch(err) {
+          toast({ title: 'Error', description: (err as Error).message, variant: 'destructive'});
+      } finally {
+          setIsSaving(false);
+      }
     };
 
     if (isLoading) return <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
