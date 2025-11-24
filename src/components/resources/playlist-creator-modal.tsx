@@ -196,9 +196,9 @@ export function PlaylistCreatorModal({ isOpen, onClose, onSave, parentId }: Play
                 <div className="flex items-center justify-between">
                      <Label>Añadir Video</Label>
                       <div className="flex items-center gap-2">
-                          <Youtube className="h-4 w-4"/>
+                          <Youtube className="h-5 w-5"/>
                           <Switch checked={videoSource === 'upload'} onCheckedChange={(c) => setVideoSource(c ? 'upload' : 'youtube')}/>
-                          <UploadCloud className="h-4 w-4"/>
+                          <UploadCloud className="h-5 w-5"/>
                       </div>
                 </div>
                 {videoSource === 'youtube' ? (
