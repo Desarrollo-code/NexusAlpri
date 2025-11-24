@@ -6,6 +6,27 @@ import type { Prisma, ResourceStatus } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
+const getFileTypeFilter = (fileType: string): Prisma.EnterpriseResourceWhereInput => {
+    const mimeMap: Record<string, string[]> = {
+        image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+        video: ['video/mp4', 'video/webm', 'video/ogg'],
+        pdf: ['application/pdf'],
+        doc: ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+        xls: ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+        ppt: ['application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'],
+        zip: ['application/zip', 'application/x-rar-compressed', 'application/x-7z-compressed'],
+    };
+    const mimeTypes = mimeMap[fileType];
+    if (mimeTypes) {
+        return { filetype: { in: mimeTypes } };
+    }
+    if (fileType === 'other') {
+        const allKnownMimes = Object.values(mimeMap).flat();
+        return { filetype: { notIn: allKnownMimes } };
+    }
+    return {};
+}
+
 // GET resources
 export async function GET(req: NextRequest) {
     const session = await getCurrentUser();
@@ -19,26 +40,37 @@ export async function GET(req: NextRequest) {
         let parentId = searchParams.get('parentId');
         const status = (searchParams.get('status') as ResourceStatus) || 'ACTIVE';
         const searchTerm = searchParams.get('search');
-        const typeFilter = searchParams.get('type'); // "video"
         
+        // Advanced filters
+        const startDate = searchParams.get('startDate');
+        const endDate = searchParams.get('endDate');
+        const fileType = searchParams.get('fileType');
+        const hasPin = searchParams.get('hasPin') === 'true';
+        const hasExpiry = searchParams.get('hasExpiry') === 'true';
+
         if (parentId === '') parentId = null;
         
-        let baseWhere: Prisma.EnterpriseResourceWhereInput = { parentId, status };
+        const baseWhere: Prisma.EnterpriseResourceWhereInput = { parentId, status };
         if (status === 'ACTIVE') {
             baseWhere.OR = [ { expiresAt: null }, { expiresAt: { gte: new Date() } } ];
         }
         if (searchTerm) {
             baseWhere.title = { contains: searchTerm, mode: 'insensitive' };
         }
-        if (typeFilter === 'video') {
-             baseWhere.OR = [
-                ...(baseWhere.OR || []),
-                { filetype: { startsWith: 'video/' } },
-                { url: { contains: 'youtube.com' } },
-                { url: { contains: 'youtu.be' } },
-            ]
-        }
         
+        // Apply advanced filters
+        if (startDate) baseWhere.uploadDate = { ...baseWhere.uploadDate, gte: new Date(startDate) };
+        if (endDate) baseWhere.uploadDate = { ...baseWhere.uploadDate, lte: new Date(endDate) };
+        if (fileType && fileType !== 'all') {
+            const fileTypeFilter = getFileTypeFilter(fileType);
+            if (baseWhere.AND) {
+                (baseWhere.AND as any[]).push(fileTypeFilter);
+            } else {
+                baseWhere.AND = [fileTypeFilter];
+            }
+        }
+        if (hasPin) baseWhere.pin = { not: null };
+        if (hasExpiry) baseWhere.expiresAt = { not: null };
 
         let whereClause: Prisma.EnterpriseResourceWhereInput = {};
         if (session.role === 'ADMINISTRATOR') {
