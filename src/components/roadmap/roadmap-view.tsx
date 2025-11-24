@@ -65,11 +65,15 @@ export const RoadmapView = ({ items, onEdit, onDelete }: { items: RoadmapItem[],
     
     const phases = settings?.roadmapPhases || [];
     
-    const groupedItems = phases.map(phase => ({
-        phase,
-        label: phase,
-        items: items.filter(item => item.phase === phase).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
-    })).filter(group => group.items.length > 0);
+    const groupedItems = phases.map(phase => {
+        const phaseItems = items.filter(item => item.phase === phase).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        if (phaseItems.length === 0) return null; // Devolver null si no hay items
+        return {
+            phase,
+            label: phase,
+            items: phaseItems,
+        };
+    }).filter(group => group !== null); // Filtrar los grupos nulos
     
     const handleDelete = async () => {
         if(!itemToDelete) return;
@@ -91,9 +95,9 @@ export const RoadmapView = ({ items, onEdit, onDelete }: { items: RoadmapItem[],
 
             <div className="space-y-12">
                 {groupedItems.map((group) => (
-                    <div key={group.phase} className="space-y-8">
-                         <h2 className="text-center md:text-left md:pl-16 text-2xl font-bold font-headline sticky top-16 bg-background/80 backdrop-blur-sm py-2 z-10">{group.label}</h2>
-                        {group.items.map((item, itemIndex) => {
+                    <div key={group!.phase} className="space-y-8">
+                         <h2 className="text-center md:text-left md:pl-16 text-2xl font-bold font-headline sticky top-16 bg-background/80 backdrop-blur-sm py-2 z-10">{group!.label}</h2>
+                        {group!.items.map((item, itemIndex) => {
                             const isEven = itemIndex % 2 === 0;
                             return (
                                 <div key={item.id} className="relative flex items-start gap-4 md:gap-8">
