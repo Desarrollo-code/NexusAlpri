@@ -46,7 +46,7 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({ resource, index, onSelect, 
           </div>
         )}
         <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-          <PlayCircle className="h-8 w-8 text-white drop-shadow-lg" />
+          <PlayCircle className="h-8 w-8 text-white drop-shadow-lg transition-transform duration-300 group-hover:scale-110" />
         </div>
       </div>
       <div className="flex-grow min-w-0">

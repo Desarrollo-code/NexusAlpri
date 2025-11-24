@@ -43,11 +43,11 @@ const getFileTypeFilter = (fileType: string): Prisma.EnterpriseResourceWhereInpu
     };
     const mimeTypes = mimeMap[fileType];
     if (mimeTypes) {
-        return { fileType: { in: mimeTypes } };
+        return { filetype: { in: mimeTypes } };
     }
     if (fileType === 'other') {
         const allKnownMimes = Object.values(mimeMap).flat();
-        return { fileType: { notIn: allKnownMimes } };
+        return { filetype: { notIn: allKnownMimes } };
     }
     return {};
 }
@@ -309,7 +309,7 @@ export default function ResourcesPage() {
                 {breadcrumbs.map((crumb, index) => (
                     <li key={crumb.id || 'root'} className="flex items-center gap-1.5">
                         <button onClick={() => handleBreadcrumbClick(crumb.id, index)} disabled={index === breadcrumbs.length - 1} className={cn("hover:text-primary disabled:hover:text-muted-foreground disabled:cursor-default", index === breadcrumbs.length - 1 && "text-foreground font-semibold")}>{crumb.title}</button>
-                        {index < breadcrumbs.length - 1 && <ChevronDown className="h-4 w-4 -rotate-90" />}
+                        {index < breadcrumbs.length - 1 && <ChevronRight className="h-4 w-4" />}
                     </li>
                 ))}
             </ol>

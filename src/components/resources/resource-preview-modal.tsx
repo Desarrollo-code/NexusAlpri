@@ -27,6 +27,7 @@ import { RichTextEditor } from '../ui/rich-text-editor';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
 import { getFileTypeDetails } from '@/lib/resource-utils';
+import { QuizViewer } from '../quiz-viewer';
 
 const DocxPreviewer = ({ url }: { url: string }) => {
     const [html, setHtml] = useState<string | null>(null);
@@ -260,6 +261,14 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified, isEditing, ed
     const displayUrl = pinVerifiedUrl || resource.url;
     
     const renderPreview = () => {
+        if (resource.quiz) {
+            return (
+                <div className="flex items-center justify-center h-full w-full bg-muted">
+                    <QuizViewer quiz={resource.quiz} lessonId="resource-quiz" isCreatorPreview={false} isEnrolled={true} />
+                </div>
+            )
+        }
+
         if (displayUrl) {
             const isPdf = displayUrl.toLowerCase().endsWith('.pdf');
             const youtubeId = getYoutubeVideoId(displayUrl);
@@ -399,7 +408,7 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
         }
     }
     
-    const fileExtension = resource.fileType?.split('/')[1] || resource.url?.split('.').pop() || 'file';
+    const fileExtension = resource.filetype?.split('/')[1] || resource.url?.split('.').pop() || 'file';
     const { label, bgColor } = getFileTypeDetails(fileExtension);
 
     return (
