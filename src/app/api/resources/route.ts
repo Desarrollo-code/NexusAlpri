@@ -6,27 +6,6 @@ import type { Prisma, ResourceStatus } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
-const getFileTypeFilter = (fileType: string): Prisma.EnterpriseResourceWhereInput => {
-    const mimeMap: Record<string, string[]> = {
-        image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
-        video: ['video/mp4', 'video/webm', 'video/ogg'],
-        pdf: ['application/pdf'],
-        doc: ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-        xls: ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
-        ppt: ['application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'],
-        zip: ['application/zip', 'application/x-rar-compressed', 'application/x-7z-compressed'],
-    };
-    const mimeTypes = mimeMap[fileType];
-    if (mimeTypes) {
-        return { filetype: { in: mimeTypes } };
-    }
-    if (fileType === 'other') {
-        const allKnownMimes = Object.values(mimeMap).flat();
-        return { filetype: { notIn: allKnownMimes } };
-    }
-    return {};
-}
-
 // GET resources
 export async function GET(req: NextRequest) {
     const session = await getCurrentUser();
@@ -119,7 +98,7 @@ export async function POST(req: NextRequest) {
                     type, description, category,
                     ispublic: true, // Playlists are public by default for simplicity
                     uploader: { connect: { id: session.id } },
-                    parentId,
+                    parent: parentId ? { connect: { id: parentId } } : undefined,
                     status: 'ACTIVE'
                 }
             });
@@ -146,15 +125,15 @@ export async function POST(req: NextRequest) {
 
         const data: Prisma.EnterpriseResourceCreateInput = {
             title: finalTitle, type, description, url: url || null,
+            content: type === 'DOCUMENTO_EDITABLE' ? ' ' : null,
             category: category || 'General',
             tags: Array.isArray(tags) ? tags.join(',') : '',
             ispublic: isPublic === true, status: status || 'ACTIVE',
             expiresAt: expiresAt ? new Date(expiresAt) : null,
             size, filetype: fileType,
             uploader: { connect: { id: session.id } },
+            parent: parentId ? { connect: { id: parentId } } : undefined,
         };
-        
-        if (parentId) data.parent = { connect: { id: parentId } };
 
         if (isPublic === false && sharedWithUserIds && Array.isArray(sharedWithUserIds)) {
             data.sharedWith = { connect: sharedWithUserIds.map((id:string) => ({ id })) };
