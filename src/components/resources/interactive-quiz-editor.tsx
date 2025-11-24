@@ -3,12 +3,12 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import type { AppResourceType, AppQuiz, AppQuestion } from '@/types';
-import { Loader2, AlertTriangle, PlayCircle, PlusCircle, Trash2, GripVertical } from 'lucide-react';
+import { Loader2, AlertTriangle, PlayCircle, PlusCircle, Trash2, GripVertical, Save } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import YouTube from 'react-youtube';
-import { DndContext, DragEndEvent, useDroppable, useDraggable } from '@dnd-kit/core';
+import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { QuizQuestionForm } from './quiz-question-form';
@@ -35,10 +35,13 @@ const QuestionItem = ({ question, isActive, onSelect, onDelete }: {
     const style = { transform: CSS.Transform.toString(transform), transition };
 
     return (
-        <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="touch-none">
+        <div ref={setNodeRef} style={style} {...attributes} className="touch-none">
             <Card className={`p-2 cursor-pointer ${isActive ? 'border-primary ring-2 ring-primary' : 'bg-muted/50'}`} onClick={onSelect}>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
+                         <div {...listeners} className="p-1 cursor-grab">
+                            <GripVertical className="h-5 w-5 text-muted-foreground" />
+                        </div>
                          <div className="w-12 text-center">
                             <p className="font-mono text-sm font-bold text-primary">{formatTime(question.timestamp || 0)}</p>
                          </div>
@@ -70,7 +73,8 @@ export const InteractiveQuizEditor: React.FC<InteractiveQuizEditorProps> = ({ fo
             const res = await fetch(`/api/resources?parentId=${folderId}`);
             if (!res.ok) throw new Error("No se pudo cargar la lista de reproducción.");
             const data = await res.json();
-            const videos = data.resources.filter((r: AppResourceType) => getYoutubeVideoId(r.url));
+            // CORRECCIÓN: Se elimina el filtro que solo permitía videos de YouTube.
+            const videos = data.resources;
             setPlaylist(videos);
 
             // Fetch or initialize quiz data
@@ -157,7 +161,7 @@ export const InteractiveQuizEditor: React.FC<InteractiveQuizEditorProps> = ({ fo
 
     if (isLoading) return <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
     if (error) return <div className="p-8 text-destructive text-center"><AlertTriangle className="mx-auto h-12 w-12" /><p>{error}</p></div>;
-    if (!playlist || playlist.length === 0) return <div className="p-8 text-center text-muted-foreground">Esta lista de reproducción no contiene videos válidos de YouTube.</div>;
+    if (!playlist || playlist.length === 0) return <div className="p-8 text-center text-muted-foreground">Esta lista de reproducción no contiene videos.</div>;
 
     return (
         <DndContext onDragEnd={handleDragEnd}>
