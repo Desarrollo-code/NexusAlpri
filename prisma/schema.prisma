@@ -517,7 +517,8 @@ model EnterpriseResource {
   versions     ResourceVersion[]
   filetype String?
   quiz Quiz?
-  size         Int?
+  size        Int?
+  isPinned    Boolean  @default(false)
   uploader    User               @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
   parent      EnterpriseResource? @relation("FolderChildren", fields: [parentId], references: [id], onDelete: Restrict)
   children    EnterpriseResource[] @relation("FolderChildren")
