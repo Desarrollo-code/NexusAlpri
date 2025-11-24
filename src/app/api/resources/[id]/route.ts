@@ -82,7 +82,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             const existingQuiz = await tx.quiz.findUnique({ where: { resourceId: id } });
 
             if (quiz) {
-                const questionsData = Array.isArray(quiz.questions)
+                const questionsData = (Array.isArray(quiz.questions))
                     ? {
                         deleteMany: {},
                         create: quiz.questions.map((q: any, qIndex: number) => ({
@@ -91,7 +91,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                             type: q.type,
                             template: q.template,
                             imageUrl: q.imageUrl,
-                            options: Array.isArray(q.options) ? {
+                            options: (Array.isArray(q.options)) ? {
                                 create: q.options.map((opt: any) => ({
                                     text: opt.text,
                                     isCorrect: opt.isCorrect,
