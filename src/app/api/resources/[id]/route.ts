@@ -18,7 +18,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
             include: {
                 uploader: { select: { id: true, name: true } },
                 sharedWith: { select: { id: true, name: true, avatar: true } },
-                collaborators: { select: { id: true, name: true, avatar: true } }, // Include collaborators
+                collaborators: { select: { id: true, name: true, avatar: true } },
                 quiz: { include: { questions: { include: { options: true }, orderBy: { order: 'asc' } } } },
             },
         });
@@ -79,14 +79,16 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             }
             
             // --- Lógica del Quiz ---
-            if (category === 'Formación Interna' && quiz) {
+            const existingQuiz = await tx.quiz.findUnique({ where: { resourceId: id } });
+
+            if (quiz) {
                  const quizData = {
                     title: quiz.title || 'Evaluación del Recurso',
                     description: quiz.description,
                     maxAttempts: quiz.maxAttempts,
                     resourceId: id,
                     questions: {
-                        deleteMany: {},
+                        deleteMany: {}, // Limpia preguntas antiguas
                         create: quiz.questions.map((q: any, qIndex: number) => ({
                             text: q.text,
                             order: qIndex,
@@ -111,11 +113,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                          update: quizData,
                      }
                  };
-            } else {
-                const existingQuiz = await tx.quiz.findFirst({ where: { resourceId: id } });
-                if (existingQuiz) {
-                    await tx.quiz.delete({ where: { id: existingQuiz.id }});
-                }
+            } else if(existingQuiz) {
+                 // Si no se manda un quiz pero existe uno, se elimina.
+                await tx.quiz.delete({ where: { id: existingQuiz.id }});
             }
             // --------------------
 
