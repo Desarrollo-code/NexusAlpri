@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
     
     try {
         const body = await req.json();
-        const { title, type, url, category, tags, parentId, description, isPublic, sharedWithUserIds, expiresAt, status, size, fileType, filename, videos } = body;
+        const { title, type, url, category, tags, parentId, description, isPublic, sharedWithUserIds, expiresAt, status, size, fileType, filename, videos, collaboratorIds } = body;
 
         const finalTitle = title || filename;
 
@@ -128,15 +128,18 @@ export async function POST(req: NextRequest) {
                 data: {
                     title: finalTitle,
                     type, description, category,
-                    ispublic: true, // Playlists are public by default for simplicity
+                    ispublic: true, 
                     uploader: { connect: { id: session.id } },
                     parent: parentId ? { connect: { id: parentId } } : undefined,
+                    collaborators: collaboratorIds && collaboratorIds.length > 0 ? {
+                        connect: collaboratorIds.map((id: string) => ({ id }))
+                    } : undefined,
                     status: 'ACTIVE'
                 }
             });
 
             if (videos && videos.length > 0) {
-                 for (const video of videos) {
+                 for (const [index, video] of videos.entries()) {
                     await prisma.enterpriseResource.create({
                         data: {
                             title: video.title,

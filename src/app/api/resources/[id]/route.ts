@@ -16,6 +16,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
             include: {
                 uploader: { select: { id: true, name: true } },
                 sharedWith: { select: { id: true, name: true, avatar: true } },
+                collaborators: { select: { id: true, name: true, avatar: true } }, // Include collaborators
                 quiz: { include: { questions: { include: { options: true }, orderBy: { order: 'asc' } } } },
             },
         });
@@ -51,7 +52,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
              return NextResponse.json({ message: 'No tienes permiso para editar este recurso' }, { status: 403 });
         }
 
-        const { title, category, description, isPublic, sharedWithUserIds, expiresAt, status, content, observations, quiz } = await req.json();
+        const { title, category, description, isPublic, sharedWithUserIds, expiresAt, status, content, observations, quiz, collaboratorIds } = await req.json();
 
         const createVersion = resourceToUpdate.type === 'DOCUMENTO_EDITABLE' && resourceToUpdate.content !== content;
         
@@ -60,7 +61,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 title, category, content, observations, description, status,
                 expiresAt: expiresAt ? new Date(expiresAt) : null,
                 ispublic: isPublic,
-                sharedWith: isPublic ? { set: [] } : { set: sharedWithUserIds.map((id: string) => ({ id })) }
+                sharedWith: isPublic ? { set: [] } : { set: sharedWithUserIds.map((id: string) => ({ id })) },
+                collaborators: collaboratorIds ? { set: collaboratorIds.map((id: string) => ({ id })) } : undefined,
             };
 
             if (createVersion) {
@@ -152,7 +154,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
              return NextResponse.json({ message: 'No tienes permiso para eliminar este recurso' }, { status: 403 });
         }
         
-        if (resourceToDelete.type === 'FOLDER') {
+        if (resourceToDelete.type === 'FOLDER' || resourceToDelete.type === 'VIDEO_PLAYLIST') {
             const childrenCount = await prisma.enterpriseResource.count({
                 where: {
                     parentId: id,
