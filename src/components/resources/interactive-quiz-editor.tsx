@@ -138,12 +138,7 @@ export const InteractiveQuizEditor: React.FC<{ folderId: string }> = ({ folderId
                 type: 'QUIZ',
                 quiz: folderData.quiz,
             };
-            const quizIndex = allBlocks.findIndex(b => b.quiz?.id === quizBlock.quiz?.id);
-            if (quizIndex > -1) {
-                allBlocks[quizIndex] = quizBlock;
-            } else {
-                allBlocks.push(quizBlock);
-            }
+            allBlocks.push(quizBlock);
         }
         
         setContentBlocks(allBlocks);
@@ -160,7 +155,7 @@ export const InteractiveQuizEditor: React.FC<{ folderId: string }> = ({ folderId
 
     useEffect(() => {
         fetchContent();
-    }, [fetchContent]);
+    }, [folderId]);
 
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
@@ -190,8 +185,6 @@ export const InteractiveQuizEditor: React.FC<{ folderId: string }> = ({ folderId
                 maxAttempts: null,
             }
         };
-        setContentBlocks(prev => [...prev, newQuizBlock]);
-        setActiveBlockId(newQuizBlock.id);
         handleEditQuiz(newQuizBlock.quiz!);
     };
 
@@ -213,9 +206,21 @@ export const InteractiveQuizEditor: React.FC<{ folderId: string }> = ({ folderId
     };
 
     const handleSaveQuiz = (updatedQuiz: AppQuiz) => {
-        setContentBlocks(prev => prev.map(block => 
-            block.quiz?.id === updatedQuiz.id || (block.id === updatedQuiz.id.replace('-obj', '')) ? { ...block, quiz: updatedQuiz } : block
-        ));
+        const quizExists = contentBlocks.some(b => b.type === 'QUIZ' && b.quiz?.id === updatedQuiz.id);
+        
+        if (quizExists) {
+             setContentBlocks(prev => prev.map(block =>
+                block.quiz?.id === updatedQuiz.id ? { ...block, quiz: updatedQuiz } : block
+            ));
+        } else {
+             const newQuizBlock: ContentBlock = {
+                id: `quiz-block-${updatedQuiz.id}`,
+                type: 'QUIZ',
+                quiz: updatedQuiz,
+            };
+            setContentBlocks(prev => [...prev, newQuizBlock]);
+        }
+       
         setQuizToEdit(null);
     };
 
