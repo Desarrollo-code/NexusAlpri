@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { useTitle } from '@/contexts/title-context';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Move, Trash2, FolderOpen, Filter, ChevronRight, Pin } from 'lucide-react';
+import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Move, Trash2, FolderOpen, Filter, ChevronRight, Pin, ListVideo } from 'lucide-react';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { ResourceListItem } from '@/components/resources/resource-list-item';
 import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
@@ -26,49 +26,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import type { Prisma } from '@prisma/client';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import { VideoPlaylistView } from '@/components/resources/video-playlist-view';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '../ui/checkbox';
 import { AnimatePresence, motion } from 'framer-motion';
 
-const getFileTypeFilter = (fileType: string): Prisma.EnterpriseResourceWhereInput => {
-    const mimeMap: Record<string, string[]> = {
-        image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
-        video: ['video/mp4', 'video/webm', 'video/ogg'],
-        pdf: ['application/pdf'],
-        doc: ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-        xls: ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
-        ppt: ['application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'],
-        zip: ['application/zip', 'application/x-rar-compressed', 'application/x-7z-compressed'],
-    };
-    const mimeTypes = mimeMap[fileType];
-    if (mimeTypes) {
-        return { filetype: { in: mimeTypes } };
-    }
-    if (fileType === 'other') {
-        const allKnownMimes = Object.values(mimeMap).flat();
-        return { filetype: { notIn: allKnownMimes } };
-    }
-    return {};
-}
-
-const FILE_TYPE_OPTIONS = [
-  { value: "all", label: "Todos los tipos" },
-  { value: "image", label: "Imágenes" },
-  { value: "video", label: "Videos" },
-  { value: "pdf", label: "PDFs" },
-  { value: "doc", label: "Documentos de Word" },
-  { value: "xls", label: "Hojas de cálculo" },
-  { value: "ppt", label: "Presentaciones" },
-  { value: "zip", label: "Archivos Comprimidos" },
-  { value: "other", label: "Otros" },
-];
-
 // --- MAIN PAGE COMPONENT ---
 export default function ResourcesPage() {
-  const { user, isLoading: isAuthLoading, settings } = useAuth();
+  const { user, settings } = useAuth();
   const { setPageTitle } = useTitle();
   const { toast } = useToast();
   
@@ -78,16 +44,11 @@ export default function ResourcesPage() {
   
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
-  const [activeTab, setActiveTab] = useState<ResourceStatus>('ACTIVE');
+  const [activeTab, setActiveTab] = useState<'all' | 'folders' | 'files'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
-  const [filters, setFilters] = useState({
-      fileType: 'all',
-      hasPin: false,
-      hasExpiry: false,
-  });
-
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
+  const [currentFolder, setCurrentFolder] = useState<AppResourceType | null>(null);
   const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; title: string }[]>([{ id: null, title: 'Principal' }]);
   const [selectedResource, setSelectedResource] = useState<AppResourceType | null>(null);
   const [resourceToEdit, setResourceToEdit] = useState<AppResourceType | null>(null);
@@ -106,37 +67,50 @@ export default function ResourcesPage() {
   }, [setPageTitle]);
 
   const fetchResources = useCallback(async () => {
-    if (isAuthLoading) return;
+    if (!user) return;
     setIsLoadingData(true);
     setError(null);
     
-    const params = new URLSearchParams({ status: activeTab });
+    const params = new URLSearchParams({ status: 'ACTIVE' });
     if (currentFolderId) params.append('parentId', currentFolderId);
     if (debouncedSearchTerm) params.append('search', debouncedSearchTerm);
-    
-    if (filters.fileType !== 'all') params.append('fileType', filters.fileType);
-    if (filters.hasPin) params.append('hasPin', 'true');
-    if (filters.hasExpiry) params.append('hasExpiry', 'true');
     
     try {
       const response = await fetch(`/api/resources?${params.toString()}`, { cache: 'no-store' });
       if (!response.ok) throw new Error((await response.json()).message || 'Failed to fetch resources');
       const data = await response.json();
       setAllApiResources(data.resources || []);
+      
+      if (currentFolderId) {
+        const folderData = await fetch(`/api/resources/${currentFolderId}`).then(res => res.json());
+        setCurrentFolder(folderData);
+      } else {
+        setCurrentFolder(null);
+      }
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido');
     } finally {
       setIsLoadingData(false);
     }
-  }, [isAuthLoading, activeTab, currentFolderId, debouncedSearchTerm, filters]);
+  }, [user, currentFolderId, debouncedSearchTerm]);
 
   useEffect(() => {
     fetchResources();
     setSelectedIds(new Set()); // Reset selection on data change
   }, [fetchResources]);
 
-  const folders = useMemo(() => allApiResources.filter(r => r.type === 'FOLDER'), [allApiResources]);
-  const files = useMemo(() => allApiResources.filter(r => r.type !== 'FOLDER'), [allApiResources]);
+  const filteredResources = useMemo(() => {
+    switch (activeTab) {
+      case 'folders': return allApiResources.filter(r => r.type === 'FOLDER');
+      case 'files': return allApiResources.filter(r => r.type !== 'FOLDER');
+      case 'all':
+      default: return allApiResources;
+    }
+  }, [allApiResources, activeTab]);
+
+  const folders = useMemo(() => filteredResources.filter(r => r.type === 'FOLDER'), [filteredResources]);
+  const files = useMemo(() => filteredResources.filter(r => r.type !== 'FOLDER'), [filteredResources]);
 
   const handleNavigateFolder = (resource: AppResourceType) => {
     if (resource.type === 'FOLDER') {
@@ -259,15 +233,15 @@ export default function ResourcesPage() {
     });
   }, [allApiResources]);
     
-  if (isAuthLoading) {
+  if (!user) {
       return <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>
   }
 
   const isVideoFolder = useMemo(() => {
-    if (!files || files.length === 0) return false;
+    if (!currentFolder || files.length === 0) return false;
     const videoCount = files.filter(f => f.type === 'VIDEO' || getYoutubeVideoId(f.url)).length;
     return (videoCount / files.length) >= 0.7;
-  }, [files]);
+  }, [files, currentFolder]);
   
   const sensors = useSensors(useSensor(MouseSensor), useSensor(TouchSensor));
 
@@ -282,23 +256,6 @@ export default function ResourcesPage() {
                     <Input placeholder="Buscar en la carpeta actual..." className="pl-10 h-10 text-base rounded-md" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                 </div>
                  <div className="flex items-center gap-2 w-full md:w-auto">
-                    <Popover>
-                        <PopoverTrigger asChild>
-                           <Button variant="outline" className="h-10 flex-grow md:flex-none">
-                             <Filter className="mr-2 h-4 w-4"/>
-                             Filtros
-                           </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-screen max-w-sm p-4" align="end">
-                           <div className="space-y-4">
-                              <h4 className="font-medium text-center">Filtros Avanzados</h4>
-                              <div className="space-y-2"><Label>Tipo de Archivo</Label><Select value={filters.fileType} onValueChange={(v) => setFilters(f => ({...f, fileType: v}))}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{FILE_TYPE_OPTIONS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent></Select></div>
-                              <Separator/>
-                              <div className="flex items-center justify-between"><Label htmlFor="has-pin">Protegido con PIN</Label><Switch id="has-pin" checked={filters.hasPin} onCheckedChange={(c) => setFilters(f => ({...f, hasPin: c}))} /></div>
-                              <div className="flex items-center justify-between"><Label htmlFor="has-expiry">Tiene Vencimiento</Label><Switch id="has-expiry" checked={filters.hasExpiry} onCheckedChange={(c) => setFilters(f => ({...f, hasExpiry: c}))}/></div>
-                           </div>
-                        </PopoverContent>
-                    </Popover>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                            <Button className="h-10 flex-grow md:flex-none">
@@ -306,13 +263,14 @@ export default function ResourcesPage() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem onSelect={() => setIsFolderCreatorOpen(true)}><FolderIcon className="mr-2 h-4 w-4"/>Nueva Carpeta</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => setIsFolderCreatorOpen(true)}><FolderIcon className="mr-2 h-4 w-4"/>Nueva Lista de Reproducción</DropdownMenuItem>
                             <DropdownMenuItem onSelect={() => setIsUploaderOpen(true)}><UploadCloud className="mr-2 h-4 w-4"/>Subir Archivo</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                      <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
-                         <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')}><List className="h-4 w-4"/></Button>
-                        <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')}><Grid className="h-4 w-4"/></Button>
+                        <Button variant={activeTab === 'all' ? 'secondary' : 'ghost'} size="sm" onClick={() => setActiveTab('all')}>Todos</Button>
+                        <Button variant={activeTab === 'folders' ? 'secondary' : 'ghost'} size="sm" onClick={() => setActiveTab('folders')}><FolderIcon className="mr-2 h-4 w-4"/>Listas</Button>
+                        <Button variant={activeTab === 'files' ? 'secondary' : 'ghost'} size="sm" onClick={() => setActiveTab('files')}><FileText className="mr-2 h-4 w-4"/>Archivos</Button>
                     </div>
                 </div>
             </div>
@@ -342,13 +300,13 @@ export default function ResourcesPage() {
                 </div>
             ) : error ? (
                 <div className="text-center py-10"><AlertTriangle className="mx-auto h-8 w-8 text-destructive" /><p className="mt-2 font-semibold text-destructive">{error}</p></div>
-            ) : isVideoFolder ? (
-                 <VideoPlaylistView resources={files} folderName={breadcrumbs[breadcrumbs.length-1].title} />
+            ) : isVideoFolder && currentFolder ? (
+                <VideoPlaylistView resources={files} folder={currentFolder} />
             ) : (
                 <div className="space-y-8">
                     {folders.length > 0 && (
                         <section>
-                            <h3 className="text-lg font-semibold mb-3">Carpetas</h3>
+                            <h3 className="text-lg font-semibold mb-3">Listas de Reproducción</h3>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                                 {folders.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={true} onNavigate={handleNavigateFolder} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onSelect={() => {}} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
                             </div>
@@ -357,7 +315,13 @@ export default function ResourcesPage() {
                      {(folders.length > 0 && files.length > 0) && <Separator />}
                     {files.length > 0 && (
                         <section>
-                             <h3 className="text-lg font-semibold mb-3">Archivos</h3>
+                             <div className="flex items-center justify-between mb-3">
+                                <h3 className="text-lg font-semibold">Archivos</h3>
+                                <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
+                                    <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')}><List className="h-4 w-4"/></Button>
+                                    <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')}><Grid className="h-4 w-4"/></Button>
+                                </div>
+                             </div>
                             {viewMode === 'grid' ? (
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                                     {files.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={false} onSelect={() => setSelectedResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onNavigate={() => {}} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
@@ -367,11 +331,11 @@ export default function ResourcesPage() {
                             )}
                         </section>
                     )}
-                    {folders.length === 0 && files.length === 0 && (
+                    {filteredResources.length === 0 && (
                          <EmptyState 
                             icon={FolderOpen} 
-                            title={debouncedSearchTerm || filters.fileType !== 'all' || filters.hasPin || filters.hasExpiry ? "No se encontraron resultados" : "Esta carpeta está vacía"}
-                            description={debouncedSearchTerm || filters.fileType !== 'all' || filters.hasPin || filters.hasExpiry ? "Intenta con otros filtros de búsqueda." : "Sube un archivo o crea una nueva carpeta para empezar."}
+                            title={debouncedSearchTerm ? "No se encontraron resultados" : "Esta carpeta está vacía"}
+                            description={debouncedSearchTerm ? "Intenta con otros filtros de búsqueda." : "Sube un archivo o crea una nueva carpeta para empezar."}
                             imageUrl={settings?.emptyStateResourcesUrl}
                          />
                     )}
@@ -416,7 +380,6 @@ export default function ResourcesPage() {
         <FolderCreatorModal
              isOpen={isFolderCreatorOpen}
              onClose={() => setIsFolderCreatorOpen(false)}
-             parentId={currentFolderId}
              onSave={handleResourceSave}
         />
 

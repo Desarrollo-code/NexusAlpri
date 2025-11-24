@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import type { AppResourceType } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
 import { Card } from '@/components/ui/card';
-import { Edit, MoreVertical, Trash2, Lock, Download, Globe, Users, Move, Grip, ArchiveRestore, Pin } from 'lucide-react';
+import { Edit, MoreVertical, Trash2, Lock, Download, Globe, Users, Move, Grip, ArchiveRestore, Pin, BrainCircuit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -23,6 +23,7 @@ import { FileIcon } from '../ui/file-icon';
 import { DecorativeFolder } from './decorative-folder';
 import { ExternalLink } from 'lucide-react';
 import { Checkbox } from '../ui/checkbox';
+import Link from 'next/link';
 
 // --- Sub-components for Page ---
 const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onDelete, onNavigate, onRestore, onTogglePin, isSelected, onSelectionChange }: { 
@@ -93,6 +94,8 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
         }
     };
     
+    const isQuizEnabled = isFolder && resource.category === 'Formación Interna';
+
     return (
         <div ref={setNodeRef} className={cn("w-full touch-none", isDragging && 'opacity-50 z-10')}>
             <Card 
@@ -139,7 +142,7 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                         {canModify && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 -mr-1 text-muted-foreground" aria-label={`Opciones para ${resource.title}`} onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
+                                    <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 -mr-1 -mt-1 text-muted-foreground" aria-label={`Opciones para ${resource.title}`} onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                                     {resource.status === 'ACTIVE' && (
@@ -157,10 +160,19 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                             </DropdownMenu>
                         )}
                     </div>
-                    <p className={cn("text-xs text-muted-foreground mt-1", canModify && !isFolder && "pl-7")}>
+                     <p className={cn("text-xs text-muted-foreground mt-1", canModify && !isFolder && "pl-7")}>
                         {new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>
                 </div>
+                 {isQuizEnabled && (
+                    <div className="px-2 pb-2">
+                        <Button asChild size="sm" className="w-full">
+                            <Link href={`/resources/${resource.id}/edit-quiz`}>
+                                <BrainCircuit className="mr-2 h-4 w-4" /> Crear/Editar Quiz
+                            </Link>
+                        </Button>
+                    </div>
+                 )}
             </Card>
         </div>
     );

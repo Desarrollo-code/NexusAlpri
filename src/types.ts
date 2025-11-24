@@ -82,7 +82,8 @@ export interface NavItem {
 // --- COURSE CONTENT ---
 export type LessonType = 'TEXT' | 'VIDEO' | 'QUIZ' | 'FILE';
 export type CourseStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
-export type QuestionType = 'MULTIPLE_CHOICE' | 'SINGLE_CHOICE';
+export type QuestionType = 'MULTIPLE_CHOICE' | 'SINGLE_CHOICE' | 'TRUE_FALSE' | 'OPEN_ENDED';
+
 
 export interface AnswerOption {
     id: string;
@@ -101,6 +102,7 @@ export interface Question {
     options: AnswerOption[];
     imageUrl?: string | null;
     template?: string | null;
+    timestamp?: number; // Para quizzes interactivos con video
 }
 
 export interface Quiz {
@@ -382,8 +384,10 @@ export type FormFieldOption = Omit<Prisma.FormFieldOptionGetPayload<{}>, 'id'> &
 
 export type AppQuestion = Omit<Prisma.FormFieldGetPayload<{
   include: { options: true }
-}>, 'options'> & {
+}>, 'options' | 'id'> & {
+    id: string; // Client-side ID
     options: FormFieldOption[];
+    timestamp?: number; // Para quizzes interactivos con video
 };
 
 

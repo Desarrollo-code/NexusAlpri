@@ -40,37 +40,21 @@ export async function GET(req: NextRequest) {
         let parentId = searchParams.get('parentId');
         const status = (searchParams.get('status') as ResourceStatus) || 'ACTIVE';
         const searchTerm = searchParams.get('search');
+        const typeFilter = searchParams.get('type'); // "video"
         
-        // Advanced filters
-        const startDate = searchParams.get('startDate');
-        const endDate = searchParams.get('endDate');
-        const fileType = searchParams.get('fileType');
-        const hasPin = searchParams.get('hasPin') === 'true';
-        const hasExpiry = searchParams.get('hasExpiry') === 'true';
-
         if (parentId === '') parentId = null;
         
-        const baseWhere: Prisma.EnterpriseResourceWhereInput = { parentId, status };
+        let baseWhere: Prisma.EnterpriseResourceWhereInput = { parentId, status };
         if (status === 'ACTIVE') {
             baseWhere.OR = [ { expiresAt: null }, { expiresAt: { gte: new Date() } } ];
         }
         if (searchTerm) {
             baseWhere.title = { contains: searchTerm, mode: 'insensitive' };
         }
-        
-        // Apply advanced filters
-        if (startDate) baseWhere.uploadDate = { ...baseWhere.uploadDate, gte: new Date(startDate) };
-        if (endDate) baseWhere.uploadDate = { ...baseWhere.uploadDate, lte: new Date(endDate) };
-        if (fileType && fileType !== 'all') {
-            const fileTypeFilter = getFileTypeFilter(fileType);
-            if (baseWhere.AND) {
-                (baseWhere.AND as any[]).push(fileTypeFilter);
-            } else {
-                baseWhere.AND = [fileTypeFilter];
-            }
+        if (typeFilter === 'video') {
+            baseWhere.filetype = { startsWith: 'video/' };
         }
-        if (hasPin) baseWhere.pin = { not: null };
-        if (hasExpiry) baseWhere.expiresAt = { not: null };
+        
 
         let whereClause: Prisma.EnterpriseResourceWhereInput = {};
         if (session.role === 'ADMINISTRATOR') {
@@ -111,7 +95,7 @@ export async function POST(req: NextRequest) {
     
     try {
         const body = await req.json();
-        const { title, type, url, category, tags, parentId, description, isPublic, sharedWithUserIds, expiresAt, status, size, fileType, filename } = body;
+        const { title, type, url, category, tags, parentId, description, isPublic, sharedWithUserIds, expiresAt, status, size, fileType, filename, videoIds } = body;
 
         // Use the filename as a fallback for the title if title is not provided
         const finalTitle = title || filename;
@@ -120,22 +104,32 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ message: 'Título y tipo son requeridos' }, { status: 400 });
         }
         
-        if (type !== 'FOLDER' && type !== 'EXTERNAL_LINK' && type !== 'DOCUMENTO_EDITABLE' && !url) {
-            return NextResponse.json({ message: 'URL es requerida para este tipo de recurso' }, { status: 400 });
+        if (type !== 'FOLDER' && type !== 'EXTERNAL_LINK' && type !== 'DOCUMENTO_EDITABLE' && !url && !videoIds) {
+            return NextResponse.json({ message: 'URL o videoIds son requeridos para este tipo de recurso' }, { status: 400 });
         }
 
-        const data: any = {
+        const data: Prisma.EnterpriseResourceCreateInput = {
             title: finalTitle, type, description, url: url || null,
-            content: type === 'DOCUMENTO_EDITABLE' ? ' ' : null,
             category: category || 'General',
             tags: Array.isArray(tags) ? tags.join(',') : '',
             ispublic: isPublic === true, status: status || 'ACTIVE',
             expiresAt: expiresAt ? new Date(expiresAt) : null,
-            size, filetype: fileType, // CORRECCIÓN: Usar 'filetype' en minúsculas
+            size, filetype: fileType,
             uploader: { connect: { id: session.id } },
         };
         
         if (parentId) data.parent = { connect: { id: parentId } };
+        
+        if (type === 'FOLDER' && videoIds && videoIds.length > 0) {
+            // This is a special case for playlist creation
+            const newFolder = await prisma.enterpriseResource.create({ data });
+            await prisma.enterpriseResource.updateMany({
+                where: { id: { in: videoIds } },
+                data: { parentId: newFolder.id }
+            });
+            return NextResponse.json(newFolder, { status: 201 });
+        }
+
         if (isPublic === false && sharedWithUserIds && Array.isArray(sharedWithUserIds)) {
             data.sharedWith = { connect: sharedWithUserIds.map((id:string) => ({ id })) };
         }

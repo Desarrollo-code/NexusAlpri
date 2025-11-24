@@ -10,6 +10,9 @@ import { getYoutubeVideoId } from '@/lib/resource-utils';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { BrainCircuit } from 'lucide-react';
 
 interface PlaylistItemProps {
   resource: AppResourceType;
@@ -27,7 +30,7 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({ resource, index, onSelect, 
       onClick={onSelect}
       className={cn(
         "flex items-center gap-4 p-2 rounded-lg cursor-pointer transition-colors group",
-        isActive ? "bg-primary/10 border-l-4 border-primary" : "hover:bg-muted"
+        isActive ? "bg-primary/10" : "hover:bg-muted"
       )}
     >
       <div className="relative w-32 h-20 bg-muted rounded-md overflow-hidden flex-shrink-0">
@@ -89,6 +92,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ resource }) => {
     // Para videos subidos directamente (MP4, etc.)
     return (
         <video
+            key={resource.id} // Add key to force re-render on video change
             src={resource.url}
             controls
             autoPlay
@@ -100,11 +104,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ resource }) => {
 };
 
 
-export const VideoPlaylistView: React.FC<{ resources: AppResourceType[], folderName: string }> = ({ resources, folderName }) => {
+export const VideoPlaylistView: React.FC<{ resources: AppResourceType[], folder: AppResourceType }> = ({ resources, folder }) => {
   const isMobile = useIsMobile();
   const [selectedVideo, setSelectedVideo] = useState<AppResourceType | null>(resources[0] || null);
 
   const playlistHeight = isMobile ? 'h-64' : 'h-[calc(100vh-22rem)]';
+  const isQuizEnabled = folder.category === 'Formación Interna';
+
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
@@ -123,11 +129,22 @@ export const VideoPlaylistView: React.FC<{ resources: AppResourceType[], folderN
       <div className="lg:col-span-1">
         <Card className="w-full h-full shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-xl font-bold font-headline">
-              <Folder className="h-6 w-6 text-amber-500" />
-              {folderName}
-            </CardTitle>
-            <CardDescription>{resources.length} videos en esta lista.</CardDescription>
+            <div className="flex justify-between items-start">
+              <div className="flex-grow">
+                <CardTitle className="flex items-center gap-2 text-xl font-bold font-headline">
+                  <Folder className="h-6 w-6 text-amber-500" />
+                  {folder.title}
+                </CardTitle>
+                <CardDescription>{resources.length} videos en esta lista.</CardDescription>
+              </div>
+              {isQuizEnabled && (
+                  <Button asChild size="sm">
+                      <Link href={`/resources/${folder.id}/edit-quiz`}>
+                          <BrainCircuit className="mr-2 h-4 w-4" /> Quiz
+                      </Link>
+                  </Button>
+              )}
+            </div>
           </CardHeader>
           <Separator />
           <CardContent className="p-0">
