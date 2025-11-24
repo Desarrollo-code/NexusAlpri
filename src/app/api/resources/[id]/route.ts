@@ -4,6 +4,8 @@ import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 import type { Quiz } from '@/types';
+import { checkResourceOwnership } from '@/lib/auth-utils';
+
 
 export const dynamic = 'force-dynamic';
 
@@ -38,20 +40,19 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 // PUT (update) a resource
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
-    if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
+    const { id } = params;
+
+    const hasPermission = await checkResourceOwnership(session, id);
+    if (!hasPermission) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
     
     try {
-        const { id } = params;
         const resourceToUpdate = await prisma.enterpriseResource.findUnique({ where: { id } });
         if (!resourceToUpdate) {
             return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });
         }
-        if (session.role === 'INSTRUCTOR' && resourceToUpdate.uploaderId !== session.id) {
-             return NextResponse.json({ message: 'No tienes permiso para editar este recurso' }, { status: 403 });
-        }
-
+        
         const { title, category, description, isPublic, sharedWithUserIds, expiresAt, status, content, observations, quiz, collaboratorIds } = await req.json();
 
         const createVersion = resourceToUpdate.type === 'DOCUMENTO_EDITABLE' && resourceToUpdate.content !== content;
@@ -72,7 +73,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                         resourceId: resourceToUpdate.id,
                         version: resourceToUpdate.version,
                         content: resourceToUpdate.content,
-                        authorId: session.id,
+                        authorId: session!.id,
                     }
                 });
             }
@@ -111,7 +112,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                      }
                  };
             } else {
-                // Si la categoría no es "Formación Interna" o no hay quiz, nos aseguramos de que se elimine
                 const existingQuiz = await tx.quiz.findFirst({ where: { resourceId: id } });
                 if (existingQuiz) {
                     await tx.quiz.delete({ where: { id: existingQuiz.id }});
@@ -140,18 +140,17 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 // DELETE a resource
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
-    if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
+    const { id } = params;
+
+    const hasPermission = await checkResourceOwnership(session, id);
+    if (!hasPermission) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
     try {
-        const { id } = params;
         const resourceToDelete = await prisma.enterpriseResource.findUnique({ where: { id } });
         if (!resourceToDelete) {
             return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });
-        }
-        if (session.role === 'INSTRUCTOR' && resourceToDelete.uploaderId !== session.id) {
-             return NextResponse.json({ message: 'No tienes permiso para eliminar este recurso' }, { status: 403 });
         }
         
         if (resourceToDelete.type === 'FOLDER' || resourceToDelete.type === 'VIDEO_PLAYLIST') {

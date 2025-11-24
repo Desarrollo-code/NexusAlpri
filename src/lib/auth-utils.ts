@@ -9,7 +9,7 @@ import prisma from '@/lib/prisma';
  * @param courseId The ID of the course to check.
  * @returns A boolean indicating if the user has permission.
  */
-export async function checkCourseOwnership(session: User, courseId: string): Promise<boolean> {
+export async function checkCourseOwnership(session: User | null, courseId: string): Promise<boolean> {
     if (!session || !courseId) return false;
     
     if (session.role === 'ADMINISTRATOR') {
@@ -37,7 +37,7 @@ export async function checkCourseOwnership(session: User, courseId: string): Pro
  * @param resourceId The ID of the resource to check.
  * @returns A boolean indicating if the user has permission.
  */
-export async function checkResourceOwnership(session: User, resourceId: string): Promise<boolean> {
+export async function checkResourceOwnership(session: User | null, resourceId: string): Promise<boolean> {
     if (!session || !resourceId) return false;
 
     if (session.role === 'ADMINISTRATOR') {
