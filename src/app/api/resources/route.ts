@@ -119,8 +119,8 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ message: 'Título y tipo son requeridos' }, { status: 400 });
         }
         
-        if (type !== 'FOLDER' && type !== 'VIDEO_PLAYLIST' && type !== 'EXTERNAL_LINK' && type !== 'DOCUMENTO_EDITABLE' && !url) {
-            return NextResponse.json({ message: 'URL es requerida para este tipo de recurso' }, { status: 400 });
+        if (type !== 'FOLDER' && type !== 'VIDEO_PLAYLIST' && type !== 'EXTERNAL_LINK' && type !== 'DOCUMENTO_EDITABLE' && !url && (!videos || videos.length === 0)) {
+            return NextResponse.json({ message: 'URL o videos son requeridos para este tipo de recurso' }, { status: 400 });
         }
         
         if (type === 'VIDEO_PLAYLIST') {

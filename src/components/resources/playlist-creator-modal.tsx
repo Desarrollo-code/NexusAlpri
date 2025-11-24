@@ -38,6 +38,8 @@ interface VideoItem {
     url: string;
     title: string;
     thumbnail: string | null;
+    uploadProgress?: number;
+    error?: string;
 }
 
 const SortableVideoItem = ({ video, onDelete }: { video: VideoItem; onDelete: () => void }) => {
@@ -55,7 +57,13 @@ const SortableVideoItem = ({ video, onDelete }: { video: VideoItem; onDelete: ()
                     <div className="w-full h-full bg-black flex items-center justify-center text-white"><Youtube className="h-6 w-6"/></div>
                 )}
             </div>
-            <p className="text-sm font-medium truncate flex-grow">{video.title}</p>
+            <div className="flex-grow min-w-0">
+                <p className="text-sm font-medium truncate flex-grow">{video.title}</p>
+                {video.uploadProgress !== undefined && video.uploadProgress < 100 && (
+                     <Progress value={video.uploadProgress} className="h-1 mt-1" />
+                )}
+                 {video.error && <p className="text-xs text-destructive">{video.error}</p>}
+            </div>
             <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={onDelete}><Trash2 className="h-4 w-4"/></Button>
         </div>
     );
@@ -109,22 +117,29 @@ export function PlaylistCreatorModal({ isOpen, onClose, onSave, parentId }: Play
     }
   };
   
-  const handleFileUpload = async (file: File) => {
-      setIsAddingVideo(true);
-      const tempId = `upload-${Date.now()}`;
-      // Optimistic update
-      const newVideoStub: VideoItem = { id: tempId, url: '', title: file.name, thumbnail: null };
-      setVideos(prev => [...prev, newVideoStub]);
-      try {
-          const result = await uploadWithProgress('/api/upload/resource-file', file, (progress) => {
-              // Can implement progress update here if needed
-          });
-          setVideos(prev => prev.map(v => v.id === tempId ? { ...v, url: result.url, title: file.name, thumbnail: null } : v));
-      } catch (err) {
-           toast({ title: 'Error de subida', description: (err as Error).message, variant: 'destructive' });
-           setVideos(prev => prev.filter(v => v.id !== tempId)); // Revert optimistic update
-      } finally {
-          setIsAddingVideo(false);
+  const handleFileUpload = async (files: FileList | null) => {
+      if (!files || files.length === 0) return;
+      
+      const filesArray = Array.from(files);
+      const newUploads: VideoItem[] = filesArray.map(file => ({
+          id: `upload-${file.name}-${Date.now()}`,
+          url: '',
+          title: file.name,
+          thumbnail: null,
+          uploadProgress: 0,
+      }));
+      
+      setVideos(prev => [...prev, ...newUploads]);
+      
+      for (const upload of newUploads) {
+          try {
+              const result = await uploadWithProgress('/api/upload/resource-file', upload.title, (progress) => {
+                  setVideos(prev => prev.map(v => v.id === upload.id ? { ...v, uploadProgress: progress } : v));
+              });
+              setVideos(prev => prev.map(v => v.id === upload.id ? { ...v, url: result.url, uploadProgress: 100 } : v));
+          } catch (err) {
+              setVideos(prev => prev.map(v => v.id === upload.id ? { ...v, error: (err as Error).message } : v));
+          }
       }
   }
 
@@ -144,12 +159,12 @@ export function PlaylistCreatorModal({ isOpen, onClose, onSave, parentId }: Play
     e.preventDefault();
     setIsSaving(true);
     try {
-        const validVideos = videos.filter(v => v.url); // Ensure we only save videos with a URL
+        const validVideos = videos.filter(v => v.url);
         const payload = {
             title: playlistName,
             type: 'VIDEO_PLAYLIST',
             category,
-            videos: validVideos,
+            videos: validVideos, // Envía la lista completa de videos.
             parentId,
         };
         const response = await fetch('/api/resources', {
@@ -192,13 +207,13 @@ export function PlaylistCreatorModal({ isOpen, onClose, onSave, parentId }: Play
               </Select>
             </div>
             
-             <div className="space-y-2">
+            <div className="space-y-3 pt-2">
                 <div className="flex items-center justify-between">
                      <Label>Añadir Video</Label>
                       <div className="flex items-center gap-2">
-                          <Youtube className="h-5 w-5"/>
+                          <Youtube className="h-5 w-5 text-red-500"/>
                           <Switch checked={videoSource === 'upload'} onCheckedChange={(c) => setVideoSource(c ? 'upload' : 'youtube')}/>
-                          <UploadCloud className="h-5 w-5"/>
+                          <UploadCloud className="h-5 w-5 text-blue-500"/>
                       </div>
                 </div>
                 {videoSource === 'youtube' ? (
@@ -209,11 +224,11 @@ export function PlaylistCreatorModal({ isOpen, onClose, onSave, parentId }: Play
                         </Button>
                     </div>
                 ) : (
-                    <UploadArea onFileSelect={(file) => file && handleFileUpload(file)} compact disabled={isAddingVideo}>
+                    <UploadArea onFileSelect={handleFileUpload} multiple compact disabled={isAddingVideo} className="h-28">
                        <div className="text-center text-muted-foreground p-2">
                             <UploadCloud className="mx-auto h-6 w-6"/>
-                            <p className="text-sm font-semibold">Sube un video</p>
-                            <p className="text-xs">O arrastra y suelta el archivo aquí.</p>
+                            <p className="text-sm font-semibold">Sube uno o varios videos</p>
+                            <p className="text-xs">O arrastra los archivos aquí.</p>
                        </div>
                     </UploadArea>
                 )}

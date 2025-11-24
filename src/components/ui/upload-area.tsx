@@ -5,7 +5,7 @@ import React, { useRef, useState, useCallback, ChangeEvent } from 'react';
 import { IconUploadCloud } from '@/components/icons/icon-upload-cloud';
 
 interface UploadAreaProps {
-  onFileSelect: (file: File) => void;
+  onFileSelect: (files: FileList | null) => void;
   disabled?: boolean;
   className?: string;
   inputId?: string;
@@ -20,13 +20,8 @@ export function UploadArea({ onFileSelect, disabled, className, inputId = "file-
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
-      if (multiple) {
-        Array.from(event.target.files).forEach(file => onFileSelect(file));
-      } else {
-        onFileSelect(event.target.files[0]);
-      }
+        onFileSelect(event.target.files);
     }
-    // Reset the input value to allow re-uploading the same file
     if(event.target) {
         event.target.value = '';
     }
@@ -57,13 +52,9 @@ export function UploadArea({ onFileSelect, disabled, className, inputId = "file-
       if(disabled) return;
       setIsDragging(false);
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-          if (multiple) {
-            Array.from(e.dataTransfer.files).forEach(file => onFileSelect(file));
-          } else {
-            onFileSelect(e.dataTransfer.files[0]);
-          }
+          onFileSelect(e.dataTransfer.files);
       }
-  }, [onFileSelect, disabled, multiple]);
+  }, [onFileSelect, disabled]);
 
 
   const handleClick = () => {
@@ -114,7 +105,7 @@ export function UploadArea({ onFileSelect, disabled, className, inputId = "file-
       )}
 
       {children && (
-        <div className={cn("relative z-10 w-full h-full", isDragging && "opacity-20")}>
+        <div className={cn("relative z-10 w-full h-full flex items-center justify-center", isDragging && "opacity-20")}>
             {children}
         </div>
       )}
