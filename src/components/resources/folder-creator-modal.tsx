@@ -13,16 +13,15 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Video, ListVideo } from 'lucide-react';
+import { Loader2, Folder, ListVideo, GripVertical } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import type { AppResourceType } from '@/types';
-import { ScrollArea } from '../ui/scroll-area';
-import { Checkbox } from '../ui/checkbox';
-import Image from 'next/image';
-import { getYoutubeVideoId } from '@/lib/resource-utils';
-import { FileIcon } from '../ui/file-icon';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
+import { getYoutubeVideoId } from '@/lib/resource-utils';
+import Image from 'next/image';
+import { DndContext, DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, useSortable, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface FolderCreatorModalProps {
   isOpen: boolean;
@@ -31,32 +30,20 @@ interface FolderCreatorModalProps {
   parentId: string | null;
 }
 
+
 export function FolderCreatorModal({ isOpen, onClose, onSave, parentId }: FolderCreatorModalProps) {
   const { toast } = useToast();
   const { settings } = useAuth();
   const [folderName, setFolderName] = useState('');
   const [category, setCategory] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  const [availableVideos, setAvailableVideos] = useState<AppResourceType[]>([]);
-  const [selectedVideoIds, setSelectedVideoIds] = useState<string[]>([]);
   
-  // Nuevo estado para el tipo de carpeta a crear
-  const [folderType, setFolderType] = useState<'FOLDER' | 'VIDEO_PLAYLIST'>('FOLDER');
-
   useEffect(() => {
     if (isOpen) {
       setFolderName('');
       setCategory(settings?.resourceCategories[0] || 'General');
-      setSelectedVideoIds([]);
-      
-      // Cargar videos solo si se está creando una playlist
-      if (folderType === 'VIDEO_PLAYLIST') {
-        fetch('/api/resources?type=video')
-          .then(res => res.json())
-          .then(data => setAvailableVideos(data.resources || []));
-      }
     }
-  }, [isOpen, settings?.resourceCategories, folderType]);
+  }, [isOpen, settings?.resourceCategories]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,11 +55,10 @@ export function FolderCreatorModal({ isOpen, onClose, onSave, parentId }: Folder
     try {
       const payload = {
         title: folderName,
-        type: folderType,
+        type: 'FOLDER',
         category,
         isPublic: true,
         parentId,
-        videoIds: folderType === 'VIDEO_PLAYLIST' ? selectedVideoIds : [],
       };
 
       const response = await fetch('/api/resources', {
@@ -80,10 +66,9 @@ export function FolderCreatorModal({ isOpen, onClose, onSave, parentId }: Folder
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      if (!response.ok) throw new Error((await response.json()).message || 'No se pudo crear el elemento.');
+      if (!response.ok) throw new Error((await response.json()).message || 'No se pudo crear la carpeta.');
       
-      const typeLabel = folderType === 'FOLDER' ? 'Carpeta' : 'Lista de Reproducción';
-      toast({ title: `${typeLabel} Creada`, description: `Se ha creado "${folderName}".` });
+      toast({ title: `Carpeta Creada`, description: `Se ha creado "${folderName}".` });
       onSave();
       onClose();
     } catch (err) {
@@ -93,41 +78,20 @@ export function FolderCreatorModal({ isOpen, onClose, onSave, parentId }: Folder
     }
   };
 
-  const handleVideoSelection = (videoId: string, isSelected: boolean) => {
-    setSelectedVideoIds(prev => isSelected ? [...prev, videoId] : prev.filter(id => id !== videoId));
-  }
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Crear Nuevo Elemento</DialogTitle>
+          <DialogTitle className="flex items-center gap-2"><Folder className="h-5 w-5 text-amber-500"/>Crear Nueva Carpeta</DialogTitle>
           <DialogDescription>
-            Elige si quieres crear una carpeta para organizar archivos o una lista de reproducción de videos.
+            Crea una carpeta para organizar tus archivos y recursos.
           </DialogDescription>
         </DialogHeader>
         <form id="folder-form" onSubmit={handleCreate}>
           <div className="py-4 space-y-4">
-             <RadioGroup defaultValue="FOLDER" onValueChange={(value) => setFolderType(value as any)} className="grid grid-cols-2 gap-4">
-                <div>
-                    <RadioGroupItem value="FOLDER" id="r1" className="peer sr-only" />
-                    <Label htmlFor="r1" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer">
-                        <Folder className="mb-2 h-6 w-6" />
-                        Carpeta
-                    </Label>
-                </div>
-                <div>
-                    <RadioGroupItem value="VIDEO_PLAYLIST" id="r2" className="peer sr-only" />
-                    <Label htmlFor="r2" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer">
-                        <ListVideo className="mb-2 h-6 w-6" />
-                        Lista de Vídeos
-                    </Label>
-                </div>
-            </RadioGroup>
-
             <div className="space-y-1.5">
                 <Label htmlFor="folder-name">Título</Label>
-                <Input id="folder-name" value={folderName} onChange={(e) => setFolderName(e.target.value)} placeholder={folderType === 'FOLDER' ? 'Ej: Documentos de RRHH' : 'Ej: Inducción a Nuevos Colaboradores'} autoFocus required />
+                <Input id="folder-name" value={folderName} onChange={(e) => setFolderName(e.target.value)} placeholder={'Ej: Documentos de RRHH'} autoFocus required />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="category">Categoría</Label>
@@ -138,32 +102,6 @@ export function FolderCreatorModal({ isOpen, onClose, onSave, parentId }: Folder
                 </SelectContent>
               </Select>
             </div>
-             {folderType === 'VIDEO_PLAYLIST' && (
-                 <div className="space-y-1.5">
-                    <Label>Asignar Videos</Label>
-                     <ScrollArea className="h-48 border rounded-md p-2">
-                        {availableVideos.length > 0 ? (
-                            <div className="space-y-2">
-                            {availableVideos.map(video => {
-                                const youtubeId = getYoutubeVideoId(video.url);
-                                const thumbnailUrl = youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : video.url;
-                                const fileExtension = youtubeId ? 'youtube' : (video.fileType?.split('/')[1] || video.url?.split('.').pop() || 'file');
-
-                                return (
-                                    <div key={video.id} className="flex items-center gap-2 p-1.5 rounded-md hover:bg-muted">
-                                        <Checkbox id={`video-${video.id}`} checked={selectedVideoIds.includes(video.id)} onCheckedChange={(checked) => handleVideoSelection(video.id, !!checked)} />
-                                        <Label htmlFor={`video-${video.id}`} className="flex items-center gap-2 font-normal cursor-pointer w-full">
-                                           <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={thumbnailUrl} className="w-12 h-8" />
-                                           <span className="truncate">{video.title}</span>
-                                        </Label>
-                                    </div>
-                                )
-                            })}
-                            </div>
-                        ) : <p className="text-sm text-center text-muted-foreground p-4">No hay videos disponibles para añadir.</p>}
-                     </ScrollArea>
-                </div>
-             )}
           </div>
         </form>
         <DialogFooter>

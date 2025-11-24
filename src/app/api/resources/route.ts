@@ -52,7 +52,12 @@ export async function GET(req: NextRequest) {
             baseWhere.title = { contains: searchTerm, mode: 'insensitive' };
         }
         if (typeFilter === 'video') {
-            baseWhere.filetype = { startsWith: 'video/' };
+             baseWhere.OR = [
+                ...(baseWhere.OR || []),
+                { filetype: { startsWith: 'video/' } },
+                { url: { contains: 'youtube.com' } },
+                { url: { contains: 'youtu.be' } },
+            ]
         }
         
 
@@ -95,17 +100,48 @@ export async function POST(req: NextRequest) {
     
     try {
         const body = await req.json();
-        const { title, type, url, category, tags, parentId, description, isPublic, sharedWithUserIds, expiresAt, status, size, fileType, filename, videoIds } = body;
+        const { title, type, url, category, tags, parentId, description, isPublic, sharedWithUserIds, expiresAt, status, size, fileType, filename, videos } = body;
 
-        // Use the filename as a fallback for the title if title is not provided
         const finalTitle = title || filename;
 
         if (!finalTitle || !type) {
             return NextResponse.json({ message: 'Título y tipo son requeridos' }, { status: 400 });
         }
         
-        if (type !== 'FOLDER' && type !== 'EXTERNAL_LINK' && type !== 'DOCUMENTO_EDITABLE' && !url && !videoIds) {
-            return NextResponse.json({ message: 'URL o videoIds son requeridos para este tipo de recurso' }, { status: 400 });
+        if (type !== 'FOLDER' && type !== 'VIDEO_PLAYLIST' && type !== 'EXTERNAL_LINK' && type !== 'DOCUMENTO_EDITABLE' && !url) {
+            return NextResponse.json({ message: 'URL es requerida para este tipo de recurso' }, { status: 400 });
+        }
+        
+        if (type === 'VIDEO_PLAYLIST') {
+            const playlist = await prisma.enterpriseResource.create({
+                data: {
+                    title: finalTitle,
+                    type, description, category,
+                    ispublic: true, // Playlists are public by default for simplicity
+                    uploader: { connect: { id: session.id } },
+                    parentId,
+                    status: 'ACTIVE'
+                }
+            });
+
+            if (videos && videos.length > 0) {
+                 for (const [index, video] of videos.entries()) {
+                    await prisma.enterpriseResource.create({
+                        data: {
+                            title: video.title,
+                            type: 'VIDEO',
+                            url: video.url,
+                            uploader: { connect: { id: session.id } },
+                            parent: { connect: { id: playlist.id } },
+                            ispublic: true,
+                            category,
+                            status: 'ACTIVE',
+                            order: index
+                        }
+                    })
+                 }
+            }
+            return NextResponse.json(playlist, { status: 201 });
         }
 
         const data: Prisma.EnterpriseResourceCreateInput = {
@@ -119,16 +155,6 @@ export async function POST(req: NextRequest) {
         };
         
         if (parentId) data.parent = { connect: { id: parentId } };
-        
-        if (type === 'FOLDER' && videoIds && videoIds.length > 0) {
-            // This is a special case for playlist creation
-            const newFolder = await prisma.enterpriseResource.create({ data });
-            await prisma.enterpriseResource.updateMany({
-                where: { id: { in: videoIds } },
-                data: { parentId: newFolder.id }
-            });
-            return NextResponse.json(newFolder, { status: 201 });
-        }
 
         if (isPublic === false && sharedWithUserIds && Array.isArray(sharedWithUserIds)) {
             data.sharedWith = { connect: sharedWithUserIds.map((id:string) => ({ id })) };
