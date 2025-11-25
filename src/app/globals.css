@@ -38,6 +38,7 @@
     --event-green: 145 55% 35%;
     --event-red: 0 75% 55%;
     --event-orange: 25 80% 55%;
+    
 
     /* Fuentes */
     --font-body: 'Inter', sans-serif;
@@ -55,8 +56,8 @@
     --sidebar-border: 220 10% 90%; /* Borde más sutil que el border general */
 
     --sidebar-hover-background: 220 10% 90%; /* Gris sutil para hover */
-    --sidebar-active-background: 145 55% 90%; /* Fondo muy claro de Verde Esmeralda */
-    --sidebar-active-foreground: 145 55% 35%; /* El texto activo toma el Verde Esmeralda oscuro */
+    --sidebar-active-background: 260 70% 95%; /* Fondo muy claro de Púrpura */
+    --sidebar-active-foreground: 260 70% 40%; /* El texto activo toma el Púrpura oscuro */
       }
 
   [data-theme="dark"] {
