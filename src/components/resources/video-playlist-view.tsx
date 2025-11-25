@@ -1,11 +1,11 @@
 // src/components/resources/video-playlist-view.tsx
 'use client';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { AppResourceType } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
-import { PlayCircle, Folder, Video, BrainCircuit, Edit } from 'lucide-react';
+import { PlayCircle, Folder, Video, Edit, ListVideo } from 'lucide-react';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '../ui/input';
+import { BrainCircuit } from 'lucide-react';
 
 interface PlaylistItemProps {
   resource: AppResourceType;
@@ -61,16 +62,15 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({ resource, onSelect, isActiv
       }
   }
 
-
   return (
     <div
       onClick={onSelect}
       className={cn(
-        "flex items-center gap-4 p-2 rounded-lg cursor-pointer transition-colors group",
-        isActive ? "bg-primary/10" : "hover:bg-muted"
+        "flex items-center gap-4 p-2 rounded-lg cursor-pointer transition-all duration-300 group relative border-2",
+        isActive ? "bg-primary/10 border-primary shadow-lg" : "border-transparent hover:bg-muted"
       )}
     >
-      <div className="relative w-32 h-20 bg-muted rounded-md overflow-hidden flex-shrink-0">
+      <div className="relative w-28 h-16 bg-muted rounded-md overflow-hidden flex-shrink-0">
         {thumbnailUrl ? (
           <Image
             src={thumbnailUrl}
@@ -84,7 +84,7 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({ resource, onSelect, isActiv
             <Video className="h-8 w-8 text-muted-foreground" />
           </div>
         )}
-        <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+        <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
           <PlayCircle className="h-8 w-8 text-white drop-shadow-lg transition-transform duration-300 group-hover:scale-110" />
         </div>
       </div>
@@ -97,20 +97,24 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({ resource, onSelect, isActiv
                 onKeyDown={handleKeyDown}
                 className="h-8 text-sm"
                 autoFocus
+                onClick={(e) => e.stopPropagation()} // Evitar que el clic en el input seleccione el video
              />
         ) : (
             <p 
-                className={cn("font-semibold truncate", isActive ? "text-primary" : "text-foreground")}
+                className="font-semibold truncate text-foreground"
                 title={resource.title}
+                onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
             >
                 {resource.title}
             </p>
         )}
-        <p className="text-sm text-muted-foreground truncate">{resource.uploaderName}</p>
+        <p className="text-sm text-muted-foreground truncate">Por: {resource.uploaderName}</p>
       </div>
-      <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 opacity-0 group-hover:opacity-100" onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}>
-         <Edit className="h-4 w-4"/>
-      </Button>
+       {isActive && (
+            <div className="absolute top-1/2 -translate-y-1/2 right-2 bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full shadow">
+              VIENDO
+            </div>
+        )}
     </div>
   );
 };
@@ -137,7 +141,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ resource }) => {
             <iframe
                 key={resource.id}
                 className="w-full h-full"
-                src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0`}
+                src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0&modestbranding=1`}
                 title={resource.title}
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -187,24 +191,24 @@ export const VideoPlaylistView: React.FC<{ resources: AppResourceType[], folder:
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
       <div className="lg:col-span-2">
-         <Card className="shadow-lg overflow-hidden">
+         <Card className="shadow-lg overflow-hidden border-2">
              <div className="w-full aspect-video bg-black">
                 <VideoPlayer resource={selectedVideo} />
              </div>
-             <CardContent className="p-4">
-                <CardTitle className="truncate">{selectedVideo?.title || "Selecciona un video"}</CardTitle>
+             <CardContent className="p-4 bg-card">
+                <CardTitle className="truncate text-xl">{selectedVideo?.title || "Selecciona un video"}</CardTitle>
                 <CardDescription>Subido por: {selectedVideo?.uploaderName}</CardDescription>
              </CardContent>
          </Card>
       </div>
 
       <div className="lg:col-span-1">
-        <Card className="w-full h-full shadow-lg">
+        <Card className="w-full h-full shadow-lg flex flex-col">
           <CardHeader>
             <div className="flex justify-between items-start">
               <div className="flex-grow">
                 <CardTitle className="flex items-center gap-2 text-xl font-bold font-headline">
-                  <Folder className="h-6 w-6 text-amber-500" />
+                  <ListVideo className="h-6 w-6 text-primary" />
                   {folder.title}
                 </CardTitle>
                 <CardDescription>{playlistResources.length} videos en esta lista.</CardDescription>
@@ -219,15 +223,14 @@ export const VideoPlaylistView: React.FC<{ resources: AppResourceType[], folder:
             </div>
           </CardHeader>
           <Separator />
-          <CardContent className="p-0">
-            <ScrollArea className={playlistHeight}>
+          <CardContent className="p-2 flex-1 min-h-0">
+            <ScrollArea className="h-full">
                 {playlistResources.length > 0 ? (
                     <div className="p-2 space-y-1">
-                        {playlistResources.map((resource, index) => (
+                        {playlistResources.map((resource) => (
                         <PlaylistItem
                             key={resource.id}
                             resource={resource}
-                            index={index}
                             onSelect={() => setSelectedVideo(resource)}
                             isActive={selectedVideo?.id === resource.id}
                             onTitleChange={handleTitleChange}
