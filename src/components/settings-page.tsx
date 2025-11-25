@@ -333,7 +333,7 @@ export default function SettingsPageComponent() {
         <Tabs defaultValue="appearance" className="w-full">
             <TabsList id="settings-tabs-list" className="inline-grid w-full grid-cols-2 md:grid-cols-4 h-auto bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg">
                 <TabsTrigger value="appearance">Identidad y Apariencia</TabsTrigger>
-                <TabsTrigger value="style">Tema y Estilo</TabsTrigger>
+                <TabsTrigger value="style">Estilo</TabsTrigger>
                 <TabsTrigger value="security">Seguridad</TabsTrigger>
                 <TabsTrigger value="general">Generales</TabsTrigger>
             </TabsList>
@@ -399,30 +399,6 @@ export default function SettingsPageComponent() {
             </TabsContent>
             
             <TabsContent value="style" className="mt-6 space-y-6">
-                <Card className="card-border-animated">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Paintbrush className="h-5 w-5 text-primary"/>Paleta de Colores</CardTitle>
-                        <CardDescription>Personaliza los colores principales de la plataforma.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <Label>Tema Claro</Label>
-                            <div className="p-4 border rounded-lg mt-2 space-y-3">
-                                <div className="flex items-center justify-between"><Label htmlFor="primaryColor">Primario</Label><Input id="primaryColor" type="color" value={formState.primaryColor || '#000000'} onChange={(e) => handleInputChange('primaryColor', e.target.value)} className="w-20 p-1 h-10" /></div>
-                                <div className="flex items-center justify-between"><Label htmlFor="secondaryColor">Secundario</Label><Input id="secondaryColor" type="color" value={formState.secondaryColor || '#000000'} onChange={(e) => handleInputChange('secondaryColor', e.target.value)} className="w-20 p-1 h-10" /></div>
-                                <div className="flex items-center justify-between"><Label htmlFor="accentColor">Acento</Label><Input id="accentColor" type="color" value={formState.accentColor || '#000000'} onChange={(e) => handleInputChange('accentColor', e.target.value)} className="w-20 p-1 h-10" /></div>
-                                <div className="flex items-center justify-between"><Label htmlFor="backgroundColorLight">Fondo</Label><Input id="backgroundColorLight" type="color" value={formState.backgroundColorLight || '#FFFFFF'} onChange={(e) => handleInputChange('backgroundColorLight', e.target.value)} className="w-20 p-1 h-10" /></div>
-                            </div>
-                        </div>
-                        <div>
-                            <Label>Tema Oscuro</Label>
-                             <div className="p-4 border rounded-lg mt-2 space-y-3">
-                                <div className="flex items-center justify-between"><Label htmlFor="primaryColorDark">Primario</Label><Input id="primaryColorDark" type="color" value={formState.primaryColorDark || '#FFFFFF'} onChange={(e) => handleInputChange('primaryColorDark', e.target.value)} className="w-20 p-1 h-10" /></div>
-                                <div className="flex items-center justify-between"><Label htmlFor="backgroundColorDark">Fondo</Label><Input id="backgroundColorDark" type="color" value={formState.backgroundColorDark || '#000000'} onChange={(e) => handleInputChange('backgroundColorDark', e.target.value)} className="w-20 p-1 h-10" /></div>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
                 <Card className="card-border-animated">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><Type className="h-5 w-5 text-primary"/>Tipografía</CardTitle>
