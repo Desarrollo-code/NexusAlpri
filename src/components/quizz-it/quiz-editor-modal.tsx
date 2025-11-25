@@ -110,7 +110,7 @@ const QuestionEditor = ({ question, isQuiz, onQuestionChange, onOptionChange, on
 
     const renderOptionEditor = (opt: FormFieldOption, index: number) => {
         if (isImageOptionsTemplate) {
-            return (
+             return (
                  <div className="w-full h-full cursor-pointer" onClick={() => onSetCorrect(opt.id)}>
                     <ImageUploadWidget inputId={`opt-img-${opt.id}`} imageUrl={opt.imageUrl} onUpload={(url) => onOptionChange(index, 'imageUrl', url)} onRemove={() => onOptionChange(index, 'imageUrl', null)} disabled={false} isCorrect={opt.isCorrect}/>
                  </div>
@@ -152,8 +152,8 @@ const QuestionEditor = ({ question, isQuiz, onQuestionChange, onOptionChange, on
 
             <Card>
                 <CardHeader><CardTitle className="text-base">Opciones de Respuesta</CardTitle></CardHeader>
-                 <CardContent className={cn("grid gap-2", isImageOptionsTemplate ? "grid-cols-2" : "grid-cols-1 md:grid-cols-2")}>
-                    {question.options.slice(0, 4).map((opt, index) => (
+                 <CardContent className={cn("grid gap-2", isImageOptionsTemplate ? "grid-cols-4" : "grid-cols-1 md:grid-cols-2")}>
+                    {(question.options || []).slice(0, 4).map((opt, index) => (
                         <div key={opt.id} className="flex items-center gap-2">
                             <div className="flex-grow">{renderOptionEditor(opt, index)}</div>
                             {!isImageOptionsTemplate && (
