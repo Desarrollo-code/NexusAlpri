@@ -114,17 +114,17 @@ export const TopBar = () => {
     return (
         <div className={cn(
             "flex items-center justify-between h-20 px-4 shrink-0 sticky top-0 z-30",
-            "bg-primary text-primary-foreground border-b-2 border-border dark:border-white/10"
+            "bg-card text-card-foreground shadow-[0_4px_12px_-4px_hsl(var(--border)/0.5)]"
         )}>
             {/* Left side */}
             <div className="flex items-center gap-2 flex-1 min-w-0">
                  {isMobile ? (
-                    <Button onClick={toggleSidebar} variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground hover:bg-black/20">
+                    <Button onClick={toggleSidebar} variant="ghost" size="icon" className="h-8 w-8 text-foreground hover:bg-muted">
                         <PanelLeft className="h-5 w-5"/>
                         <span className="sr-only">Toggle Menu</span>
                     </Button>
                  ) : showBackButton ? (
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground hover:bg-black/20" onClick={() => router.back()}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-foreground hover:bg-muted" onClick={() => router.back()}>
                         <ArrowLeft className="h-4 w-4"/>
                         <span className="sr-only">Volver</span>
                     </Button>
@@ -141,7 +141,7 @@ export const TopBar = () => {
                  {headerActions && <div className="hidden md:flex items-center gap-2">{headerActions}</div>}
                  <Popover onOpenChange={(open) => { if (open) fetchNotifications() }}>
                     <PopoverTrigger asChild>
-                        <Button variant="ghost" size="icon" className="relative text-primary-foreground/80 hover:text-primary-foreground hover:bg-black/20 transition-colors">
+                        <Button variant="ghost" size="icon" className="relative text-foreground/70 hover:text-foreground hover:bg-muted transition-colors">
                             <Bell className="h-5 w-5"/>
                             {unreadCount > 0 && (
                                 <span className="absolute top-1 right-1 flex h-4 w-4">
@@ -184,7 +184,7 @@ export const TopBar = () => {
                          </div>
                     </PopoverContent>
                  </Popover>
-                <Separator orientation="vertical" className="h-8 bg-white/20" />
+                <Separator orientation="vertical" className="h-8 bg-border" />
                 <UserAvatarDropdown />
             </div>
             {headerActions && isMobile && (
