@@ -16,7 +16,6 @@ export const AVAILABLE_THEMES = [
   { value: 'lavender', label: 'Lavanda', colors: ['#8b5cf6', '#ddd6fe'], },
   { value: 'mint', label: 'Menta', colors: ['#10b981', '#a7f3d0'], },
   { value: 'forest', label: 'Bosque', colors: ['#16a34a', '#bbf7d0'], },
-  { value: 'sunrise', label: 'Amanecer', colors: ['#f97316', '#fcd34d'], },
   { value: 'graphite', label: 'Grafito', colors: ['#06b6d4', '#6b7280'], },
 ];
 

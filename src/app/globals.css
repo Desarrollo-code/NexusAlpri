@@ -207,33 +207,6 @@
     --sidebar-border: 100 20% 30%;
   }
 
-  [data-theme="sunrise"] {
-    --background: 25 100% 98%;
-    --foreground: 15 50% 20%;
-    --card: 0 0% 100%;
-    --card-foreground: 15 50% 20%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 15 50% 20%;
-    --primary: 10 80% 55%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 30 80% 95%;
-    --secondary-foreground: 20 40% 30%;
-    --muted: 30 80% 97%;
-    --muted-foreground: 20 20% 50%;
-    --accent: 350 85% 65%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 70% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 25 50% 90%;
-    --input: 25 50% 94%;
-    --ring: 10 80% 60%;
-    --sidebar-background: 355 70% 50%;
-    --sidebar-foreground: 355 30% 98%;
-    --sidebar-muted-foreground: 355 30% 85%;
-    --sidebar-accent: 0 0% 100%;
-    --sidebar-accent-foreground: 355 70% 25%;
-    --sidebar-border: 355 70% 50%;
-  }
 
   [data-theme="graphite"] {
     --background: 220 10% 12%;
@@ -356,7 +329,7 @@
     height: 6px;
   }
   .thin-scrollbar::-webkit-scrollbar-thumb {
-    background-color: hsl(var(--muted-foreground) / 0.5);
+    background-color: hsl(var(--muted-foreground) / 0.75rem);
     border-radius: 3px;
   }
   .thin-scrollbar::-webkit-scrollbar-track {
