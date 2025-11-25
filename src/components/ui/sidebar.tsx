@@ -90,8 +90,8 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       )}
       <aside
         className={cn(
-          "fixed top-0 left-0 z-50 h-screen flex flex-col transition-all duration-300 ease-in-out shadow-xl",
-          "border-r border-sidebar-border",
+          "fixed top-0 left-0 z-50 h-screen flex flex-col transition-all duration-300 ease-in-out",
+          "bg-card shadow-[4px_0_12px_-4px_hsl(var(--sidebar-border)/0.5)]",
           isMobile ? `w-72 ${mobileClasses}` : desktopClasses
         )}
       >
@@ -251,7 +251,7 @@ export const SidebarFooter = () => {
     if (isMobile) return null;
 
     return (
-        <div className="p-3 border-t border-sidebar-border flex flex-col gap-2 bg-[hsl(var(--sidebar-footer-background))]">
+        <div className="p-3 shadow-[0_-4px_6px_-2px_hsl(var(--sidebar-border)/0.5)] flex flex-col gap-2 bg-[hsl(var(--sidebar-footer-background))] z-10">
              {!isCollapsed && settings?.projectVersion && (
                 <div className="px-3 py-2 text-center text-xs text-sidebar-muted-foreground">
                     Versión: {settings.projectVersion}

@@ -15,8 +15,8 @@ export const SidebarHeader = () => {
   // Para móvil, el encabezado siempre está expandido y dentro de un `Sheet`.
   if (isMobile) {
       return (
-         <div className="bg-[hsl(var(--sidebar-header-background))] flex items-center h-20 border-b border-sidebar-border px-4">
-             <Link href="/dashboard" className="inline-flex items-center gap-3">
+         <div className="bg-[hsl(var(--sidebar-header-background))] flex items-center h-20 shadow-[0_4px_6px_-2px_hsl(var(--sidebar-border)/0.5)]">
+             <Link href="/dashboard" className="inline-flex items-center gap-3 px-4">
                  <div className="relative h-12 w-12 flex-shrink-0 rounded-lg overflow-hidden bg-sidebar-accent/20">
                     {isLoading ? <Skeleton className="h-full w-full"/> : 
                      settings?.logoUrl ? <Image src={settings.logoUrl} alt="Logo" fill className="object-contain p-1" /> : <div className="w-full h-full rounded-md bg-muted" />
@@ -31,7 +31,7 @@ export const SidebarHeader = () => {
   // Vista para escritorio
   return (
     <div className={cn(
-      "flex items-center h-20 bg-[hsl(var(--sidebar-header-background))]",
+      "flex items-center h-20 bg-[hsl(var(--sidebar-header-background))] shadow-[0_4px_6px_-2px_hsl(var(--sidebar-border)/0.5)] z-10",
       isCollapsed ? 'justify-center' : 'justify-start px-4'
     )}>
       <Link href="/dashboard" className="inline-flex items-center gap-3">
@@ -42,7 +42,7 @@ export const SidebarHeader = () => {
             {isLoading ? <Skeleton className="h-full w-full"/> : 
              settings?.logoUrl ? 
               <div className="relative w-full h-full">
-                <Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" className={cn("object-contain p-1.5")} />
+                <Image src={settings.logoUrl} alt="Logo" data-ai-hint="logo" className={cn("object-contain p-1.5")} />
               </div> 
               : <div className="w-full h-full rounded-md bg-muted" />
             }
