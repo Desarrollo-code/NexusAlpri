@@ -1,29 +1,66 @@
 // src/components/resources/video-playlist-view.tsx
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import type { AppResourceType } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
-import { PlayCircle, Folder, Video } from 'lucide-react';
+import { PlayCircle, Folder, Video, BrainCircuit, Edit } from 'lucide-react';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { BrainCircuit } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Input } from '../ui/input';
 
 interface PlaylistItemProps {
   resource: AppResourceType;
-  index: number;
   onSelect: () => void;
   isActive: boolean;
+  onTitleChange: (id: string, newTitle: string) => void;
 }
 
-const PlaylistItem: React.FC<PlaylistItemProps> = ({ resource, index, onSelect, isActive }) => {
+const PlaylistItem: React.FC<PlaylistItemProps> = ({ resource, onSelect, isActive, onTitleChange }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [title, setTitle] = useState(resource.title);
+  const { toast } = useToast();
+
   const youtubeId = getYoutubeVideoId(resource.url);
   const thumbnailUrl = youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null;
+
+  const handleTitleSave = async () => {
+    if (title.trim() === resource.title) {
+        setIsEditing(false);
+        return;
+    }
+    try {
+      const response = await fetch(`/api/resources/${resource.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: title.trim() }),
+      });
+      if (!response.ok) throw new Error('No se pudo guardar el título.');
+      onTitleChange(resource.id, title.trim());
+      toast({ description: "Título actualizado." });
+    } catch (err) {
+      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+      setTitle(resource.title); // Revertir en caso de error
+    } finally {
+      setIsEditing(false);
+    }
+  };
+  
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+          handleTitleSave();
+      } else if (e.key === 'Escape') {
+          setTitle(resource.title);
+          setIsEditing(false);
+      }
+  }
+
 
   return (
     <div
@@ -52,9 +89,28 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({ resource, index, onSelect, 
         </div>
       </div>
       <div className="flex-grow min-w-0">
-        <p className={cn("font-semibold truncate", isActive ? "text-primary" : "text-foreground")}>{resource.title}</p>
+        {isEditing ? (
+             <Input 
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+                onBlur={handleTitleSave}
+                onKeyDown={handleKeyDown}
+                className="h-8 text-sm"
+                autoFocus
+             />
+        ) : (
+            <p 
+                className={cn("font-semibold truncate", isActive ? "text-primary" : "text-foreground")}
+                title={resource.title}
+            >
+                {resource.title}
+            </p>
+        )}
         <p className="text-sm text-muted-foreground truncate">{resource.uploaderName}</p>
       </div>
+      <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 opacity-0 group-hover:opacity-100" onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}>
+         <Edit className="h-4 w-4"/>
+      </Button>
     </div>
   );
 };
@@ -79,6 +135,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ resource }) => {
     if (youtubeId) {
         return (
             <iframe
+                key={resource.id}
                 className="w-full h-full"
                 src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0`}
                 title={resource.title}
@@ -89,10 +146,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ resource }) => {
         );
     }
 
-    // Para videos subidos directamente (MP4, etc.)
     return (
         <video
-            key={resource.id} // Add key to force re-render on video change
+            key={resource.id}
             src={resource.url}
             controls
             autoPlay
@@ -104,12 +160,28 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ resource }) => {
 };
 
 
-export const VideoPlaylistView: React.FC<{ resources: AppResourceType[], folder: AppResourceType }> = ({ resources, folder }) => {
+export const VideoPlaylistView: React.FC<{ resources: AppResourceType[], folder: AppResourceType }> = ({ resources: initialResources, folder }) => {
   const isMobile = useIsMobile();
-  const [selectedVideo, setSelectedVideo] = useState<AppResourceType | null>(resources[0] || null);
+  const [playlistResources, setPlaylistResources] = useState(initialResources);
+  const [selectedVideo, setSelectedVideo] = useState<AppResourceType | null>(playlistResources[0] || null);
+
+  useEffect(() => {
+    setPlaylistResources(initialResources);
+    if (!selectedVideo && initialResources.length > 0) {
+        setSelectedVideo(initialResources[0]);
+    }
+  }, [initialResources, selectedVideo]);
+
 
   const playlistHeight = isMobile ? 'h-64' : 'h-[calc(100vh-22rem)]';
   const isQuizEnabled = folder.category === 'Formación Interna';
+
+  const handleTitleChange = (id: string, newTitle: string) => {
+      setPlaylistResources(prev => prev.map(r => r.id === id ? {...r, title: newTitle} : r));
+      if(selectedVideo?.id === id) {
+          setSelectedVideo(prev => prev ? {...prev, title: newTitle} : null);
+      }
+  }
 
 
   return (
@@ -120,7 +192,7 @@ export const VideoPlaylistView: React.FC<{ resources: AppResourceType[], folder:
                 <VideoPlayer resource={selectedVideo} />
              </div>
              <CardContent className="p-4">
-                <CardTitle>{selectedVideo?.title || "Selecciona un video"}</CardTitle>
+                <CardTitle className="truncate">{selectedVideo?.title || "Selecciona un video"}</CardTitle>
                 <CardDescription>Subido por: {selectedVideo?.uploaderName}</CardDescription>
              </CardContent>
          </Card>
@@ -135,7 +207,7 @@ export const VideoPlaylistView: React.FC<{ resources: AppResourceType[], folder:
                   <Folder className="h-6 w-6 text-amber-500" />
                   {folder.title}
                 </CardTitle>
-                <CardDescription>{resources.length} videos en esta lista.</CardDescription>
+                <CardDescription>{playlistResources.length} videos en esta lista.</CardDescription>
               </div>
               {isQuizEnabled && (
                   <Button asChild size="sm">
@@ -149,15 +221,16 @@ export const VideoPlaylistView: React.FC<{ resources: AppResourceType[], folder:
           <Separator />
           <CardContent className="p-0">
             <ScrollArea className={playlistHeight}>
-                {resources.length > 0 ? (
+                {playlistResources.length > 0 ? (
                     <div className="p-2 space-y-1">
-                        {resources.map((resource, index) => (
+                        {playlistResources.map((resource, index) => (
                         <PlaylistItem
                             key={resource.id}
                             resource={resource}
                             index={index}
                             onSelect={() => setSelectedVideo(resource)}
                             isActive={selectedVideo?.id === resource.id}
+                            onTitleChange={handleTitleChange}
                         />
                         ))}
                     </div>
