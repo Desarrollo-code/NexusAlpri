@@ -114,7 +114,7 @@ export const TopBar = () => {
     return (
         <div className={cn(
             "flex items-center justify-between h-20 px-4 shrink-0 sticky top-0 z-30",
-            "bg-primary text-primary-foreground border-b-2 border-white/10"
+            "bg-primary text-primary-foreground border-b-2 border-border dark:border-white/10"
         )}>
             {/* Left side */}
             <div className="flex items-center gap-2 flex-1 min-w-0">
