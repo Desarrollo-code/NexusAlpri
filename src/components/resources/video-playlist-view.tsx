@@ -70,13 +70,18 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({ resource, onSelect, isActiv
         isActive ? "bg-primary/10 border-primary shadow-lg" : "border-transparent hover:bg-muted"
       )}
     >
-        <div className="w-28 h-16 bg-muted rounded-md overflow-hidden flex-shrink-0">
+        <div className="w-28 h-16 bg-muted rounded-md overflow-hidden flex-shrink-0 relative">
              <FileIcon 
                 displayMode="list" 
                 type={fileExtension} 
                 thumbnailUrl={resource.url} 
                 className="w-full h-full"
              />
+             {isActive && (
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <PlayCircle className="h-8 w-8 text-white" />
+                </div>
+             )}
         </div>
       <div className="flex-grow min-w-0">
         {isEditing ? (
@@ -100,11 +105,6 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({ resource, onSelect, isActiv
         )}
         <p className="text-sm text-muted-foreground truncate">Subido por: {resource.uploaderName}</p>
       </div>
-       {isActive && (
-            <div className="absolute top-1/2 -translate-y-1/2 right-2 bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full shadow">
-              VIENDO
-            </div>
-        )}
     </div>
   );
 };
@@ -179,8 +179,8 @@ export const VideoPlaylistView: React.FC<{ resources: AppResourceType[], folder:
 
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-      <div className="lg:col-span-2">
+    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+      <div className="md:col-span-8 lg:col-span-8">
          <Card className="shadow-lg overflow-hidden border-2">
              <div className="w-full aspect-video bg-black">
                 <VideoPlayer resource={selectedVideo} />
@@ -192,19 +192,21 @@ export const VideoPlaylistView: React.FC<{ resources: AppResourceType[], folder:
          </Card>
       </div>
 
-      <div className="lg:col-span-1">
+      <div className="md:col-span-4 lg:col-span-4">
         <Card className="w-full h-full shadow-lg flex flex-col">
           <CardHeader>
             <div className="flex justify-between items-start">
               <div className="flex-grow">
-                <CardTitle className="flex items-center gap-2 text-xl font-bold font-headline">
-                  <ListVideo className="h-6 w-6 text-primary" />
-                  {folder.title}
-                </CardTitle>
-                <CardDescription>{playlistResources.length} videos en esta lista.</CardDescription>
+                <div className="flex items-center gap-2">
+                   <div className="w-8 h-8 flex items-center justify-center bg-primary/10 text-primary rounded-lg"><ListVideo className="h-5 w-5"/></div>
+                   <div>
+                     <CardTitle className="text-xl font-bold font-headline">{folder.title}</CardTitle>
+                     <CardDescription>{playlistResources.length} videos en esta lista.</CardDescription>
+                   </div>
+                </div>
               </div>
               {isQuizEnabled && (
-                  <Button asChild size="sm">
+                  <Button asChild size="sm" variant="secondary">
                       <Link href={`/resources/${folder.id}/edit-quiz`}>
                           <BrainCircuit className="mr-2 h-4 w-4" /> Quiz
                       </Link>
