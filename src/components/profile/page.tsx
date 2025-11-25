@@ -453,7 +453,7 @@ const ThemeSelectorCard = ({ className }: { className?: string }) => {
           <CardDescription>Elige tu paleta de colores preferida.</CardDescription>
         </CardHeader>
         <CardContent>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-5 gap-3">
               {AVAILABLE_THEMES.map((t) => (
                 <TooltipProvider key={t.value} delayDuration={100}>
                     <Tooltip>
@@ -465,7 +465,7 @@ const ThemeSelectorCard = ({ className }: { className?: string }) => {
                                         theme === t.value ? 'border-primary ring-2 ring-primary/50' : 'border-border group-hover:border-primary/70'
                                     )}
                                 >
-                                     <div className="flex items-center gap-1">
+                                    <div className="flex items-center gap-1">
                                         <div className="h-10 w-5 rounded" style={{backgroundColor: t.colors[0]}}/>
                                         <div className="h-10 w-5 rounded" style={{backgroundColor: t.colors[1]}}/>
                                     </div>
@@ -578,10 +578,10 @@ function ProfilePageContent() {
                         <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                             <div className="space-y-6">
                                 <InfoCard user={user} updateUser={updateUser} />
-                                <TwoFactorCard user={user} updateUser={updateUser} />
+                                <ThemeSelectorCard />
                             </div>
                             <div className="space-y-6">
-                                <ThemeSelectorCard />
+                                <TwoFactorCard user={user} updateUser={updateUser} />
                                 <SecurityCard 
                                     user={user} 
                                     newPassword={newPassword}
