@@ -81,14 +81,15 @@
     --chart-5: 223 75% 75%;
     
     /* Variables para la barra lateral en tema oscuro (usa --card) */
-    --sidebar-header-background: hsl(var(--card));
-    --sidebar-body-background: hsl(var(--card));
-    --sidebar-footer-background: hsl(var(--card));
-    --sidebar-foreground: hsl(var(--card-foreground));
-    --sidebar-muted-foreground: hsl(var(--muted-foreground));
-    --sidebar-accent: hsl(var(--primary));
-    --sidebar-accent-foreground: hsl(var(--primary-foreground));
-    --sidebar-border: hsl(var(--border));
+    --sidebar-header-background: var(--card);
+    --sidebar-body-background: var(--card);
+    --sidebar-footer-background: var(--card);
+    --sidebar-foreground: var(--card-foreground);
+    --sidebar-muted-foreground: var(--muted-foreground);
+    --sidebar-accent: var(--primary);
+    --sidebar-accent-foreground: var(--primary-foreground);
+    --sidebar-border: var(--border);
+
   }
 
   [data-theme="mint"] {
