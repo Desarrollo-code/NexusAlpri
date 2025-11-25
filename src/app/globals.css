@@ -44,15 +44,21 @@
     --font-headline: 'Space Grotesk', sans-serif;
     
     /* Variables para la barra lateral */
-    --sidebar-header-background: hsl(var(--card));
-    --sidebar-body-background: hsl(var(--card));
-    --sidebar-footer-background: hsl(var(--card));
-    --sidebar-foreground: hsl(var(--card-foreground));
-    --sidebar-muted-foreground: hsl(var(--muted-foreground));
-    --sidebar-accent: hsl(var(--primary));
+    --sidebar-background: 220 20% 97%; /* Fondo ligeramente más oscuro que el background principal */
+    --sidebar-header-background: hsl(var(--sidebar-background)); /* Usa el nuevo sidebar-background */
+    --sidebar-body-background: hsl(var(--sidebar-background)); /* Usa el nuevo sidebar-background */
+    --sidebar-footer-background: hsl(var(--sidebar-background)); /* Usa el nuevo sidebar-background */
+    --sidebar-foreground: 220 15% 20%; /* Texto y iconos más oscuros para buen contraste */
+    --sidebar-muted-foreground: 220 5% 40%; /* Texto secundario más suave */
+    --sidebar-accent: hsl(var(--primary)); /* Mantenemos el azul primario para el acento activo */
     --sidebar-accent-foreground: hsl(var(--primary-foreground));
-    --sidebar-border: hsl(var(--border));
-  }
+    --sidebar-border: 220 10% 90%; /* Borde más sutil que el border general */
+
+        /* Nuevas variables para estados interactivos en la barra lateral */
+    --sidebar-hover-background: 220 10% 90%; /* Fondo sutil para hover */
+    --sidebar-active-background: 210 70% 95%; /* Fondo muy suave del color primario para el activo */
+    --sidebar-active-foreground: hsl(var(--primary)); /* Texto del primario para el activo */
+      }
 
   [data-theme="dark"] {
     --background: 220 15% 9%;
