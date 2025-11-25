@@ -43,8 +43,10 @@
     --font-body: 'Inter', sans-serif;
     --font-headline: 'Space Grotesk', sans-serif;
     
-    /* Variable para la barra lateral (por defecto usa --card) */
-    --sidebar-background: var(--card);
+    /* Variables para la barra lateral (por defecto usa --card) */
+    --sidebar-header-background: var(--card);
+    --sidebar-body-background: var(--card);
+    --sidebar-footer-background: var(--card);
     --sidebar-foreground: var(--card-foreground);
     --sidebar-muted-foreground: var(--muted-foreground);
     --sidebar-accent: var(--primary);
@@ -78,8 +80,10 @@
     --chart-4: 223 75% 70%;
     --chart-5: 223 75% 75%;
     
-    /* Variable para la barra lateral en tema oscuro (usa --card) */
-    --sidebar-background: var(--card);
+    /* Variables para la barra lateral en tema oscuro (usa --card) */
+    --sidebar-header-background: var(--card);
+    --sidebar-body-background: var(--card);
+    --sidebar-footer-background: var(--card);
     --sidebar-foreground: var(--card-foreground);
     --sidebar-muted-foreground: var(--muted-foreground);
     --sidebar-accent: var(--primary);
@@ -112,7 +116,9 @@
     --chart-3: 160 50% 60%;
     --chart-4: 160 50% 50%;
     --chart-5: 160 50% 40%;
-    --sidebar-background: 160 50% 45%;
+    --sidebar-header-background: 160 50% 45%;
+    --sidebar-body-background: 160 50% 50%;
+    --sidebar-footer-background: 160 50% 42%;
     --sidebar-foreground: 160 50% 98%;
     --sidebar-muted-foreground: 160 50% 90%;
     --sidebar-accent: 0 0% 100%;
@@ -145,7 +151,9 @@
     --chart-3: 20 70% 65%;
     --chart-4: 20 70% 55%;
     --chart-5: 20 70% 45%;
-    --sidebar-background: 15 65% 50%;
+    --sidebar-header-background: 15 65% 50%;
+    --sidebar-body-background: 15 65% 55%;
+    --sidebar-footer-background: 15 65% 47%;
     --sidebar-foreground: 15 50% 98%;
     --sidebar-muted-foreground: 15 50% 90%;
     --sidebar-accent: 0 0% 100%;
@@ -178,7 +186,9 @@
     --chart-3: 250 65% 75%;
     --chart-4: 250 65% 70%;
     --chart-5: 250 65% 65%;
-    --sidebar-background: 250 50% 55%;
+    --sidebar-header-background: 250 50% 55%;
+    --sidebar-body-background: 250 50% 60%;
+    --sidebar-footer-background: 250 50% 52%;
     --sidebar-foreground: 250 50% 98%;
     --sidebar-muted-foreground: 250 50% 90%;
     --sidebar-accent: 0 0% 100%;
@@ -211,7 +221,9 @@
     --chart-3: 210 70% 60%;
     --chart-4: 210 70% 50%;
     --chart-5: 210 70% 40%;
-    --sidebar-background: 205 65% 50%;
+    --sidebar-header-background: 205 65% 50%;
+    --sidebar-body-background: 205 65% 55%;
+    --sidebar-footer-background: 205 65% 47%;
     --sidebar-foreground: 205 50% 98%;
     --sidebar-muted-foreground: 205 50% 90%;
     --sidebar-accent: 0 0% 100%;
@@ -244,7 +256,9 @@
     --chart-3: 350 70% 60%;
     --chart-4: 350 70% 50%;
     --chart-5: 350 70% 40%;
-    --sidebar-background: 350 60% 45%;
+    --sidebar-header-background: 350 60% 45%;
+    --sidebar-body-background: 350 60% 50%;
+    --sidebar-footer-background: 350 60% 42%;
     --sidebar-foreground: 350 50% 98%;
     --sidebar-muted-foreground: 350 50% 90%;
     --sidebar-accent: 0 0% 100%;
@@ -277,7 +291,9 @@
     --chart-3: 100 35% 55%;
     --chart-4: 100 35% 45%;
     --chart-5: 100 35% 35%;
-    --sidebar-background: 95 40% 35%;
+    --sidebar-header-background: 95 40% 35%;
+    --sidebar-body-background: 95 40% 40%;
+    --sidebar-footer-background: 95 40% 32%;
     --sidebar-foreground: 95 40% 98%;
     --sidebar-muted-foreground: 95 40% 90%;
     --sidebar-accent: 0 0% 100%;
@@ -310,12 +326,14 @@
     --chart-3: 205 80% 75%;
     --chart-4: 205 80% 70%;
     --chart-5: 205 80% 65%;
-    --sidebar-background: var(--background);
-    --sidebar-foreground: var(--foreground);
-    --sidebar-muted-foreground: var(--muted-foreground);
-    --sidebar-accent: var(--primary);
-    --sidebar-accent-foreground: var(--primary-foreground);
-    --sidebar-border: var(--border);
+    --sidebar-header-background: var(--primary);
+    --sidebar-body-background: hsl(var(--primary) / 0.8);
+    --sidebar-footer-background: hsl(var(--primary) / 0.7);
+    --sidebar-foreground: var(--primary-foreground);
+    --sidebar-muted-foreground: hsl(var(--primary-foreground) / 0.8);
+    --sidebar-accent: hsl(var(--primary-foreground));
+    --sidebar-accent-foreground: hsl(var(--primary));
+    --sidebar-border: hsl(var(--primary) / 0.9);
   }
 }
  

@@ -91,7 +91,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       <aside
         className={cn(
           "fixed top-0 left-0 z-50 h-screen flex flex-col transition-all duration-300 ease-in-out shadow-xl",
-          "bg-sidebar-background border-r border-sidebar-border",
+          "border-r border-sidebar-border",
           isMobile ? `w-72 ${mobileClasses}` : desktopClasses
         )}
       >
@@ -230,7 +230,7 @@ export const SidebarContent = () => {
 
     return (
         <TooltipProvider delayDuration={100}>
-            <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-1 thin-scrollbar shadow-inner">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-1 thin-scrollbar bg-[hsl(var(--sidebar-body-background))]">
                 {navItems.map((item) => {
                     if (item.children && item.children.length > 0) {
                         return <SectionItem key={item.id} item={item} />;
@@ -251,7 +251,7 @@ export const SidebarFooter = () => {
     if (isMobile) return null;
 
     return (
-        <div className="p-3 border-t border-sidebar-border flex flex-col gap-2">
+        <div className="p-3 border-t border-sidebar-border flex flex-col gap-2 bg-[hsl(var(--sidebar-footer-background))]">
              {!isCollapsed && settings?.projectVersion && (
                 <div className="px-3 py-2 text-center text-xs text-sidebar-muted-foreground">
                     Versión: {settings.projectVersion}
