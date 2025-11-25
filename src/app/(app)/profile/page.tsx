@@ -453,7 +453,7 @@ const ThemeSelectorCard = ({ className }: { className?: string }) => {
           <CardDescription>Elige tu paleta de colores preferida.</CardDescription>
         </CardHeader>
         <CardContent>
-            <div className="grid grid-cols-6 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-3 xl:grid-cols-5 gap-3">
               {AVAILABLE_THEMES.map((t) => (
                 <TooltipProvider key={t.value} delayDuration={100}>
                     <Tooltip>
@@ -570,21 +570,25 @@ function ProfilePageContent() {
                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                         <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
                             <ProfileCard user={user} onAvatarChange={handleAvatarChange} onAvatarRemove={handleAvatarRemove} isUploading={isUploading} uploadProgress={uploadProgress} />
+                             <PrivacyCard user={user} updateUser={updateUser} />
                         </div>
-                        <div className="lg:col-span-2 space-y-6">
-                            <InfoCard user={user} updateUser={updateUser} />
-                            <PrivacyCard user={user} updateUser={updateUser} />
-                            <ThemeSelectorCard />
-                            <SecurityCard 
-                                user={user} 
-                                newPassword={newPassword}
-                                setNewPassword={setNewPassword}
-                                confirmPassword={confirmPassword}
-                                setConfirmPassword={setConfirmPassword}
-                                currentPassword={currentPassword}
-                                setCurrentPassword={setCurrentPassword}
-                            />
-                             <TwoFactorCard user={user} updateUser={updateUser} />
+                        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                            <div className="space-y-6">
+                                <InfoCard user={user} updateUser={updateUser} />
+                                <SecurityCard 
+                                    user={user} 
+                                    newPassword={newPassword}
+                                    setNewPassword={setNewPassword}
+                                    confirmPassword={confirmPassword}
+                                    setConfirmPassword={setConfirmPassword}
+                                    currentPassword={currentPassword}
+                                    setCurrentPassword={setCurrentPassword}
+                                />
+                            </div>
+                            <div className="space-y-6">
+                                <ThemeSelectorCard />
+                                <TwoFactorCard user={user} updateUser={updateUser} />
+                            </div>
                         </div>
                     </div>
                 </TabsContent>
