@@ -4,46 +4,46 @@
 
 @layer base {
   :root {
-    /* Paleta de colores base (Tema Claro por defecto) */
-    --background: 220 20% 99%;
-    --foreground: 220 15% 15%;
+    /* Paleta de colores base (Tema Claro) */
+    --background: 0 0% 100%;
+    --foreground: 220 15% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 220 15% 15%;
+    --card-foreground: 220 15% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 220 15% 15%;
-    --primary: 223 80% 65%;
+    --popover-foreground: 220 15% 10%;
+    --primary: 210 70% 55%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 10% 94%;
-    --secondary-foreground: 220 10% 25%;
-    --muted: 220 10% 95%;
-    --muted-foreground: 220 5% 45%;
-    --accent: 340 80% 70%;
+    --secondary: 220 10% 95%;
+    --secondary-foreground: 220 10% 30%;
+    --muted: 220 10% 97%;
+    --muted-foreground: 220 5% 50%;
+    --accent: 340 85% 65%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 75% 55%; /* Rojo más oscuro para mejor contraste */
+    --destructive: 0 75% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 10% 88%;
-    --input: 220 10% 92%;
-    --ring: 223 80% 55%;
+    --border: 220 10% 85%;
+    --input: 220 10% 90%;
+    --ring: 210 70% 50%;
     --radius: 0.75rem;
 
     /* Progresión armónica del tema principal */
-    --chart-1: 223 80% 80%; /* Más claro */
-    --chart-2: 223 80% 75%;
-    --chart-3: 223 80% 70%;
-    --chart-4: 223 80% 65%; /* Principal */
-    --chart-5: 223 80% 60%; /* Más oscuro */
-    
+    --chart-1: 210 70% 85%;
+    --chart-2: 210 70% 70%;
+    --chart-3: 210 70% 55%;
+    --chart-4: 210 70% 40%;
+    --chart-5: 210 70% 25%;
+
     /* Colores para eventos del calendario */
-    --event-blue: 210 80% 55%;
-    --event-green: 145 55% 42%;
-    --event-red: 0 75% 60%;
-    --event-orange: 25 80% 60%;
+    --event-blue: 210 80% 50%;
+    --event-green: 145 55% 35%;
+    --event-red: 0 75% 55%;
+    --event-orange: 25 80% 55%;
 
     /* Fuentes */
     --font-body: 'Inter', sans-serif;
     --font-headline: 'Space Grotesk', sans-serif;
     
-    /* Variables para la barra lateral (por defecto usa --card) */
+    /* Variables para la barra lateral */
     --sidebar-header-background: hsl(var(--card));
     --sidebar-body-background: hsl(var(--card));
     --sidebar-footer-background: hsl(var(--card));
@@ -55,32 +55,38 @@
   }
 
   [data-theme="dark"] {
-    --background: 220 15% 12%;
-    --foreground: 0 0% 98%;
-    --card: 220 15% 15%;
-    --card-foreground: 0 0% 98%;
-    --popover: 220 15% 8%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 223 75% 70%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 220 10% 22%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 220 10% 18%;
-    --muted-foreground: 220 5% 65%;
-    --accent: 340 70% 70%;
-    --accent-foreground: 0 0% 10%;
-    --destructive: 0 70% 55%; /* Rojo oscuro también para el tema oscuro */
-    --destructive-foreground: 0 0% 98%;
+    --background: 220 15% 9%;
+    --foreground: 0 0% 95%;
+    --card: 220 15% 12%;
+    --card-foreground: 0 0% 95%;
+    --popover: 220 15% 7%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 210 75% 65%;
+    --primary-foreground: 0 0% 10%;
+    --secondary: 220 10% 20%;
+    --secondary-foreground: 0 0% 90%;
+    --muted: 220 10% 15%;
+    --muted-foreground: 220 5% 60%;
+    --accent: 340 85% 75%;
+    --accent-foreground: 220 15% 10%;
+    --destructive: 0 80% 60%;
+    --destructive-foreground: 0 0% 95%;
     --border: 220 10% 25%;
-    --input: 220 10% 20%;
-    --ring: 223 75% 65%;
-    --chart-1: 223 75% 55%;
-    --chart-2: 223 75% 60%;
-    --chart-3: 223 75% 65%;
-    --chart-4: 223 75% 70%;
-    --chart-5: 223 75% 75%;
-    
-    /* Variables para la barra lateral en tema oscuro (usa --card) */
+    --input: 220 10% 18%;
+    --ring: 210 75% 60%;
+
+    --chart-1: 210 75% 85%;
+    --chart-2: 210 75% 75%;
+    --chart-3: 210 75% 65%;
+    --chart-4: 210 75% 55%;
+    --chart-5: 210 75% 45%;
+
+    --event-blue: 210 75% 65%;
+    --event-green: 145 55% 60%;
+    --event-red: 0 70% 65%;
+    --event-orange: 25 80% 65%;
+
+    /* Variables para la barra lateral en tema oscuro */
     --sidebar-header-background: var(--card);
     --sidebar-body-background: var(--card);
     --sidebar-footer-background: var(--card);
@@ -89,8 +95,8 @@
     --sidebar-accent: var(--primary);
     --sidebar-accent-foreground: var(--primary-foreground);
     --sidebar-border: var(--border);
-
   }
+}
 
   [data-theme="mint"] {
     --background: 210 60% 98%;
