@@ -55,7 +55,7 @@
     --sidebar-accent-foreground: hsl(var(--primary-foreground));
     --sidebar-border: 220 10% 90%; /* Borde más sutil que el border general */
 
-    --sidebar-hover-background: 220 10% 90%; /* Gris sutil para hover */
+    --sidebar-hover-background: 190 15% 95%;
     --sidebar-active-background: 260 70% 95%; /* Fondo muy claro de Púrpura */
     --sidebar-active-foreground: 260 70% 40%; /* El texto activo toma el Púrpura oscuro */
       }
