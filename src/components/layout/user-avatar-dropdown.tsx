@@ -32,14 +32,10 @@ function ThemeToggle() {
   const { user, updateUser } = useAuth();
 
   const handleThemeChange = async (newTheme: string) => {
-    // 1. Actualizar el tema visualmente de forma inmediata (optimista).
     setTheme(newTheme);
     
     if (user) {
-        // 2. Actualizar el estado local en el contexto sin causar recargas.
         updateUser({ theme: newTheme });
-
-        // 3. Guardar en el backend en segundo plano sin bloquear la UI.
         try {
             await fetch(`/api/users/${user.id}`, {
                 method: 'PUT',
@@ -48,8 +44,6 @@ function ThemeToggle() {
             });
         } catch (error) {
             console.error('Error guardando la preferencia de tema:', error);
-            // Opcional: podrías revertir el tema si falla el guardado,
-            // pero para una mejor experiencia de usuario, mantenemos la UI optimista.
         }
     }
   };
@@ -63,7 +57,7 @@ function ThemeToggle() {
       <DropdownMenuPortal>
         <DropdownMenuSubContent>
           <DropdownMenuRadioGroup value={theme} onValueChange={handleThemeChange}>
-            {AVAILABLE_THEMES.map((t) => (
+            {AVAILABLE_THEMES.filter(t => t.value !== 'light' && t.value !== 'dark').map((t) => (
              <DropdownMenuRadioItem key={t.value} value={t.value}>
               {t.label}
              </DropdownMenuRadioItem>
