@@ -10,8 +10,6 @@ import { getContrastingTextColor, hexToHslString } from '@/lib/utils';
 
 
 export const AVAILABLE_THEMES = [
-  { value: 'light', label: 'Claro', colors: ['#f8fafc', '#6366f1'], previewClass: 'bg-[#f8fafc] border border-slate-200' },
-  { value: 'dark', label: 'Oscuro', colors: ['#020617', '#a5b4fc'], previewClass: 'bg-[#020617] border border-slate-800' },
   { value: 'ruby', label: 'Rubí', colors: ['#fff1f2', '#e11d48'], previewClass: 'bg-[#e11d48] border-red-200' },
   { value: 'sunset', label: 'Atardecer', colors: ['#fff7ed', '#fb923c'], previewClass: 'bg-[#fb923c] border-orange-200' },
   { value: 'ocean', label: 'Océano', colors: ['#eff6ff', '#3b82f6'], previewClass: 'bg-[#3b82f6] border-blue-200' },

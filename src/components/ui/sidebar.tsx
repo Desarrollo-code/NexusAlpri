@@ -244,9 +244,8 @@ export const SidebarContent = () => {
 
 
 export const SidebarFooter = () => {
-    const { logout, settings } = useAuth();
+    const { settings } = useAuth();
     const { isCollapsed, toggleSidebar, isMobile } = useSidebar();
-    const { theme, setTheme } = useTheme();
 
     if (isMobile) return null;
 
@@ -257,27 +256,6 @@ export const SidebarFooter = () => {
                     Versión: {settings.projectVersion}
                 </div>
              )}
-             {!isCollapsed && (
-                <div className="flex items-center justify-between px-3 py-2">
-                     <Label htmlFor="theme-toggle" className="text-sidebar-muted-foreground text-sm">Modo Oscuro</Label>
-                     <Switch 
-                        id="theme-toggle"
-                        checked={theme === 'dark'}
-                        onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
-                     />
-                </div>
-             )}
-            <Button
-                onClick={logout}
-                variant="ghost"
-                className={cn(
-                    "w-full text-sidebar-muted-foreground hover:bg-red-500/20 hover:text-red-400",
-                    isCollapsed ? 'justify-center p-0 h-10' : 'justify-start gap-3 p-3'
-                )}
-            >
-                <GradientIcon icon={LogOut} />
-                {!isCollapsed && <span className="font-semibold">Cerrar Sesión</span>}
-            </Button>
             <Button
                 onClick={toggleSidebar}
                 variant="ghost"
