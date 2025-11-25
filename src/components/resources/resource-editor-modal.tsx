@@ -37,6 +37,7 @@ import { cn } from '@/lib/utils';
 import { Separator } from '../ui/separator';
 import { FileIcon } from '../ui/file-icon';
 import { RichTextEditor } from '../ui/rich-text-editor';
+import { QuizViewer } from '../quiz-viewer';
 
 interface ResourceEditorModalProps {
   isOpen: boolean;
@@ -55,6 +56,18 @@ interface UploadState {
   url?: string;
 }
 
+const getInitials = (name?: string | null): string => {
+  if (!name) return '??';
+  const names = name.trim().split(/\s+/);
+  if (names.length > 1 && names[0] && names[names.length - 1]) {
+    return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+  }
+  if (names.length === 1 && names[0]) {
+    return names[0].substring(0, 2).toUpperCase();
+  }
+  return name.substring(0, 2).toUpperCase();
+};
+
 export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSave }: ResourceEditorModalProps) {
   const { toast } = useToast();
   const { user, settings } = useAuth();
@@ -66,6 +79,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   const [category, setCategory] = useState('');
   const [isPublic, setIsPublic] = useState(true);
   const [sharedWithUserIds, setSharedWithUserIds] = useState<string[]>([]);
+  const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
   const [expiresAt, setExpiresAt] = useState<Date | undefined>(undefined);
   const [resourceType, setResourceType] = useState<AppResourceType['type']>('DOCUMENT');
   const [externalLink, setExternalLink] = useState('');
@@ -90,6 +104,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     setCategory(settings?.resourceCategories[0] || 'General');
     setIsPublic(true);
     setSharedWithUserIds([]);
+    setCollaboratorIds([]);
     setExpiresAt(undefined);
     setResourceType('DOCUMENT');
     setExternalLink('');
@@ -108,6 +123,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         setCategory(resource.category || settings?.resourceCategories[0] || 'General');
         setIsPublic(resource.ispublic);
         setSharedWithUserIds(resource.sharedWith?.map(u => u.id) || []);
+        setCollaboratorIds(resource.collaborators?.map(u => u.id) || []);
         setExpiresAt(resource.expiresAt ? new Date(resource.expiresAt) : undefined);
         setResourceType(resource.type);
         setExternalLink(resource.type === 'EXTERNAL_LINK' ? resource.url || '' : '');
@@ -154,6 +170,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
           title: uploads.length > 1 ? upload.file.name.split('.').slice(0,-1).join('.') : title,
           filename: upload.file.name,
           description, category, isPublic, sharedWithUserIds: isPublic ? [] : sharedWithUserIds,
+          collaboratorIds: [], // Collaborators not supported for bulk upload yet
           expiresAt: expiresAt ? expiresAt.toISOString() : null,
           status: 'ACTIVE', type: 'DOCUMENT', url: result.url,
           size: upload.file.size, fileType: upload.file.type, parentId,
@@ -190,7 +207,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Si se están subiendo archivos, el guardado es por archivo. El botón solo cierra.
     if (uploads.length > 0 && resourceType === 'DOCUMENT') {
         const isStillUploading = uploads.some(u => u.status === 'uploading' || u.status === 'processing');
         if (isStillUploading) {
@@ -202,11 +218,11 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         return;
     }
     
-    // Guardado para Enlaces o Documentos Editables, o para editar un recurso existente.
     setIsSubmitting(true);
     const payload = {
       title, description, content, observations, category, isPublic, 
       sharedWithUserIds: isPublic ? [] : sharedWithUserIds,
+      collaboratorIds: isPublic ? [] : collaboratorIds,
       expiresAt: expiresAt ? expiresAt.toISOString() : null,
       status: resource?.status || 'ACTIVE', type: resourceType,
       url: resourceType === 'EXTERNAL_LINK' ? externalLink : resource?.url,
@@ -320,6 +336,14 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                   <ScrollArea className="h-32 border rounded-md p-2">
                       {filteredUsers.map(u => (
                           <div key={u.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={(c) => setSharedWithUserIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(u.name)}</AvatarFallback></Avatar>{u.name}</Label></div>
+                      ))}
+                  </ScrollArea></div>
+              )}
+              {resourceType === 'VIDEO_PLAYLIST' && (
+                 <div className="space-y-1.5"><Label>Colaboradores</Label><Input placeholder="Buscar usuarios..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
+                  <ScrollArea className="h-32 border rounded-md p-2">
+                      {filteredUsers.map(u => (
+                          <div key={u.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`collab-${u.id}`} checked={collaboratorIds.includes(u.id)} onCheckedChange={(c) => setCollaboratorIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`collab-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(u.name)}</AvatarFallback></Avatar>{u.name}</Label></div>
                       ))}
                   </ScrollArea></div>
               )}
