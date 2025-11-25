@@ -465,7 +465,10 @@ const ThemeSelectorCard = ({ className }: { className?: string }) => {
                                         theme === t.value ? 'border-primary ring-2 ring-primary/50' : 'border-border group-hover:border-primary/70'
                                     )}
                                 >
-                                    <div className={cn('h-14 w-full mx-1 rounded-md', t.previewClass)} />
+                                    <div className="flex items-center gap-1">
+                                        <div className="h-10 w-5 rounded" style={{backgroundColor: t.colors[0]}}/>
+                                        <div className="h-10 w-5 rounded" style={{backgroundColor: t.colors[1]}}/>
+                                    </div>
                                 </div>
                                 <p className="text-xs font-medium text-muted-foreground">{t.label}</p>
                             </div>
@@ -575,6 +578,9 @@ function ProfilePageContent() {
                         <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                             <div className="space-y-6">
                                 <InfoCard user={user} updateUser={updateUser} />
+                                <ThemeSelectorCard />
+                            </div>
+                            <div className="space-y-6">
                                 <SecurityCard 
                                     user={user} 
                                     newPassword={newPassword}
@@ -584,9 +590,6 @@ function ProfilePageContent() {
                                     currentPassword={currentPassword}
                                     setCurrentPassword={setCurrentPassword}
                                 />
-                            </div>
-                            <div className="space-y-6">
-                                <ThemeSelectorCard />
                                 <TwoFactorCard user={user} updateUser={updateUser} />
                             </div>
                         </div>
