@@ -54,10 +54,9 @@
     --sidebar-accent-foreground: hsl(var(--primary-foreground));
     --sidebar-border: 220 10% 90%; /* Borde más sutil que el border general */
 
-        /* Nuevas variables para estados interactivos en la barra lateral */
-    --sidebar-hover-background: 220 10% 90%; /* Fondo sutil para hover */
-    --sidebar-active-background: 210 70% 95%; /* Fondo muy suave del color primario para el activo */
-    --sidebar-active-foreground: hsl(var(--primary)); /* Texto del primario para el activo */
+    --sidebar-hover-background: 220 10% 90%; /* Gris sutil para hover */
+    --sidebar-active-background: 145 55% 90%; /* Fondo muy claro de Verde Esmeralda */
+    --sidebar-active-foreground: 145 55% 35%; /* El texto activo toma el Verde Esmeralda oscuro */
       }
 
   [data-theme="dark"] {
