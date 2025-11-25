@@ -581,6 +581,7 @@ function ProfilePageContent() {
                                 <ThemeSelectorCard />
                             </div>
                             <div className="space-y-6">
+                                <TwoFactorCard user={user} updateUser={updateUser} />
                                 <SecurityCard 
                                     user={user} 
                                     newPassword={newPassword}
@@ -590,7 +591,6 @@ function ProfilePageContent() {
                                     currentPassword={currentPassword}
                                     setCurrentPassword={setCurrentPassword}
                                 />
-                                <TwoFactorCard user={user} updateUser={updateUser} />
                             </div>
                         </div>
                     </div>

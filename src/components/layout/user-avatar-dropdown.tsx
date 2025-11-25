@@ -57,7 +57,7 @@ function ThemeToggle() {
       <DropdownMenuPortal>
         <DropdownMenuSubContent>
           <DropdownMenuRadioGroup value={theme} onValueChange={handleThemeChange}>
-            {AVAILABLE_THEMES.filter(t => t.value !== 'light' && t.value !== 'dark').map((t) => (
+            {AVAILABLE_THEMES.map((t) => (
              <DropdownMenuRadioItem key={t.value} value={t.value}>
               {t.label}
              </DropdownMenuRadioItem>
