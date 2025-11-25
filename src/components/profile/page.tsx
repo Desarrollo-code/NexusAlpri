@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Camera, User, KeyRound, Shield, Eye, EyeOff, Save, CheckCircle, Award, Star, HelpCircle, Trophy, Palette, Briefcase } from 'lucide-react';
+import { Loader2, Camera, User, KeyRound, Shield, Eye, EyeOff, Save, CheckCircle, Award, Star, HelpCircle, Trophy, Palette, Briefcase, Replace, XCircle } from 'lucide-react';
 import React, { useState, ChangeEvent, FormEvent, useEffect, useCallback, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { PasswordStrengthIndicator } from '@/components/password-strength-indicator';
@@ -30,6 +30,8 @@ import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { AVAILABLE_THEMES } from '@/components/theme-provider';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { UploadArea } from '@/components/ui/upload-area';
+import { Switch } from '@/components/ui/switch';
 
 
 // Gamification Level Calculation
@@ -108,6 +110,55 @@ const InfoCard = ({ user, updateUser }: { user: AppUser, updateUser: (data: Part
     );
 };
 
+const PrivacyCard = ({ user, updateUser }: { user: AppUser, updateUser: (data: Partial<AppUser>) => void }) => {
+    const { toast } = useToast();
+    const [showInLeaderboard, setShowInLeaderboard] = useState(user.showInLeaderboard !== false);
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handlePrivacyChange = async (checked: boolean) => {
+        setShowInLeaderboard(checked);
+        setIsSaving(true);
+        try {
+            const response = await fetch(`/api/users/${user.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ showInLeaderboard: checked }),
+            });
+            if (!response.ok) throw new Error((await response.json()).message);
+            updateUser({ showInLeaderboard: checked });
+            toast({ title: 'Preferencia guardada', description: 'Tu visibilidad en el ranking ha sido actualizada.' });
+        } catch (error) {
+            toast({ title: 'Error', description: (error as Error).message, variant: 'destructive' });
+            setShowInLeaderboard(!checked); // Revert on error
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Preferencias de Privacidad</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                        <Label htmlFor="show-leaderboard" className="text-base font-medium">Visibilidad en Ranking</Label>
+                        <p className="text-sm text-muted-foreground">Controla si tu nombre y puntuación aparecen en la tabla de clasificación.</p>
+                    </div>
+                     <Switch
+                        id="show-leaderboard"
+                        checked={showInLeaderboard}
+                        onCheckedChange={handlePrivacyChange}
+                        disabled={isSaving}
+                    />
+                </div>
+            </CardContent>
+        </Card>
+    );
+};
+
+
 const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setConfirmPassword, currentPassword, setCurrentPassword }: 
 { user: AppUser, newPassword: any, setNewPassword: any, confirmPassword: any, setConfirmPassword: any, currentPassword: any, setCurrentPassword: any }) => {
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -154,7 +205,7 @@ const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setC
                         <div className="relative">
                             <Input id="current-password" type={showCurrentPassword ? "text" : "password"} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required disabled={isSavingPassword} autoComplete="current-password" />
                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowCurrentPassword(!showCurrentPassword)}>
-                                {showCurrentPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
+                                {showCurrentPassword ? <Eye className="h-5 w-5"/> : <EyeOff className="h-5 w-5"/>}
                             </Button>
                         </div>
                     </div>
@@ -163,7 +214,7 @@ const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setC
                         <div className="relative">
                              <Input id="new-password" type={showNewPassword ? "text" : "password"} value={newPassword} onChange={e => setNewPassword(e.target.value)} required disabled={isSavingPassword} autoComplete="new-password"/>
                              <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowNewPassword(!showNewPassword)}>
-                                {showNewPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
+                                {showNewPassword ? <Eye className="h-5 w-5"/> : <EyeOff className="h-5 w-5"/>}
                             </Button>
                         </div>
                     </div>
@@ -173,7 +224,7 @@ const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setC
                          <div className="relative">
                             <Input id="confirm-password" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required disabled={isSavingPassword} autoComplete="new-password"/>
                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                                {showConfirmPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
+                                {showConfirmPassword ? <Eye className="h-5 w-5"/> : <EyeOff className="h-5 w-5"/>}
                             </Button>
                         </div>
                     </div>
@@ -309,7 +360,7 @@ const TwoFactorCard = ({ user, updateUser }: { user: AppUser, updateUser: (data:
     );
 };
 
-const ProfileCard = ({ user, onAvatarChange, isUploading, uploadProgress }: { user: AppUser, onAvatarChange: (e: ChangeEvent<HTMLInputElement>) => void, isUploading: boolean, uploadProgress: number }) => {
+const ProfileCard = ({ user, onAvatarChange, onAvatarRemove, isUploading, uploadProgress }: { user: AppUser, onAvatarChange: (file: File | null) => void, onAvatarRemove: () => void, isUploading: boolean, uploadProgress: number }) => {
     const { level, currentXPInLevel, xpForNextLevel, progressPercentage } = useMemo(() => calculateLevel(user?.xp || 0), [user?.xp]);
     const { user: currentUser } = useAuth();
     
@@ -320,15 +371,23 @@ const ProfileCard = ({ user, onAvatarChange, isUploading, uploadProgress }: { us
         <div className="card__img">
             <div className="card__img--gradient" />
         </div>
-        <div className="card__avatar">
-            <Avatar className="avatar">
-                 <AvatarImage src={user.avatar || undefined} />
-                 <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
-            </Avatar>
-            <label htmlFor="avatar-upload" className="absolute bottom-1 right-1 bg-background text-foreground rounded-full p-1.5 cursor-pointer hover:bg-muted transition-colors shadow-md">
-                <Camera className="h-5 w-5" />
-                <input id="avatar-upload" type="file" className="hidden" onChange={onAvatarChange} accept="image/*" disabled={isUploading}/>
-            </label>
+        <div className="card__avatar group">
+           <UploadArea
+                onFileSelect={onAvatarChange}
+                className="w-32 h-32 rounded-full border-4 border-background p-0"
+                inputId="avatar-upload-dnd"
+                disabled={isUploading}
+            >
+                <Avatar className="h-full w-full">
+                     <AvatarImage src={user.avatar || undefined} />
+                     <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
+                </Avatar>
+            </UploadArea>
+            {user.avatar && (
+                 <button onClick={onAvatarRemove} className="absolute top-1 right-1 z-20 bg-destructive text-destructive-foreground rounded-full p-1.5 cursor-pointer hover:bg-destructive/80 transition-colors shadow-md opacity-0 group-hover:opacity-100">
+                    <XCircle className="h-5 w-5" />
+                </button>
+            )}
         </div>
          <CardContent className="px-6 pb-6 pt-4">
             <CardTitle className="text-2xl font-bold font-headline flex items-center justify-center gap-2">
@@ -394,7 +453,7 @@ const ThemeSelectorCard = ({ className }: { className?: string }) => {
           <CardDescription>Elige tu paleta de colores preferida.</CardDescription>
         </CardHeader>
         <CardContent>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {AVAILABLE_THEMES.map((t) => (
                 <TooltipProvider key={t.value} delayDuration={100}>
                     <Tooltip>
@@ -406,7 +465,10 @@ const ThemeSelectorCard = ({ className }: { className?: string }) => {
                                         theme === t.value ? 'border-primary ring-2 ring-primary/50' : 'border-border group-hover:border-primary/70'
                                     )}
                                 >
-                                    <div className={cn('h-14 w-full mx-1 rounded-md', t.previewClass)} />
+                                     <div className="flex items-center gap-1">
+                                        <div className="h-10 w-5 rounded" style={{backgroundColor: t.colors[0]}}/>
+                                        <div className="h-10 w-5 rounded" style={{backgroundColor: t.colors[1]}}/>
+                                    </div>
                                 </div>
                                 <p className="text-xs font-medium text-muted-foreground">{t.label}</p>
                             </div>
@@ -441,10 +503,8 @@ function ProfilePageContent() {
         startTour('profile', profileTour);
     }, [setPageTitle, startTour]);
 
-    const handleAvatarChange = async (e: ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0] && user) {
-            const file = e.target.files[0];
-            
+    const handleAvatarChange = async (file: File | null) => {
+        if (file && user) {
             setIsUploading(true);
             setUploadProgress(0);
 
@@ -471,6 +531,26 @@ function ProfilePageContent() {
         }
     };
     
+    const handleAvatarRemove = async () => {
+        if (!user) return;
+        setIsUploading(true);
+        try {
+             const updateUserResponse = await fetch(`/api/users/${user.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ avatar: null }),
+            });
+            if (!updateUserResponse.ok) throw new Error('No se pudo eliminar la imagen de perfil.');
+            const updatedUser = await updateUserResponse.json();
+            updateUser(updatedUser);
+            toast({ title: "Avatar Eliminado" });
+        } catch (error) {
+             toast({ title: 'Error', description: (error as Error).message, variant: 'destructive' });
+        } finally {
+             setIsUploading(false);
+        }
+    }
+    
     if (!user) return <Loader2 className="h-8 w-8 animate-spin" />;
     
     return (
@@ -492,21 +572,26 @@ function ProfilePageContent() {
                 <TabsContent value="profile" className="mt-6">
                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                         <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
-                            <ProfileCard user={user} onAvatarChange={handleAvatarChange} isUploading={isUploading} uploadProgress={uploadProgress} />
+                            <ProfileCard user={user} onAvatarChange={handleAvatarChange} onAvatarRemove={handleAvatarRemove} isUploading={isUploading} uploadProgress={uploadProgress} />
+                             <PrivacyCard user={user} updateUser={updateUser} />
                         </div>
-                        <div className="lg:col-span-2 space-y-6">
-                            <InfoCard user={user} updateUser={updateUser} />
-                            <ThemeSelectorCard />
-                            <SecurityCard 
-                                user={user} 
-                                newPassword={newPassword}
-                                setNewPassword={setNewPassword}
-                                confirmPassword={confirmPassword}
-                                setConfirmPassword={setConfirmPassword}
-                                currentPassword={currentPassword}
-                                setCurrentPassword={setCurrentPassword}
-                            />
-                             <TwoFactorCard user={user} updateUser={updateUser} />
+                        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                            <div className="space-y-6">
+                                <InfoCard user={user} updateUser={updateUser} />
+                                <TwoFactorCard user={user} updateUser={updateUser} />
+                            </div>
+                            <div className="space-y-6">
+                                <ThemeSelectorCard />
+                                <SecurityCard 
+                                    user={user} 
+                                    newPassword={newPassword}
+                                    setNewPassword={setNewPassword}
+                                    confirmPassword={confirmPassword}
+                                    setConfirmPassword={setConfirmPassword}
+                                    currentPassword={currentPassword}
+                                    setCurrentPassword={setCurrentPassword}
+                                />
+                            </div>
                         </div>
                     </div>
                 </TabsContent>

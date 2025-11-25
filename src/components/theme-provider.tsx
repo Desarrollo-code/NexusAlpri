@@ -10,16 +10,18 @@ import { getContrastingTextColor, hexToHslString } from '@/lib/utils';
 
 
 export const AVAILABLE_THEMES = [
-  { value: 'light', label: 'Claro (Personalizado)', colors: ['#f8fafc', '#6366f1'], previewClass: 'bg-[#f8fafc] border border-slate-200' },
-  { value: 'dark', label: 'Oscuro (Personalizado)', colors: ['#020617', '#a5b4fc'], previewClass: 'bg-[#020617] border border-slate-800' },
-  { value: 'mint', label: 'Menta Fresca', colors: ['#f0fdfa', '#10b981'], previewClass: 'bg-[#f0fdfa] border border-emerald-200' },
-  { value: 'sunset', label: 'Atardecer Suave', colors: ['#fff7ed', '#fb923c'], previewClass: 'bg-[#fff7ed] border border-orange-200' },
-  { value: 'lavender', label: 'Cielo Lavanda', colors: ['#f5f3ff', '#8b5cf6'], previewClass: 'bg-[#f5f3ff] border border-violet-200' },
-  { value: 'ocean', label: 'Océano Tranquilo', colors: ['#eff6ff', '#3b82f6'], previewClass: 'bg-[#eff6ff] border border-blue-200' },
-  { value: 'rose', label: 'Pétalo de Rosa', colors: ['#fff1f2', '#f43f5e'], previewClass: 'bg-[#fff1f2] border border-rose-200' },
-  { value: 'forest', label: 'Bosque Profundo', colors: ['#f0fff4', '#228b22'], previewClass: 'bg-[#f0fff4] border border-green-200' },
-  { value: 'sky', label: 'Cielo Despejado', colors: ['#f0f9ff', '#0ea5e9'], previewClass: 'bg-[#f0f9ff] border border-sky-200' },
-  { value: 'ruby', label: 'Rubí Intenso', colors: ['#fff1f2', '#e11d48'], previewClass: 'bg-[#fff1f2] border border-red-200' },
+  { value: 'light', label: 'Claro', colors: ['#f8fafc', '#6366f1'], previewClass: 'bg-[#f8fafc] border border-slate-200' },
+  { value: 'dark', label: 'Oscuro', colors: ['#020617', '#a5b4fc'], previewClass: 'bg-[#020617] border border-slate-800' },
+  { value: 'rose', label: 'Rosa', colors: ['#fff1f2', '#f43f5e'], previewClass: 'bg-[#f43f5e] border-rose-200' },
+  { value: 'ruby', label: 'Rubí', colors: ['#fff1f2', '#e11d48'], previewClass: 'bg-[#e11d48] border-red-200' },
+  { value: 'sunset', label: 'Naranja', colors: ['#fff7ed', '#fb923c'], previewClass: 'bg-[#fb923c] border-orange-200' },
+  { value: 'sky', label: 'Cielo', colors: ['#f0f9ff', '#0ea5e9'], previewClass: 'bg-[#0ea5e9] border-sky-200' },
+  { value: 'ocean', label: 'Océano', colors: ['#eff6ff', '#3b82f6'], previewClass: 'bg-[#3b82f6] border-blue-200' },
+  { value: 'lavender', label: 'Lavanda', colors: ['#f5f3ff', '#8b5cf6'], previewClass: 'bg-[#8b5cf6] border-violet-200' },
+  { value: 'mint', label: 'Menta', colors: ['#f0fdfa', '#10b981'], previewClass: 'bg-[#10b981] border-emerald-200' },
+  { value: 'forest', label: 'Bosque', colors: ['#f0fff4', '#228b22'], previewClass: 'bg-[#228b22] border-green-200' },
+  { value: 'slate', label: 'Pizarra', colors: ['#f1f5f9', '#64748b'], previewClass: 'bg-[#64748b] border-slate-300' },
+  { value: 'gradient', label: 'Gradiente', colors: ['#8b5cf6', '#ec4899'], previewClass: 'bg-gradient-to-r from-violet-500 to-pink-500' },
 ];
 
 /**
