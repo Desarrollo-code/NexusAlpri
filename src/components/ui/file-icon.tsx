@@ -1,6 +1,6 @@
 // src/components/ui/file-icon.tsx
 'use client';
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { getFileTypeDetails } from '@/lib/resource-utils';
 import Image from 'next/image';
@@ -16,24 +16,54 @@ interface FileIconProps {
 export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUrl, displayMode = 'grid' }) => {
   const { label, bgColor } = getFileTypeDetails(type);
   const isYoutube = type.toLowerCase() === 'youtube';
+  const isVideo = type.toLowerCase() === 'mp4' || type.toLowerCase() === 'webm';
+  
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoThumbnail, setVideoThumbnail] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isVideo && thumbnailUrl && !thumbnailUrl.startsWith('blob:')) {
+      const video = videoRef.current;
+      if (video) {
+        video.onloadeddata = () => {
+          video.currentTime = 1; // Seek to 1 second
+        };
+        video.onseeked = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            setVideoThumbnail(canvas.toDataURL('image/jpeg'));
+          }
+        };
+      }
+    }
+  }, [isVideo, thumbnailUrl]);
+  
+  const finalThumbnailUrl = isYoutube ? `https://i.ytimg.com/vi/${getYoutubeVideoId(thumbnailUrl)}/hqdefault.jpg` : videoThumbnail || thumbnailUrl;
+
 
   if (displayMode === 'list') {
     return (
       <div
-        className={cn("w-10 h-10 flex items-center justify-center rounded-lg overflow-hidden group relative", className)}
+        className={cn("w-full h-full flex items-center justify-center rounded-lg overflow-hidden group relative", className)}
       >
-        {thumbnailUrl && isYoutube ? (
+        {finalThumbnailUrl ? (
           <>
             <Image
-              src={thumbnailUrl}
+              src={finalThumbnailUrl}
               alt={label}
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-105"
               quality={75}
             />
-            <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-colors">
-              <PlayCircle className="h-6 w-6 text-white/80 drop-shadow-lg transition-transform duration-300 group-hover:scale-110" />
-            </div>
+            {(isVideo || isYoutube) && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-colors">
+                <PlayCircle className="h-6 w-6 text-white/80 drop-shadow-lg transition-transform duration-300 group-hover:scale-110" />
+              </div>
+            )}
           </>
         ) : (
           <div
@@ -45,20 +75,16 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
             </span>
           </div>
         )}
+        {isVideo && thumbnailUrl && !videoThumbnail && <video ref={videoRef} src={thumbnailUrl} muted playsInline crossOrigin="anonymous" className="hidden" />}
       </div>
     );
   }
 
-  // --- Vista de Cuadrícula (Grid View) con el nuevo estilo ---
   return (
     <div
-      className={cn(
-        "relative w-20 h-24 rounded-lg overflow-hidden group shadow-sm",
-        className
-      )}
-      style={{ backgroundColor: thumbnailUrl ? 'hsl(var(--muted))' : bgColor }}
+      className={cn("relative w-20 h-24 rounded-lg overflow-hidden group shadow-sm", className)}
+      style={{ backgroundColor: finalThumbnailUrl ? 'hsl(var(--muted))' : bgColor }}
     >
-      {/* Dog-ear effect */}
       <div 
         className="absolute top-0 right-0 w-0 h-0 border-solid border-transparent"
         style={{
@@ -67,20 +93,19 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
             filter: 'drop-shadow(-1px 1px 1px rgba(0,0,0,0.1))'
         }}
       />
-      
-      {/* Content */}
       <div className="flex flex-col items-center justify-center h-full">
-        {thumbnailUrl ? (
+        {finalThumbnailUrl ? (
           <div className="relative w-full h-full">
-             <Image src={thumbnailUrl} alt={label} fill className="object-cover"/>
-             <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-               <PlayCircle className="h-8 w-8 text-white/80 drop-shadow-lg transition-transform duration-300 group-hover:scale-110" />
-             </div>
+             <Image src={finalThumbnailUrl} alt={label} fill className="object-cover"/>
+             {(isVideo || isYoutube) && (
+                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                    <PlayCircle className="h-8 w-8 text-white/80 drop-shadow-lg transition-transform duration-300 group-hover:scale-110" />
+                </div>
+             )}
           </div>
         ) : null}
+         {isVideo && thumbnailUrl && !videoThumbnail && <video ref={videoRef} src={thumbnailUrl} muted playsInline crossOrigin="anonymous" className="hidden" />}
       </div>
-
-      {/* Label */}
       <div className="absolute bottom-0 left-0 right-0 h-7 px-1 flex items-center justify-center bg-black/10">
         <span className="text-xs font-bold uppercase tracking-wider text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>
           {label}

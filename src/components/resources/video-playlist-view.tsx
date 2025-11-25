@@ -5,7 +5,7 @@ import type { AppResourceType } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
-import { PlayCircle, Folder, Video, Edit, ListVideo } from 'lucide-react';
+import { PlayCircle, Folder, Video, Edit, ListVideo, BrainCircuit } from 'lucide-react';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '../ui/input';
-import { BrainCircuit } from 'lucide-react';
+import { FileIcon } from '../ui/file-icon';
 
 interface PlaylistItemProps {
   resource: AppResourceType;
@@ -29,7 +29,7 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({ resource, onSelect, isActiv
   const { toast } = useToast();
 
   const youtubeId = getYoutubeVideoId(resource.url);
-  const thumbnailUrl = youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null;
+  const fileExtension = youtubeId ? 'youtube' : (resource.fileType?.split('/')[1] || resource.url?.split('.').pop() || 'file');
 
   const handleTitleSave = async () => {
     if (title.trim() === resource.title) {
@@ -70,24 +70,14 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({ resource, onSelect, isActiv
         isActive ? "bg-primary/10 border-primary shadow-lg" : "border-transparent hover:bg-muted"
       )}
     >
-      <div className="relative w-28 h-16 bg-muted rounded-md overflow-hidden flex-shrink-0">
-        {thumbnailUrl ? (
-          <Image
-            src={thumbnailUrl}
-            alt={resource.title}
-            fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-            quality={75}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Video className="h-8 w-8 text-muted-foreground" />
-          </div>
-        )}
-        <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-          <PlayCircle className="h-8 w-8 text-white drop-shadow-lg transition-transform duration-300 group-hover:scale-110" />
+        <div className="w-28 h-16 bg-muted rounded-md overflow-hidden flex-shrink-0">
+             <FileIcon 
+                displayMode="list" 
+                type={fileExtension} 
+                thumbnailUrl={resource.url} 
+                className="w-full h-full"
+             />
         </div>
-      </div>
       <div className="flex-grow min-w-0">
         {isEditing ? (
              <Input 
@@ -97,7 +87,7 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({ resource, onSelect, isActiv
                 onKeyDown={handleKeyDown}
                 className="h-8 text-sm"
                 autoFocus
-                onClick={(e) => e.stopPropagation()} // Evitar que el clic en el input seleccione el video
+                onClick={(e) => e.stopPropagation()} 
              />
         ) : (
             <p 
@@ -108,7 +98,7 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({ resource, onSelect, isActiv
                 {resource.title}
             </p>
         )}
-        <p className="text-sm text-muted-foreground truncate">Por: {resource.uploaderName}</p>
+        <p className="text-sm text-muted-foreground truncate">Subido por: {resource.uploaderName}</p>
       </div>
        {isActive && (
             <div className="absolute top-1/2 -translate-y-1/2 right-2 bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full shadow">
