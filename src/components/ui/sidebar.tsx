@@ -90,9 +90,9 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       )}
       <aside
         className={cn(
-          "group fixed top-0 left-0 z-50 h-screen flex flex-col transition-all duration-300 ease-in-out bg-card",
+          "group fixed top-0 left-0 z-50 h-screen flex flex-col transition-all duration-300 ease-in-out",
           // Efecto de borde difuminado
-          "after:content-[''] after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gradient-to-b after:from-transparent via-border/30 to-transparent",
+          "after:content-[''] after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gradient-to-b after:from-transparent via-sidebar-border/30 to-transparent",
           isMobile ? `w-72 ${mobileClasses}` : desktopClasses
         )}
       >
@@ -117,8 +117,8 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         "flex items-center gap-3 rounded-lg transition-all duration-300 font-semibold group/menu-item relative",
         isCollapsed ? "justify-center h-12 w-12" : "p-3",
         isActive
-          ? "bg-primary text-primary-foreground shadow-inner"
-          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          ? "bg-primary/10 text-primary shadow-inner"
+          : "text-sidebar-muted-foreground hover:bg-muted hover:text-foreground"
       )}>
         <GradientIcon icon={item.icon} isActive={isActive} />
         {!isCollapsed && <span className="whitespace-nowrap">{item.label}</span>}
@@ -152,7 +152,7 @@ const SidebarSectionHeader = ({ item, isActive }: { item: NavItem, isActive: boo
       <div className={cn(
           "flex items-center justify-between w-full rounded-lg transition-colors group",
           isCollapsed ? 'h-12 w-12 justify-center' : 'p-3',
-          isActive ? "bg-muted text-foreground" : "hover:bg-muted text-muted-foreground hover:text-foreground"
+          isActive ? "bg-muted text-foreground" : "hover:bg-muted text-sidebar-muted-foreground hover:text-foreground"
       )}>
           <div className="flex items-center gap-3">
               <GradientIcon icon={item.icon} isActive={isActive} />
@@ -231,7 +231,7 @@ export const SidebarContent = () => {
 
     return (
         <TooltipProvider delayDuration={100}>
-            <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-1 thin-scrollbar">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-1 thin-scrollbar bg-[hsl(var(--sidebar-body-background))]">
                 {navItems.map((item) => {
                     if (item.children && item.children.length > 0) {
                         return <SectionItem key={item.id} item={item} />;
@@ -251,9 +251,9 @@ export const SidebarFooter = () => {
     if (isMobile) return null;
 
     return (
-        <div className="p-3 shadow-[0_-4px_6px_-2px_hsl(var(--border)/0.5)] flex flex-col gap-2 bg-background z-10">
+        <div className="p-3 shadow-[0_-4px_6px_-2px_hsla(var(--sidebar-border),0.5)] flex flex-col gap-2 bg-[hsl(var(--sidebar-footer-background))] z-10">
              {!isCollapsed && settings?.projectVersion && (
-                <div className="px-3 py-2 text-center text-xs text-muted-foreground">
+                <div className="px-3 py-2 text-center text-xs text-sidebar-foreground">
                     Versión: {settings.projectVersion}
                 </div>
              )}
@@ -261,7 +261,7 @@ export const SidebarFooter = () => {
                 onClick={logout}
                 variant="ghost"
                 className={cn(
-                    "w-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive",
+                    "w-full text-sidebar-foreground hover:bg-red-500/20 hover:text-red-400",
                     isCollapsed ? 'justify-center p-0 h-10' : 'justify-start gap-3 p-3'
                 )}
             >
@@ -272,7 +272,7 @@ export const SidebarFooter = () => {
                 onClick={toggleSidebar}
                 variant="ghost"
                 size="icon"
-                className="w-full h-10 text-muted-foreground hover:bg-muted hover:text-foreground"
+                className="w-full h-10 text-sidebar-foreground hover:bg-black/10 hover:text-sidebar-foreground"
             >
                 {isCollapsed ? <ChevronRightCircle className="h-6 w-6"/> : <ChevronLeftCircle className="h-6 w-6"/>}
             </Button>
