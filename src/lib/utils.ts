@@ -2,6 +2,12 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import type { MotivationalMessageTriggerType } from '@/types';
+import { colord, extend } from 'colord';
+import lchPlugin from 'colord/plugins/lch';
+
+// Registra el plugin LCH para poder usarlo.
+extend([lchPlugin]);
+
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -142,23 +148,27 @@ const stringToHash = (str: string): number => {
     return Math.abs(hash);
 };
 
-const PALETTE = [
-    { light: '#e0f2f1', medium: '#4db6ac', dark: '#004d40' },
-    { light: '#e3f2fd', medium: '#64b5f6', dark: '#1e88e5' },
-    { light: '#f3e5f5', medium: '#ba68c8', dark: '#6a1b9a' },
-    { light: '#fff3e0', medium: '#ffb74d', dark: '#e65100' },
-    { light: '#e8f5e9', medium: '#81c784', dark: '#2e7d32' },
-];
-
 export const getProcessColors = (id: string) => {
     const hash = stringToHash(id);
-    const colors = PALETTE[hash % PALETTE.length];
+    const primaryColorVar = typeof window !== 'undefined' 
+        ? getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()
+        : '210 90% 55%'; // Fallback a azul
 
+    const baseColor = colord(`hsl(${primaryColorVar})`);
+    
+    // Generar variaciones de color basadas en el hash del ID del proceso
+    const hueVariation = (hash % 60) - 30; // -30 a +30
+    const newHue = (baseColor.toLch().h + hueVariation + 360) % 360;
+
+    // Generar un color de fondo claro y uno de texto oscuro dentro del mismo tono
+    const lightColor = baseColor.lch({ l: 92, c: 15, h: newHue }).toRgbString();
+    const darkColor = baseColor.lch({ l: 30, c: 40, h: newHue }).toRgbString();
+    
     return {
-        bgColor: `bg-[${colors.light}]`,
-        textColor: 'text-black', // Assuming all light backgrounds have enough contrast with black
-        borderColor: `border-[${colors.medium}]`,
-        raw: colors
+        raw: {
+            light: lightColor,
+            dark: darkColor,
+        }
     };
 };
 
