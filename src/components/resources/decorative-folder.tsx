@@ -75,7 +75,7 @@ const getUniqueFolderStyle = (id: number | string): React.CSSProperties => {
 
     // Variar el matiz (hue) ligeramente para crear variedad entre carpetas.
     const hueVariation = (numericId % 30) - 15; // Variación entre -15 y 15
-    const newHue = baseColor.hue() + hueVariation;
+    const newHue = baseColor.toLch().h + hueVariation;
 
     // Crear un color de fondo más claro y menos saturado.
     const backgroundColor = baseColor
