@@ -13,11 +13,12 @@ import { Identicon } from '../ui/identicon';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '../ui/tooltip';
 import { useDraggable } from '@dnd-kit/core';
 import { FileIcon } from '../ui/file-icon';
-import { getYoutubeVideoId from '@/lib/resource-utils';
+import { getYoutubeVideoId } from '@/lib/resource-utils';
 import { Badge } from '../ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Card, CardHeader, CardContent } from '../ui/card';
 import { TableRow, TableCell } from '../ui/table';
+import { Table, TableBody, TableHead, TableHeader } from '@/components/ui/table';
 import { Checkbox } from '../ui/checkbox';
 import Link from 'next/link';
 
@@ -190,4 +191,3 @@ const SingleRowItem = ({ resource, onSelect, onEdit, onDelete, onRestore, onTogg
         </TableRow>
     )
 }
-

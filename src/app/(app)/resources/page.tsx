@@ -25,13 +25,14 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import { VideoPlaylistView } from '@/components/resources/video-playlist-view';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Checkbox } from '../ui/checkbox';
+import { Checkbox } from '@/components/ui/checkbox';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Label } from '../ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { DateRangePicker } from '../ui/date-range-picker';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { startOfDay, subDays } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
+import { useDroppable } from '@dnd-kit/core';
 
 // --- MAIN PAGE COMPONENT ---
 export default function ResourcesPage() {
@@ -446,4 +447,3 @@ export default function ResourcesPage() {
     </DndContext>
   );
 }
-
