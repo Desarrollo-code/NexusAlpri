@@ -66,24 +66,24 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({ resource, onSelect, isActiv
     <div
       onClick={onSelect}
       className={cn(
-        "flex items-center gap-4 p-2 rounded-lg cursor-pointer transition-all duration-300 group relative border-2",
-        isActive ? "bg-primary/10 border-primary shadow-lg" : "border-transparent hover:bg-muted"
+        "flex items-start gap-3 p-2 rounded-lg cursor-pointer transition-all duration-200 group relative",
+        isActive ? "bg-primary/15 border-primary" : "border-transparent hover:bg-muted"
       )}
     >
-        <div className="w-28 h-16 bg-muted rounded-md overflow-hidden flex-shrink-0 relative">
-             <FileIcon 
+        <div className="w-32 h-20 bg-black rounded-md overflow-hidden flex-shrink-0 relative">
+            <FileIcon 
                 displayMode="list" 
                 type={fileExtension} 
                 thumbnailUrl={resource.url} 
                 className="w-full h-full"
              />
              {isActive && (
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                     <PlayCircle className="h-8 w-8 text-white" />
                 </div>
              )}
         </div>
-      <div className="flex-grow min-w-0">
+      <div className="flex-grow min-w-0 pt-1">
         {isEditing ? (
              <Input 
                 value={title}
@@ -96,14 +96,13 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({ resource, onSelect, isActiv
              />
         ) : (
             <p 
-                className="font-semibold truncate text-foreground"
+                className="font-semibold text-sm leading-tight line-clamp-2 text-foreground group-hover:text-primary"
                 title={resource.title}
-                onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
             >
                 {resource.title}
             </p>
         )}
-        <p className="text-sm text-muted-foreground truncate">Subido por: {resource.uploaderName}</p>
+        <p className="text-xs text-muted-foreground mt-1 truncate">Subido por: {resource.uploaderName}</p>
       </div>
     </div>
   );
@@ -179,29 +178,29 @@ export const VideoPlaylistView: React.FC<{ resources: AppResourceType[], folder:
 
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-      <div className="md:col-span-8 lg:col-span-8">
-         <Card className="shadow-lg overflow-hidden border-2">
-             <div className="w-full aspect-video bg-black">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="lg:col-span-8">
+         <Card className="shadow-2xl overflow-hidden border-2 bg-black">
+             <div className="w-full aspect-video">
                 <VideoPlayer resource={selectedVideo} />
              </div>
-             <CardContent className="p-4 bg-card">
-                <CardTitle className="truncate text-xl">{selectedVideo?.title || "Selecciona un video"}</CardTitle>
-                <CardDescription>Subido por: {selectedVideo?.uploaderName}</CardDescription>
+             <CardContent className="p-4">
+                <CardTitle className="truncate text-xl font-bold">{selectedVideo?.title || "Selecciona un video"}</CardTitle>
+                <CardDescription className="mt-1">Subido por: {selectedVideo?.uploaderName}</CardDescription>
              </CardContent>
          </Card>
       </div>
 
-      <div className="md:col-span-4 lg:col-span-4">
-        <Card className="w-full h-full shadow-lg flex flex-col">
-          <CardHeader>
+      <div className="lg:col-span-4">
+        <Card className="w-full h-full shadow-lg flex flex-col bg-card/90 backdrop-blur-sm">
+          <CardHeader className="p-4">
             <div className="flex justify-between items-start">
               <div className="flex-grow">
-                <div className="flex items-center gap-2">
-                   <div className="w-8 h-8 flex items-center justify-center bg-primary/10 text-primary rounded-lg"><ListVideo className="h-5 w-5"/></div>
+                <div className="flex items-center gap-3">
+                   <div className="w-10 h-10 flex items-center justify-center bg-primary/10 text-primary rounded-lg flex-shrink-0"><ListVideo className="h-6 w-6"/></div>
                    <div>
-                     <CardTitle className="text-xl font-bold font-headline">{folder.title}</CardTitle>
-                     <CardDescription>{playlistResources.length} videos en esta lista.</CardDescription>
+                     <CardTitle className="text-lg font-bold font-headline">{folder.title}</CardTitle>
+                     <CardDescription className="text-xs">{playlistResources.length} videos en esta lista.</CardDescription>
                    </div>
                 </div>
               </div>
@@ -216,7 +215,7 @@ export const VideoPlaylistView: React.FC<{ resources: AppResourceType[], folder:
           </CardHeader>
           <Separator />
           <CardContent className="p-2 flex-1 min-h-0">
-            <ScrollArea className="h-full">
+            <ScrollArea className="h-full max-h-[60vh] pr-2">
                 {playlistResources.length > 0 ? (
                     <div className="p-2 space-y-1">
                         {playlistResources.map((resource) => (

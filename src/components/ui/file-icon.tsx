@@ -2,7 +2,7 @@
 'use client';
 import React, { useEffect, useState, useRef } from 'react';
 import { cn } from '@/lib/utils';
-import { getFileTypeDetails } from '@/lib/resource-utils';
+import { getFileTypeDetails, getYoutubeVideoId } from '@/lib/resource-utils';
 import Image from 'next/image';
 import { PlayCircle } from 'lucide-react';
 
@@ -42,7 +42,7 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
     }
   }, [isVideo, thumbnailUrl]);
   
-  const finalThumbnailUrl = isYoutube ? `https://i.ytimg.com/vi/${getYoutubeVideoId(thumbnailUrl)}/hqdefault.jpg` : videoThumbnail || thumbnailUrl;
+  const finalThumbnailUrl = isYoutube ? `https://img.youtube.com/vi/${getYoutubeVideoId(thumbnailUrl)}/mqdefault.jpg` : videoThumbnail || thumbnailUrl;
 
 
   if (displayMode === 'list') {
