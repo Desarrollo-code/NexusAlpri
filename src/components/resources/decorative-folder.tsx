@@ -58,15 +58,16 @@ const patterns = [
  * basado en su ID y en el color primario del tema actual.
  */
 const getUniqueFolderStyle = (id: number | string): React.CSSProperties => {
+    // Utiliza la función centralizada para obtener los colores del tema.
     const { raw } = getProcessColors(String(id));
 
-    // Crear un color para el patrón que sea ligeramente más oscuro y sutil.
+    // El color para el patrón será el tono medio, más sutil.
     const patternColor = raw.medium;
     
     const numericId = typeof id === 'string' ? stringToHash(id) : id;
     const patternGenerator = patterns[numericId % patterns.length];
     
-    // Genera el estilo del patrón y lo combina con el color de fondo.
+    // Genera el estilo del patrón y lo combina con el color de fondo claro.
     const patternStyle = patternGenerator(patternColor);
     
     return {
@@ -76,8 +77,12 @@ const getUniqueFolderStyle = (id: number | string): React.CSSProperties => {
 };
 
 export const DecorativeFolder: React.FC<DecorativeFolderProps> = ({ patternId, className }) => {
-  // Obtenemos el objeto de estilo completo para la carpeta.
-  const style = getUniqueFolderStyle(patternId);
+  const [style, setStyle] = React.useState<React.CSSProperties>({});
+
+  React.useEffect(() => {
+    // La generación de estilos ahora puede ocurrir en el cliente de forma segura.
+    setStyle(getUniqueFolderStyle(patternId));
+  }, [patternId]);
 
   return (
     <div className={cn(className)} style={style} />
