@@ -26,12 +26,9 @@
     --ring: 250 65% 65%;
     --radius: 1rem;
 
-    /* Nueva paleta de colores para gráficos */
-    --chart-1: 221 83% 53%; /* blue */
-    --chart-2: 160 60% 45%; /* emerald */
-    --chart-3: 340 82% 52%; /* fuchsia */
-    --chart-4: 35 91% 55%;  /* amber */
-    --chart-5: 262 74% 50%; /* violet */
+    /* Fuentes */
+    --font-body: 'Inter', sans-serif;
+    --font-headline: 'Space Grotesk', sans-serif;
     
     /* Colores para eventos del calendario */
     --event-blue: 210 90% 55%;
@@ -39,109 +36,176 @@
     --event-red: 0 80% 60%;
     --event-orange: 25 90% 60%;
 
-    /* Fuentes */
-    --font-body: 'Inter', sans-serif;
-    --font-headline: 'Space Grotesk', sans-serif;
-    
-    /* Paleta para la barra lateral en tema claro (Basado en la imagen) */
-    --sidebar-header-background: 250 45% 35%;
-    --sidebar-body-background: 250 45% 45%;
-    --sidebar-footer-background: 250 45% 35%;
+    /* Paleta para la barra lateral en tema claro (por defecto) */
+    --sidebar-header-background: 250 45% 30%;
+    --sidebar-body-background: 250 45% 40%;
+    --sidebar-footer-background: 250 45% 30%;
     --sidebar-foreground: 250 50% 98%;
     --sidebar-muted-foreground: 250 30% 85%;
-    --sidebar-accent: 250 45% 40%;
+    --sidebar-accent: 250 45% 35%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 250 45% 40%;
+    --sidebar-border: 250 45% 35%;
+
+    /* Gráficos para tema claro por defecto */
+    --chart-1: 221 83% 53%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 340 82% 52%;
+    --chart-4: 35 91% 55%;
+    --chart-5: 262 74% 50%;
   }
 
+  /* TEMA OSCURO GENERAL */
+  .dark {
+    --background: 220 15% 8%;
+    --foreground: 220 10% 95%;
+    --card: 220 15% 12%;
+    --card-foreground: 220 10% 95%;
+    --popover: 220, 15%, 8%;
+    --popover-foreground: 220, 10%, 95%;
+    --secondary: 220 10% 20%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 220 10% 16%;
+    --muted-foreground: 220 5% 65%;
+    --destructive: 0 70% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 10% 20%;
+    --input: 220 10% 18%;
+  }
+  
+  /* ======================================================= */
+  /* ================= TEMAS PERSONALIZADOS ================= */
+  /* ======================================================= */
+
+  /* Tema Light (Personalizable desde DB) */
+  [data-theme="light"] {
+    /* Los colores primarios y de fondo se establecen desde el ThemeProvider */
+  }
+
+  /* Tema Dark (Personalizable desde DB) */
+  [data-theme="dark"] {
+    /* Los colores primarios y de fondo se establecen desde el ThemeProvider */
+  }
+  
+  /* Tema Rubí */
   [data-theme="ruby"] {
-    --sidebar-header-background: 350 40% 35%;
-    --sidebar-body-background: 350 40% 45%;
-    --sidebar-footer-background: 350 40% 35%;
-    --sidebar-foreground: 350 50% 98%;
-    --sidebar-muted-foreground: 350 30% 85%;
+    --primary: 350 70% 55%;
+    --accent: 15 80% 60%;
+    --sidebar-header-background: 350 40% 30%;
+    --sidebar-body-background: 350 70% 55%;
+    --sidebar-footer-background: 350 40% 30%;
     --sidebar-accent: 350 40% 40%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 350 40% 40%;
+    --chart-1: 350 70% 55%;
+    --chart-2: 0 60% 50%;
+    --chart-3: 330 80% 60%;
+    --chart-4: 20 70% 50%;
+    --chart-5: 355 65% 65%;
   }
-
+  
+  /* Tema Atardecer */
   [data-theme="sunset"] {
-    --sidebar-header-background: 20 50% 40%;
-    --sidebar-body-background: 20 50% 50%;
-    --sidebar-footer-background: 20 50% 40%;
-    --sidebar-foreground: 20 50% 98%;
-    --sidebar-muted-foreground: 20 30% 85%;
+    --primary: 25 85% 58%;
+    --accent: 45 90% 55%;
+    --sidebar-header-background: 20 50% 35%;
+    --sidebar-body-background: 25 85% 58%;
+    --sidebar-footer-background: 20 50% 35%;
     --sidebar-accent: 20 50% 45%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 20 50% 45%;
+    --chart-1: 25 85% 58%;
+    --chart-2: 40 80% 55%;
+    --chart-3: 15 75% 60%;
+    --chart-4: 50 90% 50%;
+    --chart-5: 30 70% 65%;
   }
   
+  /* Tema Océano */
   [data-theme="ocean"] {
-    --sidebar-header-background: 210 50% 35%;
-    --sidebar-body-background: 210 50% 45%;
-    --sidebar-footer-background: 210 50% 35%;
-    --sidebar-foreground: 210 50% 98%;
-    --sidebar-muted-foreground: 210 30% 85%;
+    --primary: 210 80% 55%;
+    --accent: 180 70% 45%;
+    --sidebar-header-background: 210 50% 30%;
+    --sidebar-body-background: 210 80% 55%;
+    --sidebar-footer-background: 210 50% 30%;
     --sidebar-accent: 210 50% 40%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 210 50% 40%;
+    --chart-1: 210 80% 55%;
+    --chart-2: 190 75% 50%;
+    --chart-3: 170 65% 45%;
+    --chart-4: 220 85% 60%;
+    --chart-5: 200 70% 58%;
   }
 
+  /* Tema Lavanda */
   [data-theme="lavender"] {
-    --sidebar-header-background: 255 45% 35%;
-    --sidebar-body-background: 255 45% 45%;
-    --sidebar-footer-background: 255 45% 35%;
-    --sidebar-foreground: 255 50% 98%;
-    --sidebar-muted-foreground: 255 30% 85%;
-    --sidebar-accent: 255 45% 40%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 255 45% 40%;
+    --primary: 255 70% 60%;
+    --accent: 280 75% 65%;
+    --sidebar-header-background: 255 45% 30%;
+    --sidebar-body-background: 255 70% 60%;
+    --sidebar-footer-background: 255 45% 30%;
+    --sidebar-accent: 255 45% 50%;
+    --chart-1: 255 70% 60%;
+    --chart-2: 270 65% 65%;
+    --chart-3: 240 75% 70%;
+    --chart-4: 285 70% 55%;
+    --chart-5: 250 80% 75%;
   }
   
+  /* Tema Menta */
   [data-theme="mint"] {
-    --sidebar-header-background: 160 50% 30%;
-    --sidebar-body-background: 160 50% 40%;
-    --sidebar-footer-background: 160 50% 30%;
-    --sidebar-foreground: 160 50% 98%;
-    --sidebar-muted-foreground: 160 30% 85%;
+    --primary: 160 70% 45%;
+    --accent: 145 65% 50%;
+    --sidebar-header-background: 160 50% 25%;
+    --sidebar-body-background: 160 70% 45%;
+    --sidebar-footer-background: 160 50% 25%;
     --sidebar-accent: 160 50% 35%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 160 50% 35%;
+    --chart-1: 160 70% 45%;
+    --chart-2: 140 60% 40%;
+    --chart-3: 170 75% 50%;
+    --chart-4: 150, 65%, 55%;
+    --chart-5: 180 55% 48%;
   }
   
+  /* Tema Bosque */
   [data-theme="forest"] {
-    --sidebar-header-background: 100 30% 30%;
-    --sidebar-body-background: 100 30% 40%;
-    --sidebar-footer-background: 100 30% 30%;
-    --sidebar-foreground: 100 30% 98%;
-    --sidebar-muted-foreground: 100 20% 85%;
+    --primary: 100 45% 45%;
+    --accent: 80 50% 40%;
+    --sidebar-header-background: 100 30% 25%;
+    --sidebar-body-background: 100 45% 45%;
+    --sidebar-footer-background: 100 30% 25%;
     --sidebar-accent: 100 30% 35%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 100 30% 35%;
+    --chart-1: 100 45% 45%;
+    --chart-2: 85 50% 40%;
+    --chart-3: 110 40% 50%;
+    --chart-4: 90 60% 35%;
+    --chart-5: 120 35% 55%;
   }
 
+  /* Tema Amanecer */
   [data-theme="sunrise"] {
-    --sidebar-header-background: 25 55% 40%;
-    --sidebar-body-background: 25 55% 50%;
-    --sidebar-footer-background: 25 55% 40%;
-    --sidebar-foreground: 25 50% 98%;
-    --sidebar-muted-foreground: 25 30% 85%;
+    --primary: 40 90% 55%;
+    --accent: 50 95% 60%;
+    --sidebar-header-background: 25 55% 35%;
+    --sidebar-body-background: 40 90% 55%;
+    --sidebar-footer-background: 25 55% 35%;
     --sidebar-accent: 25 55% 45%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 25 55% 45%;
+    --chart-1: 40 90% 55%;
+    --chart-2: 50 95% 60%;
+    --chart-3: 30 85% 50%;
+    --chart-4: 20 80% 65%;
+    --chart-5: 45 100% 58%;
   }
 
+  /* Tema Grafito */
   [data-theme="graphite"] {
-    --sidebar-header-background: 220 10% 20%;
-    --sidebar-body-background: 220 10% 28%;
-    --sidebar-footer-background: 220 10% 20%;
-    --sidebar-foreground: 220 10% 90%;
-    --sidebar-muted-foreground: 220 10% 60%;
-    --sidebar-accent: 220 10% 25%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 220 10% 25%;
+    --primary: 220 15% 50%;
+    --accent: 210 10% 60%;
+    --sidebar-header-background: 220 10% 25%;
+    --sidebar-body-background: 220 15% 50%;
+    --sidebar-footer-background: 220 10% 25%;
+    --sidebar-accent: 220 10% 40%;
+    --chart-1: 220 15% 50%;
+    --chart-2: 210 10% 60%;
+    --chart-3: 230 20% 55%;
+    --chart-4: 200 12% 45%;
+    --chart-5: 225 18% 65%;
   }
- 
+
   @layer base {
     * {
       @apply border-border transition-colors duration-300 ease-in-out;
@@ -295,13 +359,13 @@
   }
 
   .animate-aurora-1 {
-      animation: aurora-1 20s ease-in-out infinite;
+    animation: aurora-1 20s ease-in-out infinite;
   }
   .animate-aurora-2 {
-      animation: aurora-2 25s ease-in-out infinite;
+    animation: aurora-2 25s ease-in-out infinite;
   }
   .animate-aurora-3 {
-      animation: aurora-3 18s ease-in-out infinite;
+    animation: aurora-3 18s ease-in-out infinite;
   }
 
 
