@@ -51,22 +51,22 @@ export function StudentDashboard({ studentStats, myDashboardCourses, assignedCou
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Columna Principal */}
         <div className="lg:col-span-2 space-y-8">
-          <Card className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary via-blue-500 to-indigo-600 text-white shadow-lg">
+          <Card id="student-welcome-card" className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg">
               <div className="absolute inset-0 bg-black/10"></div>
               <div className="relative z-10">
                   <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Hola, {user?.name}! <span className="text-2xl animate-wave">👋</span></h1>
-                  <p className="text-white/80">Bienvenido de nuevo a tu centro de aprendizaje.</p>
+                  <p className="text-primary-foreground/80">Bienvenido de nuevo a tu centro de aprendizaje.</p>
                   <div className="mt-4">
                       <div className="flex justify-between items-end mb-1">
-                          <p className="font-semibold text-white">Nivel {level}</p>
-                          <p className="text-sm text-white/80">{user?.xp || 0} XP</p>
+                          <p className="font-semibold text-primary-foreground">Nivel {level}</p>
+                          <p className="text-sm text-primary-foreground/80">{user?.xp || 0} XP</p>
                       </div>
                       <Progress value={progressPercentage} className="h-2 bg-white/20"/>
                   </div>
               </div>
           </Card>
           
-           <div className="grid grid-cols-2 gap-4">
+           <div id="student-stats-cards" className="grid grid-cols-2 gap-4">
               <MetricCard title="Cursos Inscritos" value={studentStats?.enrolled || 0} icon={GraduationCap} index={0} />
               <MetricCard title="Cursos Completados" value={studentStats?.completed || 0} icon={CheckCircle} index={1} />
            </div>
@@ -123,7 +123,7 @@ export function StudentDashboard({ studentStats, myDashboardCourses, assignedCou
         </div>
 
         {/* Columna Lateral */}
-        <div className="lg:col-span-1 space-y-6">
+        <div id="student-side-widgets" className="lg:col-span-1 space-y-6">
           <AnnouncementsWidget announcements={recentAnnouncements} />
           <CalendarWidget events={upcomingEvents} />
         </div>
