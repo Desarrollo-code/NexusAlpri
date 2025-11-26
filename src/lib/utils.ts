@@ -2,7 +2,12 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import type { MotivationalMessageTriggerType } from '@/types';
-import { colord } from '@/lib/color'; // CORREGIDO: Importar desde el módulo centralizado
+import { colord, extend } from 'colord';
+import lchPlugin from 'colord/plugins/lch';
+
+// Se registra el plugin LCH aquí, de forma global para el módulo.
+// Esto asegura que cualquier importación de `colord` en este archivo tendrá el plugin disponible.
+extend([lchPlugin]);
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))

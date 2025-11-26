@@ -2,9 +2,7 @@
 'use client';
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { colord } from '@/lib/color';
 import { getProcessColors } from '@/lib/utils';
-
 
 interface DecorativeFolderProps {
   patternId: number | string;
@@ -63,7 +61,7 @@ const getUniqueFolderStyle = (id: number | string): React.CSSProperties => {
     const { raw } = getProcessColors(String(id));
 
     // Crear un color para el patrón que sea ligeramente más oscuro y sutil.
-    const patternColor = colord(raw.light).darken(0.08).alpha(0.6).toRgbString();
+    const patternColor = raw.medium;
     
     const numericId = typeof id === 'string' ? stringToHash(id) : id;
     const patternGenerator = patterns[numericId % patterns.length];
