@@ -45,7 +45,7 @@
     
     /* Paleta para la barra lateral en tema claro */
     --sidebar-header-background: 220 15% 20%;
-    --sidebar-body-background: 210 90% 55%;
+    --sidebar-body-background: hsl(var(--primary));
     --sidebar-footer-background: 220 15% 20%;
     --sidebar-foreground: 220 15% 95%;
     --sidebar-muted-foreground: 220 10% 70%;
@@ -79,14 +79,14 @@
     --chart-3: 350 70% 60%;
     --chart-4: 350 70% 50%;
     --chart-5: 350 70% 40%;
-    --sidebar-header-background: 350 40% 25%;
-    --sidebar-body-background: 350 70% 55%;
-    --sidebar-footer-background: 350 40% 25%;
+    --sidebar-header-background: 350 50% 30%;
+    --sidebar-body-background: hsl(var(--primary));
+    --sidebar-footer-background: 350 50% 30%;
     --sidebar-foreground: 350 50% 98%;
     --sidebar-muted-foreground: 350 50% 90%;
     --sidebar-accent: hsl(0, 0%, 100%);
     --sidebar-accent-foreground: hsl(350, 70%, 25%);
-    --sidebar-border: 350 40% 30%;
+    --sidebar-border: 350 40% 35%;
   }
 
   [data-theme="sunset"] {
@@ -114,14 +114,14 @@
     --chart-3: 20 70% 65%;
     --chart-4: 20 70% 55%;
     --chart-5: 20 70% 45%;
-    --sidebar-header-background: 15 50% 30%;
-    --sidebar-body-background: 20 70% 60%;
-    --sidebar-footer-background: 15 50% 30%;
+    --sidebar-header-background: 15 50% 35%;
+    --sidebar-body-background: hsl(var(--primary));
+    --sidebar-footer-background: 15 50% 35%;
     --sidebar-foreground: 15 50% 98%;
     --sidebar-muted-foreground: 15 50% 90%;
     --sidebar-accent: hsl(0, 0%, 100%);
     --sidebar-accent-foreground: hsl(15, 70%, 25%);
-    --sidebar-border: 15 50% 35%;
+    --sidebar-border: 15 50% 40%;
   }
   
   [data-theme="ocean"] {
@@ -149,14 +149,14 @@
     --chart-3: 210 70% 60%;
     --chart-4: 210 70% 50%;
     --chart-5: 210 70% 40%;
-    --sidebar-header-background: 210 40% 20%;
-    --sidebar-body-background: 210 70% 55%;
-    --sidebar-footer-background: 210 40% 20%;
+    --sidebar-header-background: 210 50% 30%;
+    --sidebar-body-background: hsl(var(--primary));
+    --sidebar-footer-background: 210 50% 30%;
     --sidebar-foreground: 210 50% 98%;
     --sidebar-muted-foreground: 210 50% 90%;
     --sidebar-accent: hsl(0, 0%, 100%);
     --sidebar-accent-foreground: hsl(205, 60%, 20%);
-    --sidebar-border: 210 40% 25%;
+    --sidebar-border: 210 40% 35%;
   }
 
   [data-theme="lavender"] {
@@ -184,14 +184,14 @@
     --chart-3: 250 65% 75%;
     --chart-4: 250 65% 70%;
     --chart-5: 250 65% 65%;
-    --sidebar-header-background: 250 30% 22%;
-    --sidebar-body-background: 250 65% 65%;
-    --sidebar-footer-background: 250 30% 22%;
+    --sidebar-header-background: 255 23% 34%;
+    --sidebar-body-background: hsl(var(--primary));
+    --sidebar-footer-background: 255 23% 34%;
     --sidebar-foreground: 250 40% 95%;
     --sidebar-muted-foreground: 250 15% 70%;
-    --sidebar-accent: hsl(250, 45%, 45%);
+    --sidebar-accent: 250 65% 60%;
     --sidebar-accent-foreground: hsl(0, 0%, 100%);
-    --sidebar-border: 250 30% 28%;
+    --sidebar-border: 250 30% 40%;
   }
   
   [data-theme="mint"] {
@@ -219,14 +219,14 @@
     --chart-3: 160 50% 60%;
     --chart-4: 160 50% 50%;
     --chart-5: 160 50% 40%;
-    --sidebar-header-background: 160 50% 30%;
-    --sidebar-body-background: 160 50% 55%;
-    --sidebar-footer-background: 160 50% 30%;
+    --sidebar-header-background: 160 50% 35%;
+    --sidebar-body-background: hsl(var(--primary));
+    --sidebar-footer-background: 160 50% 35%;
     --sidebar-foreground: 160 50% 98%;
     --sidebar-muted-foreground: 160 50% 90%;
     --sidebar-accent: hsl(0, 0%, 100%);
     --sidebar-accent-foreground: hsl(160, 60%, 25%);
-    --sidebar-border: 160 50% 35%;
+    --sidebar-border: 160 50% 40%;
   }
   
   [data-theme="forest"] {
@@ -249,14 +249,14 @@
     --border: 100 15% 88%;
     --input: 100 15% 94%;
     --ring: 110 40% 60%;
-    --sidebar-header-background: 100 20% 22%;
-    --sidebar-body-background: 110 40% 55%;
-    --sidebar-footer-background: 100 20% 22%;
+    --sidebar-header-background: 100 25% 30%;
+    --sidebar-body-background: hsl(var(--primary));
+    --sidebar-footer-background: 100 25% 30%;
     --sidebar-foreground: 90 25% 95%;
     --sidebar-muted-foreground: 90 15% 75%;
     --sidebar-accent: hsl(var(--primary));
     --sidebar-accent-foreground: hsl(var(--primary-foreground));
-    --sidebar-border: 100 20% 30%;
+    --sidebar-border: 100 20% 35%;
   }
 
   [data-theme="sunrise"] {
@@ -279,14 +279,14 @@
     --border: 355 25% 90%;
     --input: 355 25% 95%;
     --ring: 350 80% 65%;
-    --sidebar-header-background: 350 70% 35%;
-    --sidebar-body-background: 350 80% 65%;
-    --sidebar-footer-background: 350 70% 35%;
+    --sidebar-header-background: 350 70% 40%;
+    --sidebar-body-background: hsl(var(--primary));
+    --sidebar-footer-background: 350 70% 40%;
     --sidebar-foreground: 350 50% 98%;
     --sidebar-muted-foreground: 350 50% 90%;
     --sidebar-accent: hsl(0, 0%, 100%);
     --sidebar-accent-foreground: hsl(350, 70%, 20%);
-    --sidebar-border: 350 70% 40%;
+    --sidebar-border: 350 70% 45%;
   }
 
   [data-theme="graphite"] {
@@ -309,14 +309,14 @@
     --border: 220 10% 22%;
     --input: 220 10% 18%;
     --ring: 190 80% 65%;
-    --sidebar-header-background: 220 10% 10%;
-    --sidebar-body-background: 190 80% 60%;
-    --sidebar-footer-background: 220 10% 10%;
+    --sidebar-header-background: 220 10% 20%;
+    --sidebar-body-background: hsl(var(--primary));
+    --sidebar-footer-background: 220 10% 20%;
     --sidebar-foreground: 220 10% 90%;
     --sidebar-muted-foreground: 220 10% 60%;
-    --sidebar-accent: 190 80% 60%;
-    --sidebar-accent-foreground: 190 20% 5%;
-    --sidebar-border: 220 10% 15%;
+    --sidebar-accent: hsl(var(--primary));
+    --sidebar-accent-foreground: hsl(var(--primary-foreground));
+    --sidebar-border: 220 10% 25%;
   }
  
   @layer base {
@@ -481,6 +481,7 @@
       animation: aurora-3 18s ease-in-out infinite;
   }
 
+
   .quill-editor .ql-toolbar {
     @apply rounded-t-lg border-b bg-muted/50;
   }
@@ -504,13 +505,14 @@
       @apply text-xs;
     }
     .quill-editor .ql-toolbar .ql-stroke {
-     @apply !h-4 !w-4;
+       @apply !h-4 !w-4;
+    }
+     .quill-editor .ql-toolbar .ql-picker {
+       @apply !h-6;
+    }
+     .quill-editor .ql-toolbar button {
+       @apply !p-1 !h-6 !w-6;
+    }
   }
-   .quill-editor .ql-toolbar .ql-picker {
-     @apply !h-6;
-  }
-   .quill-editor .ql-toolbar button {
-     @apply !p-1 !h-6 !w-6;
-  }
-}
+
 }

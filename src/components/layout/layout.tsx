@@ -14,14 +14,13 @@ export const SidebarHeader = () => {
   
   return (
     <div className={cn(
-      "flex items-center h-20", 
-      isCollapsed ? 'justify-center' : 'justify-start'
+      "flex items-center h-20 bg-[hsl(var(--sidebar-header-background))] shadow-[0_4px_6px_-2px_hsl(var(--sidebar-border)/0.5)] z-10", 
+      isCollapsed ? 'justify-center' : 'justify-start px-4'
     )}>
-      <Link href="/dashboard" className={cn("inline-flex items-center gap-3", !isCollapsed && "px-4 w-full")}>
+      <Link href="/dashboard" className="inline-flex items-center gap-3">
          <div className={cn(
-             "bg-gradient-to-br from-primary/80 to-accent/80 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg relative overflow-hidden",
-             isCollapsed ? "h-12 w-12" : "h-14 w-14",
-             !settings?.logoUrl && "p-2"
+             "bg-gradient-to-br from-sidebar-accent/20 to-sidebar-accent/10 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg relative overflow-hidden",
+             isCollapsed ? "h-12 w-12" : "h-14 w-14"
          )}>
             {isLoading ? <Skeleton className="w-full h-full" /> : 
              settings?.logoUrl ? 
