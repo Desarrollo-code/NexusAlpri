@@ -93,11 +93,11 @@ const config: Config = {
           orange: 'hsl(var(--event-orange))',
         },
         sidebar: {
-          background: 'hsl(var(--sidebar-background))',
+          'header-background': 'hsl(var(--sidebar-header-background))',
+          'body-background': 'hsl(var(--sidebar-body-background))',
+          'footer-background': 'hsl(var(--sidebar-footer-background))',
           foreground: 'hsl(var(--sidebar-foreground))',
-          muted: {
-            foreground: 'hsl(var(--sidebar-muted-foreground))',
-          },
+          'muted-foreground': 'hsl(var(--sidebar-muted-foreground))',
           accent: {
             DEFAULT: 'hsl(var(--sidebar-accent))',
             foreground: 'hsl(var(--sidebar-accent-foreground))',

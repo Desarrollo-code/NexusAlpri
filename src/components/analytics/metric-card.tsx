@@ -16,7 +16,7 @@ export const MetricCard = ({ title, value, icon: Icon, description, suffix = '',
     gradient?: string;
 }) => {
     const animatedValue = useAnimatedCounter(value, 0, 1000);
-    const colorVar = `--chart-${(index % 5) + 1}`;
+    const colorVar = `var(--chart-${(index % 5) + 1})`;
     
     const textColor = 'white';
 
@@ -25,12 +25,10 @@ export const MetricCard = ({ title, value, icon: Icon, description, suffix = '',
             onClick={onClick} 
             className={cn(
                 "relative text-white p-4 flex flex-col justify-between transition-transform duration-300 hover:scale-[1.03] rounded-2xl h-28 overflow-hidden",
-                onClick && "cursor-pointer",
-                gradient // Aplicar el gradiente si se proporciona
+                onClick && "cursor-pointer"
             )}
             style={{ 
-                // Usar el color del gráfico como fallback si no hay gradiente
-                backgroundColor: gradient ? undefined : `hsl(var(${colorVar}))` 
+                backgroundColor: `hsl(${colorVar})` 
             }}
         >
             <div className="flex justify-between items-start z-10">
