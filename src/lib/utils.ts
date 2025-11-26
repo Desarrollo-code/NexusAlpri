@@ -5,7 +5,7 @@ import type { MotivationalMessageTriggerType } from '@/types';
 import { colord, extend } from 'colord';
 import lchPlugin from 'colord/plugins/lch';
 
-// Registra el plugin LCH para poder usarlo.
+// Registra el plugin LCH para poder usarlo en toda la aplicación.
 extend([lchPlugin]);
 
 
@@ -163,11 +163,13 @@ export const getProcessColors = (id: string) => {
     // Generar un color de fondo claro y uno de texto oscuro dentro del mismo tono
     const lightColor = baseColor.lch({ l: 92, c: 15, h: newHue }).toRgbString();
     const darkColor = baseColor.lch({ l: 30, c: 40, h: newHue }).toRgbString();
+    const mediumColor = baseColor.lch({ l: 75, c: 30, h: newHue }).toRgbString();
     
     return {
         raw: {
             light: lightColor,
             dark: darkColor,
+            medium: mediumColor
         }
     };
 };
