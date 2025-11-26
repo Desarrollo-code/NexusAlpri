@@ -5,13 +5,12 @@ import { cn } from '@/lib/utils';
 import type { AppResourceType } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
 import { Card } from '@/components/ui/card';
-import { Edit, MoreVertical, Trash2, Lock, Download, Globe, Users, Move, Grip, ArchiveRestore, Pin, BrainCircuit, FileText, ListVideo } from 'lucide-react';
+import { Edit, MoreVertical, Trash2, Lock, Download, Globe, Users, Move, Grip, ArchiveRestore, Pin, BrainCircuit, FileText, ListVideo, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import Image from 'next/image';
@@ -39,7 +38,7 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
     onSelectionChange: (id: string, checked: boolean) => void,
 }) => {
     const { user } = useAuth();
-    const canModify = user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && resource.uploaderId === user.id));
+    const canModify = user && (user.role === 'ADMINISTRATOR' || user.role === 'INSTRUCTOR');
 
     const { attributes, listeners, setNodeRef: setDraggableNodeRef, isDragging } = useDraggable({
         id: resource.id,
@@ -101,6 +100,7 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
     };
     
     const isQuizEnabled = isFolder && resource.category === 'Formación Interna';
+    const hasQuiz = !!resource.quiz;
 
     return (
         <div ref={setNodeRef} className={cn("w-full touch-none", isDragging && 'opacity-50 z-10')}>
@@ -113,13 +113,16 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                     isSelected && "ring-2 ring-primary ring-offset-2 border-primary/80"
                 )}
             >
-                <div className="absolute top-2 left-2 z-20">
+                {canModify && (
+                  <div className="absolute top-2 left-2 z-20">
                      <Checkbox
                         checked={isSelected}
                         onCheckedChange={(checked) => onSelectionChange(resource.id, !!checked)}
+                        onClick={e => e.stopPropagation()}
                         className="bg-background/80 backdrop-blur-sm data-[state=checked]:bg-primary"
                     />
-                </div>
+                  </div>
+                )}
                 <div className="aspect-[3/2] w-full flex items-center justify-center relative border-b overflow-hidden rounded-t-lg bg-muted cursor-pointer" onClick={handleClick}>
                     <Thumbnail />
                      {resource.hasPin && !isFolder && (
@@ -173,9 +176,10 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                  {isQuizEnabled && (
                     <div className="px-2 pb-2">
                         <Button asChild size="sm" className="w-full">
-                            <Link href={`/resources/${resource.id}/edit-quiz`}>
-                                <BrainCircuit className="mr-2 h-4 w-4" /> Crear/Editar Quiz
-                            </Link>
+                           <Link href={canModify ? `/resources/${resource.id}/edit-quiz` : `/forms/${resource.quiz?.id}/view`}>
+                              {hasQuiz ? <BrainCircuit className="mr-2 h-4 w-4"/> : <PlusCircle className="mr-2 h-4 w-4"/>}
+                              {canModify ? (hasQuiz ? 'Editar Quiz' : 'Crear Quiz') : 'Realizar Quiz'}
+                           </Link>
                         </Button>
                     </div>
                  )}
@@ -185,3 +189,4 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
 });
 ResourceGridItem.displayName = 'ResourceGridItem';
 export { ResourceGridItem };
+

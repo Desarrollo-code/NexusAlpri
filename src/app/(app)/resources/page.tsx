@@ -8,11 +8,11 @@ import { cn } from '@/lib/utils';
 import { useTitle } from '@/contexts/title-context';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Move, Trash2, FolderOpen, Filter, ChevronRight, Pin, ListVideo, FileText } from 'lucide-react';
+import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Move, Trash2, FolderOpen, Filter, ChevronRight, Pin, ListVideo, FileText, Image as ImageIcon, Video as VideoIcon, FileQuestion, Archive as ZipIcon } from 'lucide-react';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { ResourceListItem } from '@/components/resources/resource-list-item';
 import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
-import { DndContext, type DragEndEvent, MouseSensor, TouchSensor, useSensor, useSensors, useDroppable } from '@dnd-kit/core';
+import { DndContext, type DragEndEvent, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -27,6 +27,11 @@ import { VideoPlaylistView } from '@/components/resources/video-playlist-view';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '../ui/checkbox';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Label } from '../ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { DateRangePicker } from '../ui/date-range-picker';
+import { startOfDay, subDays } from 'date-fns';
+import type { DateRange } from 'react-day-picker';
 
 // --- MAIN PAGE COMPONENT ---
 export default function ResourcesPage() {
@@ -39,7 +44,6 @@ export default function ResourcesPage() {
   const [error, setError] = useState<string | null>(null);
   
   const [searchTerm, setSearchTerm] = useState('');
-  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
@@ -58,11 +62,21 @@ export default function ResourcesPage() {
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [fileType, setFileType] = useState('all');
+  const [hasPin, setHasPin] = useState(false);
+  const [hasExpiry, setHasExpiry] = useState(false);
+  const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
   const { setNodeRef: setRootDroppableRef, isOver: isOverRoot } = useDroppable({ id: 'root' });
 
   useEffect(() => {
     setPageTitle('Biblioteca de Recursos');
   }, [setPageTitle]);
+
+  const canManage = useMemo(() => user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR', [user]);
+  const activeFilterCount = [dateRange, fileType !== 'all', hasPin, hasExpiry].filter(Boolean).length;
 
   const fetchResources = useCallback(async () => {
     if (!user) return;
@@ -73,6 +87,11 @@ export default function ResourcesPage() {
     const params = new URLSearchParams({ status: 'ACTIVE' });
     if (currentFolderId) params.append('parentId', currentFolderId);
     if (debouncedSearchTerm) params.append('search', debouncedSearchTerm);
+    if (dateRange?.from) params.append('startDate', dateRange.from.toISOString());
+    if (dateRange?.to) params.append('endDate', dateRange.to.toISOString());
+    if (fileType !== 'all') params.append('fileType', fileType);
+    if (hasPin) params.append('hasPin', 'true');
+    if (hasExpiry) params.append('hasExpiry', 'true');
     
     try {
       const response = await fetch(`/api/resources?${params.toString()}`, { cache: 'no-store' });
@@ -80,8 +99,6 @@ export default function ResourcesPage() {
       const data = await response.json();
       const fetchedResources: AppResourceType[] = data.resources || [];
       setAllApiResources(fetchedResources);
-      
-      const isVideoFolder = fetchedResources.length > 0 && fetchedResources.every(r => r.type === 'VIDEO' || getYoutubeVideoId(r.url));
       
       if (currentFolderId) {
         const folderDataRes = await fetch(`/api/resources/${currentFolderId}`);
@@ -100,28 +117,27 @@ export default function ResourcesPage() {
     } finally {
       setIsLoadingData(false);
     }
-  }, [user, currentFolderId, debouncedSearchTerm]);
+  }, [user, currentFolderId, debouncedSearchTerm, dateRange, fileType, hasPin, hasExpiry]);
 
   useEffect(() => {
     fetchResources();
     setSelectedIds(new Set());
   }, [fetchResources]);
 
-  const filteredResources = useMemo(() => {
-    return allApiResources;
-  }, [allApiResources]);
-
+  const filteredResources = useMemo(() => allApiResources, [allApiResources]);
   const folders = useMemo(() => filteredResources.filter(r => r.type === 'FOLDER' || r.type === 'VIDEO_PLAYLIST'), [filteredResources]);
   const files = useMemo(() => filteredResources.filter(r => r.type !== 'FOLDER' && r.type !== 'VIDEO_PLAYLIST'), [filteredResources]);
 
   const handleNavigateFolder = (resource: AppResourceType) => {
     setCurrentFolderId(resource.id);
     setBreadcrumbs(prev => [...prev, { id: resource.id, title: resource.title }]);
+    setSearchTerm('');
   };
 
   const handleBreadcrumbClick = (folderId: string | null, index: number) => {
     setCurrentFolderId(folderId);
     setBreadcrumbs(prev => prev.slice(0, index + 1));
+    setSearchTerm('');
   };
   
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -213,7 +229,8 @@ export default function ResourcesPage() {
           toast({ title: "Error", description: (err as Error).message, variant: 'destructive' });
       } finally {
           setIsDeleting(false);
-          setResourceToDelete(null); // Reuse for bulk delete confirmation
+          setResourceToDelete(null); 
+          setSelectedIds(new Set());
       }
   }
 
@@ -253,18 +270,44 @@ export default function ResourcesPage() {
                     <Input placeholder="Buscar en la carpeta actual..." className="pl-10 h-10 text-base rounded-md" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                 </div>
                  <div className="flex items-center gap-2 w-full md:w-auto">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                           <Button className="h-10 flex-grow md:flex-none">
+                    <Popover open={isFilterPopoverOpen} onOpenChange={setIsFilterPopoverOpen}>
+                        <PopoverTrigger asChild>
+                            <Button variant="outline" className="h-10 flex-grow md:flex-none">
+                               <Filter className="mr-2 h-4 w-4"/> Filtros {activeFilterCount > 0 && `(${activeFilterCount})`}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80" align="end">
+                            <div className="grid gap-4">
+                                <div className="space-y-2"><h4 className="font-medium leading-none">Filtros Avanzados</h4><p className="text-sm text-muted-foreground">Refina tu búsqueda de recursos.</p></div>
+                                <div className="space-y-2"><Label>Fecha de subida</Label><DateRangePicker date={dateRange} onDateChange={setDateRange} /></div>
+                                <div className="space-y-2"><Label>Tipo de Archivo</Label>
+                                <Select value={fileType} onValueChange={setFileType}>
+                                    <SelectTrigger><SelectValue/></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">Todos</SelectItem><SelectItem value="image">Imagen</SelectItem><SelectItem value="video">Video</SelectItem><SelectItem value="pdf">PDF</SelectItem><SelectItem value="doc">Documento</SelectItem><SelectItem value="xls">Hoja de cálculo</SelectItem><SelectItem value="ppt">Presentación</SelectItem><SelectItem value="zip">ZIP</SelectItem><SelectItem value="other">Otro</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                </div>
+                                <div className="flex items-center space-x-2"><Checkbox id="hasPin" checked={hasPin} onCheckedChange={(c) => setHasPin(!!c)}/><Label htmlFor="hasPin">Con PIN</Label></div>
+                                <div className="flex items-center space-x-2"><Checkbox id="hasExpiry" checked={hasExpiry} onCheckedChange={(c) => setHasExpiry(!!c)}/><Label htmlFor="hasExpiry">Con Vencimiento</Label></div>
+                                <Button onClick={() => setIsFilterPopoverOpen(false)}>Aplicar Filtros</Button>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+                    {canManage && (
+                      <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button className="h-10 flex-grow md:flex-none">
                                 + Nuevo <ChevronDown className="ml-2 h-4 w-4"/>
                             </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem onSelect={() => setIsFolderCreatorOpen(true)}><FolderIcon className="mr-2 h-4 w-4"/>Nueva Carpeta</DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => setIsPlaylistCreatorOpen(true)}><ListVideo className="mr-2 h-4 w-4"/>Nueva Lista de Reproducción</DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => setIsUploaderOpen(true)}><UploadCloud className="mr-2 h-4 w-4"/>Subir Archivo/Enlace</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                              <DropdownMenuItem onSelect={() => setIsFolderCreatorOpen(true)}><FolderIcon className="mr-2 h-4 w-4"/>Nueva Carpeta</DropdownMenuItem>
+                              <DropdownMenuItem onSelect={() => setIsPlaylistCreatorOpen(true)}><ListVideo className="mr-2 h-4 w-4"/>Nueva Lista de Videos</DropdownMenuItem>
+                              <DropdownMenuItem onSelect={() => setIsUploaderOpen(true)}><UploadCloud className="mr-2 h-4 w-4"/>Subir Archivo/Enlace</DropdownMenuItem>
+                          </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                 </div>
             </div>
         </Card>
@@ -338,7 +381,7 @@ export default function ResourcesPage() {
         </div>
         
         <AnimatePresence>
-            {selectedIds.size > 0 && (
+            {selectedIds.size > 0 && canManage && (
                  <motion.div
                     initial={{ y: 100, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
@@ -403,3 +446,4 @@ export default function ResourcesPage() {
     </DndContext>
   );
 }
+

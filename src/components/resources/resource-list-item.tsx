@@ -13,12 +13,13 @@ import { Identicon } from '../ui/identicon';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '../ui/tooltip';
 import { useDraggable } from '@dnd-kit/core';
 import { FileIcon } from '../ui/file-icon';
-import { getYoutubeVideoId } from '@/lib/resource-utils';
+import { getYoutubeVideoId from '@/lib/resource-utils';
 import { Badge } from '../ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Card, CardHeader, CardContent } from '../ui/card';
 import { TableRow, TableCell } from '../ui/table';
 import { Checkbox } from '../ui/checkbox';
+import Link from 'next/link';
 
 interface ResourceListItemProps {
     resources: AppResourceType[];
@@ -36,8 +37,7 @@ export const ResourceListItem = React.memo(({ resources, onSelect, onEdit, onDel
     const { user } = useAuth();
     const isMobile = useIsMobile();
     const isAllSelected = resources.length > 0 && resources.every(r => selectedIds.has(r.id));
-    
-    const canModifyAny = user && (user.role === 'ADMINISTRATOR' || resources.some(r => user.role === 'INSTRUCTOR' && r.uploaderId === user.id));
+    const canManage = user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR';
 
     if (isMobile) {
         return (
@@ -50,7 +50,7 @@ export const ResourceListItem = React.memo(({ resources, onSelect, onEdit, onDel
                     return (
                         <Card key={resource.id} onClick={() => onSelect(resource)} className="w-full flex flex-col shadow-sm">
                             <CardHeader className="flex flex-row items-center gap-4 p-3 relative">
-                                <Checkbox checked={selectedIds.has(resource.id)} onCheckedChange={(checked) => onSelectionChange(resource.id, !!checked)} onClick={e => e.stopPropagation()} className="shrink-0" />
+                                {canManage && <Checkbox checked={selectedIds.has(resource.id)} onCheckedChange={(checked) => onSelectionChange(resource.id, !!checked)} onClick={e => e.stopPropagation()} className="shrink-0" />}
                                 <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : resource.url} />
                                 <div className="flex-grow min-w-0">
                                    <p className="font-semibold truncate text-foreground">{resource.title}</p>
@@ -88,7 +88,7 @@ export const ResourceListItem = React.memo(({ resources, onSelect, onEdit, onDel
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead className="w-12 px-4"><Checkbox checked={isAllSelected} onCheckedChange={(checked) => onSelectionChange('all', !!checked)} /></TableHead>
+                    {canManage && <TableHead className="w-12 px-4"><Checkbox checked={isAllSelected} onCheckedChange={(checked) => onSelectionChange('all', !!checked)} /></TableHead>}
                     <TableHead className="w-[40%]">Nombre</TableHead>
                     <TableHead className="w-[15%] hidden md:table-cell">Propietario</TableHead>
                     <TableHead className="w-[15%] hidden lg:table-cell">Categoría</TableHead>
@@ -98,14 +98,14 @@ export const ResourceListItem = React.memo(({ resources, onSelect, onEdit, onDel
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {resources.map(resource => <SingleRowItem key={resource.id} resource={resource} onSelect={onSelect} onEdit={onEdit} onDelete={onDelete} onRestore={onRestore} onTogglePin={onTogglePin} isSelected={selectedIds.has(resource.id)} onSelectionChange={onSelectionChange} />)}
+                {resources.map(resource => <SingleRowItem key={resource.id} resource={resource} onSelect={onSelect} onEdit={onEdit} onDelete={onDelete} onRestore={onRestore} onTogglePin={onTogglePin} isSelected={selectedIds.has(resource.id)} onSelectionChange={onSelectionChange} canManage={canManage} />)}
             </TableBody>
         </Table>
     );
 });
 ResourceListItem.displayName = 'ResourceListItem';
 
-const SingleRowItem = ({ resource, onSelect, onEdit, onDelete, onRestore, onTogglePin, isSelected, onSelectionChange }: Omit<ResourceListItemProps, 'resources' | 'selectedIds'> & { isSelected: boolean }) => {
+const SingleRowItem = ({ resource, onSelect, onEdit, onDelete, onRestore, onTogglePin, isSelected, onSelectionChange, canManage }: Omit<ResourceListItemProps, 'resources' | 'selectedIds'> & { isSelected: boolean, canManage: boolean }) => {
     const { user } = useAuth();
     const canModify = user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && resource.uploaderId === user.id));
     const youtubeId = getYoutubeVideoId(resource.url);
@@ -124,12 +124,10 @@ const SingleRowItem = ({ resource, onSelect, onEdit, onDelete, onRestore, onTogg
 
     return (
         <TableRow ref={setNodeRef} onClick={() => onSelect(resource)} className={cn("cursor-pointer", isDragging && 'opacity-50', isSelected && 'bg-primary/10')}>
-             <TableCell className="px-4" onClick={(e) => e.stopPropagation()}><Checkbox checked={isSelected} onCheckedChange={(checked) => onSelectionChange(resource.id, !!checked)} /></TableCell>
+             {canManage && <TableCell className="px-4" onClick={(e) => e.stopPropagation()}><Checkbox checked={isSelected} onCheckedChange={(checked) => onSelectionChange(resource.id, !!checked)} /></TableCell>}
              <TableCell className="w-[40%]">
                 <div className="flex items-center gap-4">
-                    <div {...listeners} {...attributes} className="p-1 cursor-grab touch-none">
-                        <Grip className="h-4 w-4 text-muted-foreground/50"/>
-                    </div>
+                    {canModify && <div {...listeners} {...attributes} className="p-1 cursor-grab touch-none"><Grip className="h-4 w-4 text-muted-foreground/50"/></div>}
                     <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : resource.url} />
                     <div className="min-w-0">
                         <p className="font-semibold truncate text-foreground flex items-center gap-1.5">
@@ -192,3 +190,4 @@ const SingleRowItem = ({ resource, onSelect, onEdit, onDelete, onRestore, onTogg
         </TableRow>
     )
 }
+
