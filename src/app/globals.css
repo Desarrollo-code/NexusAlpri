@@ -63,9 +63,9 @@
 
   [data-theme="light"], [data-theme="dark"] {
     --sidebar-header-background: 222 47% 25%;
-    --sidebar-body-background: 222 47% 35%;
+    --sidebar-body-background: 222 47% 42%;
     --sidebar-footer-background: 222 47% 25%;
-    --sidebar-accent: 222 47% 42%;
+    --sidebar-accent: 222 47% 48%;
     --sidebar-border: 222 47% 20%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-muted-foreground: 222 40% 85%;
@@ -75,11 +75,11 @@
 
   [data-theme="ruby"] {
     --primary: 350 70% 55%;
-    --accent: 20 90% 65%;
+    --accent: 330 80% 65%;
     --sidebar-header-background: 350 40% 25%;
-    --sidebar-body-background: 350 30% 45%;
+    --sidebar-body-background: 350 30% 52%;
     --sidebar-footer-background: 350 40% 25%;
-    --sidebar-accent: 350 55% 50%;
+    --sidebar-accent: 350 55% 58%;
     --sidebar-border: 350 40% 20%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-muted-foreground: 350 40% 85%;
@@ -89,11 +89,11 @@
   
   [data-theme="sunset"] {
     --primary: 25 85% 58%;
-    --accent: 350 80% 65%;
+    --accent: 350 80% 70%;
     --sidebar-header-background: 20 50% 30%;
-    --sidebar-body-background: 20 40% 50%;
+    --sidebar-body-background: 20 40% 58%;
     --sidebar-footer-background: 20 50% 30%;
-    --sidebar-accent: 20 70% 52%;
+    --sidebar-accent: 20 70% 60%;
     --sidebar-border: 20 50% 25%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-muted-foreground: 20 50% 85%;
@@ -105,9 +105,9 @@
     --primary: 210 80% 55%;
     --accent: 170 80% 45%;
     --sidebar-header-background: 210 50% 25%;
-    --sidebar-body-background: 210 50% 45%;
+    --sidebar-body-background: 210 50% 52%;
     --sidebar-footer-background: 210 50% 25%;
-    --sidebar-accent: 210 70% 50%;
+    --sidebar-accent: 210 70% 58%;
     --sidebar-border: 210 50% 20%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-muted-foreground: 210 50% 85%;
@@ -119,9 +119,9 @@
     --primary: 255 60% 60%;
     --accent: 300 70% 70%;
     --sidebar-header-background: 255 35% 30%;
-    --sidebar-body-background: 255 35% 55%;
+    --sidebar-body-background: 255 35% 62%;
     --sidebar-footer-background: 255 35% 30%;
-    --sidebar-accent: 255 50% 58%;
+    --sidebar-accent: 255 50% 65%;
     --sidebar-border: 255 35% 25%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-muted-foreground: 255 35% 85%;
@@ -133,9 +133,9 @@
     --primary: 160 70% 48%;
     --accent: 140 65% 55%;
     --sidebar-header-background: 160 50% 25%;
-    --sidebar-body-background: 160 50% 45%;
+    --sidebar-body-background: 160 50% 52%;
     --sidebar-footer-background: 160 50% 25%;
-    --sidebar-accent: 160 60% 48%;
+    --sidebar-accent: 160 60% 55%;
     --sidebar-border: 160 50% 20%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-muted-foreground: 160 50% 85%;
@@ -147,9 +147,9 @@
     --primary: 100 45% 45%;
     --accent: 75 60% 40%;
     --sidebar-header-background: 100 30% 20%;
-    --sidebar-body-background: 100 35% 42%;
+    --sidebar-body-background: 100 35% 48%;
     --sidebar-footer-background: 100 30% 20%;
-    --sidebar-accent: 100 40% 45%;
+    --sidebar-accent: 100 40% 52%;
     --sidebar-border: 100 30% 15%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-muted-foreground: 100 30% 80%;
@@ -161,9 +161,9 @@
     --primary: 40 90% 55%;
     --accent: 50 100% 60%;
     --sidebar-header-background: 25 55% 30%;
-    --sidebar-body-background: 25 65% 52%;
+    --sidebar-body-background: 25 65% 58%;
     --sidebar-footer-background: 25 55% 30%;
-    --sidebar-accent: 30 75% 52%;
+    --sidebar-accent: 30 75% 60%;
     --sidebar-border: 25 55% 25%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-muted-foreground: 25 55% 85%;
@@ -175,9 +175,9 @@
     --primary: 220 15% 50%;
     --accent: 210 10% 70%;
     --sidebar-header-background: 220 10% 20%;
-    --sidebar-body-background: 220 12% 40%;
+    --sidebar-body-background: 220 12% 48%;
     --sidebar-footer-background: 220 10% 20%;
-    --sidebar-accent: 220 14% 48%;
+    --sidebar-accent: 220 14% 55%;
     --sidebar-border: 220 10% 15%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-muted-foreground: 220 10% 80%;
