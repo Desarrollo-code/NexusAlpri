@@ -67,8 +67,8 @@ export function StudentDashboard({ studentStats, myDashboardCourses, assignedCou
           </Card>
           
            <div className="grid grid-cols-2 gap-4">
-              <MetricCard title="Cursos Inscritos" value={studentStats?.enrolled || 0} icon={GraduationCap} gradient="bg-gradient-blue" />
-              <MetricCard title="Cursos Completados" value={studentStats?.completed || 0} icon={CheckCircle} gradient="bg-gradient-green" />
+              <MetricCard title="Cursos Inscritos" value={studentStats?.enrolled || 0} icon={GraduationCap} index={0} />
+              <MetricCard title="Cursos Completados" value={studentStats?.completed || 0} icon={CheckCircle} index={1} />
            </div>
           
           <InteractiveEventsWidget events={studentStats.interactiveEventsToday} onParticipate={onParticipate} />

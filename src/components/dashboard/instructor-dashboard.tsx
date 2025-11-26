@@ -31,8 +31,8 @@ export function InstructorDashboard({ instructorStats, recentAnnouncements, taug
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-          <MetricCard title="Cursos Creados" value={instructorStats?.taught || 0} icon={GraduationCap} gradient="bg-gradient-blue" />
-          <MetricCard title="Estudiantes Totales" value={instructorStats?.students || 0} icon={Users} gradient="bg-gradient-green" />
+          <MetricCard title="Cursos Creados" value={instructorStats?.taught || 0} icon={GraduationCap} index={0} />
+          <MetricCard title="Estudiantes Totales" value={instructorStats?.students || 0} icon={Users} index={1} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">

@@ -113,14 +113,14 @@ export function AdminDashboard({ adminStats, securityLogs }: {
             <MetricCard title="Total Cursos" value={adminStats.totalCourses} icon={BookOpenCheck} index={1} />
             <MetricCard title="Inscripciones" value={adminStats.totalEnrollments} icon={GraduationCap} index={2}/>
             <MetricCard title="Cursos Publicados" value={adminStats.totalPublishedCourses} icon={BookOpenCheck} index={3} />
-            <MetricCard title="Recursos" value={adminStats.totalResources} icon={Folder} index={4} />
-            <MetricCard title="Anuncios" value={adminStats.totalAnnouncements} icon={Megaphone} index={5} />
-            <MetricCard title="Formularios" value={adminStats.totalForms} icon={FileText} index={6} />
+            <MetricCard title="Recursos" value={adminStats.totalResources} icon={Folder} index={4}/>
+            <MetricCard title="Anuncios" value={adminStats.totalAnnouncements} icon={Megaphone} index={5}/>
+            <MetricCard title="Formularios" value={adminStats.totalForms} icon={FileText} index={6}/>
             <MetricCard title="Finalización" value={Math.round(adminStats.averageCompletionRate)} icon={Percent} suffix="%" description="Promedio" index={7} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-            <div className="lg:col-span-1">
+            <div id="admin-charts-section" className="lg:col-span-1">
                  <Card>
                     <CardHeader>
                         <CardTitle>Tendencia de Actividad</CardTitle>
@@ -148,7 +148,7 @@ export function AdminDashboard({ adminStats, securityLogs }: {
                 </Card>
             </div>
             
-            <div className="lg:col-span-1">
+            <div id="admin-security-log-widget" className="lg:col-span-1">
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-base">Auditoría de Seguridad Activa</CardTitle>
@@ -164,7 +164,7 @@ export function AdminDashboard({ adminStats, securityLogs }: {
                     </CardFooter>
                 </Card>
             </div>
-             <div className="lg:col-span-1 space-y-6">
+             <div id="admin-quick-actions" className="lg:col-span-1 space-y-6">
                  <Card>
                     <CardHeader><CardTitle className="text-base">Acciones Rápidas</CardTitle></CardHeader>
                     <CardContent className="grid grid-cols-2 gap-2">
