@@ -238,7 +238,7 @@
  
   @layer base {
     * {
-      @apply border-border transition-colors duration-300 ease-in-out **rounded-xl**;;
+      @apply border-border transition-colors duration-300 ease-in-out rounded-xl;
     }
     body {
       @apply bg-background text-foreground;
