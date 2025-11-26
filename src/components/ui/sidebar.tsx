@@ -92,7 +92,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
         className={cn(
           "group fixed top-0 left-0 z-50 h-screen flex flex-col transition-all duration-300 ease-in-out shadow-2xl",
           // Este pseudo-elemento crea el borde difuminado
-          "after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gradient-to-b after:from-transparent after:via-[hsl(var(--sidebar-border))] after:to-transparent",
+          "border-r border-[hsl(var(--sidebar-border))]",
           isMobile ? `w-72 ${mobileClasses}` : desktopClasses
         )}
       >
