@@ -4,7 +4,7 @@
 import { cn } from "@/lib/utils";
 import { useSidebar } from "../ui/sidebar";
 import { Button } from "../ui/button";
-import { Bell, PanelLeft, ArrowLeft, BellRing, Hand } from "lucide-react";
+import { Bell, PanelLeft, ArrowLeft, BellRing } from "lucide-react";
 import { UserAvatarDropdown } from "./user-avatar-dropdown";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Separator } from "../ui/separator";
@@ -144,7 +144,7 @@ export const TopBar = () => {
                         <Button variant="ghost" size="icon" className="relative text-foreground/70 hover:text-foreground hover:bg-black/10 transition-colors">
                              {unreadCount > 0 ? (
                                 <div className="relative">
-                                    <Bell className="h-6 w-6 text-amber-500 fill-amber-400" />
+                                    <Bell className="h-6 w-6 text-black fill-amber-400" />
                                     <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
                                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                                       <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
