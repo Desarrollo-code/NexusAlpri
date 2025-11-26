@@ -2,26 +2,25 @@
 'use client';
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { colord, extend } from 'colord';
+import lchPlugin from 'colord/plugins/lch';
+
+extend([lchPlugin]);
 
 interface DecorativeFolderProps {
   patternId: number | string;
   className?: string;
 }
 
-// Paletas de colores tonales vibrantes ampliadas.
-const colorPalettes = [
-    { background: 'hsl(210, 50%, 45%)', pattern: 'hsl(210, 50%, 40%)' }, // Azul
-    { background: 'hsl(160, 50%, 40%)', pattern: 'hsl(160, 50%, 35%)' }, // Verde
-    { background: 'hsl(0, 55%, 50%)',   pattern: 'hsl(0, 55%, 45%)' },   // Rojo
-    { background: 'hsl(30, 80%, 55%)',  pattern: 'hsl(30, 80%, 50%)' },  // Naranja
-    { background: 'hsl(260, 45%, 50%)', pattern: 'hsl(260, 45%, 45%)' }, // Púrpura
-    { background: 'hsl(180, 60%, 40%)', pattern: 'hsl(180, 60%, 35%)' }, // Turquesa
-    { background: 'hsl(340, 65%, 55%)', pattern: 'hsl(340, 65%, 50%)' }, // Rosa
-    { background: 'hsl(50, 90%, 50%)',  pattern: 'hsl(50, 90%, 45%)' },  // Amarillo
-    { background: 'hsl(290, 50%, 48%)', pattern: 'hsl(290, 50%, 43%)' }, // Magenta
-    { background: 'hsl(240, 60%, 60%)', pattern: 'hsl(240, 60%, 55%)' }, // Índigo
-];
-
+const stringToHash = (str: string): number => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = (hash << 5) - hash + char;
+        hash |= 0; 
+    }
+    return Math.abs(hash);
+};
 
 // Definición de los patrones usando CSS background-image
 const patterns = [
@@ -48,14 +47,6 @@ const patterns = [
     backgroundImage: `radial-gradient(${color} 1.2px, transparent 1.2px)`,
     backgroundSize: '15px 15px',
   }),
-  // Ondas (Waves)
-  (color: string) => ({
-    backgroundImage: `
-      radial-gradient(circle at 100% 50%, transparent 20%, ${color} 21%, ${color} 34%, transparent 35%, transparent),
-      radial-gradient(circle at 0% 50%, transparent 20%, ${color} 21%, ${color} 34%, transparent 35%, transparent)
-    `,
-    backgroundSize: '30px 40px',
-  }),
   // Zig-Zag
   (color: string) => ({
     backgroundImage: `
@@ -63,42 +54,39 @@ const patterns = [
       linear-gradient(225deg, ${color} 25%, transparent 25%)`,
     backgroundSize: '20px 20px',
   }),
-  // Chevrones (Chevron)
-  (color: string) => ({
-    backgroundImage: `
-      linear-gradient(45deg, ${color} 25%, transparent 25%, transparent 75%, ${color} 75%, ${color}),
-      linear-gradient(45deg, ${color} 25%, transparent 25%, transparent 75%, ${color} 75%, ${color})
-    `,
-    backgroundSize: '25px 25px',
-    backgroundPosition: '0 0, 12.5px 12.5px',
-  }),
-  // Cruces (Plus)
-  (color: string) => ({
-    backgroundImage: `
-      linear-gradient(${color} 1.5px, transparent 1.5px),
-      linear-gradient(to right, ${color} 1.5px, transparent 1.5px)
-    `,
-    backgroundSize: '15px 15px',
-  }),
 ];
 
 /**
  * Asigna un estilo único (color de fondo + patrón) a cada carpeta
- * basado en su ID.
+ * basado en su ID y en el color primario del tema actual.
  */
 const getUniqueFolderStyle = (id: number | string): React.CSSProperties => {
     const numericId = typeof id === 'string'
-        ? id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+        ? stringToHash(id)
         : id;
 
-    const { background, pattern: patternColor } = colorPalettes[numericId % colorPalettes.length];
+    // Obtener el color primario desde la variable CSS
+    const primaryColorVar = typeof window !== 'undefined' 
+        ? getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()
+        : '210 90% 55%'; // Fallback a azul
+
+    // Usamos colord para manipular el color. HSL es más fácil de variar.
+    const baseColor = colord(`hsl(${primaryColorVar})`);
+
+    // Variar el matiz (hue) ligeramente para crear variedad entre carpetas.
+    const hueVariation = (numericId % 30) - 15; // Variación entre -15 y 15
+    
+    // Crear colores de fondo y patrón con diferentes niveles de luminosidad.
+    const backgroundColor = baseColor.hue(baseColor.hue() + hueVariation).lightness(45).saturate(0.1).toHslString();
+    const patternColor = colord(backgroundColor).darken(0.1).alpha(0.5).toRgbString();
+
     const patternGenerator = patterns[numericId % patterns.length];
     
     // Genera el estilo del patrón y lo combina con el color de fondo.
     const patternStyle = patternGenerator(patternColor);
     
     return {
-        backgroundColor: background,
+        backgroundColor,
         ...patternStyle
     };
 };
