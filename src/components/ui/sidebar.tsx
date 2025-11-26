@@ -91,7 +91,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       <aside
         className={cn(
           "fixed top-0 left-0 z-50 h-screen flex flex-col transition-all duration-300 ease-in-out shadow-xl",
-          "bg-card border-r border-sidebar-border",
+          "border-r border-sidebar-border",
           isMobile ? `w-72 ${mobileClasses}` : desktopClasses
         )}
       >
@@ -117,7 +117,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         isCollapsed ? "justify-center h-12 w-12" : "p-3",
         isActive
           ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-inner"
-          : "text-sidebar-muted-foreground hover:bg-black/10 hover:text-sidebar-foreground"
+          : "text-sidebar-muted-foreground hover:bg-black/20 hover:text-sidebar-foreground"
       )}>
         <GradientIcon icon={item.icon} isActive={isActive} />
         {!isCollapsed && <span className="whitespace-nowrap">{item.label}</span>}
