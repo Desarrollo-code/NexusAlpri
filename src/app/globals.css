@@ -24,7 +24,7 @@
     --border: 220 10% 88%;
     --input: 220 10% 92%;
     --ring: 250 65% 65%;
-    --radius: 0.75rem;
+    --radius: 2rem;
 
     /* Fuentes */
     --font-body: 'Inter', sans-serif;
@@ -66,6 +66,8 @@
     --border: 220 10% 20%;
     --input: 220 10% 18%;
 
+    /* Los colores de la sidebar en modo oscuro heredan los del modo claro por defecto */
+    /* para mantener la consistencia del branding del tema elegido. */
     --sidebar-foreground: 0 0% 100%;
     --sidebar-muted-foreground: 250 20% 85%;
     --sidebar-accent-foreground: 0 0% 100%;
@@ -77,19 +79,13 @@
   /* ======================================================= */
   /* ================= TEMAS PERSONALIZADOS ================= */
   /* ======================================================= */
-  [data-theme="light"] {
+  [data-theme="light"], [data-theme="dark"] {
     --primary: 224 71% 56%;
     --sidebar-header-background: 222 47% 21%;
     --sidebar-body-background: 224 71% 56%;
     --sidebar-footer-background: 222 47% 21%;
     --sidebar-accent: 222 47% 31%;
-  }
-  [data-theme="dark"] {
-    --primary: 224 71% 56%;
-    --sidebar-header-background: 222 47% 21%;
-    --sidebar-body-background: 224 71% 56%;
-    --sidebar-footer-background: 222 47% 21%;
-    --sidebar-accent: 222 47% 31%;
+    --sidebar-border: 222 47% 18%;
   }
   
   [data-theme="ruby"] {
@@ -98,6 +94,7 @@
     --sidebar-body-background: 350 70% 55%;
     --sidebar-footer-background: 350 40% 30%;
     --sidebar-accent: 350 50% 45%;
+    --sidebar-border: 350 40% 25%;
     --chart-1: 350 70% 55%; --chart-2: 0 60% 50%; --chart-3: 330 80% 60%; --chart-4: 20 70% 50%; --chart-5: 355 65% 65%;
   }
   
@@ -107,6 +104,7 @@
     --sidebar-body-background: 25 85% 58%;
     --sidebar-footer-background: 20 50% 35%;
     --sidebar-accent: 20 60% 48%;
+    --sidebar-border: 20 50% 30%;
     --chart-1: 25 85% 58%; --chart-2: 40 80% 55%; --chart-3: 15 75% 60%; --chart-4: 50 90% 50%; --chart-5: 30 70% 65%;
   }
   
@@ -116,15 +114,17 @@
     --sidebar-body-background: 210 80% 55%;
     --sidebar-footer-background: 210 50% 30%;
     --sidebar-accent: 210 60% 45%;
+    --sidebar-border: 210 50% 25%;
     --chart-1: 210 80% 55%; --chart-2: 190 75% 50%; --chart-3: 170 65% 45%; --chart-4: 220 85% 60%; --chart-5: 200 70% 58%;
   }
 
   [data-theme="lavender"] {
     --primary: 255 60% 60%;
-    --sidebar-header-background: 255 45% 25%;
+    --sidebar-header-background: 255 35% 35%;
     --sidebar-body-background: 255 60% 60%;
-    --sidebar-footer-background: 255 45% 25%;
+    --sidebar-footer-background: 255 35% 35%;
     --sidebar-accent: 255 50% 50%;
+    --sidebar-border: 255 35% 30%;
     --chart-1: 255 70% 60%; --chart-2: 270 65% 65%; --chart-3: 240 75% 70%; --chart-4: 285 70% 55%; --chart-5: 250 80% 75%;
   }
   
@@ -134,6 +134,7 @@
     --sidebar-body-background: 160 70% 45%;
     --sidebar-footer-background: 160 50% 25%;
     --sidebar-accent: 160 60% 35%;
+    --sidebar-border: 160 50% 20%;
     --chart-1: 160 70% 45%; --chart-2: 140 60% 40%; --chart-3: 170 75% 50%; --chart-4: 150, 65%, 55%; --chart-5: 180 55% 48%;
   }
   
@@ -143,6 +144,7 @@
     --sidebar-body-background: 100 45% 45%;
     --sidebar-footer-background: 100 30% 25%;
     --sidebar-accent: 100 35% 35%;
+    --sidebar-border: 100 30% 20%;
     --chart-1: 100 45% 45%; --chart-2: 85 50% 40%; --chart-3: 110 40% 50%; --chart-4: 90 60% 35%; --chart-5: 120 35% 55%;
   }
 
@@ -152,6 +154,7 @@
     --sidebar-body-background: 40 90% 55%;
     --sidebar-footer-background: 25 55% 35%;
     --sidebar-accent: 30 70% 45%;
+    --sidebar-border: 25 55% 30%;
     --chart-1: 40 90% 55%; --chart-2: 50 95% 60%; --chart-3: 30 85% 50%; --chart-4: 20 80% 65%; --chart-5: 45 100% 58%;
   }
 
@@ -161,6 +164,7 @@
     --sidebar-body-background: 220 15% 50%;
     --sidebar-footer-background: 220 10% 25%;
     --sidebar-accent: 220 12% 40%;
+    --sidebar-border: 220 10% 20%;
     --chart-1: 220 15% 50%; --chart-2: 210 10% 60%; --chart-3: 230 20% 55%; --chart-4: 200 12% 45%; --chart-5: 225 18% 65%;
   }
 
