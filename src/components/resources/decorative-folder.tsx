@@ -70,14 +70,19 @@ const getUniqueFolderStyle = (id: number | string): React.CSSProperties => {
         ? getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()
         : '210 90% 55%'; // Fallback a azul
 
-    // Usamos colord para manipular el color. HSL es más fácil de variar.
+    // Usamos colord para manipular el color. LCH es mejor para variaciones perceptuales.
     const baseColor = colord(`hsl(${primaryColorVar})`);
 
     // Variar el matiz (hue) ligeramente para crear variedad entre carpetas.
     const hueVariation = (numericId % 30) - 15; // Variación entre -15 y 15
-    
-    // Crear colores de fondo y patrón con diferentes niveles de luminosidad.
-    const backgroundColor = baseColor.hue(baseColor.hue() + hueVariation).lightness(45).saturate(0.1).toHslString();
+    const newHue = baseColor.hue() + hueVariation;
+
+    // Crear un color de fondo más claro y menos saturado.
+    const backgroundColor = baseColor
+        .lch({ l: 85, c: 20, h: newHue })
+        .toRgbString();
+
+    // Crear un color para el patrón que sea ligeramente más oscuro y sutil.
     const patternColor = colord(backgroundColor).darken(0.1).alpha(0.5).toRgbString();
 
     const patternGenerator = patterns[numericId % patterns.length];
