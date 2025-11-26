@@ -5,7 +5,8 @@ import type { MotivationalMessageTriggerType } from '@/types';
 import { colord, extend } from 'colord';
 import lchPlugin from 'colord/plugins/lch';
 
-// Registra el plugin LCH para poder usarlo en toda la aplicación.
+// Registra el plugin LCH una sola vez a nivel de módulo.
+// Esto asegura que estará disponible para cualquier función que lo necesite.
 extend([lchPlugin]);
 
 
