@@ -2,7 +2,7 @@
 'use client';
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { colord } from 'colord';
+import { colord } from '@/lib/color';
 import { getProcessColors } from '@/lib/utils';
 
 

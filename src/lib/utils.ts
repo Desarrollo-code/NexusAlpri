@@ -2,13 +2,7 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import type { MotivationalMessageTriggerType } from '@/types';
-import { colord, extend } from 'colord';
-import lchPlugin from 'colord/plugins/lch';
-
-// Registra el plugin LCH una sola vez a nivel de módulo.
-// Esto asegura que estará disponible para cualquier función que lo necesite.
-extend([lchPlugin]);
-
+import { colord } from '@/lib/color'; // CORREGIDO: Importar desde el módulo centralizado
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -150,14 +144,14 @@ const stringToHash = (str: string): number => {
 };
 
 export const getProcessColors = (id: string) => {
-    const hash = stringToHash(id);
-    const primaryColorVar = typeof window !== 'undefined' 
+    const primaryColorVar = (typeof window !== 'undefined')
         ? getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()
         : '210 90% 55%'; // Fallback a azul
 
     const baseColor = colord(`hsl(${primaryColorVar})`);
     
     // Generar variaciones de color basadas en el hash del ID del proceso
+    const hash = stringToHash(id);
     const hueVariation = (hash % 60) - 30; // -30 a +30
     const newHue = (baseColor.toLch().h + hueVariation + 360) % 360;
 
