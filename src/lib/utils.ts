@@ -1,13 +1,8 @@
+
 // src/lib/utils.ts
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import type { MotivationalMessageTriggerType } from '@/types';
-import { colord, extend } from 'colord';
-import lchPlugin from 'colord/plugins/lch';
-
-// Se registra el plugin LCH aquí, de forma global para el módulo.
-// Esto asegura que cualquier importación de `colord` en este archivo tendrá el plugin disponible.
-extend([lchPlugin]);
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -148,28 +143,52 @@ const stringToHash = (str: string): number => {
     return Math.abs(hash);
 };
 
+// Función para convertir HSL a RGB
+function hslToRgb(h: number, s: number, l: number): { r: number; g: number; b: number } {
+    s /= 100;
+    l /= 100;
+    const k = (n: number) => (n + h / 30) % 12;
+    const a = s * Math.min(l, 1 - l);
+    const f = (n: number) => l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
+    return { r: 255 * f(0), g: 255 * f(8), b: 255 * f(4) };
+}
+
 export const getProcessColors = (id: string) => {
-    const primaryColorVar = (typeof window !== 'undefined')
-        ? getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()
-        : '210 90% 55%'; // Fallback a azul
+    // Definimos un color base de fallback en caso de que no se puedan obtener las variables CSS
+    // (ej. en un entorno de servidor sin DOM)
+    const fallbackPrimaryHsl = { h: 210, s: 90, l: 55 };
+    let primaryHsl = fallbackPrimaryHsl;
 
-    const baseColor = colord(`hsl(${primaryColorVar})`);
+    if (typeof window !== 'undefined') {
+        const primaryColorVar = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+        const parts = primaryColorVar.match(/(\d+)\s*(\d+)%?\s*(\d+)%?/);
+        if (parts) {
+            primaryHsl = {
+                h: parseInt(parts[1], 10),
+                s: parseInt(parts[2], 10),
+                l: parseInt(parts[3], 10),
+            };
+        }
+    }
     
-    // Generar variaciones de color basadas en el hash del ID del proceso
+    // Generar una variación de tono basada en el hash del ID
     const hash = stringToHash(id);
-    const hueVariation = (hash % 60) - 30; // -30 a +30
-    const newHue = (baseColor.toLch().h + hueVariation + 360) % 360;
+    const hueVariation = (hash % 60) - 30; // Rango de -30 a +30
+    const newHue = (primaryHsl.h + hueVariation + 360) % 360;
 
-    // Generar un color de fondo claro y uno de texto oscuro dentro del mismo tono
-    const lightColor = baseColor.lch({ l: 92, c: 15, h: newHue }).toRgbString();
-    const darkColor = baseColor.lch({ l: 30, c: 40, h: newHue }).toRgbString();
-    const mediumColor = baseColor.lch({ l: 75, c: 30, h: newHue }).toRgbString();
-    
+    // Generar un color de fondo claro y uno de texto oscuro
+    // Tono claro: luminosidad alta (ej. 92%) y saturación baja (ej. 75% del original)
+    const lightRgb = hslToRgb(newHue, primaryHsl.s * 0.75, 92);
+    // Tono oscuro: luminosidad baja (ej. 30%) y saturación alta (ej. 100% del original)
+    const darkRgb = hslToRgb(newHue, primaryHsl.s, 30);
+    // Tono medio: para el borde de la carpeta
+    const mediumRgb = hslToRgb(newHue, primaryHsl.s * 0.85, 75);
+
     return {
         raw: {
-            light: lightColor,
-            dark: darkColor,
-            medium: mediumColor
+            light: `rgb(${lightRgb.r.toFixed(0)}, ${lightRgb.g.toFixed(0)}, ${lightRgb.b.toFixed(0)})`,
+            dark: `rgb(${darkRgb.r.toFixed(0)}, ${darkRgb.g.toFixed(0)}, ${darkRgb.b.toFixed(0)})`,
+            medium: `rgb(${mediumRgb.r.toFixed(0)}, ${mediumRgb.g.toFixed(0)}, ${mediumRgb.b.toFixed(0)})`
         }
     };
 };
