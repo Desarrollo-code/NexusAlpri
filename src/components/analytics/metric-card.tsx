@@ -26,7 +26,7 @@ export const MetricCard = ({ title, value, icon: Icon, description, suffix = '',
     const animatedValue = useAnimatedCounter(value, 0, 1000);
     const colorVar = `var(--chart-${(index % 5) + 1})`;
     
-    // El texto ahora es siempre oscuro para un mejor contraste sobre los fondos pastel claros.
+    // El texto ahora es siempre oscuro (negro) para un mejor contraste.
     const textColor = 'hsl(var(--card-foreground))';
     const bgColor = `hsl(${colorVar})`;
 
@@ -43,7 +43,7 @@ export const MetricCard = ({ title, value, icon: Icon, description, suffix = '',
             }}
         >
             <div className="flex justify-between items-start z-10">
-                <p className="text-sm font-semibold" style={{ color: `hsl(${colorVar})` }}>{title}</p>
+                <p className="text-sm font-semibold" style={{ color: textColor }}>{title}</p>
                  <div className="h-8 w-8 flex items-center justify-center rounded-full" style={{ backgroundColor: `hsl(${colorVar} / 0.15)`}}>
                     <Icon className="h-5 w-5" style={{ color: `hsl(${colorVar})` }} />
                 </div>
