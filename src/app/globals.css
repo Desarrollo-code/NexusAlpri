@@ -35,14 +35,14 @@
     --font-headline: 'Space Grotesk', sans-serif;
     
     /* === BARRA LATERAL TEMA POR DEFECTO === */
-    --sidebar-header-background: 220 25% 18%;
-    --sidebar-body-background: 220 20% 98%;
-    --sidebar-footer-background: 220 25% 18%;
+    --sidebar-header-background: 210 30% 25%;
+    --sidebar-body-background: 210 30% 94%;
+    --sidebar-footer-background: 210 30% 25%;
     --sidebar-accent: 0 0% 100%;
-    --sidebar-border: 220 25% 15%;
+    --sidebar-border: 210 30% 20%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-muted-foreground: 220 15% 15%;
-    --sidebar-accent-foreground: 220 25% 18%;
+    --sidebar-accent-foreground: 210 30% 25%;
   }
 
   .dark {

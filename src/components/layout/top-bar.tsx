@@ -142,13 +142,14 @@ export const TopBar = () => {
                  <Popover onOpenChange={(open) => { if (open) fetchNotifications() }}>
                     <PopoverTrigger asChild>
                         <Button variant="ghost" size="icon" className="relative text-foreground/70 hover:text-foreground hover:bg-black/10 transition-colors">
-                             {unreadCount > 0 ? <BellRing className="h-5 w-5" /> : <Bell className="h-5 w-5"/>}
-                            {unreadCount > 0 && (
-                                <span className="absolute top-1 right-1 flex h-4 w-4">
-                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
-                                  <span className="relative inline-flex rounded-full h-4 w-4 bg-destructive items-center justify-center text-xs text-destructive-foreground">{unreadCount}</span>
-                                </span>
-                            )}
+                             {unreadCount > 0 ? (
+                                <div className="relative">
+                                    <BellRing className="h-6 w-6 animate-wave" />
+                                    <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                                      <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 items-center justify-center text-xs font-bold text-white">{unreadCount}</span>
+                                    </span>
+                                </div>
+                             ) : <Bell className="h-6 w-6"/>}
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-80 p-0" align="end">
