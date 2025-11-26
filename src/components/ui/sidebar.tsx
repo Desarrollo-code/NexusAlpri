@@ -92,7 +92,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
         className={cn(
           "group fixed top-0 left-0 z-50 h-screen flex flex-col transition-all duration-300 ease-in-out",
           // Efecto de borde difuminado
-          "after:content-[''] after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gradient-to-b after:from-transparent via-border/50 to-transparent",
+          "after:content-[''] after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gradient-to-b after:from-transparent via-sidebar-border/30 to-transparent",
           isMobile ? `w-72 ${mobileClasses}` : desktopClasses
         )}
       >
@@ -215,7 +215,7 @@ const SectionItem = ({ item }: { item: NavItem }) => {
             <AccordionItem value={item.id} className="border-b-0">
                 <SidebarSectionHeader item={item} isActive={isActive} />
                 <AccordionContent className="pl-6 pt-0 pb-0">
-                    <div className="space-y-1 mt-1 border-l-2 border-[hsl(var(--sidebar-border))]">
+                    <div className="space-y-1 mt-1 border-l-2 border-sidebar-muted-foreground/30">
                         {item.children?.map(child => <SidebarMenuItem key={child.id} item={child} />)}
                     </div>
                 </AccordionContent>
