@@ -90,8 +90,9 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       )}
       <aside
         className={cn(
-          "fixed top-0 left-0 z-50 h-screen flex flex-col transition-all duration-300 ease-in-out shadow-xl",
-          "border-r border-[hsl(var(--sidebar-border))]",
+          "group fixed top-0 left-0 z-50 h-screen flex flex-col transition-all duration-300 ease-in-out shadow-xl",
+          "after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gradient-to-b after:from-transparent after:via-sidebar-border/50 after:to-transparent",
+          "hover:after:via-sidebar-border/80",
           isMobile ? `w-72 ${mobileClasses}` : desktopClasses
         )}
       >
