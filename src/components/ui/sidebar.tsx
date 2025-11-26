@@ -253,7 +253,7 @@ export const SidebarFooter = () => {
     return (
         <div className="p-3 shadow-[0_-4px_6px_-2px_hsla(var(--sidebar-border),0.5)] flex flex-col gap-2 bg-[hsl(var(--sidebar-footer-background))] z-10">
              {!isCollapsed && settings?.projectVersion && (
-                <div className="px-3 py-2 text-center text-xs text-sidebar-muted-foreground">
+                <div className="px-3 py-2 text-center text-xs text-sidebar-foreground">
                     Versión: {settings.projectVersion}
                 </div>
              )}
@@ -261,7 +261,7 @@ export const SidebarFooter = () => {
                 onClick={logout}
                 variant="ghost"
                 className={cn(
-                    "w-full text-sidebar-muted-foreground hover:bg-red-500/20 hover:text-red-400",
+                    "w-full text-sidebar-foreground hover:bg-white/10 hover:text-white",
                     isCollapsed ? 'justify-center p-0 h-10' : 'justify-start gap-3 p-3'
                 )}
             >
@@ -272,7 +272,7 @@ export const SidebarFooter = () => {
                 onClick={toggleSidebar}
                 variant="ghost"
                 size="icon"
-                className="w-full h-10 text-sidebar-muted-foreground hover:bg-black/10 hover:text-sidebar-foreground"
+                className="w-full h-10 text-sidebar-foreground hover:bg-white/10 hover:text-white"
             >
                 {isCollapsed ? <ChevronRightCircle className="h-6 w-6"/> : <ChevronLeftCircle className="h-6 w-6"/>}
             </Button>
