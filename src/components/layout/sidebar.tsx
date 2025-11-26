@@ -90,8 +90,9 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       )}
       <aside
         className={cn(
-          "fixed top-0 left-0 z-50 h-screen flex flex-col transition-all duration-300 ease-in-out shadow-xl",
-          "border-r border-sidebar-border",
+          "group fixed top-0 left-0 z-50 h-screen flex flex-col transition-all duration-300 ease-in-out",
+          // Efecto de borde difuminado
+          "after:content-[''] after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gradient-to-b after:from-transparent via-sidebar-border/30 to-transparent",
           isMobile ? `w-72 ${mobileClasses}` : desktopClasses
         )}
       >
@@ -116,7 +117,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         "flex items-center gap-3 rounded-lg transition-all duration-300 font-semibold group/menu-item relative",
         isCollapsed ? "justify-center h-12 w-12" : "p-3",
         isActive
-          ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-inner"
+          ? "bg-[hsl(var(--sidebar-accent))] text-sidebar-accent-foreground shadow-inner"
           : "text-sidebar-muted-foreground hover:bg-black/20 hover:text-sidebar-foreground"
       )}>
         <GradientIcon icon={item.icon} isActive={isActive} />
@@ -214,7 +215,7 @@ const SectionItem = ({ item }: { item: NavItem }) => {
             <AccordionItem value={item.id} className="border-b-0">
                 <SidebarSectionHeader item={item} isActive={isActive} />
                 <AccordionContent className="pl-6 pt-0 pb-0">
-                    <div className="space-y-1 mt-1 border-l-2 border-sidebar-border/50">
+                    <div className="space-y-1 mt-1 border-l-2 border-sidebar-muted-foreground/30">
                         {item.children?.map(child => <SidebarMenuItem key={child.id} item={child} />)}
                     </div>
                 </AccordionContent>
@@ -250,7 +251,7 @@ export const SidebarFooter = () => {
     if (isMobile) return null;
 
     return (
-        <div className="p-3 shadow-[0_-4px_6px_-2px_hsl(var(--sidebar-border)/0.5)] flex flex-col gap-2 bg-[hsl(var(--sidebar-footer-background))] z-10">
+        <div className="p-3 shadow-[0_-4px_6px_-2px_hsla(var(--sidebar-border),0.5)] flex flex-col gap-2 bg-[hsl(var(--sidebar-footer-background))] z-10">
              {!isCollapsed && settings?.projectVersion && (
                 <div className="px-3 py-2 text-center text-xs text-sidebar-muted-foreground">
                     Versión: {settings.projectVersion}
