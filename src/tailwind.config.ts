@@ -33,6 +33,7 @@ const config: Config = {
         'gradient-purple': 'linear-gradient(to right bottom, hsl(var(--chart-5)), hsl(var(--chart-5)/0.8))',
         'gradient-orange': 'linear-gradient(to right bottom, hsl(var(--chart-4)), hsl(var(--chart-4)/0.8))',
         'gradient-pink': 'linear-gradient(to right bottom, hsl(var(--chart-3)), hsl(var(--chart-3)/0.8))',
+        'sidebar-active-gradient': 'linear-gradient(to right, hsl(var(--primary)), hsl(260, 80%, 70%))',
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -92,7 +93,15 @@ const config: Config = {
           orange: 'hsl(var(--event-orange))',
         },
         sidebar: {
-          background: 'hsl(var(--sidebar-background))',
+          header: {
+            background: 'hsl(var(--sidebar-header-background))'
+          },
+          body: {
+            background: 'hsl(var(--sidebar-body-background))'
+          },
+          footer: {
+            background: 'hsl(var(--sidebar-footer-background))'
+          },
           foreground: 'hsl(var(--sidebar-foreground))',
           muted: {
             foreground: 'hsl(var(--sidebar-muted-foreground))',

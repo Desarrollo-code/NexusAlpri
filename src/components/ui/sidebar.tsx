@@ -90,8 +90,8 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       )}
       <aside
         className={cn(
-          "fixed top-0 left-0 z-50 h-screen flex flex-col transition-all duration-300 ease-in-out shadow-xl",
-          "bg-card border-r border-border",
+          "fixed top-0 left-0 z-50 h-screen flex flex-col transition-all duration-300 ease-in-out",
+          "bg-sidebar-body-background border-r border-sidebar-border",
           isMobile ? `w-72 ${mobileClasses}` : desktopClasses
         )}
       >
@@ -116,7 +116,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         "flex items-center gap-3 rounded-lg transition-all duration-300 font-semibold group/menu-item relative",
         isCollapsed ? "justify-center h-12 w-12" : "p-3",
         isActive
-          ? "bg-sidebar-accent text-sidebar-accent-foreground shadow"
+          ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-inner"
           : "text-sidebar-muted-foreground hover:bg-black/10 hover:text-sidebar-foreground"
       )}>
         <GradientIcon icon={item.icon} isActive={isActive} />
@@ -230,7 +230,7 @@ export const SidebarContent = () => {
 
     return (
         <TooltipProvider delayDuration={100}>
-            <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-1 thin-scrollbar bg-[hsl(var(--sidebar-body-background))]">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-1 thin-scrollbar bg-sidebar-body-background">
                 {navItems.map((item) => {
                     if (item.children && item.children.length > 0) {
                         return <SectionItem key={item.id} item={item} />;
@@ -250,12 +250,23 @@ export const SidebarFooter = () => {
     if (isMobile) return null;
 
     return (
-        <div className="p-3 shadow-[0_-4px_6px_-2px_hsl(var(--sidebar-border)/0.5)] flex flex-col gap-2 bg-[hsl(var(--sidebar-footer-background))] z-10">
+        <div className="p-3 shadow-[0_-4px_6px_-2px_hsl(var(--sidebar-border)/0.5)] flex flex-col gap-2 bg-sidebar-footer-background z-10">
              {!isCollapsed && settings?.projectVersion && (
                 <div className="px-3 py-2 text-center text-xs text-sidebar-muted-foreground">
                     Versión: {settings.projectVersion}
                 </div>
              )}
+            <Button
+                onClick={logout}
+                variant="ghost"
+                className={cn(
+                    "w-full text-sidebar-muted-foreground hover:bg-red-500/20 hover:text-red-400",
+                    isCollapsed ? 'justify-center p-0 h-10' : 'justify-start gap-3 p-3'
+                )}
+            >
+                <LogOut className="h-5 w-5" />
+                {!isCollapsed && <span className="font-semibold">Cerrar Sesión</span>}
+            </Button>
             <Button
                 onClick={toggleSidebar}
                 variant="ghost"
