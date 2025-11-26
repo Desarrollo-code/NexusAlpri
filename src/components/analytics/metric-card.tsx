@@ -5,7 +5,7 @@ import { useAnimatedCounter } from "@/hooks/use-animated-counter"
 import { cn } from "@/lib/utils";
 import React from "react";
 
-const GRADIENT_CLASSES = {
+const GRADIENT_CLASSES: Record<string, string> = {
     'bg-gradient-blue': 'from-blue-400 to-blue-500',
     'bg-gradient-green': 'from-green-400 to-green-500',
     'bg-gradient-purple': 'from-purple-400 to-purple-500',
@@ -13,7 +13,9 @@ const GRADIENT_CLASSES = {
     'bg-gradient-orange': 'from-orange-400 to-orange-500',
 };
 
-export const MetricCard = ({ title, value, icon: Icon, description, suffix = '', index = 0, onClick, gradient }: { 
+const gradientKeys = Object.keys(GRADIENT_CLASSES);
+
+export const MetricCard = ({ title, value, icon: Icon, description, suffix = '', index = 0, onClick }: { 
     title: string; 
     value: number; 
     icon: React.ElementType; 
@@ -21,14 +23,13 @@ export const MetricCard = ({ title, value, icon: Icon, description, suffix = '',
     suffix?: string; 
     index?: number;
     onClick?: () => void;
-    gradient?: keyof typeof GRADIENT_CLASSES;
 }) => {
     const animatedValue = useAnimatedCounter(value, 0, 1000);
     const colorVar = `var(--chart-${(index % 5) + 1})`;
     
-    // El texto ahora es siempre oscuro (negro) para un mejor contraste.
     const textColor = 'hsl(var(--card-foreground))';
-    const bgColor = `hsl(${colorVar})`;
+    const bgColor = `hsl(${colorVar} / 0.1)`;
+    const gradientClass = gradientKeys[index % gradientKeys.length];
 
     return (
         <Card 
@@ -38,14 +39,17 @@ export const MetricCard = ({ title, value, icon: Icon, description, suffix = '',
                 onClick && "cursor-pointer"
             )}
             style={{ 
-                backgroundColor: `hsl(${colorVar} / 0.1)`,
+                backgroundColor: bgColor,
                 borderColor: `hsl(${colorVar} / 0.3)`
             }}
         >
             <div className="flex justify-between items-start z-10">
                 <p className="text-sm font-semibold" style={{ color: textColor }}>{title}</p>
-                 <div className="h-8 w-8 flex items-center justify-center rounded-full" style={{ backgroundColor: `hsl(${colorVar} / 0.15)`}}>
-                    <Icon className="h-5 w-5" style={{ color: `hsl(${colorVar})` }} />
+                 <div className={cn(
+                     "h-8 w-8 flex items-center justify-center rounded-lg text-white shadow-md",
+                     gradientClass
+                 )}>
+                    <Icon className="h-5 w-5" />
                 </div>
             </div>
             
