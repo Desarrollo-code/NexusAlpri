@@ -59,7 +59,10 @@ function ThemeToggle() {
           <DropdownMenuRadioGroup value={theme} onValueChange={handleThemeChange}>
             {AVAILABLE_THEMES.map((t) => (
              <DropdownMenuRadioItem key={t.value} value={t.value}>
-              {t.label}
+              <div className="flex items-center gap-2">
+                <div className="h-4 w-4 rounded-full" style={{ background: `linear-gradient(45deg, ${t.colors[0]}, ${t.colors[1]})` }}/>
+                {t.label}
+              </div>
              </DropdownMenuRadioItem>
           ))}
           </DropdownMenuRadioGroup>

@@ -453,7 +453,7 @@ const ThemeSelectorCard = ({ className }: { className?: string }) => {
           <CardDescription>Elige tu paleta de colores preferida.</CardDescription>
         </CardHeader>
         <CardContent>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-3 xl:grid-cols-5 gap-3">
               {AVAILABLE_THEMES.map((t) => (
                 <TooltipProvider key={t.value} delayDuration={100}>
                     <Tooltip>
