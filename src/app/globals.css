@@ -4,36 +4,31 @@
 
 @layer base {
   :root {
-    /* Paleta de colores base (Tema Claro por defecto) */
-    --background: 220 20% 99%;
+    /* Paleta Tonal basada en el tema claro por defecto */
+    --background: 220 60% 97%;
     --foreground: 220 15% 15%;
-    --card: 0 0% 100%;
+    --card: 220 60% 99%;
     --card-foreground: 220 15% 15%;
-    --popover: 0 0% 100%;
+    --popover: 220 60% 99%;
     --popover-foreground: 220 15% 15%;
-    --primary: 210 90% 55%; /* Azul vibrante */
+    --primary: 224 71% 56%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 10% 90%; /* Gris claro neutro */
+    --secondary: 220 10% 90%; 
     --secondary-foreground: 220 10% 10%;
     --muted: 220 10% 95%;
     --muted-foreground: 220 5% 45%;
-    --accent: 25 90% 60%; /* Naranja cálido */
+    --accent: 25 90% 60%; 
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 80% 60%; /* Rojo claro */
+    --destructive: 0 80% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 10% 88%;
-    --input: 220 10% 92%;
-    --ring: 210 90% 55%;
-    --radius: 2rem;
+    --border: 220 15% 90%;
+    --input: 220 15% 94%;
+    --ring: 224 71% 50%;
+    --radius: 0.75rem;
 
-    /* Nueva paleta de colores para gráficos */
+    /* Gráficos y Eventos */
     --chart-1: 221 83% 53%; --chart-2: 160 60% 45%; --chart-3: 340 82% 52%; --chart-4: 35 91% 55%; --chart-5: 262 74% 50%;
-    
-    /* Colores para eventos del calendario */
-    --event-blue: 210 90% 55%;
-    --event-green: 145 63% 42%;
-    --event-red: 0 80% 60%;
-    --event-orange: 25 90% 60%;
+    --event-blue: 210 90% 55%; --event-green: 145 63% 42%; --event-red: 0 80% 60%; --event-orange: 25 90% 60%;
 
     /* Fuentes */
     --font-body: 'Inter', sans-serif;
@@ -41,33 +36,29 @@
   }
 
   .dark {
-    /* Tema oscuro con colores complementarios */
-    --background: 220 15% 8%;
+    /* Paleta Tonal para el modo oscuro */
+    --background: 220 15% 5%;
     --foreground: 220 10% 95%;
-    --card: 220 15% 12%;
+    --card: 220 15% 9%;
     --card-foreground: 220 10% 95%;
-    --popover: 220, 15%, 8%;
-    --popover-foreground: 220, 10%, 95%;
-    --primary: 210 90% 65%; /* Azul más brillante */
+    --popover: 220 15% 9%;
+    --popover-foreground: 220 10% 95%;
+    --primary: 224 71% 60%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 10% 20%;
+    --secondary: 220 10% 15%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 220 10% 16%;
+    --muted: 220 10% 12%;
     --muted-foreground: 220 5% 65%;
-    --accent: 25 90% 65%; /* Naranja más brillante */
+    --accent: 25 80% 60%;
     --accent-foreground: 0 0% 10%;
     --destructive: 0 70% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 220 10% 20%;
-    --input: 220 10% 18%;
-    --ring: 210 90% 65%;
+    --border: 220 10% 15%;
+    --input: 220 10% 14%;
+    --ring: 224 71% 55%;
     
     /* Gráficos en tema oscuro */
-    --chart-1: 216 80% 65%; /* blue */
-    --chart-2: 158 55% 55%; /* emerald */
-    --chart-3: 336 75% 65%; /* fuchsia */
-    --chart-4: 36 85% 60%;  /* amber */
-    --chart-5: 262 80% 70%; /* violet */
+    --chart-1: 216 80% 65%; --chart-2: 158 55% 55%; --chart-3: 336 75% 65%; --chart-4: 36 85% 60%; --chart-5: 262 80% 70%;
   }
 
   [data-theme="light"], [data-theme="dark"] {
@@ -136,11 +127,11 @@
   }
   
   [data-theme="mint"] {
-    --primary: 160 70% 48%; /* El mismo color que el cuerpo */
+    --primary: 160 70% 48%;
     --sidebar-header-background: 160 50% 30%;
-    --sidebar-body-background: 160 70% 48%; /* Tono menta principal */
+    --sidebar-body-background: 160 70% 48%;
     --sidebar-footer-background: 160 50% 30%;
-    --sidebar-accent: 160 60% 40%; /* Un poco más oscuro para el hover/activo */
+    --sidebar-accent: 160 60% 40%;
     --sidebar-border: 160 50% 25%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-muted-foreground: 160 50% 85%;
