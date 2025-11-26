@@ -4,7 +4,7 @@
 import { cn } from "@/lib/utils";
 import { useSidebar } from "../ui/sidebar";
 import { Button } from "../ui/button";
-import { Bell, PanelLeft, ArrowLeft } from "lucide-react";
+import { Bell, PanelLeft, ArrowLeft, BellRing } from "lucide-react";
 import { UserAvatarDropdown } from "./user-avatar-dropdown";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Separator } from "../ui/separator";
@@ -114,24 +114,24 @@ export const TopBar = () => {
     return (
         <div className={cn(
             "flex items-center justify-between h-20 px-4 shrink-0 sticky top-0 z-30",
-            "bg-[hsl(var(--sidebar-body-background))] text-primary-foreground border-b border-black/10 dark:border-white/10"
+            "bg-[hsl(var(--sidebar-body-background))] text-foreground border-b border-black/10 dark:border-white/10"
         )}>
             {/* Left side */}
             <div className="flex items-center gap-2 flex-1 min-w-0">
                  {isMobile ? (
-                    <Button onClick={toggleSidebar} variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground hover:bg-black/20">
+                    <Button onClick={toggleSidebar} variant="ghost" size="icon" className="h-8 w-8 text-foreground hover:bg-black/10">
                         <PanelLeft className="h-5 w-5"/>
                         <span className="sr-only">Toggle Menu</span>
                     </Button>
                  ) : showBackButton ? (
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground hover:bg-black/20" onClick={() => router.back()}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-foreground hover:bg-black/10" onClick={() => router.back()}>
                         <ArrowLeft className="h-4 w-4"/>
                         <span className="sr-only">Volver</span>
                     </Button>
                  ) : (
                     <div className="w-8"/> // Placeholder to keep alignment
                  )}
-                 <h1 className="text-xl font-bold truncate">
+                 <h1 className="text-xl font-bold truncate text-foreground">
                     {currentPageTitle}
                  </h1>
             </div>
@@ -141,8 +141,8 @@ export const TopBar = () => {
                  {headerActions && <div className="hidden md:flex items-center gap-2">{headerActions}</div>}
                  <Popover onOpenChange={(open) => { if (open) fetchNotifications() }}>
                     <PopoverTrigger asChild>
-                        <Button variant="ghost" size="icon" className="relative text-primary-foreground/70 hover:text-primary-foreground hover:bg-black/20 transition-colors">
-                            <Bell className="h-5 w-5"/>
+                        <Button variant="ghost" size="icon" className="relative text-foreground/70 hover:text-foreground hover:bg-black/10 transition-colors">
+                             {unreadCount > 0 ? <BellRing className="h-5 w-5" /> : <Bell className="h-5 w-5"/>}
                             {unreadCount > 0 && (
                                 <span className="absolute top-1 right-1 flex h-4 w-4">
                                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
@@ -184,7 +184,7 @@ export const TopBar = () => {
                          </div>
                     </PopoverContent>
                  </Popover>
-                <Separator orientation="vertical" className="h-8 bg-primary-foreground/20" />
+                <Separator orientation="vertical" className="h-8 bg-foreground/20" />
                 <UserAvatarDropdown />
             </div>
             {headerActions && isMobile && (
