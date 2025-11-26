@@ -90,8 +90,8 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       )}
       <aside
         className={cn(
-          "fixed top-0 left-0 z-50 h-screen flex flex-col transition-all duration-300 ease-in-out",
-          "bg-card shadow-[4px_0_12px_-4px_hsl(var(--sidebar-border)/0.5)]",
+          "fixed top-0 left-0 z-50 h-screen flex flex-col transition-all duration-300 ease-in-out shadow-xl",
+          "bg-card border-r border-border",
           isMobile ? `w-72 ${mobileClasses}` : desktopClasses
         )}
       >
@@ -244,7 +244,7 @@ export const SidebarContent = () => {
 
 
 export const SidebarFooter = () => {
-    const { settings } = useAuth();
+    const { logout, settings } = useAuth();
     const { isCollapsed, toggleSidebar, isMobile } = useSidebar();
 
     if (isMobile) return null;
