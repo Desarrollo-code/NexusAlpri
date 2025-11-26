@@ -5,7 +5,7 @@ import { useAnimatedCounter } from "@/hooks/use-animated-counter"
 import { cn } from "@/lib/utils";
 import React from "react";
 
-export const MetricCard = ({ title, value, icon: Icon, description, suffix = '', index = 0, onClick, gradient }: { 
+export const MetricCard = ({ title, value, icon: Icon, description, suffix = '', index = 0, onClick }: { 
     title: string; 
     value: number; 
     icon: React.ElementType; 
@@ -13,11 +13,11 @@ export const MetricCard = ({ title, value, icon: Icon, description, suffix = '',
     suffix?: string; 
     index?: number;
     onClick?: () => void;
-    gradient?: string;
 }) => {
     const animatedValue = useAnimatedCounter(value, 0, 1000);
     const colorVar = `var(--chart-${(index % 5) + 1})`;
     
+    // El texto ahora es siempre blanco para un mejor contraste sobre los fondos de color.
     const textColor = 'white';
 
     return (
