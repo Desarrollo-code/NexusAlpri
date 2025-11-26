@@ -566,13 +566,13 @@
       @apply text-xs;
     }
     .quill-editor .ql-toolbar .ql-stroke {
-      @apply !h-4 !w-4;
-    }
-    .quill-editor .ql-toolbar .ql-picker {
-      @apply !h-6;
-    }
-    .quill-editor .ql-toolbar button {
-      @apply !p-1 !h-6 !w-6;
-    }
+     @apply !h-4 !w-4;
   }
+   .quill-editor .ql-toolbar .ql-picker {
+     @apply !h-6;
+  }
+   .quill-editor .ql-toolbar button {
+     @apply !p-1 !h-6 !w-6;
+  }
+}
 }

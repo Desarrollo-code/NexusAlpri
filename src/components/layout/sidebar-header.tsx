@@ -19,7 +19,7 @@ export const SidebarHeader = () => {
              <Link href="/dashboard" className="inline-flex items-center gap-3 px-4">
                  <div className="relative h-12 w-12 flex-shrink-0 rounded-lg overflow-hidden bg-sidebar-accent/20">
                     {isLoading ? <Skeleton className="h-full w-full"/> : 
-                     settings?.logoUrl ? <Image src={settings.logoUrl} alt="Logo" fill className="object-contain p-1" /> : <div className="w-full h-full rounded-md bg-muted" />
+                     settings?.logoUrl ? <div className="relative w-full h-full"><Image src={settings.logoUrl} alt="Logo" fill className="object-contain p-1" /></div> : <div className="w-full h-full rounded-md bg-muted" />
                     }
                  </div>
                  <span className="text-xl font-bold text-sidebar-foreground whitespace-nowrap">{isLoading ? <Skeleton className="h-6 w-32"/> : settings?.platformName || 'NexusAlpri'}</span>
@@ -42,7 +42,7 @@ export const SidebarHeader = () => {
             {isLoading ? <Skeleton className="h-full w-full"/> : 
              settings?.logoUrl ? 
               <div className="relative w-full h-full">
-                <Image src={settings.logoUrl} alt="Logo" data-ai-hint="logo" className={cn("object-contain p-1.5")} />
+                <Image src={settings.logoUrl} alt="Logo" data-ai-hint="logo" quality={100} fill className={cn("object-contain p-1.5")} />
               </div> 
               : <div className="w-full h-full rounded-md bg-muted" />
             }
