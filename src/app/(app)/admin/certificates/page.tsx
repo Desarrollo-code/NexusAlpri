@@ -11,6 +11,7 @@ import { certificatesTour } from '@/lib/tour-steps';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
+
 const CertificatesSkeleton = () => (
     <div className="space-y-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
