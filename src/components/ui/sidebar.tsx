@@ -118,7 +118,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         isCollapsed ? "justify-center h-12 w-12" : "p-3",
         isActive
           ? "bg-primary text-primary-foreground"
-          : "text-foreground/70 hover:bg-black/10 hover:text-foreground"
+          : "text-foreground/70 hover:bg-primary/10 hover:text-foreground"
       )}>
         <GradientIcon icon={item.icon} isActive={isActive} />
         {!isCollapsed && <span className="whitespace-nowrap">{item.label}</span>}
