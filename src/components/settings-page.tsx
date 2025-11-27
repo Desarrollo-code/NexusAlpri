@@ -77,7 +77,6 @@ const UploadWidget = ({
   }
 
   useEffect(() => {
-    // Revoke object URL when component unmounts or image changes
     return () => {
       if (localPreview) {
         URL.revokeObjectURL(localPreview);
@@ -104,12 +103,12 @@ const UploadWidget = ({
         setIsUploading(false);
     }
   };
-
+  
   const handleFileSelectInternal = (files: FileList | null) => {
       if (files && files.length > 0) {
           handleUpload(files[0]);
       }
-  }
+  };
 
   const finalImageUrl = localPreview || currentImageUrl;
 
@@ -311,9 +310,7 @@ export default function SettingsPageComponent() {
   }
 
   if (!user || user.role !== 'ADMINISTRATOR') {
-    if (typeof window !== 'undefined') {
-        router.push('/dashboard');
-    }
+    router.push('/dashboard');
     return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>;
   }
   
@@ -502,70 +499,72 @@ export default function SettingsPageComponent() {
                 </div>
             </TabsContent>
             
-             <TabsContent value="general" className="mt-6 space-y-6">
-                <Card className="card-border-animated">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><List className="h-5 w-5 text-primary" />Categorías de Recursos</CardTitle>
-                        <CardDescription>Gestiona las categorías usadas en cursos y la biblioteca.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="newCategoryName">Nueva Categoría</Label>
-                            <div className="flex gap-2">
-                            <Input id="newCategoryName" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="Ej: Marketing" disabled={isSaving}/>
-                            <Button onClick={handleAddCategory} disabled={isSaving || !newCategory.trim()}>Añadir</Button>
-                            </div>
-                        </div>
-                        <Separator />
-                        <div>
-                            <h4 className="text-sm font-medium mb-3">Categorías Existentes:</h4>
-                            {formState.resourceCategories.length > 0 ? (
-                            <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
-                                {formState.resourceCategories.map(category => (
-                                <div key={category} className="flex items-center justify-between p-2.5 border rounded-lg bg-card text-sm">
-                                    <span className="flex items-center gap-2"><Tag className="h-4 w-4 text-muted-foreground"/>{category}</span>
-                                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:bg-destructive/10" onClick={() => setCategoryToDelete(category)} disabled={isSaving}><Trash2 className="h-4 w-4" /><span className="sr-only">Eliminar {category}</span></Button>
-                                </div>))}
-                            </div>
-                            ) : ( <p className="text-sm text-muted-foreground text-center py-4">No hay categorías.</p> )}
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card className="card-border-animated">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Rocket className="h-5 w-5 text-primary" />Hoja de Ruta (Roadmap)</CardTitle>
-                        <CardDescription>Configura las fases y la visibilidad de la página de la hoja de ruta del proyecto.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                       <div>
-                            <h4 className="text-sm font-medium mb-3">Fases de la Hoja de Ruta</h4>
+            <TabsContent value="general" className="mt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                    <Card className="card-border-animated">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><List className="h-5 w-5 text-primary" />Categorías de Recursos</CardTitle>
+                            <CardDescription>Gestiona las categorías usadas en cursos y la biblioteca.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
                             <div className="space-y-2">
-                                {(formState.roadmapPhases || []).map(phase => (
-                                    <div key={phase} className="flex items-center gap-2">
-                                        <Input value={phase} disabled className="bg-muted"/>
-                                        <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive" onClick={() => handleDeletePhase(phase)} disabled={isSaving}><Trash2 className="h-4 w-4"/></Button>
-                                    </div>
-                                ))}
-                                <div className="flex gap-2 pt-2">
-                                    <Input value={newPhase} onChange={e => setNewPhase(e.target.value)} placeholder="Nombre de la nueva fase"/>
-                                    <Button onClick={handleAddPhase} disabled={isSaving || !newPhase.trim()}>Añadir Fase</Button>
+                                <Label htmlFor="newCategoryName">Nueva Categoría</Label>
+                                <div className="flex gap-2">
+                                <Input id="newCategoryName" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="Ej: Marketing" disabled={isSaving}/>
+                                <Button onClick={handleAddCategory} disabled={isSaving || !newCategory.trim()}>Añadir</Button>
                                 </div>
                             </div>
-                       </div>
-                       <Separator/>
-                       <div>
-                            <h4 className="text-sm font-medium mb-3">Visibilidad por Rol</h4>
-                            <div className="space-y-2">
-                                {(['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'] as UserRole[]).map(role => (
-                                    <div key={role} className="flex items-center justify-between rounded-lg border p-3">
-                                        <Label htmlFor={`visibility-${role}`} className="font-semibold">{getRoleInSpanish(role)}</Label>
-                                        <Checkbox id={`visibility-${role}`} checked={(formState.roadmapVisibleTo || []).includes(role)} onCheckedChange={checked => handleVisibilityChange(role, !!checked)} disabled={isSaving} />
-                                    </div>
-                                ))}
+                            <Separator />
+                            <div>
+                                <h4 className="text-sm font-medium mb-3">Categorías Existentes:</h4>
+                                {formState.resourceCategories.length > 0 ? (
+                                <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                                    {formState.resourceCategories.map(category => (
+                                    <div key={category} className="flex items-center justify-between p-2.5 border rounded-lg bg-card text-sm">
+                                        <span className="flex items-center gap-2"><Tag className="h-4 w-4 text-muted-foreground"/>{category}</span>
+                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:bg-destructive/10" onClick={() => setCategoryToDelete(category)} disabled={isSaving}><Trash2 className="h-4 w-4" /><span className="sr-only">Eliminar {category}</span></Button>
+                                    </div>))}
+                                </div>
+                                ) : ( <p className="text-sm text-muted-foreground text-center py-4">No hay categorías.</p> )}
                             </div>
-                       </div>
-                    </CardContent>
-                </Card>
+                        </CardContent>
+                    </Card>
+                     <Card className="card-border-animated">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><Rocket className="h-5 w-5 text-primary" />Hoja de Ruta (Roadmap)</CardTitle>
+                            <CardDescription>Configura las fases y la visibilidad de la página de la hoja de ruta del proyecto.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                           <div>
+                                <h4 className="text-sm font-medium mb-3">Fases de la Hoja de Ruta</h4>
+                                <div className="space-y-2">
+                                    {(formState.roadmapPhases || []).map(phase => (
+                                        <div key={phase} className="flex items-center gap-2">
+                                            <Input value={phase} disabled className="bg-muted"/>
+                                            <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive" onClick={() => handleDeletePhase(phase)} disabled={isSaving}><Trash2 className="h-4 w-4"/></Button>
+                                        </div>
+                                    ))}
+                                    <div className="flex gap-2 pt-2">
+                                        <Input value={newPhase} onChange={e => setNewPhase(e.target.value)} placeholder="Nombre de la nueva fase"/>
+                                        <Button onClick={handleAddPhase} disabled={isSaving || !newPhase.trim()}>Añadir Fase</Button>
+                                    </div>
+                                </div>
+                           </div>
+                           <Separator/>
+                           <div>
+                                <h4 className="text-sm font-medium mb-3">Visibilidad por Rol</h4>
+                                <div className="space-y-2">
+                                    {(['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'] as UserRole[]).map(role => (
+                                        <div key={role} className="flex items-center justify-between rounded-lg border p-3">
+                                            <Label htmlFor={`visibility-${role}`} className="font-semibold">{getRoleInSpanish(role)}</Label>
+                                            <Checkbox id={`visibility-${role}`} checked={(formState.roadmapVisibleTo || []).includes(role)} onCheckedChange={checked => handleVisibilityChange(role, !!checked)} disabled={isSaving} />
+                                        </div>
+                                    ))}
+                                </div>
+                           </div>
+                        </CardContent>
+                    </Card>
+                </div>
              </TabsContent>
         </Tabs>
 
