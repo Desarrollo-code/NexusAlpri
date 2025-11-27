@@ -58,10 +58,10 @@ const HealthStatusWidget = () => {
     
     return (
         <Card>
-            <CardHeader>
+            <CardHeader className="p-4">
                 <CardTitle className="text-base">Salud de la Plataforma</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 p-4 pt-0">
                 <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-sm"><Monitor className="h-4 w-4"/><span>API</span></div><StatusIndicator status={healthStatus.api as any} /></div>
                 <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-sm"><Database className="h-4 w-4"/><span>Base de Datos</span></div><StatusIndicator status={healthStatus.db as any} /></div>
             </CardContent>
@@ -108,19 +108,15 @@ export function AdminDashboard({ adminStats, securityLogs }: {
             <p className="text-muted-foreground">Una vista general y accionable del estado de tu plataforma.</p>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-8 gap-4" id="admin-stats-cards">
-            <MetricCard title="Total Usuarios" value={adminStats.totalUsers} icon={Users} index={0} />
-            <MetricCard title="Total Cursos" value={adminStats.totalCourses} icon={BookOpenCheck} index={1} />
-            <MetricCard title="Inscripciones" value={adminStats.totalEnrollments} icon={GraduationCap} index={2}/>
-            <MetricCard title="Cursos Publicados" value={adminStats.totalPublishedCourses} icon={BookOpenCheck} index={3} />
-            <MetricCard title="Recursos" value={adminStats.totalResources} icon={Folder} index={4}/>
-            <MetricCard title="Anuncios" value={adminStats.totalAnnouncements} icon={Megaphone} index={5}/>
-            <MetricCard title="Formularios" value={adminStats.totalForms} icon={FileText} index={6}/>
-            <MetricCard title="Finalización" value={Math.round(adminStats.averageCompletionRate)} icon={Percent} suffix="%" description="Promedio" index={7} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="admin-stats-cards">
+            <MetricCard title="Usuarios Totales" value={adminStats.totalUsers} icon={Users} index={0} />
+            <MetricCard title="Cursos Publicados" value={adminStats.totalPublishedCourses} icon={BookOpenCheck} index={1} />
+            <MetricCard title="Inscripciones Totales" value={adminStats.totalEnrollments} icon={GraduationCap} index={2}/>
+            <MetricCard title="Finalización Promedio" value={Math.round(adminStats.averageCompletionRate)} icon={Percent} suffix="%" index={3} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-            <div id="admin-charts-section" className="lg:col-span-1">
+            <div id="admin-charts-section" className="lg:col-span-2">
                  <Card>
                     <CardHeader>
                         <CardTitle>Tendencia de Actividad</CardTitle>
@@ -140,40 +136,34 @@ export function AdminDashboard({ adminStats, securityLogs }: {
                           </ComposedChart>
                         </ChartContainer>
                     </CardContent>
-                     <CardFooter className="justify-center">
-                       <div className="text-sm font-semibold text-green-600 bg-green-100 dark:bg-green-900/30 px-3 py-1 rounded-full">
-                           {getMonthRangeLabel()}
-                       </div>
-                    </CardFooter>
                 </Card>
             </div>
             
-            <div id="admin-security-log-widget" className="lg:col-span-1">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-base">Auditoría de Seguridad Activa</CardTitle>
-                        <CardDescription className="text-xs">Últimos eventos importantes.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <SecurityLogTimeline logs={securityLogs} onLogClick={setSelectedLog}/>
-                    </CardContent>
-                    <CardFooter>
-                       <Button variant="outline" size="sm" className="w-full" asChild>
-                           <Link href="/security-audit">Ver auditoría completa <ArrowRight className="ml-2 h-4 w-4"/></Link>
-                       </Button>
-                    </CardFooter>
-                </Card>
-            </div>
-             <div id="admin-quick-actions" className="lg:col-span-1 space-y-6">
-                 <Card>
-                    <CardHeader><CardTitle className="text-base">Acciones Rápidas</CardTitle></CardHeader>
-                    <CardContent className="grid grid-cols-2 gap-2">
+            <div className="lg:col-span-1 space-y-6">
+                <Card id="admin-quick-actions">
+                    <CardContent className="grid grid-cols-2 gap-2 p-4">
                         <Button variant="outline" asChild><Link href="/manage-courses"><PlusCircle className="mr-2 h-4 w-4"/>Crear Curso</Link></Button>
                         <Button variant="outline" asChild><Link href="/users"><Users className="mr-2 h-4 w-4"/>Gestionar Usuarios</Link></Button>
                         <Button variant="outline" asChild><Link href="/analytics"><BarChart3 className="mr-2 h-4 w-4"/>Ver Analíticas</Link></Button>
                         <Button variant="outline" asChild><Link href="/settings"><Settings className="mr-2 h-4 w-4"/>Ajustes</Link></Button>
                     </CardContent>
                 </Card>
+                <div id="admin-security-log-widget">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Auditoría de Seguridad</CardTitle>
+                            <CardDescription className="text-xs">Últimos eventos importantes.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <SecurityLogTimeline logs={securityLogs} onLogClick={setSelectedLog}/>
+                        </CardContent>
+                        <CardFooter>
+                           <Button variant="outline" size="sm" className="w-full" asChild>
+                               <Link href="/security-audit">Ver auditoría completa <ArrowRight className="ml-2 h-4 w-4"/></Link>
+                           </Button>
+                        </CardFooter>
+                    </Card>
+                </div>
                 <HealthStatusWidget />
             </div>
         </div>

@@ -6,14 +6,13 @@ import { cn } from "@/lib/utils";
 import React from "react";
 
 const GRADIENT_CLASSES: Record<string, string> = {
-    'bg-gradient-blue': 'from-blue-400 to-blue-500',
-    'bg-gradient-green': 'from-green-400 to-green-500',
-    'bg-gradient-purple': 'from-purple-400 to-purple-500',
-    'bg-gradient-pink': 'from-pink-400 to-pink-500',
-    'bg-gradient-orange': 'from-orange-400 to-orange-500',
+    '0': 'bg-gradient-to-br from-teal-500 to-cyan-600',
+    '1': 'bg-gradient-to-br from-blue-500 to-indigo-600',
+    '2': 'bg-gradient-to-br from-violet-500 to-purple-600',
+    '3': 'bg-gradient-to-br from-emerald-500 to-green-600',
+    '4': 'bg-gradient-to-br from-rose-500 to-pink-600',
+    '5': 'bg-gradient-to-br from-amber-500 to-orange-600',
 };
-
-const gradientKeys = Object.keys(GRADIENT_CLASSES);
 
 export const MetricCard = ({ title, value, icon: Icon, description, suffix = '', index = 0, onClick }: { 
     title: string; 
@@ -25,44 +24,27 @@ export const MetricCard = ({ title, value, icon: Icon, description, suffix = '',
     onClick?: () => void;
 }) => {
     const animatedValue = useAnimatedCounter(value, 0, 1000);
-    const colorVar = `var(--chart-${(index % 5) + 1})`;
-    
-    const textColor = 'hsl(var(--card-foreground))';
-    const bgColor = `hsl(${colorVar} / 0.1)`;
-    const gradientClass = gradientKeys[index % gradientKeys.length];
+    const gradientClass = GRADIENT_CLASSES[index % Object.keys(GRADIENT_CLASSES).length];
 
     return (
         <Card 
             onClick={onClick} 
             className={cn(
-                "relative text-card-foreground p-4 flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] rounded-2xl h-28 overflow-hidden border-2",
+                "relative text-white p-4 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl rounded-2xl h-28 overflow-hidden border-0",
+                gradientClass,
                 onClick && "cursor-pointer"
             )}
-            style={{ 
-                backgroundColor: bgColor,
-                borderColor: `hsl(${colorVar} / 0.3)`
-            }}
         >
             <div className="flex justify-between items-start z-10">
-                <p className="text-sm font-semibold" style={{ color: textColor }}>{title}</p>
-                 <div className={cn(
-                     "h-8 w-8 flex items-center justify-center rounded-lg text-white shadow-md",
-                     gradientClass
-                 )}>
-                    <Icon className="h-5 w-5" />
-                </div>
+                <p className="text-sm font-semibold">{title}</p>
+                <Icon className="h-5 w-5 text-white/80" />
             </div>
             
             <div className="z-10 text-left">
-                <p 
-                    className="text-3xl font-bold"
-                    style={{ 
-                        color: textColor,
-                    }}
-                >
+                <p className="text-4xl font-bold tracking-tighter">
                     {animatedValue}{suffix}
                 </p>
-                 {description && <p className="text-xs" style={{ color: textColor, opacity: 0.8 }}>{description}</p>}
+                 {description && <p className="text-xs text-white/80">{description}</p>}
             </div>
         </Card>
     );
