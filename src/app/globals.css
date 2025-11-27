@@ -99,7 +99,7 @@
     --primary: 205 90% 55%; --accent: 215 85% 90%; --accent-foreground: 220 15% 15%;
     --sidebar-header-background: 205 35% 20%; --sidebar-footer-background: 205 35% 20%;
     --sidebar-body-background: 215 85% 90%;
-    --sidebar-accent: 205 90% 55%; --sidebar-border: 205 35% 17%; --sidebar-foreground: 0 0% 100%; --sidebar-muted-foreground: 0 0% 100%; --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-accent: 205 90% 55%; --sidebar-border: 205 35% 17%; --sidebar-foreground: 0 0% 100%; --sidebar-muted-foreground: 220 15% 15%; --sidebar-accent-foreground: 0 0% 100%;
     --chart-1: 205 85% 65%; --chart-2: 215 80% 75%; --chart-3: 195 90% 60%; --chart-4: 220 75% 70%; --chart-5: 210 95% 80%;
   }
   
