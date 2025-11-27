@@ -164,7 +164,7 @@ export default function SettingsPageComponent() {
   
   const [newPhase, setNewPhase] = useState('');
   
-  type ImageField = 'logoUrl' | 'faviconUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl' | 'announcementsImageUrl' | 'publicPagesBgUrl' | 'securityMascotUrl' | 'dashboardImageUrlAdmin' | 'dashboardImageUrlInstructor' | 'dashboardImageUrlStudent' | 'emptyStateCoursesUrl' | 'emptyStateMyCoursesUrl' | 'emptyStateFormsUrl' | 'emptyStateMyNotesUrl' | 'emptyStateResourcesUrl' | 'emptyStateCertificatesUrl' | 'emptyStateMotivationsUrl' | 'emptyStateUsersUrl' | 'emptyStateLeaderboardUrl' | 'emptyStateAnnouncementsUrl';
+  type ImageField = 'logoUrl' | 'faviconUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl' | 'announcementsImageUrl' | 'publicPagesBgUrl' | 'securityAuditImageUrl' | 'tourMascotUrl' | 'dashboardImageUrlAdmin' | 'dashboardImageUrlInstructor' | 'dashboardImageUrlStudent' | 'emptyStateCoursesUrl' | 'emptyStateMyCoursesUrl' | 'emptyStateFormsUrl' | 'emptyStateMyNotesUrl' | 'emptyStateResourcesUrl' | 'emptyStateCertificatesUrl' | 'emptyStateMotivationsUrl' | 'emptyStateUsersUrl' | 'emptyStateLeaderboardUrl' | 'emptyStateAnnouncementsUrl';
   
   useEffect(() => {
     setPageTitle('Configuración');
@@ -389,14 +389,16 @@ export default function SettingsPageComponent() {
                 </div>
                  <Card id="settings-images-card" className="lg:col-span-3">
                    <CardHeader>
-                       <CardTitle className="flex items-center gap-2 text-lg"><ImagePlay className="h-5 w-5 text-primary"/>Imágenes de Navegación Pública</CardTitle>
+                       <CardTitle className="flex items-center gap-2 text-lg"><ImagePlay className="h-5 w-5 text-primary"/>Imágenes de Navegación y Componentes</CardTitle>
                    </CardHeader>
                    <CardContent className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 place-items-center">
                       <UploadWidget id="landing-img-upload" label="Página de Inicio" currentImageUrl={formState.landingImageUrl} onFileSelect={(url) => handleImageUpload('landingImageUrl', url)} onRemove={()=>handleRemoveImage('landingImageUrl')} disabled={isSaving}/>
                       <UploadWidget id="about-img-upload" label="Página 'Nosotros'" currentImageUrl={formState.aboutImageUrl} onFileSelect={(url) => handleImageUpload('aboutImageUrl', url)} onRemove={()=>handleRemoveImage('aboutImageUrl')} disabled={isSaving}/>
                       <UploadWidget id="benefits-img-upload" label="Beneficios (Inicio)" currentImageUrl={formState.benefitsImageUrl} onFileSelect={(url) => handleImageUpload('benefitsImageUrl', url)} onRemove={()=>handleRemoveImage('benefitsImageUrl')} disabled={isSaving}/>
                       <UploadWidget id="auth-img-upload" label="Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(url) => handleImageUpload('authImageUrl', url)} onRemove={()=>handleRemoveImage('authImageUrl')} disabled={isSaving}/>
-                      <UploadWidget id="public-bg-upload" label="Fondo Público" currentImageUrl={formState.publicPagesBgUrl} onFileSelect={(url) => handleImageUpload('publicPagesBgUrl', url)} onRemove={()=>handleRemoveImage('publicPagesBgUrl')} disabled={isSaving}/>
+                      <UploadWidget id="public-bg-upload" label="Fondo Público/Ruta" currentImageUrl={formState.publicPagesBgUrl} onFileSelect={(url) => handleImageUpload('publicPagesBgUrl', url)} onRemove={()=>handleRemoveImage('publicPagesBgUrl')} disabled={isSaving}/>
+                      <UploadWidget id="security-audit-img-upload" label="Imagen Auditoría" currentImageUrl={formState.securityAuditImageUrl} onFileSelect={(url) => handleImageUpload('securityAuditImageUrl', url)} onRemove={() => handleRemoveImage('securityAuditImageUrl')} disabled={isSaving} />
+                      <UploadWidget id="tour-mascot-upload" label="Mascota del Tour" currentImageUrl={formState.tourMascotUrl} onFileSelect={(url) => handleImageUpload('tourMascotUrl', url)} onRemove={() => handleRemoveImage('tourMascotUrl')} disabled={isSaving} />
                    </CardContent>
                </Card>
             </TabsContent>
@@ -404,7 +406,10 @@ export default function SettingsPageComponent() {
             <TabsContent value="style" className="mt-6 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                     <Card className="card-border-animated">
-                        <CardHeader><CardDescription>Elige las fuentes para los títulos y el texto del cuerpo.</CardDescription></CardHeader>
+                        <CardHeader>
+                           <CardTitle className="text-lg flex items-center gap-2"><Paintbrush className="h-5 w-5 text-primary"/>Tipografía</CardTitle>
+                           <CardDescription>Elige las fuentes para los títulos y el texto del cuerpo.</CardDescription>
+                        </CardHeader>
                         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="fontHeadline">Fuente de Títulos</Label>
@@ -423,11 +428,14 @@ export default function SettingsPageComponent() {
                         </CardContent>
                     </Card>
                     <Card>
-                       <CardHeader><CardDescription>Imágenes para los fondos de los paneles de cada rol.</CardDescription></CardHeader>
+                       <CardHeader>
+                          <CardTitle className="text-lg flex items-center gap-2"><ImageIcon className="h-5 w-5 text-primary"/>Fondos de Dashboards</CardTitle>
+                          <CardDescription>Imágenes de bienvenida para cada rol.</CardDescription>
+                        </CardHeader>
                        <CardContent className="grid grid-cols-3 gap-4 place-items-center">
-                         <UploadWidget id="dashboard-admin-bg-upload" label="Fondo Dashboard Admin" currentImageUrl={formState.dashboardImageUrlAdmin} onFileSelect={(url) => handleImageUpload('dashboardImageUrlAdmin', url)} onRemove={() => handleRemoveImage('dashboardImageUrlAdmin')} disabled={isSaving} size="small"/>
-                         <UploadWidget id="dashboard-instructor-bg-upload" label="Fondo Dashboard Instructor" currentImageUrl={formState.dashboardImageUrlInstructor} onFileSelect={(url) => handleImageUpload('dashboardImageUrlInstructor', url)} onRemove={() => handleRemoveImage('dashboardImageUrlInstructor')} disabled={isSaving} size="small"/>
-                         <UploadWidget id="dashboard-student-bg-upload" label="Fondo Dashboard Estudiante" currentImageUrl={formState.dashboardImageUrlStudent} onFileSelect={(url) => handleImageUpload('dashboardImageUrlStudent', url)} onRemove={() => handleRemoveImage('dashboardImageUrlStudent')} disabled={isSaving} size="small"/>
+                         <UploadWidget id="dashboard-admin-bg-upload" label="Fondo Admin" currentImageUrl={formState.dashboardImageUrlAdmin} onFileSelect={(url) => handleImageUpload('dashboardImageUrlAdmin', url)} onRemove={() => handleRemoveImage('dashboardImageUrlAdmin')} disabled={isSaving} size="small"/>
+                         <UploadWidget id="dashboard-instructor-bg-upload" label="Fondo Instructor" currentImageUrl={formState.dashboardImageUrlInstructor} onFileSelect={(url) => handleImageUpload('dashboardImageUrlInstructor', url)} onRemove={() => handleRemoveImage('dashboardImageUrlInstructor')} disabled={isSaving} size="small"/>
+                         <UploadWidget id="dashboard-student-bg-upload" label="Fondo Estudiante" currentImageUrl={formState.dashboardImageUrlStudent} onFileSelect={(url) => handleImageUpload('dashboardImageUrlStudent', url)} onRemove={() => handleRemoveImage('dashboardImageUrlStudent')} disabled={isSaving} size="small"/>
                        </CardContent>
                     </Card>
                 </div>
@@ -437,6 +445,7 @@ export default function SettingsPageComponent() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                     <Card>
                          <CardHeader>
+                            <CardTitle className="text-lg flex items-center gap-2"><User className="h-5 w-5 text-primary"/>Acceso y Registro</CardTitle>
                             <CardDescription>Configura cómo los usuarios pueden registrarse y acceder a la plataforma.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -457,7 +466,8 @@ export default function SettingsPageComponent() {
                     <div className="space-y-6">
                          <Card>
                             <CardHeader>
-                                <CardDescription>Define la complejidad requerida para las contraseñas de los usuarios.</CardDescription>
+                               <CardTitle className="text-lg flex items-center gap-2"><KeyRound className="h-5 w-5 text-primary"/>Política de Contraseñas</CardTitle>
+                               <CardDescription>Define la complejidad requerida para las contraseñas.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 <div className="flex items-center justify-between"><Label htmlFor="passwordMinLength">Longitud Mínima</Label><Input id="passwordMinLength" type="number" className="w-20 h-8" value={formState.passwordMinLength} onChange={(e) => handleInputChange('passwordMinLength', parseInt(e.target.value, 10) || 8)} min="8" disabled={isSaving} /></div>
@@ -469,11 +479,12 @@ export default function SettingsPageComponent() {
                         </Card>
                         <Card>
                              <CardHeader>
-                                <CardDescription>Cierra la sesión de los usuarios automáticamente después de un período de inactividad.</CardDescription>
+                                <CardTitle className="text-lg flex items-center gap-2"><Clock className="h-5 w-5 text-primary"/>Sesión por Inactividad</CardTitle>
+                                <CardDescription>Cierra la sesión de los usuarios automáticamente.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="flex items-center justify-between gap-4 rounded-lg border p-3 shadow-sm">
-                                    <Label htmlFor="enableIdleTimeout" className="text-base">Cierre por Inactividad</Label>
+                                    <Label htmlFor="enableIdleTimeout" className="text-base">Activar Cierre por Inactividad</Label>
                                     <Switch id="enableIdleTimeout" checked={formState.enableIdleTimeout} onCheckedChange={(c) => handleSwitchChange('enableIdleTimeout', c)} disabled={isSaving} />
                                 </div>
                                 {formState.enableIdleTimeout && (
@@ -486,7 +497,7 @@ export default function SettingsPageComponent() {
                         </Card>
                         <Card>
                             <CardHeader>
-                                <CardDescription>Fuerza a todos los administradores a usar la Autenticación de Dos Factores (2FA) para mayor seguridad.</CardDescription>
+                               <CardTitle className="text-lg flex items-center gap-2"><Shield className="h-5 w-5 text-primary"/>Autenticación de Dos Factores (2FA)</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="flex items-center justify-between gap-4 rounded-lg border p-3 shadow-sm">
@@ -503,7 +514,8 @@ export default function SettingsPageComponent() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Card className="card-border-animated">
                         <CardHeader>
-                            <CardDescription>Gestiona las categorías usadas en cursos y la biblioteca.</CardDescription>
+                           <CardTitle className="text-lg flex items-center gap-2"><List className="h-5 w-5 text-primary"/>Categorías de Contenido</CardTitle>
+                           <CardDescription>Gestiona las categorías usadas en cursos y la biblioteca.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
@@ -532,6 +544,7 @@ export default function SettingsPageComponent() {
                     </Card>
                      <Card className="card-border-animated">
                         <CardHeader>
+                            <CardTitle className="text-lg flex items-center gap-2"><Rocket className="h-5 w-5 text-primary"/>Hoja de Ruta</CardTitle>
                             <CardDescription>Configura las fases y la visibilidad de la página de la hoja de ruta del proyecto.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">

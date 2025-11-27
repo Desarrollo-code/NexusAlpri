@@ -51,11 +51,11 @@ export interface PlatformSettings {
     benefitsImageUrl?: string | null;
     announcementsImageUrl?: string | null;
     publicPagesBgUrl?: string | null;
-    securityMascotUrl?: string | null;
-    tourMascotUrl?: string | null; // Añadido
-    dashboardImageUrlAdmin?: string | null; // Añadido
-    dashboardImageUrlInstructor?: string | null; // Añadido
-    dashboardImageUrlStudent?: string | null; // Añadido
+    securityAuditImageUrl?: string | null; // Renombrado
+    tourMascotUrl?: string | null; 
+    dashboardImageUrlAdmin?: string | null;
+    dashboardImageUrlInstructor?: string | null;
+    dashboardImageUrlStudent?: string | null;
     emptyStateCoursesUrl?: string | null;
     emptyStateMyCoursesUrl?: string | null;
     emptyStateFormsUrl?: string | null;
