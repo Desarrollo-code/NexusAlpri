@@ -79,7 +79,7 @@ const courseStatusChartConfig = {
     ARCHIVED: { label: "Archivado", color: "hsl(var(--chart-5))" },
 } satisfies ChartConfig;
 
-function RankingList({ title, items, metric, icon: Icon, unit = '' }: { title: string, items: any[], metric: string, icon: React.ElementType, unit?: string }) {
+function RankingList({ title, items, icon: Icon, unit = '' }: { title: string, items: any[], icon: React.ElementType, unit?: string }) {
     if (!items || items.length === 0) {
         return <p className="text-sm text-muted-foreground text-center py-4">Datos no disponibles.</p>;
     }

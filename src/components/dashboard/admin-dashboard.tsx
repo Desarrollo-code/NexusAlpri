@@ -111,8 +111,8 @@ export function AdminDashboard({ adminStats, securityLogs }: {
            <div className="lg:col-span-2">
                 <Card id="admin-welcome-card" className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg">
                     <div className="absolute inset-0 z-0">
-                        {settings?.dashboardImageUrl && (
-                            <Image src={settings.dashboardImageUrl} alt="Fondo decorativo" fill className="object-cover opacity-20" data-ai-hint="office background" />
+                        {settings?.dashboardImageUrlAdmin && (
+                            <Image src={settings.dashboardImageUrlAdmin} alt="Fondo decorativo del dashboard de administrador" fill className="object-cover opacity-20" data-ai-hint="office background" />
                         )}
                         <div className="absolute inset-0 bg-black/10"></div>
                     </div>
