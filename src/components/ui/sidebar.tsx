@@ -117,7 +117,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         "flex items-center gap-3 rounded-lg transition-all duration-300 font-semibold group/menu-item relative",
         isCollapsed ? "justify-center h-12 w-12" : "p-3",
         isActive
-          ? "bg-primary/10 text-primary shadow-inner"
+          ? "bg-primary text-primary-foreground shadow-inner"
           : "text-sidebar-foreground hover:bg-black/20"
       )}>
         <GradientIcon icon={item.icon} isActive={isActive} />
@@ -272,7 +272,7 @@ export const SidebarFooter = () => {
                 onClick={toggleSidebar}
                 variant="ghost"
                 size="icon"
-                className="w-full h-10 text-sidebar-foreground hover:bg-black/10 hover:text-sidebar-foreground"
+                className="w-full h-10 text-sidebar-foreground hover:bg-black/10"
             >
                 {isCollapsed ? <ChevronRightCircle className="h-6 w-6"/> : <ChevronLeftCircle className="h-6 w-6"/>}
             </Button>
