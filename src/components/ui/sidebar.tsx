@@ -118,7 +118,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         isCollapsed ? "justify-center h-12 w-12" : "p-3",
         isActive
           ? "bg-primary text-primary-foreground shadow-inner"
-          : "text-sidebar-muted-foreground hover:bg-black/20 hover:text-sidebar-foreground"
+          : "text-primary-foreground/70 hover:bg-white/10 hover:text-white"
       )}>
         <GradientIcon icon={item.icon} isActive={isActive} />
         {!isCollapsed && <span className="whitespace-nowrap">{item.label}</span>}
@@ -152,7 +152,7 @@ const SidebarSectionHeader = ({ item, isActive }: { item: NavItem, isActive: boo
       <div className={cn(
           "flex items-center justify-between w-full rounded-lg transition-colors group",
           isCollapsed ? 'h-12 w-12 justify-center' : 'p-3',
-          isActive ? "bg-black/10 text-sidebar-foreground" : "hover:bg-black/10 text-sidebar-foreground"
+          isActive ? "bg-white/10 text-white" : "hover:bg-white/10 text-primary-foreground/70 hover:text-white"
       )}>
           <div className="flex items-center gap-3">
               <GradientIcon icon={item.icon} isActive={isActive} />
@@ -215,7 +215,7 @@ const SectionItem = ({ item }: { item: NavItem }) => {
             <AccordionItem value={item.id} className="border-b-0">
                 <SidebarSectionHeader item={item} isActive={isActive} />
                 <AccordionContent className="pl-6 pt-0 pb-0">
-                    <div className="space-y-1 mt-1 border-l-2 border-sidebar-foreground/20">
+                    <div className="space-y-1 mt-1 border-l-2 border-white/20">
                         {item.children?.map(child => <SidebarMenuItem key={child.id} item={child} />)}
                     </div>
                 </AccordionContent>
@@ -251,9 +251,9 @@ export const SidebarFooter = () => {
     if (isMobile) return null;
 
     return (
-        <div className="p-3 shadow-[0_-4px_6px_-2px_hsla(var(--sidebar-border),0.5)] flex flex-col gap-2 bg-[hsl(var(--sidebar-footer-background))] z-10">
+        <div className="p-3 shadow-[0_-4px_6px_-2px_hsla(var(--sidebar-border),0.5)] flex flex-col gap-2 bg-accent z-10">
              {!isCollapsed && settings?.projectVersion && (
-                <div className="px-3 py-2 text-center text-xs text-sidebar-foreground">
+                <div className="px-3 py-2 text-center text-xs text-primary-foreground">
                     Versión: {settings.projectVersion}
                 </div>
              )}
@@ -261,7 +261,7 @@ export const SidebarFooter = () => {
                 onClick={logout}
                 variant="ghost"
                 className={cn(
-                    "w-full text-sidebar-foreground hover:bg-red-500/20 hover:text-red-400",
+                    "w-full text-primary-foreground hover:bg-red-500/20 hover:text-red-400",
                     isCollapsed ? 'justify-center p-0 h-10' : 'justify-start gap-3 p-3'
                 )}
             >
@@ -272,7 +272,7 @@ export const SidebarFooter = () => {
                 onClick={toggleSidebar}
                 variant="ghost"
                 size="icon"
-                className="w-full h-10 text-sidebar-foreground hover:bg-black/10"
+                className="w-full h-10 text-primary-foreground hover:bg-white/10"
             >
                 {isCollapsed ? <ChevronRightCircle className="h-6 w-6"/> : <ChevronLeftCircle className="h-6 w-6"/>}
             </Button>
