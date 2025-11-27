@@ -1,36 +1,46 @@
 // src/components/security/visitors-by-country-card.tsx
 'use client';
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
+import { useAuth } from '@/contexts/auth-context';
+import { Globe } from 'lucide-react';
 
 interface VisitorsByCountryCardProps {
     isLoading: boolean;
-    imageUrl?: string; // Prop opcional para la imagen de fondo
 }
 
-export const VisitorsByCountryCard = ({ isLoading, imageUrl }: VisitorsByCountryCardProps) => {
+export const VisitorsByCountryCard = ({ isLoading }: VisitorsByCountryCardProps) => {
+    const { settings } = useAuth();
+    
     return (
-        <Card className="relative bg-gradient-to-r from-purple-500 to-blue-500 text-white overflow-hidden h-40">
-            <CardContent className="p-0 h-full">
+        <Card>
+             <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">Mascota de Seguridad</CardTitle>
+                <CardDescription className="text-xs">
+                    Una cara amigable para una sección importante. Puedes cambiar esta imagen en la configuración de apariencia.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="p-4">
+                <div className="w-full aspect-square relative bg-muted/50 rounded-lg flex items-center justify-center">
                 {isLoading ? (
-                    <Skeleton className="w-full h-full bg-white/20" />
+                    <Skeleton className="w-full h-full" />
+                ) : settings?.securityMascotUrl ? (
+                    <Image 
+                        src={settings.securityMascotUrl} 
+                        alt="Mascota de Seguridad" 
+                        fill 
+                        className="object-contain p-4"
+                        data-ai-hint="security mascot robot"
+                    />
                 ) : (
-                    <div className="w-full h-full">
-                        {/* 
-                          AQUÍ PUEDES AÑADIR TU IMAGEN DE FONDO. 
-                          Idealmente, la URL de la imagen vendría de la configuración.
-                          Ejemplo:
-                          <Image 
-                            src={imageUrl || "/placeholder.jpg"} 
-                            alt="Mapa de visitantes" 
-                            fill 
-                            className="object-cover opacity-30"
-                          />
-                        */}
+                    <div className="text-center text-muted-foreground p-4">
+                       <Globe className="mx-auto h-12 w-12"/>
+                       <p className="mt-2 text-sm">Sube una imagen para la mascota.</p>
                     </div>
                 )}
+                </div>
             </CardContent>
         </Card>
     );

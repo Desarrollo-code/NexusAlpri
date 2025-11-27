@@ -159,7 +159,7 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
         >
-             {settings?.securityMascotUrl && (
+             {settings?.tourMascotUrl && (
                  <motion.div
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
@@ -167,7 +167,7 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: {
                     className="relative -mr-5 mt-4 z-10"
                  >
                     <div className="w-20 h-20 rounded-full bg-card border-4 border-primary shadow-lg overflow-hidden">
-                       <Image src={settings.securityMascotUrl} alt="Mascota del Tour" width={80} height={80} className="object-cover"/>
+                       <Image src={settings.tourMascotUrl} alt="Mascota del Tour" width={80} height={80} className="object-cover"/>
                     </div>
                 </motion.div>
              )}
