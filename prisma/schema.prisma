@@ -417,6 +417,11 @@ model PlatformSettings {
   emptyStateLeaderboardUrl   String?
   emptyStateAnnouncementsUrl String?
   faviconUrl                 String?
+  securityAuditImageUrl      String?
+  tourMascotUrl              String?
+  dashboardImageUrlAdmin     String?
+  dashboardImageUrlInstructor String?
+  dashboardImageUrlStudent    String?
   projectVersion             String? @default("1.0.0")
   updatedAt                  DateTime @updatedAt
   roadmapVisibleTo           UserRole[] @default([ADMINISTRATOR, INSTRUCTOR, STUDENT])
