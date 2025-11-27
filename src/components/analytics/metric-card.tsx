@@ -5,14 +5,15 @@ import { useAnimatedCounter } from "@/hooks/use-animated-counter"
 import { cn } from "@/lib/utils";
 import React from "react";
 
-const GRADIENT_CLASSES: Record<string, string> = {
-    '0': 'bg-gradient-to-br from-teal-500 to-cyan-600',
-    '1': 'bg-gradient-to-br from-blue-500 to-indigo-600',
-    '2': 'bg-gradient-to-br from-violet-500 to-purple-600',
-    '3': 'bg-gradient-to-br from-emerald-500 to-green-600',
-    '4': 'bg-gradient-to-br from-rose-500 to-pink-600',
-    '5': 'bg-gradient-to-br from-amber-500 to-orange-600',
-};
+// CORRECCIÓN: Usar clases que hacen referencia a las variables de color del tema de Tailwind.
+const CHART_COLORS = [
+    "bg-chart-1",
+    "bg-chart-2",
+    "bg-chart-3",
+    "bg-chart-4",
+    "bg-chart-5",
+];
+
 
 export const MetricCard = ({ title, value, icon: Icon, description, suffix = '', index = 0, onClick }: { 
     title: string; 
@@ -24,14 +25,16 @@ export const MetricCard = ({ title, value, icon: Icon, description, suffix = '',
     onClick?: () => void;
 }) => {
     const animatedValue = useAnimatedCounter(value, 0, 1000);
-    const gradientClass = GRADIENT_CLASSES[index % Object.keys(GRADIENT_CLASSES).length];
+    
+    // Asigna un color del tema basado en el índice de la tarjeta.
+    const colorClass = CHART_COLORS[index % CHART_COLORS.length];
 
     return (
         <Card 
             onClick={onClick} 
             className={cn(
-                "relative text-white p-4 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl rounded-2xl h-28 overflow-hidden border-0",
-                gradientClass,
+                "relative text-primary-foreground p-4 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl rounded-2xl h-28 overflow-hidden border-0",
+                colorClass,
                 onClick && "cursor-pointer"
             )}
         >
