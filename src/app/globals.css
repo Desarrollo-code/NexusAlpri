@@ -17,7 +17,7 @@
     --secondary-foreground: 220 10% 10%;
     --muted: 220 10% 95%;
     --muted-foreground: 220 5% 45%;
-    --accent: 215 85% 94%;
+    --accent: 220 10% 95%;
     --accent-foreground: 220 15% 15%;
     --destructive: 0 80% 60%; 
     --destructive-foreground: 0 0% 100%;
@@ -37,11 +37,11 @@
     /* === BARRA LATERAL TEMA POR DEFECTO === */
     --sidebar-header-background: 210 30% 25%;
     --sidebar-footer-background: 210 30% 25%;
-    --sidebar-body-background: 220 20% 99%;
+    --sidebar-body-background: 220 10% 95%;
     --sidebar-accent: 210 90% 55%; /* Azul por defecto */
     --sidebar-border: 210 30% 20%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-muted-foreground: 0 0% 100%;
+    --sidebar-muted-foreground: 220 15% 15%;
     --sidebar-accent-foreground: 0 0% 100%;
   }
 
@@ -400,7 +400,7 @@
     }
 
     100% {
-        box-shadow: 0.5em 1em hsl(var(--chart-2)), -0.5em -1em hsl(var(--chart-4));
+        box-shadow: 0.5em 1em hsl(var(--chart-2)), -0.5em 1em hsl(var(--chart-4));
     }
 }
 

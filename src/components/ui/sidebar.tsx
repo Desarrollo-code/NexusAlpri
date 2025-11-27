@@ -117,8 +117,8 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         "flex items-center gap-3 rounded-lg transition-all duration-300 font-semibold group/menu-item relative",
         isCollapsed ? "justify-center h-12 w-12" : "p-3",
         isActive
-          ? "bg-primary text-primary-foreground"
-          : "text-accent-foreground/70 hover:bg-black/10 hover:text-accent-foreground"
+          ? "bg-[hsl(var(--sidebar-accent))] text-[hsl(var(--sidebar-accent-foreground))] shadow-inner"
+          : "text-[hsl(var(--sidebar-muted-foreground))] hover:bg-black/10 hover:text-[hsl(var(--sidebar-foreground))]"
       )}>
         <GradientIcon icon={item.icon} isActive={isActive} />
         {!isCollapsed && <span className="whitespace-nowrap">{item.label}</span>}
@@ -152,7 +152,7 @@ const SidebarSectionHeader = ({ item, isActive }: { item: NavItem, isActive: boo
       <div className={cn(
           "flex items-center justify-between w-full rounded-lg transition-colors group",
           isCollapsed ? 'h-12 w-12 justify-center' : 'p-3',
-          isActive ? "bg-black/10 text-accent-foreground" : "hover:bg-black/10 text-accent-foreground/70 hover:text-accent-foreground"
+          isActive ? "bg-black/10 text-[hsl(var(--sidebar-foreground))]" : "hover:bg-black/10 text-[hsl(var(--sidebar-muted-foreground))] hover:text-[hsl(var(--sidebar-foreground))]"
       )}>
           <div className="flex items-center gap-3">
               <GradientIcon icon={item.icon} isActive={isActive} />
@@ -215,7 +215,7 @@ const SectionItem = ({ item }: { item: NavItem }) => {
             <AccordionItem value={item.id} className="border-b-0">
                 <SidebarSectionHeader item={item} isActive={isActive} />
                 <AccordionContent className="pl-6 pt-0 pb-0">
-                    <div className="space-y-1 mt-1 border-l-2 border-foreground/20">
+                    <div className="space-y-1 mt-1 border-l-2 border-[hsl(var(--sidebar-muted-foreground))]/30">
                         {item.children?.map(child => <SidebarMenuItem key={child.id} item={child} />)}
                     </div>
                 </AccordionContent>
@@ -231,7 +231,7 @@ export const SidebarContent = () => {
 
     return (
         <TooltipProvider delayDuration={100}>
-            <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-1 thin-scrollbar bg-accent">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-1 thin-scrollbar bg-[hsl(var(--sidebar-body-background))]">
                 {navItems.map((item) => {
                     if (item.children && item.children.length > 0) {
                         return <SectionItem key={item.id} item={item} />;
@@ -251,9 +251,9 @@ export const SidebarFooter = () => {
     if (isMobile) return null;
 
     return (
-        <div className="p-3 shadow-[0_-4px_6px_-2px_hsla(var(--sidebar-border),0.5)] flex flex-col gap-2 bg-[hsl(var(--sidebar-header-background))] z-10">
+        <div className="p-3 shadow-[0_-4px_6px_-2px_hsl(var(--sidebar-border)/0.5)] flex flex-col gap-2 bg-[hsl(var(--sidebar-header-background))] z-10">
              {!isCollapsed && settings?.projectVersion && (
-                <div className="px-3 py-2 text-center text-xs text-sidebar-foreground">
+                <div className="px-3 py-2 text-center text-xs text-[hsl(var(--sidebar-foreground))]">
                     Versión: {settings.projectVersion}
                 </div>
              )}
@@ -261,7 +261,7 @@ export const SidebarFooter = () => {
                 onClick={logout}
                 variant="ghost"
                 className={cn(
-                    "w-full text-sidebar-foreground hover:bg-red-500/20 hover:text-white",
+                    "w-full text-[hsl(var(--sidebar-foreground))] hover:bg-red-500/20 hover:text-white",
                     isCollapsed ? 'justify-center p-0 h-10' : 'justify-start gap-3 p-3'
                 )}
             >
@@ -272,7 +272,7 @@ export const SidebarFooter = () => {
                 onClick={toggleSidebar}
                 variant="ghost"
                 size="icon"
-                className="w-full h-10 text-sidebar-foreground hover:bg-black/10 hover:text-white"
+                className="w-full h-10 text-[hsl(var(--sidebar-foreground))] hover:bg-black/10 hover:text-white"
             >
                 {isCollapsed ? <ChevronRightCircle className="h-6 w-6"/> : <ChevronLeftCircle className="h-6 w-6"/>}
             </Button>
