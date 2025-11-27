@@ -52,6 +52,8 @@ const DEFAULT_DB_SETTINGS = {
   emptyStateUsersUrl: null,
   emptyStateLeaderboardUrl: null,
   emptyStateAnnouncementsUrl: null,
+  roadmapPhases: [],
+  roadmapVisibleTo: ['ADMINISTRATOR'],
 };
 
 const getFallbackSettings = (): AppPlatformSettings => {
@@ -81,6 +83,8 @@ export async function GET(req: NextRequest) {
         ...dbSettings,
         resourceCategories: dbSettings.resourceCategories ? dbSettings.resourceCategories.split(',').filter(Boolean) : [],
         emailWhitelist: dbSettings.emailWhitelist || '',
+        roadmapPhases: dbSettings.roadmapPhases || [],
+        roadmapVisibleTo: dbSettings.roadmapVisibleTo || ['ADMINISTRATOR'],
     };
     
     return NextResponse.json(settingsToReturn);
@@ -151,6 +155,8 @@ export async function POST(req: NextRequest) {
       emptyStateUsersUrl: dataFromClient.emptyStateUsersUrl,
       emptyStateLeaderboardUrl: dataFromClient.emptyStateLeaderboardUrl,
       emptyStateAnnouncementsUrl: dataFromClient.emptyStateAnnouncementsUrl,
+      roadmapPhases: dataFromClient.roadmapPhases,
+      roadmapVisibleTo: dataFromClient.roadmapVisibleTo,
     };
     
     const currentSettings = await prisma.platformSettings.findFirst();
@@ -185,6 +191,8 @@ export async function POST(req: NextRequest) {
         ...updatedDbSettings,
         resourceCategories: updatedDbSettings.resourceCategories ? updatedDbSettings.resourceCategories.split(',').filter(Boolean) : [],
         emailWhitelist: updatedDbSettings.emailWhitelist || '',
+        roadmapPhases: updatedDbSettings.roadmapPhases || [],
+        roadmapVisibleTo: updatedDbSettings.roadmapVisibleTo || ['ADMINISTRATOR'],
     };
 
     return NextResponse.json(settingsToReturn);
