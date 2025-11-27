@@ -102,13 +102,13 @@ const UploadWidget = ({
     }
   };
 
-  const handleFileSelectInternal = (file: File | null) => {
-      if (file) {
-          handleUpload(file);
+  const handleFileSelectInternal = (files: FileList | null) => {
+      if (files && files[0]) {
+          handleUpload(files[0]);
       }
   }
 
-  const displayUrl = localPreview || currentImageUrl;
+  const finalImageUrl = localPreview || currentImageUrl;
 
   return (
     <div className="space-y-2 flex flex-col items-center">
