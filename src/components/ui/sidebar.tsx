@@ -152,7 +152,7 @@ const SidebarSectionHeader = ({ item, isActive }: { item: NavItem, isActive: boo
       <div className={cn(
           "flex items-center justify-between w-full rounded-lg transition-colors group",
           isCollapsed ? 'h-12 w-12 justify-center' : 'p-3',
-          isActive ? "bg-black/10 text-[hsl(var(--sidebar-foreground))]" : "hover:bg-black/10 text-[hsl(var(--sidebar-muted-foreground))] hover:text-[hsl(var(--sidebar-foreground))]"
+          isActive ? "bg-black/10 text-foreground" : "hover:bg-black/10 text-sidebar-muted-foreground hover:text-foreground"
       )}>
           <div className="flex items-center gap-3">
               <GradientIcon icon={item.icon} isActive={isActive} />
@@ -251,7 +251,7 @@ export const SidebarFooter = () => {
     if (isMobile) return null;
 
     return (
-        <div className="p-3 shadow-[0_-4px_6px_-2px_hsl(var(--sidebar-border)/0.5)] flex flex-col gap-2 bg-[hsl(var(--sidebar-header-background))] z-10">
+        <div className="p-3 shadow-[0_-4px_6px_-2px_hsl(var(--sidebar-border)/0.5)] flex flex-col gap-2 bg-[hsl(var(--sidebar-footer-background))] z-10">
              {!isCollapsed && settings?.projectVersion && (
                 <div className="px-3 py-2 text-center text-xs text-[hsl(var(--sidebar-foreground))]">
                     Versión: {settings.projectVersion}
