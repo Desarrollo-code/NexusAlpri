@@ -83,8 +83,7 @@ const UploadWidget = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentImageUrl]);
 
-  const handleUpload = async (file: File | null) => {
-    if (!file) return;
+  const handleUpload = async (file: File) => {
     setIsUploading(true);
     setUploadProgress(0);
     const preview = URL.createObjectURL(file);
@@ -121,13 +120,13 @@ const UploadWidget = ({
                 <div className="z-10 text-center space-y-2">
                     <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto" />
                     <p className="text-xs text-muted-foreground">Subiendo...</p>
-                    <Progress value={uploadProgress} className="w-20 h-1" />
+                    <Progress value={uploadProgress} className="w-20 h-1.5" />
                 </div>
             </div>
         ) : finalImageUrl ? (
              <div className="relative w-full h-full group">
                 <Image src={finalImageUrl} alt={`Previsualización de ${label}`} fill className="object-contain p-2 rounded-lg border bg-muted/20" />
-                <div className="absolute top-1 right-1 flex flex-col gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                 <div className="absolute top-1 right-1 flex flex-col gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                      <UploadArea onFileSelect={handleFileSelectInternal} disabled={disabled} inputId={id} className="h-7 w-7 rounded-full shadow-md bg-secondary text-secondary-foreground hover:bg-secondary/80 p-0 border-0">
                          <Replace className="h-4 w-4" />
                      </UploadArea>
@@ -309,7 +308,9 @@ export default function SettingsPageComponent() {
   }
 
   if (!user || user.role !== 'ADMINISTRATOR') {
-    if (typeof window !== 'undefined') router.push('/dashboard');
+    if (typeof window !== 'undefined') {
+        router.push('/dashboard');
+    }
     return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>;
   }
   
@@ -424,70 +425,80 @@ export default function SettingsPageComponent() {
                 </Card>
             </TabsContent>
             
-            <TabsContent value="security" className="space-y-8 mt-6">
-                <Card className="card-border-animated">
-                    <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Shield className="h-5 w-5 text-primary"/>Seguridad y Acceso</CardTitle>
-                    <CardDescription>Gestiona las políticas de seguridad y registro.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
-                            <div className="space-y-0.5">
-                                <Label htmlFor="allowPublicRegistration" className="text-base">Registro Público</Label>
-                                <p className="text-sm text-muted-foreground">Controla si los usuarios pueden crear sus propias cuentas.</p>
-                            </div>
-                            <Switch 
-                                id="allowPublicRegistration" 
-                                checked={formState.allowPublicRegistration}
-                                onCheckedChange={(checked) => handleSwitchChange('allowPublicRegistration', checked)}
-                                disabled={isSaving}
-                            />
-                        </div>
-                        <Separator/>
-                         <div className="space-y-2 rounded-lg border p-3 shadow-sm">
-                            <Label htmlFor="emailWhitelist">Lista Blanca de Dominios</Label>
-                            <Input
-                                id="emailWhitelist"
-                                value={formState.emailWhitelist || ''}
-                                onChange={(e) => handleInputChange('emailWhitelist', e.target.value)}
-                                placeholder="ej: alprigrama.com, ejemplo.org"
-                                disabled={isSaving}
-                            />
-                            <p className="text-sm text-muted-foreground">
-                                Si se completa, solo los correos que terminen con estos dominios podrán registrarse. Déjalo en blanco para permitir cualquier correo. Separa los dominios con comas.
-                            </p>
-                        </div>
-                        <Separator/>
-                        <div>
-                            <h4 className="font-medium mb-3">Política de Contraseñas</h4>
-                            <div className="space-y-4 p-3 border rounded-lg shadow-sm">
-                                <div className="flex items-center justify-between"><Label htmlFor="passwordMinLength">Longitud Mínima</Label><Input id="passwordMinLength" type="number" className="w-24" value={formState.passwordMinLength} onChange={(e) => handleInputChange('passwordMinLength', parseInt(e.target.value, 10) || 8)} min="8" disabled={isSaving} /></div>
+            <TabsContent value="security" className="mt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                    <div className="space-y-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-lg flex items-center gap-2"><User className="h-5 w-5 text-primary" />Acceso de Usuarios</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+                                    <div className="space-y-0.5">
+                                        <Label htmlFor="allowPublicRegistration" className="text-base">Registro Público</Label>
+                                        <p className="text-sm text-muted-foreground">Permite que nuevos usuarios se registren.</p>
+                                    </div>
+                                    <Switch id="allowPublicRegistration" checked={formState.allowPublicRegistration} onCheckedChange={(c) => handleSwitchChange('allowPublicRegistration', c)} disabled={isSaving} />
+                                </div>
+                                <div className="space-y-2 rounded-lg border p-3 shadow-sm">
+                                    <Label htmlFor="emailWhitelist">Lista Blanca de Dominios</Label>
+                                    <Input id="emailWhitelist" value={formState.emailWhitelist || ''} onChange={(e) => handleInputChange('emailWhitelist', e.target.value)} placeholder="ej: alprigrama.com, ejemplo.org" disabled={isSaving} />
+                                    <p className="text-xs text-muted-foreground">Separa dominios con comas. Si está vacío, se permite cualquier correo.</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                         <Card>
+                            <CardHeader>
+                                <CardTitle className="text-lg flex items-center gap-2"><Clock className="h-5 w-5 text-primary" />Sesión</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="flex items-center justify-between gap-4 rounded-lg border p-3 shadow-sm">
+                                    <div className="space-y-0.5">
+                                        <Label htmlFor="enableIdleTimeout" className="text-base">Cierre por Inactividad</Label>
+                                        <p className="text-sm text-muted-foreground">Cierra la sesión tras un tiempo.</p>
+                                    </div>
+                                    <Switch id="enableIdleTimeout" checked={formState.enableIdleTimeout} onCheckedChange={(c) => handleSwitchChange('enableIdleTimeout', c)} disabled={isSaving} />
+                                </div>
+                                {formState.enableIdleTimeout && (
+                                    <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+                                        <Label htmlFor="idleTimeoutMinutes">Tiempo (Minutos)</Label>
+                                        <Input id="idleTimeoutMinutes" type="number" className="w-24" value={formState.idleTimeoutMinutes} onChange={(e) => handleInputChange('idleTimeoutMinutes', parseInt(e.target.value, 10) || 1)} min="1" disabled={isSaving}/>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
+                    <div className="space-y-6">
+                        <Card>
+                             <CardHeader>
+                                <CardTitle className="text-lg flex items-center gap-2"><KeyRound className="h-5 w-5 text-primary" />Política de Contraseñas</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                                <div className="flex items-center justify-between"><Label htmlFor="passwordMinLength">Longitud Mínima</Label><Input id="passwordMinLength" type="number" className="w-20 h-8" value={formState.passwordMinLength} onChange={(e) => handleInputChange('passwordMinLength', parseInt(e.target.value, 10) || 8)} min="8" disabled={isSaving} /></div>
                                 <div className="flex items-center justify-between"><Label htmlFor="passwordRequireUppercase">Requerir Mayúscula</Label><Switch id="passwordRequireUppercase" checked={formState.passwordRequireUppercase} onCheckedChange={(c) => handleSwitchChange('passwordRequireUppercase', c)} disabled={isSaving} /></div>
                                 <div className="flex items-center justify-between"><Label htmlFor="passwordRequireLowercase">Requerir Minúscula</Label><Switch id="passwordRequireLowercase" checked={formState.passwordRequireLowercase} onCheckedChange={(c) => handleSwitchChange('passwordRequireLowercase', c)} disabled={isSaving} /></div>
                                 <div className="flex items-center justify-between"><Label htmlFor="passwordRequireNumber">Requerir Número</Label><Switch id="passwordRequireNumber" checked={formState.passwordRequireNumber} onCheckedChange={(c) => handleSwitchChange('passwordRequireNumber', c)} disabled={isSaving} /></div>
                                 <div className="flex items-center justify-between"><Label htmlFor="passwordRequireSpecialChar">Requerir Carácter Especial</Label><Switch id="passwordRequireSpecialChar" checked={formState.passwordRequireSpecialChar} onCheckedChange={(c) => handleSwitchChange('passwordRequireSpecialChar', c)} disabled={isSaving} /></div>
-                            </div>
-                        </div>
-                        <Separator/>
-                         <div>
-                            <h4 className="font-medium mb-3">Cierre de Sesión por Inactividad</h4>
-                            <div className="space-y-4 p-3 border rounded-lg shadow-sm">
-                                <div className="flex items-center justify-between gap-4"><div className="space-y-0.5"><Label htmlFor="enableIdleTimeout" className="text-base">Habilitar Cierre por Inactividad</Label><p className="text-sm text-muted-foreground">Cierra la sesión del usuario tras un período de inactividad.</p></div><Switch id="enableIdleTimeout" checked={formState.enableIdleTimeout} onCheckedChange={(c) => handleSwitchChange('enableIdleTimeout', c)} disabled={isSaving} /></div>
-                                {formState.enableIdleTimeout && (
-                                    <div className="flex items-center justify-between"><Label htmlFor="idleTimeoutMinutes">Tiempo de Inactividad (Minutos)</Label><Input id="idleTimeoutMinutes" type="number" className="w-24" value={formState.idleTimeoutMinutes} onChange={(e) => handleInputChange('idleTimeoutMinutes', parseInt(e.target.value, 10) || 1)} min="1" disabled={isSaving}/></div>
-                                )}
-                            </div>
-                        </div>
-                        <Separator/>
-                        <div>
-                            <h4 className="font-medium mb-3">Autenticación de Dos Factores (2FA)</h4>
-                            <div className="space-y-4 p-3 border rounded-lg shadow-sm">
-                                <div className="flex items-center justify-between gap-4"><div className="space-y-0.5"><Label htmlFor="require2faForAdmins" className="text-base">Requerir 2FA para Administradores</Label><p className="text-sm text-muted-foreground">Forzar la activación de 2FA para todos los roles de Administrador.</p></div><Switch id="require2faForAdmins" checked={formState.require2faForAdmins} onCheckedChange={(c) => handleSwitchChange('require2faForAdmins', c)} disabled={isSaving} /></div>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-lg flex items-center gap-2"><Shield className="h-5 w-5 text-primary" />Autenticación 2FA</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="flex items-center justify-between gap-4 rounded-lg border p-3 shadow-sm">
+                                    <div className="space-y-0.5">
+                                        <Label htmlFor="require2faForAdmins" className="text-base">Requerir para Admins</Label>
+                                        <p className="text-sm text-muted-foreground">Forzar 2FA para todos los administradores.</p>
+                                    </div>
+                                    <Switch id="require2faForAdmins" checked={formState.require2faForAdmins} onCheckedChange={(c) => handleSwitchChange('require2faForAdmins', c)} disabled={isSaving} />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
             </TabsContent>
+            
              <TabsContent value="general" className="mt-6 space-y-6">
                 <Card className="card-border-animated">
                     <CardHeader>
@@ -544,7 +555,7 @@ export default function SettingsPageComponent() {
                             <div className="space-y-2">
                                 {(['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'] as UserRole[]).map(role => (
                                     <div key={role} className="flex items-center justify-between rounded-lg border p-3">
-                                        <Label htmlFor={`visibility-${role}`} className="font-semibold">{role}</Label>
+                                        <Label htmlFor={`visibility-${role}`} className="font-semibold">{getRoleInSpanish(role)}</Label>
                                         <Checkbox id={`visibility-${role}`} checked={(formState.roadmapVisibleTo || []).includes(role)} onCheckedChange={checked => handleVisibilityChange(role, !!checked)} disabled={isSaving} />
                                     </div>
                                 ))}
