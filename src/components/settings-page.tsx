@@ -164,7 +164,7 @@ export default function SettingsPageComponent() {
   
   const [newPhase, setNewPhase] = useState('');
   
-  type ImageField = 'logoUrl' | 'faviconUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl' | 'announcementsImageUrl' | 'publicPagesBgUrl' | 'securityMascotUrl' | 'dashboardImageUrl' | 'emptyStateCoursesUrl' | 'emptyStateMyCoursesUrl' | 'emptyStateFormsUrl' | 'emptyStateMyNotesUrl' | 'emptyStateResourcesUrl' | 'emptyStateCertificatesUrl' | 'emptyStateMotivationsUrl' | 'emptyStateUsersUrl' | 'emptyStateLeaderboardUrl' | 'emptyStateAnnouncementsUrl';
+  type ImageField = 'logoUrl' | 'faviconUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl' | 'announcementsImageUrl' | 'publicPagesBgUrl' | 'securityMascotUrl' | 'dashboardImageUrlAdmin' | 'dashboardImageUrlInstructor' | 'dashboardImageUrlStudent' | 'emptyStateCoursesUrl' | 'emptyStateMyCoursesUrl' | 'emptyStateFormsUrl' | 'emptyStateMyNotesUrl' | 'emptyStateResourcesUrl' | 'emptyStateCertificatesUrl' | 'emptyStateMotivationsUrl' | 'emptyStateUsersUrl' | 'emptyStateLeaderboardUrl' | 'emptyStateAnnouncementsUrl';
   
   useEffect(() => {
     setPageTitle('Configuración');
@@ -336,7 +336,7 @@ export default function SettingsPageComponent() {
 
         <Tabs defaultValue="appearance" className="w-full">
             <TabsList id="settings-tabs-list" className="inline-grid w-full grid-cols-2 md:grid-cols-4 h-auto bg-primary/10 text-foreground">
-                <TabsTrigger value="appearance">Identidad y Apariencia</TabsTrigger>
+                <TabsTrigger value="appearance">Apariencia</TabsTrigger>
                 <TabsTrigger value="style">Estilo</TabsTrigger>
                 <TabsTrigger value="security">Seguridad</TabsTrigger>
                 <TabsTrigger value="general">Generales</TabsTrigger>
@@ -347,7 +347,7 @@ export default function SettingsPageComponent() {
                     <div className="lg:col-span-1 h-full">
                         <Card id="settings-identity-card" className="h-full">
                              <CardHeader>
-                                 <CardTitle className="flex items-center gap-2 text-lg"><Building className="h-5 w-5 text-primary"/>Identidad de Marca</CardTitle>
+                                <CardTitle className="flex items-center gap-2 text-lg"><Building className="h-5 w-5 text-primary"/>Identidad de Marca</CardTitle>
                              </CardHeader>
                              <CardContent className="space-y-4">
                                  <div className="space-y-1.5"><Label htmlFor="platformName">Nombre de la Plataforma</Label><Input id="platformName" value={formState.platformName} onChange={(e) => handleInputChange('platformName', e.target.value)} disabled={isSaving}/></div>
@@ -391,90 +391,73 @@ export default function SettingsPageComponent() {
                    <CardHeader>
                        <CardTitle className="flex items-center gap-2 text-lg"><ImagePlay className="h-5 w-5 text-primary"/>Imágenes de Navegación Pública</CardTitle>
                    </CardHeader>
-                   <CardContent className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 place-items-center">
+                   <CardContent className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 place-items-center">
                       <UploadWidget id="landing-img-upload" label="Página de Inicio" currentImageUrl={formState.landingImageUrl} onFileSelect={(url) => handleImageUpload('landingImageUrl', url)} onRemove={()=>handleRemoveImage('landingImageUrl')} disabled={isSaving}/>
                       <UploadWidget id="about-img-upload" label="Página 'Nosotros'" currentImageUrl={formState.aboutImageUrl} onFileSelect={(url) => handleImageUpload('aboutImageUrl', url)} onRemove={()=>handleRemoveImage('aboutImageUrl')} disabled={isSaving}/>
                       <UploadWidget id="benefits-img-upload" label="Beneficios (Inicio)" currentImageUrl={formState.benefitsImageUrl} onFileSelect={(url) => handleImageUpload('benefitsImageUrl', url)} onRemove={()=>handleRemoveImage('benefitsImageUrl')} disabled={isSaving}/>
                       <UploadWidget id="auth-img-upload" label="Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(url) => handleImageUpload('authImageUrl', url)} onRemove={()=>handleRemoveImage('authImageUrl')} disabled={isSaving}/>
                       <UploadWidget id="public-bg-upload" label="Fondo Público" currentImageUrl={formState.publicPagesBgUrl} onFileSelect={(url) => handleImageUpload('publicPagesBgUrl', url)} onRemove={()=>handleRemoveImage('publicPagesBgUrl')} disabled={isSaving}/>
-                      <UploadWidget id="announce-bg-upload" label="Fondo Anuncios" currentImageUrl={formState.announcementsImageUrl} onFileSelect={(url) => handleImageUpload('announcementsImageUrl', url)} onRemove={() => handleRemoveImage('announcementsImageUrl')} disabled={isSaving} />
-                      <UploadWidget id="dashboard-bg-upload" label="Fondo Dashboards" currentImageUrl={formState.dashboardImageUrl} onFileSelect={(url) => handleImageUpload('dashboardImageUrl', url)} onRemove={() => handleRemoveImage('dashboardImageUrl')} disabled={isSaving} />
                    </CardContent>
                </Card>
             </TabsContent>
             
             <TabsContent value="style" className="mt-6 space-y-6">
-                <Card className="card-border-animated">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Type className="h-5 w-5 text-primary"/>Tipografía</CardTitle>
-                        <CardDescription>Elige las fuentes para los títulos y el texto del cuerpo.</CardDescription>
-                    </CardHeader>
-                     <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="fontHeadline">Fuente de Títulos</Label>
-                             <Select value={formState.fontHeadline || 'Space Grotesk'} onValueChange={(value) => handleInputChange('fontHeadline', value)}>
-                                <SelectTrigger id="fontHeadline"><SelectValue/></SelectTrigger>
-                                <SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{ fontFamily: (fontMap[f.value] as any)?.style.fontFamily }}>{f.label}</SelectItem>)}</SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="fontBody">Fuente de Párrafos</Label>
-                             <Select value={formState.fontBody || 'Inter'} onValueChange={(value) => handleInputChange('fontBody', value)}>
-                                <SelectTrigger id="fontBody"><SelectValue/></SelectTrigger>
-                                <SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{ fontFamily: (fontMap[f.value] as any)?.style.fontFamily }}>{f.label}</SelectItem>)}</SelectContent>
-                            </Select>
-                        </div>
-                    </CardContent>
-                </Card>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                    <Card className="card-border-animated">
+                        <CardHeader><CardDescription>Elige las fuentes para los títulos y el texto del cuerpo.</CardDescription></CardHeader>
+                        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="fontHeadline">Fuente de Títulos</Label>
+                                <Select value={formState.fontHeadline || 'Space Grotesk'} onValueChange={(value) => handleInputChange('fontHeadline', value)}>
+                                    <SelectTrigger id="fontHeadline"><SelectValue/></SelectTrigger>
+                                    <SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{ fontFamily: (fontMap[f.value] as any)?.style.fontFamily }}>{f.label}</SelectItem>)}</SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="fontBody">Fuente de Párrafos</Label>
+                                <Select value={formState.fontBody || 'Inter'} onValueChange={(value) => handleInputChange('fontBody', value)}>
+                                    <SelectTrigger id="fontBody"><SelectValue/></SelectTrigger>
+                                    <SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{ fontFamily: (fontMap[f.value] as any)?.style.fontFamily }}>{f.label}</SelectItem>)}</SelectContent>
+                                </Select>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                       <CardHeader><CardDescription>Imágenes para los fondos de los paneles de cada rol.</CardDescription></CardHeader>
+                       <CardContent className="grid grid-cols-3 gap-4 place-items-center">
+                         <UploadWidget id="dashboard-admin-bg-upload" label="Fondo Dashboard Admin" currentImageUrl={formState.dashboardImageUrlAdmin} onFileSelect={(url) => handleImageUpload('dashboardImageUrlAdmin', url)} onRemove={() => handleRemoveImage('dashboardImageUrlAdmin')} disabled={isSaving} size="small"/>
+                         <UploadWidget id="dashboard-instructor-bg-upload" label="Fondo Dashboard Instructor" currentImageUrl={formState.dashboardImageUrlInstructor} onFileSelect={(url) => handleImageUpload('dashboardImageUrlInstructor', url)} onRemove={() => handleRemoveImage('dashboardImageUrlInstructor')} disabled={isSaving} size="small"/>
+                         <UploadWidget id="dashboard-student-bg-upload" label="Fondo Dashboard Estudiante" currentImageUrl={formState.dashboardImageUrlStudent} onFileSelect={(url) => handleImageUpload('dashboardImageUrlStudent', url)} onRemove={() => handleRemoveImage('dashboardImageUrlStudent')} disabled={isSaving} size="small"/>
+                       </CardContent>
+                    </Card>
+                </div>
             </TabsContent>
             
             <TabsContent value="security" className="mt-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                    <Card>
+                         <CardHeader>
+                            <CardDescription>Configura cómo los usuarios pueden registrarse y acceder a la plataforma.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+                                <div className="space-y-0.5">
+                                    <Label htmlFor="allowPublicRegistration" className="text-base">Registro Público</Label>
+                                    <p className="text-sm text-muted-foreground">Permite que nuevos usuarios se registren.</p>
+                                </div>
+                                <Switch id="allowPublicRegistration" checked={formState.allowPublicRegistration} onCheckedChange={(c) => handleSwitchChange('allowPublicRegistration', c)} disabled={isSaving} />
+                            </div>
+                            <div className="space-y-2 rounded-lg border p-3 shadow-sm">
+                                <Label htmlFor="emailWhitelist">Lista Blanca de Dominios</Label>
+                                <Input id="emailWhitelist" value={formState.emailWhitelist || ''} onChange={(e) => handleInputChange('emailWhitelist', e.target.value)} placeholder="ej: alprigrama.com, ejemplo.org" disabled={isSaving} />
+                                <p className="text-xs text-muted-foreground">Separa dominios con comas. Si está vacío, se permite cualquier correo.</p>
+                            </div>
+                        </CardContent>
+                    </Card>
                     <div className="space-y-6">
-                        <Card>
-                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-lg"><User className="h-5 w-5 text-primary" />Acceso de Usuarios</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
-                                    <div className="space-y-0.5">
-                                        <Label htmlFor="allowPublicRegistration" className="text-base">Registro Público</Label>
-                                        <p className="text-sm text-muted-foreground">Permite que nuevos usuarios se registren.</p>
-                                    </div>
-                                    <Switch id="allowPublicRegistration" checked={formState.allowPublicRegistration} onCheckedChange={(c) => handleSwitchChange('allowPublicRegistration', c)} disabled={isSaving} />
-                                </div>
-                                <div className="space-y-2 rounded-lg border p-3 shadow-sm">
-                                    <Label htmlFor="emailWhitelist">Lista Blanca de Dominios</Label>
-                                    <Input id="emailWhitelist" value={formState.emailWhitelist || ''} onChange={(e) => handleInputChange('emailWhitelist', e.target.value)} placeholder="ej: alprigrama.com, ejemplo.org" disabled={isSaving} />
-                                    <p className="text-xs text-muted-foreground">Separa dominios con comas. Si está vacío, se permite cualquier correo.</p>
-                                </div>
-                            </CardContent>
-                        </Card>
                          <Card>
-                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-lg"><Clock className="h-5 w-5 text-primary" />Sesión</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex items-center justify-between gap-4 rounded-lg border p-3 shadow-sm">
-                                    <div className="space-y-0.5">
-                                        <Label htmlFor="enableIdleTimeout" className="text-base">Cierre por Inactividad</Label>
-                                        <p className="text-sm text-muted-foreground">Cierra la sesión tras un tiempo.</p>
-                                    </div>
-                                    <Switch id="enableIdleTimeout" checked={formState.enableIdleTimeout} onCheckedChange={(c) => handleSwitchChange('enableIdleTimeout', c)} disabled={isSaving} />
-                                </div>
-                                {formState.enableIdleTimeout && (
-                                    <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
-                                        <Label htmlFor="idleTimeoutMinutes">Tiempo (Minutos)</Label>
-                                        <Input id="idleTimeoutMinutes" type="number" className="w-24 h-8" value={formState.idleTimeoutMinutes} onChange={(e) => handleInputChange('idleTimeoutMinutes', parseInt(e.target.value, 10) || 1)} min="1" disabled={isSaving}/>
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </div>
-                    <div className="space-y-6">
-                        <Card>
-                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-lg"><KeyRound className="h-5 w-5 text-primary" />Política de Contraseñas</CardTitle>
+                            <CardHeader>
+                                <CardDescription>Define la complejidad requerida para las contraseñas de los usuarios.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 <div className="flex items-center justify-between"><Label htmlFor="passwordMinLength">Longitud Mínima</Label><Input id="passwordMinLength" type="number" className="w-20 h-8" value={formState.passwordMinLength} onChange={(e) => handleInputChange('passwordMinLength', parseInt(e.target.value, 10) || 8)} min="8" disabled={isSaving} /></div>
@@ -485,15 +468,29 @@ export default function SettingsPageComponent() {
                             </CardContent>
                         </Card>
                         <Card>
+                             <CardHeader>
+                                <CardDescription>Cierra la sesión de los usuarios automáticamente después de un período de inactividad.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="flex items-center justify-between gap-4 rounded-lg border p-3 shadow-sm">
+                                    <Label htmlFor="enableIdleTimeout" className="text-base">Cierre por Inactividad</Label>
+                                    <Switch id="enableIdleTimeout" checked={formState.enableIdleTimeout} onCheckedChange={(c) => handleSwitchChange('enableIdleTimeout', c)} disabled={isSaving} />
+                                </div>
+                                {formState.enableIdleTimeout && (
+                                    <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+                                        <Label htmlFor="idleTimeoutMinutes">Tiempo (Minutos)</Label>
+                                        <Input id="idleTimeoutMinutes" type="number" className="w-24 h-8" value={formState.idleTimeoutMinutes} onChange={(e) => handleInputChange('idleTimeoutMinutes', parseInt(e.target.value, 10) || 1)} min="1" disabled={isSaving}/>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                        <Card>
                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-lg"><Shield className="h-5 w-5 text-primary" />Autenticación 2FA</CardTitle>
+                                <CardDescription>Fuerza a todos los administradores a usar la Autenticación de Dos Factores (2FA) para mayor seguridad.</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <div className="flex items-center justify-between gap-4 rounded-lg border p-3 shadow-sm">
-                                    <div className="space-y-0.5">
-                                        <Label htmlFor="require2faForAdmins" className="text-base">Requerir para Admins</Label>
-                                        <p className="text-sm text-muted-foreground">Forzar 2FA para todos los administradores.</p>
-                                    </div>
+                                    <Label htmlFor="require2faForAdmins" className="text-base">Requerir 2FA para Admins</Label>
                                     <Switch id="require2faForAdmins" checked={formState.require2faForAdmins} onCheckedChange={(c) => handleSwitchChange('require2faForAdmins', c)} disabled={isSaving} />
                                 </div>
                             </CardContent>
