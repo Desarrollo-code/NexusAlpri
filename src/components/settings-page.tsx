@@ -38,6 +38,7 @@ import { settingsTour } from '@/lib/tour-steps';
 import { UploadArea } from '@/components/ui/upload-area';
 import { ScrollArea } from './ui/scroll-area';
 import { Checkbox } from './ui/checkbox';
+import { getRoleInSpanish } from '@/lib/security-log-utils';
 
 const availableFonts = [
     { value: 'Inter', label: 'Inter (Sans-serif)' },
@@ -76,12 +77,14 @@ const UploadWidget = ({
   }
 
   useEffect(() => {
-    if (localPreview) {
-        URL.revokeObjectURL(localPreview); 
-    }
-    setLocalPreview(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentImageUrl]);
+    // Revoke object URL when component unmounts or image changes
+    return () => {
+      if (localPreview) {
+        URL.revokeObjectURL(localPreview);
+      }
+    };
+  }, [localPreview]);
+
 
   const handleUpload = async (file: File) => {
     setIsUploading(true);
@@ -113,7 +116,7 @@ const UploadWidget = ({
   return (
     <div className="space-y-2 flex flex-col items-center">
       <Label className="text-xs text-muted-foreground">{label}</Label>
-      <div className={cn("relative", sizeClasses[size])}>
+      <div className={cn("relative group", sizeClasses[size])}>
         {isUploading ? (
            <div className="w-full h-full flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg bg-muted/80 p-2 relative">
                 {localPreview && <Image src={localPreview} alt="Subiendo" fill className="object-contain opacity-30 p-2"/>}
@@ -124,7 +127,7 @@ const UploadWidget = ({
                 </div>
             </div>
         ) : finalImageUrl ? (
-             <div className="relative w-full h-full group">
+             <div className="relative w-full h-full">
                 <Image src={finalImageUrl} alt={`Previsualización de ${label}`} fill className="object-contain p-2 rounded-lg border bg-muted/20" />
                  <div className="absolute top-1 right-1 flex flex-col gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                      <UploadArea onFileSelect={handleFileSelectInternal} disabled={disabled} inputId={id} className="h-7 w-7 rounded-full shadow-md bg-secondary text-secondary-foreground hover:bg-secondary/80 p-0 border-0">
