@@ -117,7 +117,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         "flex items-center gap-3 rounded-lg transition-all duration-300 font-semibold group/menu-item relative",
         isCollapsed ? "justify-center h-12 w-12" : "p-3",
         isActive
-          ? "bg-primary text-primary-foreground shadow-inner"
+          ? "bg-primary text-primary-foreground"
           : "text-foreground/70 hover:bg-black/10 hover:text-foreground"
       )}>
         <GradientIcon icon={item.icon} isActive={isActive} />
@@ -251,9 +251,9 @@ export const SidebarFooter = () => {
     if (isMobile) return null;
 
     return (
-        <div className="p-3 shadow-[0_-4px_6px_-2px_hsla(var(--sidebar-border),0.5)] flex flex-col gap-2 bg-accent z-10">
+        <div className="p-3 shadow-[0_-4px_6px_-2px_hsla(var(--sidebar-border),0.5)] flex flex-col gap-2 bg-[hsl(var(--sidebar-header-background))] z-10">
              {!isCollapsed && settings?.projectVersion && (
-                <div className="px-3 py-2 text-center text-xs text-foreground">
+                <div className="px-3 py-2 text-center text-xs text-sidebar-foreground">
                     Versión: {settings.projectVersion}
                 </div>
              )}
@@ -261,7 +261,7 @@ export const SidebarFooter = () => {
                 onClick={logout}
                 variant="ghost"
                 className={cn(
-                    "w-full text-foreground/70 hover:bg-red-500/20 hover:text-red-400",
+                    "w-full text-sidebar-foreground hover:bg-red-500/20 hover:text-white",
                     isCollapsed ? 'justify-center p-0 h-10' : 'justify-start gap-3 p-3'
                 )}
             >
@@ -272,7 +272,7 @@ export const SidebarFooter = () => {
                 onClick={toggleSidebar}
                 variant="ghost"
                 size="icon"
-                className="w-full h-10 text-foreground/70 hover:bg-black/10 hover:text-foreground"
+                className="w-full h-10 text-sidebar-foreground hover:bg-black/10 hover:text-white"
             >
                 {isCollapsed ? <ChevronRightCircle className="h-6 w-6"/> : <ChevronLeftCircle className="h-6 w-6"/>}
             </Button>
