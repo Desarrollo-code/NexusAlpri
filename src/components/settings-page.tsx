@@ -77,12 +77,12 @@ const UploadWidget = ({
   }
 
   useEffect(() => {
-    return () => {
-      if (localPreview) {
-        URL.revokeObjectURL(localPreview);
-      }
-    };
-  }, [localPreview]);
+    // Revoke object URL on unmount or when currentImageUrl changes to prevent memory leaks
+    if (localPreview) {
+      URL.revokeObjectURL(localPreview);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentImageUrl]);
 
 
   const handleUpload = async (file: File) => {
@@ -310,7 +310,9 @@ export default function SettingsPageComponent() {
   }
 
   if (!user || user.role !== 'ADMINISTRATOR') {
-    router.push('/dashboard');
+    if (typeof window !== 'undefined') {
+        router.push('/dashboard');
+    }
     return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>;
   }
   
@@ -518,7 +520,7 @@ export default function SettingsPageComponent() {
                             <div>
                                 <h4 className="text-sm font-medium mb-3">Categorías Existentes:</h4>
                                 {formState.resourceCategories.length > 0 ? (
-                                <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                                <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
                                     {formState.resourceCategories.map(category => (
                                     <div key={category} className="flex items-center justify-between p-2.5 border rounded-lg bg-card text-sm">
                                         <span className="flex items-center gap-2"><Tag className="h-4 w-4 text-muted-foreground"/>{category}</span>
