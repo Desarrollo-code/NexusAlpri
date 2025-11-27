@@ -118,7 +118,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         isCollapsed ? "justify-center h-12 w-12" : "p-3",
         isActive
           ? "bg-primary text-primary-foreground shadow-inner"
-          : "text-sidebar-foreground hover:bg-black/20"
+          : "text-sidebar-muted-foreground hover:bg-black/20 hover:text-sidebar-foreground"
       )}>
         <GradientIcon icon={item.icon} isActive={isActive} />
         {!isCollapsed && <span className="whitespace-nowrap">{item.label}</span>}
@@ -231,7 +231,7 @@ export const SidebarContent = () => {
 
     return (
         <TooltipProvider delayDuration={100}>
-            <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-1 thin-scrollbar bg-gradient-to-br from-primary to-accent">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-1 thin-scrollbar bg-accent">
                 {navItems.map((item) => {
                     if (item.children && item.children.length > 0) {
                         return <SectionItem key={item.id} item={item} />;
