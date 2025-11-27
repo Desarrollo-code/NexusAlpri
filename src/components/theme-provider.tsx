@@ -10,6 +10,7 @@ import { getContrastingTextColor, hexToHslString } from '@/lib/utils';
 
 
 export const AVAILABLE_THEMES = [
+  { value: 'light', label: 'Blanco', colors: ['#f8fafc', '#e2e8f0']},
   { value: 'peach-dune', label: 'Duna Melocotón', colors: ['#f97316', '#fdba74'], },
   { value: 'fresh-mint', label: 'Menta Fresca', colors: ['#16a34a', '#86efac'], },
   { value: 'summer-sky', label: 'Cielo de Verano', colors: ['#3b82f6', '#93c5fd'], },
