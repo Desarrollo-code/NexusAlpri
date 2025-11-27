@@ -164,7 +164,7 @@ export default function SettingsPageComponent() {
   
   const [newPhase, setNewPhase] = useState('');
   
-  type ImageField = 'logoUrl' | 'faviconUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl' | 'announcementsImageUrl' | 'publicPagesBgUrl' | 'securityMascotUrl' | 'emptyStateCoursesUrl' | 'emptyStateMyCoursesUrl' | 'emptyStateFormsUrl' | 'emptyStateMyNotesUrl' | 'emptyStateResourcesUrl' | 'emptyStateCertificatesUrl' | 'emptyStateMotivationsUrl' | 'emptyStateUsersUrl' | 'emptyStateLeaderboardUrl' | 'emptyStateAnnouncementsUrl';
+  type ImageField = 'logoUrl' | 'faviconUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl' | 'announcementsImageUrl' | 'publicPagesBgUrl' | 'securityMascotUrl' | 'dashboardImageUrl' | 'emptyStateCoursesUrl' | 'emptyStateMyCoursesUrl' | 'emptyStateFormsUrl' | 'emptyStateMyNotesUrl' | 'emptyStateResourcesUrl' | 'emptyStateCertificatesUrl' | 'emptyStateMotivationsUrl' | 'emptyStateUsersUrl' | 'emptyStateLeaderboardUrl' | 'emptyStateAnnouncementsUrl';
   
   useEffect(() => {
     setPageTitle('Configuración');
@@ -391,13 +391,14 @@ export default function SettingsPageComponent() {
                    <CardHeader>
                        <CardTitle className="flex items-center gap-2 text-lg"><ImagePlay className="h-5 w-5 text-primary"/>Imágenes de Navegación Pública</CardTitle>
                    </CardHeader>
-                   <CardContent className="grid grid-cols-2 md:grid-cols-6 gap-4 place-items-center">
+                   <CardContent className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 place-items-center">
                       <UploadWidget id="landing-img-upload" label="Página de Inicio" currentImageUrl={formState.landingImageUrl} onFileSelect={(url) => handleImageUpload('landingImageUrl', url)} onRemove={()=>handleRemoveImage('landingImageUrl')} disabled={isSaving}/>
                       <UploadWidget id="about-img-upload" label="Página 'Nosotros'" currentImageUrl={formState.aboutImageUrl} onFileSelect={(url) => handleImageUpload('aboutImageUrl', url)} onRemove={()=>handleRemoveImage('aboutImageUrl')} disabled={isSaving}/>
                       <UploadWidget id="benefits-img-upload" label="Beneficios (Inicio)" currentImageUrl={formState.benefitsImageUrl} onFileSelect={(url) => handleImageUpload('benefitsImageUrl', url)} onRemove={()=>handleRemoveImage('benefitsImageUrl')} disabled={isSaving}/>
                       <UploadWidget id="auth-img-upload" label="Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(url) => handleImageUpload('authImageUrl', url)} onRemove={()=>handleRemoveImage('authImageUrl')} disabled={isSaving}/>
                       <UploadWidget id="public-bg-upload" label="Fondo Público" currentImageUrl={formState.publicPagesBgUrl} onFileSelect={(url) => handleImageUpload('publicPagesBgUrl', url)} onRemove={()=>handleRemoveImage('publicPagesBgUrl')} disabled={isSaving}/>
-                       <UploadWidget id="announce-bg-upload" label="Fondo Anuncios" currentImageUrl={formState.announcementsImageUrl} onFileSelect={(url) => handleImageUpload('announcementsImageUrl', url)} onRemove={() => handleRemoveImage('announcementsImageUrl')} disabled={isSaving} />
+                      <UploadWidget id="announce-bg-upload" label="Fondo Anuncios" currentImageUrl={formState.announcementsImageUrl} onFileSelect={(url) => handleImageUpload('announcementsImageUrl', url)} onRemove={() => handleRemoveImage('announcementsImageUrl')} disabled={isSaving} />
+                      <UploadWidget id="dashboard-bg-upload" label="Fondo Dashboards" currentImageUrl={formState.dashboardImageUrl} onFileSelect={(url) => handleImageUpload('dashboardImageUrl', url)} onRemove={() => handleRemoveImage('dashboardImageUrl')} disabled={isSaving} />
                    </CardContent>
                </Card>
             </TabsContent>
@@ -431,8 +432,8 @@ export default function SettingsPageComponent() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                     <div className="space-y-6">
                         <Card>
-                            <CardHeader>
-                                <CardTitle className="text-lg flex items-center gap-2"><User className="h-5 w-5 text-primary" />Acceso de Usuarios</CardTitle>
+                             <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-lg"><User className="h-5 w-5 text-primary" />Acceso de Usuarios</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
@@ -450,8 +451,8 @@ export default function SettingsPageComponent() {
                             </CardContent>
                         </Card>
                          <Card>
-                            <CardHeader>
-                                <CardTitle className="text-lg flex items-center gap-2"><Clock className="h-5 w-5 text-primary" />Sesión</CardTitle>
+                             <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-lg"><Clock className="h-5 w-5 text-primary" />Sesión</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="flex items-center justify-between gap-4 rounded-lg border p-3 shadow-sm">
@@ -464,7 +465,7 @@ export default function SettingsPageComponent() {
                                 {formState.enableIdleTimeout && (
                                     <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
                                         <Label htmlFor="idleTimeoutMinutes">Tiempo (Minutos)</Label>
-                                        <Input id="idleTimeoutMinutes" type="number" className="w-24" value={formState.idleTimeoutMinutes} onChange={(e) => handleInputChange('idleTimeoutMinutes', parseInt(e.target.value, 10) || 1)} min="1" disabled={isSaving}/>
+                                        <Input id="idleTimeoutMinutes" type="number" className="w-24 h-8" value={formState.idleTimeoutMinutes} onChange={(e) => handleInputChange('idleTimeoutMinutes', parseInt(e.target.value, 10) || 1)} min="1" disabled={isSaving}/>
                                     </div>
                                 )}
                             </CardContent>
@@ -473,7 +474,7 @@ export default function SettingsPageComponent() {
                     <div className="space-y-6">
                         <Card>
                              <CardHeader>
-                                <CardTitle className="text-lg flex items-center gap-2"><KeyRound className="h-5 w-5 text-primary" />Política de Contraseñas</CardTitle>
+                                <CardTitle className="flex items-center gap-2 text-lg"><KeyRound className="h-5 w-5 text-primary" />Política de Contraseñas</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 <div className="flex items-center justify-between"><Label htmlFor="passwordMinLength">Longitud Mínima</Label><Input id="passwordMinLength" type="number" className="w-20 h-8" value={formState.passwordMinLength} onChange={(e) => handleInputChange('passwordMinLength', parseInt(e.target.value, 10) || 8)} min="8" disabled={isSaving} /></div>
@@ -485,7 +486,7 @@ export default function SettingsPageComponent() {
                         </Card>
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-lg flex items-center gap-2"><Shield className="h-5 w-5 text-primary" />Autenticación 2FA</CardTitle>
+                                <CardTitle className="flex items-center gap-2 text-lg"><Shield className="h-5 w-5 text-primary" />Autenticación 2FA</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="flex items-center justify-between gap-4 rounded-lg border p-3 shadow-sm">
@@ -502,10 +503,9 @@ export default function SettingsPageComponent() {
             </TabsContent>
             
             <TabsContent value="general" className="mt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Card className="card-border-animated">
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><List className="h-5 w-5 text-primary" />Categorías de Recursos</CardTitle>
                             <CardDescription>Gestiona las categorías usadas en cursos y la biblioteca.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -520,20 +520,21 @@ export default function SettingsPageComponent() {
                             <div>
                                 <h4 className="text-sm font-medium mb-3">Categorías Existentes:</h4>
                                 {formState.resourceCategories.length > 0 ? (
-                                <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+                                <ScrollArea className="h-96 pr-3">
+                                  <div className="space-y-2">
                                     {formState.resourceCategories.map(category => (
                                     <div key={category} className="flex items-center justify-between p-2.5 border rounded-lg bg-card text-sm">
                                         <span className="flex items-center gap-2"><Tag className="h-4 w-4 text-muted-foreground"/>{category}</span>
                                         <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:bg-destructive/10" onClick={() => setCategoryToDelete(category)} disabled={isSaving}><Trash2 className="h-4 w-4" /><span className="sr-only">Eliminar {category}</span></Button>
                                     </div>))}
-                                </div>
+                                   </div>
+                                </ScrollArea>
                                 ) : ( <p className="text-sm text-muted-foreground text-center py-4">No hay categorías.</p> )}
                             </div>
                         </CardContent>
                     </Card>
                      <Card className="card-border-animated">
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><Rocket className="h-5 w-5 text-primary" />Hoja de Ruta (Roadmap)</CardTitle>
                             <CardDescription>Configura las fases y la visibilidad de la página de la hoja de ruta del proyecto.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">

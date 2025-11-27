@@ -111,8 +111,8 @@ export function AdminDashboard({ adminStats, securityLogs }: {
            <div className="lg:col-span-2">
                 <Card id="admin-welcome-card" className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg">
                     <div className="absolute inset-0 z-0">
-                        {settings?.announcementsImageUrl && (
-                            <Image src={settings.announcementsImageUrl} alt="Fondo decorativo" fill className="object-cover opacity-20" />
+                        {settings?.dashboardImageUrl && (
+                            <Image src={settings.dashboardImageUrl} alt="Fondo decorativo" fill className="object-cover opacity-20" data-ai-hint="office background" />
                         )}
                         <div className="absolute inset-0 bg-black/10"></div>
                     </div>
@@ -123,17 +123,17 @@ export function AdminDashboard({ adminStats, securityLogs }: {
                        </div>
                        {settings?.securityMascotUrl && (
                          <div className="relative w-28 h-28 flex-shrink-0">
-                           <Image src={settings.securityMascotUrl} alt="Mascota de Seguridad" fill className="object-contain" />
+                           <Image src={settings.securityMascotUrl} alt="Mascota de Seguridad" fill className="object-contain" data-ai-hint="cute robot mascot" />
                          </div>
                        )}
                     </div>
                 </Card>
            </div>
            <div className="lg:col-span-1 grid grid-cols-2 gap-4">
-              <MetricCard title="Usuarios" value={adminStats.totalUsers} icon={Users} index={0} />
-              <MetricCard title="Cursos" value={adminStats.totalPublishedCourses} icon={BookOpenCheck} index={1} />
-              <MetricCard title="Inscripciones" value={adminStats.totalEnrollments} icon={GraduationCap} index={2}/>
-              <MetricCard title="Finalización" value={Math.round(adminStats.averageCompletionRate)} icon={Percent} suffix="%" index={3} />
+              <MetricCard title="Usuarios Totales" value={adminStats.totalUsers} icon={Users} index={0} />
+              <MetricCard title="Cursos Publicados" value={adminStats.totalPublishedCourses} icon={BookOpenCheck} index={1} />
+              <MetricCard title="Inscripciones Totales" value={adminStats.totalEnrollments} icon={GraduationCap} index={2}/>
+              <MetricCard title="Finalización Promedio" value={Math.round(adminStats.averageCompletionRate)} icon={Percent} suffix="%" index={3} />
            </div>
         </div>
 

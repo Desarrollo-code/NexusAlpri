@@ -50,8 +50,8 @@ export function StudentDashboard({ studentStats, myDashboardCourses, assignedCou
     <div className="space-y-8">
        <Card id="student-welcome-card" className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg">
            <div className="absolute inset-0 z-0">
-                {settings?.announcementsImageUrl && (
-                    <Image src={settings.announcementsImageUrl} alt="Fondo decorativo" fill className="object-cover opacity-20" />
+                {settings?.dashboardImageUrl && (
+                    <Image src={settings.dashboardImageUrl} alt="Fondo decorativo" fill className="object-cover opacity-20" data-ai-hint="office background" />
                 )}
                 <div className="absolute inset-0 bg-black/10"></div>
             </div>

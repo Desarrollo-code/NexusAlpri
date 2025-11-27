@@ -52,6 +52,7 @@ export interface PlatformSettings {
     announcementsImageUrl?: string | null;
     publicPagesBgUrl?: string | null;
     securityMascotUrl?: string | null;
+    dashboardImageUrl?: string | null;
     emptyStateCoursesUrl?: string | null;
     emptyStateMyCoursesUrl?: string | null;
     emptyStateFormsUrl?: string | null;

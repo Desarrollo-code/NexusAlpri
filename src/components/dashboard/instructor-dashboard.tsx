@@ -31,8 +31,8 @@ export function InstructorDashboard({ instructorStats, recentAnnouncements, taug
          <div className="lg:col-span-2">
            <Card id="instructor-welcome-card" className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg">
                 <div className="absolute inset-0 z-0">
-                    {settings?.announcementsImageUrl && (
-                        <Image src={settings.announcementsImageUrl} alt="Fondo decorativo" fill className="object-cover opacity-20" />
+                    {settings?.dashboardImageUrl && (
+                        <Image src={settings.dashboardImageUrl} alt="Fondo decorativo" fill className="object-cover opacity-20" data-ai-hint="office background"/>
                     )}
                     <div className="absolute inset-0 bg-black/10"></div>
                 </div>
@@ -43,7 +43,7 @@ export function InstructorDashboard({ instructorStats, recentAnnouncements, taug
                    </div>
                    {settings?.securityMascotUrl && (
                      <div className="relative w-28 h-28 flex-shrink-0">
-                       <Image src={settings.securityMascotUrl} alt="Mascota" fill className="object-contain" />
+                       <Image src={settings.securityMascotUrl} alt="Mascota" fill className="object-contain" data-ai-hint="cute robot mascot" />
                      </div>
                    )}
                 </div>
