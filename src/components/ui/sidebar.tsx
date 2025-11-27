@@ -118,7 +118,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         isCollapsed ? "justify-center h-12 w-12" : "p-3",
         isActive
           ? "bg-primary text-primary-foreground"
-          : "text-foreground/70 hover:bg-primary/10 hover:text-foreground"
+          : "text-accent-foreground/70 hover:bg-black/10 hover:text-accent-foreground"
       )}>
         <GradientIcon icon={item.icon} isActive={isActive} />
         {!isCollapsed && <span className="whitespace-nowrap">{item.label}</span>}
@@ -152,7 +152,7 @@ const SidebarSectionHeader = ({ item, isActive }: { item: NavItem, isActive: boo
       <div className={cn(
           "flex items-center justify-between w-full rounded-lg transition-colors group",
           isCollapsed ? 'h-12 w-12 justify-center' : 'p-3',
-          isActive ? "bg-black/10 text-foreground" : "hover:bg-black/10 text-foreground/70 hover:text-foreground"
+          isActive ? "bg-black/10 text-accent-foreground" : "hover:bg-black/10 text-accent-foreground/70 hover:text-accent-foreground"
       )}>
           <div className="flex items-center gap-3">
               <GradientIcon icon={item.icon} isActive={isActive} />

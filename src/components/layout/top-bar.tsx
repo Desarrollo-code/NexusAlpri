@@ -114,24 +114,24 @@ export const TopBar = () => {
     return (
         <div className={cn(
             "flex items-center justify-between h-20 px-4 shrink-0 sticky top-0 z-30",
-            "bg-accent border-b border-black/10 dark:border-white/10"
+            "bg-accent border-b"
         )}>
             {/* Left side */}
             <div className="flex items-center gap-2 flex-1 min-w-0">
                  {isMobile ? (
-                    <Button onClick={toggleSidebar} variant="ghost" size="icon" className="h-8 w-8 text-foreground hover:bg-black/10">
+                    <Button onClick={toggleSidebar} variant="ghost" size="icon" className="h-8 w-8 text-accent-foreground hover:bg-black/10">
                         <PanelLeft className="h-5 w-5"/>
                         <span className="sr-only">Toggle Menu</span>
                     </Button>
                  ) : showBackButton ? (
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-foreground hover:bg-black/10" onClick={() => router.back()}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-accent-foreground hover:bg-black/10" onClick={() => router.back()}>
                         <ArrowLeft className="h-4 w-4"/>
                         <span className="sr-only">Volver</span>
                     </Button>
                  ) : (
                     <div className="w-8"/> // Placeholder to keep alignment
                  )}
-                 <h1 className="text-xl font-bold truncate text-foreground">
+                 <h1 className="text-xl font-bold truncate text-accent-foreground">
                     {currentPageTitle}
                  </h1>
             </div>
@@ -141,10 +141,10 @@ export const TopBar = () => {
                  {headerActions && <div className="hidden md:flex items-center gap-2">{headerActions}</div>}
                  <Popover onOpenChange={(open) => { if (open) fetchNotifications() }}>
                     <PopoverTrigger asChild>
-                        <Button variant="ghost" size="icon" className="relative text-foreground/70 hover:text-foreground hover:bg-black/20 transition-colors">
+                        <Button variant="ghost" size="icon" className="relative text-accent-foreground/70 hover:text-accent-foreground hover:bg-black/10 transition-colors">
                              {unreadCount > 0 ? (
                                 <div className="relative">
-                                    <Bell className="h-6 w-6 text-foreground fill-amber-400 animate-pulse" />
+                                    <Bell className="h-6 w-6 text-accent-foreground fill-amber-400 animate-pulse" />
                                     <span className="absolute -top-1 -right-1 flex h-3 w-3">
                                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                                       <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-background"></span>
