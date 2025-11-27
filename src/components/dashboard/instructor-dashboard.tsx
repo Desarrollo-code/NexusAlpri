@@ -10,6 +10,8 @@ import { CalendarWidget } from "./calendar-widget";
 import { CourseProgressCard } from "./course-progress-card";
 import { MetricCard } from "../analytics/metric-card";
 import { Skeleton } from "../ui/skeleton";
+import { useAuth } from "@/contexts/auth-context";
+import Image from "next/image";
 
 interface InstructorDashboardProps {
   instructorStats: {
@@ -22,17 +24,35 @@ interface InstructorDashboardProps {
 }
 
 export function InstructorDashboard({ instructorStats, recentAnnouncements, taughtCourses, upcomingEvents }: InstructorDashboardProps) {
-
+  const { user, settings } = useAuth();
   return (
     <div className="space-y-8">
-      <div className="space-y-1">
-          <h1 className="text-3xl font-bold font-headline">Estudio del Creador</h1>
-          <p className="text-muted-foreground">Tu espacio para crear, gestionar y ver el impacto de tu contenido.</p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-          <MetricCard title="Cursos Creados" value={instructorStats?.taught || 0} icon={GraduationCap} index={0} />
-          <MetricCard title="Estudiantes Totales" value={instructorStats?.students || 0} icon={Users} index={1} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+         <div className="lg:col-span-2">
+           <Card id="instructor-welcome-card" className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg">
+                <div className="absolute inset-0 z-0">
+                    {settings?.announcementsImageUrl && (
+                        <Image src={settings.announcementsImageUrl} alt="Fondo decorativo" fill className="object-cover opacity-20" />
+                    )}
+                    <div className="absolute inset-0 bg-black/10"></div>
+                </div>
+                <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                   <div className="space-y-1">
+                      <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Estudio del Creador <span className="text-2xl">🎨</span></h1>
+                      <p className="text-primary-foreground/80">Tu espacio para crear, gestionar y ver el impacto de tu contenido.</p>
+                   </div>
+                   {settings?.securityMascotUrl && (
+                     <div className="relative w-28 h-28 flex-shrink-0">
+                       <Image src={settings.securityMascotUrl} alt="Mascota" fill className="object-contain" />
+                     </div>
+                   )}
+                </div>
+            </Card>
+         </div>
+         <div className="lg:col-span-1 grid grid-cols-2 gap-4">
+           <MetricCard title="Cursos Creados" value={instructorStats?.taught || 0} icon={GraduationCap} index={0} />
+           <MetricCard title="Estudiantes Totales" value={instructorStats?.students || 0} icon={Users} index={1} />
+         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
