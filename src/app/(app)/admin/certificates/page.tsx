@@ -9,6 +9,7 @@ import { CertificateTemplateManager } from '@/components/certificates/certificat
 import { useTour } from '@/contexts/tour-context';
 import { certificatesTour } from '@/lib/tour-steps';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const CertificatesSkeleton = () => (
     <div className="space-y-6">
