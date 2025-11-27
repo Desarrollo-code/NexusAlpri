@@ -76,10 +76,10 @@ const UploadWidget = ({
   }
 
   useEffect(() => {
-    setLocalPreview(null);
     if (localPreview) {
         URL.revokeObjectURL(localPreview); 
     }
+    setLocalPreview(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentImageUrl]);
 
@@ -102,9 +102,9 @@ const UploadWidget = ({
     }
   };
 
-  const handleFileSelectInternal = (files: FileList | null) => {
-      if (files && files[0]) {
-          handleUpload(files[0]);
+  const handleFileSelectInternal = (file: File | null) => {
+      if (file) {
+          handleUpload(file);
       }
   }
 
@@ -123,9 +123,9 @@ const UploadWidget = ({
                     <Progress value={uploadProgress} className="w-20 h-1" />
                 </div>
             </div>
-        ) : displayUrl ? (
+        ) : finalImageUrl ? (
              <div className="relative w-full h-full group">
-                <Image src={displayUrl} alt={`Previsualización de ${label}`} fill className="object-contain p-2 rounded-lg border bg-muted/20" />
+                <Image src={finalImageUrl} alt={`Previsualización de ${label}`} fill className="object-contain p-2 rounded-lg border bg-muted/20" />
                 <div className="absolute top-1 right-1 flex flex-col gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                      <UploadArea onFileSelect={handleFileSelectInternal} disabled={disabled} inputId={id} className="h-7 w-7 rounded-full shadow-md bg-secondary text-secondary-foreground hover:bg-secondary/80 p-0 border-0">
                          <Replace className="h-4 w-4" />
@@ -331,7 +331,7 @@ export default function SettingsPageComponent() {
         </div>
 
         <Tabs defaultValue="appearance" className="w-full">
-            <TabsList id="settings-tabs-list" className="inline-grid w-full grid-cols-2 md:grid-cols-4 h-auto bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg">
+            <TabsList id="settings-tabs-list" className="inline-grid w-full grid-cols-2 md:grid-cols-4 h-auto bg-primary/10 text-foreground">
                 <TabsTrigger value="appearance">Identidad y Apariencia</TabsTrigger>
                 <TabsTrigger value="style">Estilo</TabsTrigger>
                 <TabsTrigger value="security">Seguridad</TabsTrigger>
@@ -563,3 +563,177 @@ export default function SettingsPageComponent() {
     </div>
   );
 }
+
+```
+- src/tailwind.config.ts:
+```ts
+import type {Config} from 'tailwindcss';
+
+const config: Config = {
+  content: [
+    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
+  safelist: [
+    {
+      pattern: /bg-event-(blue|green|red|orange)/,
+    },
+    {
+      pattern: /text-event-(blue|green|red|orange)/,
+    },
+    {
+      pattern: /border-event-(blue|green|red|orange)/,
+    }
+  ],
+  darkMode: ["class"],
+  theme: {
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
+      },
+    },
+    extend: {
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 4px)",
+        sm: "calc(var(--radius) - 8px)",
+        '2xl': '1rem',
+      },
+      fontFamily: {
+        body: ['var(--font-body)', 'sans-serif'],
+        headline: ['var(--font-headline)', 'sans-serif'],
+      },
+      colors: {
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        primary: {
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))',
+          darker: 'hsl(var(--primary) / 0.8)',
+        },
+        secondary: {
+          DEFAULT: 'hsl(var(--secondary))',
+          foreground: 'hsl(var(--secondary-foreground))',
+        },
+        destructive: {
+          DEFAULT: 'hsl(var(--destructive))',
+          foreground: 'hsl(var(--destructive-foreground))',
+        },
+        muted: {
+          DEFAULT: 'hsl(var(--muted))',
+          foreground: 'hsl(var(--muted-foreground))',
+        },
+        accent: {
+          DEFAULT: 'hsl(var(--accent))',
+          foreground: 'hsl(var(--accent-foreground))',
+        },
+        popover: {
+          DEFAULT: 'hsl(var(--popover))',
+          foreground: 'hsl(var(--popover-foreground))',
+        },
+        card: {
+          DEFAULT: 'hsl(var(--card))',
+          foreground: 'hsl(var(--card-foreground))',
+        },
+        chart: {
+          '1': 'hsl(var(--chart-1))',
+          '2': 'hsl(var(--chart-2))',
+          '3': 'hsl(var(--chart-3))',
+          '4': 'hsl(var(--chart-4))',
+          '5': 'hsl(var(--chart-5))',
+        },
+         event: {
+          blue: 'hsl(var(--event-blue))',
+          green: 'hsl(var(--event-green))',
+          red: 'hsl(var(--event-red))',
+          orange: 'hsl(var(--event-orange))',
+        },
+        sidebar: {
+          'header-background': 'hsl(var(--sidebar-header-background))',
+          'body-background': 'hsl(var(--sidebar-body-background))',
+          'footer-background': 'hsl(var(--sidebar-footer-background))',
+          foreground: 'hsl(var(--sidebar-foreground))',
+          'muted-foreground': 'hsl(var(--sidebar-muted-foreground))',
+          accent: {
+            DEFAULT: 'hsl(var(--sidebar-accent))',
+            foreground: 'hsl(var(--sidebar-accent-foreground))',
+          },
+          border: 'hsl(var(--sidebar-border))',
+        },
+      },
+      keyframes: {
+        'accordion-down': {
+          from: {
+            height: '0',
+          },
+          to: {
+            height: 'var(--radix-accordion-content-height)',
+          },
+        },
+        'accordion-up': {
+          from: {
+            height: 'var(--radix-accordion-content-height)',
+          },
+          to: {
+            height: '0',
+          },
+        },
+        'press': {
+          '0%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(0.92)' },
+          'to': { transform: 'scale(1)' },
+        },
+        'throw': {
+            '0%': { transform: 'translateY(20px) scale(0.95)', opacity: '0' },
+            '100%': { transform: 'translateY(0) scale(1)', opacity: '1' }
+        },
+        'caret-blink': {
+          '0%, 70%, 100%': { opacity: '1' },
+          '20%, 50%': { opacity: '0' },
+        },
+        'piller-push-up': {
+          '0%, 100%': { transform: 'scaleY(0.2)' },
+          '50%': { transform: 'scaleY(1)' },
+        },
+        'aurora-1': {
+            '0%, 100%': { transform: 'translate(0%, 0%) scale(1)', opacity: 0.2 },
+            '25%': { transform: 'translate(20%, -10%) scale(1.1)', opacity: 0.3 },
+            '50%': { transform: 'translate(10%, 20%) scale(0.9)', opacity: 0.25 },
+            '75%': { transform: 'translate(-10%, 10%) scale(1.2)', opacity: 0.3 },
+        },
+        'aurora-2': {
+            '0%, 100%': { transform: 'translate(0%, 0%) scale(1)', opacity: 0.2 },
+            '25%': { transform: 'translate(-15%, 10%) scale(0.9)', opacity: 0.25 },
+            '50%': { transform: 'translate(10%, -15%) scale(1.1)', opacity: 0.3 },
+            '75%': { transform: 'translate(5%, 5%) scale(1)', opacity: 0.2 },
+        },
+        'aurora-3': {
+            '0%, 100%': { transform: 'translate(0%, 0%) scale(1)', opacity: 0.15 },
+            '25%': { transform: 'translate(10%, 15%) scale(1.2)', opacity: 0.2 },
+            '50%': { transform: 'translate(-15%, -10%) scale(0.8)', opacity: 0.1 },
+            '75%': { transform: 'translate(5%, -5%) scale(1.1)', opacity: 0.18 },
+        },
+      },
+      animation: {
+        'accordion-down': 'accordion-down 0.2s ease-out',
+        'accordion-up': 'accordion-up 0.2s ease-out',
+        'press': 'press 0.2s 1 linear',
+        'throw': 'throw 0.4s ease-out forwards',
+        'caret-blink': 'caret-blink 1.25s ease-out infinite',
+        'piller-push-up': 'piller-push-up 1s ease-in-out infinite alternate',
+        'aurora-1': 'aurora-1 20s ease-in-out infinite',
+        'aurora-2': 'aurora-2 25s ease-in-out infinite',
+        'aurora-3': 'aurora-3 18s ease-in-out infinite',
+      },
+    },
+  },
+  plugins: [require('tailwindcss-animate')],
+}
+export default config;
+```
