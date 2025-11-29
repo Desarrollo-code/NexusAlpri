@@ -1,3 +1,5 @@
+
+      
 // src/components/analytics/metric-card.tsx
 'use client';
 import { Card } from "@/components/ui/card"
@@ -13,7 +15,6 @@ export const MetricCard = ({
     suffix = '', 
     index = 0, 
     onClick, 
-    gradient 
 }: { 
     title: string; 
     value: number; 
@@ -22,30 +23,20 @@ export const MetricCard = ({
     suffix?: string; 
     index?: number;
     onClick?: () => void;
-    gradient?: string;
 }) => {
     const animatedValue = useAnimatedCounter(value, 0, 1000);
     
-    // Define an array of gradient classes
-    const gradients = [
-        'bg-gradient-blue',
-        'bg-gradient-green',
-        'bg-gradient-purple',
-        'bg-gradient-pink',
-        'bg-gradient-orange',
-    ];
-
-    // Use the provided gradient or pick one from the array based on index
-    const gradientClass = gradient || gradients[index % gradients.length];
+    // Asigna un color de la paleta de gráficos del tema.
+    const colorVar = `--chart-${(index % 5) + 1}`;
     
     return (
         <Card 
             onClick={onClick} 
             className={cn(
-                "relative text-primary-foreground p-4 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl rounded-2xl h-28 overflow-hidden border-0",
-                gradientClass,
+                "relative text-white p-4 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl rounded-2xl h-28 overflow-hidden border-0",
                 onClick && "cursor-pointer"
             )}
+            style={{ backgroundColor: `hsl(var(${colorVar}))` }}
         >
             <div className="flex justify-between items-start z-10">
                 <p className="text-sm font-semibold">{title}</p>
@@ -61,3 +52,5 @@ export const MetricCard = ({
         </Card>
     );
 };
+
+    
