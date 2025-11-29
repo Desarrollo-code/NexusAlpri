@@ -2,7 +2,7 @@
 'use client';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, BookOpenCheck, GraduationCap, Percent, PlusCircle, BarChart3, Settings, ShieldAlert, Monitor, Database, ArrowRight, Folder, Megaphone, FileText, AlertCircle, Calendar, Pencil, ExternalLink, LineChart } from "lucide-react";
+import { Users, BookOpenCheck, GraduationCap, Percent, PlusCircle, BarChart3, Settings, ShieldAlert, Monitor, Database, ArrowRight, Folder, Megaphone, FileText, AlertCircle, Calendar, Pencil, ExternalLink, LineChart, UsersRound } from "lucide-react";
 import type { AdminDashboardStats, SecurityLog as AppSecurityLog, Announcement as AnnouncementType, CalendarEvent } from '@/types';
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
@@ -14,13 +14,14 @@ import { SecurityLogDetailSheet } from "../security/security-log-detail-sheet";
 import { useRouter } from 'next/navigation';
 import { useAuth } from "@/contexts/auth-context";
 import Image from "next/image";
-import { useAnimatedCounter } from "@/hooks/use-animated-counter";
 import { AnnouncementsWidget } from "./announcements-widget";
 import { CalendarWidget } from "./calendar-widget";
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, AreaChart, Bar, BarChart, ComposedChart, Legend, Line, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
+import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, CartesianGrid } from "@/components/ui/chart";
+import { Area, AreaChart, Bar, BarChart, ComposedChart, Legend, Line, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { DonutChart } from "../analytics/donut-chart";
 import { HealthStatusWidget } from "./health-status-widget";
+import { MetricCard } from "../analytics/metric-card";
+
 
 const userRolesChartConfig = {
   count: { label: "Usuarios" },
@@ -32,42 +33,17 @@ const userRolesChartConfig = {
 
 const formatDateTick = (tick: string): string => {
   const date = parseISO(tick);
-  // Muestra solo el número del día.
-  return format(date, "d", { locale: es });
+  if (!isValid(date)) return tick;
+  return format(date, "d MMM", { locale: es });
 };
 
-const MetricCard = ({ title, value, icon: Icon, description, gradient, index = 0, onClick }: { 
-    title: string; 
-    value: number; 
-    icon: React.ElementType; 
-    description?: string; 
-    gradient: string;
-    index?: number;
-    onClick?: () => void;
-}) => {
-    const animatedValue = useAnimatedCounter(value, 0, 1000);
-    
-    return (
-        <Card 
-            onClick={onClick} 
-            className={cn(
-                "relative text-white p-4 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl rounded-2xl h-28 overflow-hidden border-0",
-                gradient,
-                onClick && "cursor-pointer"
-            )}
-        >
-            <div className="flex justify-between items-start z-10">
-                <p className="text-sm font-semibold">{title}</p>
-                <Icon className="h-5 w-5 text-white/80" />
-            </div>
-            
-            <div className="z-10 text-left">
-                <p className="text-4xl font-bold tracking-tighter">
-                    {animatedValue}{description === 'Promedio' ? '%' : ''}
-                </p>
-            </div>
-        </Card>
-    );
+const formatDateTooltip = (dateString: string) => {
+    try {
+        const date = parseISO(dateString);
+        return format(date, "EEEE, d 'de' MMMM", { locale: es });
+    } catch (e) {
+        return dateString;
+    }
 };
 
 
@@ -93,27 +69,8 @@ export function AdminDashboard({ adminStats, securityLogs, recentAnnouncements, 
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <div className="lg:col-span-8">
-            <Card id="admin-welcome-card" className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg h-full flex flex-col justify-between">
-                <div className="relative z-10 flex items-center justify-between">
-                    <div>
-                        <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Hola, {user?.name}! <span className="text-2xl animate-wave">👋</span></h1>
-                        <p className="text-primary-foreground/80">Bienvenido al Centro de Mando de tu plataforma.</p>
-                    </div>
-                </div>
-            </Card>
-        </div>
-        <div className="lg:col-span-4 grid grid-cols-2 gap-4">
-             <MetricCard title="Usuarios Totales" value={adminStats?.totalUsers || 0} icon={Users} gradient="bg-gradient-blue" index={0} />
-             <MetricCard title="Cursos Publicados" value={adminStats?.totalPublishedCourses || 0} icon={BookOpenCheck} gradient="bg-gradient-purple" index={1}/>
-             <MetricCard title="Inscripciones Totales" value={adminStats?.totalEnrollments || 0} icon={GraduationCap} gradient="bg-gradient-blue" index={2} />
-             <MetricCard title="Finalización Promedio" value={adminStats?.averageCompletionRate || 0} description="Promedio" icon={Percent} gradient="bg-gradient-purple" index={3} />
-        </div>
-      </div>
-        
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* Columna Izquierda: Gráficos Principales */}
+        {/* --- COLUMNA IZQUIERDA: GRÁFICOS --- */}
         <div className="lg:col-span-1 space-y-6">
             <Card>
               <CardHeader>
@@ -125,7 +82,7 @@ export function AdminDashboard({ adminStats, securityLogs, recentAnnouncements, 
                       <CartesianGrid vertical={false} />
                       <XAxis dataKey="date" tickFormatter={formatDateTick} fontSize={12}/>
                       <YAxis allowDecimals={false} width={30} fontSize={12}/>
-                      <Tooltip content={<ChartTooltipContent indicator="dot" />} />
+                      <Tooltip content={<ChartTooltipContent indicator="dot" labelFormatter={formatDateTooltip} />} />
                       <Legend iconType="circle" />
                       <Bar dataKey="newCourses" fill="var(--color-newCourses)" radius={4} name="Nuevos Cursos" />
                       <Line type="monotone" dataKey="newEnrollments" stroke="var(--color-newEnrollments)" strokeWidth={3} dot={false} name="Inscripciones" />
@@ -133,33 +90,24 @@ export function AdminDashboard({ adminStats, securityLogs, recentAnnouncements, 
                   </ChartContainer>
               </CardContent>
             </Card>
-            <DonutChart title="Distribución de Roles" data={userRolesChartData} config={userRolesChartConfig} />
+             <DonutChart title="Distribución de Roles" data={userRolesChartData} config={userRolesChartConfig} />
         </div>
 
-        {/* Columna Central: Alertas y Eventos */}
+        {/* --- COLUMNA CENTRAL: MÉTRICAS Y AUDITORÍA --- */}
         <div className="lg:col-span-1 space-y-6">
-             <Card>
-                <CardHeader><CardTitle className="text-base flex items-center gap-2"><AlertCircle className="h-4 w-4 text-primary"/>Alertas & Notificaciones</CardTitle></CardHeader>
-                 <CardContent><p className="text-sm text-center text-muted-foreground p-8">No hay alertas importantes.</p></CardContent>
-             </Card>
-              <Card>
-                <CardHeader><CardTitle className="text-base flex items-center gap-2"><Pencil className="h-4 w-4 text-primary"/>Cursos Pendientes</CardTitle></CardHeader>
-                 <CardContent><p className="text-sm text-center text-muted-foreground p-8">No hay cursos pendientes de revisión.</p></CardContent>
-             </Card>
-             <CalendarWidget events={upcomingEvents} />
-        </div>
-        
-        {/* Columna Derecha: Acciones y Auditoría */}
-        <div className="lg:col-span-1 space-y-6">
-            <Card>
-              <CardHeader><CardTitle className="text-base flex items-center gap-2"><PlusCircle className="h-4 w-4 text-primary"/>Accesos Rápidos</CardTitle></CardHeader>
-              <CardContent className="grid grid-cols-2 gap-2">
-                 <Button variant="outline" asChild><Link href="/manage-courses">Crear Curso</Link></Button>
-                 <Button variant="outline" asChild><Link href="/users">Gestionar Usuarios</Link></Button>
-                 <Button variant="outline" asChild><Link href="/analytics">Ver Analíticas</Link></Button>
-                 <Button variant="outline" asChild><Link href="/settings">Ajustes</Link></Button>
-              </CardContent>
-           </Card>
+           <Card id="admin-welcome-card" className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/10 to-accent/10 shadow-lg h-full flex flex-col justify-between">
+                <div className="relative z-10 flex items-center justify-between gap-6">
+                   <div className="space-y-1">
+                      <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Hola, {user?.name}! <span className="text-2xl animate-wave">👋</span></h1>
+                      <p className="text-muted-foreground">Bienvenido al Centro de Mando.</p>
+                   </div>
+                   {settings?.dashboardImageUrlAdmin && (
+                     <div className="relative w-24 h-24 flex-shrink-0 hidden sm:block">
+                       <Image src={settings.dashboardImageUrlAdmin} alt="Imagen del panel de Admin" fill className="object-contain" data-ai-hint="admin dashboard mascot" />
+                     </div>
+                   )}
+                </div>
+            </Card>
             <Card>
               <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2"><ShieldAlert className="h-4 w-4 text-primary"/>Auditoría de Seguridad</CardTitle>
@@ -171,6 +119,28 @@ export function AdminDashboard({ adminStats, securityLogs, recentAnnouncements, 
                  <Button variant="outline" size="sm" className="w-full" asChild><Link href="/security-audit">Ver auditoría completa <ArrowRight className="ml-2 h-4 w-4"/></Link></Button>
               </CardFooter>
            </Card>
+        </div>
+        
+        {/* --- COLUMNA DERECHA: ACCIONES Y ALERTAS --- */}
+        <div className="lg:col-span-1 space-y-6">
+             <div className="grid grid-cols-2 gap-4">
+                <MetricCard title="Usuarios" value={adminStats?.totalUsers || 0} icon={Users} gradient="bg-gradient-blue" index={0} />
+                <MetricCard title="Cursos" value={adminStats?.totalPublishedCourses || 0} icon={BookOpenCheck} gradient="bg-gradient-purple" index={1}/>
+                <MetricCard title="Recursos" value={adminStats?.totalResources || 0} icon={Folder} gradient="bg-gradient-green" index={2}/>
+                <MetricCard title="Finalización" value={adminStats?.averageCompletionRate || 0} description="Promedio" suffix="%" icon={Percent} gradient="bg-gradient-orange" index={3} />
+            </div>
+             <Card>
+              <CardHeader><CardTitle className="text-base flex items-center gap-2"><PlusCircle className="h-4 w-4 text-primary"/>Accesos Rápidos</CardTitle></CardHeader>
+              <CardContent className="grid grid-cols-2 gap-2">
+                 <Button variant="outline" asChild><Link href="/manage-courses">Crear Curso</Link></Button>
+                 <Button variant="outline" asChild><Link href="/users">Gestionar Usuarios</Link></Button>
+                 <Button variant="outline" asChild><Link href="/analytics">Ver Analíticas</Link></Button>
+                 <Button variant="outline" asChild><Link href="/settings">Ajustes</Link></Button>
+              </CardContent>
+           </Card>
+           <AnnouncementsWidget announcements={recentAnnouncements} />
+           <CalendarWidget events={upcomingEvents} />
+           <HealthStatusWidget />
         </div>
       </div>
       

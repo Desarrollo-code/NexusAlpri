@@ -379,7 +379,7 @@ export {
   ChartLegend,
   ChartLegendContent,
   ChartStyle,
-  ChartGrid
+  ChartGrid,
 }
 
 // Re-export primitives from Recharts for convenience
@@ -399,3 +399,4 @@ export const XAxis = RechartsPrimitive.XAxis
 export const YAxis = RechartsPrimitive.YAxis
 export const Legend = RechartsPrimitive.Legend
 export const ResponsiveContainer = RechartsPrimitive.ResponsiveContainer
+
