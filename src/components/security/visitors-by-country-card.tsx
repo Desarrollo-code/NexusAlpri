@@ -21,7 +21,7 @@ export const VisitorsByCountryCard = ({ isLoading }: VisitorsByCountryCardProps)
                     <CardHeader className="p-0">
                         <CardTitle className="text-base">Imagen de Auditoría</CardTitle>
                         <CardDescription className="text-xs mt-1">
-                            Imagen temática para esta sección.
+                            Visual que acompaña el panel de seguridad, aportando un elemento de identidad y profesionalismo a la sección de auditoría.
                         </CardDescription>
                     </CardHeader>
                 </div>
