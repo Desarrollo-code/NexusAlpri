@@ -16,14 +16,16 @@ export const VisitorsByCountryCard = ({ isLoading }: VisitorsByCountryCardProps)
     
     return (
         <Card>
-             <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">Imagen de Auditoría</CardTitle>
-                <CardDescription className="text-xs">
-                    Una imagen temática para esta sección. Puedes cambiarla en la configuración de apariencia.
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="p-4">
-                <div className="w-full aspect-square relative bg-muted/50 rounded-lg flex items-center justify-center">
+            <CardContent className="p-4 grid grid-cols-3 gap-4 items-center">
+                 <div className="col-span-1">
+                    <CardHeader className="p-0">
+                        <CardTitle className="text-base">Imagen de Auditoría</CardTitle>
+                        <CardDescription className="text-xs mt-1">
+                            Imagen temática para esta sección.
+                        </CardDescription>
+                    </CardHeader>
+                </div>
+                <div className="col-span-2 w-full aspect-video relative bg-muted/50 rounded-lg flex items-center justify-center">
                 {isLoading ? (
                     <Skeleton className="w-full h-full" />
                 ) : settings?.securityAuditImageUrl ? (
@@ -31,13 +33,13 @@ export const VisitorsByCountryCard = ({ isLoading }: VisitorsByCountryCardProps)
                         src={settings.securityAuditImageUrl} 
                         alt="Imagen de Auditoría de Seguridad" 
                         fill 
-                        className="object-contain p-4"
+                        className="object-contain p-2"
                         data-ai-hint="security audit illustration"
                     />
                 ) : (
-                    <div className="text-center text-muted-foreground p-4">
-                       <Globe className="mx-auto h-12 w-12"/>
-                       <p className="mt-2 text-sm">Sube una imagen para esta sección.</p>
+                    <div className="text-center text-muted-foreground p-2">
+                       <Globe className="mx-auto h-8 w-8"/>
+                       <p className="mt-1 text-xs">Sin imagen</p>
                     </div>
                 )}
                 </div>
