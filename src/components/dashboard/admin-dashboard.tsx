@@ -17,21 +17,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from "@/contexts/auth-context";
 import Image from "next/image";
 import { useAnimatedCounter } from "@/hooks/use-animated-counter";
+import { MetricCard } from "../analytics/metric-card";
 
-const MetricCard = ({ title, value, icon: Icon, className }: { title: string; value: number, icon: React.ElementType, className?: string}) => {
-  const animatedValue = useAnimatedCounter(value);
-  return (
-    <Card className={cn("p-4 text-white", className)}>
-        <div className="flex justify-between items-start">
-            <p className="text-sm font-semibold">{title}</p>
-            <Icon className="h-5 w-5 text-white/80" />
-        </div>
-        <p className="text-4xl font-bold tracking-tighter mt-2">
-            {animatedValue}
-        </p>
-    </Card>
-  )
-}
 
 const formatDateTick = (tick: string): string => {
   const date = parseISO(tick);
@@ -77,13 +64,13 @@ export function AdminDashboard({ adminStats, securityLogs }: {
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-5 gap-6">
         {/* Columna Izquierda (Bienvenida) */}
-        <div className="xl:col-span-2">
-           <Card id="admin-welcome-card" className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-blue-500 to-cyan-400 text-primary-foreground shadow-lg h-full flex flex-col justify-between">
-              <div className="relative z-10">
-                  <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Hola, {user?.name}! <span className="text-2xl animate-wave">👋</span></h1>
-                  <p className="text-primary-foreground/80">Bienvenido al Centro de Mando de tu plataforma.</p>
-              </div>
-              <div className="relative z-10 self-end mt-4">
+        <div className="lg:col-span-1 xl:col-span-3">
+           <Card id="admin-welcome-card" className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg h-full flex flex-col justify-between">
+              <div className="relative z-10 flex items-center justify-between">
+                  <div>
+                      <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Hola, {user?.name}! <span className="text-2xl animate-wave">👋</span></h1>
+                      <p className="text-primary-foreground/80">Bienvenido al Centro de Mando de tu plataforma.</p>
+                  </div>
                   {settings?.dashboardImageUrlAdmin && (
                     <div className="relative w-28 h-28 flex-shrink-0">
                       <Image src={settings.dashboardImageUrlAdmin} alt="Imagen del panel de Administrador" fill className="object-contain" data-ai-hint="admin dashboard mascot" />
@@ -94,72 +81,40 @@ export function AdminDashboard({ adminStats, securityLogs }: {
         </div>
 
         {/* Columna Derecha (Métricas) */}
-        <div className="xl:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-6">
-           <MetricCard title="Usuarios Totales" value={adminStats.totalUsers} icon={Users} className="bg-blue-500" />
-           <MetricCard title="Cursos Publicados" value={adminStats.totalPublishedCourses} icon={BookOpenCheck} className="bg-blue-400" />
-           <MetricCard title="Inscripciones Totales" value={adminStats.totalEnrollments} icon={GraduationCap} className="bg-cyan-500"/>
-           <MetricCard title="Finalización Promedio" value={Math.round(adminStats.averageCompletionRate)} icon={Percent} className="bg-cyan-400"/>
+        <div className="lg:col-span-1 xl:col-span-2 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-2 gap-6">
+           <MetricCard title="Usuarios Totales" value={adminStats.totalUsers} icon={Users} index={0} />
+           <MetricCard title="Cursos Publicados" value={adminStats.totalPublishedCourses} icon={BookOpenCheck} index={1} />
+           <MetricCard title="Inscripciones" value={adminStats.totalEnrollments} icon={GraduationCap} index={2}/>
+           <MetricCard title="Finalización" value={adminStats.averageCompletionRate} icon={Percent} index={3} suffix="%"/>
         </div>
       </div>
         
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
-        {/* Columna 1: Tendencia */}
-        <div className="xl:col-span-1 space-y-6">
+        {/* Columna 1: Tendencia y Accesos Rápidos */}
+        <div className="xl:col-span-2 space-y-6">
            <Card>
               <CardHeader>
                   <CardTitle>Tendencia de Actividad</CardTitle>
               </CardHeader>
               <CardContent className="h-80 pr-4">
                  <ChartContainer config={chartConfig} className="w-full h-full">
-                    <ComposedChart data={activityData} accessibilityLayer margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
+                    <ComposedChart data={adminStats.contentActivityTrend} accessibilityLayer margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false}/>
-                      <XAxis dataKey="month" tickFormatter={(str) => str.charAt(0)} fontSize={12}/>
+                      <XAxis dataKey="date" tickFormatter={formatDateTick} fontSize={12}/>
                       <YAxis allowDecimals={false} width={30} fontSize={12}/>
                       <Tooltip content={<ChartTooltipContent indicator="dot" />} />
                       <Legend iconType="circle" />
-                      <Bar dataKey="usuarios" fill="var(--color-usuarios)" radius={4} name="Usuarios" />
-                      <Bar dataKey="inscripciones" fill="var(--color-inscripciones)" radius={4} name="Inscripciones" />
+                      <Bar dataKey="newCourses" fill="var(--color-usuarios)" radius={4} name="Nuevos Cursos" />
+                      <Line type="monotone" dataKey="newEnrollments" stroke="var(--color-inscripciones)" strokeWidth={3} dot={false} name="Inscripciones" />
                     </ComposedChart>
                   </ChartContainer>
-                   <ChartContainer config={chartConfig} className="w-full h-[120px] mt-4">
-                        <AreaChart data={trendData} accessibilityLayer margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false}/>
-                            <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false}/>
-                             <YAxis width={30} fontSize={12} tickLine={false} axisLine={false}/>
-                            <Tooltip content={<ChartTooltipContent indicator="dot" />} />
-                            <Area dataKey="value" type="monotone" fill="hsl(var(--chart-1))" fillOpacity={0.4} stroke="hsl(var(--chart-1))" />
-                        </AreaChart>
-                   </ChartContainer>
               </CardContent>
           </Card>
         </div>
 
         {/* Columna 2: Alertas y Eventos */}
         <div className="xl:col-span-1 space-y-6">
-           <Card>
-              <CardHeader><CardTitle>Alertas & Notificaciones</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-red-100/50 border border-red-200"><AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0"/><p className="text-sm font-medium text-red-700">Se agotó el espacio de atomuledimer</p></div>
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-yellow-100/50 border border-yellow-200"><AlertCircle className="h-5 w-5 text-yellow-500 flex-shrink-0"/><p className="text-sm font-medium text-yellow-700">5 nuevos tickets de soporte abiertos</p></div>
-              </CardContent>
-           </Card>
-           <Card>
-              <CardHeader><CardTitle>Próximos Eventos</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                  <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center"><Calendar className="h-5 w-5 text-muted-foreground"/></div><div><p className="font-semibold">Webinar: IA en Educación</p><p className="text-sm text-muted-foreground">25 OCT, 10:00 AM</p></div></div>
-              </CardContent>
-           </Card>
             <Card>
-              <CardHeader><CardTitle>Cursos Pendientes de Revisión</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                  <div className="flex items-center justify-between"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-muted"/><p className="font-semibold">Fundamentos de React (Bordator)</p></div><Button variant="outline" size="sm">Editar</Button></div>
-              </CardContent>
-           </Card>
-        </div>
-
-        {/* Columna 3: Acciones y Auditoría */}
-        <div className="xl:col-span-1 space-y-6">
-           <Card>
               <CardHeader><CardTitle>Accesos Rápidos</CardTitle></CardHeader>
               <CardContent className="grid grid-cols-2 gap-2">
                  <Button variant="outline" asChild><Link href="/manage-courses"><PlusCircle className="mr-2 h-4 w-4"/>Crear Curso</Link></Button>

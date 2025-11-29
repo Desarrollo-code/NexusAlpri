@@ -5,16 +5,16 @@ import { useAnimatedCounter } from "@/hooks/use-animated-counter"
 import { cn } from "@/lib/utils";
 import React from "react";
 
-const CHART_COLORS = [
-    "bg-chart-1",
-    "bg-chart-2",
-    "bg-chart-3",
-    "bg-chart-4",
-    "bg-chart-5",
-];
-
-
-export const MetricCard = ({ title, value, icon: Icon, description, suffix = '', index = 0, onClick, gradient }: { 
+export const MetricCard = ({ 
+    title, 
+    value, 
+    icon: Icon, 
+    description, 
+    suffix = '', 
+    index = 0, 
+    onClick, 
+    gradient 
+}: { 
     title: string; 
     value: number; 
     icon: React.ElementType; 
@@ -26,12 +26,24 @@ export const MetricCard = ({ title, value, icon: Icon, description, suffix = '',
 }) => {
     const animatedValue = useAnimatedCounter(value, 0, 1000);
     
+    // Define an array of gradient classes
+    const gradients = [
+        'bg-gradient-blue',
+        'bg-gradient-green',
+        'bg-gradient-purple',
+        'bg-gradient-pink',
+        'bg-gradient-orange',
+    ];
+
+    // Use the provided gradient or pick one from the array based on index
+    const gradientClass = gradient || gradients[index % gradients.length];
+    
     return (
         <Card 
             onClick={onClick} 
             className={cn(
                 "relative text-primary-foreground p-4 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl rounded-2xl h-28 overflow-hidden border-0",
-                gradient,
+                gradientClass,
                 onClick && "cursor-pointer"
             )}
         >
