@@ -19,7 +19,6 @@ export const VisitorsByCountryCard = ({ isLoading }: VisitorsByCountryCardProps)
             <CardContent className="p-4 grid grid-cols-3 gap-4 items-center">
                  <div className="col-span-1">
                     <CardHeader className="p-0">
-                        <CardTitle className="text-base">Imagen de Auditoría</CardTitle>
                         <CardDescription className="text-xs mt-1">
                             La información que encuentras en esta página es crucial para monitorear la seguridad y la integridad de la plataforma.
                         </CardDescription>
