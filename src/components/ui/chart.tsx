@@ -316,6 +316,23 @@ const ChartLegendContent = React.forwardRef<
 )
 ChartLegendContent.displayName = "ChartLegend"
 
+const ChartGrid = React.forwardRef<
+  React.ElementRef<typeof RechartsPrimitive.CartesianGrid>,
+  React.ComponentProps<typeof RechartsPrimitive.CartesianGrid>
+>(({ className, ...props }, ref) => {
+  return (
+    <RechartsPrimitive.CartesianGrid
+      ref={ref}
+      strokeDasharray="3 3"
+      vertical={false}
+      className={cn("[&_line]:stroke-muted-foreground/50", className)}
+      {...props}
+    />
+  )
+})
+ChartGrid.displayName = "ChartGrid"
+
+
 // Helper to extract item config from a payload.
 function getPayloadConfigFromPayload(
   config: ChartConfig,
@@ -362,6 +379,7 @@ export {
   ChartLegend,
   ChartLegendContent,
   ChartStyle,
+  ChartGrid
 }
 
 // Re-export primitives from Recharts for convenience
