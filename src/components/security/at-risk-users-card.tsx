@@ -27,7 +27,7 @@ export const AtRiskUsersCard = ({ users, onSuspend, isLoading }: AtRiskUsersCard
                     Usuarios en Riesgo
                 </CardTitle>
                  <CardDescription className="text-xs">
-                    Usuarios con más de 5 intentos fallidos de inicio de sesión en las últimas 24h.
+                    Usuarios con más de 5 intentos fallidos de inicio de sesión en las últimas 24h. Es importante tener en cuenta esta información.
                 </CardDescription>
             </CardHeader>
             <CardContent>
