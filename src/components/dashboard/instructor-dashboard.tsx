@@ -29,21 +29,17 @@ export function InstructorDashboard({ instructorStats, recentAnnouncements, taug
     <div className="space-y-8">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
          <div className="lg:col-span-2">
-           <Card id="instructor-welcome-card" className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg">
-                <div className="absolute inset-0 z-0">
-                    {settings?.dashboardImageUrlInstructor && (
-                        <Image src={settings.dashboardImageUrlInstructor} alt="Fondo decorativo del dashboard de instructor" fill className="object-cover opacity-20" data-ai-hint="office background" />
-                    )}
-                    <div className="absolute inset-0 bg-black/10"></div>
-                </div>
+            <Card id="instructor-welcome-card" className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg">
+                <div className="absolute inset-0 z-0 opacity-20" style={{ backgroundImage: `url(${settings?.publicPagesBgUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+                <div className="absolute inset-0 bg-black/10"></div>
                 <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
                    <div className="space-y-1">
                       <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Estudio del Creador <span className="text-2xl">🎨</span></h1>
                       <p className="text-primary-foreground/80">Tu espacio para crear, gestionar y ver el impacto de tu contenido.</p>
                    </div>
-                   {settings?.securityMascotUrl && (
+                   {settings?.dashboardImageUrlInstructor && (
                      <div className="relative w-28 h-28 flex-shrink-0">
-                       <Image src={settings.securityMascotUrl} alt="Mascota" fill className="object-contain" data-ai-hint="cute robot mascot" />
+                       <Image src={settings.dashboardImageUrlInstructor} alt="Imagen del panel de Instructor" fill className="object-contain" data-ai-hint="instructor dashboard mascot" />
                      </div>
                    )}
                 </div>

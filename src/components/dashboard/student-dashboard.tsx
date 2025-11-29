@@ -49,22 +49,25 @@ export function StudentDashboard({ studentStats, myDashboardCourses, assignedCou
   return (
     <div className="space-y-8">
        <Card id="student-welcome-card" className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg">
-           <div className="absolute inset-0 z-0">
-                {settings?.dashboardImageUrl && (
-                    <Image src={settings.dashboardImageUrl} alt="Fondo decorativo" fill className="object-cover opacity-20" data-ai-hint="office background" />
-                )}
-                <div className="absolute inset-0 bg-black/10"></div>
-            </div>
-          <div className="relative z-10">
-              <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Hola, {user?.name}! <span className="text-2xl animate-wave">👋</span></h1>
-              <p className="text-primary-foreground/80">Bienvenido de nuevo a tu centro de aprendizaje.</p>
-              <div className="mt-4">
-                  <div className="flex justify-between items-end mb-1">
-                      <p className="font-semibold text-primary-foreground">Nivel {level}</p>
-                      <p className="text-sm text-primary-foreground/80">{user?.xp || 0} XP</p>
+           <div className="absolute inset-0 z-0 opacity-20" style={{ backgroundImage: `url(${settings?.publicPagesBgUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+           <div className="absolute inset-0 bg-black/10"></div>
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="space-y-1">
+                  <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Hola, {user?.name}! <span className="text-2xl animate-wave">👋</span></h1>
+                  <p className="text-primary-foreground/80">Bienvenido de nuevo a tu centro de aprendizaje.</p>
+                  <div className="pt-2">
+                      <div className="flex justify-between items-end mb-1">
+                          <p className="font-semibold text-primary-foreground">Nivel {level}</p>
+                          <p className="text-sm text-primary-foreground/80">{user?.xp || 0} XP</p>
+                      </div>
+                      <Progress value={progressPercentage} className="h-2 bg-white/20"/>
                   </div>
-                  <Progress value={progressPercentage} className="h-2 bg-white/20"/>
               </div>
+               {settings?.dashboardImageUrlStudent && (
+                 <div className="relative w-28 h-28 flex-shrink-0">
+                   <Image src={settings.dashboardImageUrlStudent} alt="Imagen del panel de Estudiante" fill className="object-contain" data-ai-hint="student dashboard mascot"/>
+                 </div>
+               )}
           </div>
       </Card>
       

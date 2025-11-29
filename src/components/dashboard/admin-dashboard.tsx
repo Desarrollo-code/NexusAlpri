@@ -110,20 +110,16 @@ export function AdminDashboard({ adminStats, securityLogs }: {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
            <div className="lg:col-span-2">
                 <Card id="admin-welcome-card" className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg">
-                    <div className="absolute inset-0 z-0">
-                        {settings?.dashboardImageUrlAdmin && (
-                            <Image src={settings.dashboardImageUrlAdmin} alt="Fondo decorativo del dashboard de administrador" fill className="object-cover opacity-20" data-ai-hint="office background" />
-                        )}
-                        <div className="absolute inset-0 bg-black/10"></div>
-                    </div>
+                    <div className="absolute inset-0 z-0 opacity-20" style={{ backgroundImage: `url(${settings?.publicPagesBgUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+                    <div className="absolute inset-0 bg-black/10"></div>
                     <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
                        <div className="space-y-1">
                           <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Hola, {user?.name}! <span className="text-2xl animate-wave">👋</span></h1>
                           <p className="text-primary-foreground/80">Bienvenido al Centro de Mando de tu plataforma.</p>
                        </div>
-                       {settings?.securityMascotUrl && (
+                       {settings?.dashboardImageUrlAdmin && (
                          <div className="relative w-28 h-28 flex-shrink-0">
-                           <Image src={settings.securityMascotUrl} alt="Mascota de Seguridad" fill className="object-contain" data-ai-hint="cute robot mascot" />
+                           <Image src={settings.dashboardImageUrlAdmin} alt="Imagen del panel de Administrador" fill className="object-contain" data-ai-hint="admin dashboard mascot" />
                          </div>
                        )}
                     </div>
