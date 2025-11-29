@@ -21,8 +21,6 @@ import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "
 import { Area, AreaChart, Bar, BarChart, ComposedChart, Legend, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 import { DonutChart } from "../analytics/donut-chart";
 import { HealthStatusWidget } from "./health-status-widget";
-import { MetricCard } from "../analytics/metric-card";
-
 
 const userRolesChartConfig = {
   count: { label: "Usuarios" },
