@@ -70,6 +70,8 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <Card className="lg:col-span-8 relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/80 to-accent/80 text-primary-foreground shadow-lg flex items-center">
+            <div className="absolute inset-0 z-0 opacity-20" style={{ backgroundImage: `url(${settings?.publicPagesBgUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+            <div className="absolute inset-0 bg-black/10"></div>
             <div className="relative z-10 flex items-center justify-between gap-6 w-full">
                <div className="space-y-1">
                   <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Hola, {user?.name}! <span className="text-2xl animate-wave">👋</span></h1>
@@ -82,9 +84,11 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
                )}
             </div>
         </Card>
-        <div className="lg:col-span-4 grid grid-cols-2 gap-4">
+        <div className="lg:col-span-4 grid grid-cols-2 lg:grid-cols-4 gap-4 lg:col-start-9 lg:col-end-13">
             <MetricCard title="Usuarios Totales" value={adminStats?.totalUsers || 0} icon={UsersRound} index={0} onClick={() => router.push('/users')} />
-            <MetricCard title="Cursos Publicados" value={adminStats?.totalPublishedCourses || 0} icon={GraduationCap} index={1} onClick={() => router.push('/manage-courses?tab=PUBLISHED')} />
+            <MetricCard title="Cursos Publicados" value={adminStats?.totalPublishedCourses || 0} icon={BookOpenCheck} index={1} onClick={() => router.push('/manage-courses?tab=PUBLISHED')} />
+            <MetricCard title="Inscripciones" value={adminStats?.totalEnrollments || 0} icon={GraduationCap} index={2} onClick={() => router.push('/enrollments')} />
+            <MetricCard title="Finalización" value={adminStats?.averageCompletionRate || 0} icon={Percent} index={3} suffix="%" description="Promedio" onClick={() => router.push('/analytics')} />
         </div>
       </div>
       
