@@ -152,3 +152,4 @@ src/
 │   ├── calendar-utils.ts   # Lógica de expansión de eventos recurrentes
 │   ├── gamification.ts     # Lógica central de XP, logros y niveles
 │   └── ...
+```

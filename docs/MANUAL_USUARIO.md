@@ -74,4 +74,4 @@ Accede a encuestas o evaluaciones compartidas contigo. Si un formulario es un "Q
 **R:** Es probable que ese curso requiera que completes otro curso como prerrequisito. Revisa la descripción del curso para ver cuál es.
 
 **P: ¿Dónde están mis apuntes?**
-**R:** Puedes verlos dentro de cada lección o todos juntos en la sección **"Mis Apuntes"** en
+**R:** Puedes verlos dentro de cada lección o todos juntos en la sección **"Mis Apuntes"** en el menú lateral.

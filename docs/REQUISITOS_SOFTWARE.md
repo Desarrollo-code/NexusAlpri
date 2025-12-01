@@ -126,6 +126,3 @@ Funcionalidades como la integración con sistemas de RRHH externos o la venta de
 
 ### 5.2. Restricciones
 *   **Stack Tecnológico:** El proyecto debe desarrollarse utilizando el stack definido: Next.js (App Router), TypeScript, Prisma, Tailwind CSS y ShadCN. No se deben introducir otros frameworks o librerías que alteren fundamentalmente esta arquitectura sin una justificación formal.
-
----
-Este documento servirá como una guía estricta para el desarrollo y la validación de NexusAlpri.
