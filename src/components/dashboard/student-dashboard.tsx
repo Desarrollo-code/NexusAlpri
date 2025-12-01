@@ -45,41 +45,53 @@ export function StudentDashboard({ studentStats, myDashboardCourses, assignedCou
   const { level, progressPercentage } = useMemo(() => calculateLevel(user?.xp || 0), [user?.xp]);
   
   const hasCourses = (myDashboardCourses && myDashboardCourses.length > 0) || (assignedCourses && assignedCourses.length > 0);
+  const hasInteractiveEvents = studentStats?.interactiveEventsToday && studentStats.interactiveEventsToday.length > 0;
 
   return (
     <div className="space-y-8">
-       <Card id="student-welcome-card" className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg">
-           <div className="absolute inset-0 z-0 opacity-20" style={{ backgroundImage: `url(${settings?.publicPagesBgUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-           <div className="absolute inset-0 bg-black/10"></div>
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="space-y-1">
-                  <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Hola, {user?.name}! <span className="text-2xl animate-wave">👋</span></h1>
-                  <p className="text-primary-foreground/80">Bienvenido de nuevo a tu centro de aprendizaje.</p>
-                  <div className="pt-2">
-                      <div className="flex justify-between items-end mb-1">
-                          <p className="font-semibold text-primary-foreground">Nivel {level}</p>
-                          <p className="text-sm text-primary-foreground/80">{user?.xp || 0} XP</p>
-                      </div>
-                      <Progress value={progressPercentage} className="h-2 bg-white/20"/>
-                  </div>
-              </div>
-               {settings?.dashboardImageUrlStudent && (
-                 <div className="relative w-28 h-28 flex-shrink-0">
-                   <Image src={settings.dashboardImageUrlStudent} alt="Imagen del panel de Estudiante" fill className="object-contain" data-ai-hint="student dashboard mascot"/>
-                 </div>
-               )}
+       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          
+          <div className={hasInteractiveEvents ? "lg:col-span-8" : "lg:col-span-12"}>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
+                <Card id="student-welcome-card" className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/10 to-accent/10 shadow-lg flex flex-col justify-center">
+                   <div className="absolute inset-0 z-0 opacity-20" style={{ backgroundImage: `url(${settings?.publicPagesBgUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+                   <div className="absolute inset-0 bg-gradient-to-br from-background/30 to-background/10 backdrop-blur-sm"></div>
+                   <div className="relative z-10 flex items-center justify-between gap-6">
+                     <div className="space-y-2 flex-grow">
+                         <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Hola, {user?.name}! <span className="text-2xl animate-wave">👋</span></h1>
+                         <p className="text-muted-foreground">Bienvenido de nuevo a tu centro de aprendizaje.</p>
+                         <div className="pt-2">
+                             <div className="flex justify-between items-end mb-1">
+                                 <p className="font-semibold text-primary">Nivel {level}</p>
+                                 <p className="text-sm text-muted-foreground">{user?.xp || 0} XP</p>
+                             </div>
+                             <Progress value={progressPercentage} className="h-2 bg-background/20"/>
+                         </div>
+                     </div>
+                      {settings?.dashboardImageUrlStudent && (
+                         <div className="relative w-24 h-24 flex-shrink-0 hidden sm:block">
+                           <Image src={settings.dashboardImageUrlStudent} alt="Imagen del panel de Estudiante" fill className="object-contain" data-ai-hint="student dashboard mascot"/>
+                         </div>
+                       )}
+                   </div>
+               </Card>
+                <div id="student-stats-cards" className="grid grid-cols-2 gap-4">
+                  <MetricCard title="Cursos Inscritos" value={studentStats?.enrolled || 0} icon={GraduationCap} index={0} />
+                  <MetricCard title="Cursos Completados" value={studentStats?.completed || 0} icon={CheckCircle} index={1} />
+                </div>
+             </div>
           </div>
-      </Card>
-      
+          
+          {hasInteractiveEvents && (
+             <div className="lg:col-span-4">
+                <InteractiveEventsWidget events={studentStats.interactiveEventsToday} onParticipate={onParticipate} />
+             </div>
+          )}
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Columna Principal */}
         <div className="lg:col-span-2 space-y-8">
-           <div id="student-stats-cards" className="grid grid-cols-2 gap-4">
-              <MetricCard title="Cursos Inscritos" value={studentStats?.enrolled || 0} icon={GraduationCap} index={0} />
-              <MetricCard title="Cursos Completados" value={studentStats?.completed || 0} icon={CheckCircle} index={1} />
-           </div>
-          
-          <InteractiveEventsWidget events={studentStats.interactiveEventsToday} onParticipate={onParticipate} />
           
           {assignedCourses && assignedCourses.length > 0 && (
             <section>

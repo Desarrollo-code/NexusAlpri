@@ -17,16 +17,16 @@ export function InteractiveEventsWidget({ events, onParticipate }: InteractiveEv
   }
 
   return (
-    <Card className="bg-green-100/50 dark:bg-green-900/20 border-green-500/30">
+    <Card className="bg-green-100/50 dark:bg-green-900/20 border-green-500/30 h-full flex flex-col">
         <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2 text-green-700 dark:text-green-300">
                 <Hand/> ¡Pausa Activa!
             </CardTitle>
             <CardDescription>Confirma tu participación en los eventos del día para ganar XP.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-3 flex-grow flex flex-col justify-center">
             {events.map(event => (
-                <div key={event.id} className="flex flex-col sm:flex-row items-center justify-between p-3 bg-card rounded-lg gap-4">
+                <div key={event.id} className="flex flex-col items-center justify-between p-3 bg-card rounded-lg gap-3 text-center">
                     <div className="flex-grow">
                         <p className="font-semibold">{event.title}</p>
                         <p className="text-sm text-muted-foreground">{event.description}</p>
@@ -41,7 +41,7 @@ export function InteractiveEventsWidget({ events, onParticipate }: InteractiveEv
                         onClick={() => onParticipate(event.parentId || event.id, new Date(event.start))}
                         disabled={event.hasParticipated}
                         variant={event.hasParticipated ? "secondary" : "default"}
-                        className={event.hasParticipated ? "bg-green-600 text-white" : ""}
+                        className={event.hasParticipated ? "bg-green-600 text-white w-full" : "w-full"}
                     >
                        {event.hasParticipated ? <Check className="mr-2 h-4 w-4"/> : null}
                        {event.hasParticipated ? 'Confirmado' : 'Participar'}

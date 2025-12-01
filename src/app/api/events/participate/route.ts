@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
         // Solo otorgar puntos si la participación fue recién creada
         const isNewParticipation = participation.createdAt.getTime() === participation.updatedAt.getTime();
         if (isNewParticipation) {
-            await addXp(session.id, XP_CONFIG.COMPLETE_LESSON); // Reutilizamos los puntos de completar una lección
+            await addXp(session.id, XP_CONFIG.COMPLETE_LESSON || 5); // Reutilizamos los puntos de completar una lección
         }
         // --------------------
 
