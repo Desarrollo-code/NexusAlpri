@@ -60,26 +60,32 @@ const RoadmapCard = ({ item, onEdit, onDelete }: { item: RoadmapItem, onEdit: (i
     };
     
     return (
-        <Card className="h-full bg-card/80 backdrop-blur-sm border shadow-lg flex flex-col">
-             <CardContent className="p-4 flex flex-col items-center text-center flex-grow">
-                 <div className="w-16 h-16 rounded-full flex items-center justify-center mb-3 border-4" style={{ borderColor: item.color, backgroundColor: `${item.color}20` }}>
-                    <Icon className="h-8 w-8" style={{ color: item.color }}/>
-                 </div>
-                 <Badge style={{ backgroundColor: `${item.color}20`, color: item.color }} className="mb-2 border border-current/30">{item.phase.replace('_', ' ')}</Badge>
-                 <h3 className="font-bold text-lg text-foreground">{item.title}</h3>
-                 <p className="text-sm text-muted-foreground mt-2 flex-grow whitespace-pre-wrap">{item.description}</p>
+        <>
+            <Card className="h-full bg-card/80 backdrop-blur-sm border shadow-lg flex flex-col relative group">
                  {user?.role === 'ADMINISTRATOR' && (
-                     <div className="mt-4">
-                         <DropdownMenu>
-                            <DropdownMenuTrigger asChild><Button variant="ghost" size="sm"><MoreVertical className="h-4 w-4"/></Button></DropdownMenuTrigger>
+                    <div className="absolute top-2 right-2 z-10">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-black/10 hover:text-white">
+                                    <MoreVertical className="h-4 w-4"/>
+                                </Button>
+                            </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 <DropdownMenuItem onSelect={() => onEdit(item)}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => setItemToDelete(item)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => setItemToDelete(item)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
-                     </div>
-                 )}
-            </CardContent>
+                    </div>
+                )}
+                <CardContent className="p-4 flex flex-col items-center text-center flex-grow">
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center mb-3 border-4" style={{ borderColor: item.color, backgroundColor: `${item.color}20` }}>
+                        <Icon className="h-8 w-8" style={{ color: item.color }}/>
+                    </div>
+                    <Badge style={{ backgroundColor: `${item.color}20`, color: item.color }} className="mb-2 border border-current/30">{item.phase.replace('_', ' ')}</Badge>
+                    <h3 className="font-bold text-lg text-foreground">{item.title}</h3>
+                    <p className="text-sm text-muted-foreground mt-2 flex-grow whitespace-pre-wrap">{item.description}</p>
+                </CardContent>
+            </Card>
             <AlertDialog open={!!itemToDelete} onOpenChange={(isOpen) => !isOpen && setItemToDelete(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -92,7 +98,7 @@ const RoadmapCard = ({ item, onEdit, onDelete }: { item: RoadmapItem, onEdit: (i
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </Card>
+        </>
     );
 }
 
