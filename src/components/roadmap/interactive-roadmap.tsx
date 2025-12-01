@@ -8,7 +8,7 @@ import type { RoadmapItem } from '@/types';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Edit, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Edit, Trash2, MoreVertical } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
 import { useAuth } from '@/contexts/auth-context';
