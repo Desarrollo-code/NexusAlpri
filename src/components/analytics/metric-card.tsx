@@ -31,7 +31,7 @@ export const MetricCard = ({
         <Card 
             onClick={onClick} 
             className={cn(
-                "relative text-card-foreground p-4 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] hover:shadow-xl rounded-2xl overflow-hidden border-0",
+                "relative text-card-foreground p-4 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] hover:shadow-xl rounded-2xl overflow-hidden",
                 onClick && "cursor-pointer"
             )}
             style={{ backgroundColor: `hsl(var(${colorVar}))` }}

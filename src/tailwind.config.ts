@@ -33,7 +33,6 @@ const config: Config = {
         'gradient-purple': 'linear-gradient(to right bottom, hsl(var(--chart-5)), hsl(var(--chart-5)/0.8))',
         'gradient-pink': 'linear-gradient(to right bottom, hsl(var(--chart-3)), hsl(var(--chart-3)/0.8))',
         'gradient-orange': 'linear-gradient(to right bottom, hsl(var(--chart-4)), hsl(var(--chart-4)/0.8))',
-        'sidebar-active-gradient': 'linear-gradient(to right, hsl(var(--primary)), hsl(260, 80%, 70%))',
       },
       borderRadius: {
         lg: "var(--radius)",

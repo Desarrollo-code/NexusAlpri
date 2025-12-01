@@ -2,7 +2,7 @@
 'use client';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, BookOpenCheck, GraduationCap, Percent, PlusCircle, BarChart3, Settings, ShieldAlert, Monitor, Database, ArrowRight, LineChart, UsersRound, BookOpen } from "lucide-react";
+import { Users, BookOpenCheck, GraduationCap, Percent, PlusCircle, BarChart3, Settings, ShieldAlert, Monitor, Database, ArrowRight, LineChart, UsersRound, BookOpen, Clock } from "lucide-react";
 import type { AdminDashboardStats, SecurityLog as AppSecurityLog, Announcement as AnnouncementType, CalendarEvent, Course, Notification as AppNotification } from '@/types';
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
@@ -69,22 +69,22 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <Card className="lg:col-span-8 relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/80 to-accent/80 text-primary-foreground shadow-lg flex items-center">
+        <Card className="lg:col-span-8 relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/80 to-accent/80 text-primary-foreground shadow-lg">
             <div className="absolute inset-0 z-0 opacity-20" style={{ backgroundImage: `url(${settings?.publicPagesBgUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
             <div className="absolute inset-0 bg-black/10"></div>
-            <div className="relative z-10 flex items-center justify-between gap-6 w-full">
+            <div className="relative z-10 flex items-center justify-between gap-6">
                <div className="space-y-1">
                   <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Hola, {user?.name}! <span className="text-2xl animate-wave">👋</span></h1>
                   <p className="text-primary-foreground/80">Bienvenido al Centro de Mando de tu plataforma.</p>
                </div>
                {settings?.dashboardImageUrlAdmin && (
-                 <div className="relative w-32 h-32 flex-shrink-0 hidden sm:block">
+                 <div className="relative w-28 h-28 flex-shrink-0 hidden sm:block">
                    <Image src={settings.dashboardImageUrlAdmin} alt="Imagen del panel de Admin" fill className="object-contain" data-ai-hint="admin dashboard mascot"/>
                  </div>
                )}
             </div>
         </Card>
-        <div className="lg:col-span-4 grid grid-cols-2 lg:grid-cols-4 gap-4 lg:col-start-9 lg:col-end-13">
+        <div className="lg:col-span-4 grid grid-cols-2 gap-4">
             <MetricCard title="Usuarios Totales" value={adminStats?.totalUsers || 0} icon={UsersRound} index={0} onClick={() => router.push('/users')} />
             <MetricCard title="Cursos Publicados" value={adminStats?.totalPublishedCourses || 0} icon={BookOpenCheck} index={1} onClick={() => router.push('/manage-courses?tab=PUBLISHED')} />
             <MetricCard title="Inscripciones" value={adminStats?.totalEnrollments || 0} icon={GraduationCap} index={2} onClick={() => router.push('/enrollments')} />
@@ -129,7 +129,7 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
                  <Button variant="outline" size="sm" className="w-full" asChild><Link href="/security-audit">Ver auditoría completa <ArrowRight className="ml-2 h-4 w-4"/></Link></Button>
               </CardFooter>
            </Card>
-            <Card>
+           <Card>
               <CardHeader>
                  <CardTitle className="text-base flex items-center gap-2"><BookOpenCheck className="h-4 w-4 text-primary" />Cursos Pendientes de Revisión</CardTitle>
               </CardHeader>
@@ -162,6 +162,7 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
               </CardContent>
            </Card>
            <NotificationsWidget notifications={notifications} />
+           <HealthStatusWidget />
            <CalendarWidget events={upcomingEvents} />
         </div>
       </div>
