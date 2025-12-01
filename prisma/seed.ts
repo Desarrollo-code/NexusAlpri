@@ -1,5 +1,5 @@
 // prisma/seed.ts
-import { PrismaClient, UserRole, AchievementSlug, RecurrenceType, FormStatus, FormFieldType } from '@prisma/client';
+import { PrismaClient, UserRole, AchievementSlug, RecurrenceType, FormStatus, FormFieldType, RoadmapPhase } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { addDays, subDays } from 'date-fns';
 
@@ -137,6 +137,18 @@ async function seedProcesses() {
   console.log('Procesos creados.');
 }
 
+const roadmapItemsToSeed = [
+    // Fase 1
+    { date: new Date('2024-01-15'), phase: RoadmapPhase.FASE_1, title: 'Concepción y Planificación Estratégica', description: 'Definición de problema: Se identificó la necesidad de una plataforma de e-learning corporativa que fuera robusta. Por ello Alprigrama S.A.S. requiere una plataforma de e-learning (LMS) robusta y segura, enfocada en la gestión de roles y contenido, donde se identificaron tres perfiles clave—Administrador (control total), Instructor (creación de cursos) y Estudiante (consumo de contenido)—y se definió un Producto Mínimo Viable (MVP) que incluye la gestión de usuarios, la creación de cursos multimedia, una biblioteca de recursos y un sistema automático de seguimiento de progreso.', icon: 'Lightbulb', color: '#8b5cf6' },
+    { date: new Date('2024-02-20'), phase: RoadmapPhase.FASE_1, title: 'Arquitectura y Desarrollo del Núcleo', description: 'El proyecto se inicializó usando Next.js con App Router y TypeScript; paralelamente, en el backend, se definió el modelado de datos mediante schema.prisma y se crearon los endpoints API necesarios para las operaciones CRUD de usuarios y cursos, junto con la autenticación; finalmente, en el frontend, se estableció la interfaz de usuario base, que incluye el layout principal con la barra lateral, la barra superior y las páginas de gestión iniciales para cursos y usuarios.', icon: 'Code', color: '#3b82f6' },
+    // Fase 2
+    { date: new Date('2024-04-10'), phase: RoadmapPhase.FASE_2, title: 'Expansión de Módulos Centrales', description: 'Introducción de los módulos de Anuncios, Calendario y una primera versión de la Biblioteca de Recursos. Se implementa la capacidad de subir archivos y crear eventos, sentando las bases para una comunicación y gestión de contenido más ricas.', icon: 'Layers3', color: '#10b981' },
+    // Fase 3
+    { date: new Date('2024-06-05'), phase: RoadmapPhase.FASE_3, title: 'Interactividad y Colaboración', description: 'Se habilita la sección de comentarios dentro de cada curso y se introduce un sistema de reacciones en los anuncios para fomentar la participación. Se rediseña la gestión de usuarios, que pasa a llamarse "Control Central", unificando la administración de colaboradores y procesos organizacionales con una interfaz de arrastrar y soltar.', icon: 'Users', color: '#ec4899' },
+    // Fase 4
+    { date: new Date('2024-08-20'), phase: RoadmapPhase.FASE_4, title: 'Gamificación y Reconocimiento', description: 'Lanzamiento del sistema de gamificación completo: se añaden los Certificados de Finalización con plantillas personalizables, los Mensajes de Motivación automáticos al alcanzar hitos, y las "Pausas Activas" interactivas en el calendario para ganar XP.', icon: 'Award', color: '#f59e0b' },
+];
+
 async function main() {
   console.log('Iniciando el proceso de seeding no destructivo...');
   
@@ -148,6 +160,7 @@ async function main() {
       create: {
             id: 'cl-nexus-settings-default',
             platformName: "NexusAlpri", 
+            projectVersion: "1.2.0",
             allowPublicRegistration: true, 
             enableEmailNotifications: true, 
             emailWhitelist: "alprigrama.com",
@@ -169,13 +182,23 @@ async function main() {
             fontHeadline: 'Space Grotesk',
             fontBody: 'Inter',
             announcementsImageUrl: 'https://izefimwyuayfvektsstg.supabase.co/storage/v1/object/public/settings_images/announcement-bg.jpg',
+            roadmapPhases: [RoadmapPhase.FASE_1, RoadmapPhase.FASE_2, RoadmapPhase.FASE_3, RoadmapPhase.FASE_4],
+            roadmapVisibleTo: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
       }
   });
 
   for (const ach of achievementsToSeed) {
     await prisma.achievement.upsert({ where: { slug: ach.slug }, update: {}, create: ach });
   }
-  console.log('Configuración y logros listos.');
+  
+  for (const item of roadmapItemsToSeed) {
+    await prisma.roadmapItem.upsert({
+      where: { title: item.title },
+      update: { ...item },
+      create: { ...item },
+    });
+  }
+  console.log('Configuración, logros y hoja de ruta listos.');
 
   // --- 2. PROCESOS ---
   await seedProcesses();

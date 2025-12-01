@@ -11,6 +11,7 @@ import type { RoadmapItem } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
 import { InteractiveRoadmap } from '@/components/roadmap/interactive-roadmap';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function RoadmapPage() {
   const { setPageTitle } = useTitle();
@@ -31,7 +32,6 @@ export default function RoadmapPage() {
         if (!res.ok) throw new Error("No se pudo cargar la hoja de ruta.");
         const data = await res.json();
         if (isMountedRef.current) {
-            // Ordenar por fecha para la línea de tiempo
             const sortedData = data.sort((a: RoadmapItem, b: RoadmapItem) => new Date(a.date).getTime() - new Date(b.date).getTime());
             setItems(sortedData);
         }
@@ -100,9 +100,12 @@ export default function RoadmapPage() {
             )}
         </div>
         
-        <div className="w-full flex-grow">
-            <InteractiveRoadmap items={items} onEdit={handleOpenEditor} onDelete={handleSaveSuccess} />
-        </div>
+        <ScrollArea className="w-full pb-4">
+            <div className="w-full flex-grow">
+                <InteractiveRoadmap items={items} onEdit={handleOpenEditor} onDelete={handleSaveSuccess} />
+            </div>
+            <div className="h-4" />
+        </ScrollArea>
 
         {isEditorOpen && (
             <RoadmapEditorModal 

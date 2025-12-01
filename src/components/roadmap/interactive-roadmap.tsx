@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import type { RoadmapItem } from '@/types';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -15,17 +15,21 @@ import { useAuth } from '@/contexts/auth-context';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../ui/alert-dialog';
-import { buttonVariants } from '../ui/button';
 import { cn } from '@/lib/utils';
 import { EmptyState } from '../empty-state';
 import { Rocket } from 'lucide-react';
+import { ScrollArea } from '../ui/scroll-area';
+
 
 const RoadmapCard = ({ item, isActive, onEdit, onDelete }: { item: RoadmapItem, isActive: boolean, onEdit: () => void, onDelete: () => void }) => {
     const { user } = useAuth();
     const Icon = (LucideIcons as any)[item.icon] || LucideIcons.Lightbulb;
     
     return (
-        <Card className={cn("w-full h-full transform transition-all duration-300", isActive ? "scale-105 shadow-2xl" : "shadow-md")}>
+        <Card className={cn(
+            "w-full h-full transform transition-all duration-300 flex flex-col shadow-lg border",
+            isActive ? "scale-100 shadow-primary/20 border-primary/50" : "shadow-md hover:shadow-xl hover:-translate-y-1"
+        )}>
             <CardHeader className="relative pb-2">
                 <div className="flex justify-between items-start">
                     <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${item.color}20` }}>
@@ -45,8 +49,8 @@ const RoadmapCard = ({ item, isActive, onEdit, onDelete }: { item: RoadmapItem, 
                 </div>
                  <CardTitle className="text-base font-bold font-headline pt-2">{item.title}</CardTitle>
             </CardHeader>
-            <CardContent>
-                <p className="text-xs text-muted-foreground whitespace-normal">{item.description}</p>
+            <CardContent className="flex-grow">
+                <p className="text-xs text-muted-foreground whitespace-pre-wrap">{item.description}</p>
             </CardContent>
         </Card>
     );
@@ -140,7 +144,7 @@ export const InteractiveRoadmap = ({ items, onEdit, onDelete }: { items: Roadmap
             <div className="overflow-hidden" ref={emblaRef}>
                 <div className="flex -ml-4">
                     {items.map((item, index) => (
-                        <div key={item.id} className="relative flex-shrink-0 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 pl-4">
+                        <div key={item.id} className="relative flex-shrink-0 w-full sm:w-1/2 md:w-1/3 lg:w-[28%] xl:w-1/4 pl-4">
                             <RoadmapCard 
                                 item={item}
                                 isActive={index === selectedIndex}
