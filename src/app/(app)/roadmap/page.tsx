@@ -10,8 +10,9 @@ import { RoadmapEditorModal } from '@/components/roadmap/roadmap-editor-modal';
 import type { RoadmapItem } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
-import { InteractiveRoadmap } from '@/components/roadmap/interactive-roadmap';
 import { EmptyState } from '@/components/empty-state';
+import { HorizontalRoadmap } from '@/components/roadmap/horizontal-roadmap'; // Cambiado
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function RoadmapPage() {
   const { setPageTitle } = useTitle();
@@ -87,8 +88,8 @@ export default function RoadmapPage() {
   }
 
   return (
-    <div className="w-full flex flex-col">
-        <div className="text-center mb-8 container max-w-4xl mx-auto">
+    <div className="w-full flex flex-col items-center">
+        <div className="text-center mb-12 container max-w-4xl mx-auto">
             <h1 className="text-4xl font-bold font-headline tracking-tight">La Evolución de NexusAlpri</h1>
             <p className="mt-4 text-lg text-muted-foreground">
                 Un viaje visual a través de los hitos clave que han dado forma a nuestra plataforma.
@@ -103,17 +104,17 @@ export default function RoadmapPage() {
             )}
         </div>
         
-        <div className="w-full flex-grow">
+        <div className="w-full flex-grow px-4">
             {items.length === 0 ? (
-                 <div className="container max-w-lg mx-auto">
-                   <EmptyState 
-                     icon={Rocket}
-                     title="La Hoja de Ruta está en Blanco"
-                     description="Un administrador necesita añadir hitos para poder visualizarlos aquí."
-                   />
-                 </div>
+                <div className="container max-w-lg mx-auto">
+                <EmptyState 
+                    icon={Rocket}
+                    title="La Hoja de Ruta está en Blanco"
+                    description="Un administrador necesita añadir hitos para poder visualizarlos aquí."
+                />
+                </div>
             ) : (
-                <InteractiveRoadmap items={items} onEdit={handleOpenEditor} onDelete={handleDeleteSuccess} />
+                <HorizontalRoadmap items={items} onEdit={handleOpenEditor} onDelete={handleDeleteSuccess} />
             )}
         </div>
 
