@@ -70,9 +70,8 @@ export function AdminDashboard({ adminStats, securityLogs, recentAnnouncements, 
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
-        <div className="xl:col-span-3">
-          <Card id="admin-welcome-card" className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg h-full flex items-center">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <Card id="admin-welcome-card" className="lg:col-span-2 relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg flex items-center">
             <div className="relative z-10 flex items-center justify-between gap-6 w-full">
                <div className="space-y-1">
                   <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Hola, {user?.name}! <span className="text-2xl animate-wave">👋</span></h1>
@@ -84,13 +83,10 @@ export function AdminDashboard({ adminStats, securityLogs, recentAnnouncements, 
                  </div>
                )}
             </div>
-          </Card>
-        </div>
-        <div className="xl:col-span-2 grid grid-cols-2 gap-4">
-             <MetricCard title="Usuarios Totales" value={adminStats?.totalUsers || 0} icon={Users} onClick={() => router.push('/users')} gradient="bg-gradient-blue" />
-             <MetricCard title="Inscripciones" value={adminStats?.totalEnrollments || 0} icon={GraduationCap} gradient="bg-gradient-blue" />
-             <MetricCard title="Cursos Publicados" value={adminStats?.totalPublishedCourses || 0} icon={BookOpenCheck} gradient="bg-gradient-purple" />
-             <MetricCard title="Finalización" value={adminStats?.averageCompletionRate || 0} suffix="%" icon={Percent} gradient="bg-gradient-purple" />
+        </Card>
+        <div className="lg:col-span-1 grid grid-cols-2 gap-4">
+           <MetricCard title="Usuarios" value={adminStats?.totalUsers || 0} icon={Users} gradient="bg-gradient-blue" onClick={() => router.push('/users')} />
+           <MetricCard title="Cursos" value={adminStats?.totalPublishedCourses || 0} icon={GraduationCap} gradient="bg-gradient-purple" onClick={() => router.push('/manage-courses')} />
         </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
@@ -130,6 +126,14 @@ export function AdminDashboard({ adminStats, securityLogs, recentAnnouncements, 
                  <Button variant="outline" size="sm" className="w-full" asChild><Link href="/security-audit">Ver auditoría completa <ArrowRight className="ml-2 h-4 w-4"/></Link></Button>
               </CardFooter>
            </Card>
+           <Card>
+              <CardHeader>
+                 <CardTitle className="text-base flex items-center gap-2"><BookOpenCheck className="h-4 w-4 text-primary" />Cursos Pendientes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                 <p className="text-sm text-muted-foreground text-center py-4">No hay cursos pendientes de revisión.</p>
+              </CardContent>
+           </Card>
         </div>
         
         {/* --- COLUMNA DERECHA: ACCIONES Y ALERTAS --- */}
@@ -143,9 +147,9 @@ export function AdminDashboard({ adminStats, securityLogs, recentAnnouncements, 
                  <Button variant="outline" asChild><Link href="/settings">Ajustes</Link></Button>
               </CardContent>
            </Card>
+           <HealthStatusWidget />
            <AnnouncementsWidget announcements={recentAnnouncements} />
            <CalendarWidget events={upcomingEvents} />
-           <HealthStatusWidget />
         </div>
       </div>
       
