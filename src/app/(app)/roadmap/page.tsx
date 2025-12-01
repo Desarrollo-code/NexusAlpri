@@ -5,13 +5,13 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useTitle } from '@/contexts/title-context';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, ShieldAlert } from 'lucide-react';
+import { PlusCircle, ShieldAlert, Rocket } from 'lucide-react';
 import { RoadmapEditorModal } from '@/components/roadmap/roadmap-editor-modal';
 import type { RoadmapItem } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
 import { InteractiveRoadmap } from '@/components/roadmap/interactive-roadmap';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { EmptyState } from '@/components/empty-state';
 
 export default function RoadmapPage() {
   const { setPageTitle } = useTitle();
@@ -32,8 +32,7 @@ export default function RoadmapPage() {
         if (!res.ok) throw new Error("No se pudo cargar la hoja de ruta.");
         const data = await res.json();
         if (isMountedRef.current) {
-            const sortedData = data.sort((a: RoadmapItem, b: RoadmapItem) => new Date(a.date).getTime() - new Date(b.date).getTime());
-            setItems(sortedData);
+            setItems(data);
         }
     } catch(err) {
         if (isMountedRef.current) {
@@ -65,6 +64,10 @@ export default function RoadmapPage() {
     setIsEditorOpen(false);
   };
   
+  const handleDeleteSuccess = (deletedId: string) => {
+      setItems(prev => prev.filter(item => item.id !== deletedId));
+  }
+  
   const canView = user && ((settings?.roadmapVisibleTo && settings.roadmapVisibleTo.includes(user.role)) || user.role === 'ADMINISTRATOR');
   
   if (isLoading) {
@@ -84,11 +87,11 @@ export default function RoadmapPage() {
   }
 
   return (
-    <div className="w-full h-full flex flex-col items-center">
-        <div className="text-center mb-12 container max-w-4xl mx-auto">
+    <div className="w-full flex flex-col">
+        <div className="text-center mb-8 container max-w-4xl mx-auto">
             <h1 className="text-4xl font-bold font-headline tracking-tight">La Evolución de NexusAlpri</h1>
             <p className="mt-4 text-lg text-muted-foreground">
-                Un viaje interactivo a través de nuestro desarrollo. Desliza para explorar cada hito que ha dado forma a nuestra plataforma.
+                Un viaje visual a través de los hitos clave que han dado forma a nuestra plataforma.
             </p>
             {user?.role === 'ADMINISTRATOR' && (
                 <div className="text-center mt-6">
@@ -100,12 +103,19 @@ export default function RoadmapPage() {
             )}
         </div>
         
-        <ScrollArea className="w-full pb-4">
-            <div className="w-full flex-grow">
-                <InteractiveRoadmap items={items} onEdit={handleOpenEditor} onDelete={handleSaveSuccess} />
-            </div>
-            <div className="h-4" />
-        </ScrollArea>
+        <div className="w-full flex-grow">
+            {items.length === 0 ? (
+                 <div className="container max-w-lg mx-auto">
+                   <EmptyState 
+                     icon={Rocket}
+                     title="La Hoja de Ruta está en Blanco"
+                     description="Un administrador necesita añadir hitos para poder visualizarlos aquí."
+                   />
+                 </div>
+            ) : (
+                <InteractiveRoadmap items={items} onEdit={handleOpenEditor} onDelete={handleDeleteSuccess} />
+            )}
+        </div>
 
         {isEditorOpen && (
             <RoadmapEditorModal 
