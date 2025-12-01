@@ -2,14 +2,14 @@
 'use client';
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Code, Database, Paintbrush, Rocket, CheckCircle, Lightbulb, MoreVertical, Edit, Trash2, Award, Sparkles, UsersRound, FileText, Shield } from 'lucide-react';
+import { MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { RoadmapItem } from '@/types';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useAuth } from '@/contexts/auth-context';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../ui/dropdown-menu';
-import { Button, buttonVariants } from '../ui/button';
+import { Button } from '../ui/button';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -22,15 +22,16 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import * as LucideIcons from 'lucide-react';
+import { motion } from 'framer-motion';
 
-const RoadmapItemCard = ({ item, onEdit, onDelete }: { item: RoadmapItem, onEdit: () => void, onDelete: () => void }) => {
+const RoadmapItemCard = ({ item, onEdit, onDelete, isEven }: { item: RoadmapItem, onEdit: () => void, onDelete: () => void, isEven: boolean }) => {
     const { user } = useAuth();
-    const Icon = (LucideIcons as any)[item.icon] || Lightbulb;
+    const Icon = (LucideIcons as any)[item.icon] || LucideIcons.Lightbulb;
     
     return (
-        <Card className="relative shadow-lg hover:shadow-2xl transition-shadow duration-300">
+        <Card className="relative shadow-lg hover:shadow-2xl transition-shadow duration-300 w-72 bg-card/80 backdrop-blur-sm border">
             {user?.role === 'ADMINISTRATOR' && (
-                <div className="absolute top-2 right-2">
+                <div className="absolute top-1 right-1 z-10">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-7 w-7"><MoreVertical className="h-4 w-4"/></Button>
@@ -42,17 +43,17 @@ const RoadmapItemCard = ({ item, onEdit, onDelete }: { item: RoadmapItem, onEdit
                     </DropdownMenu>
                 </div>
             )}
-            <CardHeader>
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: `${item.color}20` }}>
-                        <Icon className="h-5 w-5" style={{ color: item.color }}/>
-                    </div>
-                    <p className="text-sm font-semibold text-muted-foreground">{format(new Date(item.date), "MMMM, yyyy", { locale: es })}</p>
+            <CardHeader className="pt-8 text-center">
+                 <div 
+                    className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2" 
+                    style={{ backgroundColor: `${item.color}20` }}
+                >
+                    <Icon className="h-5 w-5" style={{ color: item.color }}/>
                 </div>
-                <CardTitle className="text-base font-headline pt-2">{item.title}</CardTitle>
+                <CardTitle className="text-base font-headline">{item.title}</CardTitle>
             </CardHeader>
             <CardContent>
-                <p className="text-muted-foreground text-sm">{item.description}</p>
+                <p className="text-muted-foreground text-xs text-center">{item.description}</p>
             </CardContent>
         </Card>
     );
@@ -63,7 +64,6 @@ export const RoadmapView = ({ items, onEdit, onDelete }: { items: RoadmapItem[],
     const { toast } = useToast();
     const { settings } = useAuth();
     
-    // CORRECCIÓN: Usar un array vacío como fallback si settings o roadmapPhases son nulos.
     const phases = settings?.roadmapPhases || [];
     
     const groupedItems = phases.map(phase => {
@@ -71,10 +71,9 @@ export const RoadmapView = ({ items, onEdit, onDelete }: { items: RoadmapItem[],
         if (phaseItems.length === 0) return null;
         return {
             phase,
-            label: phase,
             items: phaseItems,
         };
-    }).filter((group): group is { phase: string; label: string; items: RoadmapItem[] } => group !== null);
+    }).filter((group): group is { phase: string; items: RoadmapItem[] } => group !== null);
     
     const handleDelete = async () => {
         if(!itemToDelete) return;
@@ -91,41 +90,58 @@ export const RoadmapView = ({ items, onEdit, onDelete }: { items: RoadmapItem[],
     };
     
     return (
-        <div className="relative w-full max-w-4xl mx-auto">
-            <div className="absolute left-6 md:left-1/2 top-0 h-full w-0.5 bg-border -translate-x-1/2" />
-
-            <div className="space-y-12">
-                {groupedItems.map((group) => (
-                    <div key={group.phase} className="space-y-8">
-                         <h2 className="text-center md:text-left md:pl-16 text-2xl font-bold font-headline sticky top-16 bg-background/80 backdrop-blur-sm py-2 z-10">{group.label}</h2>
-                        {group.items.map((item, itemIndex) => {
-                            const isEven = itemIndex % 2 === 0;
-                            return (
-                                <div key={item.id} className="relative flex items-start gap-4 md:gap-8">
-                                    <div className={cn("absolute left-6 top-1 h-10 w-10 rounded-full flex items-center justify-center -translate-x-1/2", "md:static md:translate-x-0", !isEven && "md:order-2")} style={{ backgroundColor: `${item.color}20` }}>
-                                        <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: item.color }}><span className="text-white font-bold text-xs"></span></div>
-                                    </div>
-                                    <div className={cn("w-full pl-12 md:pl-0", isEven ? "md:w-1/2" : "md:w-1/2 md:pl-8 md:order-1")}>
-                                        <RoadmapItemCard item={item} onEdit={() => onEdit(item)} onDelete={() => setItemToDelete(item)}/>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                ))}
+        <div className="relative w-full px-12 md:px-24">
+            <div className="relative flex items-center" style={{ minWidth: `${groupedItems.reduce((acc, g) => acc + g.items.length, 0) * 20}rem`}}>
+                {/* Timeline rail */}
+                <div className="absolute top-1/2 left-0 w-full h-1 bg-border -translate-y-1/2" />
+                
+                <div className="flex items-start gap-4">
+                    {groupedItems.map((group, groupIndex) => (
+                        <React.Fragment key={group.phase}>
+                            <div className="relative pt-4">
+                                <div className="absolute top-1/2 left-0 w-px h-12 bg-border -translate-y-full"/>
+                                <div className="absolute top-1/2 left-0 w-3 h-3 bg-foreground rounded-full -translate-x-1/2 -translate-y-[calc(100%+14px)]"/>
+                                <h2 className="text-xl font-bold font-headline whitespace-nowrap -translate-y-[calc(100%+3rem)]">{group.phase}</h2>
+                            </div>
+                            {group.items.map((item, itemIndex) => {
+                                const isEven = itemIndex % 2 === 0;
+                                return (
+                                <div key={item.id} className={cn("relative flex flex-col items-center", isEven ? "pt-12" : "pb-12", groupIndex === 0 && itemIndex === 0 ? "" : "ml-4 md:ml-8")}>
+                                     {/* Vertical Connector */}
+                                     <div className={cn("absolute left-1/2 -translate-x-1/2 w-0.5 h-12", isEven ? 'top-0' : 'bottom-0', 'bg-border')}/>
+                                     {/* Dot on timeline */}
+                                     <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
+                                        <div className="relative group">
+                                           <div className="w-4 h-4 rounded-full border-2 border-background" style={{ backgroundColor: item.color }}/>
+                                            <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-max bg-background px-2 py-0.5 rounded-md text-xs font-semibold text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                                {format(new Date(item.date), "d MMM, yyyy", { locale: es })}
+                                            </div>
+                                        </div>
+                                     </div>
+                                     <motion.div
+                                        initial={{ opacity: 0, y: isEven ? 20 : -20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: (groupIndex + itemIndex) * 0.1, duration: 0.5 }}
+                                    >
+                                        <RoadmapItemCard item={item} onEdit={() => onEdit(item)} onDelete={() => setItemToDelete(item)} isEven={isEven}/>
+                                     </motion.div>
+                                 </div>
+                                )
+                            })}
+                        </React.Fragment>
+                    ))}
+                </div>
             </div>
 
             <AlertDialog open={!!itemToDelete} onOpenChange={(isOpen) => !isOpen && setItemToDelete(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Se eliminará permanentemente el hito "<strong>{itemToDelete?.title}</strong>".
-                        </AlertDialogDescription>
+                        <AlertDialogDescription>Se eliminará permanentemente el hito "<strong>{itemToDelete?.title}</strong>".</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDelete} className={buttonVariants({ variant: "destructive" })}>
+                        <AlertDialogAction onClick={handleDelete} className={cn(buttonVariants({ variant: "destructive" }))}>
                            <Trash2 className="mr-2 h-4 w-4"/> Sí, eliminar
                         </AlertDialogAction>
                     </AlertDialogFooter>
