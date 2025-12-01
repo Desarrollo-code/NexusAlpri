@@ -87,11 +87,18 @@ const nextConfig = {
         port: '',
         pathname: '/storage/v1/object/public/form_images/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'izefimwyuayfvektsstg.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/roadmap_images/**',
+      },
     ],
   },
 };
 
 module.exports = nextConfig;
+
 
 
 

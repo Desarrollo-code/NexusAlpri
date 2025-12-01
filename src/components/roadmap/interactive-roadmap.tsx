@@ -6,7 +6,7 @@ import useEmblaCarousel, { type EmblaCarouselType } from 'embla-carousel-react';
 import { motion } from 'framer-motion';
 import type { RoadmapItem } from '@/types';
 import { Card, CardContent } from '../ui/card';
-import { Button } from '../ui/button';
+import { Button, buttonVariants } from '../ui/button';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ArrowLeft, ArrowRight, MoreVertical, Edit, Trash2 } from 'lucide-react';
@@ -16,8 +16,8 @@ import { useAuth } from '@/contexts/auth-context';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { buttonVariants } from '../ui/button';
 import { Badge } from '../ui/badge';
+import Image from 'next/image';
 
 interface DotButtonProps {
   selected: boolean;
@@ -77,12 +77,18 @@ const RoadmapCard = ({ item, onEdit, onDelete }: { item: RoadmapItem, onEdit: (i
                         </DropdownMenu>
                     </div>
                 )}
+                 {item.imageUrl && (
+                  <div className="aspect-video w-full relative">
+                    <Image src={item.imageUrl} alt={item.title} fill className="object-cover rounded-t-lg" />
+                  </div>
+                )}
                 <CardContent className="p-4 flex flex-col items-center text-center flex-grow">
                     <div className="w-16 h-16 rounded-full flex items-center justify-center mb-3 border-4" style={{ borderColor: item.color, backgroundColor: `${item.color}20` }}>
                         <Icon className="h-8 w-8" style={{ color: item.color }}/>
                     </div>
                     <Badge style={{ backgroundColor: `${item.color}20`, color: item.color }} className="mb-2 border border-current/30">{item.phase.replace('_', ' ')}</Badge>
                     <h3 className="font-bold text-lg text-foreground">{item.title}</h3>
+                    <p className="text-xs text-muted-foreground mb-2">{format(new Date(item.date), "d 'de' MMMM, yyyy", { locale: es })}</p>
                     <p className="text-sm text-muted-foreground mt-2 flex-grow whitespace-pre-wrap">{item.description}</p>
                 </CardContent>
             </Card>

@@ -1,7 +1,7 @@
 // src/components/roadmap/roadmap-editor-modal.tsx
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -23,6 +23,10 @@ import { useToast } from '@/hooks/use-toast';
 import type { RoadmapItem } from '@/types';
 import * as LucideIcons from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
+import { UploadArea } from '@/components/ui/upload-area';
+import { uploadWithProgress } from '@/lib/upload-with-progress';
+import { Progress } from '@/components/ui/progress';
+import Image from 'next/image';
 
 const ICONS = ['Lightbulb', 'Code', 'Database', 'Paintbrush', 'Rocket', 'CheckCircle', 'Award', 'Sparkles', 'UsersRound', 'FileText', 'Shield', 'MessageSquare', 'ScreenShare', 'Network', 'ListChecks', 'Megaphone', 'Folder', 'Users'];
 
@@ -43,6 +47,9 @@ export function RoadmapEditorModal({ isOpen, onClose, item, onSave }: RoadmapEdi
     const [phase, setPhase] = useState('');
     const [icon, setIcon] = useState('Lightbulb');
     const [color, setColor] = useState('#3b82f6');
+    const [imageUrl, setImageUrl] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const roadmapPhases = settings?.roadmapPhases || [];
@@ -55,15 +62,33 @@ export function RoadmapEditorModal({ isOpen, onClose, item, onSave }: RoadmapEdi
             setPhase(item.phase);
             setIcon(item.icon);
             setColor(item.color);
+            setImageUrl(item.imageUrl);
         } else {
             setTitle('');
             setDescription('');
             setDate(new Date());
-            setPhase(roadmapPhases.length > 0 ? roadmapPhases[roadmapPhases.length - 1] : '');
+            setPhase(roadmapPhases.length > 0 ? roadmapPhases[0] : '');
             setIcon('Lightbulb');
             setColor('#3b82f6');
+            setImageUrl(null);
         }
     }, [item, isOpen, roadmapPhases]);
+    
+    const handleImageUpload = async (file: File | null) => {
+        if (!file) return;
+        setIsUploading(true);
+        setUploadProgress(0);
+        try {
+            const result = await uploadWithProgress('/api/upload/roadmap-image', file, setUploadProgress);
+            setImageUrl(result.url);
+            toast({ title: "Imagen Subida" });
+        } catch(err) {
+            toast({ title: 'Error de subida', description: (err as Error).message, variant: 'destructive' });
+        } finally {
+            setIsUploading(false);
+        }
+    }
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -75,7 +100,7 @@ export function RoadmapEditorModal({ isOpen, onClose, item, onSave }: RoadmapEdi
             const response = await fetch(endpoint, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, description, date, phase, icon, color }),
+                body: JSON.stringify({ title, description, date, phase, icon, color, imageUrl }),
             });
             
             if (!response.ok) {
@@ -126,12 +151,20 @@ export function RoadmapEditorModal({ isOpen, onClose, item, onSave }: RoadmapEdi
                                 <SelectTrigger><SelectValue/></SelectTrigger>
                                 <SelectContent>
                                     {roadmapPhases.map(phaseName => (
-                                        <SelectItem key={phaseName} value={phaseName}>{phaseName}</SelectItem>
+                                        <SelectItem key={phaseName} value={phaseName}>{phaseName.replace('_', ' ')}</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
                         </div>
                     </div>
+                     <div className="space-y-2">
+                        <Label>Imagen Representativa</Label>
+                        {isUploading ? (
+                             <div className="w-full h-32 flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg"><Loader2 className="h-8 w-8 animate-spin text-primary"/><Progress value={uploadProgress} className="w-1/2 h-2"/></div>
+                        ) : imageUrl ? (
+                            <div className="relative w-full aspect-video rounded-lg border overflow-hidden"><Image src={imageUrl} alt="preview" fill className="object-cover" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => setImageUrl(null)}><Trash2 className="h-4 w-4"/></Button></div>
+                        ) : <UploadArea onFileSelect={(files) => files && handleImageUpload(files[0])} inputId="roadmap-image-upload" />}
+                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
                             <Label>Icono</Label>

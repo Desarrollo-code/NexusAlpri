@@ -51,8 +51,8 @@ export interface PlatformSettings {
     benefitsImageUrl?: string | null;
     announcementsImageUrl?: string | null;
     publicPagesBgUrl?: string | null;
-    securityAuditImageUrl?: string | null; // Renombrado
-    tourMascotUrl?: string | null; 
+    securityAuditImageUrl?: string | null;
+    tourMascotUrl?: string | null;
     dashboardImageUrlAdmin?: string | null;
     dashboardImageUrlInstructor?: string | null;
     dashboardImageUrlStudent?: string | null;
@@ -392,7 +392,6 @@ export type AppQuestion = Omit<Prisma.FormFieldGetPayload<{
 }>, 'options' | 'id'> & {
     id: string; // Client-side ID
     options: FormFieldOption[];
-    timestamp?: number; // Para quizzes interactivos con video
 };
 
 
@@ -415,25 +414,6 @@ export type Process = Prisma.ProcessGetPayload<{
         users: true
     }
 }>;
-
-// --- MESSAGES / CHAT ---
-export interface Conversation {
-    id: string;
-    participants: Participant[];
-    messages: Message[];
-    updatedAt: string;
-    isGroup: boolean;
-}
-export interface Participant extends Pick<User, 'id' | 'name' | 'avatar'> {}
-export interface Message {
-    id: string;
-    content: string | null;
-    createdAt: string;
-    authorId: string;
-    author: Participant;
-    attachments: Attachment[];
-    conversationId: string;
-}
 
 // --- ROADMAP ---
 export type RoadmapItem = Prisma.RoadmapItemGetPayload<{}>;

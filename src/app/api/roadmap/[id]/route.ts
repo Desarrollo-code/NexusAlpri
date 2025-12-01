@@ -16,17 +16,15 @@ async function checkPermissions(session: any) {
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
     const permission = await checkPermissions(session);
-    // CORRECCIÓN: La condición '!permission.error' era incorrecta y causaba el fallo.
-    // La comprobación correcta es simplemente si no está autorizado.
     if (!permission.authorized) {
-        return permission.error || NextResponse.json({ message: 'Error de permisos desconocido' }, { status: 500 });
+        return permission.error;
     }
 
     const { id } = params;
 
     try {
         const body = await req.json();
-        const { title, description, date, phase, icon, color } = body;
+        const { title, description, date, phase, icon, color, imageUrl } = body;
 
         if (!title || !description || !date || !phase) {
             return NextResponse.json({ message: 'Faltan campos requeridos.' }, { status: 400 });
@@ -41,6 +39,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 phase,
                 icon,
                 color,
+                imageUrl,
             },
         });
 
@@ -58,7 +57,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     const session = await getCurrentUser();
     const permission = await checkPermissions(session);
     if (!permission.authorized) {
-        return permission.error || NextResponse.json({ message: 'Error de permisos desconocido' }, { status: 500 });
+        return permission.error;
     }
     
     const { id } = params;
