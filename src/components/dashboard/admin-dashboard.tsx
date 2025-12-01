@@ -16,7 +16,7 @@ import { useAuth } from "@/contexts/auth-context";
 import Image from "next/image";
 import { AnnouncementsWidget } from "./announcements-widget";
 import { CalendarWidget } from "./calendar-widget";
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, CartesianGrid } from "@/components/ui/chart";
+import { ChartConfig, ChartContainer, ChartTooltip, CartesianGrid } from "@/components/ui/chart";
 import { Area, AreaChart, Bar, BarChart, ComposedChart, Legend, Line, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { DonutChart } from "../analytics/donut-chart";
 import { HealthStatusWidget } from "./health-status-widget";
@@ -69,6 +69,29 @@ export function AdminDashboard({ adminStats, securityLogs, recentAnnouncements, 
 
   return (
     <div className="space-y-6">
+       <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
+        <div className="xl:col-span-3">
+          <Card id="admin-welcome-card" className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg h-48 flex items-center">
+            <div className="relative z-10 flex items-center justify-between gap-6 w-full">
+               <div className="space-y-1">
+                  <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Hola, {user?.name}! <span className="text-2xl animate-wave">👋</span></h1>
+                  <p className="text-primary-foreground/80">Bienvenido al Centro de Mando de tu plataforma.</p>
+               </div>
+               {settings?.dashboardImageUrlAdmin && (
+                 <div className="relative w-32 h-32 flex-shrink-0 hidden sm:block">
+                   <Image src={settings.dashboardImageUrlAdmin} alt="Imagen del panel de Admin" fill className="object-contain" data-ai-hint="admin dashboard mascot" />
+                 </div>
+               )}
+            </div>
+          </Card>
+        </div>
+        <div className="xl:col-span-2 grid grid-cols-2 md:grid-cols-4 xl:grid-cols-2 gap-4">
+             <MetricCard title="Usuarios Totales" value={adminStats?.totalUsers || 0} icon={Users} onClick={() => router.push('/users')} />
+             <MetricCard title="Inscripciones Totales" value={adminStats?.totalEnrollments || 0} icon={GraduationCap} />
+             <MetricCard title="Cursos Publicados" value={adminStats?.totalPublishedCourses || 0} icon={BookOpenCheck} />
+             <MetricCard title="Finalización Promedio" value={adminStats?.averageCompletionRate || 0} suffix="%" icon={Percent} />
+        </div>
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* --- COLUMNA IZQUIERDA: GRÁFICOS --- */}
         <div className="lg:col-span-1 space-y-6">
@@ -93,22 +116,9 @@ export function AdminDashboard({ adminStats, securityLogs, recentAnnouncements, 
              <DonutChart title="Distribución de Roles" data={userRolesChartData} config={userRolesChartConfig} />
         </div>
 
-        {/* --- COLUMNA CENTRAL: MÉTRICAS Y AUDITORÍA --- */}
+        {/* --- COLUMNA CENTRAL: SEGURIDAD --- */}
         <div className="lg:col-span-1 space-y-6">
-           <Card id="admin-welcome-card" className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/10 to-accent/10 shadow-lg h-full flex flex-col justify-between">
-                <div className="relative z-10 flex items-center justify-between gap-6">
-                   <div className="space-y-1">
-                      <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Hola, {user?.name}! <span className="text-2xl animate-wave">👋</span></h1>
-                      <p className="text-muted-foreground">Bienvenido al Centro de Mando.</p>
-                   </div>
-                   {settings?.dashboardImageUrlAdmin && (
-                     <div className="relative w-24 h-24 flex-shrink-0 hidden sm:block">
-                       <Image src={settings.dashboardImageUrlAdmin} alt="Imagen del panel de Admin" fill className="object-contain" data-ai-hint="admin dashboard mascot" />
-                     </div>
-                   )}
-                </div>
-            </Card>
-            <Card>
+           <Card>
               <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2"><ShieldAlert className="h-4 w-4 text-primary"/>Auditoría de Seguridad</CardTitle>
               </CardHeader>
@@ -123,12 +133,6 @@ export function AdminDashboard({ adminStats, securityLogs, recentAnnouncements, 
         
         {/* --- COLUMNA DERECHA: ACCIONES Y ALERTAS --- */}
         <div className="lg:col-span-1 space-y-6">
-             <div className="grid grid-cols-2 gap-4">
-                <MetricCard title="Usuarios" value={adminStats?.totalUsers || 0} icon={Users} gradient="bg-gradient-blue" index={0} />
-                <MetricCard title="Cursos" value={adminStats?.totalPublishedCourses || 0} icon={BookOpenCheck} gradient="bg-gradient-purple" index={1}/>
-                <MetricCard title="Recursos" value={adminStats?.totalResources || 0} icon={Folder} gradient="bg-gradient-green" index={2}/>
-                <MetricCard title="Finalización" value={adminStats?.averageCompletionRate || 0} description="Promedio" suffix="%" icon={Percent} gradient="bg-gradient-orange" index={3} />
-            </div>
              <Card>
               <CardHeader><CardTitle className="text-base flex items-center gap-2"><PlusCircle className="h-4 w-4 text-primary"/>Accesos Rápidos</CardTitle></CardHeader>
               <CardContent className="grid grid-cols-2 gap-2">

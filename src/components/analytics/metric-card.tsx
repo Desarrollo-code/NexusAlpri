@@ -13,7 +13,6 @@ export const MetricCard = ({
     suffix = '', 
     index = 0, 
     onClick,
-    gradient
 }: { 
     title: string; 
     value: number; 
@@ -22,7 +21,6 @@ export const MetricCard = ({
     suffix?: string; 
     index?: number;
     onClick?: () => void;
-    gradient?: string;
 }) => {
     const animatedValue = useAnimatedCounter(value, 0, 1000);
     
@@ -33,12 +31,12 @@ export const MetricCard = ({
         <Card 
             onClick={onClick} 
             className={cn(
-                "relative text-card-foreground p-4 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] hover:shadow-xl rounded-2xl h-24 overflow-hidden border-0",
+                "relative text-card-foreground p-4 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] hover:shadow-xl rounded-2xl overflow-hidden border-0",
                 onClick && "cursor-pointer"
             )}
             style={{ backgroundColor: `hsl(var(${colorVar}))` }}
         >
-            <div className="flex justify-between items-start text-primary-foreground/80">
+             <div className="flex justify-between items-start text-primary-foreground/80">
                 <p className="text-sm font-semibold">{title}</p>
                 <Icon className="h-5 w-5" />
             </div>
@@ -47,6 +45,7 @@ export const MetricCard = ({
                 <p className="text-3xl font-bold tracking-tighter text-primary-foreground">
                     {animatedValue}{suffix}
                 </p>
+                {description && <p className="text-xs text-primary-foreground/70">{description}</p>}
             </div>
         </Card>
     );
