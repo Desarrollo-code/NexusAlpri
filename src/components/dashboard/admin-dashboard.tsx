@@ -2,12 +2,12 @@
 'use client';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, BookOpenCheck, GraduationCap, Percent, PlusCircle, BarChart3, Settings, ShieldAlert, Monitor, Database, ArrowRight, Folder, Megaphone, FileText, AlertCircle, Calendar, Pencil, ExternalLink, LineChart, UsersRound } from "lucide-react";
-import type { AdminDashboardStats, SecurityLog as AppSecurityLog, Announcement as AnnouncementType, CalendarEvent } from '@/types';
+import { Users, BookOpenCheck, GraduationCap, Percent, PlusCircle, BarChart3, Settings, ShieldAlert, Monitor, Database, ArrowRight, LineChart, UsersRound, BookOpen } from "lucide-react";
+import type { AdminDashboardStats, SecurityLog as AppSecurityLog, Announcement as AnnouncementType, CalendarEvent, Course, Notification as AppNotification } from '@/types';
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { format, parseISO, subDays, startOfDay, endOfDay, isValid } from "date-fns";
+import { format, parseISO, isValid } from "date-fns";
 import { es } from "date-fns/locale";
 import { SecurityLogTimeline } from "../security/security-log-timeline";
 import { SecurityLogDetailSheet } from "../security/security-log-detail-sheet";
@@ -16,12 +16,12 @@ import { useAuth } from "@/contexts/auth-context";
 import Image from "next/image";
 import { AnnouncementsWidget } from "./announcements-widget";
 import { CalendarWidget } from "./calendar-widget";
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, CartesianGrid } from "@/components/ui/chart";
-import { Area, AreaChart, Bar, BarChart, ComposedChart, Legend, Line, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
+import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { Area, AreaChart, Bar, BarChart, ComposedChart, Legend, Line, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 import { DonutChart } from "../analytics/donut-chart";
 import { HealthStatusWidget } from "./health-status-widget";
 import { MetricCard } from "../analytics/metric-card";
-
+import { NotificationsWidget } from "./notifications-widget";
 
 const userRolesChartConfig = {
   count: { label: "Usuarios" },
@@ -30,11 +30,9 @@ const userRolesChartConfig = {
   ADMINISTRATOR: { label: "Administradores", color: "hsl(var(--chart-3))" },
 } satisfies ChartConfig;
 
-
 const formatDateTick = (tick: string): string => {
   const date = parseISO(tick);
   if (!isValid(date)) return tick;
-  // Muestra solo el número del día.
   return format(date, "d", { locale: es });
 };
 
@@ -47,12 +45,12 @@ const formatDateTooltip = (dateString: string) => {
     }
 };
 
-
-export function AdminDashboard({ adminStats, securityLogs, recentAnnouncements, upcomingEvents }: {
+export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendingCourses, notifications }: {
   adminStats: AdminDashboardStats;
   securityLogs: AppSecurityLog[];
-  recentAnnouncements?: AnnouncementType[];
   upcomingEvents?: CalendarEvent[];
+  pendingCourses?: Course[];
+  notifications?: AppNotification[];
 }) {
   const [selectedLog, setSelectedLog] = useState<AppSecurityLog | null>(null);
   const router = useRouter();
@@ -70,8 +68,8 @@ export function AdminDashboard({ adminStats, securityLogs, recentAnnouncements, 
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        <Card id="admin-welcome-card" className="lg:col-span-2 relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg flex items-center">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <Card className="lg:col-span-8 relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/80 to-accent/80 text-primary-foreground shadow-lg flex items-center">
             <div className="relative z-10 flex items-center justify-between gap-6 w-full">
                <div className="space-y-1">
                   <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Hola, {user?.name}! <span className="text-2xl animate-wave">👋</span></h1>
@@ -79,16 +77,17 @@ export function AdminDashboard({ adminStats, securityLogs, recentAnnouncements, 
                </div>
                {settings?.dashboardImageUrlAdmin && (
                  <div className="relative w-32 h-32 flex-shrink-0 hidden sm:block">
-                   <Image src={settings.dashboardImageUrlAdmin} alt="Imagen del panel de Admin" fill className="object-contain" data-ai-hint="admin dashboard mascot" />
+                   <Image src={settings.dashboardImageUrlAdmin} alt="Imagen del panel de Admin" fill className="object-contain" data-ai-hint="admin dashboard mascot"/>
                  </div>
                )}
             </div>
         </Card>
-        <div className="lg:col-span-1 grid grid-cols-2 gap-4">
-           <MetricCard title="Usuarios" value={adminStats?.totalUsers || 0} icon={Users} gradient="bg-gradient-blue" onClick={() => router.push('/users')} />
-           <MetricCard title="Cursos" value={adminStats?.totalPublishedCourses || 0} icon={GraduationCap} gradient="bg-gradient-purple" onClick={() => router.push('/manage-courses')} />
+        <div className="lg:col-span-4 grid grid-cols-2 gap-4">
+            <MetricCard title="Usuarios Totales" value={adminStats?.totalUsers || 0} icon={UsersRound} index={0} onClick={() => router.push('/users')} />
+            <MetricCard title="Cursos Publicados" value={adminStats?.totalPublishedCourses || 0} icon={GraduationCap} index={1} onClick={() => router.push('/manage-courses?tab=PUBLISHED')} />
         </div>
       </div>
+      
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* --- COLUMNA IZQUIERDA: GRÁFICOS --- */}
         <div className="lg:col-span-1 space-y-6">
@@ -113,7 +112,7 @@ export function AdminDashboard({ adminStats, securityLogs, recentAnnouncements, 
              <DonutChart title="Distribución de Roles" data={userRolesChartData} config={userRolesChartConfig} />
         </div>
 
-        {/* --- COLUMNA CENTRAL: SEGURIDAD --- */}
+        {/* --- COLUMNA CENTRAL: SEGURIDAD Y TAREAS --- */}
         <div className="lg:col-span-1 space-y-6">
            <Card>
               <CardHeader>
@@ -126,12 +125,23 @@ export function AdminDashboard({ adminStats, securityLogs, recentAnnouncements, 
                  <Button variant="outline" size="sm" className="w-full" asChild><Link href="/security-audit">Ver auditoría completa <ArrowRight className="ml-2 h-4 w-4"/></Link></Button>
               </CardFooter>
            </Card>
-           <Card>
+            <Card>
               <CardHeader>
-                 <CardTitle className="text-base flex items-center gap-2"><BookOpenCheck className="h-4 w-4 text-primary" />Cursos Pendientes</CardTitle>
+                 <CardTitle className="text-base flex items-center gap-2"><BookOpenCheck className="h-4 w-4 text-primary" />Cursos Pendientes de Revisión</CardTitle>
               </CardHeader>
               <CardContent>
-                 <p className="text-sm text-muted-foreground text-center py-4">No hay cursos pendientes de revisión.</p>
+                 {pendingCourses && pendingCourses.length > 0 ? (
+                    <div className="space-y-2">
+                        {pendingCourses.map(course => (
+                            <Link key={course.id} href={`/manage-courses/${course.id}/edit`} className="block p-2 rounded-md hover:bg-muted">
+                                <p className="font-semibold text-sm">{course.title}</p>
+                                <p className="text-xs text-muted-foreground">Por {course.instructor.name}</p>
+                            </Link>
+                        ))}
+                    </div>
+                 ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">No hay cursos pendientes de revisión.</p>
+                 )}
               </CardContent>
            </Card>
         </div>
@@ -147,8 +157,7 @@ export function AdminDashboard({ adminStats, securityLogs, recentAnnouncements, 
                  <Button variant="outline" asChild><Link href="/settings">Ajustes</Link></Button>
               </CardContent>
            </Card>
-           <HealthStatusWidget />
-           <AnnouncementsWidget announcements={recentAnnouncements} />
+           <NotificationsWidget notifications={notifications} />
            <CalendarWidget events={upcomingEvents} />
         </div>
       </div>

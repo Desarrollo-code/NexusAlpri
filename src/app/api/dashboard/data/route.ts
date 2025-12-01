@@ -31,7 +31,8 @@ async function getAdminDashboardData(session: PrismaUser, startDate?: Date, endD
         totalResources, totalAnnouncements, totalForms,
         progressAggregates, usersByRole, coursesByStatus,
         topCoursesByEnrollmentRaw,
-        topStudentsByEnrollment, topStudentsByCompletion, topInstructorsByCourses
+        topStudentsByEnrollment, topStudentsByCompletion, topInstructorsByCourses,
+        pendingCourses // NUEVO
     ] = await Promise.all([
         safeQuery(prisma.user.count({ where: dateFilterRegistered }), 0, 'totalUsers'),
         safeQuery(prisma.course.count(), 0, 'totalCourses'),
@@ -50,7 +51,8 @@ async function getAdminDashboardData(session: PrismaUser, startDate?: Date, endD
         safeQuery(prisma.course.findMany({ where: { status: 'PUBLISHED' }, orderBy: { enrollments: { _count: 'desc' } }, take: 5, select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: true } } } }), [], 'topCoursesByEnrollment'),
         safeQuery(prisma.user.findMany({ where: { role: 'STUDENT', enrollments: { some: {} } }, orderBy: { enrollments: { _count: 'desc' } }, take: 5, select: { id: true, name: true, avatar: true, _count: { select: { enrollments: true } } } }), [], 'topStudentsByEnrollment'),
         safeQuery(prisma.user.findMany({ where: { role: 'STUDENT', courseProgress: { some: { completedAt: { not: null } } } }, orderBy: { courseProgress: { _count: 'desc' } }, take: 5, select: { id: true, name: true, avatar: true, _count: { select: { courseProgress: true } } } }), [], 'topStudentsByCompletion'),
-        safeQuery(prisma.user.findMany({ where: { role: 'INSTRUCTOR', courses: { some: {} } }, orderBy: { courses: { _count: 'desc' } }, take: 5, select: { id: true, name: true, avatar: true, _count: { select: { courses: true } } } }), [], 'topInstructorsByCourses')
+        safeQuery(prisma.user.findMany({ where: { role: 'INSTRUCTOR', courses: { some: {} } }, orderBy: { courses: { _count: 'desc' } }, take: 5, select: { id: true, name: true, avatar: true, _count: { select: { courses: true } } } }), [], 'topInstructorsByCourses'),
+        safeQuery(prisma.course.findMany({ where: { status: 'DRAFT' }, take: 5, orderBy: { updatedAt: 'desc' }, include: { instructor: { select: { name: true }}}}), [], 'pendingCourses')
     ]);
     
     // These queries must be run separately as they depend on aggregations not available in direct findMany
@@ -110,7 +112,7 @@ async function getAdminDashboardData(session: PrismaUser, startDate?: Date, endD
         topInstructorsByCourses: topInstructorsByCourses.map(u => ({ id: u.id, name: u.name, avatar: u.avatar, value: u._count.courses})),
     };
     
-    return { adminStats };
+    return { adminStats, pendingCourses };
 }
 
 
@@ -135,23 +137,14 @@ async function getSharedDashboardData(session: PrismaUser) {
         .sort((a,b) => new Date(a.start).getTime() - new Date(b.start).getTime())
         .slice(0, 3);
         
-    let announcementWhereClause: any = {};
-    if (session.role !== 'ADMINISTRATOR') {
-        announcementWhereClause.OR = [
-            { audience: 'ALL' },
-            { audience: session.role },
-        ];
-    }
-    const recentAnnouncements = await safeQuery(prisma.announcement.findMany({
-        where: announcementWhereClause,
-        take: 3,
-        orderBy: [{ isPinned: 'desc' }, { date: 'desc' }],
-        include: {
-            author: { select: { id: true, name: true, avatar: true, role: true } },
-        }
-    }), [], 'recentAnnouncements');
+    const recentNotifications = await safeQuery(prisma.notification.findMany({
+        where: { userId: session.id, read: false },
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+    }), [], 'recentNotifications');
 
-    return { allCalendarEvents, upcomingEvents, recentAnnouncements };
+
+    return { allCalendarEvents, upcomingEvents, recentNotifications };
 }
 
 
@@ -269,20 +262,22 @@ export async function GET(req: NextRequest) {
         
         switch(session.role) {
             case 'ADMINISTRATOR':
-                const adminData = await getAdminDashboardData(session, startDate, endDate);
+                const { adminStats, pendingCourses } = await getAdminDashboardData(session, startDate, endDate);
                 const securityLogs = await safeQuery(prisma.securityLog.findMany({ take: 5, orderBy: { createdAt: 'desc' }, include: { user: { select: { id: true, name: true, avatar: true } } } }), [], 'securityLogs');
-                data = { ...adminData, securityLogs };
+                data = { adminStats, securityLogs, pendingCourses, notifications: sharedData.recentNotifications };
                 break;
             case 'INSTRUCTOR':
                 data = await getInstructorDashboardData(session);
+                data.notifications = sharedData.recentNotifications;
                 break;
             case 'STUDENT':
                 data = await getStudentDashboardData(session);
+                data.notifications = sharedData.recentNotifications;
                 break;
             default:
                 return NextResponse.json({ message: 'Rol de usuario no reconocido' }, { status: 400 });
         }
-        return NextResponse.json({ ...data, ...sharedData });
+        return NextResponse.json({ ...data, upcomingEvents: sharedData.upcomingEvents });
 
     } catch (error) {
         console.error('[DASHBOARD_DATA_API_ERROR]', error);
