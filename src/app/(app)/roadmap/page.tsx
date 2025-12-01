@@ -4,14 +4,13 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useTitle } from '@/contexts/title-context';
-import { RoadmapView } from '@/components/roadmap/roadmap-view';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, ShieldAlert } from 'lucide-react';
 import { RoadmapEditorModal } from '@/components/roadmap/roadmap-editor-modal';
 import type { RoadmapItem } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { InteractiveRoadmap } from '@/components/roadmap/interactive-roadmap';
 
 export default function RoadmapPage() {
   const { setPageTitle } = useTitle();
@@ -32,7 +31,9 @@ export default function RoadmapPage() {
         if (!res.ok) throw new Error("No se pudo cargar la hoja de ruta.");
         const data = await res.json();
         if (isMountedRef.current) {
-            setItems(data);
+            // Ordenar por fecha para la línea de tiempo
+            const sortedData = data.sort((a: RoadmapItem, b: RoadmapItem) => new Date(a.date).getTime() - new Date(b.date).getTime());
+            setItems(sortedData);
         }
     } catch(err) {
         if (isMountedRef.current) {
@@ -83,28 +84,25 @@ export default function RoadmapPage() {
   }
 
   return (
-    <div className="w-full h-full flex flex-col">
-        <div className="text-center mb-8 container max-w-4xl mx-auto">
+    <div className="w-full h-full flex flex-col items-center">
+        <div className="text-center mb-12 container max-w-4xl mx-auto">
             <h1 className="text-4xl font-bold font-headline tracking-tight">La Evolución de NexusAlpri</h1>
             <p className="mt-4 text-lg text-muted-foreground">
-                Un vistazo a nuestro viaje, desde la primera línea de código hasta las últimas funcionalidades. Esta es la historia de cómo construimos juntos el futuro del aprendizaje.
+                Un viaje interactivo a través de nuestro desarrollo. Desliza para explorar cada hito que ha dado forma a nuestra plataforma.
             </p>
             {user?.role === 'ADMINISTRATOR' && (
                 <div className="text-center mt-6">
                     <Button onClick={() => handleOpenEditor()}>
                         <PlusCircle className="mr-2 h-4 w-4"/>
-                        Añadir Hito a la Hoja de Ruta
+                        Añadir Hito
                     </Button>
                 </div>
             )}
         </div>
         
-        <ScrollArea className="w-full flex-grow whitespace-nowrap">
-            <div className="w-full h-full py-12 flex items-center">
-                 <RoadmapView items={items} onEdit={handleOpenEditor} onDelete={handleSaveSuccess}/>
-            </div>
-            <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+        <div className="w-full flex-grow">
+            <InteractiveRoadmap items={items} onEdit={handleOpenEditor} onDelete={handleSaveSuccess} />
+        </div>
 
         {isEditorOpen && (
             <RoadmapEditorModal 
