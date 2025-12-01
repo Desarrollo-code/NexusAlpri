@@ -44,7 +44,7 @@ const formatDateTooltip = (dateString: string) => {
     }
 };
 
-const MetricCard = ({ title, value, icon: Icon, description, index = 0, onClick }: { 
+const MetricCard = ({ title, value, icon: Icon, description, suffix = '', index = 0, onClick }: { 
     title: string; 
     value: number; 
     icon: React.ElementType; 
@@ -53,25 +53,25 @@ const MetricCard = ({ title, value, icon: Icon, description, index = 0, onClick 
     index?: number;
     onClick?: () => void;
 }) => {
-    const colorVar = `--chart-${(index % 5) + 1}`;
-    
     return (
         <Card 
             onClick={onClick} 
-            className={cn("text-card-foreground p-4 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] hover:shadow-xl rounded-2xl overflow-hidden h-full", onClick && "cursor-pointer")}
-            style={{ backgroundColor: `hsl(var(${colorVar}))` }}
+            className={cn("p-4 transition-all duration-300 hover:shadow-lg hover:border-primary/50 text-foreground flex flex-col justify-between h-full", onClick && "cursor-pointer")}
         >
-             <div className="flex justify-between items-start text-primary-foreground/80">
-                <p className="text-sm font-semibold">{title}</p>
-                <Icon className="h-5 w-5" />
-            </div>
-            
-            <div className="text-left">
-                <p className="text-3xl font-bold tracking-tighter text-primary-foreground">
-                    {value.toLocaleString()}
+            <CardHeader className="flex-row items-start justify-between p-0">
+                <div className="flex flex-col">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+                    {description && <CardDescription className="text-xs">{description}</CardDescription>}
+                </div>
+                <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                    <Icon className="h-4 w-4" />
+                </div>
+            </CardHeader>
+            <CardContent className="p-0">
+                 <p className="text-3xl font-bold tracking-tighter">
+                    {value.toLocaleString()}{suffix}
                 </p>
-                {description && <p className="text-xs text-primary-foreground/70">{description}</p>}
-            </div>
+            </CardContent>
         </Card>
     );
 };
@@ -102,16 +102,15 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-8">
-            <Card className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/10 to-accent/10 shadow-lg h-full border-2">
+            <Card className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 shadow-lg h-full border-2 border-primary/10">
                  <div className="absolute inset-0 z-0 opacity-20" style={{ backgroundImage: `url(${settings?.publicPagesBgUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-                 <div className="absolute inset-0 bg-gradient-to-br from-background/30 to-background/10 backdrop-blur-sm"></div>
                 <div className="relative z-10 flex items-center justify-between gap-6 h-full">
                    <div className="space-y-1">
                       <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Hola, {user?.name}! <span className="text-2xl animate-wave">👋</span></h1>
                       <p className="text-muted-foreground">Bienvenido al Centro de Mando de tu plataforma.</p>
                    </div>
                    {settings?.dashboardImageUrlAdmin && (
-                     <div className="relative w-28 h-28 flex-shrink-0 hidden sm:block">
+                     <div className="relative w-40 h-40 flex-shrink-0 hidden sm:block">
                        <Image src={settings.dashboardImageUrlAdmin} alt="Imagen del panel de Admin" fill className="object-contain" data-ai-hint="admin dashboard mascot" />
                      </div>
                    )}
@@ -119,10 +118,10 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
             </Card>
         </div>
         <div className="lg:col-span-4 grid grid-cols-2 gap-4">
-            <MetricCard title="Usuarios Totales" value={adminStats?.totalUsers || 0} icon={UsersRound} index={0} onClick={() => router.push('/users')} />
-            <MetricCard title="Cursos Publicados" value={adminStats?.totalPublishedCourses || 0} icon={BookOpenCheck} index={1} onClick={() => router.push('/manage-courses?tab=PUBLISHED')} />
-            <MetricCard title="Inscripciones" value={adminStats?.totalEnrollments || 0} icon={GraduationCap} index={2} onClick={() => router.push('/enrollments')} />
-            <MetricCard title="Finalización" value={adminStats?.averageCompletionRate || 0} icon={Percent} index={3} suffix="%" onClick={() => router.push('/analytics')} />
+           <MetricCard title="Usuarios Totales" value={adminStats?.totalUsers || 0} icon={UsersRound} index={0} onClick={() => router.push('/users')} />
+           <MetricCard title="Cursos Publicados" value={adminStats?.totalPublishedCourses || 0} icon={BookOpenCheck} index={1} onClick={() => router.push('/manage-courses?tab=PUBLISHED')} />
+           <MetricCard title="Inscripciones" value={adminStats?.totalEnrollments || 0} icon={GraduationCap} index={2} onClick={() => router.push('/enrollments')} />
+           <MetricCard title="Finalización" value={adminStats?.averageCompletionRate || 0} icon={Percent} index={3} suffix="%" onClick={() => router.push('/analytics')} />
         </div>
       </div>
       
@@ -154,17 +153,6 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
         <div className="lg:col-span-1 space-y-6">
            <Card>
               <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2"><ShieldAlert className="h-4 w-4 text-primary"/>Auditoría de Seguridad</CardTitle>
-              </CardHeader>
-              <CardContent>
-                  <SecurityLogTimeline logs={securityLogs} onLogClick={setSelectedLog}/>
-              </CardContent>
-              <CardFooter>
-                 <Button variant="outline" size="sm" className="w-full" asChild><Link href="/security-audit">Ver auditoría completa <ArrowRight className="ml-2 h-4 w-4"/></Link></Button>
-              </CardFooter>
-           </Card>
-           <Card>
-              <CardHeader>
                  <CardTitle className="text-base flex items-center gap-2"><BookOpenCheck className="h-4 w-4 text-primary" />Cursos Pendientes de Revisión</CardTitle>
               </CardHeader>
               <CardContent>
@@ -183,6 +171,17 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
                     </div>
                  )}
               </CardContent>
+           </Card>
+           <Card>
+              <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2"><ShieldAlert className="h-4 w-4 text-primary"/>Auditoría de Seguridad</CardTitle>
+              </CardHeader>
+              <CardContent>
+                  <SecurityLogTimeline logs={securityLogs} onLogClick={setSelectedLog}/>
+              </CardContent>
+              <CardFooter>
+                 <Button variant="outline" size="sm" className="w-full" asChild><Link href="/security-audit">Ver auditoría completa <ArrowRight className="ml-2 h-4 w-4"/></Link></Button>
+              </CardFooter>
            </Card>
         </div>
         
