@@ -52,5 +52,4 @@ Este documento detalla la relación entre los requisitos funcionales, los roles 
 | **S-06** | | Competir en la tabla de clasificación general. | `/leaderboard` | El ranking muestra la posición del usuario basada en sus XP. |
 | **S-07** | **Certificados** | Descargar y compartir un certificado PDF al completar un curso. | `/certificates/[id]/view` | Se genera un certificado con un diseño personalizado. |
 | **S-08** | **Recursos** | Acceder a listas de reproducción de videos y ver el contenido de forma secuencial. | `/resources` | El visor de listas de reproducción permite una experiencia de micro-learning. |
-| **S-09** | **Chat** | Iniciar conversaciones uno a uno con otros usuarios. | `/messages` | El sistema de mensajería permite la comunicación directa. |
-| **S-10** | **Quizz-IT** | Unirse a un juego de quiz en tiempo real con un PIN. | `/quizz-it/join` | El estudiante participa en una competencia en vivo. |
+| **S-09** | **Quizz-IT** | Unirse a un juego de quiz en tiempo real con un PIN. | `/quizz-it/join` | El estudiante participa en una competencia en vivo. |

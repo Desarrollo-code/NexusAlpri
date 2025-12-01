@@ -52,7 +52,6 @@ Una vez establecida la base sólida, el proyecto entró en una fase de mejora co
 3.  **Interactividad en Tiempo Real y Herramientas Colaborativas:**
     *   **Quizz-IT:** Se desarrolló un modo de juego en tiempo real que permite a los instructores lanzar un quiz y a los participantes unirse con un PIN para competir en vivo.
     *   **Módulo de Comentarios en Cursos:** Se habilitó una sección de discusión dentro de cada curso para que los estudiantes puedan hacer preguntas y colaborar.
-    *   **Chat 1-a-1:** Se implementó un sistema de mensajería directa entre usuarios.
 
 4.  **Mejoras en la Experiencia de Usuario y la Interfaz:**
     *   **Panel de Control Central (`/users`):** Se unificó la gestión de usuarios y procesos, permitiendo la asignación por "arrastrar y soltar".
