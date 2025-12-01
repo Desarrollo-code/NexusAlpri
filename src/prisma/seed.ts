@@ -1,5 +1,5 @@
 // prisma/seed.ts
-import { PrismaClient, UserRole, AchievementSlug, RecurrenceType, FormStatus, FormFieldType } from '@prisma/client';
+import { PrismaClient, UserRole, AchievementSlug, RecurrenceType, FormStatus, FormFieldType, RoadmapPhase } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { addDays, subDays } from 'date-fns';
 
@@ -137,6 +137,20 @@ async function seedProcesses() {
   console.log('Procesos creados.');
 }
 
+const roadmapItemsToSeed = [
+    // Fase 1
+    { date: new Date('2024-01-15'), phase: RoadmapPhase.FASE_1, title: 'Lanzamiento del MVP', description: 'Se lanza la primera versión de la plataforma con funcionalidades básicas de autenticación, perfiles y dashboards para cada rol.', icon: 'Rocket', color: '#3b82f6' },
+    // Fase 2
+    { date: new Date('2024-03-20'), phase: RoadmapPhase.FASE_2, title: 'Módulos de Comunicación', description: 'Implementación de los módulos de Anuncios y Calendario para mejorar la comunicación interna.', icon: 'Megaphone', color: '#10b981' },
+    { date: new Date('2024-05-10'), phase: RoadmapPhase.FASE_2, title: 'Biblioteca de Recursos v1', description: 'Lanzamiento de la biblioteca centralizada para la gestión de documentos, guías y políticas.', icon: 'Folder', color: '#10b981' },
+    // Fase 3
+    { date: new Date('2024-07-01'), phase: RoadmapPhase.FASE_3, title: 'Interactividad en Cursos', description: 'Se añade la sección de comentarios en los cursos y se implementa la lógica de arrastrar y soltar para organizar el contenido.', icon: 'MessageSquare', color: '#ec4899' },
+    { date: new Date('2024-08-15'), phase: RoadmapPhase.FASE_3, title: 'Nace el "Control Central"', description: 'La sección de usuarios se renueva por completo, unificando la gestión de usuarios y procesos con una interfaz más intuitiva.', icon: 'Network', color: '#ec4899' },
+    // Fase 4
+    { date: new Date('2024-10-05'), phase: RoadmapPhase.FASE_4, title: 'Gamificación y Reconocimiento', description: 'Se introduce el sistema de certificados de finalización personalizables y los mensajes de motivación emergentes.', icon: 'Award', color: '#f59e0b' },
+    { date: new Date('2024-11-20'), phase: RoadmapPhase.FASE_4, title: 'Eventos Interactivos', description: 'Se lanza la funcionalidad de "Pausas Activas" en el calendario, permitiendo a los usuarios ganar XP por confirmar su participación.', icon: 'Sparkles', color: '#f59e0b' },
+];
+
 async function main() {
   console.log('Iniciando el proceso de seeding no destructivo...');
   
@@ -148,23 +162,45 @@ async function main() {
       create: {
             id: 'cl-nexus-settings-default',
             platformName: "NexusAlpri", 
+            projectVersion: "1.2.0",
             allowPublicRegistration: true, 
             enableEmailNotifications: true, 
             emailWhitelist: "alprigrama.com",
             resourceCategories: "Recursos Humanos,TI y Seguridad,Marketing,Ventas,Legal,Operaciones,Finanzas,Formación Interna,Documentación de Producto,General",
-            passwordMinLength: 8, passwordRequireUppercase: true, passwordRequireLowercase: true, passwordRequireNumber: true, passwordRequireSpecialChar: false,
-            enableIdleTimeout: true, idleTimeoutMinutes: 20, require2faForAdmins: false,
-            primaryColor: '#6366f1', secondaryColor: '#a5b4fc', accentColor: '#ec4899', backgroundColorLight: '#f8fafc',
-            primaryColorDark: '#a5b4fc', backgroundColorDark: '#020617',
-            fontHeadline: 'Space Grotesk', fontBody: 'Inter',
+            passwordMinLength: 8,
+            passwordRequireUppercase: true,
+            passwordRequireLowercase: true,
+            passwordRequireNumber: true,
+            passwordRequireSpecialChar: false,
+            enableIdleTimeout: true,
+            idleTimeoutMinutes: 20,
+            require2faForAdmins: false,
+            primaryColor: '#6366f1',
+            secondaryColor: '#a5b4fc',
+            accentColor: '#ec4899',
+            backgroundColorLight: '#f8fafc',
+            primaryColorDark: '#a5b4fc',
+            backgroundColorDark: '#020617',
+            fontHeadline: 'Space Grotesk',
+            fontBody: 'Inter',
             announcementsImageUrl: 'https://izefimwyuayfvektsstg.supabase.co/storage/v1/object/public/settings_images/announcement-bg.jpg',
+            roadmapPhases: [RoadmapPhase.FASE_1, RoadmapPhase.FASE_2, RoadmapPhase.FASE_3, RoadmapPhase.FASE_4],
+            roadmapVisibleTo: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
       }
   });
 
   for (const ach of achievementsToSeed) {
     await prisma.achievement.upsert({ where: { slug: ach.slug }, update: {}, create: ach });
   }
-  console.log('Configuración y logros listos.');
+  
+  for (const item of roadmapItemsToSeed) {
+    await prisma.roadmapItem.upsert({
+      where: { title: item.title },
+      update: { ...item },
+      create: { ...item },
+    });
+  }
+  console.log('Configuración, logros y hoja de ruta listos.');
 
   // --- 2. PROCESOS ---
   await seedProcesses();
