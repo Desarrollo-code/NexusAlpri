@@ -7,10 +7,10 @@ import { useTitle } from '@/contexts/title-context';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, ShieldAlert, Rocket } from 'lucide-react';
 import { RoadmapEditorModal } from '@/components/roadmap/roadmap-editor-modal';
-import type { RoadmapItem, UserRole } from '@/types';
+import type { RoadmapItem } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { HorizontalRoadmap } from '@/components/roadmap/horizontal-roadmap';
 import { Skeleton } from '@/components/ui/skeleton';
+import { InteractiveRoadmap } from '@/components/roadmap/interactive-roadmap';
 
 const RoadmapSkeleton = () => (
     <div className="w-full flex flex-col items-center">
@@ -18,17 +18,9 @@ const RoadmapSkeleton = () => (
             <Skeleton className="h-10 w-3/4 mx-auto" />
             <Skeleton className="h-6 w-full max-w-2xl mx-auto mt-4" />
         </div>
-        <div className="w-full flex items-center justify-start p-10 min-w-max">
-            <div className="absolute top-1/2 left-0 w-full h-2.5 bg-muted rounded-full"/>
-             <div className="flex gap-4 md:gap-8">
-                {[...Array(3)].map((_, index) => (
-                    <div key={index} className="flex flex-col items-center w-64 md:w-80 flex-shrink-0">
-                         {index % 2 === 0 ? <Skeleton className="h-44 w-full rounded-xl mb-4"/> : <div className="h-44"/>}
-                         <Skeleton className="h-12 w-12 rounded-full border-4" />
-                         {index % 2 !== 0 ? <Skeleton className="h-44 w-full rounded-xl mt-4"/> : <div className="h-44"/>}
-                    </div>
-                ))}
-             </div>
+        <div className="w-full space-y-8">
+            <Skeleton className="h-10 w-full max-w-xl mx-auto" />
+            <Skeleton className="h-64 w-full rounded-2xl" />
         </div>
     </div>
 );
@@ -85,8 +77,8 @@ export default function RoadmapPage() {
     setIsEditorOpen(false);
   };
   
-  const handleDeleteSuccess = (deletedId: string) => {
-      setItems(prev => prev.filter(item => item.id !== deletedId));
+  const handleDeleteSuccess = () => {
+      fetchItems();
   }
   
   const canView = user && ((settings?.roadmapVisibleTo && settings.roadmapVisibleTo.includes(user.role)) || user.role === 'ADMINISTRATOR');
@@ -112,7 +104,7 @@ export default function RoadmapPage() {
         <div className="text-center mb-12 container max-w-4xl mx-auto">
             <h1 className="text-4xl font-bold font-headline tracking-tight">La Evolución de NexusAlpri</h1>
             <p className="mt-4 text-lg text-muted-foreground">
-                Un viaje visual a través de los hitos clave que han dado forma a nuestra plataforma.
+                Un viaje interactivo a través de los hitos clave que han dado forma a nuestra plataforma.
             </p>
             {user?.role === 'ADMINISTRATOR' && (
                 <div className="text-center mt-6">
@@ -134,7 +126,7 @@ export default function RoadmapPage() {
                 </div>
                 </div>
             ) : (
-                <HorizontalRoadmap items={items} onEdit={handleOpenEditor} onDelete={handleDeleteSuccess} />
+                <InteractiveRoadmap items={items} onEdit={handleOpenEditor} onDelete={handleDeleteSuccess} />
             )}
         </div>
 
