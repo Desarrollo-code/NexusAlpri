@@ -2,7 +2,7 @@
 'use client';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, BookOpenCheck, GraduationCap, Percent, PlusCircle, BarChart3, Settings, ShieldAlert, Monitor, Database, ArrowRight, LineChart, UsersRound, BookOpen, Clock } from "lucide-react";
+import { Users, BookOpenCheck, GraduationCap, Percent, PlusCircle, BarChart3, Settings, ShieldAlert, Monitor, Database, ArrowRight, LineChart, UsersRound, BookOpen, Clock, AlertTriangle } from "lucide-react";
 import type { AdminDashboardStats, SecurityLog as AppSecurityLog, Announcement as AnnouncementType, CalendarEvent, Course, Notification as AppNotification } from '@/types';
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
@@ -16,10 +16,9 @@ import { useAuth } from "@/contexts/auth-context";
 import Image from "next/image";
 import { CalendarWidget } from "./calendar-widget";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { ComposedChart, Legend, Line, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
+import { ComposedChart, Legend, Line, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Bar } from "recharts";
 import { DonutChart } from "../analytics/donut-chart";
 import { HealthStatusWidget } from "./health-status-widget";
-import { MetricCard } from "../analytics/metric-card";
 import { NotificationsWidget } from "./notifications-widget";
 
 const userRolesChartConfig = {
@@ -32,6 +31,7 @@ const userRolesChartConfig = {
 const formatDateTick = (tick: string): string => {
   const date = parseISO(tick);
   if (!isValid(date)) return tick;
+  // Muestra solo el número del día.
   return format(date, "d", { locale: es });
 };
 
@@ -43,6 +43,39 @@ const formatDateTooltip = (dateString: string) => {
         return dateString;
     }
 };
+
+const MetricCard = ({ title, value, icon: Icon, description, index = 0, onClick }: { 
+    title: string; 
+    value: number; 
+    icon: React.ElementType; 
+    description?: string; 
+    suffix?: string; 
+    index?: number;
+    onClick?: () => void;
+}) => {
+    const colorVar = `--chart-${(index % 5) + 1}`;
+    
+    return (
+        <Card 
+            onClick={onClick} 
+            className={cn("text-card-foreground p-4 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] hover:shadow-xl rounded-2xl overflow-hidden h-full", onClick && "cursor-pointer")}
+            style={{ backgroundColor: `hsl(var(${colorVar}))` }}
+        >
+             <div className="flex justify-between items-start text-primary-foreground/80">
+                <p className="text-sm font-semibold">{title}</p>
+                <Icon className="h-5 w-5" />
+            </div>
+            
+            <div className="text-left">
+                <p className="text-3xl font-bold tracking-tighter text-primary-foreground">
+                    {value.toLocaleString()}
+                </p>
+                {description && <p className="text-xs text-primary-foreground/70">{description}</p>}
+            </div>
+        </Card>
+    );
+};
+
 
 export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendingCourses, notifications }: {
   adminStats: AdminDashboardStats;
@@ -67,22 +100,24 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
 
   return (
     <div className="space-y-6">
-       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <Card className="lg:col-span-8 relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/80 to-accent/80 text-primary-foreground shadow-lg h-full">
-            <div className="absolute inset-0 z-0 opacity-20" style={{ backgroundImage: `url(${settings?.publicPagesBgUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-            <div className="absolute inset-0 bg-black/10"></div>
-            <div className="relative z-10 flex items-center justify-between gap-6 h-full">
-               <div className="space-y-1">
-                  <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Hola, {user?.name}! <span className="text-2xl animate-wave">👋</span></h1>
-                  <p className="text-primary-foreground/80">Bienvenido al Centro de Mando de tu plataforma.</p>
-               </div>
-               {settings?.dashboardImageUrlAdmin && (
-                 <div className="relative w-28 h-28 flex-shrink-0 hidden sm:block">
-                   <Image src={settings.dashboardImageUrlAdmin} alt="Imagen del panel de Admin" fill className="object-contain" data-ai-hint="admin dashboard mascot"/>
-                 </div>
-               )}
-            </div>
-        </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-8">
+            <Card className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/10 to-accent/10 shadow-lg h-full border-2">
+                 <div className="absolute inset-0 z-0 opacity-20" style={{ backgroundImage: `url(${settings?.publicPagesBgUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+                 <div className="absolute inset-0 bg-gradient-to-br from-background/30 to-background/10 backdrop-blur-sm"></div>
+                <div className="relative z-10 flex items-center justify-between gap-6 h-full">
+                   <div className="space-y-1">
+                      <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Hola, {user?.name}! <span className="text-2xl animate-wave">👋</span></h1>
+                      <p className="text-muted-foreground">Bienvenido al Centro de Mando de tu plataforma.</p>
+                   </div>
+                   {settings?.dashboardImageUrlAdmin && (
+                     <div className="relative w-28 h-28 flex-shrink-0 hidden sm:block">
+                       <Image src={settings.dashboardImageUrlAdmin} alt="Imagen del panel de Admin" fill className="object-contain" data-ai-hint="admin dashboard mascot" />
+                     </div>
+                   )}
+                </div>
+            </Card>
+        </div>
         <div className="lg:col-span-4 grid grid-cols-2 gap-4">
             <MetricCard title="Usuarios Totales" value={adminStats?.totalUsers || 0} icon={UsersRound} index={0} onClick={() => router.push('/users')} />
             <MetricCard title="Cursos Publicados" value={adminStats?.totalPublishedCourses || 0} icon={BookOpenCheck} index={1} onClick={() => router.push('/manage-courses?tab=PUBLISHED')} />
@@ -99,15 +134,15 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
                   <CardTitle className="text-base flex items-center gap-2"><LineChart className="h-4 w-4 text-primary"/>Tendencia de Actividad</CardTitle>
               </CardHeader>
               <CardContent className="h-64 pr-4">
-                 <ChartContainer config={{ newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-1))" }, newEnrollments: { label: "Inscripciones", color: "hsl(var(--chart-2))" }}} className="w-full h-full">
-                    <ComposedChart data={adminStats.contentActivityTrend} accessibilityLayer margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
+                 <ChartContainer config={{ newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-2))" }, newUsers: { label: "Nuevos Usuarios", color: "hsl(var(--chart-1))" }}} className="w-full h-full">
+                    <ComposedChart data={adminStats.userRegistrationTrend} accessibilityLayer margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
                       <CartesianGrid vertical={false} />
                       <XAxis dataKey="date" tickFormatter={formatDateTick} fontSize={12}/>
                       <YAxis allowDecimals={false} width={30} fontSize={12}/>
                       <Tooltip content={<ChartTooltipContent indicator="dot" labelFormatter={formatDateTooltip} />} />
                       <Legend iconType="circle" />
-                      <Line type="monotone" dataKey="newCourses" stroke="var(--color-newCourses)" strokeWidth={3} dot={false} name="Nuevos Cursos" />
-                      <Line type="monotone" dataKey="newEnrollments" stroke="var(--color-newEnrollments)" strokeWidth={3} dot={false} name="Inscripciones" />
+                      <Bar dataKey="count" fill="var(--color-newUsers)" radius={2} name="Usuarios"/>
+                      <Line type="monotone" dataKey="newCourses" stroke="var(--color-newCourses)" strokeWidth={3} dot={false} name="Cursos" data={adminStats.contentActivityTrend}/>
                     </ComposedChart>
                   </ChartContainer>
               </CardContent>
@@ -143,7 +178,9 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
                         ))}
                     </div>
                  ) : (
-                    <p className="text-sm text-muted-foreground text-center py-4">No hay cursos pendientes de revisión.</p>
+                    <div className="text-center py-8">
+                       <p className="text-sm text-muted-foreground">No hay cursos pendientes de revisión.</p>
+                    </div>
                  )}
               </CardContent>
            </Card>
