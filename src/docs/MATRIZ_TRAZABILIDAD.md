@@ -1,80 +1,56 @@
-
 # Matriz de Trazabilidad de Requisitos - NexusAlpri
 
-Este documento detalla la relación entre los requisitos funcionales, los roles de usuario y las áreas clave de la aplicación, explicando qué puede hacer cada rol, dónde lo hace, qué tipo de información se ve afectada y cuál es el resultado esperado.
+Este documento detalla la relación entre los requisitos funcionales, los roles de usuario y las áreas clave de la aplicación.
 
 ---
 
 ## 1. Rol: Administrador (`ADMINISTRATOR`)
 
-El administrador tiene control total sobre la plataforma.
-
-| ID | Módulo/Funcionalidad | Descripción del Requisito | Ubicación en la App | Datos Involucrados | Resultado Esperado |
-| :-- | :--- | :--- | :--- | :--- | :--- |
-| **A-01** | **Gestión de Usuarios** | Visualizar, buscar y paginar todos los usuarios de la plataforma. | `/users` | Información de todos los usuarios. | La tabla muestra la lista de usuarios. La búsqueda filtra los resultados correctamente. |
-| **A-02** | | Crear un nuevo usuario con nombre, email, contraseña y rol. | `/users` (Modal) | Creación de un nuevo registro de usuario. | El nuevo usuario aparece en la lista. El usuario puede iniciar sesión con las credenciales proporcionadas. |
-| **A-03** | | Editar la información de un usuario existente (nombre, email). | `/users` (Modal) | Actualización de la información de un usuario. | Los cambios se reflejan inmediatamente en la lista de usuarios. |
-| **A-04** | | Cambiar el rol de un usuario. | `/users` (Modal) | Rol del usuario, Registro de seguridad. | El nuevo rol del usuario se muestra en la lista. Se genera un log de seguridad. |
-| **A-05** | | Inactivar o activar un usuario (excepto a sí mismo). | `/users` | Estado `isActive` del usuario. | El estado del usuario cambia visualmente y el acceso del usuario se bloquea/desbloquea. |
-| **A-06** | **Gestión de Cursos** | Crear un nuevo curso (borrador inicial). | `/manage-courses` (Modal) | Creación de un nuevo registro de curso. | Se redirige a la página de edición del nuevo curso. El curso aparece en la lista como "Borrador". |
-| **A-07** | | Editar toda la información de cualquier curso (título, imagen, etc.). | `/manage-courses/[id]/edit` | Actualización de la información de un curso. | Los cambios se guardan y persisten al recargar la página. |
-| **A-08** | | Añadir, editar, reordenar y eliminar contenido en cualquier curso. | `/manage-courses/[id]/edit` | Estructura completa del curso (módulos, lecciones, etc.). | La estructura del curso se actualiza visualmente y se guarda correctamente. |
-| **A-09** | | Publicar, archivar o cambiar a borrador el estado de un curso. | `/manage-courses` | Estado de un curso. | El estado del curso cambia visualmente (ej. la insignia) y se notifica a los usuarios si se publica. |
-| **A-10** | | Eliminar cualquier curso de la plataforma. | `/manage-courses` | Eliminación completa de un curso y su contenido. | El curso desaparece de la lista. Todos los datos asociados se eliminan. |
-| **A-11** | **Analíticas** | Ver un dashboard con estadísticas clave de la plataforma. | `/analytics` | Datos de usuarios, cursos, inscripciones, etc. | Se muestran gráficos y métricas actualizadas sobre el uso de la plataforma. |
-| **A-12** | **Auditoría** | Revisar un registro de eventos de seguridad importantes. | `/security-audit` | Registros de eventos de seguridad. | La tabla muestra una lista cronológica de los eventos de seguridad con sus detalles. |
-| **A-13** | **Configuración** | Ver y modificar la configuración general de la plataforma. | `/settings` | Ajustes de la plataforma (nombre, políticas, etc.). | Los cambios se guardan y se aplican en toda la plataforma (ej. cambio de nombre). |
-| **A-14** | **Contenido Global** | Crear, editar y eliminar anuncios, eventos del calendario y recursos. | `/announcements`, `/calendar`, `/resources` | Anuncios, Eventos, Recursos de la biblioteca. | Las acciones (crear, editar, eliminar) se reflejan inmediatamente en las respectivas secciones. |
-| **A-15** | **Inscripciones** | Ver el progreso y los inscritos de cualquier curso. | `/enrollments` | Inscripciones y progreso de los estudiantes. | Al seleccionar un curso, se muestra la lista de estudiantes inscritos y su progreso. |
-| **A-16** | **Formularios** | Crear y editar cualquier formulario o evaluación. | `/forms`, `/forms/[id]/edit` | Formularios y sus preguntas. | El formulario se crea o actualiza, permitiendo la configuración de preguntas. |
-| **A-17** | | Ver los resultados de cualquier formulario. | `/forms/[id]/results` | Respuestas de los usuarios. | Se muestran gráficos y tablas con los resultados consolidados de las respuestas. |
-| **A-18** | | Compartir un formulario con usuarios específicos. | `/forms` (Modal) | Relación de compartición del formulario. | El formulario se vuelve visible y accesible para los usuarios seleccionados. |
-| **A-19** | **Anuncios** | Ver quién ha reaccionado y quién ha leído cualquier anuncio. | `/announcements` (Popover) | Datos de lecturas y reacciones. | Al hacer clic en los contadores, se muestra una lista de usuarios. |
+| ID | Módulo/Funcionalidad | Descripción del Requisito | Ubicación en la App | Resultado Esperado |
+| :-- | :--- | :--- | :--- | :--- |
+| **A-01** | **Gestión de Usuarios** | Visualizar, buscar, filtrar y paginar todos los usuarios. | `/users` | La tabla/cuadrícula muestra la lista de usuarios. La búsqueda y filtros funcionan. |
+| **A-02** | | Crear un nuevo usuario con rol, proceso y permisos granulares. | `/users` (Modal) | El nuevo usuario aparece en la lista y puede iniciar sesión. |
+| **A-03** | | Editar la información de un usuario (nombre, email, rol, proceso, permisos). | `/users` (Modal) | Los cambios se reflejan inmediatamente. |
+| **A-04** | | Inactivar o activar un usuario (excepto a sí mismo). | `/users` (Menú de Acciones) | El estado del usuario cambia y el acceso se bloquea/desbloquea. |
+| **A-05** | **Gestión de Procesos** | Crear, editar, reordenar y eliminar procesos y subprocesos. | `/users` (Barra Lateral) | La estructura organizacional se actualiza. |
+| **A-06** | | Asignar usuarios a procesos mediante arrastrar y soltar o en lote. | `/users` | El proceso asignado al usuario se actualiza. |
+| **A-07** | **Gestión de Cursos** | Crear, editar, publicar, archivar y eliminar cualquier curso. | `/manage-courses`, `/manage-courses/[id]/edit` | El ciclo de vida del curso se gestiona correctamente. |
+| **A-08** | | Definir prerrequisitos, fechas de vigencia y si un curso es obligatorio. | `/manage-courses/[id]/edit` | Las reglas del curso se aplican en el catálogo y las inscripciones. |
+| **A-09** | | Asignar cursos obligatorios a usuarios específicos. | `/manage-courses` (Menú de Acciones) | Los usuarios seleccionados son notificados y el curso aparece en su dashboard. |
+| **A-10** | **Gamificación** | Crear y gestionar plantillas para certificados de finalización. | `/admin/certificates` | Las plantillas están disponibles para ser asignadas a los cursos. |
+| **A-11** | | Crear y gestionar mensajes de motivación para hitos específicos. | `/admin/motivations` | Los mensajes emergentes se muestran a los usuarios cuando alcanzan el hito. |
+| **A-12** | **Analíticas y Auditoría** | Ver un dashboard con estadísticas clave y rankings de la plataforma. | `/analytics` | Se muestran gráficos y métricas actualizadas sobre el uso de la plataforma. |
+| **A-13** | | Revisar un registro detallado de eventos de seguridad. | `/security-audit` | La tabla muestra una lista cronológica de los eventos de seguridad. |
+| **A-14** | **Configuración** | Personalizar la apariencia, estilos, seguridad, categorías y hoja de ruta. | `/settings` | Los cambios se aplican en toda la plataforma (ej. cambio de nombre, colores). |
+| **A-15** | **Recursos** | Crear, editar y eliminar cualquier recurso, carpeta o lista de reproducción. | `/resources` | El contenido de la biblioteca se gestiona correctamente. |
 
 ---
 
 ## 2. Rol: Instructor (`INSTRUCTOR`)
 
-El instructor gestiona sus propios cursos y estudiantes.
-
-| ID | Módulo/Funcionalidad | Descripción del Requisito | Ubicación en la App | Datos Involucrados | Resultado Esperado |
-| :-- | :--- | :--- | :--- | :--- | :--- |
-| **I-01** | **Dashboard** | Ver un panel con resúmenes de los cursos que imparte. | `/dashboard` | Cursos creados por el instructor. | Se muestra un resumen y accesos directos a los cursos del instructor. |
-| **I-02** | **Gestión de Cursos** | Crear un nuevo curso, que se le asigna automáticamente. | `/manage-courses` (Modal) | Creación de un nuevo registro de curso. | Se redirige a la página de edición del nuevo curso. El instructor se asigna como creador. |
-| **I-03** | | Ver y gestionar únicamente los cursos que ha creado. | `/manage-courses` | Cursos creados por el instructor. | La lista solo muestra los cursos donde el usuario es el instructor. |
-| **I-04** | | Editar la información y contenido de sus propios cursos. | `/manage-courses/[id]/edit` | Actualización y estructura de sus cursos. | El instructor puede modificar sus cursos, pero no los de otros. |
-| **I-05** | | Publicar, archivar o cambiar a borrador el estado de sus cursos. | `/manage-courses` | Estado de sus cursos. | El instructor puede cambiar el estado de sus propios cursos. |
-| **I-06** | **Seguimiento** | Ver la lista de estudiantes inscritos en sus cursos y su progreso. | `/enrollments` | Inscripciones y progreso de los estudiantes en sus cursos. | El instructor puede seleccionar sus cursos y ver quién está inscrito y su avance. |
-| **I-07** | **Contenido Global** | Crear anuncios y eventos en el calendario para diferentes audiencias. | `/announcements`, `/calendar` | Anuncios, Eventos del calendario. | El instructor puede crear comunicados y eventos visibles para otros usuarios. |
-| **I-08** | | Subir, editar y eliminar los recursos que ha subido a la biblioteca. | `/resources` | Recursos de la biblioteca. | El instructor puede gestionar los archivos que él mismo ha subido. |
-| **I-09** | **Formularios** | Crear, editar y eliminar los formularios que ha creado. | `/forms` | Formularios del instructor. | El instructor puede gestionar sus propios formularios, pero no los de otros. |
-| **I-10** | | Ver los resultados de sus propios formularios. | `/forms/[id]/results` | Respuestas de sus formularios. | El instructor puede analizar las respuestas de los formularios que ha creado. |
-| **I-11** | **Anuncios** | Ver quién ha reaccionado y quién ha leído los anuncios. | `/announcements` (Popover) | Datos de lecturas y reacciones. | Al hacer clic en los contadores, se muestra una lista de usuarios. |
-| **I-12** | **Perfil** | Editar su propio perfil y gestionar su contraseña y 2FA. | `/profile` | Información de su propia cuenta. | El usuario puede actualizar su nombre, avatar y seguridad personal. |
+| ID | Módulo/Funcionalidad | Descripción del Requisito | Ubicación en la App | Resultado Esperado |
+| :-- | :--- | :--- | :--- | :--- |
+| **I-01** | **Gestión de Cursos** | Crear, editar, publicar y eliminar **sus propios** cursos. | `/manage-courses` | El instructor solo puede gestionar los cursos donde es el autor. |
+| **I-02** | | Añadir contenido interactivo (texto, video, quiz) a sus cursos. | `/manage-courses/[id]/edit` | El contenido de las lecciones se actualiza. |
+| **I-03** | **Seguimiento** | Ver la lista de estudiantes inscritos en sus cursos y su progreso. | `/enrollments` | El instructor puede ver el avance detallado de sus estudiantes. |
+| **I-04** | **Quizz-IT** | Iniciar un juego de quiz en tiempo real basado en un formulario. | `/forms` (Menú de Acciones) | Se genera un PIN para que los estudiantes se unan y compitan en vivo. |
+| **I-05** | **Contenido Global** | Crear anuncios y eventos en el calendario para diferentes audiencias. | `/announcements`, `/calendar` | El instructor puede crear comunicados y eventos. |
+| **I-06** | **Recursos** | Subir, editar y eliminar los recursos que ha subido. Crear listas de reproducción. | `/resources` | El instructor puede gestionar sus propios archivos y listas de videos. |
+| **I-07** | **Formularios** | Crear y analizar los resultados de sus propios formularios y evaluaciones. | `/forms` | El instructor puede crear y ver las respuestas de sus formularios. |
 
 ---
 
 ## 3. Rol: Estudiante (`STUDENT`)
 
-El estudiante consume el contenido formativo de la plataforma.
-
-| ID | Módulo/Funcionalidad | Descripción del Requisito | Ubicación en la App | Datos Involucrados | Resultado Esperado |
-| :-- | :--- | :--- | :--- | :--- | :--- |
-| **S-01** | **Dashboard** | Ver un panel con resúmenes de sus cursos inscritos y anuncios. | `/dashboard` | Sus inscripciones, su progreso, anuncios. | El panel muestra tarjetas con los cursos en los que está inscrito y los últimos anuncios. |
-| **S-02** | **Catálogo de Cursos** | Explorar todos los cursos publicados en la plataforma. | `/courses` | Lista de cursos públicos. | El estudiante ve todas las ofertas formativas publicadas, excepto sus propios cursos si es también instructor. |
-| **S-03** | | Inscribirse a un curso público. | `/courses` | Creación de un registro de inscripción. | El botón "Inscribirse" cambia a "Continuar Curso" y el curso aparece en "Mis Cursos". |
-| **S-04** | | Cancelar la inscripción a un curso. | `/my-courses` | Eliminación de su inscripción y progreso. | El curso desaparece de "Mis Cursos" y vuelve a estar disponible en el Catálogo. |
-| **S-05** | **Consumo de Curso** | Navegar y ver el contenido de las lecciones (texto, video, etc.). | `/courses/[courseId]` | Contenido de la lección, Registro de interacción. | El contenido de la lección se muestra en el área principal. La lección se marca como vista. |
-| **S-06** | | Realizar y enviar quizzes dentro de una lección. | `/courses/[courseId]` | Preguntas del quiz, Registro de la nota. | Después de responder, el sistema muestra el resultado y guarda la puntuación. |
-| **S-07** | **Progreso** | Solicitar el cálculo de la puntuación final del curso. | `/courses/[courseId]` | Consolidación de la nota final. | Tras ver todas las lecciones, el botón se activa. Al pulsarlo, se muestra la nota final en el indicador circular. |
-| **S-08** | **Biblioteca** | Acceder y descargar recursos de la biblioteca. | `/resources` | Lista de recursos disponibles. | El estudiante puede navegar por las carpetas y ver o descargar los archivos. |
-| **S-09** | | Ingresar un PIN para acceder a recursos protegidos. | `/resources` | Verificación del PIN de un recurso. | Si el PIN es correcto, se concede el acceso al archivo; si no, se muestra un error. |
-| **S-10** | **Perfil** | Editar su propio perfil y gestionar su contraseña y 2FA. | `/profile` | Información de su propia cuenta. | El estudiante puede actualizar su nombre, avatar y configuraciones de seguridad. |
-| **S-11** | **Autenticación** | Iniciar sesión y registrarse (si está habilitado). | `/sign-in`, `/sign-up` | Su cuenta de usuario, Registro de seguridad. | El usuario puede acceder a la plataforma o crear una cuenta nueva. |
-| **S-12** | | Cerrar sesión de forma segura. | (Botón en Layout) | Cierre de su sesión actual. | El usuario es desconectado y redirigido a la página de inicio de sesión. |
-| **S-13** | **Notificaciones** | Ver y gestionar sus notificaciones personales. | `/notifications` (Popover y página) | Sus notificaciones personales. | El estudiante puede ver una lista de sus notificaciones, marcarlas como leídas o eliminarlas. |
-| **S-14** | **Calendario** | Ver los eventos del calendario que le conciernen. | `/calendar` | Eventos del calendario. | El estudiante puede ver un calendario con los eventos dirigidos a él, a su rol o a todos. |
-| **S-15** | **Anuncios** | Reaccionar a un anuncio y ver quién más ha reaccionado o visto. | `/announcements` (Popover) | Datos de lecturas y reacciones. | El estudiante puede añadir un emoji de reacción. Al hacer clic en los contadores, ve la lista de usuarios. |
-| **S-16** | **Mis Cursos** | Ver una lista dedicada de los cursos en los que está inscrito. | `/my-courses` | Sus inscripciones, su progreso. | La página muestra solo los cursos en los que está inscrito, con su progreso visible. |
-| **S-17** | **Mis Apuntes** | Ver y gestionar todas las notas tomadas en los cursos. | `/my-notes` | Sus notas personales. | La página muestra una lista de sus notas, organizadas por curso, y permite acceder a ellas. |
-| **S-18** | **Formularios** | Ver y responder formularios públicos o compartidos con él. | `/forms` | Formularios disponibles, Envío de respuestas. | El estudiante puede ver la lista de formularios activos y enviar sus respuestas. |
+| ID | Módulo/Funcionalidad | Descripción del Requisito | Ubicación en la App | Resultado Esperado |
+| :-- | :--- | :--- | :--- | :--- |
+| **S-01** | **Dashboard** | Ver un resumen de cursos, anuncios y eventos interactivos (Pausas Activas). | `/dashboard` | El panel muestra información personalizada y relevante. |
+| **S-02** | **Inscripción** | Inscribirse a un curso, respetando los prerrequisitos. | `/courses` | El curso aparece en "Mis Cursos" si se cumplen los requisitos. |
+| **S-03** | **Consumo de Curso** | Navegar y ver contenido de lecciones de forma secuencial. | `/courses/[courseId]` | El estudiante solo puede avanzar a la siguiente lección si completó la anterior. |
+| **S-04** | | Participar en la sección de comentarios del curso. | `/courses/[courseId]` | El estudiante puede publicar preguntas y respuestas. |
+| **S-05** | **Gamificación** | Ver su nivel, XP y logros desbloqueados. | `/profile` | El perfil del usuario muestra sus estadísticas de gamificación. |
+| **S-06** | | Competir en la tabla de clasificación general. | `/leaderboard` | El ranking muestra la posición del usuario basada en sus XP. |
+| **S-07** | **Certificados** | Descargar y compartir un certificado PDF al completar un curso. | `/certificates/[id]/view` | Se genera un certificado con un diseño personalizado. |
+| **S-08** | **Recursos** | Acceder a listas de reproducción de videos y ver el contenido de forma secuencial. | `/resources` | El visor de listas de reproducción permite una experiencia de micro-learning. |
+| **S-09** | **Chat** | Iniciar conversaciones uno a uno con otros usuarios. | `/messages` | El sistema de mensajería permite la comunicación directa. |
+| **S-10** | **Quizz-IT** | Unirse a un juego de quiz en tiempo real con un PIN. | `/quizz-it/join` | El estudiante participa en una competencia en vivo. |

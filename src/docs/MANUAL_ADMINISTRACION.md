@@ -1,114 +1,90 @@
-
 # Manual de Administración de NexusAlpri
 
 ## 1. Introducción
 
 Este manual está destinado a los usuarios con el rol de **Administrador**. Proporciona una guía completa para gestionar la plataforma, los usuarios, el contenido y la configuración del sistema.
 
-## 2. Gestión de Usuarios
+## 2. Gestión de Usuarios y Procesos (`/users`)
 
-**Ruta:** `/users`
-
-Desde esta sección, puedes realizar las siguientes acciones:
-*   **Visualizar Usuarios:** Ver una lista de todos los usuarios registrados, con su nombre, email, rol y estado (Activo/Inactivo).
-*   **Buscar y Filtrar:** Utiliza la barra de búsqueda para encontrar usuarios específicos.
+Desde esta sección (ahora llamada "Control Central"), puedes realizar las siguientes acciones:
+*   **Visualizar Usuarios:** Ver una lista o cuadrícula de todos los usuarios registrados, con su nombre, email, rol y estado.
+*   **Buscar y Filtrar:** Utiliza la barra de búsqueda y los filtros avanzados para encontrar usuarios específicos por rol, estado o proceso.
 *   **Añadir un Nuevo Usuario:**
-    1.  Haz clic en "Añadir Nuevo Usuario".
-    2.  Completa el nombre, email, rol y una contraseña inicial.
-    3.  El usuario será creado y podrá iniciar sesión con esas credenciales.
+    1.  Haz clic en "Añadir Colaborador".
+    2.  Completa el nombre, email, rol, proceso y una contraseña inicial.
+    3.  Define permisos de acceso granulares para el usuario si es necesario.
 *   **Editar un Usuario:**
     1.  Haz clic en el menú de acciones (tres puntos) de un usuario y selecciona "Editar".
-    2.  Puedes modificar el nombre, email y rol del usuario.
+    2.  Puedes modificar el nombre, email, rol, proceso y permisos.
 *   **Inactivar/Activar un Usuario:**
-    1.  Selecciona "Inactivar" (o "Activar" si ya está inactivo) en el menú de acciones.
-    2.  Confirma la acción. Un usuario inactivo **no podrá iniciar sesión**, pero todos sus datos (progreso, cursos, etc.) se conservan.
-    *Nota: No puedes cambiar tu propio estado.*
-*   **Cambiar Rol:**
-    1.  Selecciona "Cambiar Rol" en el menú de acciones para asignar rápidamente un nuevo rol sin entrar en la pantalla de edición completa.
+    1.  Selecciona "Inactivar" (o "Activar") en el menú de acciones. Un usuario inactivo **no podrá iniciar sesión**.
+    *Nota: No puedes inactivar tu propia cuenta.*
+*   **Gestión de Procesos:**
+    *   Crea, edita y elimina los procesos y subprocesos de tu organización.
+    *   Asigna usuarios a procesos arrastrándolos desde la lista de usuarios y soltándolos sobre un proceso en la estructura de árbol.
 
-## 3. Gestión de Cursos
-
-**Ruta:** `/manage-courses`
+## 3. Gestión de Cursos (`/manage-courses`)
 
 Esta sección es el centro de control para todo el contenido formativo.
 *   **Crear un Curso:**
     1.  Haz clic en "Crear Nuevo Curso".
-    2.  Ingresa un título, descripción y categoría inicial.
+    2.  Ingresa un título, descripción, categoría y si es un curso obligatorio o tiene prerrequisitos.
     3.  Serás redirigido a la página de edición completa.
 *   **Editar un Curso:**
-    *   Haz clic en "Editar Contenido" en cualquier curso de la lista.
     *   En la página de edición, puedes modificar la información general, subir una imagen, y lo más importante: **añadir módulos y lecciones**.
     *   Puedes reordenar módulos y lecciones arrastrándolos.
+*   **Asignar Cursos Obligatorios:** Si un curso está marcado como obligatorio, puedes usar la opción "Asignar Curso" para inscribir forzosamente a usuarios específicos.
 *   **Gestionar Estado del Curso:**
-    *   **Borrador (Draft):** El curso no es visible para los estudiantes. Es el estado por defecto.
+    *   **Borrador (Draft):** El curso no es visible para los estudiantes.
     *   **Publicado (Published):** El curso es visible en el catálogo y los estudiantes pueden inscribirse.
     *   **Archivado (Archived):** El curso se oculta del catálogo principal pero conserva los datos de los usuarios inscritos.
 
 ## 4. Gestión de Contenido Global
 
-### 4.1. Anuncios
+### 4.1. Anuncios (`/announcements`)
+*   Crea anuncios con tarjetas de color, contenido enriquecido y archivos adjuntos.
+*   Fija anuncios importantes en la parte superior del feed.
+*   Supervisa quién ha leído el anuncio y cómo han reaccionado.
 
-**Ruta:** `/announcements`
-*   Crea anuncios para toda la plataforma o para roles específicos (Estudiantes, Instructores, etc.).
-*   Edita o elimina anuncios existentes.
-*   **Supervisa la Interacción:** Haz clic en los contadores de vistas (icono de ojo) y en las insignias de emojis para ver qué usuarios han leído el anuncio y cómo han reaccionado.
+### 4.2. Calendario (`/calendar`)
+*   Crea eventos, talleres o recordatorios.
+*   **Eventos Recurrentes:** Programa eventos para que se repitan (diariamente, semanalmente, etc.).
+*   **Eventos Interactivos:** Crea "Pausas Activas" que aparecen como alertas para los usuarios, permitiéndoles confirmar su participación para ganar XP.
 
-### 4.2. Calendario
+### 4.3. Biblioteca de Recursos (`/resources`)
+*   **Subir Archivos:** Sube documentos, videos, imágenes, o añade enlaces.
+*   **Crear Listas de Reproducción:** Agrupa videos de YouTube o subidos por ti en una lista ordenada para crear un micro-curso.
+*   **Documentos Editables:** Crea y edita documentos directamente en la plataforma, con un historial de versiones para rastrear cambios.
+*   **Control de Acceso y Seguridad:** Protege recursos con un PIN, hazlos privados, o compártelos con usuarios o colaboradores específicos.
 
-**Ruta:** `/calendar`
-*   Crea eventos, talleres o recordatorios para la organización.
-*   Define la audiencia del evento (todos, un rol específico o usuarios seleccionados).
-*   Asigna colores para una mejor diferenciación visual.
+### 4.4. Formularios y Evaluaciones (`/forms`)
+*   Crea encuestas o evaluaciones con diferentes tipos de preguntas.
+*   Activa el "Modo Quiz" para calificar automáticamente las respuestas.
+*   Personaliza la apariencia con imágenes y colores.
+*   Analiza los resultados con gráficos y tablas detalladas.
 
-### 4.3. Biblioteca de Recursos
+## 5. Gamificación y Reconocimiento
 
-**Ruta:** `/resources`
+### 5.1. Mensajes de Motivación (`/admin/motivations`)
+*   Crea ventanas emergentes con texto, imágenes o videos que se disparan en momentos clave (ej. al completar un curso, al subir de nivel).
 
-Aquí puedes gestionar todos los archivos y materiales compartidos de la organización.
+### 5.2. Certificados (`/admin/certificates`)
+*   **Diseñar Plantillas:** Crea y personaliza las plantillas para los certificados de finalización.
+*   **Asignar a Cursos:** Vincula una plantilla de certificado a un curso en la página de edición del mismo para que se genere automáticamente al finalizar.
 
-*   **Subir Archivos:**
-    1.  Haz clic en "Subir Recurso".
-    2.  Puedes subir diferentes tipos de contenido: **documentos (PDF, Word), imágenes (JPG, PNG), videos (MP4), o añadir enlaces externos**.
-    3.  Completa el título, la descripción y la categoría del recurso.
-*   **Crear Carpetas:** Organiza los recursos en carpetas para una mejor navegación.
-*   **Control de Acceso y Seguridad:** Al crear o editar un recurso, puedes configurar:
-    *   **Visibilidad:**
-        *   **Público:** El recurso es visible para todos los usuarios de la plataforma.
-        *   **Privado:** El recurso solo es visible para ti y para los usuarios específicos con los que lo compartas.
-    *   **Compartir con Usuarios:** Si un recurso es privado, puedes buscar y seleccionar usuarios individuales para concederles acceso.
-    *   **Protección con PIN:** Puedes añadir un PIN de 4 a 8 dígitos a cualquier recurso (sea público o privado) como una capa extra de seguridad. Deberás comunicar este PIN a los usuarios que necesiten acceder.
-*   **Gestionar Recursos Existentes:** Puedes editar los detalles, cambiar los permisos de acceso o eliminar cualquier recurso de la biblioteca.
-
-### 4.4. Formularios y Evaluaciones
-
-**Ruta:** `/forms`
-
-Crea encuestas o evaluaciones personalizadas.
-
-*   **Crear un Formulario:**
-    1.  Haz clic en "Crear Nuevo Formulario".
-    2.  Asigna un título y descripción inicial.
-    3.  Serás redirigido al editor para añadir preguntas.
-*   **Añadir Preguntas:** Configura preguntas de texto, párrafo, opción única o múltiple.
-*   **Habilitar Puntuación (Modo Quiz):** En la configuración del formulario, puedes habilitar el modo "Evaluación" para asignar puntos a las respuestas y calificar automáticamente los envíos.
-*   **Compartir y Publicar:**
-    *   Usa el botón **"Compartir"** en el menú de acciones para asignar el formulario directamente a usuarios específicos.
-    *   Una vez **Publicado**, puedes obtener un enlace directo para compartirlo masivamente.
-
-## 5. Configuración del Sistema
-
-**Ruta:** `/settings`
+## 6. Configuración del Sistema (`/settings`)
 
 Esta sección te permite personalizar el comportamiento de toda la plataforma.
-*   **Apariencia:** Cambia el nombre de la plataforma, los logos, colores y fuentes.
+*   **Apariencia y Estilo:** Cambia el nombre de la plataforma, los logos, la paleta de colores, las fuentes y todas las imágenes decorativas.
 *   **Seguridad y Acceso:**
-    *   **Registro Público:** Habilita o deshabilita la capacidad de que nuevos usuarios se registren por sí mismos.
-    *   **Política de Contraseñas:** Define la complejidad requerida para las contraseñas de los usuarios.
-    *   **Cierre por Inactividad:** Configura si los usuarios deben ser desconectados después de un tiempo de inactividad.
-    *   **Requerir 2FA para Admins:** Fuerza a todos los administradores a usar Autenticación de Dos Factores.
-*   **Categorías de Recursos:** Gestiona la lista de categorías disponibles al crear cursos o subir recursos a la biblioteca.
+    *   Configura el registro público, la política de contraseñas y el cierre por inactividad.
+    *   Fuerza 2FA para administradores.
+*   **Categorías y Hoja de Ruta:**
+    *   Gestiona la lista de categorías usadas en cursos y recursos.
+    *   Define las fases y la visibilidad de la página de la hoja de ruta del proyecto.
 
-## 6. Mantenimiento y Monitoreo
+## 7. Mantenimiento y Monitoreo
 
-*   **Copias de Seguridad:** La responsabilidad de las copias de seguridad de la base de datos recae en la configuración de la infraestructura del servidor de la base de datos (PostgreSQL en Supabase). Asegúrate de tener una política de copias de seguridad regular.
-*   **Logs del Sistema:** Los logs de la aplicación (errores, accesos) son gestionados por el entorno de despliegue (ej. Vercel, Docker, un servidor PM2). Consulta la documentación de tu proveedor de hosting para acceder a ellos.
+*   **Auditoría de Seguridad (`/security-audit`):** Revisa un registro detallado de todos los eventos de seguridad, con gráficos y métricas sobre la salud de la plataforma.
+*   **Analíticas (`/analytics`):** Obtén una visión global del rendimiento de la plataforma, incluyendo rankings de cursos y usuarios, y tendencias de actividad.
+*   **Salud del Sistema:** El panel principal del administrador incluye un widget que monitorea el estado en tiempo real de la API y la base de datos.
