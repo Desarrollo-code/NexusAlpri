@@ -7,7 +7,7 @@ import { useTitle } from '@/contexts/title-context';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, ShieldAlert, Rocket } from 'lucide-react';
 import { RoadmapEditorModal } from '@/components/roadmap/roadmap-editor-modal';
-import type { RoadmapItem } from '@/types';
+import type { RoadmapItem, UserRole } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { HorizontalRoadmap } from '@/components/roadmap/horizontal-roadmap';
 import { Skeleton } from '@/components/ui/skeleton';

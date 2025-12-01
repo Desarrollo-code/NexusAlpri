@@ -42,8 +42,8 @@ const RoadmapItemNode = ({ item, index, onEdit, onDelete }: { item: RoadmapItem;
     return (
         <div className="flex flex-col items-center w-64 md:w-80 flex-shrink-0">
             {isEven ? (
-                <div className="min-h-[180px] flex items-end pb-4">
-                    <Card className="w-full max-w-xs p-4 rounded-xl shadow-lg border bg-card/80 backdrop-blur-sm relative text-left">
+                <div className="min-h-[190px] w-full flex items-end pb-4">
+                    <Card className="w-full p-4 rounded-xl shadow-lg border bg-card/80 backdrop-blur-sm relative text-left">
                         <div className="flex justify-between items-start">
                              <Badge style={{ backgroundColor: item.color, color: 'white' }} className="mb-2 border-0">{item.phase}</Badge>
                             {user?.role === 'ADMINISTRATOR' && (
@@ -58,13 +58,14 @@ const RoadmapItemNode = ({ item, index, onEdit, onDelete }: { item: RoadmapItem;
                                 </DropdownMenu>
                             )}
                         </div>
-                        <h3 className="font-bold text-base text-foreground">{item.title}</h3>
+                        <h3 className="font-bold text-base text-foreground whitespace-normal">{item.title}</h3>
                         <p className="text-xs text-muted-foreground mt-1 whitespace-normal break-words">{item.description}</p>
                     </Card>
                 </div>
             ) : <div className="h-48"></div>}
             
             <div className="flex flex-col items-center">
+                <span className="text-sm font-semibold text-muted-foreground">{format(new Date(item.date), "MMM", { locale: es })}</span>
                 <span className="text-lg font-bold font-headline">{format(new Date(item.date), "yyyy")}</span>
                 <div className="w-0.5 h-4 bg-muted-foreground/30" />
                 <div className="w-12 h-12 rounded-full border-4 flex items-center justify-center relative shadow-md bg-background" style={{ borderColor: item.color }}>
@@ -75,8 +76,8 @@ const RoadmapItemNode = ({ item, index, onEdit, onDelete }: { item: RoadmapItem;
             </div>
 
             {!isEven ? (
-                <div className="min-h-[180px] flex items-start pt-4">
-                     <Card className="w-full max-w-xs p-4 rounded-xl shadow-lg border bg-card/80 backdrop-blur-sm relative text-left">
+                <div className="min-h-[190px] w-full flex items-start pt-4">
+                     <Card className="w-full p-4 rounded-xl shadow-lg border bg-card/80 backdrop-blur-sm relative text-left">
                         <div className="flex justify-between items-start">
                            <Badge style={{ backgroundColor: item.color, color: 'white' }} className="mb-2 border-0">{item.phase}</Badge>
                            {user?.role === 'ADMINISTRATOR' && (
@@ -91,7 +92,7 @@ const RoadmapItemNode = ({ item, index, onEdit, onDelete }: { item: RoadmapItem;
                                </DropdownMenu>
                            )}
                         </div>
-                        <h3 className="font-bold text-base text-foreground">{item.title}</h3>
+                        <h3 className="font-bold text-base text-foreground whitespace-normal">{item.title}</h3>
                         <p className="text-xs text-muted-foreground mt-1 whitespace-normal break-words">{item.description}</p>
                     </Card>
                 </div>
