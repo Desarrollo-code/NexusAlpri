@@ -2,12 +2,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button, buttonVariants } from '@/components/ui/button';
 import type { RoadmapItem } from '@/types';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Edit, Trash2, MoreVertical, ChevronRight } from 'lucide-react';
+import { Edit, Trash2, MoreVertical, ChevronRight, ChevronDown } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../ui/dropdown-menu';
@@ -23,6 +23,7 @@ const RoadmapItemNode = ({ item, index, onEdit, onDelete }: { item: RoadmapItem;
     const Icon = (LucideIcons as any)[item.icon] || LucideIcons.Lightbulb;
     const [itemToDelete, setItemToDelete] = useState<RoadmapItem | null>(null);
     const { toast } = useToast();
+    const [isExpanded, setIsExpanded] = useState(false);
 
     const handleDelete = async () => {
         if (!itemToDelete) return;
@@ -39,31 +40,46 @@ const RoadmapItemNode = ({ item, index, onEdit, onDelete }: { item: RoadmapItem;
     };
     
     const cardContent = (
-        <Card className="w-full max-w-xs p-4 rounded-xl shadow-lg border bg-card/80 backdrop-blur-sm relative">
-             <h3 className="font-bold text-base text-foreground text-left">{item.title}</h3>
-             <p className="text-xs text-muted-foreground text-left mt-1 line-clamp-4">{item.description}</p>
-             <div className="mt-2">
-                 <Button variant="link" size="sm" className="p-0 h-auto text-xs">Leer más <ChevronRight className="h-3 w-3 ml-1"/></Button>
-             </div>
-             {user?.role === 'ADMINISTRATOR' && (
-                <div className="absolute top-2 right-2">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full"><MoreVertical className="h-4 w-4"/></Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem onSelect={() => onEdit(item)}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => setItemToDelete(item)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            )}
-        </Card>
+        <motion.div layout>
+            <Card className="w-full max-w-xs p-4 rounded-xl shadow-lg border bg-card/80 backdrop-blur-sm relative">
+                <h3 className="font-bold text-base text-foreground text-left pr-8">{item.title}</h3>
+                <AnimatePresence>
+                     <motion.p 
+                        layout 
+                        className="text-xs text-muted-foreground text-left mt-1 overflow-hidden"
+                        initial={{ height: 40 }}
+                        animate={{ height: isExpanded ? 'auto' : 40 }}
+                        transition={{ duration: 0.4, ease: [0.04, 0.62, 0.23, 0.98] }}
+                    >
+                        {item.description}
+                    </motion.p>
+                </AnimatePresence>
+                 <div className="mt-2">
+                     <Button variant="link" size="sm" className="p-0 h-auto text-xs" onClick={() => setIsExpanded(!isExpanded)}>
+                        {isExpanded ? 'Leer menos' : 'Leer más'} 
+                        {isExpanded ? <ChevronDown className="h-3 w-3 ml-1"/> : <ChevronRight className="h-3 w-3 ml-1"/>}
+                     </Button>
+                 </div>
+                 {user?.role === 'ADMINISTRATOR' && (
+                    <div className="absolute top-2 right-2">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full"><MoreVertical className="h-4 w-4"/></Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onSelect={() => onEdit(item)}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => setItemToDelete(item)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                )}
+            </Card>
+        </motion.div>
     );
 
     return (
-        <div className="flex flex-col items-center w-64 md:w-72 flex-shrink-0">
-            {isEven ? <div className="h-40">{cardContent}</div> : <div className="h-40"></div>}
+        <div className="flex flex-col items-center w-64 md:w-80 flex-shrink-0">
+            {isEven ? <div className="h-auto min-h-[160px] flex items-end pb-4">{cardContent}</div> : <div className="h-40"></div>}
             
             <div className="flex flex-col items-center">
                 <span className="text-lg font-bold font-headline">{format(new Date(item.date), "yyyy")}</span>
@@ -75,7 +91,7 @@ const RoadmapItemNode = ({ item, index, onEdit, onDelete }: { item: RoadmapItem;
                 <div className="w-0.5 h-4 bg-muted-foreground/30" />
             </div>
 
-            {!isEven ? <div className="h-40">{cardContent}</div> : <div className="h-40"></div>}
+            {!isEven ? <div className="h-auto min-h-[160px] flex items-start pt-4">{cardContent}</div> : <div className="h-40"></div>}
              <AlertDialog open={!!itemToDelete} onOpenChange={(isOpen) => !isOpen && setItemToDelete(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
