@@ -7,7 +7,7 @@ import type { AdminDashboardStats, SecurityLog as AppSecurityLog, Announcement a
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, subDays, startOfDay, endOfDay, isValid } from "date-fns";
 import { es } from "date-fns/locale";
 import { SecurityLogTimeline } from "../security/security-log-timeline";
 import { SecurityLogDetailSheet } from "../security/security-log-detail-sheet";
@@ -34,7 +34,8 @@ const userRolesChartConfig = {
 const formatDateTick = (tick: string): string => {
   const date = parseISO(tick);
   if (!isValid(date)) return tick;
-  return format(date, "d MMM", { locale: es });
+  // Muestra solo el número del día.
+  return format(date, "d", { locale: es });
 };
 
 const formatDateTooltip = (dateString: string) => {
@@ -69,9 +70,9 @@ export function AdminDashboard({ adminStats, securityLogs, recentAnnouncements, 
 
   return (
     <div className="space-y-6">
-       <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
         <div className="xl:col-span-3">
-          <Card id="admin-welcome-card" className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg h-48 flex items-center">
+          <Card id="admin-welcome-card" className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg h-full flex items-center">
             <div className="relative z-10 flex items-center justify-between gap-6 w-full">
                <div className="space-y-1">
                   <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Hola, {user?.name}! <span className="text-2xl animate-wave">👋</span></h1>
@@ -85,11 +86,11 @@ export function AdminDashboard({ adminStats, securityLogs, recentAnnouncements, 
             </div>
           </Card>
         </div>
-        <div className="xl:col-span-2 grid grid-cols-2 md:grid-cols-4 xl:grid-cols-2 gap-4">
-             <MetricCard title="Usuarios Totales" value={adminStats?.totalUsers || 0} icon={Users} onClick={() => router.push('/users')} />
-             <MetricCard title="Inscripciones Totales" value={adminStats?.totalEnrollments || 0} icon={GraduationCap} />
-             <MetricCard title="Cursos Publicados" value={adminStats?.totalPublishedCourses || 0} icon={BookOpenCheck} />
-             <MetricCard title="Finalización Promedio" value={adminStats?.averageCompletionRate || 0} suffix="%" icon={Percent} />
+        <div className="xl:col-span-2 grid grid-cols-2 gap-4">
+             <MetricCard title="Usuarios Totales" value={adminStats?.totalUsers || 0} icon={Users} onClick={() => router.push('/users')} gradient="bg-gradient-blue" />
+             <MetricCard title="Inscripciones" value={adminStats?.totalEnrollments || 0} icon={GraduationCap} gradient="bg-gradient-blue" />
+             <MetricCard title="Cursos Publicados" value={adminStats?.totalPublishedCourses || 0} icon={BookOpenCheck} gradient="bg-gradient-purple" />
+             <MetricCard title="Finalización" value={adminStats?.averageCompletionRate || 0} suffix="%" icon={Percent} gradient="bg-gradient-purple" />
         </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
