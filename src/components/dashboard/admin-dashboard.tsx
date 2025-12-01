@@ -135,7 +135,7 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
               </CardHeader>
               <CardContent className="h-64 pr-4">
                  <ChartContainer config={{ newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-2))" }, newUsers: { label: "Nuevos Usuarios", color: "hsl(var(--chart-1))" }}} className="w-full h-full">
-                    <ComposedChart data={adminStats.userRegistrationTrend} accessibilityLayer margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
+                 <ComposedChart data={adminStats.userRegistrationTrend} accessibilityLayer margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
                       <CartesianGrid vertical={false} />
                       <XAxis dataKey="date" tickFormatter={formatDateTick} fontSize={12}/>
                       <YAxis allowDecimals={false} width={30} fontSize={12}/>
