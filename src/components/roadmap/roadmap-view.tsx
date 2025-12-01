@@ -24,7 +24,7 @@ import {
 import * as LucideIcons from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const RoadmapItemCard = ({ item, onEdit, onDelete, isEven }: { item: RoadmapItem, onEdit: () => void, onDelete: () => void, isEven: boolean }) => {
+const RoadmapItemCard = ({ item, onEdit, onDelete }: { item: RoadmapItem, onEdit: () => void, onDelete: () => void }) => {
     const { user } = useAuth();
     const Icon = (LucideIcons as any)[item.icon] || LucideIcons.Lightbulb;
     
@@ -53,7 +53,7 @@ const RoadmapItemCard = ({ item, onEdit, onDelete, isEven }: { item: RoadmapItem
                 <CardTitle className="text-base font-headline">{item.title}</CardTitle>
             </CardHeader>
             <CardContent>
-                <p className="text-muted-foreground text-xs text-center">{item.description}</p>
+                <p className="text-muted-foreground text-xs text-center whitespace-normal">{item.description}</p>
             </CardContent>
         </Card>
     );
@@ -89,6 +89,8 @@ export const RoadmapView = ({ items, onEdit, onDelete }: { items: RoadmapItem[],
         }
     };
     
+    let isEven = true;
+
     return (
         <div className="relative w-full px-12 md:px-24">
             <div className="relative flex items-center" style={{ minWidth: `${groupedItems.reduce((acc, g) => acc + g.items.length, 0) * 20}rem`}}>
@@ -104,11 +106,12 @@ export const RoadmapView = ({ items, onEdit, onDelete }: { items: RoadmapItem[],
                                 <h2 className="text-xl font-bold font-headline whitespace-nowrap -translate-y-[calc(100%+3rem)]">{group.phase}</h2>
                             </div>
                             {group.items.map((item, itemIndex) => {
-                                const isEven = itemIndex % 2 === 0;
+                                const currentIsEven = isEven;
+                                isEven = !isEven;
                                 return (
-                                <div key={item.id} className={cn("relative flex flex-col items-center", isEven ? "pt-12" : "pb-12", groupIndex === 0 && itemIndex === 0 ? "" : "ml-4 md:ml-8")}>
+                                <div key={item.id} className={cn("relative flex flex-col items-center", currentIsEven ? "pt-12" : "pb-12", "ml-4 md:ml-8")}>
                                      {/* Vertical Connector */}
-                                     <div className={cn("absolute left-1/2 -translate-x-1/2 w-0.5 h-12", isEven ? 'top-0' : 'bottom-0', 'bg-border')}/>
+                                     <div className={cn("absolute left-1/2 -translate-x-1/2 w-0.5 h-12", currentIsEven ? 'top-0' : 'bottom-0', 'bg-border')}/>
                                      {/* Dot on timeline */}
                                      <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
                                         <div className="relative group">
@@ -119,11 +122,12 @@ export const RoadmapView = ({ items, onEdit, onDelete }: { items: RoadmapItem[],
                                         </div>
                                      </div>
                                      <motion.div
-                                        initial={{ opacity: 0, y: isEven ? 20 : -20 }}
+                                        initial={{ opacity: 0, y: currentIsEven ? 20 : -20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: (groupIndex + itemIndex) * 0.1, duration: 0.5 }}
+                                        className={cn(currentIsEven ? "mt-[60px]" : "mb-[60px]")}
                                     >
-                                        <RoadmapItemCard item={item} onEdit={() => onEdit(item)} onDelete={() => setItemToDelete(item)} isEven={isEven}/>
+                                        <RoadmapItemCard item={item} onEdit={() => onEdit(item)} onDelete={() => setItemToDelete(item)} />
                                      </motion.div>
                                  </div>
                                 )

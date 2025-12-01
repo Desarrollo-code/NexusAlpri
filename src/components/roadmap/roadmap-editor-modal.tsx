@@ -1,7 +1,7 @@
 // src/components/roadmap/roadmap-editor-modal.tsx
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -24,7 +24,7 @@ import type { RoadmapItem } from '@/types';
 import * as LucideIcons from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 
-const ICONS = ['Lightbulb', 'Code', 'Database', 'Paintbrush', 'Rocket', 'CheckCircle', 'Award', 'Sparkles', 'UsersRound', 'FileText', 'Shield'];
+const ICONS = ['Lightbulb', 'Code', 'Database', 'Paintbrush', 'Rocket', 'CheckCircle', 'Award', 'Sparkles', 'UsersRound', 'FileText', 'Shield', 'MessageSquare', 'ScreenShare', 'Network', 'ListChecks'];
 
 interface RoadmapEditorModalProps {
     isOpen: boolean;
@@ -45,7 +45,6 @@ export function RoadmapEditorModal({ isOpen, onClose, item, onSave }: RoadmapEdi
     const [color, setColor] = useState('#3b82f6');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // CORRECCIÓN: Usar un array vacío como fallback si settings o roadmapPhases son nulos.
     const roadmapPhases = settings?.roadmapPhases || [];
 
     useEffect(() => {
@@ -60,7 +59,6 @@ export function RoadmapEditorModal({ isOpen, onClose, item, onSave }: RoadmapEdi
             setTitle('');
             setDescription('');
             setDate(new Date());
-            // CORRECCIÓN: Asegurarse de que roadmapPhases existe antes de acceder a él.
             setPhase(roadmapPhases.length > 0 ? roadmapPhases[roadmapPhases.length - 1] : '');
             setIcon('Lightbulb');
             setColor('#3b82f6');
