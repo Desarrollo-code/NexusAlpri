@@ -24,7 +24,7 @@ import type { RoadmapItem } from '@/types';
 import * as LucideIcons from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 
-const ICONS = ['Lightbulb', 'Code', 'Database', 'Paintbrush', 'Rocket', 'CheckCircle', 'Award', 'Sparkles', 'UsersRound', 'FileText', 'Shield', 'MessageSquare', 'ScreenShare', 'Network', 'ListChecks'];
+const ICONS = ['Lightbulb', 'Code', 'Database', 'Paintbrush', 'Rocket', 'CheckCircle', 'Award', 'Sparkles', 'UsersRound', 'FileText', 'Shield', 'MessageSquare', 'ScreenShare', 'Network', 'ListChecks', 'Megaphone', 'Folder', 'Users'];
 
 interface RoadmapEditorModalProps {
     isOpen: boolean;

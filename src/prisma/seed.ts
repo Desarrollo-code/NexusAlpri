@@ -138,15 +138,11 @@ async function seedProcesses() {
 }
 
 const roadmapItemsToSeed = [
-    // Fase 1
     { date: new Date('2024-01-15'), phase: RoadmapPhase.FASE_1, title: 'Lanzamiento del MVP', description: 'Se lanza la primera versión de la plataforma con funcionalidades básicas de autenticación, perfiles y dashboards para cada rol.', icon: 'Rocket', color: '#3b82f6' },
-    // Fase 2
     { date: new Date('2024-03-20'), phase: RoadmapPhase.FASE_2, title: 'Módulos de Comunicación', description: 'Implementación de los módulos de Anuncios y Calendario para mejorar la comunicación interna.', icon: 'Megaphone', color: '#10b981' },
     { date: new Date('2024-05-10'), phase: RoadmapPhase.FASE_2, title: 'Biblioteca de Recursos v1', description: 'Lanzamiento de la biblioteca centralizada para la gestión de documentos, guías y políticas.', icon: 'Folder', color: '#10b981' },
-    // Fase 3
     { date: new Date('2024-07-01'), phase: RoadmapPhase.FASE_3, title: 'Interactividad en Cursos', description: 'Se añade la sección de comentarios en los cursos y se implementa la lógica de arrastrar y soltar para organizar el contenido.', icon: 'MessageSquare', color: '#ec4899' },
     { date: new Date('2024-08-15'), phase: RoadmapPhase.FASE_3, title: 'Nace el "Control Central"', description: 'La sección de usuarios se renueva por completo, unificando la gestión de usuarios y procesos con una interfaz más intuitiva.', icon: 'Network', color: '#ec4899' },
-    // Fase 4
     { date: new Date('2024-10-05'), phase: RoadmapPhase.FASE_4, title: 'Gamificación y Reconocimiento', description: 'Se introduce el sistema de certificados de finalización personalizables y los mensajes de motivación emergentes.', icon: 'Award', color: '#f59e0b' },
     { date: new Date('2024-11-20'), phase: RoadmapPhase.FASE_4, title: 'Eventos Interactivos', description: 'Se lanza la funcionalidad de "Pausas Activas" en el calendario, permitiendo a los usuarios ganar XP por confirmar su participación.', icon: 'Sparkles', color: '#f59e0b' },
 ];

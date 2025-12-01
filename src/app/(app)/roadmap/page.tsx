@@ -9,10 +9,30 @@ import { PlusCircle, ShieldAlert, Rocket } from 'lucide-react';
 import { RoadmapEditorModal } from '@/components/roadmap/roadmap-editor-modal';
 import type { RoadmapItem } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { ColorfulLoader } from '@/components/ui/colorful-loader';
-import { EmptyState } from '@/components/empty-state';
-import { HorizontalRoadmap } from '@/components/roadmap/horizontal-roadmap'; // Cambiado
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { HorizontalRoadmap } from '@/components/roadmap/horizontal-roadmap';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const RoadmapSkeleton = () => (
+    <div className="w-full flex flex-col items-center">
+        <div className="text-center mb-12 container max-w-4xl mx-auto">
+            <Skeleton className="h-10 w-3/4 mx-auto" />
+            <Skeleton className="h-6 w-full max-w-2xl mx-auto mt-4" />
+        </div>
+        <div className="w-full flex items-center justify-start p-10 min-w-max">
+            <div className="absolute top-1/2 left-0 w-full h-2.5 bg-muted rounded-full"/>
+             <div className="flex gap-4 md:gap-8">
+                {[...Array(3)].map((_, index) => (
+                    <div key={index} className="flex flex-col items-center w-64 md:w-80 flex-shrink-0">
+                         {index % 2 === 0 ? <Skeleton className="h-44 w-full rounded-xl mb-4"/> : <div className="h-44"/>}
+                         <Skeleton className="h-12 w-12 rounded-full border-4" />
+                         {index % 2 !== 0 ? <Skeleton className="h-44 w-full rounded-xl mt-4"/> : <div className="h-44"/>}
+                    </div>
+                ))}
+             </div>
+        </div>
+    </div>
+);
+
 
 export default function RoadmapPage() {
   const { setPageTitle } = useTitle();
@@ -72,7 +92,7 @@ export default function RoadmapPage() {
   const canView = user && ((settings?.roadmapVisibleTo && settings.roadmapVisibleTo.includes(user.role)) || user.role === 'ADMINISTRATOR');
   
   if (isLoading) {
-    return <div className="flex justify-center items-center h-[calc(100vh-10rem)]"><ColorfulLoader /></div>
+    return <RoadmapSkeleton />;
   }
 
   if (!canView) {
@@ -107,11 +127,11 @@ export default function RoadmapPage() {
         <div className="w-full flex-grow px-4">
             {items.length === 0 ? (
                 <div className="container max-w-lg mx-auto">
-                <EmptyState 
-                    icon={Rocket}
-                    title="La Hoja de Ruta está en Blanco"
-                    description="Un administrador necesita añadir hitos para poder visualizarlos aquí."
-                />
+                <div className="text-center py-12">
+                    <Rocket className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">La Hoja de Ruta está en Blanco</h3>
+                    <p className="text-muted-foreground mb-6">Un administrador necesita añadir hitos para poder visualizarlos aquí.</p>
+                </div>
                 </div>
             ) : (
                 <HorizontalRoadmap items={items} onEdit={handleOpenEditor} onDelete={handleDeleteSuccess} />

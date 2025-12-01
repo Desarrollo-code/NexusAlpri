@@ -2,12 +2,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Button, buttonVariants } from '@/components/ui/button';
 import type { RoadmapItem } from '@/types';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Edit, Trash2, MoreVertical, ChevronRight, ChevronDown } from 'lucide-react';
+import { Edit, Trash2, MoreVertical } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../ui/dropdown-menu';
@@ -16,6 +16,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '../ui/card';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
+import { Badge } from '../ui/badge';
 
 const RoadmapItemNode = ({ item, index, onEdit, onDelete }: { item: RoadmapItem; index: number; onEdit: (item: RoadmapItem) => void; onDelete: (id: string) => void }) => {
     const { user } = useAuth();
@@ -23,7 +24,6 @@ const RoadmapItemNode = ({ item, index, onEdit, onDelete }: { item: RoadmapItem;
     const Icon = (LucideIcons as any)[item.icon] || LucideIcons.Lightbulb;
     const [itemToDelete, setItemToDelete] = useState<RoadmapItem | null>(null);
     const { toast } = useToast();
-    const [isExpanded, setIsExpanded] = useState(false);
 
     const handleDelete = async () => {
         if (!itemToDelete) return;
@@ -39,47 +39,30 @@ const RoadmapItemNode = ({ item, index, onEdit, onDelete }: { item: RoadmapItem;
         }
     };
     
-    const cardContent = (
-        <motion.div layout>
-            <Card className="w-full max-w-xs p-4 rounded-xl shadow-lg border bg-card/80 backdrop-blur-sm relative">
-                <h3 className="font-bold text-base text-foreground text-left pr-8">{item.title}</h3>
-                <AnimatePresence>
-                     <motion.p 
-                        layout 
-                        className="text-xs text-muted-foreground text-left mt-1 overflow-hidden"
-                        initial={{ height: 40 }}
-                        animate={{ height: isExpanded ? 'auto' : 40 }}
-                        transition={{ duration: 0.4, ease: [0.04, 0.62, 0.23, 0.98] }}
-                    >
-                        {item.description}
-                    </motion.p>
-                </AnimatePresence>
-                 <div className="mt-2">
-                     <Button variant="link" size="sm" className="p-0 h-auto text-xs" onClick={() => setIsExpanded(!isExpanded)}>
-                        {isExpanded ? 'Leer menos' : 'Leer más'} 
-                        {isExpanded ? <ChevronDown className="h-3 w-3 ml-1"/> : <ChevronRight className="h-3 w-3 ml-1"/>}
-                     </Button>
-                 </div>
-                 {user?.role === 'ADMINISTRATOR' && (
-                    <div className="absolute top-2 right-2">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full"><MoreVertical className="h-4 w-4"/></Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onSelect={() => onEdit(item)}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => setItemToDelete(item)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                )}
-            </Card>
-        </motion.div>
-    );
-
     return (
         <div className="flex flex-col items-center w-64 md:w-80 flex-shrink-0">
-            {isEven ? <div className="h-auto min-h-[160px] flex items-end pb-4">{cardContent}</div> : <div className="h-40"></div>}
+            {isEven ? (
+                <div className="min-h-[180px] flex items-end pb-4">
+                    <Card className="w-full max-w-xs p-4 rounded-xl shadow-lg border bg-card/80 backdrop-blur-sm relative text-left">
+                        <div className="flex justify-between items-start">
+                             <Badge style={{ backgroundColor: item.color, color: 'white' }} className="mb-2 border-0">{item.phase}</Badge>
+                            {user?.role === 'ADMINISTRATOR' && (
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-7 w-7 -mr-2 -mt-2"><MoreVertical className="h-4 w-4"/></Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onSelect={() => onEdit(item)}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => setItemToDelete(item)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            )}
+                        </div>
+                        <h3 className="font-bold text-base text-foreground">{item.title}</h3>
+                        <p className="text-xs text-muted-foreground mt-1 whitespace-normal break-words">{item.description}</p>
+                    </Card>
+                </div>
+            ) : <div className="h-48"></div>}
             
             <div className="flex flex-col items-center">
                 <span className="text-lg font-bold font-headline">{format(new Date(item.date), "yyyy")}</span>
@@ -91,7 +74,29 @@ const RoadmapItemNode = ({ item, index, onEdit, onDelete }: { item: RoadmapItem;
                 <div className="w-0.5 h-4 bg-muted-foreground/30" />
             </div>
 
-            {!isEven ? <div className="h-auto min-h-[160px] flex items-start pt-4">{cardContent}</div> : <div className="h-40"></div>}
+            {!isEven ? (
+                <div className="min-h-[180px] flex items-start pt-4">
+                     <Card className="w-full max-w-xs p-4 rounded-xl shadow-lg border bg-card/80 backdrop-blur-sm relative text-left">
+                        <div className="flex justify-between items-start">
+                           <Badge style={{ backgroundColor: item.color, color: 'white' }} className="mb-2 border-0">{item.phase}</Badge>
+                           {user?.role === 'ADMINISTRATOR' && (
+                               <DropdownMenu>
+                                   <DropdownMenuTrigger asChild>
+                                       <Button variant="ghost" size="icon" className="h-7 w-7 -mr-2 -mt-2"><MoreVertical className="h-4 w-4"/></Button>
+                                   </DropdownMenuTrigger>
+                                   <DropdownMenuContent align="end">
+                                       <DropdownMenuItem onSelect={() => onEdit(item)}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
+                                       <DropdownMenuItem onSelect={() => setItemToDelete(item)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
+                                   </DropdownMenuContent>
+                               </DropdownMenu>
+                           )}
+                        </div>
+                        <h3 className="font-bold text-base text-foreground">{item.title}</h3>
+                        <p className="text-xs text-muted-foreground mt-1 whitespace-normal break-words">{item.description}</p>
+                    </Card>
+                </div>
+            ) : <div className="h-48"></div>}
+
              <AlertDialog open={!!itemToDelete} onOpenChange={(isOpen) => !isOpen && setItemToDelete(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -126,7 +131,14 @@ export const HorizontalRoadmap = ({ items, onEdit, onDelete }: { items: RoadmapI
                 {/* Items */}
                 <div className="flex gap-4 md:gap-8">
                     {items.map((item, index) => (
-                        <RoadmapItemNode key={item.id} item={item} index={index} onEdit={onEdit} onDelete={onDelete} />
+                        <motion.div
+                            key={item.id}
+                            initial={{ opacity: 0, y: 50 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: index * 0.2 }}
+                        >
+                          <RoadmapItemNode item={item} index={index} onEdit={onEdit} onDelete={onDelete} />
+                        </motion.div>
                     ))}
                 </div>
             </div>
