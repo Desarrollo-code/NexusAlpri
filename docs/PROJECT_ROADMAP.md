@@ -22,66 +22,43 @@ Antes de escribir una sola línea de código, se crearon los documentos fundamen
 1.  **Manual Técnico (`MANUAL_TECNICO.md`):** Se definió el stack tecnológico (Next.js, Supabase, Tailwind), la arquitectura de carpetas, el flujo de datos y el esquema de la base de datos (`schema.prisma`).
 2.  **Manual de Usuario (`MANUAL_USUARIO.md`):** Se redactó una guía detallada desde la perspectiva del estudiante, explicando cómo interactuar con la plataforma.
 3.  **Manual de Administración (`MANUAL_ADMINISTRACION.md`):** Se documentaron todos los procesos que un administrador realizaría, desde la gestión de usuarios hasta la configuración del sistema.
-4.  **Matriz de Trazabilidad (`MATRIZ_TRAZABILIDAD.md`):** Se creó una tabla exhaustiva que conectaba cada requisito funcional con un rol de usuario y un resultado esperado. Este documento se convirtió en el plan de pruebas funcionales.
+4.  **Matriz de Trazabilidad (`MATRIZ_TRAZABILIDAD.md`):** Se creó una tabla exhaustiva que conectaba cada requisito funcional con un rol de usuario y un resultado esperado.
 
 ---
 
-### Fase 3: Arquitectura y Configuración del Proyecto
+### Fase 3: Arquitectura y Desarrollo del Núcleo
 
-1.  **Inicialización del Proyecto:** Se creó un nuevo proyecto Next.js utilizando el App Router y TypeScript.
-2.  **Configuración de Estilos:** Se instaló y configuró Tailwind CSS y ShadCN UI, estableciendo la base para el sistema de diseño.
-3.  **Modelado de la Base de Datos:** Se escribió el `schema.prisma` basado en los requisitos definidos en los manuales, incluyendo todas las tablas (User, Course, Module, Lesson, Resource, etc.) y sus relaciones.
-4.  **Configuración de Despliegue:** Se configuró Vercel para conectarse a Supabase y se ajustó el script de `build` para sincronizar automáticamente el esquema de la base de datos.
-5.  **Estructura de Carpetas:** Se organizó el proyecto siguiendo la arquitectura definida, separando las rutas públicas, las de autenticación y las protegidas de la aplicación.
+1.  **Inicialización del Proyecto:** Se creó un nuevo proyecto Next.js con App Router y TypeScript.
+2.  **Modelado y Backend:** Se implementó el `schema.prisma` y se desarrollaron los endpoints de la API para las operaciones CRUD básicas de usuarios, cursos y autenticación.
+3.  **Interfaz de Usuario Base:** Se construyó el layout principal de la aplicación, incluyendo la barra lateral, la barra superior y las páginas de gestión básicas para cursos y usuarios.
 
 ---
 
-### Fase 4: Desarrollo del Backend y Lógica de Negocio
+### Fase 4: Evolución y Funcionalidades Avanzadas
 
-Esta fase se centró en construir el "cerebro" de la aplicación a través de los API Endpoints.
-
-1.  **Autenticación y Sesiones:** Se implementó la lógica de autenticación con JWT en cookies (`/api/auth/...`) y el `middleware` para proteger las rutas.
-2.  **CRUD de Entidades:** Se desarrollaron los endpoints para las operaciones básicas (Crear, Leer, Actualizar, Eliminar) de las entidades principales: Cursos, Usuarios, Recursos, etc.
-3.  **Lógicas de Negocio Clave:** Se implementaron las lógicas más complejas, como el sistema de progreso automático, las notificaciones y la gestión de permisos.
-
----
-
-### Fase 5: Desarrollo de la Interfaz de Usuario (UI/UX)
-
-Con el backend funcional, el enfoque se trasladó a la experiencia del usuario.
-
-1.  **Layout Principal:** Se construyó el layout principal de la aplicación (`/src/app/(app)/layout.tsx`), incluyendo la barra lateral de navegación y la barra superior.
-2.  **Construcción de Páginas:** Se desarrollaron las páginas para cada una de las funcionalidades, conectándolas con los endpoints de la API.
-3.  **Componentes Reutilizables:** Se crearon componentes especializados como `CourseCard`, `AnnouncementCard` y `QuizViewer`.
-4.  **Estilización y Tema:** Se aplicaron los estilos visuales utilizando Tailwind CSS y se configuró el sistema de temas.
-
----
-
-### Fase 6: Evolución y Funcionalidades Avanzadas
-
-Una vez establecida la base sólida, el proyecto entró en una fase de mejora continua y adición de características de alto valor.
+Una vez establecida la base sólida, el proyecto entró en una fase de mejora continua y adición de características de alto valor que transformaron la plataforma.
 
 1.  **Gamificación y Reconocimiento Avanzado:**
-    *   **Certificados de Finalización:** Se implementó un sistema completo de certificaciones, incluyendo un **gestor de plantillas personalizables** para administradores, la **generación automática de PDFs** para los estudiantes y la opción de **compartir los certificados en redes sociales** como LinkedIn.
-    *   **Mensajes de Motivación:** Se creó un sistema para configurar mensajes emergentes (toasts) que felicitan al usuario al alcanzar hitos específicos, como completar un curso o subir de nivel.
-    *   **Pausas Activas Interactivas:** Se introdujeron eventos recurrentes que permiten a los usuarios confirmar su participación para ganar puntos de experiencia, fomentando el bienestar.
+    *   **Certificados de Finalización:** Se implementó un sistema completo de certificaciones, incluyendo un **gestor de plantillas personalizables** para administradores, la **generación automática de PDFs** para los estudiantes y la opción de **compartir los certificados en redes sociales**.
+    *   **Mensajes de Motivación:** Se creó un sistema para configurar mensajes emergentes que felicitan al usuario al alcanzar hitos específicos, como completar un curso o subir de nivel.
+    *   **Pausas Activas Interactivas:** Se introdujeron eventos recurrentes que permiten a los usuarios confirmar su participación para ganar puntos de experiencia.
 
 2.  **Mejoras en la Gestión de Contenido:**
-    *   **Vigencia de Cursos:** Se añadió la funcionalidad de establecer **fechas de inicio y cierre** para los cursos, permitiendo a los instructores programar su disponibilidad.
-    *   **Restricción de Lecciones:** Se implementó una lógica de progresión lineal, donde el estudiante debe completar una lección para desbloquear la siguiente.
+    *   **Vigencia y Prerrequisitos:** Se añadió la funcionalidad de establecer **fechas de inicio y cierre** para los cursos, así como la capacidad de definir **cursos prerrequisito**, creando rutas de aprendizaje.
+    *   **Progresión Lineal:** Se implementó una lógica de progresión donde el estudiante debe completar una lección para desbloquear la siguiente.
     *   **Quizzes en Recursos:** Se habilitó la capacidad de crear y adjuntar un **quiz directamente a un recurso de la biblioteca**, transformando materiales de lectura o videos en evaluaciones interactivas.
+    *   **Listas de Reproducción:** En la biblioteca de recursos, se añadió la opción de agrupar videos para crear micro-cursos temáticos.
 
 3.  **Interactividad en Tiempo Real y Herramientas Colaborativas:**
     *   **Quizz-IT:** Se desarrolló un modo de juego en tiempo real que permite a los instructores lanzar un quiz y a los participantes unirse con un PIN para competir en vivo.
-    *   **Módulo de Comentarios en Cursos:** Se habilitó una sección de discusión dentro de cada curso para que los estudiantes puedan hacer preguntas y colaborar entre sí.
+    *   **Módulo de Comentarios en Cursos:** Se habilitó una sección de discusión dentro de cada curso para que los estudiantes puedan hacer preguntas y colaborar.
+    *   **Chat 1-a-1:** Se implementó un sistema de mensajería directa entre usuarios.
 
 4.  **Mejoras en la Experiencia de Usuario y la Interfaz:**
-    *   **Módulo de Continuidad (Roadmap):** Se creó esta misma página dedicada a mostrar la hoja de ruta y la evolución del proyecto, haciendo transparente el proceso de desarrollo.
-    *   **Renovación de Interfaz Pública:** Se rediseñó la página de inicio y se introdujo una **barra de navegación inferior** en la vista móvil para mejorar la usabilidad.
-    *   **Personalización de Temas:** Se refinó y amplió la paleta de colores, añadiendo nuevos temas para una mayor personalización.
-    *   **Privacidad en Ranking:** Se añadió un parámetro de privacidad para que los usuarios puedan decidir si aparecen o no en la tabla de clasificación.
+    *   **Panel de Control Central (`/users`):** Se unificó la gestión de usuarios y procesos, permitiendo la asignación por "arrastrar y soltar".
+    *   **Renovación de Interfaz:** Se rediseñaron dashboards, anuncios y el look & feel general, introduciendo colores dinámicos y una mayor cohesión visual.
+    *   **Personalización de Temas:** Se amplió la paleta de colores, añadiendo nuevos temas para una mayor personalización por parte del usuario.
 
 5.  **Refinamiento y Pruebas Continuas:**
-    *   Se realizaron ajustes finos a la interfaz basados en la usabilidad.
-    *   Se optimizó el código para mejorar el rendimiento, especialmente en la carga de datos y las interacciones del usuario.
+    *   Se optimizó el rendimiento y se ajustó la interfaz basándose en pruebas de usabilidad.
     *   Se preparó el proyecto para despliegues continuos, asegurando la estabilidad en cada actualización.
