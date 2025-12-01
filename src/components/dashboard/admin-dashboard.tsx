@@ -14,10 +14,9 @@ import { SecurityLogDetailSheet } from "../security/security-log-detail-sheet";
 import { useRouter } from 'next/navigation';
 import { useAuth } from "@/contexts/auth-context";
 import Image from "next/image";
-import { AnnouncementsWidget } from "./announcements-widget";
 import { CalendarWidget } from "./calendar-widget";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, AreaChart, Bar, BarChart, ComposedChart, Legend, Line, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
+import { ComposedChart, Legend, Line, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 import { DonutChart } from "../analytics/donut-chart";
 import { HealthStatusWidget } from "./health-status-widget";
 import { MetricCard } from "../analytics/metric-card";
@@ -68,11 +67,11 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <Card className="lg:col-span-8 relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/80 to-accent/80 text-primary-foreground shadow-lg">
+       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <Card className="lg:col-span-8 relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/80 to-accent/80 text-primary-foreground shadow-lg h-full">
             <div className="absolute inset-0 z-0 opacity-20" style={{ backgroundImage: `url(${settings?.publicPagesBgUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
             <div className="absolute inset-0 bg-black/10"></div>
-            <div className="relative z-10 flex items-center justify-between gap-6">
+            <div className="relative z-10 flex items-center justify-between gap-6 h-full">
                <div className="space-y-1">
                   <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Hola, {user?.name}! <span className="text-2xl animate-wave">👋</span></h1>
                   <p className="text-primary-foreground/80">Bienvenido al Centro de Mando de tu plataforma.</p>
@@ -88,7 +87,7 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
             <MetricCard title="Usuarios Totales" value={adminStats?.totalUsers || 0} icon={UsersRound} index={0} onClick={() => router.push('/users')} />
             <MetricCard title="Cursos Publicados" value={adminStats?.totalPublishedCourses || 0} icon={BookOpenCheck} index={1} onClick={() => router.push('/manage-courses?tab=PUBLISHED')} />
             <MetricCard title="Inscripciones" value={adminStats?.totalEnrollments || 0} icon={GraduationCap} index={2} onClick={() => router.push('/enrollments')} />
-            <MetricCard title="Finalización" value={adminStats?.averageCompletionRate || 0} icon={Percent} index={3} suffix="%" description="Promedio" onClick={() => router.push('/analytics')} />
+            <MetricCard title="Finalización" value={adminStats?.averageCompletionRate || 0} icon={Percent} index={3} suffix="%" onClick={() => router.push('/analytics')} />
         </div>
       </div>
       
@@ -107,7 +106,7 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
                       <YAxis allowDecimals={false} width={30} fontSize={12}/>
                       <Tooltip content={<ChartTooltipContent indicator="dot" labelFormatter={formatDateTooltip} />} />
                       <Legend iconType="circle" />
-                      <Bar dataKey="newCourses" fill="var(--color-newCourses)" radius={4} name="Nuevos Cursos" />
+                      <Line type="monotone" dataKey="newCourses" stroke="var(--color-newCourses)" strokeWidth={3} dot={false} name="Nuevos Cursos" />
                       <Line type="monotone" dataKey="newEnrollments" stroke="var(--color-newEnrollments)" strokeWidth={3} dot={false} name="Inscripciones" />
                     </ComposedChart>
                   </ChartContainer>
@@ -161,8 +160,8 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
                  <Button variant="outline" asChild><Link href="/settings">Ajustes</Link></Button>
               </CardContent>
            </Card>
-           <NotificationsWidget notifications={notifications} />
            <HealthStatusWidget />
+           <NotificationsWidget notifications={notifications} />
            <CalendarWidget events={upcomingEvents} />
         </div>
       </div>
