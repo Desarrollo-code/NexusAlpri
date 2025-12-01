@@ -16,7 +16,7 @@ import { useAuth } from "@/contexts/auth-context";
 import Image from "next/image";
 import { AnnouncementsWidget } from "./announcements-widget";
 import { CalendarWidget } from "./calendar-widget";
-import { ChartConfig, ChartContainer, ChartTooltip, CartesianGrid } from "@/components/ui/chart";
+import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, CartesianGrid } from "@/components/ui/chart";
 import { Area, AreaChart, Bar, BarChart, ComposedChart, Legend, Line, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { DonutChart } from "../analytics/donut-chart";
 import { HealthStatusWidget } from "./health-status-widget";
