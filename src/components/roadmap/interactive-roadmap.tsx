@@ -17,6 +17,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '../ui/button';
+import { Badge } from '../ui/badge';
 
 interface DotButtonProps {
   selected: boolean;
@@ -30,7 +31,7 @@ const DotButton: React.FC<DotButtonProps> = ({ selected, onClick, label }) => (
     type="button"
     onClick={onClick}
   >
-    <span className={`text-xs font-semibold transition-colors ${selected ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`}>
+    <span className={`text-xs font-semibold transition-colors capitalize ${selected ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`}>
       {label}
     </span>
     <div className={`w-2 h-2 mt-1 rounded-full transition-all duration-300 ${selected ? 'bg-primary scale-125' : 'bg-muted-foreground/50 group-hover:bg-foreground'}`} />
@@ -59,13 +60,14 @@ const RoadmapCard = ({ item, onEdit, onDelete }: { item: RoadmapItem, onEdit: (i
     };
     
     return (
-        <Card className="h-full bg-card/80 backdrop-blur-sm border shadow-lg">
-             <CardContent className="p-4 flex flex-col items-center text-center h-full">
-                 <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4 border-4" style={{ borderColor: item.color, backgroundColor: `${item.color}20` }}>
+        <Card className="h-full bg-card/80 backdrop-blur-sm border shadow-lg flex flex-col">
+             <CardContent className="p-4 flex flex-col items-center text-center flex-grow">
+                 <div className="w-16 h-16 rounded-full flex items-center justify-center mb-3 border-4" style={{ borderColor: item.color, backgroundColor: `${item.color}20` }}>
                     <Icon className="h-8 w-8" style={{ color: item.color }}/>
                  </div>
+                 <Badge style={{ backgroundColor: `${item.color}20`, color: item.color }} className="mb-2 border border-current/30">{item.phase.replace('_', ' ')}</Badge>
                  <h3 className="font-bold text-lg text-foreground">{item.title}</h3>
-                 <p className="text-sm text-muted-foreground mt-2 flex-grow">{item.description}</p>
+                 <p className="text-sm text-muted-foreground mt-2 flex-grow whitespace-pre-wrap">{item.description}</p>
                  {user?.role === 'ADMINISTRATOR' && (
                      <div className="mt-4">
                          <DropdownMenu>
