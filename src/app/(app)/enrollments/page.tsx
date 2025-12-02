@@ -305,7 +305,7 @@ function EnrollmentsPageComponent() {
     if (isAuthLoading || !currentUser) return;
     setIsLoadingCourses(true);
     try {
-        let url = `/api/courses?manageView=true&userId=${currentUser.id}&userRole=${currentUser.role}`;
+        const url = `/api/courses?manageView=true&userId=${currentUser.id}&userRole=${currentUser.role}`;
         const response = await fetch(url, { cache: 'no-store' });
         if (!response.ok) throw new Error('No se pudieron cargar los cursos');
         const data = await response.json();
@@ -345,11 +345,12 @@ function EnrollmentsPageComponent() {
   
   useEffect(() => {
     if (initialLoadRef.current && !isLoadingCourses && courses.length > 0 && !selectedCourseId) {
-        initialLoadRef.current = false;
+        initialLoadRef.current = false; 
         router.replace(`${pathname}?${createQueryString({ courseId: courses[0].id, page: 1, search: null })}`);
         return; 
     }
-    if (!isLoadingCourses && courses.length > 0) {
+    
+    if (!isLoadingCourses) {
         initialLoadRef.current = false;
     }
   }, [courses, isLoadingCourses, router, pathname, createQueryString, selectedCourseId]);
