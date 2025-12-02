@@ -300,59 +300,53 @@ function EnrollmentsPageComponent() {
     return params.toString();
   }, [searchParams]);
 
-  // Fetch the list of available courses for the selector
-  useEffect(() => {
+  const fetchCourseList = useCallback(async () => {
     if (isAuthLoading || !currentUser) return;
-    
-    const fetchCourseList = async () => {
-        setIsLoadingCourses(true);
-        try {
-            let url = `/api/courses?manageView=true&userId=${currentUser.id}&userRole=${currentUser.role}`;
-            const response = await fetch(url, { cache: 'no-store' });
-            if (!response.ok) throw new Error('No se pudieron cargar los cursos');
-            const data = await response.json();
-            setCourses(data.courses || []);
-        } catch (err) {
-            toast({ title: "Error", description: err instanceof Error ? err.message : "No se pudieron cargar los cursos.", variant: "destructive" });
-        } finally {
-            setIsLoadingCourses(false);
-        }
-    };
-    fetchCourseList();
+    setIsLoadingCourses(true);
+    try {
+        let url = `/api/courses?manageView=true&userId=${currentUser.id}&userRole=${currentUser.role}`;
+        const response = await fetch(url, { cache: 'no-store' });
+        if (!response.ok) throw new Error('No se pudieron cargar los cursos');
+        const data = await response.json();
+        setCourses(data.courses || []);
+    } catch (err) {
+        toast({ title: "Error", description: err instanceof Error ? err.message : "No se pudieron cargar los cursos.", variant: "destructive" });
+    } finally {
+        setIsLoadingCourses(false);
+    }
   }, [currentUser, isAuthLoading, toast]);
 
 
-  // Fetch details for the currently selected course
-  useEffect(() => {
-    if (!selectedCourseId) {
-        // Clear details if no course is selected
+  const fetchCourseDetails = useCallback(async (courseId: string) => {
+    if (!courseId) return;
+    setIsLoadingDetails(true);
+    try {
+        const params = new URLSearchParams();
+        if (dateRange.from) params.set('startDate', dateRange.from.toISOString());
+        if (dateRange.to) params.set('endDate', dateRange.to.toISOString());
+
+        const response = await fetch(`/api/enrollments/course/${courseId}/details?${params.toString()}`, { cache: 'no-store' });
+        if (!response.ok) throw new Error((await response.json()).message || 'No se pudieron cargar los detalles del curso');
+        const data: CourseEnrollmentInfo = await response.json();
+        setSelectedCourseInfo(data);
+    } catch(err) {
+        setError(err instanceof Error ? err.message : 'Error desconocido');
+        toast({ title: "Error", description: err instanceof Error ? err.message : 'No se pudieron cargar los detalles del curso.', variant: "destructive" });
         setSelectedCourseInfo(null);
-        setError(null);
-        return;
-    };
-
-    const fetchCourseDetails = async () => {
-        setIsLoadingDetails(true);
-        setError(null);
-        try {
-            const params = new URLSearchParams();
-            if (dateRange.from) params.set('startDate', dateRange.from.toISOString());
-            if (dateRange.to) params.set('endDate', dateRange.to.toISOString());
-
-            const response = await fetch(`/api/enrollments/course/${selectedCourseId}/details?${params.toString()}`, { cache: 'no-store' });
-            if (!response.ok) throw new Error((await response.json()).message || 'No se pudieron cargar los detalles del curso');
-            const data: CourseEnrollmentInfo = await response.json();
-            setSelectedCourseInfo(data);
-        } catch(err) {
-            setError(err instanceof Error ? err.message : 'Error desconocido');
-            toast({ title: "Error", description: err instanceof Error ? err.message : 'No se pudieron cargar los detalles del curso.', variant: "destructive" });
-            setSelectedCourseInfo(null);
-        } finally {
-            setIsLoadingDetails(false);
-        }
-    };
-    fetchCourseDetails();
-  }, [selectedCourseId, dateRange, toast]);
+    } finally {
+        setIsLoadingDetails(false);
+    }
+  }, [toast, dateRange]);
+  
+  useEffect(() => {
+    fetchCourseList();
+  }, [fetchCourseList]);
+  
+  useEffect(() => {
+    if (selectedCourseId) {
+        fetchCourseDetails(selectedCourseId);
+    }
+  }, [selectedCourseId, fetchCourseDetails]);
 
   const handleCourseSelection = (courseId: string) => {
       router.push(`${pathname}?${createQueryString({ courseId, page: 1, search: null })}`);
@@ -382,9 +376,7 @@ function EnrollmentsPageComponent() {
         toast({ title: 'Inscripción Cancelada', description: `Se ha cancelado la inscripción de ${studentToUnenroll.user.name}.` });
         setStudentToView(null);
         setStudentToUnenroll(null);
-        // Refetch details after un-enrolling
-        const event = new Event('refetch');
-        document.dispatchEvent(event);
+        fetchCourseDetails(selectedCourseId);
     } catch(err) {
         toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
     } finally {

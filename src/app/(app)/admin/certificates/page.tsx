@@ -1,4 +1,3 @@
-
 // src/app/(app)/admin/certificates/page.tsx
 'use client';
 
@@ -46,10 +45,6 @@ export default function CertificatesAdminPage() {
     startTour('certificates', certificatesTour);
   }, [setPageTitle, startTour]);
 
-  if (isAuthLoading) {
-    return <CertificatesSkeleton />;
-  }
-
   // Redirección del lado del cliente después de verificar el estado de carga
   useEffect(() => {
     if (!isAuthLoading && (!user || user.role !== 'ADMINISTRATOR')) {
@@ -59,7 +54,7 @@ export default function CertificatesAdminPage() {
 
 
   if (!user || user.role !== 'ADMINISTRATOR') {
-    return null;
+    return <CertificatesSkeleton />;
   }
   
   return (
