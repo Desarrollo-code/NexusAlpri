@@ -15,20 +15,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, ListVideo, GripVertical, Trash2, Youtube, UploadCloud, Users, PlusCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import Image from 'next/image';
 import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, useSortable, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Switch } from '../ui/switch';
-import { UploadArea } from '../ui/upload-area';
+import { Switch } from '@/components/ui/switch';
+import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
-import { Progress } from '../ui/progress';
-import { ScrollArea } from '../ui/scroll-area';
-import { Checkbox } from '../ui/checkbox';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Identicon } from '../ui/identicon';
+import { Progress } from '@/components/ui/progress';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Identicon } from '@/components/ui/identicon';
 import type { User as AppUser, AppResourceType } from '@/types';
 
 interface PlaylistCreatorModalProps {

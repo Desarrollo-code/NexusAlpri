@@ -174,7 +174,7 @@ export function AnnouncementCreator({ isOpen, onClose, onAnnouncementCreated }: 
                     </div>
                     <div className="space-y-1">
                         <Label>Adjuntar Archivos</Label>
-                         <UploadArea onFileSelect={handleFileSelect} disabled={isSubmitting}/>
+                         <UploadArea onFileSelect={(files) => files && handleFileSelect(files[0])} disabled={isSubmitting}/>
                     </div>
 
                     {localPreviews.length > 0 && (
