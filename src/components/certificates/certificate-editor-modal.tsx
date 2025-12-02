@@ -25,6 +25,7 @@ import { Separator } from '../ui/separator';
 import { Switch } from '../ui/switch';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { Slider } from '../ui/slider';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface CertificateEditorModalProps {
     isOpen: boolean;
@@ -88,6 +89,12 @@ const UploadWidget = ({
         setIsUploading(false);
     }
   };
+  
+  const handleFileSelectInternal = (files: FileList | null) => {
+      if (files && files.length > 0) {
+          handleUpload(files[0]);
+      }
+  };
 
   const finalImageUrl = localPreview || currentImageUrl;
 
@@ -103,7 +110,7 @@ const UploadWidget = ({
             </div>
          </div>
       ) : finalImageUrl ? (
-         <div className="relative w-full h-24 rounded-lg border overflow-hidden p-1 bg-muted/20">
+         <div className="relative w-full h-24 rounded-lg border overflow-hidden p-1 bg-muted/20 group">
             <Image src={finalImageUrl} alt={`Previsualización de ${label}`} fill className="object-contain p-1" />
              <div className="absolute top-1 right-1 flex flex-col gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                  <UploadArea onFileSelect={(file) => file && handleUpload(file)} disabled={disabled} inputId={id} className="h-6 w-6 rounded-full shadow-md bg-secondary text-secondary-foreground hover:bg-secondary/80 p-0 border-0">
@@ -115,7 +122,7 @@ const UploadWidget = ({
              </div>
         </div>
       ) : (
-         <UploadArea onFileSelect={(file) => file && handleUpload(file)} disabled={disabled} inputId={id} className="h-24"/>
+         <UploadArea onFileSelect={(files) => files && handleFileSelectInternal(files)} disabled={disabled} inputId={id} className="h-24"/>
       )}
     </div>
   );
@@ -272,7 +279,7 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
                             <CardContent className="space-y-4">
                                 <div className="space-y-1"><Label htmlFor="textColor">Color del Texto</Label><Input id="textColor" type="color" value={textColor} onChange={e => setTextColor(e.target.value)} className="w-full p-1 h-10" /></div>
                                 <div className="space-y-1"><Label htmlFor="fontHeadline">Fuente de Títulos</Label><Select value={fontFamilyHeadline} onValueChange={setFontFamilyHeadline}><SelectTrigger id="fontHeadline"><SelectValue/></SelectTrigger><SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{fontFamily: (fontMap[f.value] as any)?.style.fontFamily}}>{f.label}</SelectItem>)}</SelectContent></Select></div>
-                                <div className="space-y-1"><Label htmlFor="fontBody">Fuente del Cuerpo</Label><Select value={fontFamilyBody} onValueChange={setFontFamilyBody}><SelectTrigger id="fontBody"><SelectValue/></SelectTrigger><SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{fontFamily: (fontMap[f.value] as any)?.style.fontFamily}}>{f.label}</SelectItem>)}</SelectContent></Select></div>
+                                <div className="space-y-1"><Label htmlFor="fontBody">Fuente del Cuerpo</Label><Select value={fontFamilyBody} onValueChange={setFontFamilyBody}><SelectTrigger id="fontBody"><SelectValue /></SelectTrigger><SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{fontFamily: (fontMap[f.value] as any)?.style.fontFamily}}>{f.label}</SelectItem>)}</SelectContent></Select></div>
                             </CardContent>
                         </Card>
                       </form>
