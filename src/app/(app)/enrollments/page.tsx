@@ -277,6 +277,7 @@ function EnrollmentsPageComponent() {
   const searchTerm = searchParams.get('search') || '';
   const currentPage = Number(searchParams.get('page')) || 1;
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const initialLoadRef = useRef(true);
 
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: subDays(new Date(), 29),
@@ -344,12 +345,12 @@ function EnrollmentsPageComponent() {
   
   useEffect(() => {
     if (selectedCourseId) {
+        if (initialLoadRef.current) initialLoadRef.current = false;
         fetchCourseDetails(selectedCourseId);
-    } else if (!isLoadingCourses && courses.length > 0 && !selectedCourseId) {
-        // CORRECCIÓN: Solo se redirige si no hay un courseId en la URL
+    } else if (initialLoadRef.current && !isLoadingCourses && courses.length > 0) {
         router.replace(`${pathname}?${createQueryString({ courseId: courses[0].id, page: 1, search: null })}`);
     }
-  }, [selectedCourseId, courses, isLoadingCourses, fetchCourseDetails, router, pathname, createQueryString]);
+}, [selectedCourseId, courses, isLoadingCourses, fetchCourseDetails, router, pathname, createQueryString]);
 
   const handleCourseSelection = (courseId: string) => {
       router.push(`${pathname}?${createQueryString({ courseId, page: 1, search: null })}`);
