@@ -21,8 +21,7 @@ import { ResourceEditorModal } from '@/components/resources/resource-editor-moda
 import { FolderCreatorModal } from '@/components/resources/folder-creator-modal';
 import { PlaylistCreatorModal } from '@/components/resources/playlist-creator-modal';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { DropdownMenu,DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import { VideoPlaylistView } from '@/components/resources/video-playlist-view';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -34,7 +33,7 @@ import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { startOfDay, subDays } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 import { useDroppable } from '@dnd-kit/core';
-import { Separator } from '@/components/ui/separator';
+import { Separator } from '../ui/separator';
 
 // --- MAIN PAGE COMPONENT ---
 export default function ResourcesPage() {
@@ -348,7 +347,7 @@ export default function ResourcesPage() {
                         <section>
                             <h3 className="text-lg font-semibold mb-3">Carpetas y Listas</h3>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                                {folders.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={true} onNavigate={handleNavigateFolder} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onSelect={()=>{}} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
+                                {folders.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={true} onSelect={() => {}} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onNavigate={handleNavigateFolder} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
                             </div>
                         </section>
                     )}
