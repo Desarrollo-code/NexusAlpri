@@ -355,18 +355,30 @@ function EnrollmentsPageComponent() {
   }, [toast, dateRange]);
   
   // Effect 2: Handle URL changes and data fetching
+  const initialLoadRef = useRef(true);
   useEffect(() => {
-      // If course list has loaded, but there's no selection in URL, set the first course.
-      if (!isLoadingCourses && courses.length > 0 && !selectedCourseId) {
-          router.replace(`${pathname}?${createQueryString({ courseId: courses[0].id, page: 1, search: null })}`);
-          return;
-      }
-      
-      // If there is a selection, fetch its details.
-      if (selectedCourseId) {
-          fetchCourseDetails(selectedCourseId);
-      }
-  }, [selectedCourseId, courses, isLoadingCourses, fetchCourseDetails, router, pathname, createQueryString]);
+    // 1. Lógica de Redirección Inicial
+    if (initialLoadRef.current && !isLoadingCourses && courses.length > 0 && !selectedCourseId) {
+        initialLoadRef.current = false; // Bloquea la referencia ANTES de la redirección
+        router.replace(`${pathname}?${createQueryString({ courseId: courses[0].id, page: 1, search: null })}`);
+        return;
+    }
+    // Si la lista de cursos ya cargó, aseguramos que la bandera se baje
+    if (!isLoadingCourses && courses.length > 0) {
+        initialLoadRef.current = false;
+    }
+  }, [courses, isLoadingCourses, router, pathname, createQueryString, selectedCourseId]);
+
+  // --- Nuevo useEffect para Carga de Detalles (Depende del ID y las Fechas) ---
+  useEffect(() => {
+    if (selectedCourseId) {
+        // Llama a la carga de detalles cuando el ID está presente.
+        fetchCourseDetails(selectedCourseId);
+    } else {
+        // Limpia los detalles si no hay un curso seleccionado.
+        setSelectedCourseInfo(null);
+    }
+  }, [selectedCourseId, fetchCourseDetails]);
 
 
   const handleCourseSelection = (courseId: string) => {
