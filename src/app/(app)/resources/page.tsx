@@ -33,6 +33,7 @@ import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { startOfDay, subDays } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 import { useDroppable } from '@dnd-kit/core';
+import { Separator } from '@/components/ui/separator';
 
 // --- MAIN PAGE COMPONENT ---
 export default function ResourcesPage() {
@@ -447,3 +448,4 @@ export default function ResourcesPage() {
     </DndContext>
   );
 }
+    
