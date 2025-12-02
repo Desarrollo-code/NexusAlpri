@@ -21,7 +21,8 @@ import { ResourceEditorModal } from '@/components/resources/resource-editor-moda
 import { FolderCreatorModal } from '@/components/resources/folder-creator-modal';
 import { PlaylistCreatorModal } from '@/components/resources/playlist-creator-modal';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { DropdownMenu,DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import { VideoPlaylistView } from '@/components/resources/video-playlist-view';
 import { Skeleton } from '@/components/ui/skeleton';
