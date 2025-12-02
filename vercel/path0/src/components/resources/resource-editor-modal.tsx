@@ -20,24 +20,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Loader2, Save, UploadCloud, Link as LinkIcon, Image as ImageIcon, XCircle, Replace, Calendar as CalendarIcon, Eye, EyeOff, X, Globe, Users, FileText, Check, Archive, FilePen, RotateCcw, PlusCircle } from 'lucide-react';
 import type { AppResourceType, User as AppUser } from '@/types';
-import { UploadArea } from '../ui/upload-area';
+import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
-import { Progress } from '../ui/progress';
-import { ScrollArea } from '../ui/scroll-area';
-import { Checkbox } from '../ui/checkbox';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Identicon } from '../ui/identicon';
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
-import { Calendar } from '../ui/calendar';
+import { Progress } from '@/components/ui/progress';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Identicon } from '@/components/ui/identicon';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import { Separator } from '../ui/separator';
-import { FileIcon } from '../ui/file-icon';
-import { RichTextEditor } from '../ui/rich-text-editor';
-import { QuizViewer } from '../quiz-viewer';
+import { Separator } from '@/components/ui/separator';
+import { FileIcon } from '@/components/ui/file-icon';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { QuizViewer } from '@/components/quiz-viewer';
 
 interface ResourceEditorModalProps {
   isOpen: boolean;
