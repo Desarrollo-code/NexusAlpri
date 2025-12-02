@@ -1,7 +1,7 @@
 // src/app/(app)/enrollments/page.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, Suspense, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useAuth } from '@/contexts/auth-context';
 import type { Course as AppCourse, User, CourseProgress, Quiz as AppQuiz, Question as AppQuestion } from '@/types';
@@ -344,13 +344,22 @@ function EnrollmentsPageComponent() {
   }, [fetchCourseList]);
   
   useEffect(() => {
-    if (selectedCourseId) {
-        if (initialLoadRef.current) initialLoadRef.current = false;
-        fetchCourseDetails(selectedCourseId);
-    } else if (initialLoadRef.current && !isLoadingCourses && courses.length > 0) {
-        router.replace(`${pathname}?${createQueryString({ courseId: courses[0].id, page: 1, search: null })}`);
-    }
-}, [selectedCourseId, courses, isLoadingCourses, fetchCourseDetails, router, pathname, createQueryString]);
+      // 1. Lógica de carga de detalles
+      if (selectedCourseId) {
+          fetchCourseDetails(selectedCourseId);
+      }
+
+      // 2. Lógica de redirección inicial
+      if (initialLoadRef.current && !isLoadingCourses && courses.length > 0 && !selectedCourseId) {
+          router.replace(`${pathname}?${createQueryString({ courseId: courses[0].id, page: 1, search: null })}`);
+      }
+      
+      // 3. Bloqueamos futuras inicializaciones
+      if (!isLoadingCourses && (courses.length > 0 || selectedCourseId)) {
+        initialLoadRef.current = false;
+      }
+  }, [selectedCourseId, courses, isLoadingCourses, fetchCourseDetails, router, pathname, createQueryString]);
+
 
   const handleCourseSelection = (courseId: string) => {
       router.push(`${pathname}?${createQueryString({ courseId, page: 1, search: null })}`);
