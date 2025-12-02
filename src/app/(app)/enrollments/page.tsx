@@ -302,17 +302,14 @@ function EnrollmentsPageComponent() {
         const response = await fetch(url, { cache: 'no-store' });
         if (!response.ok) throw new Error('No se pudieron cargar los cursos');
         const data = await response.json();
-        const coursesArray = data.courses || data;
-        setCourses(coursesArray);
-        if (!selectedCourseId && coursesArray.length > 0) {
-            router.replace(`${pathname}?${createQueryString({ courseId: coursesArray[0].id, page: 1, search: null })}`);
-        }
+        setCourses(data.courses || []);
     } catch (err) {
         toast({ title: "Error", description: err instanceof Error ? err.message : "No se pudieron cargar los cursos.", variant: "destructive" });
     } finally {
         setIsLoadingCourses(false);
     }
-  }, [currentUser, isAuthLoading, toast, router, pathname, createQueryString, selectedCourseId]);
+  }, [currentUser, isAuthLoading, toast]);
+
 
   const fetchCourseDetails = useCallback(async (courseId: string) => {
     if (!courseId) return;
@@ -468,7 +465,7 @@ function EnrollmentsPageComponent() {
                                         <XAxis dataKey="date" tickFormatter={(str) => format(new Date(str), 'd MMM', {locale: es})} fontSize={12} />
                                         <YAxis allowDecimals={false} width={30}/>
                                         <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
-                                        <Bar dataKey="count" fill="hsl(var(--chart-1))" barSize={20} radius={[4, 4, 0, 0]} name="Finalizados"/>
+                                        <Bar dataKey="count" fill="hsl(var(--primary))" barSize={20} radius={[4, 4, 0, 0]} name="Finalizados"/>
                                     </ComposedChart>
                                 </ResponsiveContainer>
                             </CardContent>
