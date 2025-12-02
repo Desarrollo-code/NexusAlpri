@@ -258,17 +258,6 @@ export const SidebarFooter = () => {
                 </div>
              )}
             <Button
-                onClick={logout}
-                variant="ghost"
-                className={cn(
-                    "w-full text-[hsl(var(--sidebar-foreground))] hover:bg-red-500/20 hover:text-white",
-                    isCollapsed ? 'justify-center p-0 h-10' : 'justify-start gap-3 p-3'
-                )}
-            >
-                <LogOut className="h-5 w-5" />
-                {!isCollapsed && <span className="font-semibold">Cerrar Sesión</span>}
-            </Button>
-            <Button
                 onClick={toggleSidebar}
                 variant="ghost"
                 size="icon"
