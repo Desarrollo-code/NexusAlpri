@@ -260,8 +260,7 @@ function EnrollmentsPageComponent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { startTour, forceStartTour } = useTour();
-  const initialLoadRef = useRef(true);
-
+  
   const [courses, setCourses] = useState<AppCourse[]>([]);
   const [selectedCourseInfo, setSelectedCourseInfo] = useState<CourseEnrollmentInfo | null>(null);
   const [isLoadingCourses, setIsLoadingCourses] = useState(true);
@@ -301,20 +300,36 @@ function EnrollmentsPageComponent() {
     return params.toString();
   }, [searchParams]);
 
-  const fetchCourseList = useCallback(async () => {
+  // Effect 1: Fetch the list of available courses ONCE
+  useEffect(() => {
     if (isAuthLoading || !currentUser) return;
+    
+    let isMounted = true;
     setIsLoadingCourses(true);
-    try {
-        const url = `/api/courses?manageView=true&userId=${currentUser.id}&userRole=${currentUser.role}`;
-        const response = await fetch(url, { cache: 'no-store' });
-        if (!response.ok) throw new Error('No se pudieron cargar los cursos');
-        const data = await response.json();
-        setCourses(data.courses || []);
-    } catch (err) {
-        toast({ title: "Error", description: err instanceof Error ? err.message : "No se pudieron cargar los cursos.", variant: "destructive" });
-    } finally {
-        setIsLoadingCourses(false);
-    }
+    
+    const fetchCourseList = async () => {
+        try {
+            const url = `/api/courses?manageView=true&userId=${currentUser.id}&userRole=${currentUser.role}`;
+            const response = await fetch(url, { cache: 'no-store' });
+            if (!response.ok) throw new Error('No se pudieron cargar los cursos');
+            const data = await response.json();
+            if (isMounted) {
+                setCourses(data.courses || []);
+            }
+        } catch (err) {
+            if (isMounted) {
+                toast({ title: "Error", description: err instanceof Error ? err.message : "No se pudieron cargar los cursos.", variant: "destructive" });
+            }
+        } finally {
+            if (isMounted) {
+                setIsLoadingCourses(false);
+            }
+        }
+    };
+
+    fetchCourseList();
+    
+    return () => { isMounted = false; };
   }, [currentUser, isAuthLoading, toast]);
 
 
@@ -339,36 +354,20 @@ function EnrollmentsPageComponent() {
     }
   }, [toast, dateRange]);
   
+  // Effect 2: Handle URL changes and data fetching
   useEffect(() => {
-    fetchCourseList();
-  }, [fetchCourseList]);
-  
-  // --- Efecto de Inicialización (Rompe el Bucle) ---
-  useEffect(() => {
-    // ⚠️ Ejecución única para establecer el primer curso si no hay ID en la URL.
-    if (initialLoadRef.current && !isLoadingCourses && courses.length > 0 && !selectedCourseId) {
-        initialLoadRef.current = false; // Bloquea la referencia ANTES de la redirección
-        // Redirigimos para establecer el courseId en la URL
-        router.replace(`${pathname}?${createQueryString({ courseId: courses[0].id, page: 1, search: null })}`);
-        return; 
-    }
-    
-    // Si la lista de cursos ya cargó, aseguramos que la bandera se baje
-    if (!isLoadingCourses) {
-        initialLoadRef.current = false;
-    }
-  }, [courses, isLoadingCourses, router, pathname, createQueryString, selectedCourseId]);
+      // If course list has loaded, but there's no selection in URL, set the first course.
+      if (!isLoadingCourses && courses.length > 0 && !selectedCourseId) {
+          router.replace(`${pathname}?${createQueryString({ courseId: courses[0].id, page: 1, search: null })}`);
+          return;
+      }
+      
+      // If there is a selection, fetch its details.
+      if (selectedCourseId) {
+          fetchCourseDetails(selectedCourseId);
+      }
+  }, [selectedCourseId, courses, isLoadingCourses, fetchCourseDetails, router, pathname, createQueryString]);
 
-  // --- Efecto de Carga de Detalles (Depende del ID y las Fechas) ---
-  useEffect(() => {
-    if (selectedCourseId) {
-        // Llama a la carga de detalles cuando el ID está presente.
-        fetchCourseDetails(selectedCourseId);
-    } else {
-        // Limpia los detalles si no hay un curso seleccionado.
-        setSelectedCourseInfo(null);
-    }
-  }, [selectedCourseId, fetchCourseDetails]);
 
   const handleCourseSelection = (courseId: string) => {
       router.push(`${pathname}?${createQueryString({ courseId, page: 1, search: null })}`);
