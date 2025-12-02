@@ -62,7 +62,9 @@ export default function CertificatesAdminPage() {
     return null;
   }
   
-  return <CertificateTemplateManager />;
+  return (
+    <ScrollArea className="h-full">
+      <CertificateTemplateManager />
+    </ScrollArea>
+  );
 }
-
-    
