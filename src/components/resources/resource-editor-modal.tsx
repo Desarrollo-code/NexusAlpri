@@ -1,4 +1,3 @@
-
 // src/components/resources/resource-editor-modal.tsx
 'use client';
 
