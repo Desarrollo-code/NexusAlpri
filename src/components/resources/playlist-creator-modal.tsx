@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, ListVideo, GripVertical, Trash2, Youtube, UploadCloud, Users } from 'lucide-react';
+import { Loader2, ListVideo, GripVertical, Trash2, Youtube, UploadCloud, Users, PlusCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
