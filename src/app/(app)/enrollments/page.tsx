@@ -277,7 +277,6 @@ function EnrollmentsPageComponent() {
   const searchTerm = searchParams.get('search') || '';
   const currentPage = Number(searchParams.get('page')) || 1;
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
-  const initialLoadRef = useRef(true);
 
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: subDays(new Date(), 29),
@@ -343,22 +342,19 @@ function EnrollmentsPageComponent() {
     fetchCourseList();
   }, [fetchCourseList]);
   
+  // Effect for initial redirection
   useEffect(() => {
-      // 1. Lógica de carga de detalles
-      if (selectedCourseId) {
-          fetchCourseDetails(selectedCourseId);
-      }
+    if (!isLoadingCourses && courses.length > 0 && !selectedCourseId) {
+      router.replace(`${pathname}?${createQueryString({ courseId: courses[0].id, page: 1, search: null })}`);
+    }
+  }, [isLoadingCourses, courses, selectedCourseId, router, pathname, createQueryString]);
 
-      // 2. Lógica de redirección inicial
-      if (initialLoadRef.current && !isLoadingCourses && courses.length > 0 && !selectedCourseId) {
-          router.replace(`${pathname}?${createQueryString({ courseId: courses[0].id, page: 1, search: null })}`);
-      }
-      
-      // 3. Bloqueamos futuras inicializaciones
-      if (!isLoadingCourses && (courses.length > 0 || selectedCourseId)) {
-        initialLoadRef.current = false;
-      }
-  }, [selectedCourseId, courses, isLoadingCourses, fetchCourseDetails, router, pathname, createQueryString]);
+  // Effect for fetching details when ID changes
+  useEffect(() => {
+    if (selectedCourseId) {
+      fetchCourseDetails(selectedCourseId);
+    }
+  }, [selectedCourseId, fetchCourseDetails]);
 
 
   const handleCourseSelection = (courseId: string) => {
