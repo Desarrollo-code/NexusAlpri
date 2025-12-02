@@ -345,8 +345,11 @@ function EnrollmentsPageComponent() {
   useEffect(() => {
     if (selectedCourseId) {
         fetchCourseDetails(selectedCourseId);
+    } else if (!isLoadingCourses && courses.length > 0 && !selectedCourseId) {
+        // CORRECCIÓN: Solo se redirige si no hay un courseId en la URL
+        router.replace(`${pathname}?${createQueryString({ courseId: courses[0].id, page: 1, search: null })}`);
     }
-  }, [selectedCourseId, fetchCourseDetails]);
+  }, [selectedCourseId, courses, isLoadingCourses, fetchCourseDetails, router, pathname, createQueryString]);
 
   const handleCourseSelection = (courseId: string) => {
       router.push(`${pathname}?${createQueryString({ courseId, page: 1, search: null })}`);
