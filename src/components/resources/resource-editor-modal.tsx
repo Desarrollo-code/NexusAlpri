@@ -361,4 +361,3 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     </Dialog>
   );
 }
-```
