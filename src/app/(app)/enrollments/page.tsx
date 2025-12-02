@@ -260,6 +260,7 @@ function EnrollmentsPageComponent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { startTour, forceStartTour } = useTour();
+  const initialLoadRef = useRef(true);
 
   const [courses, setCourses] = useState<AppCourse[]>([]);
   const [selectedCourseInfo, setSelectedCourseInfo] = useState<CourseEnrollmentInfo | null>(null);
@@ -342,20 +343,32 @@ function EnrollmentsPageComponent() {
     fetchCourseList();
   }, [fetchCourseList]);
   
-  // Effect for initial redirection
+  // --- Nuevo useEffect para Inicialización (para reemplazar el anterior) ---
   useEffect(() => {
-    if (!isLoadingCourses && courses.length > 0 && !selectedCourseId) {
-      router.replace(`${pathname}?${createQueryString({ courseId: courses[0].id, page: 1, search: null })}`);
+    // ⚠️ Ejecución única para establecer el primer curso si no hay ID en la URL.
+    if (initialLoadRef.current && !isLoadingCourses && courses.length > 0 && !selectedCourseId) {
+        initialLoadRef.current = false; // Bloquea la referencia ANTES de la redirección
+        // Redirigimos para establecer el courseId en la URL
+        router.replace(`${pathname}?${createQueryString({ courseId: courses[0].id, page: 1, search: null })}`);
+        return; 
     }
-  }, [isLoadingCourses, courses, selectedCourseId, router, pathname, createQueryString]);
+    
+    // Si la lista de cursos ya cargó, aseguramos que la bandera se baje
+    if (!isLoadingCourses && courses.length > 0) {
+        initialLoadRef.current = false;
+    }
+  }, [courses, isLoadingCourses, router, pathname, createQueryString, selectedCourseId]);
 
-  // Effect for fetching details when ID changes
+  // --- Nuevo useEffect para Carga de Detalles (Depende del ID y las Fechas) ---
   useEffect(() => {
     if (selectedCourseId) {
-      fetchCourseDetails(selectedCourseId);
+        // Llama a la carga de detalles cuando el ID está presente.
+        fetchCourseDetails(selectedCourseId);
+    } else {
+        // Limpia los detalles si no hay un curso seleccionado.
+        setSelectedCourseInfo(null);
     }
   }, [selectedCourseId, fetchCourseDetails]);
-
 
   const handleCourseSelection = (courseId: string) => {
       router.push(`${pathname}?${createQueryString({ courseId, page: 1, search: null })}`);
