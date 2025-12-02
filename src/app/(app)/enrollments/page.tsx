@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import { useAuth } from '@/contexts/auth-context';
 import type { Course as AppCourse, User, CourseProgress, Quiz as AppQuiz, Question as AppQuestion } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, AlertTriangle, UsersRound, Filter, MoreVertical, BookOpen, LineChart, TrendingDown, Search, CheckCircle, Percent, HelpCircle, UserX, BarChartHorizontal, ArrowRight, Download, MessageSquare, User as UserIcon, BarChart3, FileText } from 'lucide-react';
+import { Loader2, AlertTriangle, UsersRound, Filter, MoreVertical, BookOpen, LineChart, TrendingDown, Search, CheckCircle, Percent, HelpCircle, UserX, BarChartHorizontal, ArrowRight, Download, MessageSquare, User as UserIcon, BarChart3, FileText, PlusCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -343,22 +343,29 @@ function EnrollmentsPageComponent() {
     fetchCourseList();
   }, [fetchCourseList]);
   
+  // --- Efecto de Inicialización (Rompe el Bucle) ---
   useEffect(() => {
+    // ⚠️ Ejecución única para establecer el primer curso si no hay ID en la URL.
     if (initialLoadRef.current && !isLoadingCourses && courses.length > 0 && !selectedCourseId) {
-        initialLoadRef.current = false; 
+        initialLoadRef.current = false; // Bloquea la referencia ANTES de la redirección
+        // Redirigimos para establecer el courseId en la URL
         router.replace(`${pathname}?${createQueryString({ courseId: courses[0].id, page: 1, search: null })}`);
         return; 
     }
     
+    // Si la lista de cursos ya cargó, aseguramos que la bandera se baje
     if (!isLoadingCourses) {
         initialLoadRef.current = false;
     }
   }, [courses, isLoadingCourses, router, pathname, createQueryString, selectedCourseId]);
 
+  // --- Efecto de Carga de Detalles (Depende del ID y las Fechas) ---
   useEffect(() => {
     if (selectedCourseId) {
+        // Llama a la carga de detalles cuando el ID está presente.
         fetchCourseDetails(selectedCourseId);
     } else {
+        // Limpia los detalles si no hay un curso seleccionado.
         setSelectedCourseInfo(null);
     }
   }, [selectedCourseId, fetchCourseDetails]);
@@ -421,6 +428,25 @@ function EnrollmentsPageComponent() {
 
   if (!currentUser || (currentUser.role !== 'ADMINISTRATOR' && currentUser.role !== 'INSTRUCTOR')) {
     return <div className="text-center py-10">Acceso denegado a esta sección.</div>;
+  }
+  
+  if (!isLoadingCourses && courses.length === 0) {
+      return (
+        <div className="text-center py-10">
+            <Card className="max-w-lg mx-auto">
+                <CardHeader>
+                    <BookOpen className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    <CardTitle>No hay cursos para gestionar</CardTitle>
+                    <CardDescription>Para ver el seguimiento de estudiantes, primero debes crear un curso.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button asChild>
+                        <Link href="/manage-courses"><PlusCircle className="mr-2 h-4 w-4" />Crear mi primer curso</Link>
+                    </Button>
+                </CardContent>
+            </Card>
+        </div>
+      )
   }
   
   const mostDifficultLessons = selectedCourseInfo 
