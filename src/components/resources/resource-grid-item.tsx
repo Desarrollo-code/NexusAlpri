@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import type { AppResourceType } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
 import { Card } from '@/components/ui/card';
-import { Edit, MoreVertical, Trash2, Lock, Download, Globe, Users, Move, Grip, ArchiveRestore, Pin, BrainCircuit, FileText, ListVideo, Brain } from 'lucide-react';
+import { Edit, MoreVertical, Trash2, Lock, Download, Globe, Users, Move, Grip, ArchiveRestore, Pin, BrainCircuit, FileText, ListVideo, Brain, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
