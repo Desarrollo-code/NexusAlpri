@@ -260,12 +260,10 @@ function EnrollmentsPageComponent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { startTour, forceStartTour } = useTour();
-  const initialLoadRef = useRef(true);
   
   const [courses, setCourses] = useState<AppCourse[]>([]);
   const [selectedCourseInfo, setSelectedCourseInfo] = useState<CourseEnrollmentInfo | null>(null);
-  const [isLoadingCourses, setIsLoadingCourses] = useState(true);
-  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [studentToView, setStudentToView] = useState<StudentEnrollmentDetails | null>(null);
@@ -284,7 +282,6 @@ function EnrollmentsPageComponent() {
     to: new Date(),
   }));
 
-
   useEffect(() => {
     setPageTitle('Inscripciones');
     startTour('enrollments', enrollmentsTour);
@@ -302,73 +299,69 @@ function EnrollmentsPageComponent() {
     return params.toString();
   }, [searchParams]);
 
-  const fetchCourseList = useCallback(async () => {
+  useEffect(() => {
     if (isAuthLoading || !currentUser) return;
-    setIsLoadingCourses(true);
-    try {
-        let url = `/api/courses?manageView=true&userId=${currentUser.id}&userRole=${currentUser.role}`;
-        const response = await fetch(url, { cache: 'no-store' });
-        if (!response.ok) throw new Error('No se pudieron cargar los cursos');
-        const data = await response.json();
-        setCourses(data.courses || []);
-    } catch (err) {
-        toast({ title: "Error", description: err instanceof Error ? err.message : "No se pudieron cargar los cursos.", variant: "destructive" });
-    } finally {
-        setIsLoadingCourses(false);
-    }
-  }, [currentUser, isAuthLoading, toast]);
 
+    let isMounted = true;
+    setIsLoading(true);
 
-  const fetchCourseDetails = useCallback(async (courseId: string) => {
-    if (!courseId) return;
-    setIsLoadingDetails(true);
-    try {
-        const params = new URLSearchParams();
-        if (dateRange.from) params.set('startDate', dateRange.from.toISOString());
-        if (dateRange.to) params.set('endDate', dateRange.to.toISOString());
+    const loadData = async () => {
+        try {
+            // 1. Fetch course list
+            const courseRes = await fetch(`/api/courses?manageView=true&userId=${currentUser.id}&userRole=${currentUser.role}`, { cache: 'no-store' });
+            if (!courseRes.ok) throw new Error('No se pudieron cargar los cursos');
+            const courseData = await courseRes.json();
+            const fetchedCourses = courseData.courses || [];
+            
+            if (!isMounted) return;
+            setCourses(fetchedCourses);
 
-        const response = await fetch(`/api/enrollments/course/${courseId}/details?${params.toString()}`, { cache: 'no-store' });
-        if (!response.ok) throw new Error((await response.json()).message || 'No se pudieron cargar los detalles del curso');
-        const data: CourseEnrollmentInfo = await response.json();
-        setSelectedCourseInfo(data);
-    } catch(err) {
-        setError(err instanceof Error ? err.message : 'Error desconocido');
-        toast({ title: "Error", description: err instanceof Error ? err.message : 'No se pudieron cargar los detalles del curso.', variant: "destructive" });
-        setSelectedCourseInfo(null);
-    } finally {
-        setIsLoadingDetails(false);
-    }
-  }, [toast, dateRange]);
-  
-  useEffect(() => {
-    fetchCourseList();
-  }, [fetchCourseList]);
-  
-  // 1. Efecto para la Carga Inicial ÚNICA del courseId
-  useEffect(() => {
-    // ⚠️ La condición de parada debe ir primero
-    if (!initialLoadRef.current || isLoadingCourses || courses.length === 0 || selectedCourseId) {
-        return; 
-    }
-    
-    // Si llegamos aquí, es la primera carga y hay cursos disponibles
-    initialLoadRef.current = false; // BLOQUEA la referencia *antes* de la redirección
-    
-    // Ejecuta la redirección para establecer el ID
-    router.replace(`${pathname}?${createQueryString({ courseId: courses[0].id, page: 1, search: null })}`);
+            // 2. Determine which course to display
+            let finalCourseId = selectedCourseId;
+            if (!selectedCourseId && fetchedCourses.length > 0) {
+                // If no course ID in URL, redirect to the first one
+                const newQuery = createQueryString({ courseId: fetchedCourses[0].id, page: 1, search: null });
+                router.replace(`${pathname}?${newQuery}`);
+                return; // Stop execution, the re-render will handle the data fetching
+            }
+            
+            if (finalCourseId) {
+                // 3. Fetch details for the selected course
+                 const params = new URLSearchParams();
+                 if (dateRange.from) params.set('startDate', dateRange.from.toISOString());
+                 if (dateRange.to) params.set('endDate', dateRange.to.toISOString());
 
-  }, [courses, isLoadingCourses, router, pathname, createQueryString, selectedCourseId]);
+                const detailsRes = await fetch(`/api/enrollments/course/${finalCourseId}/details?${params.toString()}`, { cache: 'no-store' });
+                if (!detailsRes.ok) throw new Error('No se pudieron cargar los detalles del curso');
+                const detailsData = await detailsRes.json();
+                
+                if (isMounted) {
+                    setSelectedCourseInfo(detailsData);
+                }
+            } else {
+                 if (isMounted) {
+                    setSelectedCourseInfo(null);
+                 }
+            }
 
+        } catch (err) {
+            if (isMounted) {
+                setError(err instanceof Error ? err.message : 'Error desconocido');
+                toast({ title: "Error", description: err instanceof Error ? err.message : 'No se pudo cargar la página.', variant: "destructive" });
+            }
+        } finally {
+            if (isMounted) {
+                setIsLoading(false);
+            }
+        }
+    };
 
-// B. Efecto para Cargar los Detalles (Responde a cambios en el ID o en las fechas)
-// Este efecto solo se preocupa por selectedCourseId
-  useEffect(() => {
-    if (selectedCourseId) {
-        fetchCourseDetails(selectedCourseId);
-    } else {
-        setSelectedCourseInfo(null);
-    }
-  }, [selectedCourseId, fetchCourseDetails]);
+    loadData();
+
+    return () => {
+        isMounted = false;
+    };
+}, [isAuthLoading, currentUser, selectedCourseId, router, pathname, createQueryString, toast, dateRange]);
 
 
   const handleCourseSelection = (courseId: string) => {
@@ -399,7 +392,11 @@ function EnrollmentsPageComponent() {
         toast({ title: 'Inscripción Cancelada', description: `Se ha cancelado la inscripción de ${studentToUnenroll.user.name}.` });
         setStudentToView(null);
         setStudentToUnenroll(null);
-        fetchCourseDetails(selectedCourseId);
+        
+        // Refetch details after un-enrolling
+        const detailsRes = await fetch(`/api/enrollments/course/${selectedCourseId}/details`, { cache: 'no-store' });
+        const detailsData = await detailsRes.json();
+        setSelectedCourseInfo(detailsData);
     } catch(err) {
         toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
     } finally {
@@ -431,7 +428,7 @@ function EnrollmentsPageComponent() {
     return <div className="text-center py-10">Acceso denegado a esta sección.</div>;
   }
   
-  if (!isLoadingCourses && courses.length === 0) {
+  if (!isLoading && courses.length === 0) {
       return (
         <div className="text-center py-10">
             <Card className="max-w-lg mx-auto">
@@ -472,7 +469,7 @@ function EnrollmentsPageComponent() {
                      <CardTitle className="text-2xl font-headline flex items-center gap-2"><UsersRound /> Seguimiento de Estudiantes</CardTitle>
                 </div>
                 <div className="w-full sm:w-auto flex items-center gap-2">
-                    <CourseSelector courses={courses} onSelect={handleCourseSelection} selectedCourseId={selectedCourseId} isLoading={isLoadingCourses} />
+                    <CourseSelector courses={courses} onSelect={handleCourseSelection} selectedCourseId={selectedCourseId} isLoading={isLoading} />
                      {selectedCourseInfo && (
                         <PDFDownloadLink
                             document={<EnrollmentReportPDF course={selectedCourseInfo} platformLogo={settings?.logoUrl} />}
@@ -491,7 +488,7 @@ function EnrollmentsPageComponent() {
 
         {selectedCourseId && (
           <CardContent>
-            {isLoadingDetails ? (
+            {isLoading || !selectedCourseInfo ? (
                 <EnrollmentsSkeleton />
             ) : selectedCourseInfo ? (
                 <div className="space-y-6">
