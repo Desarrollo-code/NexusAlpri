@@ -116,7 +116,9 @@ export default function ResourcesPage() {
       }
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido');
+      const errorMessage = err instanceof Error ? err.message : 'Ocurrió un error desconocido';
+      setError(errorMessage);
+      console.error("[ResourcesPage:fetchResources] Error cargando recursos:", err);
     } finally {
       setIsLoadingData(false);
     }
@@ -367,7 +369,7 @@ export default function ResourcesPage() {
                                     {files.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={false} onSelect={() => {}} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
                                 </div>
                             ) : (
-                                <ResourceListItem resources={files} onSelect={()=>{}} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onTogglePin={handleTogglePin} selectedIds={selectedIds} onSelectionChange={handleSelectionChange} />
+                                <ResourceListItem resources={files} onSelect={()=>{}} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onTogglePin={onTogglePin} selectedIds={selectedIds} onSelectionChange={handleSelectionChange} />
                             )}
                         </section>
                     )}

@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { PlusCircle, List, Grid, Filter, UserPlus, MoreVertical, Loader2, AlertTriangle, ShieldAlert, Archive, ArchiveRestore, Trash2, Eye, HelpCircle, LineChart, BookOpen, Layers, Check, Award, ListPlus } from 'lucide-react';
+import { PlusCircle, List, Grid, Filter, UserPlus, MoreVertical, Loader2, AlertTriangle, ShieldAlert, Archive, ArchiveRestore, Trash2, Eye, HelpCircle, LineChart, BookOpen, Layers, Check, Award, BookMarked } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
 import type { Course as AppCourseType, CourseStatus, UserRole, User } from '@/types';
@@ -374,7 +374,7 @@ function ManageCoursesPageComponent() {
                  viewMode === 'grid' ? <GridView /> : <ListView />
             ) : (
                 <div className="text-center py-12">
-                    <ListPlus className="mx-auto h-12 w-12 text-primary mb-4" /><h3 className="text-xl font-semibold mb-2">No hay cursos en esta sección</h3><p className="text-muted-foreground">No se encontraron cursos que coincidan con este estado.</p>
+                    <BookMarked className="mx-auto h-12 w-12 text-primary mb-4" /><h3 className="text-xl font-semibold mb-2">No hay cursos en esta sección</h3><p className="text-muted-foreground">No se encontraron cursos que coincidan con este estado.</p>
                 </div>
             )}
           </div>
