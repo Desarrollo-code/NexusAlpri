@@ -1,3 +1,4 @@
+
 // src/app/(app)/admin/certificates/page.tsx
 'use client';
 
@@ -63,3 +64,5 @@ export default function CertificatesAdminPage() {
   
   return <CertificateTemplateManager />;
 }
+
+    
