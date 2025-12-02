@@ -279,10 +279,10 @@ function EnrollmentsPageComponent() {
   const currentPage = Number(searchParams.get('page')) || 1;
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>(() => ({
     from: subDays(new Date(), 29),
     to: new Date(),
-  });
+  }));
 
   useEffect(() => {
     setPageTitle('Inscripciones');
@@ -343,29 +343,21 @@ function EnrollmentsPageComponent() {
     fetchCourseList();
   }, [fetchCourseList]);
   
-  // --- Nuevo useEffect para Inicialización (para reemplazar el anterior) ---
   useEffect(() => {
-    // ⚠️ Ejecución única para establecer el primer curso si no hay ID en la URL.
     if (initialLoadRef.current && !isLoadingCourses && courses.length > 0 && !selectedCourseId) {
-        initialLoadRef.current = false; // Bloquea la referencia ANTES de la redirección
-        // Redirigimos para establecer el courseId en la URL
+        initialLoadRef.current = false;
         router.replace(`${pathname}?${createQueryString({ courseId: courses[0].id, page: 1, search: null })}`);
         return; 
     }
-    
-    // Si la lista de cursos ya cargó, aseguramos que la bandera se baje
     if (!isLoadingCourses && courses.length > 0) {
         initialLoadRef.current = false;
     }
   }, [courses, isLoadingCourses, router, pathname, createQueryString, selectedCourseId]);
 
-  // --- Nuevo useEffect para Carga de Detalles (Depende del ID y las Fechas) ---
   useEffect(() => {
     if (selectedCourseId) {
-        // Llama a la carga de detalles cuando el ID está presente.
         fetchCourseDetails(selectedCourseId);
     } else {
-        // Limpia los detalles si no hay un curso seleccionado.
         setSelectedCourseInfo(null);
     }
   }, [selectedCourseId, fetchCourseDetails]);
