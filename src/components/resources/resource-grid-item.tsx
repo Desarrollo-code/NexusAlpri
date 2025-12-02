@@ -12,6 +12,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Image from 'next/image';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
@@ -176,9 +177,9 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                  {isQuizEnabled && (
                     <div className="px-2 pb-2">
                         <Button asChild size="sm" className="w-full">
-                           <Link href={canModify ? `/resources/${resource.id}/edit-quiz` : `/forms/${resource.quiz?.id}/view`}>
+                           <Link href={canModify ? `/resources/${resource.id}/edit-quiz` : (hasQuiz ? `/forms/${resource.quiz?.id}/view` : '#')}>
                               {hasQuiz ? <BrainCircuit className="mr-2 h-4 w-4"/> : <PlusCircle className="mr-2 h-4 w-4"/>}
-                              {canModify ? (hasQuiz ? 'Editar Quiz' : 'Crear Quiz') : 'Realizar Quiz'}
+                              {canModify ? (hasQuiz ? 'Editar Quiz' : 'Crear Quiz') : (hasQuiz ? 'Realizar Quiz' : 'Quiz no disponible')}
                            </Link>
                         </Button>
                     </div>
@@ -189,4 +190,3 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
 });
 ResourceGridItem.displayName = 'ResourceGridItem';
 export { ResourceGridItem };
-

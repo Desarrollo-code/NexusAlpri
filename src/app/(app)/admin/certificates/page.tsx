@@ -53,7 +53,7 @@ export default function CertificatesAdminPage() {
   }, [isAuthLoading, user, router]);
 
 
-  if (!user || user.role !== 'ADMINISTRATOR') {
+  if (isAuthLoading || !user || user.role !== 'ADMINISTRATOR') {
     return <CertificatesSkeleton />;
   }
   
