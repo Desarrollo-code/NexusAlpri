@@ -1,7 +1,9 @@
+
 // src/app/(app)/enrollments/page.tsx
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import { useAuth } from '@/contexts/auth-context';
 import type { Course as AppCourse, User, CourseProgress, Quiz as AppQuiz, Question as AppQuestion } from '@/types';
 import { useToast } from '@/hooks/use-toast';
@@ -37,8 +39,13 @@ import Link from 'next/link';
 import { QuizAnalyticsView } from '@/components/analytics/quiz-analytics-view';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PDFDownloadLink } from '@react-pdf/renderer';
-import { EnrollmentReportPDF } from '@/components/reports/enrollment-report-pdf';
 import { MetricCard } from '@/components/analytics/metric-card';
+
+// Carga dinámica del componente PDF para evitar problemas de SSR
+const EnrollmentReportPDF = dynamic(() =>
+  import('@/components/reports/enrollment-report-pdf').then(mod => mod.EnrollmentReportPDF),
+  { ssr: false }
+);
 
 
 // --- TYPE DEFINITIONS ---
