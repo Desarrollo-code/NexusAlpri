@@ -17,7 +17,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { Loader2, Save, UploadCloud, Link as LinkIcon, Image as ImageIcon, XCircle, Replace, Calendar as CalendarIcon, Eye, EyeOff, X, Globe, Users, FileText, Check, Archive, FilePen, RotateCcw, PlusCircle, Briefcase } from 'lucide-react';
 import type { AppResourceType, User as AppUser, ResourceSharingMode, Process } from '@/types';
 import { UploadArea } from '@/components/ui/upload-area';
@@ -35,9 +34,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
-import { FileIcon } from '@/components/ui/file-icon';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import { QuizViewer } from '@/components/quiz-viewer';
 
 interface ResourceEditorModalProps {
   isOpen: boolean;
@@ -55,18 +52,6 @@ interface UploadState {
   status: 'uploading' | 'processing' | 'completed' | 'error';
   url?: string;
 }
-
-const getInitials = (name?: string | null): string => {
-  if (!name) return '??';
-  const names = name.trim().split(/\s+/); // Use regex to handle multiple spaces
-  if (names.length > 1 && names[0] && names[names.length - 1]) {
-    return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
-  }
-  if (names.length === 1 && names[0]) {
-    return names[0].substring(0, 2).toUpperCase();
-  }
-  return name.substring(0, 2).toUpperCase();
-};
 
 export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSave }: ResourceEditorModalProps) {
   const { toast } = useToast();

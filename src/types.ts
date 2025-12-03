@@ -219,8 +219,10 @@ export interface AppResourceType extends Omit<Prisma.EnterpriseResourceGetPayloa
     hasPin: boolean;
     status: ResourceStatus;
     filetype: string | null;
+    sharingMode: ResourceSharingMode;
     uploader?: { id: string, name: string | null, avatar: string | null } | null;
     sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
+    sharedWithProcesses?: Pick<Process, 'id' | 'name'>[];
     collaborators?: Pick<User, 'id' | 'name' | 'avatar'>[]; // Added for playlist collaborators
     quiz?: Quiz | null;
     version: number;
