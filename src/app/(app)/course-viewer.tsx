@@ -3,7 +3,7 @@
 
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft, LineChart, Notebook, ScreenShare, ChevronRight, Palette, X, GraduationCap, Expand, Edit, Smartphone, Lock } from 'lucide-react';
+import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft, LineChart, Notebook, ScreenShare, ChevronRight, Palette, X, GraduationCap, Expand, Edit, Smartphone, Lock, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
@@ -30,6 +30,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { PdfViewer } from '@/components/pdf-viewer';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import { AnimatePresence, motion } from 'framer-motion';
+import { ColorfulLoader } from './ui/colorful-loader';
+import { CourseComments } from '@/components/course-comments';
 
 const noteColors = [
   { value: 'yellow', bg: 'bg-yellow-100 dark:bg-yellow-900/40', border: 'border-yellow-200 dark:border-yellow-800/50' },
@@ -63,7 +65,7 @@ const DocxPreviewer = ({ url }: { url: string }) => {
         loadDocx();
     }, [url]);
 
-    if (isLoading) return <div className="p-4 text-center"><Loader2 className="animate-spin" /></div>;
+    if (isLoading) return <div className="p-4 text-center"><div className="w-6 h-6 mx-auto"><ColorfulLoader /></div></div>;
     if (error) return <div className="p-4 text-center text-destructive">{error}</div>;
     return <div className="prose prose-sm dark:prose-invert max-w-none my-4 p-3 border rounded-lg bg-card" dangerouslySetInnerHTML={{ __html: html || '' }} />;
 };
@@ -137,7 +139,7 @@ const LessonNotesPanel = ({ lessonId, isOpen, onClose }: { lessonId: string, isO
                     <span>Mis Apuntes</span>
                 </h3>
                 <div className="flex items-center gap-2">
-                    {isSaving && <p className="text-xs text-muted-foreground flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin"/>Guardando...</p>}
+                    {isSaving && <p className="text-xs text-muted-foreground flex items-center gap-1"><div className="w-3 h-3"><ColorfulLoader/></div>Guardando...</p>}
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-7 w-7"><Palette className="h-4 w-4"/></Button>
@@ -161,7 +163,7 @@ const LessonNotesPanel = ({ lessonId, isOpen, onClose }: { lessonId: string, isO
              <div className="flex-1 min-h-0">
                 {isLoading ? (
                     <div className="flex justify-center items-center h-full">
-                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                        <div className="w-6 h-6"><ColorfulLoader /></div>
                     </div>
                 ) : (
                     <RichTextEditor
@@ -287,15 +289,17 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   }, [courseProgress]);
 
   const lastCompletedLessonIndex = useMemo(() => {
-    if (completedLessonIds.size === 0) return -1;
+    if (!allLessons || allLessons.length === 0) return -1;
+    // Find the index of the last completed lesson in the flattened list
     let lastIndex = -1;
     allLessons.forEach((lesson, index) => {
         if (completedLessonIds.has(lesson.id)) {
-            lastIndex = index;
+            lastIndex = Math.max(lastIndex, index);
         }
     });
     return lastIndex;
   }, [allLessons, completedLessonIds]);
+
 
   const isCreatorViewingCourse = useMemo(() => {
     if (!user || !course) return false;
@@ -324,23 +328,25 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   }, []);
 
  const recordInteraction = useCallback(async (lessonId: string, type: 'view' | 'quiz' | 'video') => {
-    if (isCreatorViewingCourse || !user || !courseId || !isEnrolled || completedLessonIds.has(lessonId)) return;
+    if (isCreatorViewingCourse || !user || !courseId || !isEnrolled || completedLessonIds.has(lessonId)) {
+        return;
+    }
     
-    const originalProgress = courseProgress; // Guardar estado previo
-    
-    // --- Actualización optimista de la UI ---
+    // Optimistic UI update
     setCourseProgress(prev => {
         if (!prev) return null;
+        if (prev.completedLessons.some(l => l.lessonId === lessonId)) return prev;
+        
         const newCompletedLesson = { lessonId, type, score: null };
         const newCompletedLessons = [...prev.completedLessons, newCompletedLesson];
-        const newPercentage = Math.round((newCompletedLessons.length / totalLessonsCount) * 100);
+        const newPercentage = totalLessonsCount > 0 ? Math.round((newCompletedLessons.length / totalLessonsCount) * 100) : 0;
+        
         return {
             ...prev,
             completedLessons: newCompletedLessons,
             progressPercentage: newPercentage
         };
     });
-    // ----------------------------------------
     
     try {
         const response = await fetch(`/api/progress/${user.id}/${courseId}/lesson`, {
@@ -349,19 +355,23 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
           body: JSON.stringify({ lessonId, type }),
         });
 
-        if (!response.ok) throw new Error('Failed to record interaction');
+        if (!response.ok) {
+            throw new Error('Failed to record interaction');
+        }
         
         const lesson = allLessons.find(l => l.id === lessonId);
-        if (lesson) {
+        if (lesson && type !== 'video') { // Don't toast for video end to avoid being intrusive
             toast({ description: `Progreso guardado: "${lesson.title}"`, duration: 2000 });
         }
-
+        // No need to fetchProgress here, optimistic update is enough for the frontend
     } catch (e) {
       console.error("Failed to record interaction:", e);
-      setCourseProgress(originalProgress); // Revertir en caso de error
+      // Revert on error by re-fetching the source of truth
+      fetchProgress(user.id, courseId);
       toast({ title: 'Error de Sincronización', description: 'No se pudo guardar tu progreso. Inténtalo de nuevo.', variant: 'destructive'});
     }
-  }, [user, courseId, isEnrolled, isCreatorViewingCourse, toast, allLessons, completedLessonIds, fetchProgress, courseProgress, totalLessonsCount]);
+  }, [user, courseId, isEnrolled, isCreatorViewingCourse, toast, allLessons, completedLessonIds, totalLessonsCount, fetchProgress]);
+
   
   const handleConsolidateProgress = useCallback(async () => {
       if (!user || !courseId || isConsolidating) return;
@@ -435,8 +445,11 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
       
     const isVideoLesson = lesson.contentBlocks.some(b => b.type === 'VIDEO');
       
-    if (user && isEnrolled && !isCreatorViewingCourse && !isVideoLesson && lessonToSelect && !completedLessonIds.has(lessonToSelect)) {
-      recordInteraction(lessonToSelect, 'view');
+    if (user && isEnrolled && !isCreatorViewingCourse && !isVideoLesson && lessonToSelect) {
+        // Record interaction only if lesson is not already completed
+        if (!completedLessonIds.has(lessonToSelect)) {
+            recordInteraction(lessonToSelect, 'view');
+        }
     }
   }, [isLoading, course, lessonIdFromQuery, firstLessonId, user, isEnrolled, recordInteraction, isCreatorViewingCourse, selectedLessonId, allLessons, setPageTitle, completedLessonIds]);
   
@@ -645,7 +658,9 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             </div>
             <ScrollArea className="flex-1">
                  <Accordion type="multiple" defaultValue={course?.modules.map(m => m.id)} className="w-full p-2">
-                    {filteredModules.map((moduleItem) => (
+                    {filteredModules.map((moduleItem) => {
+                      const lessonsInModule = allLessons.filter(l => l.moduleId === moduleItem.id);
+                      return (
                       <AccordionItem value={moduleItem.id} key={moduleItem.id} className="border-b-0 mb-1">
                         <AccordionTrigger className="text-sm font-semibold hover:no-underline py-2 px-2 hover:bg-muted/50 rounded-md">
                           <span className="text-left">{moduleItem.title}</span>
@@ -654,9 +669,9 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                           {moduleItem.lessons.length > 0 ? (
                             <ul className="space-y-1 border-l-2 border-primary/20 ml-2 pl-4">
                               {moduleItem.lessons.map(lesson => {
-                                const currentLessonIndex = lessonCounter++;
+                                const currentLessonIndex = allLessons.findIndex(l => l.id === lesson.id);
                                 const isCompleted = completedLessonIds.has(lesson.id);
-                                const isLocked = !isCreatorViewingCourse && (currentLessonIndex > lastCompletedLessonIndex + 1);
+                                const isLocked = !isCreatorViewingCourse && currentLessonIndex > lastCompletedLessonIndex + 1;
 
                                 return (
                                 <li key={lesson.id} className="py-0.5">
@@ -686,7 +701,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                            )}
                         </AccordionContent>
                       </AccordionItem>
-                    ))}
+                    )})}
                  </Accordion>
                  {filteredModules.length === 0 && (
                      <p className="text-muted-foreground text-xs text-center py-4 px-2">No se encontraron lecciones que coincidan con la búsqueda.</p>
@@ -714,7 +729,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                                 <CircularProgress value={courseProgress?.progressPercentage || 0} size={150} strokeWidth={12} />
                                 {completedLessonIds.size === totalLessonsCount && !courseProgress?.completedAt && (
                                     <Button onClick={handleConsolidateProgress} disabled={isConsolidating}>
-                                        {isConsolidating ? <Loader2 className="mr-2 animate-spin"/> : <CheckCircle className="mr-2 h-4 w-4"/>}
+                                        {isConsolidating ? <div className="w-4 h-4 mr-2"><ColorfulLoader/></div> : <CheckCircle className="mr-2 h-4 w-4"/>}
                                         Calcular Puntuación Final
                                     </Button>
                                 )}
@@ -734,13 +749,23 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
       );
   }
   
-  if (isLoading || !course) {
+  if (isLoading) {
     return (
         <div className="flex flex-col items-center justify-center h-full text-center p-6">
-            <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+            <div className="w-12 h-12 mb-4"><ColorfulLoader /></div>
             <h3 className="text-xl font-semibold">Cargando curso...</h3>
         </div>
     );
+  }
+
+  if(!course) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full text-center p-6">
+            <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
+            <h3 className="text-xl font-semibold">Error</h3>
+            <p className="text-muted-foreground">No se pudo cargar el curso.</p>
+        </div>
+      )
   }
 
   return (
@@ -765,8 +790,22 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         isNotesPanelOpen && !isMobile && "mr-[28rem]"
       )}>
           <main className="flex-1 overflow-y-auto thin-scrollbar">
-              <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8">
+              <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8 space-y-6">
                  {renderLessonContent()}
+                 
+                 {isEnrolled && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <MessageSquare className="h-5 w-5 text-primary" />
+                                Comentarios del Curso
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <CourseComments courseId={courseId} />
+                        </CardContent>
+                    </Card>
+                 )}
               </div>
           </main>
       </div>

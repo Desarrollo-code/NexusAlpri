@@ -17,6 +17,7 @@ import { FileIcon } from './ui/file-icon';
 import { cn } from '@/lib/utils';
 import { VerifiedBadge } from './ui/verified-badge';
 import type { Attachment } from '@/types';
+import { useRealtime } from '@/hooks/use-realtime';
 
 interface CommentAuthor {
     id: string;
@@ -84,6 +85,7 @@ export const CourseComments = ({ courseId }: { courseId: string }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const scrollAreaRef = useRef<HTMLDivElement>(null);
 
     const fetchComments = useCallback(async () => {
         try {
@@ -97,6 +99,25 @@ export const CourseComments = ({ courseId }: { courseId: string }) => {
             setIsLoading(false);
         }
     }, [courseId, toast]);
+    
+    // --- Realtime Logic ---
+    const handleRealtimeComment = useCallback((newCommentPayload: CourseComment) => {
+        setComments(prev => {
+            // Evitar duplicados
+            if (prev.some(c => c.id === newCommentPayload.id)) {
+                return prev;
+            }
+            const newComments = [...prev, newCommentPayload];
+            // Asegurarse de que sigan ordenados por fecha
+            return newComments.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        });
+        setTimeout(() => {
+            scrollAreaRef.current?.scrollTo({ top: scrollAreaRef.current.scrollHeight, behavior: 'smooth' });
+        }, 100);
+    }, []);
+
+    useRealtime(`course:${courseId}`, handleRealtimeComment);
+    // --------------------
 
     useEffect(() => {
         fetchComments();
@@ -143,7 +164,7 @@ export const CourseComments = ({ courseId }: { courseId: string }) => {
         try {
             const attachmentPayload = attachments
                 .filter(att => att.url)
-                .map(att => ({ name: att.file.name, url: att.url, type: att.file.type, size: att.file.size }));
+                .map(att => ({ name: att.file.name, url: att.url!, type: att.file.type, size: att.file.size }));
             
             const response = await fetch(`/api/courses/${courseId}/comments`, {
                 method: 'POST',
@@ -152,9 +173,8 @@ export const CourseComments = ({ courseId }: { courseId: string }) => {
             });
 
             if (!response.ok) throw new Error("No se pudo publicar el comentario.");
-
-            const createdComment = await response.json();
-            setComments(prev => [...prev, createdComment]);
+            
+            // No necesitamos añadir el comentario aquí, el evento de broadcast se encargará.
             setNewComment('');
             setAttachments([]);
 
@@ -167,17 +187,19 @@ export const CourseComments = ({ courseId }: { courseId: string }) => {
 
     return (
         <div className="flex flex-col h-full bg-card rounded-xl border">
-            <ScrollArea className="flex-1">
-                <div className="p-4 space-y-6">
-                    {isLoading ? (
-                        <div className="flex justify-center items-center h-40"><Loader2 className="h-6 w-6 animate-spin"/></div>
-                    ) : comments.length > 0 ? (
-                        comments.map(comment => <CommentCard key={comment.id} comment={comment} />)
-                    ) : (
-                        <div className="text-center py-10 text-muted-foreground text-sm">Sé el primero en iniciar la discusión.</div>
-                    )}
-                </div>
-            </ScrollArea>
+            <div className="flex-1 min-h-[400px]">
+                <ScrollArea className="h-full" ref={scrollAreaRef}>
+                    <div className="p-4 space-y-6">
+                        {isLoading ? (
+                            <div className="flex justify-center items-center h-40"><Loader2 className="h-6 w-6 animate-spin"/></div>
+                        ) : comments.length > 0 ? (
+                            comments.map(comment => <CommentCard key={comment.id} comment={comment} />)
+                        ) : (
+                            <div className="text-center py-10 text-muted-foreground text-sm">Sé el primero en iniciar la discusión.</div>
+                        )}
+                    </div>
+                </ScrollArea>
+            </div>
             <div className="p-4 border-t bg-muted/50 rounded-b-xl">
                  {attachments.length > 0 && (
                     <div className="mb-2 space-y-2">

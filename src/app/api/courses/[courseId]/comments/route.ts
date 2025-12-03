@@ -2,6 +2,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { supabaseAdmin } from '@/lib/supabase-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -70,6 +71,17 @@ export async function POST(req: NextRequest, { params }: { params: { courseId: s
             },
         });
         
+        // --- Realtime Broadcast ---
+        if (supabaseAdmin) {
+            const channel = supabaseAdmin.channel(`course:${courseId}`);
+            await channel.send({
+                type: 'broadcast',
+                event: 'chat_message', // Reutilizamos el evento del chat
+                payload: newComment,
+            });
+        }
+        // ------------------------
+
         return NextResponse.json(newComment, { status: 201 });
 
     } catch (error) {
