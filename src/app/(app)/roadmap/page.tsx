@@ -11,7 +11,7 @@ import type { RoadmapItem } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { InteractiveRoadmap } from '@/components/roadmap/interactive-roadmap';
-import { Card, CardHeader } from '@/components/ui/card';
+import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 import Image from 'next/image';
 
 
@@ -104,25 +104,33 @@ export default function RoadmapPage() {
 
   return (
     <div className="w-full">
-      <Card className="relative z-10 w-full p-6 rounded-2xl overflow-hidden bg-background/50 shadow-lg border mb-12 text-center">
-          <div className="absolute inset-0 z-0 opacity-10">
-              {settings?.roadmapImageUrl && (
-                  <Image src={settings.roadmapImageUrl} alt="Fondo de la hoja de ruta" fill className="object-cover" />
-              )}
-          </div>
-           <div className="relative z-10">
-              <h1 className="text-3xl font-bold font-headline flex items-center justify-center gap-2">La Evolución de NexusAlpri</h1>
-              <p className="text-muted-foreground max-w-2xl mx-auto mt-2">
-                Un viaje interactivo a través de los hitos clave que han dado forma a nuestra plataforma.
-              </p>
-               {user?.role === 'ADMINISTRATOR' && (
-                    <div className="mt-4">
-                        <Button onClick={() => handleOpenEditor()} size="sm">
-                            <PlusCircle className="mr-2 h-4 w-4"/>
-                            Añadir Hito
-                        </Button>
-                    </div>
-                )}
+      <Card className="w-full p-4 md:p-6 rounded-2xl shadow-lg border mb-12">
+           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+               <div className="flex-grow text-center md:text-left">
+                  <h1 className="text-3xl font-bold font-headline flex items-center justify-center md:justify-start gap-2">La Evolución de NexusAlpri</h1>
+                  <p className="text-muted-foreground max-w-2xl mt-1">
+                    Un viaje interactivo a través de los hitos clave que han dado forma a nuestra plataforma.
+                  </p>
+                   {user?.role === 'ADMINISTRATOR' && (
+                        <div className="mt-4 text-center md:text-left">
+                            <Button onClick={() => handleOpenEditor()} size="sm">
+                                <PlusCircle className="mr-2 h-4 w-4"/>
+                                Añadir Hito
+                            </Button>
+                        </div>
+                    )}
+               </div>
+               {settings?.roadmapImageUrl && (
+                 <div className="relative w-48 h-32 flex-shrink-0 hidden md:block">
+                   <Image 
+                     src={settings.roadmapImageUrl} 
+                     alt="Ilustración de la hoja de ruta"
+                     fill 
+                     className="object-contain" 
+                     data-ai-hint="roadmap illustration"
+                   />
+                 </div>
+               )}
            </div>
       </Card>
 
