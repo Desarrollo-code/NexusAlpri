@@ -51,7 +51,11 @@ export interface PlatformSettings {
     benefitsImageUrl?: string | null;
     announcementsImageUrl?: string | null;
     publicPagesBgUrl?: string | null;
-    securityMascotUrl?: string | null;
+    securityAuditImageUrl?: string | null;
+    tourMascotUrl?: string | null;
+    dashboardImageUrlAdmin?: string | null;
+    dashboardImageUrlInstructor?: string | null;
+    dashboardImageUrlStudent?: string | null;
     emptyStateCoursesUrl?: string | null;
     emptyStateMyCoursesUrl?: string | null;
     emptyStateFormsUrl?: string | null;
@@ -62,7 +66,9 @@ export interface PlatformSettings {
     emptyStateUsersUrl?: string | null;
     emptyStateLeaderboardUrl?: string | null;
     emptyStateAnnouncementsUrl?: string | null;
+    roadmapPhases?: string[];
     roadmapVisibleTo?: UserRole[];
+    roadmapImageUrl?: string | null;
 }
 
 // --- NAVIGATION ---
@@ -81,7 +87,8 @@ export interface NavItem {
 // --- COURSE CONTENT ---
 export type LessonType = 'TEXT' | 'VIDEO' | 'QUIZ' | 'FILE';
 export type CourseStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
-export type QuestionType = 'MULTIPLE_CHOICE' | 'SINGLE_CHOICE';
+export type QuestionType = 'MULTIPLE_CHOICE' | 'SINGLE_CHOICE' | 'TRUE_FALSE' | 'OPEN_ENDED';
+
 
 export interface AnswerOption {
     id: string;
@@ -100,6 +107,7 @@ export interface Question {
     options: AnswerOption[];
     imageUrl?: string | null;
     template?: string | null;
+    timestamp?: number; // Para quizzes interactivos con video
 }
 
 export interface Quiz {
@@ -201,18 +209,23 @@ export type CourseAssignment = Prisma.CourseAssignmentGetPayload<{}>;
 
 
 // --- RESOURCES ---
-export type ResourceType = 'FOLDER' | 'DOCUMENT' | 'GUIDE' | 'MANUAL' | 'POLICY' | 'VIDEO' | 'EXTERNAL_LINK' | 'OTHER' | 'DOCUMENTO_EDITABLE';
+export type ResourceType = 'FOLDER' | 'DOCUMENT' | 'GUIDE' | 'MANUAL' | 'POLICY' | 'VIDEO' | 'EXTERNAL_LINK' | 'OTHER' | 'DOCUMENTO_EDITABLE' | 'VIDEO_PLAYLIST';
 export type ResourceStatus = 'ACTIVE' | 'ARCHIVED';
+export type ResourceSharingMode = 'PUBLIC' | 'PRIVATE' | 'PROCESS';
 
-export interface AppResourceType extends Omit<Prisma.EnterpriseResourceGetPayload<{ include: { quiz: { include: { questions: { include: { options: true }}}}}}>, 'tags' | 'status' | 'filetype'> {
+export interface AppResourceType extends Omit<Prisma.EnterpriseResourceGetPayload<{ include: { quiz: { include: { questions: { include: { options: true }}}}, sharedWithProcesses: true }}>, 'tags' | 'status' | 'filetype' | 'isPublic'> {
     tags: string[];
     uploaderName: string;
     hasPin: boolean;
     status: ResourceStatus;
     filetype: string | null;
+    sharingMode: ResourceSharingMode;
     uploader?: { id: string, name: string | null, avatar: string | null } | null;
     sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
+    sharedWithProcesses?: Pick<Process, 'id' | 'name'>[];
+    collaborators?: Pick<User, 'id' | 'name' | 'avatar'>[];
     quiz?: Quiz | null;
+    version: number;
 }
 
 
@@ -380,7 +393,8 @@ export type FormFieldOption = Omit<Prisma.FormFieldOptionGetPayload<{}>, 'id'> &
 
 export type AppQuestion = Omit<Prisma.FormFieldGetPayload<{
   include: { options: true }
-}>, 'options'> & {
+}>, 'options' | 'id'> & {
+    id: string; // Client-side ID
     options: FormFieldOption[];
 };
 
@@ -405,27 +419,11 @@ export type Process = Prisma.ProcessGetPayload<{
     }
 }>;
 
-// --- MESSAGES / CHAT ---
-export interface Conversation {
-    id: string;
-    participants: Participant[];
-    messages: Message[];
-    updatedAt: string;
-    isGroup: boolean;
-}
-export interface Participant extends Pick<User, 'id' | 'name' | 'avatar'> {}
-export interface Message {
-    id: string;
-    content: string | null;
-    createdAt: string;
-    authorId: string;
-    author: Participant;
-    attachments: Attachment[];
-    conversationId: string;
-}
-
 // --- ROADMAP ---
-export type RoadmapItem = Prisma.RoadmapItemGetPayload<{}>;
+export type RoadmapItem = Omit<Prisma.RoadmapItemGetPayload<{}>, 'color'>;
 
 
-export { type FormStatus, type FormFieldType, type AnnouncementAttachment, type RecurrenceType, type ChatAttachment, type QuizAttempt } from '@prisma/client';
+export { type FormStatus, type FormFieldType, type AnnouncementAttachment, type RecurrenceType, type ChatAttachment, type QuizAttempt, type ResourceVersion } from '@prisma/client';
+
+// Agregado para que no de error
+export type MotivationalMessageTrigger = 'COURSE_ENROLLMENT' | 'COURSE_MID_PROGRESS' | 'COURSE_NEAR_COMPLETION' | 'COURSE_COMPLETION' | 'LEVEL_UP';

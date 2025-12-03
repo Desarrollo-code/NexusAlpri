@@ -53,6 +53,18 @@ interface UploadState {
   url?: string;
 }
 
+const getInitials = (name?: string | null): string => {
+  if (!name) return '??';
+  const names = name.trim().split(/\s+/);
+  if (names.length > 1 && names[0] && names[names.length - 1]) {
+    return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+  }
+  if (names.length === 1 && names[0]) {
+    return names[0].substring(0, 2).toUpperCase();
+  }
+  return name.substring(0, 2).toUpperCase();
+};
+
 export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSave }: ResourceEditorModalProps) {
   const { toast } = useToast();
   const { user, settings } = useAuth();
@@ -111,7 +123,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         setContent(resource.content || '');
         setObservations(resource.observations || '');
         setCategory(resource.category || settings?.resourceCategories[0] || 'General');
-        setSharingMode(resource.sharingMode || (resource.ispublic ? 'PUBLIC' : 'PRIVATE'));
+        setSharingMode(resource.sharingMode || 'PUBLIC');
         setSharedWithUserIds(resource.sharedWith?.map(u => u.id) || []);
         setSharedWithProcessIds(resource.sharedWithProcesses?.map(p => p.id) || []);
         setCollaboratorIds(resource.collaborators?.map(u => u.id) || []);
@@ -125,7 +137,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
 
       if (user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') {
           fetch('/api/users/list').then(res => res.json()).then(data => setAllUsers(data.users || []));
-          fetch('/api/processes').then(res => res.json()).then(data => setAllProcesses(data || []));
+          fetch('/api/processes?format=flat').then(res => res.json()).then(data => setAllProcesses(data || []));
       }
     }
   }, [resource, isOpen, resetForm, settings, user]);
@@ -161,7 +173,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
           filename: upload.file.name,
           description, category,
           sharingMode, 
-          isPublic: sharingMode === 'PUBLIC',
           sharedWithUserIds: sharingMode === 'PRIVATE' ? sharedWithUserIds : [],
           sharedWithProcessIds: sharingMode === 'PROCESS' ? sharedWithProcessIds : [],
           collaboratorIds: [],
@@ -215,8 +226,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     setIsSubmitting(true);
     const payload = {
       title, description, content, observations, category, 
-      sharingMode, 
-      isPublic: sharingMode === 'PUBLIC',
+      sharingMode,
       sharedWithUserIds: sharingMode === 'PRIVATE' ? sharedWithUserIds : [],
       sharedWithProcessIds: sharingMode === 'PROCESS' ? sharedWithProcessIds : [],
       collaboratorIds,
@@ -284,22 +294,21 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                   <div className="space-y-4">
                     <h3 className="font-semibold text-lg text-center">Selecciona el tipo de recurso a crear</h3>
                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="p-4 border rounded-lg space-y-2">
-                          <Label className="font-semibold flex items-center gap-2"><UploadCloud/> Subir Archivo(s)</Label>
-                          <p className="text-xs text-muted-foreground">Sube documentos, imágenes o videos desde tu dispositivo.</p>
-                          {renderUploadArea()}
-                        </div>
-                        <div className="p-4 border rounded-lg space-y-2">
-                          <Label className="font-semibold flex items-center gap-2"><LinkIcon/> Enlace Externo</Label>
-                          <p className="text-xs text-muted-foreground">Añade una URL a un sitio web o recurso externo.</p>
-                          <Input type="url" value={externalLink} onChange={e => {setExternalLink(e.target.value); setResourceType('EXTERNAL_LINK');}} placeholder="https://..."/>
-                        </div>
-                         <div className="p-4 border rounded-lg space-y-2 flex flex-col items-center justify-center">
-                          <Label className="font-semibold flex items-center gap-2"><FilePen/> Documento Editable</Label>
-                          <p className="text-xs text-muted-foreground text-center">Crea y edita un documento directamente en la plataforma.</p>
-                          <Button type="button" variant="secondary" onClick={() => setResourceType('DOCUMENTO_EDITABLE')}>Crear Documento</Button>
-                        </div>
-                    </div>
+                      <div className="p-4 border rounded-lg space-y-2">
+                        <Label className="font-semibold flex items-center gap-2"><UploadCloud/> Subir Archivo(s)</Label>
+                        <p className="text-xs text-muted-foreground">Sube documentos, imágenes o videos desde tu dispositivo.</p>
+                        {renderUploadArea()}
+                      </div>
+                      <div className="p-4 border rounded-lg space-y-2">
+                        <Label className="font-semibold flex items-center gap-2"><LinkIcon/> Enlace Externo</Label>
+                        <p className="text-xs text-muted-foreground">Añade una URL a un sitio web o recurso externo.</p>
+                        <Input type="url" value={externalLink} onChange={e => {setExternalLink(e.target.value); setResourceType('EXTERNAL_LINK');}} placeholder="https://..."/>
+                      </div>
+                       <div className="p-4 border rounded-lg space-y-2 flex flex-col items-center justify-center">
+                        <Label className="font-semibold flex items-center gap-2"><FilePen/> Documento Editable</Label>
+                        <p className="text-xs text-muted-foreground text-center">Crea y edita un documento directamente en la plataforma.</p>
+                        <Button type="button" variant="secondary" onClick={() => setResourceType('DOCUMENTO_EDITABLE')}>Crear Documento</Button>
+                      </div>
                   </div>
                 )}
                   
@@ -319,7 +328,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory}><SelectTrigger id="category"><SelectValue placeholder="Seleccionar..." /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select></div>
-                  <div className="space-y-1.5"><Label>Expiración</Label><Popover><PopoverTrigger asChild><Button variant="outline" className="w-full justify-start font-normal">{expiresAt ? format(expiresAt, "PPP", {locale: es}) : <span>Sin fecha de expiración</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50"/></Button></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={expiresAt} onSelect={setExpiresAt} initialFocus /></PopoverContent></Popover></div>
+                  <div className="space-y-1.5"><Label>Expiración</Label><Popover><PopoverTrigger asChild><Button variant="outline" className="w-full justify-start font-normal">{expiresAt ? format(expiresAt, "PPP", {locale: es}) : <span>Sin fecha de expiración</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50"/></Button></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={expiresAt} onSelect={setExpiresAt} initialFocus locale={es} /></PopoverContent></Popover></div>
                 </div>
                 
                 <Separator />
@@ -328,7 +337,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                     <Label className="font-semibold text-base">Visibilidad</Label>
                      <RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-3 gap-2">
                         <div><RadioGroupItem value="PUBLIC" id="share-public" className="sr-only" /><Label htmlFor="share-public" className={cn("flex flex-col items-center justify-center p-3 rounded-lg border-2 cursor-pointer", sharingMode === 'PUBLIC' && 'border-primary ring-2 ring-primary')}><Globe className="mb-2 h-5 w-5"/>Todos</Label></div>
-                        <div><RadioGroupItem value="PROCESS" id="share-process" className="sr-only"/><Label htmlFor="share-process" className={cn("flex flex-col items-center justify-center p-3 rounded-lg border-2 cursor-pointer", sharingMode === 'PROCESS' && 'border-primary ring-2 ring-primary')}><Briefcase className="mb-2 h-5 w-5"/>Procesos</Label></div>
+                        <div><RadioGroupItem value="PROCESS" id="share-process" className="sr-only"/><Label htmlFor="share-process" className={cn("flex flex-col items-center justify-center p-3 rounded-lg border-2 cursor-pointer", sharingMode === 'PROCESS' && 'border-primary ring-2 ring-primary')}><Briefcase className="mb-2 h-5 w-5"/>Por Procesos</Label></div>
                         <div><RadioGroupItem value="PRIVATE" id="share-private" className="sr-only"/><Label htmlFor="share-private" className={cn("flex flex-col items-center justify-center p-3 rounded-lg border-2 cursor-pointer", sharingMode === 'PRIVATE' && 'border-primary ring-2 ring-primary')}><Users className="mb-2 h-5 w-5"/>Específicos</Label></div>
                      </RadioGroup>
                 </div>
@@ -360,7 +369,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
               </form>
             </ScrollArea>
           </div>
-          <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end sm:justify-end gap-2">
+          <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row sm:justify-end gap-2">
             <Button variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
             <Button type="submit" form="resource-form" disabled={isSubmitting || (resourceType !== 'DOCUMENT' && !title) || (resourceType === 'EXTERNAL_LINK' && !externalLink) }>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
