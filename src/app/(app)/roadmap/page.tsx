@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { InteractiveRoadmap } from '@/components/roadmap/interactive-roadmap';
 import { DecorativeHeaderBackground } from '@/components/layout/decorative-header-background';
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader } from '@/components/ui/card';
 import Image from 'next/image';
 
 
@@ -104,13 +104,11 @@ export default function RoadmapPage() {
   }
 
   return (
-    <div className="relative w-full flex flex-col items-center">
-        <DecorativeHeaderBackground />
-        
-        <Card className="relative z-10 w-full max-w-5xl p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/10 to-accent/10 shadow-lg border-2 border-primary/10">
+    <div className="w-full">
+        <Card className="relative z-10 w-full p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/10 to-accent/10 shadow-lg border-2 border-primary/10 mb-12">
             <div className="absolute inset-0 z-0 opacity-20" style={{ backgroundImage: `url(${settings?.publicPagesBgUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-             <div className="relative z-10 flex items-center justify-between gap-6">
-               <div className="space-y-2">
+             <div className="relative z-10 grid md:grid-cols-3 items-center gap-6">
+               <div className="md:col-span-2 space-y-2">
                   <h1 className="text-3xl font-bold font-headline flex items-center gap-2">La Evolución de NexusAlpri</h1>
                   <p className="text-muted-foreground max-w-2xl">
                     Un viaje interactivo a través de los hitos clave que han dado forma a nuestra plataforma.
@@ -125,14 +123,14 @@ export default function RoadmapPage() {
                     )}
                </div>
                {settings?.roadmapImageUrl && (
-                 <div className="relative w-32 h-32 flex-shrink-0 hidden sm:block">
+                 <div className="relative w-full h-24 md:h-full flex-shrink-0">
                    <Image src={settings.roadmapImageUrl} alt="Ilustración de la hoja de ruta" fill className="object-contain" data-ai-hint="roadmap illustration" />
                  </div>
                )}
             </div>
         </Card>
 
-        <div className="w-full flex-grow px-4 mt-12">
+        <div className="w-full flex-grow px-4">
             {items.length === 0 ? (
                 <div className="container max-w-lg mx-auto">
                 <div className="text-center py-12">
