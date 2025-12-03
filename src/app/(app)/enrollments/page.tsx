@@ -258,14 +258,15 @@ function EnrollmentsPageComponent() {
     return params.toString();
   }, [searchParams]);
 
-  // Efecto 1: Cargar la lista de cursos una sola vez.
+  // 1. Cargar la lista de cursos una sola vez
   useEffect(() => {
     let isMounted = true;
     const fetchCourseList = async () => {
         if (isAuthLoading || !currentUser) return;
         setIsLoadingCourses(true);
         try {
-            const url = `/api/courses?manageView=true&userId=${currentUser.id}&userRole=${currentUser.role}`;
+            // SOLUCIÓN: Usar `simple=true` para una llamada a la API más ligera y estable.
+            const url = `/api/courses?simple=true`;
             const response = await fetch(url, { cache: 'no-store' });
             if (!response.ok) throw new Error('No se pudieron cargar los cursos');
             const data = await response.json();
@@ -280,20 +281,21 @@ function EnrollmentsPageComponent() {
     return () => { isMounted = false; };
   }, [currentUser, isAuthLoading, toast]);
   
-  // Efecto 2: Redireccionar a la primera opción si no hay curso seleccionado. Solo una vez.
+  // 2. Efecto para inicialización, se ejecuta solo una vez cuando los cursos cargan.
   useEffect(() => {
     if (!initialLoadRef.current || isLoadingCourses || selectedCourseId) {
-      return;
+      return; 
     }
+    
     if (courses.length > 0) {
-      initialLoadRef.current = false; // Bloquear futuras redirecciones
+      initialLoadRef.current = false;
       router.replace(`${pathname}?${createQueryString({ courseId: courses[0].id, page: 1, search: null })}`);
     } else if (courses.length === 0) {
-       initialLoadRef.current = false; // Bloquear también si no hay cursos
+      initialLoadRef.current = false; 
     }
   }, [courses, isLoadingCourses, selectedCourseId, router, pathname, createQueryString]);
 
-  // Efecto 3: Cargar detalles del curso cuando el ID cambie.
+  // 3. Efecto para cargar los detalles cuando cambia el ID o el rango de fechas.
   const fetchCourseDetails = useCallback(async (courseId: string) => {
     if (!courseId) return;
     setIsLoadingDetails(true);
