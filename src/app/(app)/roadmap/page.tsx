@@ -4,7 +4,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useTitle } from '@/contexts/title-context';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { PlusCircle, ShieldAlert, Rocket } from 'lucide-react';
 import { RoadmapEditorModal } from '@/components/roadmap/roadmap-editor-modal';
 import type { RoadmapItem } from '@/types';
@@ -12,6 +12,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { InteractiveRoadmap } from '@/components/roadmap/interactive-roadmap';
 import { DecorativeHeaderBackground } from '@/components/layout/decorative-header-background';
+import { Card } from '@/components/ui/card';
+import Image from 'next/image';
 
 
 const RoadmapSkeleton = () => (
@@ -104,22 +106,33 @@ export default function RoadmapPage() {
   return (
     <div className="relative w-full flex flex-col items-center">
         <DecorativeHeaderBackground />
-        <div className="relative z-10 text-center mb-12 container max-w-4xl mx-auto pt-8">
-            <h1 className="text-4xl font-bold font-headline tracking-tight">La Evolución de NexusAlpri</h1>
-            <p className="mt-4 text-lg text-muted-foreground">
-                Un viaje interactivo a través de los hitos clave que han dado forma a nuestra plataforma.
-            </p>
-            {user?.role === 'ADMINISTRATOR' && (
-                <div className="text-center mt-6">
-                    <Button onClick={() => handleOpenEditor()}>
-                        <PlusCircle className="mr-2 h-4 w-4"/>
-                        Añadir Hito
-                    </Button>
-                </div>
-            )}
-        </div>
         
-        <div className="w-full flex-grow px-4">
+        <Card className="relative z-10 w-full max-w-5xl p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/10 to-accent/10 shadow-lg border-2 border-primary/10">
+            <div className="absolute inset-0 z-0 opacity-20" style={{ backgroundImage: `url(${settings?.publicPagesBgUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+             <div className="relative z-10 flex items-center justify-between gap-6">
+               <div className="space-y-2">
+                  <h1 className="text-3xl font-bold font-headline flex items-center gap-2">La Evolución de NexusAlpri</h1>
+                  <p className="text-muted-foreground max-w-2xl">
+                    Un viaje interactivo a través de los hitos clave que han dado forma a nuestra plataforma.
+                  </p>
+                   {user?.role === 'ADMINISTRATOR' && (
+                        <div className="pt-4">
+                            <Button onClick={() => handleOpenEditor()} size="sm">
+                                <PlusCircle className="mr-2 h-4 w-4"/>
+                                Añadir Hito
+                            </Button>
+                        </div>
+                    )}
+               </div>
+               {settings?.securityAuditImageUrl && (
+                 <div className="relative w-32 h-32 flex-shrink-0 hidden sm:block">
+                   <Image src={settings.securityAuditImageUrl} alt="Ilustración de la hoja de ruta" fill className="object-contain" data-ai-hint="roadmap illustration" />
+                 </div>
+               )}
+            </div>
+        </Card>
+
+        <div className="w-full flex-grow px-4 mt-12">
             {items.length === 0 ? (
                 <div className="container max-w-lg mx-auto">
                 <div className="text-center py-12">
