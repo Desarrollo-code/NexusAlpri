@@ -124,9 +124,9 @@ export default function RoadmapPage() {
                         </div>
                     )}
                </div>
-               {settings?.securityAuditImageUrl && (
+               {settings?.roadmapImageUrl && (
                  <div className="relative w-32 h-32 flex-shrink-0 hidden sm:block">
-                   <Image src={settings.securityAuditImageUrl} alt="Ilustración de la hoja de ruta" fill className="object-contain" data-ai-hint="roadmap illustration" />
+                   <Image src={settings.roadmapImageUrl} alt="Ilustración de la hoja de ruta" fill className="object-contain" data-ai-hint="roadmap illustration" />
                  </div>
                )}
             </div>
