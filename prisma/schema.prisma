@@ -57,6 +57,12 @@ enum ResourceStatus {
   ARCHIVED
 }
 
+enum ResourceSharingMode {
+  PUBLIC
+  PRIVATE
+  PROCESS
+}
+
 enum AchievementSlug {
   FIRST_ENROLLMENT
   FIRST_COURSE_COMPLETED
@@ -136,7 +142,7 @@ model User {
   announcementReactions AnnouncementReaction[]
   notes                 UserNote[]
   uploadedResources     EnterpriseResource[]
-  sharedResources       EnterpriseResource[] @relation("SharedWithUsers")
+  sharedResources EnterpriseResource[] @relation("ResourceSharedWith")
   securityLogs          SecurityLog[]
   createdEvents         CalendarEvent[]
   attendedEvents        CalendarEvent[]     @relation("EventAttendees")
@@ -512,7 +518,6 @@ model EnterpriseResource {
   tags        String?
   status      ResourceStatus     @default(ACTIVE)
   pin         String?
-  ispublic    Boolean            @default(true)
   uploadDate  DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
   expiresAt   DateTime?
@@ -530,8 +535,9 @@ model EnterpriseResource {
   uploader    User               @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
   parent      EnterpriseResource? @relation("FolderChildren", fields: [parentId], references: [id], onDelete: Restrict)
   children    EnterpriseResource[] @relation("FolderChildren")
-  sharedWith  User[]             @relation("SharedWithUsers")
-  sharedWithProcesses Process[] @relation("ProcessResourceShares")
+  sharingMode         ResourceSharingMode       @default(PUBLIC)
+  sharedWith          User[]                    @relation("ResourceSharedWith")
+  sharedWithProcesses Process[]                 @relation("ResourceSharedWithProcess")
   collaborators          User[]             @relation("Collaborators")
 
   @@map("enterprise_resources")
@@ -860,7 +866,7 @@ model Process {
   users User[]
    assignedCourses       Course[]             @relation("ProcessCourseAssignments")
   audienceEvents        CalendarEvent[]      @relation("ProcessEventAudiences")
-  sharedResources       EnterpriseResource[] @relation("ProcessResourceShares")
+  sharedResources EnterpriseResource[] @relation("ResourceSharedWithProcess")
   sharedForms           Form[]               @relation("ProcessFormShares")
   audienceAnnouncements Announcement[]       @relation("ProcessAnnouncementAudiences")
 }
