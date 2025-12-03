@@ -222,6 +222,7 @@ function EnrollmentsPageComponent() {
   
   const [courses, setCourses] = useState<AppCourse[]>([]);
   const [isLoadingCourses, setIsLoadingCourses] = useState(true);
+  const initialLoadRef = useRef(true);
 
   const [selectedCourseInfo, setSelectedCourseInfo] = useState<CourseEnrollmentInfo | null>(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
@@ -304,13 +305,14 @@ function EnrollmentsPageComponent() {
   useEffect(() => {
     // Si ya hay un curso seleccionado O aún cargando, salir.
     if (isLoadingCourses || selectedCourseId) {
-        return; 
+      return; 
     }
     
     // Si hay cursos cargados y no se ha seleccionado ninguno, redirigir al primero.
     if (courses.length > 0) {
-        router.replace(`${pathname}?${createQueryString({ courseId: courses[0].id, page: 1, search: null })}`);
+      router.replace(`${pathname}?${createQueryString({ courseId: courses[0].id, page: 1, search: null })}`);
     }
+    // Se ha quitado initialLoadRef.current ya que selectedCourseId actúa como el guard principal.
   }, [courses, isLoadingCourses, selectedCourseId, router, pathname, createQueryString]);
 
 
