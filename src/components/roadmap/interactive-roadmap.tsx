@@ -49,7 +49,10 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
        <>
         <div className={cn("relative flex flex-col items-center w-48 md:w-56", isOdd ? 'self-end' : 'self-start')}>
             {/* Contenedor del Banderín y Descripción */}
-            <div className={cn("relative w-full bg-background border rounded-lg shadow-lg p-3 text-center order-2", isOdd ? 'mt-8' : 'mb-8')}>
+            <div className={cn(
+                "relative w-full bg-background border rounded-lg shadow-lg p-3 text-center transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-primary/20",
+                isOdd ? 'mt-8' : 'mb-8'
+            )}>
                 {/* Flecha del Banderín */}
                 <div 
                     className="absolute left-1/2 -translate-x-1/2 w-4 h-4 bg-background border-r border-b transform rotate-45"
@@ -58,14 +61,14 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
                  {/* Contenido del Banderín */}
                 <div className="relative z-10">
                     <div 
-                        className="absolute -top-6 -left-5 -right-5 h-8 text-white font-bold flex items-center justify-center text-lg"
+                        className="absolute -top-6 -left-5 -right-5 h-8 text-white font-bold flex items-center justify-center text-xs"
                     >
                          <div className="absolute inset-0 z-0" style={{backgroundColor: item.color, clipPath: 'polygon(0 0, 100% 0, 95% 100%, 5% 100%)'}}/>
-                         <span className="z-10">{format(new Date(item.date), "yyyy")}</span>
+                         <span className="z-10">{format(new Date(item.date), "dd MMM, yyyy", { locale: es })}</span>
                     </div>
                     <div className="pt-4">
                         <p className="text-sm font-semibold text-foreground line-clamp-2">{item.title}</p>
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-3">{item.description}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{item.description}</p>
                     </div>
                 </div>
             </div>
