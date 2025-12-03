@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import { useAuth } from '@/contexts/auth-context';
 import type { Course as AppCourse, User } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, AlertTriangle, UsersRound, MoreVertical, Search, CheckCircle, Percent, HelpCircle, UserX, ArrowRight, MessageSquare, BarChart3, FileText, PlusCircle, BookOpen } from 'lucide-react';
+import { Loader2, AlertTriangle, UsersRound, MoreVertical, Search, CheckCircle, Percent, HelpCircle, UserX, ArrowRight, MessageSquare, BarChart3, FileText, PlusCircle, BookOpen, LineChart, TrendingDown } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -236,12 +236,13 @@ function EnrollmentsPageComponent() {
   const searchTerm = searchParams.get('search') || '';
   const currentPage = Number(searchParams.get('page')) || 1;
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  
+  const initialLoadRef = useRef(true);
 
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>(() => ({
     from: subDays(new Date(), 29), to: new Date(),
   }));
 
-  const initialLoadRef = useRef(true);
 
   useEffect(() => {
     setPageTitle('Inscripciones');
@@ -257,6 +258,42 @@ function EnrollmentsPageComponent() {
     return params.toString();
   }, [searchParams]);
 
+  // Efecto 1: Cargar la lista de cursos una sola vez.
+  useEffect(() => {
+    let isMounted = true;
+    const fetchCourseList = async () => {
+        if (isAuthLoading || !currentUser) return;
+        setIsLoadingCourses(true);
+        try {
+            const url = `/api/courses?manageView=true&userId=${currentUser.id}&userRole=${currentUser.role}`;
+            const response = await fetch(url, { cache: 'no-store' });
+            if (!response.ok) throw new Error('No se pudieron cargar los cursos');
+            const data = await response.json();
+            if (isMounted) setCourses(data.courses || []);
+        } catch (err) {
+             if (isMounted) toast({ title: "Error", description: err instanceof Error ? err.message : "No se pudieron cargar los cursos.", variant: "destructive" });
+        } finally {
+            if (isMounted) setIsLoadingCourses(false);
+        }
+    };
+    fetchCourseList();
+    return () => { isMounted = false; };
+  }, [currentUser, isAuthLoading, toast]);
+  
+  // Efecto 2: Redireccionar a la primera opción si no hay curso seleccionado. Solo una vez.
+  useEffect(() => {
+    if (!initialLoadRef.current || isLoadingCourses || selectedCourseId) {
+      return;
+    }
+    if (courses.length > 0) {
+      initialLoadRef.current = false; // Bloquear futuras redirecciones
+      router.replace(`${pathname}?${createQueryString({ courseId: courses[0].id, page: 1, search: null })}`);
+    } else if (courses.length === 0) {
+       initialLoadRef.current = false; // Bloquear también si no hay cursos
+    }
+  }, [courses, isLoadingCourses, selectedCourseId, router, pathname, createQueryString]);
+
+  // Efecto 3: Cargar detalles del curso cuando el ID cambie.
   const fetchCourseDetails = useCallback(async (courseId: string) => {
     if (!courseId) return;
     setIsLoadingDetails(true);
@@ -278,43 +315,12 @@ function EnrollmentsPageComponent() {
         setIsLoadingDetails(false);
     }
   }, [toast, dateRange]);
-
-  useEffect(() => {
-    let isMounted = true;
-    const loadCourses = async () => {
-        if (isAuthLoading || !currentUser) return;
-        setIsLoadingCourses(true);
-        try {
-            const url = `/api/courses?manageView=true&userId=${currentUser.id}&userRole=${currentUser.role}`;
-            const response = await fetch(url, { cache: 'no-store' });
-            if (!response.ok) throw new Error('No se pudieron cargar los cursos');
-            const data = await response.json();
-            if (isMounted) setCourses(data.courses || []);
-        } catch (err) {
-             if (isMounted) toast({ title: "Error", description: err instanceof Error ? err.message : "No se pudieron cargar los cursos.", variant: "destructive" });
-        } finally {
-            if (isMounted) setIsLoadingCourses(false);
-        }
-    };
-    loadCourses();
-    return () => { isMounted = false; };
-  }, [currentUser, isAuthLoading, toast]);
   
   useEffect(() => {
-    if (initialLoadRef.current && !isLoadingCourses && courses.length > 0 && !selectedCourseId) {
-        initialLoadRef.current = false;
-        router.replace(`${pathname}?${createQueryString({ courseId: courses[0].id, page: 1, search: null })}`);
-    }
-    if (!isLoadingCourses && courses.length === 0) {
-        initialLoadRef.current = false;
-    }
-  }, [courses, isLoadingCourses, selectedCourseId, router, pathname, createQueryString]);
-
-  useEffect(() => {
     if (selectedCourseId) {
-        fetchCourseDetails(selectedCourseId);
+      fetchCourseDetails(selectedCourseId);
     } else {
-        setSelectedCourseInfo(null);
+      setSelectedCourseInfo(null);
     }
   }, [selectedCourseId, fetchCourseDetails]);
 
