@@ -163,7 +163,8 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
                 }
             });
             if (childrenCount > 0) {
-                return NextResponse.json({ message: `No se puede eliminar. La carpeta contiene ${childrenCount} recurso(s) activo(s).` }, { status: 409 });
+                const resourceTypeName = resourceToDelete.type === 'FOLDER' ? 'La carpeta' : 'La lista de reproducción';
+                return NextResponse.json({ message: `${resourceTypeName} contiene ${childrenCount} recurso(s) activo(s) y no se puede eliminar.` }, { status: 409 });
             }
         }
         
