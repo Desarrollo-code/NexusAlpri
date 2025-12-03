@@ -30,7 +30,9 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { Card, CardContent, CardHeader } from '../ui/card';
+import { Card, CardContent, CardHeader, CardDescription, CardTitle } from '../ui/card';
+import { motion } from 'framer-motion';
+
 
 const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, index: number, onEdit: (item: RoadmapItem) => void, onDelete: (id: string) => void }) => {
     const { user } = useAuth();
@@ -57,14 +59,14 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
     return (
        <>
         <div className={cn(
-            "relative flex flex-col items-center w-full md:w-auto",
-            isOdd ? 'md:justify-start' : 'md:justify-end'
+            "relative flex w-full md:w-auto",
+            isOdd ? 'md:flex-col-reverse md:justify-end' : 'md:flex-col md:justify-start'
         )}>
             {/* Contenedor del Banderín y Descripción */}
-            <div className={cn(
-                "relative w-full max-w-xs bg-card border rounded-lg shadow-lg p-3 text-center transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-primary/20",
-                isOdd ? 'order-2 md:order-2' : 'order-1 md:order-1'
-            )}>
+            <motion.div 
+                className="relative w-full max-w-sm bg-card border rounded-lg shadow-lg p-3 text-center transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-primary/20"
+                whileHover={{ y: -5, scale: 1.02 }}
+            >
                  {/* Contenido del Banderín */}
                 <div className="relative z-10">
                     <div 
@@ -73,18 +75,27 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
                          <div className="absolute inset-0 z-0" style={{backgroundColor: item.color, clipPath: 'polygon(0 0, 100% 0, 95% 100%, 5% 100%)'}}/>
                          <span className="z-10">{format(new Date(item.date), "dd MMM, yyyy", { locale: es })}</span>
                     </div>
-                    <div className="pt-4">
-                        <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                    <div className="pt-6 text-left">
+                        <p className="text-xs font-bold uppercase tracking-wider" style={{ color: item.color }}>
+                          {item.phase.replace('_', ' ')}
+                        </p>
+                        <p className="text-base font-semibold text-foreground mt-1">{item.title}</p>
                         <p className="text-xs text-muted-foreground mt-1 text-left whitespace-pre-wrap">{item.description}</p>
                     </div>
                 </div>
-            </div>
+            </motion.div>
             
             {/* Línea y Círculo de conexión */}
-            <div className={cn("flex flex-col items-center", isOdd ? 'order-1 md:order-1' : 'order-2 md:order-2')}>
+            <div className={cn(
+                "hidden md:flex flex-col items-center",
+                isOdd ? 'mb-[-1px]' : 'mt-[-1px]' // Evitar el pixel de separación
+            )}>
                <div className="w-0.5 h-10" style={{background: item.color }} />
-                <div className="relative group">
-                     <div className="absolute -top-2 -left-2 w-24 h-24 rounded-full" style={{backgroundColor: item.color}} />
+                <motion.div 
+                    whileHover={{ scale: 1.1 }}
+                    className="relative group"
+                >
+                     <div className="absolute -inset-2 w-24 h-24 rounded-full" style={{backgroundColor: `${item.color}20`}} />
                      <div className="relative h-20 w-20 rounded-full flex items-center justify-center border-4 bg-background" style={{ borderColor: item.color }}>
                         <Icon className="h-10 w-10" style={{ color: item.color }} />
                     </div>
@@ -101,7 +112,7 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
                             </DropdownMenu>
                         </div>
                     )}
-                </div>
+                </motion.div>
                <div className="w-0.5 h-10" style={{background: item.color }} />
             </div>
         </div>
@@ -123,7 +134,7 @@ const MobileTimelineCard = ({ item, onEdit, onDelete }: { item: RoadmapItem, onE
     const Icon = (LucideIcons as any)[item.icon] || LucideIcons.Lightbulb;
 
     return (
-        <Card className="h-full flex flex-col">
+        <Card className="h-full flex flex-col transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1">
             <CardHeader className="p-4 border-b">
                  <div className="flex justify-between items-start gap-2">
                     <div className="flex items-center gap-3">
@@ -131,8 +142,11 @@ const MobileTimelineCard = ({ item, onEdit, onDelete }: { item: RoadmapItem, onE
                             <Icon className="w-6 h-6" style={{color: item.color}}/>
                          </div>
                         <div>
-                            <p className="font-semibold text-foreground">{item.title}</p>
-                            <p className="text-xs font-bold" style={{color: item.color}}>{format(new Date(item.date), "dd MMMM, yyyy", { locale: es })}</p>
+                            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: item.color }}>
+                              {item.phase.replace('_', ' ')}
+                            </p>
+                            <CardTitle className="text-base font-bold text-foreground">{item.title}</CardTitle>
+                            <p className="text-xs font-semibold" style={{color: item.color}}>{format(new Date(item.date), "dd MMMM, yyyy", { locale: es })}</p>
                         </div>
                     </div>
                     {user?.role === 'ADMINISTRATOR' && (
@@ -183,10 +197,11 @@ export const InteractiveRoadmap = ({ items, onEdit, onDelete }: { items: Roadmap
                 className="absolute top-1/2 left-0 w-full h-2.5 -translate-y-1/2"
                 style={{
                     background: 'linear-gradient(90deg, hsl(var(--chart-4)), hsl(var(--chart-3)), hsl(var(--chart-5)))',
+                    clipPath: 'polygon(0 0, calc(100% - 15px) 0, 100% 50%, calc(100% - 15px) 100%, 0 100%)',
                 }}
             />
             {/* Contenedor de hitos */}
-            <div className="relative flex justify-between items-stretch min-h-[30rem] w-full">
+            <div className="relative flex justify-between items-center w-full">
                 {items.map((item, index) => (
                     <TimelineItem key={item.id} item={item} index={index} onEdit={onEdit} onDelete={onDelete} />
                 ))}
