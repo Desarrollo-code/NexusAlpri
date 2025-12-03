@@ -422,6 +422,7 @@ model PlatformSettings {
   dashboardImageUrlAdmin     String?
   dashboardImageUrlInstructor String?
   dashboardImageUrlStudent    String?
+  roadmapImageUrl            String?
   projectVersion             String? @default("1.0.0")
   updatedAt                  DateTime @updatedAt
   roadmapVisibleTo           UserRole[] @default([ADMINISTRATOR, INSTRUCTOR, STUDENT])
