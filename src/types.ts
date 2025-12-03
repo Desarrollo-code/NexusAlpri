@@ -68,6 +68,7 @@ export interface PlatformSettings {
     emptyStateAnnouncementsUrl?: string | null;
     roadmapPhases?: string[];
     roadmapVisibleTo?: UserRole[];
+    roadmapImageUrl?: string | null;
 }
 
 // --- NAVIGATION ---

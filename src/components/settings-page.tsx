@@ -164,7 +164,8 @@ export default function SettingsPageComponent() {
   
   const [newPhase, setNewPhase] = useState('');
   
-  type ImageField = 'logoUrl' | 'faviconUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl' | 'announcementsImageUrl' | 'publicPagesBgUrl' | 'securityAuditImageUrl' | 'tourMascotUrl' | 'dashboardImageUrlAdmin' | 'dashboardImageUrlInstructor' | 'dashboardImageUrlStudent' | 'emptyStateCoursesUrl' | 'emptyStateMyCoursesUrl' | 'emptyStateFormsUrl' | 'emptyStateMyNotesUrl' | 'emptyStateResourcesUrl' | 'emptyStateCertificatesUrl' | 'emptyStateMotivationsUrl' | 'emptyStateUsersUrl' | 'emptyStateLeaderboardUrl' | 'emptyStateAnnouncementsUrl';
+    type ImageField = 'logoUrl' | 'faviconUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl' | 'announcementsImageUrl' | 'publicPagesBgUrl' | 'securityAuditImageUrl' | 'tourMascotUrl' | 'dashboardImageUrlAdmin' | 'dashboardImageUrlInstructor' | 'dashboardImageUrlStudent' | 'emptyStateCoursesUrl' | 'emptyStateMyCoursesUrl' | 'emptyStateFormsUrl' | 'emptyStateMyNotesUrl' | 'emptyStateResourcesUrl' | 'emptyStateCertificatesUrl' | 'emptyStateMotivationsUrl' | 'emptyStateUsersUrl' | 'emptyStateLeaderboardUrl' | 'emptyStateAnnouncementsUrl' | 'roadmapImageUrl';
+
   
   useEffect(() => {
     setPageTitle('Configuración');
@@ -404,6 +405,7 @@ export default function SettingsPageComponent() {
                               <UploadWidget id="public-bg-upload" label="Fondo Páginas Públicas" currentImageUrl={formState.publicPagesBgUrl} onFileSelect={(url) => handleImageUpload('publicPagesBgUrl', url)} onRemove={() => handleRemoveImage('publicPagesBgUrl')} disabled={isSaving} />
                               <UploadWidget id="security-audit-img-upload" label="Encabezado de Seguridad" currentImageUrl={formState.securityAuditImageUrl} onFileSelect={(url) => handleImageUpload('securityAuditImageUrl', url)} onRemove={() => handleRemoveImage('securityAuditImageUrl')} disabled={isSaving} />
                               <UploadWidget id="tour-mascot-upload" label="Mascota del Tour" currentImageUrl={formState.tourMascotUrl} onFileSelect={(url) => handleImageUpload('tourMascotUrl', url)} onRemove={() => handleRemoveImage('tourMascotUrl')} disabled={isSaving} />
+                              <UploadWidget id="roadmap-image-upload" label="Ruta del Proyecto" currentImageUrl={formState.roadmapImageUrl} onFileSelect={(url) => handleImageUpload('roadmapImageUrl', url)} onRemove={() => handleRemoveImage('roadmapImageUrl')} disabled={isSaving} />   
                            </CardContent>
                         </Card>
                      </div>

@@ -56,6 +56,7 @@ const DEFAULT_DB_SETTINGS = {
   emptyStateAnnouncementsUrl: null,
   roadmapPhases: [],
   roadmapVisibleTo: ['ADMINISTRATOR'],
+  roadmapImageUrl: null,
 };
 
 const getFallbackSettings = (): AppPlatformSettings => {
@@ -163,6 +164,7 @@ export async function POST(req: NextRequest) {
       emptyStateAnnouncementsUrl: dataFromClient.emptyStateAnnouncementsUrl,
       roadmapPhases: dataFromClient.roadmapPhases,
       roadmapVisibleTo: dataFromClient.roadmapVisibleTo,
+      roadmapImageUrl: dataFromClient.roadmapImageUrl,
     };
     
     const currentSettings = await prisma.platformSettings.findFirst();
