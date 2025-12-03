@@ -22,6 +22,15 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../ui/dropdown-menu';
+import { useIsMobile } from '@/hooks/use-mobile';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { Card, CardContent, CardHeader } from '../ui/card';
 
 const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, index: number, onEdit: (item: RoadmapItem) => void, onDelete: (id: string) => void }) => {
     const { user } = useAuth();
@@ -49,12 +58,12 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
        <>
         <div className={cn(
             "relative flex flex-col items-center w-full md:w-auto",
-            isOdd ? 'justify-start' : 'justify-end'
+            isOdd ? 'md:justify-start' : 'md:justify-end'
         )}>
             {/* Contenedor del Banderín y Descripción */}
             <div className={cn(
                 "relative w-full max-w-xs bg-card border rounded-lg shadow-lg p-3 text-center transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-primary/20",
-                isOdd ? 'order-2' : 'order-1'
+                isOdd ? 'order-2 md:order-2' : 'order-1 md:order-1'
             )}>
                  {/* Contenido del Banderín */}
                 <div className="relative z-10">
@@ -72,10 +81,11 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
             </div>
             
             {/* Línea y Círculo de conexión */}
-            <div className={cn("flex flex-col items-center", isOdd ? 'order-1' : 'order-2')}>
+            <div className={cn("flex flex-col items-center", isOdd ? 'order-1 md:order-1' : 'order-2 md:order-2')}>
                <div className="w-0.5 h-10" style={{background: item.color }} />
                 <div className="relative group">
-                     <div className="h-20 w-20 rounded-full flex items-center justify-center border-4" style={{ backgroundColor: `${item.color}20`, borderColor: item.color }}>
+                     <div className="absolute -top-2 -left-2 w-24 h-24 rounded-full" style={{backgroundColor: item.color}} />
+                     <div className="relative h-20 w-20 rounded-full flex items-center justify-center border-4 bg-background" style={{ borderColor: item.color }}>
                         <Icon className="h-10 w-10" style={{ color: item.color }} />
                     </div>
                     {user?.role === 'ADMINISTRATOR' && (
@@ -108,24 +118,79 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
     );
 };
 
+const MobileTimelineCard = ({ item, onEdit, onDelete }: { item: RoadmapItem, onEdit: (item: RoadmapItem) => void, onDelete: (id: string) => void }) => {
+    const { user } = useAuth();
+    const Icon = (LucideIcons as any)[item.icon] || LucideIcons.Lightbulb;
+
+    return (
+        <Card className="h-full flex flex-col">
+            <CardHeader className="p-4 border-b">
+                 <div className="flex justify-between items-start gap-2">
+                    <div className="flex items-center gap-3">
+                         <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${item.color}20`}}>
+                            <Icon className="w-6 h-6" style={{color: item.color}}/>
+                         </div>
+                        <div>
+                            <p className="font-semibold text-foreground">{item.title}</p>
+                            <p className="text-xs font-bold" style={{color: item.color}}>{format(new Date(item.date), "dd MMMM, yyyy", { locale: es })}</p>
+                        </div>
+                    </div>
+                    {user?.role === 'ADMINISTRATOR' && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-7 w-7"><MoreVertical className="h-4 w-4"/></Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuItem onSelect={() => onEdit(item)}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => onDelete(item.id)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
+                 </div>
+            </CardHeader>
+            <CardContent className="p-4 flex-grow">
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{item.description}</p>
+            </CardContent>
+        </Card>
+    )
+}
+
 export const InteractiveRoadmap = ({ items, onEdit, onDelete }: { items: RoadmapItem[], onEdit: (item: RoadmapItem) => void, onDelete: (id: string) => void }) => {
-    
-  return (
-    <div className="w-full relative px-4 md:px-10 py-12">
-      {/* Línea de tiempo central */}
-      <div 
-        className="absolute top-1/2 left-0 w-full h-2.5 -translate-y-1/2"
-        style={{
-            background: 'linear-gradient(90deg, hsl(var(--chart-4)), hsl(var(--chart-3)), hsl(var(--chart-5)))',
-            clipPath: 'polygon(0 0, 100% 0, 99.5% 50%, 100% 100%, 0 100%)'
-        }}
-      />
-      {/* Contenedor de hitos */}
-      <div className="relative flex justify-between items-center min-h-[30rem] w-full">
-        {items.map((item, index) => (
-            <TimelineItem key={item.id} item={item} index={index} onEdit={onEdit} onDelete={onDelete} />
-        ))}
-      </div>
-    </div>
-  );
+    const isMobile = useIsMobile();
+
+    if (isMobile) {
+        return (
+            <Carousel className="w-full max-w-sm mx-auto">
+                <CarouselContent>
+                    {items.map(item => (
+                        <CarouselItem key={item.id}>
+                            <div className="p-1">
+                                <MobileTimelineCard item={item} onEdit={onEdit} onDelete={onDelete}/>
+                            </div>
+                        </CarouselItem>
+                    ))}
+                </CarouselContent>
+                <CarouselPrevious className="-left-4" />
+                <CarouselNext className="-right-4" />
+            </Carousel>
+        )
+    }
+  
+    return (
+        <div className="w-full relative px-4 md:px-10 py-12">
+            {/* Línea de tiempo central */}
+            <div 
+                className="absolute top-1/2 left-0 w-full h-2.5 -translate-y-1/2"
+                style={{
+                    background: 'linear-gradient(90deg, hsl(var(--chart-4)), hsl(var(--chart-3)), hsl(var(--chart-5)))',
+                }}
+            />
+            {/* Contenedor de hitos */}
+            <div className="relative flex justify-between items-stretch min-h-[30rem] w-full">
+                {items.map((item, index) => (
+                    <TimelineItem key={item.id} item={item} index={index} onEdit={onEdit} onDelete={onDelete} />
+                ))}
+            </div>
+        </div>
+    );
 };
