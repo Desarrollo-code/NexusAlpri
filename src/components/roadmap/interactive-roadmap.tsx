@@ -47,18 +47,15 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
     
     return (
        <>
-        <div className={cn("relative flex items-center justify-center w-full max-w-xs md:max-w-sm", isOdd ? 'self-end' : 'self-start')}>
-            
+        <div className={cn(
+            "relative flex flex-col items-center w-full md:w-auto",
+            isOdd ? 'justify-start' : 'justify-end'
+        )}>
             {/* Contenedor del Banderín y Descripción */}
             <div className={cn(
-                "relative w-full bg-background border rounded-lg shadow-lg p-3 text-center transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-primary/20",
-                isOdd ? 'mb-24' : 'mt-24'
+                "relative w-full max-w-xs bg-card border rounded-lg shadow-lg p-3 text-center transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-primary/20",
+                isOdd ? 'order-2' : 'order-1'
             )}>
-                {/* Flecha del Banderín */}
-                <div 
-                    className="absolute left-1/2 -translate-x-1/2 w-4 h-4 bg-background border-r border-b transform rotate-45 z-0"
-                    style={isOdd ? { bottom: '-8px', borderTop: 'none', borderLeft: 'none' } : { top: '-8px', borderBottom: 'none', borderRight: 'none' }}
-                />
                  {/* Contenido del Banderín */}
                 <div className="relative z-10">
                     <div 
@@ -73,16 +70,13 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
                     </div>
                 </div>
             </div>
-
-             {/* Icono Circular y Línea Vertical (posicionados absolutamente para centrado perfecto) */}
-            <div className={cn("absolute left-1/2 -translate-x-1/2 flex flex-col items-center", isOdd ? 'top-full' : 'bottom-full')}>
-                 {/* Línea de Conexión Superior (si es impar) */}
-                {isOdd && <div className="w-0.5 h-12" style={{background: `linear-gradient(to top, ${item.color}, transparent)`}} />}
-
-                {/* Icono */}
+            
+            {/* Línea y Círculo de conexión */}
+            <div className={cn("flex flex-col items-center", isOdd ? 'order-1' : 'order-2')}>
+               <div className="w-0.5 h-10" style={{background: item.color }} />
                 <div className="relative group">
-                    <div className="h-16 w-16 md:h-20 md:w-20 rounded-full flex items-center justify-center border-4" style={{ backgroundColor: `${item.color}20`, borderColor: item.color }}>
-                        <Icon className="h-8 w-8 md:h-10 md:w-10" style={{ color: item.color }} />
+                     <div className="h-20 w-20 rounded-full flex items-center justify-center border-4" style={{ backgroundColor: `${item.color}20`, borderColor: item.color }}>
+                        <Icon className="h-10 w-10" style={{ color: item.color }} />
                     </div>
                     {user?.role === 'ADMINISTRATOR' && (
                         <div className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -98,9 +92,7 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
                         </div>
                     )}
                 </div>
-
-                {/* Línea de Conexión Inferior (si es par) */}
-                {!isOdd && <div className="w-0.5 h-12" style={{background: `linear-gradient(to bottom, ${item.color}, transparent)`}} />}
+               <div className="w-0.5 h-10" style={{background: item.color }} />
             </div>
         </div>
         <AlertDialog open={!!itemToDelete} onOpenChange={(isOpen) => !isOpen && setItemToDelete(null)}>
@@ -129,7 +121,7 @@ export const InteractiveRoadmap = ({ items, onEdit, onDelete }: { items: Roadmap
         }}
       />
       {/* Contenedor de hitos */}
-      <div className="relative flex justify-between items-stretch min-h-[30rem]">
+      <div className="relative flex justify-between items-center min-h-[30rem] w-full">
         {items.map((item, index) => (
             <TimelineItem key={item.id} item={item} index={index} onEdit={onEdit} onDelete={onDelete} />
         ))}
