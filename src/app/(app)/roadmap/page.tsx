@@ -11,7 +11,6 @@ import type { RoadmapItem } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { InteractiveRoadmap } from '@/components/roadmap/interactive-roadmap';
-import { DecorativeHeaderBackground } from '@/components/layout/decorative-header-background';
 import { Card, CardHeader } from '@/components/ui/card';
 import Image from 'next/image';
 
@@ -105,53 +104,50 @@ export default function RoadmapPage() {
 
   return (
     <div className="w-full">
-        <Card className="relative z-10 w-full p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/10 to-accent/10 shadow-lg border-2 border-primary/10 mb-12">
-            <div className="absolute inset-0 z-0 opacity-20" style={{ backgroundImage: `url(${settings?.publicPagesBgUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-             <div className="relative z-10 grid md:grid-cols-3 items-center gap-6">
-               <div className="md:col-span-2 space-y-2">
-                  <h1 className="text-3xl font-bold font-headline flex items-center gap-2">La Evolución de NexusAlpri</h1>
-                  <p className="text-muted-foreground max-w-2xl">
-                    Un viaje interactivo a través de los hitos clave que han dado forma a nuestra plataforma.
-                  </p>
-                   {user?.role === 'ADMINISTRATOR' && (
-                        <div className="pt-4">
-                            <Button onClick={() => handleOpenEditor()} size="sm">
-                                <PlusCircle className="mr-2 h-4 w-4"/>
-                                Añadir Hito
-                            </Button>
-                        </div>
-                    )}
-               </div>
-               {settings?.roadmapImageUrl && (
-                 <div className="relative w-full h-24 md:h-full flex-shrink-0">
-                   <Image src={settings.roadmapImageUrl} alt="Ilustración de la hoja de ruta" fill className="object-contain" data-ai-hint="roadmap illustration" />
-                 </div>
-               )}
-            </div>
-        </Card>
+      <Card className="relative z-10 w-full p-6 rounded-2xl overflow-hidden bg-background/50 shadow-lg border mb-12 text-center">
+          <div className="absolute inset-0 z-0 opacity-10">
+              {settings?.roadmapImageUrl && (
+                  <Image src={settings.roadmapImageUrl} alt="Fondo de la hoja de ruta" fill className="object-cover" />
+              )}
+          </div>
+           <div className="relative z-10">
+              <h1 className="text-3xl font-bold font-headline flex items-center justify-center gap-2">La Evolución de NexusAlpri</h1>
+              <p className="text-muted-foreground max-w-2xl mx-auto mt-2">
+                Un viaje interactivo a través de los hitos clave que han dado forma a nuestra plataforma.
+              </p>
+               {user?.role === 'ADMINISTRATOR' && (
+                    <div className="mt-4">
+                        <Button onClick={() => handleOpenEditor()} size="sm">
+                            <PlusCircle className="mr-2 h-4 w-4"/>
+                            Añadir Hito
+                        </Button>
+                    </div>
+                )}
+           </div>
+      </Card>
 
-        <div className="w-full flex-grow px-4">
-            {items.length === 0 ? (
-                <div className="container max-w-lg mx-auto">
-                <div className="text-center py-12">
-                    <Rocket className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                    <h3 className="text-xl font-semibold mb-2">La Hoja de Ruta está en Blanco</h3>
-                    <p className="text-muted-foreground mb-6">Un administrador necesita añadir hitos para poder visualizarlos aquí.</p>
-                </div>
-                </div>
-            ) : (
-                <InteractiveRoadmap items={items} onEdit={handleOpenEditor} onDelete={handleDeleteSuccess} />
-            )}
-        </div>
+      <div className="w-full flex-grow px-4">
+          {items.length === 0 ? (
+              <div className="container max-w-lg mx-auto">
+              <div className="text-center py-12">
+                  <Rocket className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">La Hoja de Ruta está en Blanco</h3>
+                  <p className="text-muted-foreground mb-6">Un administrador necesita añadir hitos para poder visualizarlos aquí.</p>
+              </div>
+              </div>
+          ) : (
+              <InteractiveRoadmap items={items} onEdit={handleOpenEditor} onDelete={handleDeleteSuccess} />
+          )}
+      </div>
 
-        {isEditorOpen && (
-            <RoadmapEditorModal 
-                isOpen={isEditorOpen}
-                onClose={() => setIsEditorOpen(false)}
-                item={editingItem}
-                onSave={handleSaveSuccess}
-            />
-        )}
+      {isEditorOpen && (
+          <RoadmapEditorModal 
+              isOpen={isEditorOpen}
+              onClose={() => setIsEditorOpen(false)}
+              item={editingItem}
+              onSave={handleSaveSuccess}
+          />
+      )}
     </div>
   );
 }
