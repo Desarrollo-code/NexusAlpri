@@ -11,6 +11,8 @@ import type { RoadmapItem } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { InteractiveRoadmap } from '@/components/roadmap/interactive-roadmap';
+import { DecorativeHeaderBackground } from '@/components/layout/decorative-header-background';
+
 
 const RoadmapSkeleton = () => (
     <div className="w-full flex flex-col items-center">
@@ -100,8 +102,9 @@ export default function RoadmapPage() {
   }
 
   return (
-    <div className="w-full flex flex-col items-center">
-        <div className="text-center mb-12 container max-w-4xl mx-auto">
+    <div className="relative w-full flex flex-col items-center">
+        <DecorativeHeaderBackground />
+        <div className="relative z-10 text-center mb-12 container max-w-4xl mx-auto pt-8">
             <h1 className="text-4xl font-bold font-headline tracking-tight">La Evolución de NexusAlpri</h1>
             <p className="mt-4 text-lg text-muted-foreground">
                 Un viaje interactivo a través de los hitos clave que han dado forma a nuestra plataforma.
