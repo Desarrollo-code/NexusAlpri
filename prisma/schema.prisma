@@ -888,4 +888,5 @@ model RoadmapItem {
   color       String   @default("#3b82f6")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  imageUrl    String?
 }
