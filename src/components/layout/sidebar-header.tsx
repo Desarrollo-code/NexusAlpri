@@ -17,7 +17,7 @@ export const SidebarHeader = () => {
       return (
          <div className="bg-[hsl(var(--sidebar-header-background))] flex items-center h-20 shadow-[0_4px_6px_-2px_hsl(var(--sidebar-border)/0.5)]">
              <Link href="/dashboard" className="inline-flex items-center gap-3 px-4">
-                 <div className="relative h-12 w-12 flex-shrink-0 rounded-lg overflow-hidden bg-sidebar-accent/20">
+                 <div className="relative h-12 w-12 flex-shrink-0 rounded-lg overflow-hidden bg-gradient-to-t from-[hsl(var(--sidebar-accent))]/30 to-transparent">
                     {isLoading ? <Skeleton className="h-full w-full"/> : 
                      settings?.logoUrl ? <div className="relative w-full h-full"><Image src={settings.logoUrl} alt="Logo" fill className="object-contain p-1" /></div> : <div className="w-full h-full rounded-md bg-muted" />
                     }
@@ -36,7 +36,7 @@ export const SidebarHeader = () => {
     )}>
       <Link href="/dashboard" className="inline-flex items-center gap-3">
           <div className={cn(
-              "bg-gradient-to-br from-sidebar-accent/20 to-sidebar-accent/10 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg relative overflow-hidden",
+              "bg-gradient-to-t from-[hsl(var(--sidebar-accent))]/30 to-transparent flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg relative overflow-hidden",
               "h-12 w-12"
           )}>
             {isLoading ? <Skeleton className="h-full w-full"/> : 
