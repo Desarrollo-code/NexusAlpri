@@ -336,73 +336,23 @@
 }
 
 .loader {
-    width: 2.5em;
-    height: 2.5em;
-    transform: rotate(165deg);
+  width: 35px;
+  aspect-ratio: 1;
+  --_g: no-repeat radial-gradient(farthest-side,hsl(var(--primary)) 94%,#0000);
+  background:
+    var(--_g) 0    0,
+    var(--_g) 100% 0,
+    var(--_g) 100% 100%,
+    var(--_g) 0    100%;
+  background-size: 40% 40%;
+  animation: l38 .8s infinite;
+  animation-timing-function: linear;
 }
 
-.loader:before,
-.loader:after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    display: block;
-    width: 0.5em;
-    height: 0.5em;
-    border-radius: 0.25em;
-    transform: translate(-50%, -50%);
+@keyframes l38 {
+  100% {background-position: 100% 0,100% 100%,0 100%,0 0}
 }
 
-.loader:before {
-    animation: before 2s infinite;
-}
-
-.loader:after {
-    animation: after 2s infinite;
-}
-
-@keyframes before {
-    0% {
-        width: 0.5em;
-        box-shadow: 1em -0.5em hsl(var(--chart-1)), -1em 0.5em hsl(var(--chart-3));
-    }
-
-    35% {
-        width: 2.5em;
-        box-shadow: 0 -0.5em hsl(var(--chart-1)), 0 0.5em hsl(var(--chart-3));
-    }
-
-    70% {
-        width: 0.5em;
-        box-shadow: -1em -0.5em hsl(var(--chart-1)), 1em 0.5em hsl(var(--chart-3));
-    }
-
-    100% {
-        box-shadow: 1em -0.5em hsl(var(--chart-1)), -1em 0.5em hsl(var(--chart-3));
-    }
-}
-
-@keyframes after {
-    0% {
-        height: 0.5em;
-        box-shadow: 0.5em 1em hsl(var(--chart-2)), -0.5em -1em hsl(var(--chart-4));
-    }
-
-    35% {
-        height: 2.5em;
-        box-shadow: 0.5em 0 hsl(var(--chart-2)), -0.5em 0 hsl(var(--chart-4));
-    }
-
-    70% {
-        height: 0.5em;
-        box-shadow: 0.5em -1em hsl(var(--chart-2)), -0.5em 1em hsl(var(--chart-4));
-    }
-
-    100% {
-        box-shadow: 0.5em 1em hsl(var(--chart-2)), -0.5em 1em hsl(var(--chart-4));
-    }
-}
 
 /* Gradient hover effect for buttons */
 .bg-gradient-blue { background-image: linear-gradient(to right, #60a5fa, #3b82f6); }
@@ -423,3 +373,5 @@
   transform-origin: 70% 70%;
   display: inline-block;
 }
+
+    
