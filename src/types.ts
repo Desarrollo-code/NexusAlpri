@@ -211,8 +211,9 @@ export type CourseAssignment = Prisma.CourseAssignmentGetPayload<{}>;
 // --- RESOURCES ---
 export type ResourceType = 'FOLDER' | 'DOCUMENT' | 'GUIDE' | 'MANUAL' | 'POLICY' | 'VIDEO' | 'EXTERNAL_LINK' | 'OTHER' | 'DOCUMENTO_EDITABLE' | 'VIDEO_PLAYLIST';
 export type ResourceStatus = 'ACTIVE' | 'ARCHIVED';
+export type ResourceSharingMode = 'PUBLIC' | 'PRIVATE' | 'PROCESS';
 
-export interface AppResourceType extends Omit<Prisma.EnterpriseResourceGetPayload<{ include: { quiz: { include: { questions: { include: { options: true }}}}}}>, 'tags' | 'status' | 'filetype'> {
+export interface AppResourceType extends Omit<Prisma.EnterpriseResourceGetPayload<{ include: { quiz: { include: { questions: { include: { options: true }}}}, sharedWithProcesses: true }}>, 'tags' | 'status' | 'filetype'> {
     tags: string[];
     uploaderName: string;
     hasPin: boolean;
