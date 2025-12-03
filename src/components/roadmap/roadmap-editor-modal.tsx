@@ -16,7 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { Calendar as CalendarIcon, Loader2, Save } from 'lucide-react';
+import { Calendar as CalendarIcon, Loader2, Save, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
@@ -28,7 +28,7 @@ import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
 import Image from 'next/image';
 
-const ICONS = ['Lightbulb', 'Code', 'Database', 'Paintbrush', 'Rocket', 'CheckCircle', 'Award', 'Sparkles', 'UsersRound', 'FileText', 'Shield', 'MessageSquare', 'ScreenShare', 'Network', 'ListChecks', 'Megaphone', 'Folder', 'Users'];
+const ICONS = ['Lightbulb', 'Code', 'Database', 'Paintbrush', 'Rocket', 'CheckCircle', 'Award', 'Sparkles', 'UsersRound', 'FileText', 'Shield', 'MessageSquare', 'ScreenShare', 'Network', 'ListChecks', 'Megaphone', 'Folder', 'Users', 'TestTube2'];
 
 interface RoadmapEditorModalProps {
     isOpen: boolean;
@@ -46,7 +46,6 @@ export function RoadmapEditorModal({ isOpen, onClose, item, onSave }: RoadmapEdi
     const [date, setDate] = useState<Date | undefined>(new Date());
     const [phase, setPhase] = useState('');
     const [icon, setIcon] = useState('Lightbulb');
-    const [color, setColor] = useState('#3b82f6');
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
@@ -61,7 +60,6 @@ export function RoadmapEditorModal({ isOpen, onClose, item, onSave }: RoadmapEdi
             setDate(new Date(item.date));
             setPhase(item.phase);
             setIcon(item.icon);
-            setColor(item.color);
             setImageUrl(item.imageUrl);
         } else {
             setTitle('');
@@ -69,7 +67,6 @@ export function RoadmapEditorModal({ isOpen, onClose, item, onSave }: RoadmapEdi
             setDate(new Date());
             setPhase(roadmapPhases.length > 0 ? roadmapPhases[0] : '');
             setIcon('Lightbulb');
-            setColor('#3b82f6');
             setImageUrl(null);
         }
     }, [item, isOpen, roadmapPhases]);
@@ -100,7 +97,7 @@ export function RoadmapEditorModal({ isOpen, onClose, item, onSave }: RoadmapEdi
             const response = await fetch(endpoint, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, description, date, phase, icon, color, imageUrl }),
+                body: JSON.stringify({ title, description, date, phase, icon, imageUrl }),
             });
             
             if (!response.ok) {
@@ -165,23 +162,17 @@ export function RoadmapEditorModal({ isOpen, onClose, item, onSave }: RoadmapEdi
                             <div className="relative w-full aspect-video rounded-lg border overflow-hidden"><Image src={imageUrl} alt="preview" fill className="object-cover" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => setImageUrl(null)}><Trash2 className="h-4 w-4"/></Button></div>
                         ) : <UploadArea onFileSelect={(files) => files && handleImageUpload(files[0])} inputId="roadmap-image-upload" />}
                      </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                            <Label>Icono</Label>
-                            <Select value={icon} onValueChange={setIcon}>
-                                <SelectTrigger><div className="flex items-center gap-2">{(LucideIcons as any)[icon] && React.createElement((LucideIcons as any)[icon], {className: "h-4 w-4"})}<span>{icon}</span></div></SelectTrigger>
-                                <SelectContent>
-                                    {ICONS.map(iconName => {
-                                        const IconComponent = (LucideIcons as any)[iconName];
-                                        return <SelectItem key={iconName} value={iconName}><div className="flex items-center gap-2"><IconComponent className="h-4 w-4"/><span>{iconName}</span></div></SelectItem>
-                                    })}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                         <div className="space-y-1">
-                            <Label>Color</Label>
-                            <Input type="color" value={color} onChange={e => setColor(e.target.value)} className="w-full h-10 p-1"/>
-                         </div>
+                    <div className="space-y-1">
+                        <Label>Icono</Label>
+                        <Select value={icon} onValueChange={setIcon}>
+                            <SelectTrigger><div className="flex items-center gap-2">{(LucideIcons as any)[icon] && React.createElement((LucideIcons as any)[icon], {className: "h-4 w-4"})}<span>{icon}</span></div></SelectTrigger>
+                            <SelectContent>
+                                {ICONS.map(iconName => {
+                                    const IconComponent = (LucideIcons as any)[iconName];
+                                    return <SelectItem key={iconName} value={iconName}><div className="flex items-center gap-2"><IconComponent className="h-4 w-4"/><span>{iconName}</span></div></SelectItem>
+                                })}
+                            </SelectContent>
+                        </Select>
                     </div>
                 </form>
                 <DialogFooter>

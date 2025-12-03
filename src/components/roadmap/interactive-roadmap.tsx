@@ -42,6 +42,9 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
 
     const isOdd = index % 2 !== 0;
     const Icon = (LucideIcons as any)[item.icon] || LucideIcons.Lightbulb;
+    
+    // Asignar color dinámicamente desde la paleta de gráficos del tema
+    const colorVar = `hsl(var(--chart-${(index % 5) + 1}))`;
 
     const handleDelete = async () => {
         if (!itemToDelete) return;
@@ -73,11 +76,11 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
                     <div 
                         className="absolute -top-6 -left-5 -right-5 h-8 text-primary-foreground font-bold flex items-center justify-center text-xs"
                     >
-                         <div className="absolute inset-0 z-0 bg-primary" style={{clipPath: 'polygon(0 0, 100% 0, 95% 100%, 5% 100%)'}}/>
+                         <div className="absolute inset-0 z-0" style={{clipPath: 'polygon(0 0, 100% 0, 95% 100%, 5% 100%)', backgroundColor: colorVar}}/>
                          <span className="z-10">{format(new Date(item.date), "dd MMM, yyyy", { locale: es })}</span>
                     </div>
                     <div className="pt-6 text-left">
-                        <p className="text-xs font-bold uppercase tracking-wider text-primary">
+                        <p className="text-xs font-bold uppercase tracking-wider" style={{ color: colorVar }}>
                           {item.phase.replace('_', ' ')}
                         </p>
                         <p className="text-base font-semibold text-foreground mt-1">{item.title}</p>
@@ -98,14 +101,14 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
                 "hidden md:flex flex-col items-center",
                 isOdd ? 'mb-[-1px]' : 'mt-[-1px]'
             )}>
-               <div className="w-0.5 h-10 bg-primary" />
+               <div className="w-0.5 h-10" style={{ backgroundColor: colorVar }} />
                 <motion.div 
                     whileHover={{ scale: 1.1 }}
                     className="relative group"
                 >
                      <div className="absolute -inset-2 w-24 h-24 rounded-full bg-primary/10" />
-                     <div className="relative h-20 w-20 rounded-full flex items-center justify-center border-4 border-primary bg-background">
-                        <Icon className="h-10 w-10 text-primary" />
+                     <div className="relative h-20 w-20 rounded-full flex items-center justify-center border-4 bg-background" style={{ borderColor: colorVar }}>
+                        <Icon className="h-10 w-10" style={{ color: colorVar }}/>
                     </div>
                     {user?.role === 'ADMINISTRATOR' && (
                         <div className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -121,7 +124,7 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
                         </div>
                     )}
                 </motion.div>
-               <div className="w-0.5 h-10 bg-primary" />
+               <div className="w-0.5 h-10" style={{ backgroundColor: colorVar }}/>
             </div>
         </div>
         <AlertDialog open={!!itemToDelete} onOpenChange={(isOpen) => !isOpen && setItemToDelete(null)}>
@@ -191,7 +194,7 @@ export const InteractiveRoadmap = ({ items, onEdit, onDelete }: { items: Roadmap
                 <CarouselContent>
                     {items.map(item => (
                         <CarouselItem key={item.id}>
-                            <div className="p-1">
+                            <div className="p-1 h-full">
                                 <MobileTimelineCard item={item} onEdit={onEdit} onDelete={onDelete}/>
                             </div>
                         </CarouselItem>

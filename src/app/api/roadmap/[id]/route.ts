@@ -24,7 +24,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     try {
         const body = await req.json();
-        const { title, description, date, phase, icon, color, imageUrl } = body;
+        const { title, description, date, phase, icon, imageUrl } = body;
 
         if (!title || !description || !date || !phase) {
             return NextResponse.json({ message: 'Faltan campos requeridos.' }, { status: 400 });
@@ -38,7 +38,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 date: new Date(date),
                 phase,
                 icon,
-                color,
                 imageUrl,
             },
         });

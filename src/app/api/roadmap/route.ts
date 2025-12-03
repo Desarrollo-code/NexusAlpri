@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
 
     try {
         const body = await req.json();
-        const { title, description, date, phase, icon, color, imageUrl } = body;
+        const { title, description, date, phase, icon, imageUrl } = body;
 
         if (!title || !description || !date || !phase) {
             return NextResponse.json({ message: 'Faltan campos requeridos.' }, { status: 400 });
@@ -47,7 +47,6 @@ export async function POST(req: NextRequest) {
                 date: new Date(date),
                 phase,
                 icon: icon || 'Lightbulb',
-                color: color || '#3b82f6',
                 imageUrl,
             },
         });

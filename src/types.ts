@@ -416,7 +416,7 @@ export type Process = Prisma.ProcessGetPayload<{
 }>;
 
 // --- ROADMAP ---
-export type RoadmapItem = Prisma.RoadmapItemGetPayload<{}>;
+export type RoadmapItem = Omit<Prisma.RoadmapItemGetPayload<{}>, 'color'>;
 
 
 export { type FormStatus, type FormFieldType, type AnnouncementAttachment, type RecurrenceType, type ChatAttachment, type QuizAttempt, type ResourceVersion } from '@prisma/client';
