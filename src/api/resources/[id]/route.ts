@@ -4,6 +4,8 @@ import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 import type { Quiz } from '@/types';
+import { checkResourceOwnership } from '@/lib/auth-utils';
+
 
 export const dynamic = 'force-dynamic';
 
@@ -16,6 +18,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
             include: {
                 uploader: { select: { id: true, name: true } },
                 sharedWith: { select: { id: true, name: true, avatar: true } },
+                collaborators: { select: { id: true, name: true, avatar: true } },
                 quiz: { include: { questions: { include: { options: true }, orderBy: { order: 'asc' } } } },
             },
         });
@@ -37,21 +40,21 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 // PUT (update) a resource
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
-    if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
+    const { id } = params;
+
+    const hasPermission = await checkResourceOwnership(session, id);
+    if (!hasPermission) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
     
     try {
-        const { id } = params;
         const resourceToUpdate = await prisma.enterpriseResource.findUnique({ where: { id } });
         if (!resourceToUpdate) {
             return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });
         }
-        if (session.role === 'INSTRUCTOR' && resourceToUpdate.uploaderId !== session.id) {
-             return NextResponse.json({ message: 'No tienes permiso para editar este recurso' }, { status: 403 });
-        }
-
-        const { title, category, description, isPublic, sharedWithUserIds, expiresAt, status, content, observations, quiz } = await req.json();
+        
+        const body = await req.json();
+        const { title, category, description, isPublic, sharedWithUserIds, expiresAt, status, content, observations, quiz, collaboratorIds } = body;
 
         const createVersion = resourceToUpdate.type === 'DOCUMENTO_EDITABLE' && resourceToUpdate.content !== content;
         
@@ -60,10 +63,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 title, category, content, observations, description, status,
                 expiresAt: expiresAt ? new Date(expiresAt) : null,
                 ispublic: isPublic,
-                sharedWith: isPublic ? { set: [] } : { set: sharedWithUserIds.map((id: string) => ({ id })) }
+                sharedWith: { set: (sharedWithUserIds ?? []).map((id: string) => ({ id })) },
+                collaborators: { set: (collaboratorIds ?? []).map((id: string) => ({ id })) },
             };
 
-            if (createVersion) {
+            if (createVersion && session) {
                 updateData.version = { increment: 1 };
                 await tx.resourceVersion.create({
                     data: {
@@ -75,14 +79,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 });
             }
             
-            // --- Lógica del Quiz ---
-            if (category === 'Formación Interna' && quiz) {
-                 const quizData = {
-                    title: quiz.title || 'Evaluación del Recurso',
-                    description: quiz.description,
-                    maxAttempts: quiz.maxAttempts,
-                    resourceId: id,
-                    questions: {
+            const existingQuiz = await tx.quiz.findUnique({ where: { resourceId: id } });
+
+            if (quiz) {
+                const questionsData = (Array.isArray(quiz.questions))
+                    ? {
                         deleteMany: {},
                         create: quiz.questions.map((q: any, qIndex: number) => ({
                             text: q.text,
@@ -90,32 +91,37 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                             type: q.type,
                             template: q.template,
                             imageUrl: q.imageUrl,
-                            options: {
+                            timestamp: q.timestamp,
+                            options: (Array.isArray(q.options)) ? {
                                 create: q.options.map((opt: any) => ({
                                     text: opt.text,
                                     isCorrect: opt.isCorrect,
-                                    points: opt.points,
+                                    points: opt.points || 0,
                                     imageUrl: opt.imageUrl
                                 }))
-                            }
+                            } : undefined,
                         }))
                     }
-                 };
-
-                 updateData.quiz = {
-                     upsert: {
-                         create: quizData,
-                         update: quizData,
-                     }
-                 };
-            } else {
-                // Si la categoría no es "Formación Interna" o no hay quiz, nos aseguramos de que se elimine
-                const existingQuiz = await tx.quiz.findFirst({ where: { resourceId: id } });
-                if (existingQuiz) {
-                    updateData.quiz = { disconnect: true };
-                }
+                    : undefined;
+                
+                const quizPayload = {
+                    title: quiz.title || 'Evaluación del Recurso',
+                    description: quiz.description,
+                    maxAttempts: quiz.maxAttempts,
+                    questions: questionsData,
+                };
+                
+                updateData.quiz = {
+                    upsert: {
+                        where: { resourceId: id },
+                        create: { ...quizPayload, resource: { connect: { id } } },
+                        update: quizPayload,
+                    }
+                };
+            } else if (existingQuiz) {
+                // Si no se envía un quiz pero existe uno, se elimina.
+                await tx.quiz.delete({ where: { id: existingQuiz.id } });
             }
-            // --------------------
 
             await tx.enterpriseResource.update({
                 where: { id },
@@ -138,21 +144,20 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 // DELETE a resource
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
-    if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
+    const { id } = params;
+
+    const hasPermission = await checkResourceOwnership(session, id);
+    if (!hasPermission) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
     try {
-        const { id } = params;
         const resourceToDelete = await prisma.enterpriseResource.findUnique({ where: { id } });
         if (!resourceToDelete) {
             return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });
         }
-        if (session.role === 'INSTRUCTOR' && resourceToDelete.uploaderId !== session.id) {
-             return NextResponse.json({ message: 'No tienes permiso para eliminar este recurso' }, { status: 403 });
-        }
         
-        if (resourceToDelete.type === 'FOLDER') {
+        if (resourceToDelete.type === 'FOLDER' || resourceToDelete.type === 'VIDEO_PLAYLIST') {
             const childrenCount = await prisma.enterpriseResource.count({
                 where: {
                     parentId: id,
@@ -160,7 +165,8 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
                 }
             });
             if (childrenCount > 0) {
-                return NextResponse.json({ message: `No se puede eliminar. La carpeta contiene ${childrenCount} recurso(s) activo(s).` }, { status: 409 });
+                const resourceTypeName = resourceToDelete.type === 'FOLDER' ? 'La carpeta' : 'La lista de reproducción';
+                return NextResponse.json({ message: `${resourceTypeName} contiene ${childrenCount} recurso(s) activo(s) y no se puede eliminar.` }, { status: 409 });
             }
         }
         
