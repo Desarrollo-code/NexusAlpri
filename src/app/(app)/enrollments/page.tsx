@@ -256,7 +256,7 @@ function EnrollmentsPageComponent() {
     return params.toString();
   }, [searchParams]);
 
-  // 1. Cargar la lista de cursos una sola vez
+  // 1. Cargar la lista de cursos una sola vez.
   useEffect(() => {
     let isMounted = true;
     const fetchCourseList = async () => {
@@ -304,17 +304,11 @@ function EnrollmentsPageComponent() {
   
   // 3. Efecto para manejar la URL y la carga de datos.
   useEffect(() => {
-    // Si los cursos aún están cargando, no hacer nada.
-    if (isLoadingCourses) {
-      return;
-    }
+    if (isLoadingCourses) return;
     
-    // Si ya hay un curso ID en la URL, cargar sus detalles.
     if (selectedCourseId) {
       fetchCourseDetails(selectedCourseId);
-    } 
-    // Si la carga de cursos terminó, hay cursos, pero no hay ID en la URL, redirigir.
-    else if (courses.length > 0) {
+    } else if (courses.length > 0) {
       router.replace(`${pathname}?${createQueryString({ courseId: courses[0].id, page: 1, search: null })}`);
     }
 
