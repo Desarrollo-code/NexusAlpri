@@ -237,8 +237,6 @@ function EnrollmentsPageComponent() {
   const currentPage = Number(searchParams.get('page')) || 1;
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   
-  const initialLoadRef = useRef(true);
-
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>(() => ({
     from: subDays(new Date(), 29), to: new Date(),
   }));
@@ -265,7 +263,6 @@ function EnrollmentsPageComponent() {
         if (isAuthLoading || !currentUser) return;
         setIsLoadingCourses(true);
         try {
-            // SOLUCIÓN: Usar `simple=true` para una llamada a la API más ligera y estable.
             const url = `/api/courses?simple=true`;
             const response = await fetch(url, { cache: 'no-store' });
             if (!response.ok) throw new Error('No se pudieron cargar los cursos');
@@ -281,21 +278,8 @@ function EnrollmentsPageComponent() {
     return () => { isMounted = false; };
   }, [currentUser, isAuthLoading, toast]);
   
-  // 2. Efecto para inicialización, se ejecuta solo una vez cuando los cursos cargan.
-  useEffect(() => {
-    if (!initialLoadRef.current || isLoadingCourses || selectedCourseId) {
-      return; 
-    }
-    
-    if (courses.length > 0) {
-      initialLoadRef.current = false;
-      router.replace(`${pathname}?${createQueryString({ courseId: courses[0].id, page: 1, search: null })}`);
-    } else if (courses.length === 0) {
-      initialLoadRef.current = false; 
-    }
-  }, [courses, isLoadingCourses, selectedCourseId, router, pathname, createQueryString]);
 
-  // 3. Efecto para cargar los detalles cuando cambia el ID o el rango de fechas.
+  // 2. Efecto para la Carga de Detalles, depende del ID y las fechas
   const fetchCourseDetails = useCallback(async (courseId: string) => {
     if (!courseId) return;
     setIsLoadingDetails(true);
@@ -318,13 +302,23 @@ function EnrollmentsPageComponent() {
     }
   }, [toast, dateRange]);
   
+  // 3. Efecto para manejar la URL y la carga de datos.
   useEffect(() => {
+    // Si los cursos aún están cargando, no hacer nada.
+    if (isLoadingCourses) {
+      return;
+    }
+    
+    // Si ya hay un curso ID en la URL, cargar sus detalles.
     if (selectedCourseId) {
       fetchCourseDetails(selectedCourseId);
-    } else {
-      setSelectedCourseInfo(null);
+    } 
+    // Si la carga de cursos terminó, hay cursos, pero no hay ID en la URL, redirigir.
+    else if (courses.length > 0) {
+      router.replace(`${pathname}?${createQueryString({ courseId: courses[0].id, page: 1, search: null })}`);
     }
-  }, [selectedCourseId, fetchCourseDetails]);
+
+  }, [selectedCourseId, courses, isLoadingCourses, fetchCourseDetails, router, pathname, createQueryString]);
 
   const handleCourseSelection = (courseId: string) => { router.push(`${pathname}?${createQueryString({ courseId, page: 1, search: null })}`); };
   const handlePageChange = (page: number) => { router.push(`${pathname}?${createQueryString({ page })}`); };
