@@ -184,7 +184,7 @@ export const VideoPlaylistView: React.FC<{ resources: AppResourceType[], folder:
 
 
   const playlistHeight = isMobile ? 'h-64' : 'h-[calc(100vh-22rem)]';
-  const isQuizEnabled = folder.category === 'Formación Interna';
+  const hasQuiz = !!folder.quiz;
 
   const handleTitleChange = (id: string, newTitle: string) => {
       setPlaylistResources(prev => prev.map(r => r.id === id ? {...r, title: newTitle} : r));
@@ -250,13 +250,11 @@ export const VideoPlaylistView: React.FC<{ resources: AppResourceType[], folder:
                     </div>
                     </div>
                 </div>
-                {isQuizEnabled && (
-                    <Button asChild size="sm" variant="secondary">
-                        <Link href={`/resources/${folder.id}/edit-quiz`}>
-                            <BrainCircuit className="mr-2 h-4 w-4" /> Quiz
-                        </Link>
-                    </Button>
-                )}
+                <Button asChild size="sm" variant="secondary">
+                    <Link href={`/resources/${folder.id}/edit-quiz`}>
+                        <BrainCircuit className="mr-2 h-4 w-4" /> Quiz
+                    </Link>
+                </Button>
                 </div>
             </CardHeader>
             <Separator />
