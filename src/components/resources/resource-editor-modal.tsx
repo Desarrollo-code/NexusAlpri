@@ -174,7 +174,9 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
       const payload = {
           title: uploads.length > 1 ? upload.file.name.split('.').slice(0,-1).join('.') : title,
           filename: upload.file.name,
-          description, category, sharingMode,
+          description, category,
+          sharingMode, 
+          isPublic: sharingMode === 'PUBLIC',
           sharedWithUserIds: sharingMode === 'PRIVATE' ? sharedWithUserIds : [],
           sharedWithProcessIds: sharingMode === 'PROCESS' ? sharedWithProcessIds : [],
           collaboratorIds: [],
@@ -227,7 +229,9 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     
     setIsSubmitting(true);
     const payload = {
-      title, description, content, observations, category, sharingMode, 
+      title, description, content, observations, category, 
+      sharingMode, 
+      isPublic: sharingMode === 'PUBLIC',
       sharedWithUserIds: sharingMode === 'PRIVATE' ? sharedWithUserIds : [],
       sharedWithProcessIds: sharingMode === 'PROCESS' ? sharedWithProcessIds : [],
       collaboratorIds,
