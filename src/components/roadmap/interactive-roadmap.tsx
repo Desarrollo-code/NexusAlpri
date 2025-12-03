@@ -47,7 +47,7 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
     
     return (
        <>
-        <div className={cn("relative flex items-center justify-center w-56", isOdd ? 'self-end' : 'self-start')}>
+        <div className={cn("relative flex items-center justify-center w-full max-w-xs md:max-w-sm", isOdd ? 'self-end' : 'self-start')}>
             
             {/* Contenedor del Banderín y Descripción */}
             <div className={cn(
@@ -68,8 +68,8 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
                          <span className="z-10">{format(new Date(item.date), "dd MMM, yyyy", { locale: es })}</span>
                     </div>
                     <div className="pt-4">
-                        <p className="text-sm font-semibold text-foreground line-clamp-2">{item.title}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{item.description}</p>
+                        <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                        <p className="text-xs text-muted-foreground mt-1 text-left whitespace-pre-wrap">{item.description}</p>
                     </div>
                 </div>
             </div>
@@ -124,8 +124,8 @@ export const InteractiveRoadmap = ({ items, onEdit, onDelete }: { items: Roadmap
       <div 
         className="absolute top-1/2 left-0 w-full h-2.5 -translate-y-1/2"
         style={{
-            background: 'linear-gradient(90deg, #f59e0b, #ec4899, #8b5cf6)',
-            clipPath: 'polygon(0 0, 100% 0, 99% 50%, 100% 100%, 0 100%)'
+            background: 'linear-gradient(90deg, hsl(var(--chart-4)), hsl(var(--chart-3)), hsl(var(--chart-5)))',
+            clipPath: 'polygon(0 0, 100% 0, 99.5% 50%, 100% 100%, 0 100%)'
         }}
       />
       {/* Contenedor de hitos */}
