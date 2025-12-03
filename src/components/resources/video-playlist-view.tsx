@@ -230,9 +230,9 @@ export const VideoPlaylistView: React.FC<{ resources: AppResourceType[], folder:
                 <div className="w-full aspect-video">
                     <VideoPlayer resource={selectedVideo} />
                 </div>
-                <CardContent className="p-4">
-                    <CardTitle className="truncate text-xl font-bold">{selectedVideo?.title || "Selecciona un video"}</CardTitle>
-                    <CardDescription className="mt-1">Subido por: {selectedVideo?.uploaderName}</CardDescription>
+                <CardContent className="p-4 bg-gradient-to-t from-black/50 to-transparent absolute bottom-0 left-0 right-0">
+                    <CardTitle className="truncate text-xl font-bold text-white [text-shadow:1px_1px_3px_rgb(0_0_0_/_0.8)]">{selectedVideo?.title || "Selecciona un video"}</CardTitle>
+                    <CardDescription className="mt-1 text-white/80 [text-shadow:1px_1px_2px_rgb(0_0_0_/_0.7)]">Subido por: {selectedVideo?.uploaderName}</CardDescription>
                 </CardContent>
             </Card>
         </div>
