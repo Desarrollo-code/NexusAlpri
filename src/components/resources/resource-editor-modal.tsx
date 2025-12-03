@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Save, UploadCloud, Link as LinkIcon, XCircle, Replace, Calendar as CalendarIcon, X, Globe, Users, FileText, Briefcase } from 'lucide-react';
+import { Loader2, Save, UploadCloud, Link as LinkIcon, XCircle, Replace, Calendar as CalendarIcon, X, Globe, Users, FileText, Briefcase, RotateCcw } from 'lucide-react';
 import type { AppResourceType, User as AppUser, ResourceSharingMode, Process } from '@/types';
 import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
@@ -52,6 +52,18 @@ interface UploadState {
   status: 'uploading' | 'processing' | 'completed' | 'error';
   url?: string;
 }
+
+const getInitials = (name?: string | null): string => {
+  if (!name) return '??';
+  const names = name.trim().split(/\s+/);
+  if (names.length > 1 && names[0] && names[names.length - 1]) {
+    return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+  }
+  if (names.length === 1 && names[0]) {
+    return names[0].substring(0, 2).toUpperCase();
+  }
+  return name.substring(0, 2).toUpperCase();
+};
 
 export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSave }: ResourceEditorModalProps) {
   const { toast } = useToast();
@@ -342,7 +354,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                     <div className="space-y-1.5"><Label>Compartir con Usuarios</Label><Input placeholder="Buscar usuarios..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
                     <ScrollArea className="h-32 border rounded-md p-2">
                         {filteredUsers.map(u => (
-                            <div key={u.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={(c) => setSharedWithUserIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{u.name?.charAt(0)}</AvatarFallback></Avatar>{u.name}</Label></div>
+                            <div key={u.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={(c) => setSharedWithUserIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(u.name)}</AvatarFallback></Avatar>{u.name}</Label></div>
                         ))}
                     </ScrollArea></div>
                 )}
@@ -350,7 +362,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                   <div className="space-y-1.5"><Label>Colaboradores</Label><Input placeholder="Buscar usuarios..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
                     <ScrollArea className="h-32 border rounded-md p-2">
                         {filteredUsers.map(u => (
-                            <div key={u.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`collab-${u.id}`} checked={collaboratorIds.includes(u.id)} onCheckedChange={(c) => setCollaboratorIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`collab-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{u.name?.charAt(0)}</AvatarFallback></Avatar>{u.name}</Label></div>
+                            <div key={u.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`collab-${u.id}`} checked={collaboratorIds.includes(u.id)} onCheckedChange={(c) => setCollaboratorIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`collab-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(u.name)}</AvatarFallback></Avatar>{u.name}</Label></div>
                         ))}
                     </ScrollArea></div>
                 )}
