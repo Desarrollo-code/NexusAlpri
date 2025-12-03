@@ -422,6 +422,7 @@ model PlatformSettings {
   dashboardImageUrlAdmin     String?
   dashboardImageUrlInstructor String?
   dashboardImageUrlStudent    String?
+  roadmapImageUrl            String?
   projectVersion             String? @default("1.0.0")
   updatedAt                  DateTime @updatedAt
   roadmapVisibleTo           UserRole[] @default([ADMINISTRATOR, INSTRUCTOR, STUDENT])
@@ -887,4 +888,5 @@ model RoadmapItem {
   color       String   @default("#3b82f6")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  imageUrl    String?
 }
