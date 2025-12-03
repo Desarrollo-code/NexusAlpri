@@ -152,7 +152,7 @@ const SidebarSectionHeader = ({ item, isActive }: { item: NavItem, isActive: boo
       <div className={cn(
           "flex items-center justify-between w-full rounded-lg transition-colors group",
           isCollapsed ? 'h-12 w-12 justify-center' : 'p-3',
-          isActive ? "bg-black/10 text-foreground" : "hover:bg-black/10 text-sidebar-muted-foreground hover:text-foreground"
+          isActive ? "bg-black/10 text-sidebar-foreground" : "hover:bg-black/10 text-sidebar-muted-foreground hover:text-sidebar-foreground"
       )}>
           <div className="flex items-center gap-3">
               <GradientIcon icon={item.icon} isActive={isActive} />
