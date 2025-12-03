@@ -30,6 +30,28 @@ import Image from 'next/image';
 
 const ICONS = ['Lightbulb', 'Code', 'Database', 'Paintbrush', 'Rocket', 'CheckCircle', 'Award', 'Sparkles', 'UsersRound', 'FileText', 'Shield', 'MessageSquare', 'ScreenShare', 'Network', 'ListChecks', 'Megaphone', 'Folder', 'Users', 'TestTube2'];
 
+const iconTranslations: { [key: string]: string } = {
+  Lightbulb: 'Idea',
+  Code: 'Código',
+  Database: 'Base de Datos',
+  Paintbrush: 'Diseño',
+  Rocket: 'Lanzamiento',
+  CheckCircle: 'Completado',
+  Award: 'Reconocimiento',
+  Sparkles: 'Mejora',
+  UsersRound: 'Comunidad',
+  FileText: 'Documentación',
+  Shield: 'Seguridad',
+  MessageSquare: 'Comunicación',
+  ScreenShare: 'Demostración',
+  Network: 'Infraestructura',
+  ListChecks: 'Tareas',
+  Megaphone: 'Anuncios',
+  Folder: 'Organización',
+  Users: 'Colaboradores',
+  TestTube2: 'Pruebas',
+};
+
 interface RoadmapEditorModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -165,11 +187,11 @@ export function RoadmapEditorModal({ isOpen, onClose, item, onSave }: RoadmapEdi
                     <div className="space-y-1">
                         <Label>Icono</Label>
                         <Select value={icon} onValueChange={setIcon}>
-                            <SelectTrigger><div className="flex items-center gap-2">{(LucideIcons as any)[icon] && React.createElement((LucideIcons as any)[icon], {className: "h-4 w-4"})}<span>{icon}</span></div></SelectTrigger>
+                            <SelectTrigger><div className="flex items-center gap-2">{(LucideIcons as any)[icon] && React.createElement((LucideIcons as any)[icon], {className: "h-4 w-4"})}<span>{iconTranslations[icon] || icon}</span></div></SelectTrigger>
                             <SelectContent>
                                 {ICONS.map(iconName => {
                                     const IconComponent = (LucideIcons as any)[iconName];
-                                    return <SelectItem key={iconName} value={iconName}><div className="flex items-center gap-2"><IconComponent className="h-4 w-4"/><span>{iconName}</span></div></SelectItem>
+                                    return <SelectItem key={iconName} value={iconName}><div className="flex items-center gap-2"><IconComponent className="h-4 w-4"/><span>{iconTranslations[iconName] || iconName}</span></div></SelectItem>
                                 })}
                             </SelectContent>
                         </Select>
