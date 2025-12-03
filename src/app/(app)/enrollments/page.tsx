@@ -242,8 +242,6 @@ function EnrollmentsPageComponent() {
     to: new Date(),
   }));
 
-  const initialLoadRef = useRef(true);
-
   useEffect(() => {
     setPageTitle('Inscripciones');
     startTour('enrollments', enrollmentsTour);
@@ -313,7 +311,6 @@ function EnrollmentsPageComponent() {
     if (courses.length > 0) {
         router.replace(`${pathname}?${createQueryString({ courseId: courses[0].id, page: 1, search: null })}`);
     }
-    // No se necesita `initialLoadRef`, `selectedCourseId` actúa como el guard principal.
   }, [courses, isLoadingCourses, selectedCourseId, router, pathname, createQueryString]);
 
 
