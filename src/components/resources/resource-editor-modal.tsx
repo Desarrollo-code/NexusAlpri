@@ -280,7 +280,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             <DialogTitle>{resource ? 'Editar Recurso' : 'Subir Nuevo Recurso'}</DialogTitle>
             <DialogDescription>{resource ? 'Modifica los detalles de tu recurso.' : 'Añade archivos, enlaces o documentos a la biblioteca.'}</DialogDescription>
           </DialogHeader>
-          <ScrollArea className="flex-1 min-h-0">
+          <ScrollArea className="flex-1 min-h-0 thin-scrollbar">
             <form id="resource-form" onSubmit={handleSave} className="space-y-6 px-6 py-4">
               {!isEditing && (
                 <div className="space-y-4">
