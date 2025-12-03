@@ -104,10 +104,11 @@ export default function RoadmapPage() {
 
   return (
     <div className="w-full">
-      <Card className="w-full p-4 md:p-6 rounded-2xl shadow-lg border mb-12">
-           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-               <div className="flex-grow text-center md:text-left">
-                  <h1 className="text-3xl font-bold font-headline flex items-center justify-center md:justify-start gap-2">La Evolución de NexusAlpri</h1>
+      <Card className="w-full p-4 md:p-6 rounded-2xl shadow-lg border mb-12 relative overflow-hidden bg-card">
+          <div className="absolute inset-0 z-0 opacity-5" style={{ backgroundImage: `url(${settings?.publicPagesBgUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex-grow text-center md:text-left">
+                  <h1 className="text-3xl font-bold font-headline">La Evolución de NexusAlpri</h1>
                   <p className="text-muted-foreground max-w-2xl mt-1">
                     Un viaje interactivo a través de los hitos clave que han dado forma a nuestra plataforma.
                   </p>
@@ -119,9 +120,9 @@ export default function RoadmapPage() {
                             </Button>
                         </div>
                     )}
-               </div>
-               {settings?.roadmapImageUrl && (
-                 <div className="relative w-48 h-32 flex-shrink-0 hidden md:block">
+              </div>
+              {settings?.roadmapImageUrl && (
+                 <div className="relative w-32 h-32 flex-shrink-0 hidden md:block">
                    <Image 
                      src={settings.roadmapImageUrl} 
                      alt="Ilustración de la hoja de ruta"
@@ -131,7 +132,7 @@ export default function RoadmapPage() {
                    />
                  </div>
                )}
-           </div>
+          </div>
       </Card>
 
       <div className="w-full flex-grow px-4">
