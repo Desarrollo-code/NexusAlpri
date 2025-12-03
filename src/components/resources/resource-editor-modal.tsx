@@ -298,7 +298,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                 {!isEditing && (
                   <div className="space-y-4">
                     <h3 className="font-semibold text-lg text-center">Selecciona el tipo de recurso a crear</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="p-4 border rounded-lg space-y-2">
                           <Label className="font-semibold flex items-center gap-2"><UploadCloud/> Subir Archivo(s)</Label>
                           <p className="text-xs text-muted-foreground">Sube documentos, imágenes o videos desde tu dispositivo.</p>
@@ -309,7 +309,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                           <p className="text-xs text-muted-foreground">Añade una URL a un sitio web o recurso externo.</p>
                           <Input type="url" value={externalLink} onChange={e => {setExternalLink(e.target.value); setResourceType('EXTERNAL_LINK');}} placeholder="https://..."/>
                         </div>
-                        <div className="p-4 border rounded-lg space-y-2 flex flex-col items-center justify-center">
+                         <div className="p-4 border rounded-lg space-y-2 flex flex-col items-center justify-center">
                           <Label className="font-semibold flex items-center gap-2"><FilePen/> Documento Editable</Label>
                           <p className="text-xs text-muted-foreground text-center">Crea y edita un documento directamente en la plataforma.</p>
                           <Button type="button" variant="secondary" onClick={() => setResourceType('DOCUMENTO_EDITABLE')}>Crear Documento</Button>
@@ -374,6 +374,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                 )}
               </form>
             </ScrollArea>
+          </div>
           <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end sm:justify-end gap-2">
             <Button variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
             <Button type="submit" form="resource-form" disabled={isSubmitting || (resourceType !== 'DOCUMENT' && !title) || (resourceType === 'EXTERNAL_LINK' && !externalLink) }>
