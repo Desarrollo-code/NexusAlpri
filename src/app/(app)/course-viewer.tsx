@@ -279,6 +279,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   const [isSidebarVisible, setIsSidebarVisible] = useState(!isMobile);
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
   const [isNotesPanelOpen, setIsNotesPanelOpen] = useState(false);
+  const [isCommentsPanelOpen, setIsCommentsPanelOpen] = useState(false);
   const [imageToView, setImageToView] = useState<string | null>(null);
 
   const allLessons = useMemo(() => course?.modules.flatMap(m => m.lessons) || [], [course]);
@@ -787,40 +788,37 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
       
       <div className={cn(
         "flex-1 flex flex-col min-w-0 transition-[margin-right] duration-300 ease-in-out",
-        isNotesPanelOpen && !isMobile && "mr-[28rem]"
+        (isNotesPanelOpen || isCommentsPanelOpen) && !isMobile && "mr-[28rem]"
       )}>
           <main className="flex-1 overflow-y-auto thin-scrollbar">
-              <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8 space-y-6">
+              <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8">
                  {renderLessonContent()}
-                 
-                 {isEnrolled && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <MessageSquare className="h-5 w-5 text-primary" />
-                                Comentarios del Curso
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <CourseComments courseId={courseId} />
-                        </CardContent>
-                    </Card>
-                 )}
               </div>
           </main>
       </div>
 
-      {isNotesPanelOpen && !isMobile && (
-          <aside className="w-full max-w-md md:w-[28rem] flex-shrink-0 fixed top-20 right-0 z-20 h-[calc(100vh-5rem)]">
-              {selectedLessonId && isEnrolled && (
-                  <LessonNotesPanel 
-                      lessonId={selectedLessonId}
-                      isOpen={isNotesPanelOpen}
-                      onClose={() => setIsNotesPanelOpen(false)}
-                  />
+      <aside className={cn(
+          "w-full max-w-md md:w-[28rem] flex-shrink-0 fixed top-20 right-0 z-20 h-[calc(100vh-5rem)] bg-card border-l transition-transform duration-300 ease-in-out",
+          (isNotesPanelOpen || isCommentsPanelOpen) && !isMobile ? "translate-x-0" : "translate-x-full"
+      )}>
+          {isEnrolled && (
+            <>
+              {isNotesPanelOpen && selectedLessonId && (
+                <LessonNotesPanel lessonId={selectedLessonId} isOpen={isNotesPanelOpen} onClose={() => setIsNotesPanelOpen(false)} />
               )}
-          </aside>
-      )}
+              {isCommentsPanelOpen && (
+                <div className="flex flex-col h-full">
+                    <div className="p-4 border-b flex-shrink-0">
+                        <h3 className="font-semibold text-lg flex items-center gap-2">
+                            <MessageSquare className="h-5 w-5"/> Discusión del Curso
+                        </h3>
+                    </div>
+                     <CourseComments courseId={courseId} />
+                </div>
+              )}
+            </>
+          )}
+      </aside>
 
       <div className="fixed bottom-20 right-4 z-40 flex flex-col gap-3">
            {isMobile && (
@@ -834,14 +832,27 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
               </Button>
            )}
           {isEnrolled && !isCreatorViewingCourse && (
+            <>
+              <Sheet open={isMobile && isCommentsPanelOpen} onOpenChange={setIsCommentsPanelOpen}>
+                   <SheetTrigger asChild>
+                       <Button size="icon" className={cn("rounded-full h-12 w-12 shadow-lg transition-colors", isCommentsPanelOpen && "bg-primary text-primary-foreground")} onClick={() => !isMobile && setIsCommentsPanelOpen(!isCommentsPanelOpen)}>
+                           <MessageSquare className="h-5 w-5" />
+                       </Button>
+                   </SheetTrigger>
+                   {isMobile && (
+                       <SheetContent side="right" className="p-0 w-full max-w-sm flex flex-col">
+                           <SheetHeader className="p-4 border-b">
+                               <SheetTitle>Discusión del Curso</SheetTitle>
+                           </SheetHeader>
+                           <CourseComments courseId={courseId} />
+                       </SheetContent>
+                   )}
+              </Sheet>
               <Sheet open={isMobile && isNotesPanelOpen} onOpenChange={setIsNotesPanelOpen}>
                   <SheetTrigger asChild>
                        <Button 
                           size="icon" 
-                          className={cn(
-                            "rounded-full h-12 w-12 shadow-lg transition-colors",
-                            isNotesPanelOpen && "bg-primary text-primary-foreground"
-                          )}
+                          className={cn("rounded-full h-12 w-12 shadow-lg transition-colors", isNotesPanelOpen && "bg-primary text-primary-foreground")}
                           onClick={() => !isMobile && setIsNotesPanelOpen(!isNotesPanelOpen)}>
                           <Notebook className="h-5 w-5" />
                       </Button>
@@ -858,6 +869,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                       </SheetContent>
                   )}
               </Sheet>
+            </>
           )}
       </div>
 
