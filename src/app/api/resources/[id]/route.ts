@@ -67,14 +67,14 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 collaborators: { set: (collaboratorIds ?? []).map((id: string) => ({ id })) },
             };
 
-            if (createVersion) {
+            if (createVersion && session) {
                 updateData.version = { increment: 1 };
                 await tx.resourceVersion.create({
                     data: {
                         resourceId: resourceToUpdate.id,
                         version: resourceToUpdate.version,
                         content: resourceToUpdate.content,
-                        authorId: session!.id,
+                        authorId: session.id,
                     }
                 });
             }
@@ -118,6 +118,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                     }
                 };
             } else if (existingQuiz) {
+                // Si no se envía un quiz pero existe uno, se elimina.
                 await tx.quiz.delete({ where: { id: existingQuiz.id } });
             }
 
