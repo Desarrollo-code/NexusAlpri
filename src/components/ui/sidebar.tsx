@@ -114,7 +114,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
 
   const linkContent = (
       <div className={cn(
-        "flex items-center gap-3 rounded-lg transition-all duration-300 font-semibold group/menu-item relative",
+        "flex items-center gap-3 rounded-lg transition-all duration-300 font-semibold group/menu-item relative text-sm",
         isCollapsed ? "justify-center h-12 w-12" : "p-3",
         isActive
           ? "bg-[hsl(var(--sidebar-accent))] text-[hsl(var(--sidebar-accent-foreground))] shadow-inner"
@@ -150,13 +150,13 @@ const SidebarSectionHeader = ({ item, isActive }: { item: NavItem, isActive: boo
 
   const headerContent = (
       <div className={cn(
-          "flex items-center justify-between w-full rounded-lg transition-colors group",
+          "flex items-center justify-between w-full rounded-lg transition-colors group text-sm",
           isCollapsed ? 'h-12 w-12 justify-center' : 'p-3',
           isActive ? "bg-black/10 text-foreground" : "hover:bg-black/10 text-sidebar-muted-foreground hover:text-foreground"
       )}>
           <div className="flex items-center gap-3">
               <GradientIcon icon={item.icon} isActive={isActive} />
-              {!isCollapsed && <span className="text-base font-semibold whitespace-nowrap">{item.label}</span>}
+              {!isCollapsed && <span className="font-semibold whitespace-nowrap">{item.label}</span>}
           </div>
           {!isCollapsed && <ChevronDown className={cn("h-4 w-4 shrink-0 transition-transform duration-200 text-inherit", "group-data-[state=open]:rotate-180")} />}
       </div>
