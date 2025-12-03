@@ -18,8 +18,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Save, UploadCloud, Link as LinkIcon, Image as ImageIcon, XCircle, Replace, Calendar as CalendarIcon, Eye, EyeOff, X, Globe, Users, FileText, Check, Archive, FilePen, RotateCcw, PlusCircle } from 'lucide-react';
-import type { AppResourceType, User as AppUser, ResourceSharingMode } from '@/types';
+import { Loader2, Save, UploadCloud, Link as LinkIcon, Image as ImageIcon, XCircle, Replace, Calendar as CalendarIcon, Eye, EyeOff, X, Globe, Users, FileText, Check, Archive, FilePen, RotateCcw, PlusCircle, Briefcase } from 'lucide-react';
+import type { AppResourceType, User as AppUser, ResourceSharingMode, Process } from '@/types';
 import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
@@ -126,7 +126,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         setContent(resource.content || '');
         setObservations(resource.observations || '');
         setCategory(resource.category || settings?.resourceCategories[0] || 'General');
-        setSharingMode(resource.sharingMode || 'PUBLIC');
+        setSharingMode(resource.sharingMode || (resource.ispublic ? 'PUBLIC' : 'PRIVATE'));
         setSharedWithUserIds(resource.sharedWith?.map(u => u.id) || []);
         setSharedWithProcessIds(resource.sharedWithProcesses?.map(p => p.id) || []);
         setCollaboratorIds(resource.collaborators?.map(u => u.id) || []);
@@ -339,8 +339,8 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                     <Label className="font-semibold text-base">Visibilidad</Label>
                      <RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-3 gap-2">
                         <div><RadioGroupItem value="PUBLIC" id="share-public" className="sr-only" /><Label htmlFor="share-public" className={cn("flex flex-col items-center justify-center p-3 rounded-lg border-2 cursor-pointer", sharingMode === 'PUBLIC' && 'border-primary ring-2 ring-primary')}><Globe className="mb-2 h-5 w-5"/>Todos</Label></div>
-                        <div><RadioGroupItem value="PROCESS" id="share-process" className="sr-only"/><Label htmlFor="share-process" className={cn("flex flex-col items-center justify-center p-3 rounded-lg border-2 cursor-pointer", sharingMode === 'PROCESS' && 'border-primary ring-2 ring-primary')}><Briefcase className="mb-2 h-5 w-5"/>Por Procesos</Label></div>
-                        <div><RadioGroupItem value="PRIVATE" id="share-private" className="sr-only"/><Label htmlFor="share-private" className={cn("flex flex-col items-center justify-center p-3 rounded-lg border-2 cursor-pointer", sharingMode === 'PRIVATE' && 'border-primary ring-2 ring-primary')}><Users className="mb-2 h-5 w-5"/>Usuarios Específicos</Label></div>
+                        <div><RadioGroupItem value="PROCESS" id="share-process" className="sr-only"/><Label htmlFor="share-process" className={cn("flex flex-col items-center justify-center p-3 rounded-lg border-2 cursor-pointer", sharingMode === 'PROCESS' && 'border-primary ring-2 ring-primary')}><Briefcase className="mb-2 h-5 w-5"/>Procesos</Label></div>
+                        <div><RadioGroupItem value="PRIVATE" id="share-private" className="sr-only"/><Label htmlFor="share-private" className={cn("flex flex-col items-center justify-center p-3 rounded-lg border-2 cursor-pointer", sharingMode === 'PRIVATE' && 'border-primary ring-2 ring-primary')}><Users className="mb-2 h-5 w-5"/>Específicos</Label></div>
                      </RadioGroup>
                 </div>
 
@@ -370,7 +370,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                 )}
               </form>
             </ScrollArea>
-          <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-center sm:justify-center gap-2">
+          <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end sm:justify-end gap-2">
             <Button variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
             <Button type="submit" form="resource-form" disabled={isSubmitting || (resourceType !== 'DOCUMENT' && !title) || (resourceType === 'EXTERNAL_LINK' && !externalLink) }>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
@@ -382,4 +382,3 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     </Dialog>
   );
 }
-```
