@@ -47,16 +47,17 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
     
     return (
        <>
-        <div className={cn("relative flex flex-col items-center w-48 md:w-56", isOdd ? 'self-end' : 'self-start')}>
+        <div className={cn("relative flex items-center justify-center w-56", isOdd ? 'self-end' : 'self-start')}>
+            
             {/* Contenedor del Banderín y Descripción */}
             <div className={cn(
                 "relative w-full bg-background border rounded-lg shadow-lg p-3 text-center transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-primary/20",
-                isOdd ? 'mt-8' : 'mb-8'
+                isOdd ? 'mb-24' : 'mt-24'
             )}>
                 {/* Flecha del Banderín */}
                 <div 
-                    className="absolute left-1/2 -translate-x-1/2 w-4 h-4 bg-background border-r border-b transform rotate-45"
-                    style={isOdd ? { top: '-8px', borderTop: 'none', borderLeft: 'none' } : { bottom: '-8px', borderBottom: 'none', borderRight: 'none' }}
+                    className="absolute left-1/2 -translate-x-1/2 w-4 h-4 bg-background border-r border-b transform rotate-45 z-0"
+                    style={isOdd ? { bottom: '-8px', borderTop: 'none', borderLeft: 'none' } : { top: '-8px', borderBottom: 'none', borderRight: 'none' }}
                 />
                  {/* Contenido del Banderín */}
                 <div className="relative z-10">
@@ -72,8 +73,12 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
                     </div>
                 </div>
             </div>
-            {/* Icono Circular y Línea Vertical */}
-            <div className={cn("flex flex-col items-center order-1", isOdd ? 'absolute top-0' : 'absolute bottom-0')}>
+
+             {/* Icono Circular y Línea Vertical (posicionados absolutamente para centrado perfecto) */}
+            <div className={cn("absolute left-1/2 -translate-x-1/2 flex flex-col items-center", isOdd ? 'top-full' : 'bottom-full')}>
+                 {/* Línea de Conexión Superior (si es impar) */}
+                {isOdd && <div className="w-0.5 h-12" style={{background: `linear-gradient(to top, ${item.color}, transparent)`}} />}
+
                 {/* Icono */}
                 <div className="relative group">
                     <div className="h-16 w-16 md:h-20 md:w-20 rounded-full flex items-center justify-center border-4" style={{ backgroundColor: `${item.color}20`, borderColor: item.color }}>
@@ -93,8 +98,9 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
                         </div>
                     )}
                 </div>
-                 {/* Línea de Conexión */}
-                 <div className={cn("w-0.5 h-16", isOdd ? 'mt-[-4px]' : 'mb-[-4px]')} style={{background: `linear-gradient(${isOdd ? 'to bottom' : 'to top'}, ${item.color}, transparent)`}} />
+
+                {/* Línea de Conexión Inferior (si es par) */}
+                {!isOdd && <div className="w-0.5 h-12" style={{background: `linear-gradient(to bottom, ${item.color}, transparent)`}} />}
             </div>
         </div>
         <AlertDialog open={!!itemToDelete} onOpenChange={(isOpen) => !isOpen && setItemToDelete(null)}>
@@ -119,25 +125,14 @@ export const InteractiveRoadmap = ({ items, onEdit, onDelete }: { items: Roadmap
         className="absolute top-1/2 left-0 w-full h-2.5 -translate-y-1/2"
         style={{
             background: 'linear-gradient(90deg, #f59e0b, #ec4899, #8b5cf6)',
-            clipPath: 'polygon(0 0, 100% 0, 98% 50%, 100% 100%, 0 100%)'
+            clipPath: 'polygon(0 0, 100% 0, 99% 50%, 100% 100%, 0 100%)'
         }}
       />
       {/* Contenedor de hitos */}
-      <div className="relative flex justify-between items-center">
+      <div className="relative flex justify-between items-stretch min-h-[30rem]">
         {items.map((item, index) => (
-          <React.Fragment key={item.id}>
-             {/* Puntos en la línea de tiempo */}
-             <div className="relative flex-shrink-0">
-                <div className="h-6 w-6 rounded-full bg-background border-4 border-primary shadow-md" />
-            </div>
-            {/* Hitos */}
-            <TimelineItem item={item} index={index} onEdit={onEdit} onDelete={onDelete} />
-          </React.Fragment>
+            <TimelineItem key={item.id} item={item} index={index} onEdit={onEdit} onDelete={onDelete} />
         ))}
-        {/* Punto final para balancear visualmente */}
-        <div className="relative flex-shrink-0">
-           <div className="h-6 w-6 rounded-full bg-background border-4 border-primary shadow-md" />
-        </div>
       </div>
     </div>
   );
