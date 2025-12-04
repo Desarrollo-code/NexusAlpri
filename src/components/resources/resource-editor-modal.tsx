@@ -11,7 +11,7 @@ import { es } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Componentes de UI
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
@@ -31,7 +31,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../ui/card';
-import { RichTextEditor } from '@/components/ui/rich-text-editor'; // Asegúrate de que esta importación sea correcta
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Separator } from '@/components/ui/separator';
 
 // 💡 Se asume que estos se encuentran en un archivo modularizado auxiliar
@@ -156,7 +156,8 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
       const payload = {
           title: uploads.length > 1 ? upload.file.name.split('.').slice(0,-1).join('.') : title,
           filename: upload.file.name,
-          description, category, sharingMode, 
+          description, category, 
+          sharingMode, 
           sharedWithUserIds: sharingMode === 'PRIVATE' ? sharedWithUserIds : [],
           sharedWithProcessIds: sharingMode === 'PROCESS' ? sharedWithProcessIds : [],
           collaboratorIds: [],
