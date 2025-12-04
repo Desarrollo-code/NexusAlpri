@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Folder, GripVertical, ListVideo, Loader2, PlusCircle, Trash2, Youtube, UploadCloud, Users } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import Image from 'next/image';
 import { DndContext, DragEndEvent } from '@dnd-kit/core';
@@ -253,12 +253,6 @@ export function PlaylistCreatorModal({ isOpen, onClose, onSave, parentId, playli
                         ))}
                     </SortableContext>
                 </DndContext>
-            </div>
-
-            <div className="space-y-2 pt-2">
-                 <Label className="flex items-center gap-2"><Users className="h-4 w-4"/>Colaboradores</Label>
-                 <p className="text-xs text-muted-foreground">Selecciona usuarios que también puedan añadir o quitar videos de esta lista.</p>
-                 {/* Aquí va la UI para seleccionar colaboradores */}
             </div>
           </form>
         </ScrollArea>
