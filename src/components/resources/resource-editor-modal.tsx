@@ -352,7 +352,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
 
           </form>
         </ScrollArea>
-        <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row sm:justify-end gap-2">
+        <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2">
           <Button variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
           <Button type="submit" form="resource-form" disabled={isSubmitting || !title || (resourceType === 'EXTERNAL_LINK' && !externalLink) || (resourceType === 'DOCUMENT' && uploads.some(u => u.status === 'uploading' || u.status === 'processing'))}>
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
