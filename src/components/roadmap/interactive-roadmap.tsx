@@ -156,7 +156,7 @@ export const InteractiveRoadmap = ({ items, onEdit, onDelete }: { items: Roadmap
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/80 z-40"
+                            className="fixed inset-0 bg-black z-40"
                             onClick={() => setSelectedId(null)}
                         />
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
