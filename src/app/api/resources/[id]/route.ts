@@ -18,6 +18,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
             include: {
                 uploader: { select: { id: true, name: true } },
                 sharedWith: { select: { id: true, name: true, avatar: true } },
+                sharedWithProcesses: { select: { id: true, name: true } },
                 collaborators: { select: { id: true, name: true, avatar: true } },
                 quiz: { include: { questions: { include: { options: true }, orderBy: { order: 'asc' } } } },
             },
@@ -54,16 +55,16 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         }
         
         const body = await req.json();
-        const { title, category, description, isPublic, sharedWithUserIds, expiresAt, status, content, observations, quiz, collaboratorIds } = body;
+        const { title, category, description, sharingMode, sharedWithUserIds, sharedWithProcessIds, expiresAt, status, content, observations, quiz, collaboratorIds } = body;
 
         const createVersion = resourceToUpdate.type === 'DOCUMENTO_EDITABLE' && resourceToUpdate.content !== content;
         
         await prisma.$transaction(async (tx) => {
             const updateData: any = {
-                title, category, content, observations, description, status,
+                title, category, content, observations, description, status, sharingMode,
                 expiresAt: expiresAt ? new Date(expiresAt) : null,
-                ispublic: isPublic,
-                sharedWith: { set: (sharedWithUserIds ?? []).map((id: string) => ({ id })) },
+                sharedWith: { set: sharingMode === 'PRIVATE' ? (sharedWithUserIds ?? []).map((id: string) => ({ id })) : [] },
+                sharedWithProcesses: { set: sharingMode === 'PROCESS' ? (sharedWithProcessIds ?? []).map((id: string) => ({ id })) : [] },
                 collaborators: { set: (collaboratorIds ?? []).map((id: string) => ({ id })) },
             };
 
@@ -118,7 +119,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                     }
                 };
             } else if (existingQuiz) {
-                // Si no se envía un quiz pero existe uno, se elimina.
                 await tx.quiz.delete({ where: { id: existingQuiz.id } });
             }
 
@@ -169,7 +169,6 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
             }
         }
         
-        // Usar una transacción para eliminar el recurso y sus notificaciones asociadas
         await prisma.$transaction([
             prisma.notification.deleteMany({
                 where: {

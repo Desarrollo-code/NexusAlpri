@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -17,7 +17,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Save, UploadCloud, Link as LinkIcon, XCircle, Replace, Calendar as CalendarIcon, X, Globe, Users, FileText, Briefcase, RotateCcw } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Loader2, Save, UploadCloud, Link as LinkIcon, XCircle, Replace, Calendar as CalendarIcon, X, Globe, Users, FileText, Check, Archive, FilePen, RotateCcw, PlusCircle, Briefcase } from 'lucide-react';
 import type { AppResourceType, User as AppUser, ResourceSharingMode, Process } from '@/types';
 import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
@@ -34,7 +35,9 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
+import { FileIcon } from '@/components/ui/file-icon';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { QuizViewer } from '@/components/quiz-viewer';
 
 interface ResourceEditorModalProps {
   isOpen: boolean;
@@ -55,7 +58,7 @@ interface UploadState {
 
 const getInitials = (name?: string | null): string => {
   if (!name) return '??';
-  const names = name.trim().split(/\s+/);
+  const names = name.trim().split(/\s+/); // Use regex to handle multiple spaces
   if (names.length > 1 && names[0] && names[names.length - 1]) {
     return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
   }
@@ -282,18 +285,17 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="w-[95vw] sm:max-w-2xl p-0 gap-0 rounded-2xl max-h-[90vh] flex flex-col">
+        <DialogContent className="w-[95vw] sm:max-w-xl p-0 gap-0 rounded-2xl max-h-[90vh] flex flex-col">
           <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
             <DialogTitle>{resource ? 'Editar Recurso' : 'Subir Nuevo Recurso'}</DialogTitle>
             <DialogDescription>{resource ? 'Modifica los detalles de tu recurso.' : 'Añade archivos, enlaces o documentos a la biblioteca.'}</DialogDescription>
           </DialogHeader>
-          <div className="flex-1 min-h-0">
-            <ScrollArea className="h-full">
-              <form id="resource-form" onSubmit={handleSave} className="space-y-6 px-6 py-4">
-                {!isEditing && (
-                  <div className="space-y-4">
-                    <h3 className="font-semibold text-lg text-center">Selecciona el tipo de recurso a crear</h3>
-                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <ScrollArea className="flex-1 min-h-0">
+            <form id="resource-form" onSubmit={handleSave} className="space-y-6 px-6 py-4">
+              {!isEditing && (
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg text-center">Selecciona el tipo de recurso a crear</h3>
+                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="p-4 border rounded-lg space-y-2">
                         <Label className="font-semibold flex items-center gap-2"><UploadCloud/> Subir Archivo(s)</Label>
                         <p className="text-xs text-muted-foreground">Sube documentos, imágenes o videos desde tu dispositivo.</p>
@@ -310,66 +312,66 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                         <Button type="button" variant="secondary" onClick={() => setResourceType('DOCUMENTO_EDITABLE')}>Crear Documento</Button>
                       </div>
                   </div>
-                )}
-                  
-                {resourceType === 'DOCUMENTO_EDITABLE' && (
-                  <div className="space-y-4">
-                    <div className="space-y-1.5"><Label htmlFor="content-editor">Contenido</Label><RichTextEditor value={content} onChange={setContent} className="h-48" /></div>
-                    <div className="space-y-1.5"><Label htmlFor="observations-editor">Observaciones (Privado)</Label><Textarea id="observations-editor" value={observations} onChange={e => setObservations(e.target.value)} placeholder="Notas internas, no visibles para estudiantes..." /></div>
-                  </div>
-                )}
-                
-                {(isEditing || (uploads.length <= 1 && resourceType !== 'DOCUMENT')) && (
-                    <>
-                    <div className="space-y-1.5"><Label htmlFor="title">Título</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required autoComplete="off" /></div>
-                    <div className="space-y-1.5"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} placeholder="Un resumen breve del contenido del recurso..."/></div>
-                    </>
-                )}
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory}><SelectTrigger id="category"><SelectValue placeholder="Seleccionar..." /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select></div>
-                  <div className="space-y-1.5"><Label>Expiración</Label><Popover><PopoverTrigger asChild><Button variant="outline" className="w-full justify-start font-normal">{expiresAt ? format(expiresAt, "PPP", {locale: es}) : <span>Sin fecha de expiración</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50"/></Button></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={expiresAt} onSelect={setExpiresAt} initialFocus locale={es} /></PopoverContent></Popover></div>
                 </div>
+              )}
                 
-                <Separator />
-                
+              {resourceType === 'DOCUMENTO_EDITABLE' && (
                 <div className="space-y-4">
-                    <Label className="font-semibold text-base">Visibilidad</Label>
-                     <RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-3 gap-2">
-                        <div><RadioGroupItem value="PUBLIC" id="share-public" className="sr-only" /><Label htmlFor="share-public" className={cn("flex flex-col items-center justify-center p-3 rounded-lg border-2 cursor-pointer", sharingMode === 'PUBLIC' && 'border-primary ring-2 ring-primary')}><Globe className="mb-2 h-5 w-5"/>Todos</Label></div>
-                        <div><RadioGroupItem value="PROCESS" id="share-process" className="sr-only"/><Label htmlFor="share-process" className={cn("flex flex-col items-center justify-center p-3 rounded-lg border-2 cursor-pointer", sharingMode === 'PROCESS' && 'border-primary ring-2 ring-primary')}><Briefcase className="mb-2 h-5 w-5"/>Por Procesos</Label></div>
-                        <div><RadioGroupItem value="PRIVATE" id="share-private" className="sr-only"/><Label htmlFor="share-private" className={cn("flex flex-col items-center justify-center p-3 rounded-lg border-2 cursor-pointer", sharingMode === 'PRIVATE' && 'border-primary ring-2 ring-primary')}><Users className="mb-2 h-5 w-5"/>Específicos</Label></div>
-                     </RadioGroup>
+                  <div className="space-y-1.5"><Label htmlFor="content-editor">Contenido</Label><RichTextEditor value={content} onChange={setContent} className="h-48" /></div>
+                  <div className="space-y-1.5"><Label htmlFor="observations-editor">Observaciones (Privado)</Label><Textarea id="observations-editor" value={observations} onChange={e => setObservations(e.target.value)} placeholder="Notas internas, no visibles para estudiantes..." /></div>
                 </div>
+              )}
+              
+              {(isEditing || (uploads.length <= 1 && resourceType !== 'DOCUMENT')) && (
+                  <>
+                  <div className="space-y-1.5"><Label htmlFor="title">Título</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required autoComplete="off" /></div>
+                  <div className="space-y-1.5"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} placeholder="Un resumen breve del contenido del recurso..."/></div>
+                  </>
+              )}
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory}><SelectTrigger id="category"><SelectValue placeholder="Seleccionar..." /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).sort().map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select></div>
+                <div className="space-y-1.5"><Label>Expiración</Label><Popover><PopoverTrigger asChild><Button variant="outline" className="w-full justify-start font-normal">{expiresAt ? format(expiresAt, "PPP", {locale: es}) : <span>Sin fecha de expiración</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50"/></Button></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={expiresAt} onSelect={setExpiresAt} initialFocus /></PopoverContent></Popover></div>
+              </div>
+              
+              <Separator />
+              
+              <div className="space-y-4">
+                  <Label className="font-semibold text-base">Visibilidad</Label>
+                   <RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-3 gap-2">
+                      <div><RadioGroupItem value="PUBLIC" id="share-public" className="sr-only" /><Label htmlFor="share-public" className={cn("flex flex-col items-center justify-center p-3 rounded-lg border-2 cursor-pointer", sharingMode === 'PUBLIC' && 'border-primary ring-2 ring-primary')}><Globe className="mb-2 h-5 w-5"/>Todos</Label></div>
+                      <div><RadioGroupItem value="PROCESS" id="share-process" className="sr-only"/><Label htmlFor="share-process" className={cn("flex flex-col items-center justify-center p-3 rounded-lg border-2 cursor-pointer", sharingMode === 'PROCESS' && 'border-primary ring-2 ring-primary')}><Briefcase className="mb-2 h-5 w-5"/>Por Procesos</Label></div>
+                      <div><RadioGroupItem value="PRIVATE" id="share-private" className="sr-only"/><Label htmlFor="share-private" className={cn("flex flex-col items-center justify-center p-3 rounded-lg border-2 cursor-pointer", sharingMode === 'PRIVATE' && 'border-primary ring-2 ring-primary')}><Users className="mb-2 h-5 w-5"/>Específicos</Label></div>
+                   </RadioGroup>
+              </div>
 
-                {sharingMode === 'PROCESS' && (
-                    <div className="space-y-1.5"><Label>Compartir con Procesos</Label>
-                    <ScrollArea className="h-32 border rounded-md p-2">
-                        {allProcesses.map(p => (
-                            <div key={p.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`proc-${p.id}`} checked={sharedWithProcessIds.includes(p.id)} onCheckedChange={(c) => setSharedWithProcessIds(prev => c ? [...prev, p.id] : prev.filter(id => id !== p.id))} /><Label htmlFor={`proc-${p.id}`} className="font-normal">{p.name}</Label></div>
-                        ))}
-                    </ScrollArea></div>
-                )}
-                {sharingMode === 'PRIVATE' && (
-                    <div className="space-y-1.5"><Label>Compartir con Usuarios</Label><Input placeholder="Buscar usuarios..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
-                    <ScrollArea className="h-32 border rounded-md p-2">
-                        {filteredUsers.map(u => (
-                            <div key={u.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={(c) => setSharedWithUserIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(u.name)}</AvatarFallback></Avatar>{u.name}</Label></div>
-                        ))}
-                    </ScrollArea></div>
-                )}
-                {resourceType === 'VIDEO_PLAYLIST' && (
-                  <div className="space-y-1.5"><Label>Colaboradores</Label><Input placeholder="Buscar usuarios..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
-                    <ScrollArea className="h-32 border rounded-md p-2">
-                        {filteredUsers.map(u => (
-                            <div key={u.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`collab-${u.id}`} checked={collaboratorIds.includes(u.id)} onCheckedChange={(c) => setCollaboratorIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`collab-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(u.name)}</AvatarFallback></Avatar>{u.name}</Label></div>
-                        ))}
-                    </ScrollArea></div>
-                )}
-              </form>
-            </ScrollArea>
-          </div>
-          <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row sm:justify-end gap-2">
+              {sharingMode === 'PROCESS' && (
+                  <div className="space-y-1.5"><Label>Compartir con Procesos</Label>
+                  <ScrollArea className="h-32 border rounded-md p-2">
+                      {allProcesses.map(p => (
+                          <div key={p.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`proc-${p.id}`} checked={sharedWithProcessIds.includes(p.id)} onCheckedChange={(c) => setSharedWithProcessIds(prev => c ? [...prev, p.id] : prev.filter(id => id !== p.id))} /><Label htmlFor={`proc-${p.id}`} className="font-normal" style={{ paddingLeft: `${(p.level || 0) * 1.5}rem` }}>{p.name}</Label></div>
+                      ))}
+                  </ScrollArea></div>
+              )}
+              {sharingMode === 'PRIVATE' && (
+                  <div className="space-y-1.5"><Label>Compartir con Usuarios</Label><Input placeholder="Buscar usuarios..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
+                  <ScrollArea className="h-32 border rounded-md p-2">
+                      {filteredUsers.map(u => (
+                          <div key={u.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={(c) => setSharedWithUserIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(u.name)}</AvatarFallback></Avatar>{u.name}</Label></div>
+                      ))}
+                  </ScrollArea></div>
+              )}
+              {resourceType === 'VIDEO_PLAYLIST' && (
+                 <div className="space-y-1.5"><Label>Colaboradores</Label><Input placeholder="Buscar usuarios..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
+                  <ScrollArea className="h-32 border rounded-md p-2">
+                      {filteredUsers.map(u => (
+                          <div key={u.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`collab-${u.id}`} checked={collaboratorIds.includes(u.id)} onCheckedChange={(c) => setCollaboratorIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} /><Label htmlFor={`collab-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(u.name)}</AvatarFallback></Avatar>{u.name}</Label></div>
+                      ))}
+                  </ScrollArea></div>
+              )}
+            </form>
+          </ScrollArea>
+          <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-center sm:justify-end gap-2">
             <Button variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
             <Button type="submit" form="resource-form" disabled={isSubmitting || (resourceType !== 'DOCUMENT' && !title) || (resourceType === 'EXTERNAL_LINK' && !externalLink) }>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}

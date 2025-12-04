@@ -2,7 +2,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import prisma from '@/lib/prisma';
-import type { Prisma, ResourceStatus } from '@prisma/client';
+import type { Prisma, ResourceStatus, ResourceSharingMode } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,7 +58,6 @@ export async function GET(req: NextRequest) {
             baseWhere.title = { contains: searchTerm, mode: 'insensitive' };
         }
         
-        // Apply advanced filters
         if (startDate) baseWhere.uploadDate = { ...baseWhere.uploadDate, gte: new Date(startDate) };
         if (endDate) baseWhere.uploadDate = { ...baseWhere.uploadDate, lte: new Date(endDate) };
         if (fileType && fileType !== 'all') {
@@ -76,7 +75,22 @@ export async function GET(req: NextRequest) {
         if (session.role === 'ADMINISTRATOR') {
             whereClause = baseWhere;
         } else {
-            whereClause.AND = [baseWhere, { OR: [ { ispublic: true }, { uploaderId: session.id }, { sharedWith: { some: { id: session.id } } } ] }];
+            const userProcessIds = await prisma.user.findUnique({
+                where: { id: session.id },
+                select: { processId: true }
+            }).then(u => u?.processId ? [u.processId] : []);
+
+            whereClause.AND = [
+                baseWhere,
+                {
+                    OR: [
+                        { sharingMode: 'PUBLIC' },
+                        { sharingMode: 'PRIVATE', sharedWith: { some: { id: session.id } } },
+                        { sharingMode: 'PROCESS', sharedWithProcesses: { some: { id: { in: userProcessIds } } } },
+                        { uploaderId: session.id },
+                    ]
+                }
+            ];
         }
 
         const resources = await prisma.enterpriseResource.findMany({
@@ -111,7 +125,7 @@ export async function POST(req: NextRequest) {
     
     try {
         const body = await req.json();
-        const { title, type, url, category, tags, parentId, description, isPublic, sharedWithUserIds, expiresAt, status, size, fileType, filename, videos, collaboratorIds } = body;
+        const { title, type, url, category, tags, parentId, description, sharingMode, sharedWithUserIds, sharedWithProcessIds, expiresAt, status, size, fileType, filename, videos, collaboratorIds } = body;
 
         const finalTitle = title || filename;
 
@@ -128,7 +142,7 @@ export async function POST(req: NextRequest) {
                 data: {
                     title: finalTitle,
                     type, description, category,
-                    ispublic: true, 
+                    sharingMode: 'PUBLIC',
                     uploader: { connect: { id: session.id } },
                     parent: parentId ? { connect: { id: parentId } } : undefined,
                     collaborators: collaboratorIds && collaboratorIds.length > 0 ? {
@@ -147,7 +161,7 @@ export async function POST(req: NextRequest) {
                             url: video.url,
                             uploader: { connect: { id: session.id } },
                             parent: { connect: { id: playlist.id } },
-                            ispublic: true,
+                            sharingMode: 'PUBLIC',
                             category,
                             status: 'ACTIVE',
                         }
@@ -162,15 +176,19 @@ export async function POST(req: NextRequest) {
             content: type === 'DOCUMENTO_EDITABLE' ? ' ' : null,
             category: category || 'General',
             tags: Array.isArray(tags) ? tags.join(',') : '',
-            ispublic: isPublic === true, status: status || 'ACTIVE',
+            sharingMode,
+            status: status || 'ACTIVE',
             expiresAt: expiresAt ? new Date(expiresAt) : null,
             size, filetype: fileType,
             uploader: { connect: { id: session.id } },
             parent: parentId ? { connect: { id: parentId } } : undefined,
         };
-
-        if (isPublic === false && sharedWithUserIds && Array.isArray(sharedWithUserIds)) {
+        
+        if (sharingMode === 'PRIVATE' && sharedWithUserIds && Array.isArray(sharedWithUserIds)) {
             data.sharedWith = { connect: sharedWithUserIds.map((id:string) => ({ id })) };
+        }
+        if (sharingMode === 'PROCESS' && sharedWithProcessIds && Array.isArray(sharedWithProcessIds)) {
+            data.sharedWithProcesses = { connect: sharedWithProcessIds.map((id:string) => ({ id })) };
         }
 
         const newResource = await prisma.enterpriseResource.create({
