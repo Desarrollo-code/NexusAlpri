@@ -78,7 +78,7 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                         </div>
                     )}
                     {resource.type === 'VIDEO_PLAYLIST' && (
-                        <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs font-semibold px-2 py-1 rounded-md flex items-center gap-1">
+                        <div className="absolute bottom-2 left-2 bg-black text-white text-xs font-semibold px-2 py-1 rounded-md flex items-center gap-1">
                             <ListVideo className="h-3 w-3"/>
                             <span>Playlist</span>
                         </div>
