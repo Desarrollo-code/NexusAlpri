@@ -44,6 +44,7 @@ const triggerLabels: Record<MotivationalMessageTriggerType, string> = {
     COURSE_NEAR_COMPLETION: 'Al 90% de un curso',
     COURSE_COMPLETION: 'Al completar un curso',
     LEVEL_UP: 'Al subir de nivel',
+    LESSON_COMPLETION: 'Al completar una lección'
 };
 
 export function MotivationEditorModal({ isOpen, onClose, message, onSave }: MotivationEditorModalProps) {

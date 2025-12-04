@@ -66,20 +66,14 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   const { sharingMode, sharedWithUserIds, sharedWithProcessIds, collaboratorIds, expiresAt } = access;
 
   const resetForm = useCallback(() => {
-    setTitle('');
-    setDescription('');
-    setContent('');
-    setObservations('');
-    setCategory(settings?.resourceCategories[0] || 'General');
-    setAccess({
-      sharingMode: 'PUBLIC',
-      sharedWithUserIds: [],
-      sharedWithProcessIds: [],
-      collaboratorIds: [],
-      expiresAt: undefined,
+    setResourceDetails({
+      title: '', description: '', content: '', observations: '', category: settings?.resourceCategories[0] || 'General',
+      externalLink: '', resourceType: 'DOCUMENT',
     });
-    setResourceType('DOCUMENT');
-    setExternalLink('');
+    setAccess({
+      sharingMode: 'PUBLIC', sharedWithUserIds: [], sharedWithProcessIds: [],
+      collaboratorIds: [], expiresAt: undefined,
+    });
     setUploads([]);
   }, [settings?.resourceCategories]);
 
@@ -300,7 +294,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] sm:max-w-2xl p-0 gap-0 rounded-2xl max-h-[95vh] flex flex-col"> 
+      <DialogContent className="w-[95vw] sm:max-w-2xl p-0 gap-0 rounded-2xl max-h-[90vh] flex flex-col">
         <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
           <DialogTitle>{resource ? 'Editar Recurso' : 'Nuevo Recurso'}</DialogTitle>
           <DialogDescription>
@@ -308,14 +302,14 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
           </DialogDescription>
         </DialogHeader>
         
-        <ScrollArea className="flex-1 min-h-0 custom-scrollbar"> 
+        <ScrollArea className="flex-1 min-h-0 custom-scrollbar">
           <form id="resource-form" onSubmit={handleSave} className="space-y-6 px-6 py-4">
             
             {!isEditing && (
               <RadioGroup value={resourceType} onValueChange={(v) => handleResourceDetailChange('resourceType', v as AppResourceType['type'])} className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <div className="relative"><RadioGroupItem value="DOCUMENT" id="type-doc" className="sr-only"/><Label htmlFor="type-doc" className={cn("flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground", resourceType === 'DOCUMENT' && 'border-primary ring-2 ring-primary')}><UploadCloud className="mb-2 h-6 w-6"/>Subir Archivo</Label></div>
-                  <div className="relative"><RadioGroupItem value="EXTERNAL_LINK" id="type-link" className="sr-only"/><Label htmlFor="type-link" className={cn("flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground", resourceType === 'EXTERNAL_LINK' && 'border-primary ring-2 ring-primary')}><LinkIcon className="mb-2 h-6 w-6"/>Enlace Externo</Label></div>
-                  <div className="relative"><RadioGroupItem value="DOCUMENTO_EDITABLE" id="type-edit" className="sr-only"/><Label htmlFor="type-edit" className={cn("flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground", resourceType === 'DOCUMENTO_EDITABLE' && 'border-primary ring-2 ring-primary')}><FilePen className="mb-2 h-6 w-6"/>Documento Editable</Label></div>
+                  <div className="relative"><RadioGroupItem value="DOCUMENT" id="type-doc" className="sr-only"/><Label htmlFor="type-doc" className={cn("flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full", resourceType === 'DOCUMENT' && 'border-primary ring-2 ring-primary')}><UploadCloud className="mb-2 h-6 w-6"/>Subir Archivo</Label></div>
+                  <div className="relative"><RadioGroupItem value="EXTERNAL_LINK" id="type-link" className="sr-only"/><Label htmlFor="type-link" className={cn("flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full", resourceType === 'EXTERNAL_LINK' && 'border-primary ring-2 ring-primary')}><LinkIcon className="mb-2 h-6 w-6"/>Enlace Externo</Label></div>
+                  <div className="relative"><RadioGroupItem value="DOCUMENTO_EDITABLE" id="type-edit" className="sr-only"/><Label htmlFor="type-edit" className={cn("flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full", resourceType === 'DOCUMENTO_EDITABLE' && 'border-primary ring-2 ring-primary')}><FilePen className="mb-2 h-6 w-6"/>Documento Editable</Label></div>
               </RadioGroup>
             )}
             
@@ -327,7 +321,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
               </motion.div>
             </AnimatePresence>
             
-            {(isEditing || uploads.length === 0) && (
+            {(isEditing || (uploads.length <= 1 && resourceType !== 'DOCUMENT')) && (
               <Card>
                 <CardHeader><CardTitle className="text-base">Detalles del Recurso</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
