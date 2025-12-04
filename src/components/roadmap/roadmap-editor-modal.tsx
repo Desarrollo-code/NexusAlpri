@@ -27,6 +27,8 @@ import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
 import Image from 'next/image';
 import { RichTextEditor } from '../ui/rich-text-editor';
+import { ScrollArea } from '../ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 const ICONS = ['Lightbulb', 'Code', 'Database', 'Paintbrush', 'Rocket', 'CheckCircle', 'Award', 'Sparkles', 'UsersRound', 'FileText', 'Shield', 'MessageSquare', 'ScreenShare', 'Network', 'ListChecks', 'Megaphone', 'Folder', 'Users', 'TestTube2'];
 
@@ -140,68 +142,71 @@ export function RoadmapEditorModal({ isOpen, onClose, item, onSave }: RoadmapEdi
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent>
-                <DialogHeader>
+            <DialogContent className="sm:max-w-2xl flex flex-col h-[90vh] p-0 gap-0">
+                <DialogHeader className="p-6 pb-4 border-b">
                     <DialogTitle>{item ? 'Editar Hito' : 'Nuevo Hito en la Hoja de Ruta'}</DialogTitle>
                     <DialogDescription>Añade o modifica un evento importante en la evolución del proyecto.</DialogDescription>
                 </DialogHeader>
-                <form id="roadmap-form" onSubmit={handleSubmit} className="space-y-4 py-4">
-                    <div className="space-y-1">
-                        <Label htmlFor="title">Título</Label>
-                        <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required/>
-                    </div>
-                    <div className="space-y-1">
-                        <Label htmlFor="description">Descripción</Label>
-                        <RichTextEditor
-                            value={description}
-                            onChange={setDescription}
-                            variant="mini"
-                        />
-                    </div>
-                     <div className="grid grid-cols-2 gap-4">
+                <ScrollArea className="flex-1">
+                    <form id="roadmap-form" onSubmit={handleSubmit} className="space-y-4 p-6">
                         <div className="space-y-1">
-                            <Label>Fecha</Label>
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button variant="outline" className="w-full justify-start font-normal">{date ? format(date, "PPP", {locale: es}) : <span>Elige una fecha</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50"/></Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={date} onSelect={setDate} initialFocus locale={es}/></PopoverContent>
-                            </Popover>
+                            <Label htmlFor="title">Título</Label>
+                            <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required/>
                         </div>
                         <div className="space-y-1">
-                            <Label>Fase</Label>
-                            <Select value={phase} onValueChange={setPhase}>
-                                <SelectTrigger><SelectValue/></SelectTrigger>
+                            <Label htmlFor="description">Descripción</Label>
+                            <RichTextEditor
+                                value={description}
+                                onChange={setDescription}
+                                variant="mini"
+                                className="min-h-[120px]"
+                            />
+                        </div>
+                         <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                                <Label>Fecha</Label>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button variant="outline" className="w-full justify-start font-normal">{date ? format(date, "PPP", {locale: es}) : <span>Elige una fecha</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50"/></Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={date} onSelect={setDate} initialFocus locale={es}/></PopoverContent>
+                                </Popover>
+                            </div>
+                            <div className="space-y-1">
+                                <Label>Fase</Label>
+                                <Select value={phase} onValueChange={setPhase}>
+                                    <SelectTrigger><SelectValue/></SelectTrigger>
+                                    <SelectContent>
+                                        {roadmapPhases.map(phaseName => (
+                                            <SelectItem key={phaseName} value={phaseName}>{phaseName.replace('_', ' ')}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                         <div className="space-y-2">
+                            <Label>Imagen Representativa</Label>
+                            {isUploading ? (
+                                 <div className="w-full h-32 flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg"><Loader2 className="h-8 w-8 animate-spin text-primary"/><Progress value={uploadProgress} className="w-1/2 h-2"/></div>
+                            ) : imageUrl ? (
+                                <div className="relative w-full aspect-video rounded-lg border overflow-hidden"><Image src={imageUrl} alt="preview" fill className="object-cover" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => setImageUrl(null)}><Trash2 className="h-4 w-4"/></Button></div>
+                            ) : <UploadArea onFileSelect={(files) => files && handleImageUpload(files[0])} inputId="roadmap-image-upload" />}
+                         </div>
+                        <div className="space-y-1">
+                            <Label>Icono</Label>
+                            <Select value={icon} onValueChange={setIcon}>
+                                <SelectTrigger><div className="flex items-center gap-2">{(LucideIcons as any)[icon] && React.createElement((LucideIcons as any)[icon], {className: "h-4 w-4"})}<span>{iconTranslations[icon] || icon}</span></div></SelectTrigger>
                                 <SelectContent>
-                                    {roadmapPhases.map(phaseName => (
-                                        <SelectItem key={phaseName} value={phaseName}>{phaseName.replace('_', ' ')}</SelectItem>
-                                    ))}
+                                    {ICONS.map(iconName => {
+                                        const IconComponent = (LucideIcons as any)[iconName];
+                                        return <SelectItem key={iconName} value={iconName}><div className="flex items-center gap-2"><IconComponent className="h-4 w-4"/><span>{iconTranslations[iconName] || iconName}</span></div></SelectItem>
+                                    })}
                                 </SelectContent>
                             </Select>
                         </div>
-                    </div>
-                     <div className="space-y-2">
-                        <Label>Imagen Representativa</Label>
-                        {isUploading ? (
-                             <div className="w-full h-32 flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg"><Loader2 className="h-8 w-8 animate-spin text-primary"/><Progress value={uploadProgress} className="w-1/2 h-2"/></div>
-                        ) : imageUrl ? (
-                            <div className="relative w-full aspect-video rounded-lg border overflow-hidden"><Image src={imageUrl} alt="preview" fill className="object-cover" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => setImageUrl(null)}><Trash2 className="h-4 w-4"/></Button></div>
-                        ) : <UploadArea onFileSelect={(files) => files && handleImageUpload(files[0])} inputId="roadmap-image-upload" />}
-                     </div>
-                    <div className="space-y-1">
-                        <Label>Icono</Label>
-                        <Select value={icon} onValueChange={setIcon}>
-                            <SelectTrigger><div className="flex items-center gap-2">{(LucideIcons as any)[icon] && React.createElement((LucideIcons as any)[icon], {className: "h-4 w-4"})}<span>{iconTranslations[icon] || icon}</span></div></SelectTrigger>
-                            <SelectContent>
-                                {ICONS.map(iconName => {
-                                    const IconComponent = (LucideIcons as any)[iconName];
-                                    return <SelectItem key={iconName} value={iconName}><div className="flex items-center gap-2"><IconComponent className="h-4 w-4"/><span>{iconTranslations[iconName] || iconName}</span></div></SelectItem>
-                                })}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </form>
-                <DialogFooter>
+                    </form>
+                </ScrollArea>
+                <DialogFooter className="p-6 pt-4 border-t flex-shrink-0">
                     <Button variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
                     <Button type="submit" form="roadmap-form" disabled={isSubmitting || !title || !date}>
                         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
