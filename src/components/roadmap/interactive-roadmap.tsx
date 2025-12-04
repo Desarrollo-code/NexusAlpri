@@ -22,7 +22,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../ui/dropdown-menu';
-import { Card, CardContent, CardHeader, CardDescription, CardTitle } from '../ui/card';
+import { Card, CardContent, CardHeader, CardDescription, CardTitle, CardFooter } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { ScrollArea } from '../ui/scroll-area';
@@ -62,7 +62,7 @@ const RoadmapGridCard = ({ item, onSelect }: { item: RoadmapItem, onSelect: () =
                     </div>
                  </CardHeader>
                  <CardContent className="p-4 flex-grow">
-                    <p className="text-sm text-muted-foreground line-clamp-3 prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: item.description.replace(/<[^>]+>/g, ' ') }}/>
+                    <div className="text-sm text-muted-foreground line-clamp-3 prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: item.description }} />
                  </CardContent>
                  <CardFooter className="p-3 border-t text-xs text-muted-foreground font-medium">
                     {format(new Date(item.date), "dd MMMM, yyyy", { locale: es })}
