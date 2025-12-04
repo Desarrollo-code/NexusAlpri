@@ -79,17 +79,23 @@ export default function RoadmapPage() {
     return (
         <div className="relative overflow-hidden w-full min-h-[calc(100vh-10rem)] flex flex-col items-center">
             <DecorativeHeaderBackground />
-             <header className="text-center mb-8 md:mb-12 z-10 w-full">
-                <Rocket className="mx-auto h-16 w-16 text-primary mb-4 animate-bounce" style={{animationDuration: '2s'}}/>
-                <h1 className="text-4xl md:text-5xl font-extrabold font-headline">La Evolución de NexusAlpri</h1>
-                <p className="mt-4 text-lg text-muted-foreground max-w-3xl mx-auto">
-                    Un recorrido interactivo por las fases de desarrollo que han dado forma a nuestra plataforma.
-                </p>
-                {user?.role === 'ADMINISTRATOR' && (
-                    <Button onClick={() => handleOpenModal()} className="mt-6">
-                        <PlusCircle className="mr-2 h-4 w-4"/> Añadir Hito
-                    </Button>
-                )}
+             <header className="z-10 w-full flex flex-col md:flex-row items-center justify-between gap-6 mb-8 md:mb-12">
+                <div className="text-center md:text-left">
+                    <h1 className="text-4xl md:text-5xl font-extrabold font-headline">La Evolución de NexusAlpri</h1>
+                    <p className="mt-2 text-lg text-muted-foreground max-w-xl">
+                        Un recorrido interactivo por las fases de desarrollo que han dado forma a nuestra plataforma.
+                    </p>
+                </div>
+                <div className="flex items-center gap-4 flex-shrink-0">
+                     <div className="w-16 h-16 rounded-full border-2 border-primary/50 bg-card shadow-lg flex items-center justify-center">
+                        <Rocket className="h-8 w-8 text-primary"/>
+                    </div>
+                    {user?.role === 'ADMINISTRATOR' && (
+                        <Button onClick={() => handleOpenModal()} className="shadow-lg">
+                            <PlusCircle className="mr-2 h-4 w-4"/> Añadir Hito
+                        </Button>
+                    )}
+                </div>
             </header>
             
             {error ? (
