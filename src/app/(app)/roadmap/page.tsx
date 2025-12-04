@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { InteractiveRoadmap } from '@/components/roadmap/interactive-roadmap';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 import Image from 'next/image';
+import { DecorativeHeaderBackground } from '@/components/layout/decorative-header-background';
 
 
 const RoadmapSkeleton = () => (
@@ -103,50 +104,52 @@ export default function RoadmapPage() {
   }
 
   return (
-    <div className="w-full">
-      <Card className="w-full p-4 md:p-6 rounded-2xl shadow-lg border mb-12 relative overflow-hidden bg-card">
-          <div className="absolute inset-0 z-0 opacity-5" style={{ backgroundImage: `url(${settings?.publicPagesBgUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="flex-grow text-center md:text-left">
-                  <h1 className="text-3xl font-bold font-headline">La Evolución de NexusAlpri</h1>
-                  <p className="text-muted-foreground max-w-2xl mt-1">
-                    Un viaje interactivo a través de los hitos clave que han dado forma a nuestra plataforma.
-                  </p>
-                   {user?.role === 'ADMINISTRATOR' && (
-                        <div className="mt-4 text-center md:text-left">
-                            <Button onClick={() => handleOpenEditor()} size="sm">
-                                <PlusCircle className="mr-2 h-4 w-4"/>
-                                Añadir Hito
-                            </Button>
-                        </div>
-                    )}
-              </div>
-              {settings?.roadmapImageUrl && (
-                 <div className="relative w-32 h-32 flex-shrink-0 hidden md:block">
-                   <Image 
-                     src={settings.roadmapImageUrl} 
-                     alt="Ilustración de la hoja de ruta"
-                     fill 
-                     className="object-contain" 
-                     data-ai-hint="roadmap illustration"
-                   />
-                 </div>
-               )}
-          </div>
-      </Card>
+    <div className="w-full relative py-8">
+      <DecorativeHeaderBackground />
+      <div className="relative z-10">
+        <Card className="w-full p-4 md:p-6 rounded-2xl shadow-lg border mb-12 bg-card/80 backdrop-blur-sm max-w-4xl mx-auto">
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex-grow text-center md:text-left">
+                    <h1 className="text-3xl font-bold font-headline">La Evolución de NexusAlpri</h1>
+                    <p className="text-muted-foreground max-w-2xl mt-1">
+                      Un viaje interactivo a través de los hitos clave que han dado forma a nuestra plataforma.
+                    </p>
+                     {user?.role === 'ADMINISTRATOR' && (
+                          <div className="mt-4 text-center md:text-left">
+                              <Button onClick={() => handleOpenEditor()} size="sm">
+                                  <PlusCircle className="mr-2 h-4 w-4"/>
+                                  Añadir Hito
+                              </Button>
+                          </div>
+                      )}
+                </div>
+                {settings?.roadmapImageUrl && (
+                   <div className="relative w-32 h-32 flex-shrink-0 hidden md:block">
+                     <Image 
+                       src={settings.roadmapImageUrl} 
+                       alt="Ilustración de la hoja de ruta"
+                       fill 
+                       className="object-contain" 
+                       data-ai-hint="roadmap illustration"
+                     />
+                   </div>
+                 )}
+            </div>
+        </Card>
 
-      <div className="w-full flex-grow px-4">
-          {items.length === 0 ? (
-              <div className="container max-w-lg mx-auto">
-              <div className="text-center py-12">
-                  <Rocket className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">La Hoja de Ruta está en Blanco</h3>
-                  <p className="text-muted-foreground mb-6">Un administrador necesita añadir hitos para poder visualizarlos aquí.</p>
-              </div>
-              </div>
-          ) : (
-              <InteractiveRoadmap items={items} onEdit={handleOpenEditor} onDelete={handleDeleteSuccess} />
-          )}
+        <div className="w-full flex-grow">
+            {items.length === 0 ? (
+                <div className="container max-w-lg mx-auto">
+                <div className="text-center py-12">
+                    <Rocket className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">La Hoja de Ruta está en Blanco</h3>
+                    <p className="text-muted-foreground mb-6">Un administrador necesita añadir hitos para poder visualizarlos aquí.</p>
+                </div>
+                </div>
+            ) : (
+                <InteractiveRoadmap items={items} onEdit={handleOpenEditor} onDelete={handleDeleteSuccess} />
+            )}
+        </div>
       </div>
 
       {isEditorOpen && (

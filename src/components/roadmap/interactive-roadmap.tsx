@@ -43,7 +43,6 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
     const isOdd = index % 2 !== 0;
     const Icon = (LucideIcons as any)[item.icon] || LucideIcons.Lightbulb;
     
-    // Asignar color dinámicamente desde la paleta de gráficos del tema
     const colorVar = `hsl(var(--chart-${(index % 5) + 1}))`;
 
     const handleDelete = async () => {
@@ -63,68 +62,63 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
     return (
        <>
         <div className={cn(
-            "relative flex w-full md:w-auto",
+            "relative w-full md:w-auto flex",
             isOdd ? 'md:flex-col-reverse md:justify-end' : 'md:flex-col md:justify-start'
         )}>
-            {/* Contenedor del Banderín y Descripción */}
             <motion.div 
-                className="relative w-full max-w-sm bg-card border rounded-lg shadow-lg p-3 text-center transition-all duration-300 ease-in-out hover:shadow-primary/20"
-                whileHover={{ y: -5, scale: 1.02 }}
+                className="relative w-full max-w-sm bg-card/80 backdrop-blur-md border rounded-lg shadow-lg p-4 text-center transition-all duration-300 ease-in-out"
+                whileHover={{ y: isOdd ? 5 : -5, scale: 1.02 }}
             >
-                 {/* Contenido del Banderín */}
-                <div className="relative z-10">
-                    <div 
-                        className="absolute -top-6 -left-5 -right-5 h-8 text-primary-foreground font-bold flex items-center justify-center text-xs"
-                    >
-                         <div className="absolute inset-0 z-0" style={{clipPath: 'polygon(0 0, 100% 0, 95% 100%, 5% 100%)', backgroundColor: colorVar}}/>
-                         <span className="z-10">{format(new Date(item.date), "dd MMM, yyyy", { locale: es })}</span>
-                    </div>
-                    <div className="pt-6 text-left">
-                        <p className="text-xs font-bold uppercase tracking-wider" style={{ color: colorVar }}>
-                          {item.phase.replace('_', ' ')}
-                        </p>
-                        <p className="text-base font-semibold text-foreground mt-1">{item.title}</p>
-                        
-                        {item.imageUrl && (
-                            <div className="relative w-full aspect-video rounded-md overflow-hidden my-2">
-                                <Image src={item.imageUrl} alt={item.title} fill className="object-cover" />
-                            </div>
-                        )}
-
-                        <p className="text-xs text-muted-foreground mt-1 text-left whitespace-pre-wrap">{item.description}</p>
-                    </div>
-                </div>
-            </motion.div>
-            
-            {/* Línea y Círculo de conexión */}
-            <div className={cn(
-                "hidden md:flex flex-col items-center",
-                isOdd ? 'mb-[-1px]' : 'mt-[-1px]'
-            )}>
-               <div className="w-0.5 h-16" style={{ backgroundColor: colorVar }} />
-                <motion.div 
-                    whileHover={{ scale: 1.1 }}
-                    className="relative group"
+                <div 
+                    className="absolute -top-4 left-1/2 -translate-x-1/2 w-fit px-3 py-1 rounded-full text-primary-foreground font-bold text-xs shadow-md"
+                    style={{backgroundColor: colorVar}}
                 >
-                     <div className="absolute -inset-2 w-24 h-24 rounded-full bg-primary/10" />
-                     <div className="relative h-20 w-20 rounded-full flex items-center justify-center border-4 bg-background" style={{ borderColor: colorVar }}>
-                        <Icon className="h-10 w-10" style={{ color: colorVar }}/>
-                    </div>
-                    {user?.role === 'ADMINISTRATOR' && (
-                        <div className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="secondary" size="icon" className="h-6 w-6 rounded-full shadow-md"><MoreVertical className="h-4 w-4"/></Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onSelect={() => onEdit(item)}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
-                                    <DropdownMenuItem onSelect={() => setItemToDelete(item)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                    {format(new Date(item.date), "dd MMM, yyyy", { locale: es })}
+                </div>
+                <div className="pt-6 text-left">
+                    <p className="text-xs font-bold uppercase tracking-wider" style={{ color: colorVar }}>
+                      {item.phase.replace('_', ' ')}
+                    </p>
+                    <p className="text-lg font-bold font-headline text-foreground mt-1">{item.title}</p>
+                    
+                    {item.imageUrl && (
+                        <div className="relative w-full aspect-video rounded-md overflow-hidden my-2 border">
+                            <Image src={item.imageUrl} alt={item.title} fill className="object-cover" />
                         </div>
                     )}
+
+                    <p className="text-sm text-muted-foreground mt-2 text-left whitespace-pre-wrap">{item.description}</p>
+                </div>
+                 {user?.role === 'ADMINISTRATOR' && (
+                    <div className="absolute top-2 right-2">
+                         <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-7 w-7"><MoreVertical className="h-4 w-4"/></Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onSelect={() => onEdit(item)}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => setItemToDelete(item)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                )}
+            </motion.div>
+            
+            <div className={cn(
+                "hidden md:flex flex-col items-center",
+                isOdd ? 'mb-[-2px]' : 'mt-[-2px]'
+            )}>
+               <div className="w-0.5 h-20" style={{ backgroundColor: colorVar }} />
+                <motion.div 
+                    className="relative group"
+                    whileHover={{ scale: 1.1 }}
+                >
+                     <div className="absolute -inset-1.5 rounded-full bg-primary/10 transition-all duration-300 group-hover:inset-0" />
+                     <div className="relative h-16 w-16 rounded-full flex items-center justify-center border-4 bg-background" style={{ borderColor: colorVar }}>
+                        <Icon className="h-8 w-8" style={{ color: colorVar }}/>
+                    </div>
                 </motion.div>
-               <div className="w-0.5 h-16" style={{ backgroundColor: colorVar }}/>
+               <div className="w-0.5 h-20" style={{ backgroundColor: colorVar }}/>
             </div>
         </div>
         <AlertDialog open={!!itemToDelete} onOpenChange={(isOpen) => !isOpen && setItemToDelete(null)}>
@@ -207,13 +201,10 @@ export const InteractiveRoadmap = ({ items, onEdit, onDelete }: { items: Roadmap
     }
   
     return (
-        <div className="w-full relative px-8 md:px-16 py-16">
+        <div className="w-full relative px-8 md:px-24 py-16">
             {/* Línea de tiempo central */}
             <div 
-                className="absolute top-1/2 left-0 w-full h-2.5 -translate-y-1/2 bg-gradient-to-r from-primary/50 to-accent/50"
-                style={{
-                    clipPath: 'polygon(0 0, calc(100% - 15px) 0, 100% 50%, calc(100% - 15px) 100%, 0 100%)',
-                }}
+                className="absolute top-1/2 left-0 w-full h-1 -translate-y-1/2 bg-gradient-to-r from-primary/50 to-accent/50"
             />
             {/* Contenedor de hitos */}
             <div className="relative flex justify-between items-center w-full">
