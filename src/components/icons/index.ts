@@ -24,3 +24,6 @@ export * from './icon-message-square';
 export * from './icon-brand-windows';
 export * from './icon-brand-linux';
 export * from './icon-upload-cloud';
+export { Trash2 } from 'lucide-react';
+
+    
