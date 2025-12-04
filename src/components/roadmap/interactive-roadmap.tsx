@@ -77,7 +77,6 @@ export const InteractiveRoadmap = ({ items, onEdit, onDelete }: { items: Roadmap
     const [itemToDelete, setItemToDelete] = useState<RoadmapItem | null>(null);
     const { user } = useAuth();
     const { toast } = useToast();
-    const isMobile = useIsMobile();
 
     const selectedIndex = useMemo(() => {
         if (!selectedId) return -1;
@@ -123,27 +122,9 @@ export const InteractiveRoadmap = ({ items, onEdit, onDelete }: { items: Roadmap
         setItemToDelete(item);
     }
     
-    if (isMobile) {
-        return (
-            <Carousel className="w-full max-w-xs sm:max-w-sm mx-auto">
-                <CarouselContent>
-                    {items.map(item => (
-                        <CarouselItem key={item.id}>
-                            <div className="p-1">
-                                <RoadmapGridCard item={item} onSelect={() => setSelectedId(item.id)} />
-                            </div>
-                        </CarouselItem>
-                    ))}
-                </CarouselContent>
-                <CarouselPrevious />
-                <CarouselNext />
-            </Carousel>
-        )
-    }
-
     return (
         <div className="w-full">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                 {items.map(item => (
                     <RoadmapGridCard key={item.id} item={item} onSelect={() => setSelectedId(item.id)} />
                 ))}
