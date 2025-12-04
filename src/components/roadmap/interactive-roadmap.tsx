@@ -3,7 +3,7 @@
 
 import React, { useState, useCallback, useMemo } from 'react';
 import type { RoadmapItem } from '@/types';
-import { Button } from '../ui/button';
+import { Button, buttonVariants } from '../ui/button';
 import { Edit, MoreVertical, Trash2, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { format } from 'date-fns';
