@@ -1,10 +1,10 @@
 // src/components/roadmap/interactive-roadmap.tsx
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import type { RoadmapItem } from '@/types';
-import { Button, buttonVariants } from '../ui/button';
-import { Edit, MoreVertical, Trash2 } from 'lucide-react';
+import { Button } from '../ui/button';
+import { Edit, MoreVertical, Trash2, X } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -18,21 +18,14 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../ui/dropdown-menu';
-import { useIsMobile } from '@/hooks/use-mobile';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
 import { Card, CardContent, CardHeader, CardDescription, CardTitle } from '../ui/card';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
+import { ScrollArea } from '../ui/scroll-area';
 
 const getPhaseColor = (phase: string) => {
     const hash = phase.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -46,17 +39,45 @@ const getPhaseColor = (phase: string) => {
     return colors[hash % colors.length];
 };
 
-
-const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, index: number, onEdit: (item: RoadmapItem) => void, onDelete: (id: string) => void }) => {
-    const { user } = useAuth();
-    const [itemToDelete, setItemToDelete] = useState<RoadmapItem | null>(null);
-    const { toast } = useToast();
-
-    const isOdd = index % 2 !== 0;
+const RoadmapGridCard = ({ item, onSelect }: { item: RoadmapItem, onSelect: () => void }) => {
     const Icon = (LucideIcons as any)[item.icon] || LucideIcons.Lightbulb;
-    
     const phaseColor = getPhaseColor(item.phase);
 
+    return (
+        <motion.div layoutId={`roadmap-card-${item.id}`} onClick={onSelect} className="cursor-pointer">
+            <Card className="h-full flex flex-col group overflow-hidden transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1.5">
+                 <CardHeader className="p-4 border-b">
+                    <div className="flex items-center gap-3">
+                         <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: phaseColor }}>
+                            <Icon className="w-6 h-6 text-primary-foreground"/>
+                         </div>
+                        <div>
+                            <CardTitle className="text-base font-bold text-foreground leading-tight">{item.title}</CardTitle>
+                            <p className="text-xs font-semibold" style={{ color: phaseColor }}>
+                              {item.phase.replace('_', ' ')}
+                            </p>
+                        </div>
+                    </div>
+                 </CardHeader>
+                 <CardContent className="p-4 flex-grow">
+                    <p className="text-sm text-muted-foreground line-clamp-3" dangerouslySetInnerHTML={{ __html: item.description.replace(/<[^>]+>/g, '') }}/>
+                 </CardContent>
+                 <CardFooter className="p-3 border-t text-xs text-muted-foreground font-medium">
+                    {format(new Date(item.date), "dd MMMM, yyyy", { locale: es })}
+                 </CardFooter>
+            </Card>
+        </motion.div>
+    );
+};
+
+export const InteractiveRoadmap = ({ items, onEdit, onDelete }: { items: RoadmapItem[], onEdit: (item: RoadmapItem) => void, onDelete: (id: string) => void }) => {
+    const [selectedId, setSelectedId] = useState<string | null>(null);
+    const [itemToDelete, setItemToDelete] = useState<RoadmapItem | null>(null);
+    const { user } = useAuth();
+    const { toast } = useToast();
+
+    const selectedItem = items.find(item => item.id === selectedId);
+    
     const handleDelete = async () => {
         if (!itemToDelete) return;
         try {
@@ -64,6 +85,7 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
             if (res.status !== 204) throw new Error("No se pudo eliminar el hito.");
             toast({ title: 'Hito eliminado' });
             onDelete(itemToDelete.id);
+            if(selectedId === itemToDelete.id) setSelectedId(null);
         } catch (err) {
             toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
         } finally {
@@ -71,163 +93,80 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
         }
     };
     
-    return (
-       <>
-        <div className={cn(
-            "relative w-full md:w-auto flex z-10",
-            isOdd ? 'md:flex-col-reverse' : 'md:flex-col'
-        )}>
-             {/* Tarjeta de Contenido */}
-            <motion.div 
-                className="relative w-full max-w-xs bg-card/80 backdrop-blur-md border rounded-lg shadow-lg p-4 text-center transition-all duration-300 ease-in-out"
-                whileHover={{ y: isOdd ? 8 : -8, scale: 1.02 }}
-            >
-                {/* Banner de Fecha */}
-                <div 
-                    className="absolute -top-4 left-1/2 -translate-x-1/2 w-fit px-4 py-1.5 rounded-md text-primary-foreground font-bold text-sm shadow-md"
-                    style={{backgroundColor: phaseColor}}
-                >
-                    {format(new Date(item.date), "dd MMM, yyyy", { locale: es })}
-                </div>
-                
-                <div className="pt-8 text-left">
-                    <p className="text-xs font-bold uppercase tracking-wider" style={{ color: phaseColor }}>
-                      {item.phase.replace('_', ' ')}
-                    </p>
-                    <p className="text-lg font-bold font-headline text-foreground mt-1">{item.title}</p>
-                    
-                    {item.imageUrl && (
-                        <div className="relative w-full aspect-video rounded-md overflow-hidden my-2 border">
-                            <Image src={item.imageUrl} alt={item.title} fill className="object-cover" />
-                        </div>
-                    )}
-                    <div className="prose prose-sm dark:prose-invert max-w-none mt-2 text-muted-foreground whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: item.description }} />
-                </div>
-
-                 {user?.role === 'ADMINISTRATOR' && (
-                    <div className="absolute top-2 right-2">
-                         <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-7 w-7"><MoreVertical className="h-4 w-4"/></Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onSelect={() => onEdit(item)}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => setItemToDelete(item)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                )}
-            </motion.div>
-            
-            {/* Conector y Círculo de Hito */}
-            <div className={cn(
-                "hidden md:flex flex-col items-center",
-                isOdd ? 'mb-[-2px]' : 'mt-[-2px]'
-            )}>
-               <div className="w-0.5 h-8 bg-border" />
-                <motion.div 
-                    className="relative group"
-                    whileHover={{ scale: 1.1 }}
-                >
-                     <div className="absolute -inset-1.5 rounded-full bg-primary/10 transition-all duration-300 group-hover:inset-0" />
-                     <div className="relative h-14 w-14 rounded-full flex items-center justify-center border-4 bg-background shadow" style={{ borderColor: phaseColor }}>
-                        <Icon className="h-7 w-7" style={{ color: phaseColor }}/>
-                    </div>
-                </motion.div>
-               <div className="w-0.5 h-8 bg-border" />
-            </div>
-        </div>
-        <AlertDialog open={!!itemToDelete} onOpenChange={(isOpen) => !isOpen && setItemToDelete(null)}>
-            <AlertDialogContent>
-                <AlertDialogHeader><AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle><AlertDialogDescription>Se eliminará permanentemente el hito "<strong>{itemToDelete?.title}</strong>".</AlertDialogDescription></AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete} className={cn(buttonVariants({ variant: "destructive" }))}><Trash2 className="mr-2 h-4 w-4"/> Sí, eliminar</AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
-       </>
-    );
-};
-
-const MobileTimelineCard = ({ item, onEdit, onDelete }: { item: RoadmapItem, onEdit: (item: RoadmapItem) => void, onDelete: (id: string) => void }) => {
-    const { user } = useAuth();
-    const Icon = (LucideIcons as any)[item.icon] || LucideIcons.Lightbulb;
-
-    return (
-        <Card className="h-full flex flex-col transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1">
-            <CardHeader className="p-4 border-b">
-                 <div className="flex justify-between items-start gap-2">
-                    <div className="flex items-center gap-3">
-                         <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-primary/10">
-                            <Icon className="w-6 h-6 text-primary"/>
-                         </div>
-                        <div>
-                            <p className="text-xs font-bold uppercase tracking-wider text-primary">
-                              {item.phase.replace('_', ' ')}
-                            </p>
-                            <CardTitle className="text-base font-bold text-foreground">{item.title}</CardTitle>
-                            <p className="text-xs font-semibold text-primary">{format(new Date(item.date), "dd MMMM, yyyy", { locale: es })}</p>
-                        </div>
-                    </div>
-                    {user?.role === 'ADMINISTRATOR' && (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-7 w-7"><MoreVertical className="h-4 w-4"/></Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                <DropdownMenuItem onSelect={() => onEdit(item)}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => onDelete(item.id)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    )}
-                 </div>
-            </CardHeader>
-            <CardContent className="p-4 flex-grow">
-                {item.imageUrl && (
-                    <div className="relative w-full aspect-video rounded-md overflow-hidden mb-4">
-                        <Image src={item.imageUrl} alt={item.title} fill className="object-cover" />
-                    </div>
-                )}
-                 <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: item.description }} />
-            </CardContent>
-        </Card>
-    )
-}
-
-export const InteractiveRoadmap = ({ items, onEdit, onDelete }: { items: RoadmapItem[], onEdit: (item: RoadmapItem) => void, onDelete: (id: string) => void }) => {
-    const isMobile = useIsMobile();
-
-    if (isMobile) {
-        return (
-            <Carousel className="w-full max-w-sm mx-auto">
-                <CarouselContent>
-                    {items.map(item => (
-                        <CarouselItem key={item.id}>
-                            <div className="p-1 h-full">
-                                <MobileTimelineCard item={item} onEdit={onEdit} onDelete={onDelete}/>
-                            </div>
-                        </CarouselItem>
-                    ))}
-                </CarouselContent>
-                <CarouselPrevious className="-left-4" />
-                <CarouselNext className="-right-4" />
-            </Carousel>
-        )
+    const handleEdit = (e: React.MouseEvent, item: RoadmapItem) => {
+        e.stopPropagation();
+        onEdit(item);
     }
-  
+    
+    const handleDeleteClick = (e: React.MouseEvent, item: RoadmapItem) => {
+        e.stopPropagation();
+        setItemToDelete(item);
+    }
+
     return (
-        <div className="w-full relative px-12 md:px-28 py-16">
-            {/* Línea de tiempo central */}
-            <div 
-                className="absolute top-1/2 left-0 w-full h-2 -translate-y-1/2 bg-gradient-to-r from-primary/20 via-accent/30 to-primary/20"
-            />
-            {/* Contenedor de hitos */}
-            <div className="relative flex justify-between items-center w-full">
-                {items.map((item, index) => (
-                    <TimelineItem key={item.id} item={item} index={index} onEdit={onEdit} onDelete={onDelete} />
+        <div className="w-full">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {items.map(item => (
+                    <RoadmapGridCard key={item.id} item={item} onSelect={() => setSelectedId(item.id)} />
                 ))}
             </div>
+
+            <AnimatePresence>
+                {selectedItem && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
+                            onClick={() => setSelectedId(null)}
+                        />
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                            <motion.div layoutId={`roadmap-card-${selectedItem.id}`} className="w-full max-w-2xl max-h-[80vh] flex">
+                                <Card className="w-full flex flex-col overflow-hidden shadow-2xl">
+                                    <CardHeader className="relative p-0">
+                                         {selectedItem.imageUrl ? (
+                                            <div className="relative w-full aspect-video">
+                                                <Image src={selectedItem.imageUrl} alt={selectedItem.title} fill className="object-cover" />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                                            </div>
+                                         ) : (
+                                            <div className="h-12" style={{backgroundColor: getPhaseColor(selectedItem.phase) }} />
+                                         )}
+                                        <div className={cn("absolute bottom-0 left-0 right-0 p-4", selectedItem.imageUrl && "text-white")}>
+                                            <p className="text-sm font-bold uppercase tracking-wider" style={{ color: !selectedItem.imageUrl ? getPhaseColor(selectedItem.phase) : undefined }}>{selectedItem.phase.replace('_', ' ')}</p>
+                                            <CardTitle className="text-2xl font-bold font-headline">{selectedItem.title}</CardTitle>
+                                            <CardDescription className={cn(selectedItem.imageUrl && "text-white/80")}>{format(new Date(selectedItem.date), "dd MMMM, yyyy", { locale: es })}</CardDescription>
+                                        </div>
+                                         {user?.role === 'ADMINISTRATOR' && (
+                                            <div className="absolute top-2 right-2">
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 bg-black/30 hover:bg-black/50 text-white" onClick={(e) => handleEdit(e, selectedItem)}><Edit className="h-4 w-4"/></Button>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 ml-1 bg-black/30 hover:bg-black/50 text-white" onClick={(e) => handleDeleteClick(e, selectedItem)}><Trash2 className="h-4 w-4"/></Button>
+                                            </div>
+                                        )}
+                                    </CardHeader>
+                                    <CardContent className="flex-1 p-0">
+                                         <ScrollArea className="h-full max-h-[calc(80vh-200px)]">
+                                            <div className="prose prose-sm dark:prose-invert max-w-none p-6" dangerouslySetInnerHTML={{ __html: selectedItem.description }} />
+                                        </ScrollArea>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                            <Button variant="ghost" size="icon" className="fixed top-6 right-6 h-10 w-10 rounded-full bg-background/80 hover:bg-background text-foreground shadow-lg" onClick={() => setSelectedId(null)}><X className="h-5 w-5"/></Button>
+                        </div>
+                    </>
+                )}
+            </AnimatePresence>
+            
+            <AlertDialog open={!!itemToDelete} onOpenChange={(isOpen) => !isOpen && setItemToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader><AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle><AlertDialogDescription>Se eliminará permanentemente el hito "<strong>{itemToDelete?.title}</strong>".</AlertDialogDescription></AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete} className={cn(buttonVariants({ variant: "destructive" }))}><Trash2 className="mr-2 h-4 w-4"/> Sí, eliminar</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 };

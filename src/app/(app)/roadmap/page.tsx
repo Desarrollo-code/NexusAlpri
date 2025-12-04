@@ -86,7 +86,7 @@ export default function RoadmapPage() {
                         <div className="text-center md:text-left">
                             <h1 className="text-3xl md:text-4xl font-extrabold font-headline">La Evolución de NexusAlpri</h1>
                             <p className="mt-2 text-md text-muted-foreground max-w-xl">
-                                Un recorrido interactivo por las fases de desarrollo que han dado forma a nuestra plataforma.
+                                Un recorrido interactivo por las fases de desarrollo que han dado forma a nuestra plataforma. Haz clic en una tarjeta para ver los detalles.
                             </p>
                         </div>
                         <div className="flex items-center gap-4 flex-shrink-0">
