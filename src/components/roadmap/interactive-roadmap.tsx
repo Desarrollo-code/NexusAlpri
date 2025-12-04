@@ -4,7 +4,7 @@
 import React, { useState } from 'react';
 import type { RoadmapItem } from '@/types';
 import { Button, buttonVariants } from '../ui/button';
-import { Edit, Trash2, MoreVertical } from 'lucide-react';
+import { Edit, MoreVertical, Trash2 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
