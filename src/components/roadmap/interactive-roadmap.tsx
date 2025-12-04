@@ -34,7 +34,6 @@ import {
 import { Card, CardContent, CardHeader, CardDescription, CardTitle } from '../ui/card';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { Trash } from 'lucide-react';
 
 const getPhaseColor = (phase: string) => {
     const hash = phase.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
