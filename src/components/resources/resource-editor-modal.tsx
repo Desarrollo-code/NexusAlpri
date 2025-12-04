@@ -19,7 +19,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Save, UploadCloud, Link as LinkIcon, FilePen, Briefcase, Calendar as CalendarIcon, Globe, Users } from 'lucide-react';
+import { Loader2, Save, UploadCloud, Link as LinkIcon, FilePen, Briefcase, Calendar as CalendarIcon, Globe, Users, ExternalLink, FileText, Archive, FileCode, List, X, Edit, RotateCcw, PlusCircle } from 'lucide-react';
 import type { AppResourceType, User as AppUser, ResourceSharingMode, Process } from '@/types';
 import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
@@ -394,7 +394,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         </ScrollArea>
         
         {/* PIE DE PÁGINA: Fijo (flex-shrink-0) */}
-        <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2">
+        <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-center sm:justify-end gap-2">
           <Button variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
           <Button 
             type="submit" 
