@@ -321,10 +321,8 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      {/* 💡 CONTENEDOR PRINCIPAL: Establece la altura máxima y el layout flex-col */}
       <DialogContent className="w-[95vw] sm:max-w-2xl p-0 gap-0 rounded-2xl max-h-[90vh] flex flex-col">
         
-        {/* ENCABEZADO: Fijo (flex-shrink-0) */}
         <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
           <DialogTitle>{resource ? 'Editar Recurso' : 'Nuevo Recurso'}</DialogTitle>
           <DialogDescription>
@@ -332,14 +330,13 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
           </DialogDescription>
         </DialogHeader>
         
-        {/* 💡 ÁREA DE SCROLL: Ocupa todo el espacio disponible (flex-1) y permite el desborde (min-h-0) */}
         <ScrollArea className="flex-1 min-h-0 custom-scrollbar">
           <form id="resource-form" onSubmit={handleSave} className="space-y-6 px-6 py-4">
             
             {/* Selector de Tipo de Recurso */}
             {!isEditing && (
               <RadioGroup value={resourceType} onValueChange={(v) => handleResourceDetailChange('resourceType', v as AppResourceType['type'])} className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <div className="relative"><RadioGroupItem value="DOCUMENT" id="type-doc" className="sr-only"/><Label htmlFor="type-doc" className={cn("flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full", resourceType === 'DOCUMENT' && 'border-primary ring-2 ring-primary')}><UploadCloud className="mb-2 h-6 w-6"/>Subir Archivo</Label></div>
+                  <div className="relative"><RadioGroupItem value="DOCUMENT" id="type-doc" className="sr-only"/><Label htmlFor="type-doc" className={cn("flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full", resourceType === 'DOCUMENT' && 'border-primary ring-2 ring-primary')}><UploadCloud className="mb-2 h-6 w-6"/>Subir Archivo(s)</Label></div>
                   <div className="relative"><RadioGroupItem value="EXTERNAL_LINK" id="type-link" className="sr-only"/><Label htmlFor="type-link" className={cn("flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full", resourceType === 'EXTERNAL_LINK' && 'border-primary ring-2 ring-primary')}><LinkIcon className="mb-2 h-6 w-6"/>Enlace Externo</Label></div>
                   <div className="relative"><RadioGroupItem value="DOCUMENTO_EDITABLE" id="type-edit" className="sr-only"/><Label htmlFor="type-edit" className={cn("flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full", resourceType === 'DOCUMENTO_EDITABLE' && 'border-primary ring-2 ring-primary')}><FilePen className="mb-2 h-6 w-6"/>Documento Editable</Label></div>
               </RadioGroup>
@@ -393,8 +390,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
           </form>
         </ScrollArea>
         
-        {/* PIE DE PÁGINA: Fijo (flex-shrink-0) */}
-        <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-center sm:justify-end gap-2">
+        <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2">
           <Button variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
           <Button 
             type="submit" 
