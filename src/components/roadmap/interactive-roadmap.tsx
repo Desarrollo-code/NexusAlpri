@@ -108,7 +108,7 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
                 "hidden md:flex flex-col items-center",
                 isOdd ? 'mb-[-2px]' : 'mt-[-2px]'
             )}>
-               <div className="w-0.5 h-20" style={{ backgroundColor: colorVar }} />
+               <div className="w-0.5 h-20 bg-border" />
                 <motion.div 
                     className="relative group"
                     whileHover={{ scale: 1.1 }}
@@ -118,7 +118,7 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
                         <Icon className="h-8 w-8" style={{ color: colorVar }}/>
                     </div>
                 </motion.div>
-               <div className="w-0.5 h-20" style={{ backgroundColor: colorVar }}/>
+               <div className="w-0.5 h-20 bg-border" />
             </div>
         </div>
         <AlertDialog open={!!itemToDelete} onOpenChange={(isOpen) => !isOpen && setItemToDelete(null)}>
@@ -204,7 +204,7 @@ export const InteractiveRoadmap = ({ items, onEdit, onDelete }: { items: Roadmap
         <div className="w-full relative px-8 md:px-24 py-16">
             {/* Línea de tiempo central */}
             <div 
-                className="absolute top-1/2 left-0 w-full h-1 -translate-y-1/2 bg-gradient-to-r from-primary/50 to-accent/50"
+                className="absolute top-1/2 left-0 w-full h-1 -translate-y-1/2 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20"
             />
             {/* Contenedor de hitos */}
             <div className="relative flex justify-between items-center w-full">
