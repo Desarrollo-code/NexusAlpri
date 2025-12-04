@@ -12,11 +12,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { Calendar as CalendarIcon, Loader2, Save, Trash2 } from 'lucide-react';
+import { Calendar as CalendarIcon, Loader2, Save } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
@@ -27,6 +26,7 @@ import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
 import Image from 'next/image';
+import { RichTextEditor } from '../ui/rich-text-editor';
 
 const ICONS = ['Lightbulb', 'Code', 'Database', 'Paintbrush', 'Rocket', 'CheckCircle', 'Award', 'Sparkles', 'UsersRound', 'FileText', 'Shield', 'MessageSquare', 'ScreenShare', 'Network', 'ListChecks', 'Megaphone', 'Folder', 'Users', 'TestTube2'];
 
@@ -152,7 +152,11 @@ export function RoadmapEditorModal({ isOpen, onClose, item, onSave }: RoadmapEdi
                     </div>
                     <div className="space-y-1">
                         <Label htmlFor="description">Descripción</Label>
-                        <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} required/>
+                        <RichTextEditor
+                            value={description}
+                            onChange={setDescription}
+                            variant="mini"
+                        />
                     </div>
                      <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
