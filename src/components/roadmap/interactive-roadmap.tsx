@@ -74,7 +74,7 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
     return (
        <>
         <div className={cn(
-            "relative w-full md:w-auto flex items-center z-10",
+            "relative w-full md:w-auto flex z-10",
             isOdd ? 'md:flex-col-reverse' : 'md:flex-col'
         )}>
              {/* Tarjeta de Contenido */}
