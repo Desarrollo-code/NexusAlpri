@@ -22,7 +22,8 @@ import { UploadArea } from '../ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '../ui/progress';
 import Image from 'next/image';
-import { ScrollArea } from '../ui/scroll-area';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { RichTextEditor } from '../ui/rich-text-editor';
 
 
 interface MotivationEditorModalProps {
@@ -197,8 +198,13 @@ export function MotivationEditorModal({ isOpen, onClose, message, onSave }: Moti
                             <Input id="msg-title" value={title} onChange={e => setTitle(e.target.value)} required />
                         </div>
                         <div className="space-y-1">
-                            <Label htmlFor="msg-content">Contenido del Mensaje</Label>
-                            <Textarea id="msg-content" value={content} onChange={e => setContent(e.target.value)} />
+                            <Label>Contenido del Mensaje</Label>
+                            <RichTextEditor
+                                value={content}
+                                onChange={setContent}
+                                variant="mini"
+                                className="min-h-[100px]"
+                            />
                         </div>
                         <div className="space-y-1">
                             <Label htmlFor="msg-image-url">Imagen (Opcional)</Label>

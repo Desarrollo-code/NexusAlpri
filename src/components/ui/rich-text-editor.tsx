@@ -20,21 +20,26 @@ const ReactQuill = dynamic(
   }
 );
 
-interface RichTextEditorProps extends ReactQuillProps {}
+interface RichTextEditorProps extends ReactQuillProps {
+    variant?: 'default' | 'mini';
+}
 
-// Configuración de la toolbar
-const modules = {
-  toolbar: [
-    [{ header: [1, 2, 3, false] }],
-    ['bold', 'italic', 'underline', 'strike'],
-    [{ list: 'ordered' }, { list: 'bullet' }],
-    ['blockquote', 'code-block'],
-    ['link'],
-    ['clean'],
-  ],
-};
+// Configuración de las barras de herramientas
+const defaultToolbar = [
+  [{ header: [1, 2, 3, false] }],
+  ['bold', 'italic', 'underline', 'strike'],
+  [{ list: 'ordered' }, { list: 'bullet' }],
+  ['blockquote', 'code-block'],
+  ['link'],
+  ['clean'],
+];
 
-// Se elimina 'bullet' de los formatos, ya que 'list' lo gestiona internamente.
+const miniToolbar = [
+  ['bold', 'italic', 'underline'],
+  [{ list: 'ordered' }, { list: 'bullet' }],
+];
+
+// Formatos permitidos
 const formats = [
   'header',
   'bold', 'italic', 'underline', 'strike',
@@ -45,8 +50,13 @@ const formats = [
 
 export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   className,
+  variant = 'default',
   ...props
 }) => {
+  const modules = {
+    toolbar: variant === 'mini' ? miniToolbar : defaultToolbar,
+  };
+
   return (
     <div
       className={cn(

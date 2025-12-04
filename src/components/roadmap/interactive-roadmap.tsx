@@ -66,7 +66,7 @@ const TimelineItem = ({ item, index, onEdit, onDelete }: { item: RoadmapItem, in
             isOdd ? 'md:flex-col-reverse md:justify-end' : 'md:flex-col md:justify-start'
         )}>
             <motion.div 
-                className="relative w-full max-w-sm bg-card/80 backdrop-blur-md border rounded-lg shadow-lg p-4 text-center transition-all duration-300 ease-in-out"
+                className="relative w-full max-w-xs bg-card/80 backdrop-blur-md border rounded-lg shadow-lg p-4 text-center transition-all duration-300 ease-in-out"
                 whileHover={{ y: isOdd ? 5 : -5, scale: 1.02 }}
             >
                 <div 
