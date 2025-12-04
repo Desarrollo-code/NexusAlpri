@@ -334,7 +334,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
           </DialogDescription>
         </DialogHeader>
         
-        <ScrollArea className="flex-1 min-h-0 custom-scrollbar">
+        <ScrollArea className="flex-1">
           <form id="resource-form" onSubmit={handleSave} className="space-y-6 px-6 py-4">
             
             {/* Selector de Tipo de Recurso */}
