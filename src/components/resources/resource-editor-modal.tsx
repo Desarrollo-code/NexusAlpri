@@ -30,7 +30,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { FileIcon } from '@/components/ui/file-icon';
@@ -334,7 +333,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
           </DialogDescription>
         </DialogHeader>
         
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 min-h-0">
           <form id="resource-form" onSubmit={handleSave} className="space-y-6 px-6 py-4">
             
             {/* Selector de Tipo de Recurso */}
