@@ -1,7 +1,6 @@
 // src/components/resources/resource-editor-modal.tsx
 'use client';
 
-// Importaciones base... (Mantengo las importaciones de la versión anterior)
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
@@ -20,12 +19,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Loader2, Save, UploadCloud, Link as LinkIcon, XCircle, RotateCcw, Calendar as CalendarIcon, Globe, Users, FilePen, Briefcase, Check } from 'lucide-react';
+import { Loader2, Save, UploadCloud, Link as LinkIcon, FilePen, Briefcase, Calendar as CalendarIcon, Globe, Users } from 'lucide-react';
 import type { AppResourceType, User as AppUser, ResourceSharingMode, Process } from '@/types';
 import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
-import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -33,20 +30,28 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../ui/card';
+import { RichTextEditor } from '@/components/ui/rich-text-editor'; // Asegúrate de que esta importación sea correcta
 import { Separator } from '@/components/ui/separator';
-import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
-import { getInitials, UploadItem, UploadState, ResourceEditorModalProps } from './resource-editor-modal-parts'; // Suponiendo que has modularizado en un archivo separado
+
+// 💡 Se asume que estos se encuentran en un archivo modularizado auxiliar
+import { getInitials, UploadItem, UploadState, ResourceEditorModalProps } from './resource-editor-modal-parts'; 
+
+// ====================================================================================================
+// ============================= COMPONENTE PRINCIPAL =================================================
+// ====================================================================================================
 
 export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSave }: ResourceEditorModalProps) {
   const { toast } = useToast();
   const { user, settings } = useAuth();
   
+  // Agrupación de estados de detalles del recurso
   const [resourceDetails, setResourceDetails] = useState({
     title: '', description: '', content: '', observations: '', category: '', externalLink: '',
     resourceType: 'DOCUMENT' as AppResourceType['type'],
   });
 
+  // Agrupación de estados de acceso
   const [access, setAccess] = useState({
     sharingMode: 'PUBLIC' as ResourceSharingMode,
     sharedWithUserIds: [] as string[],
@@ -55,6 +60,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     expiresAt: undefined as Date | undefined,
   });
   
+  // Estados funcionales
   const [uploads, setUploads] = useState<UploadState[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [allUsers, setAllUsers] = useState<AppUser[]>([]);
@@ -64,6 +70,16 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   const isEditing = !!resource;
   const { title, description, content, category, externalLink, resourceType, observations } = resourceDetails;
   const { sharingMode, sharedWithUserIds, sharedWithProcessIds, collaboratorIds, expiresAt } = access;
+
+  // --- Lógica de Manejo de Estado ---
+
+  const handleResourceDetailChange = (key: keyof typeof resourceDetails, value: any) => {
+    setResourceDetails(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleAccessChange = (key: keyof typeof access, value: any) => {
+    setAccess(prev => ({ ...prev, [key]: value }));
+  };
 
   const resetForm = useCallback(() => {
     setResourceDetails({
@@ -102,12 +118,15 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
       }
 
       if (user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') {
+          // Nota: En una aplicación real, estas llamadas API deberían ser más robustas
           fetch('/api/users/list').then(res => res.json()).then(data => setAllUsers(data.users || []));
           fetch('/api/processes').then(res => res.json()).then(data => setAllProcesses(data || []));
       }
     }
   }, [resource, isOpen, resetForm, settings, user]);
   
+  // --- Lógica de Guardado y Subida ---
+
   const saveResourceToDb = async (payload: any): Promise<boolean> => {
     const endpoint = isEditing ? `/api/resources/${resource!.id}` : '/api/resources';
     const method = isEditing ? 'PUT' : 'POST';
@@ -186,8 +205,8 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         if (isStillUploading) {
             toast({description: "Por favor, espera a que finalicen todas las subidas."});
         } else {
-             onSave();
-             onClose();
+            onSave();
+            onClose();
         }
         return;
     }
@@ -213,8 +232,33 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   };
   
   const filteredUsers = useMemo(() => {
-    return allUsers.filter(u => u.name.toLowerCase().includes(userSearch.toLowerCase()));
+    return allUsers.filter(u => u.name?.toLowerCase().includes(userSearch.toLowerCase()));
   }, [allUsers, userSearch]);
+
+  // --- Lógica de Manejo de Acceso ---
+
+  const handleProcessShareChange = (id: string, checked: boolean) => {
+    setAccess(prev => ({
+      ...prev,
+      sharedWithProcessIds: checked ? [...prev.sharedWithProcessIds, id] : prev.sharedWithProcessIds.filter(pid => pid !== id),
+    }));
+  };
+
+  const handleUserShareChange = (id: string, checked: boolean) => {
+    setAccess(prev => ({
+      ...prev,
+      sharedWithUserIds: checked ? [...prev.sharedWithUserIds, id] : prev.sharedWithUserIds.filter(uid => uid !== id),
+    }));
+  };
+
+  const handleCollaboratorChange = (id: string, checked: boolean) => {
+    setAccess(prev => ({
+      ...prev,
+      collaboratorIds: checked ? [...prev.collaboratorIds, id] : prev.collaboratorIds.filter(uid => uid !== id),
+    }));
+  };
+
+  // --- Funciones de Renderizado Modular ---
 
   const renderUploads = () => (
     <div className="space-y-2 max-h-48 overflow-y-auto pr-2 thin-scrollbar">
@@ -235,66 +279,52 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
       {uploads.length > 0 && renderUploads()}
     </div>
   );
-  
-  const handleResourceDetailChange = (key: keyof typeof resourceDetails, value: any) => {
-    setResourceDetails(prev => ({ ...prev, [key]: value }));
-  };
-
-  const handleAccessChange = (key: keyof typeof access, value: any) => {
-    setAccess(prev => ({ ...prev, [key]: value }));
-  };
-
-  const handleProcessShareChange = (id: string, checked: boolean) => {
-    setAccess(prev => ({
-      ...prev,
-      sharedWithProcessIds: checked ? [...prev.sharedWithProcessIds, id] : prev.sharedWithProcessIds.filter(pid => pid !== id),
-    }));
-  };
-
-  const handleUserShareChange = (id: string, checked: boolean) => {
-    setAccess(prev => ({
-      ...prev,
-      sharedWithUserIds: checked ? [...prev.sharedWithUserIds, id] : prev.sharedWithUserIds.filter(uid => uid !== id),
-    }));
-  };
-  
-  const handleCollaboratorChange = (id: string, checked: boolean) => {
-    setAccess(prev => ({
-      ...prev,
-      collaboratorIds: checked ? [...prev.collaboratorIds, id] : prev.collaboratorIds.filter(uid => uid !== id),
-    }));
-  };
 
   const renderAccessSection = () => (
      <Card>
           <CardHeader><CardTitle className="text-base">Visibilidad y Acceso</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-             <Select value={sharingMode} onValueChange={(v) => handleAccessChange('sharingMode', v as ResourceSharingMode)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="PUBLIC"><div className="flex items-center gap-2"><Globe className="h-4 w-4 text-green-500"/> Público</div></SelectItem><SelectItem value="PROCESS"><div className="flex items-center gap-2"><Briefcase className="h-4 w-4 text-purple-500"/> Por Proceso</div></SelectItem><SelectItem value="PRIVATE"><div className="flex items-center gap-2"><Users className="h-4 w-4 text-blue-500"/> Privado</div></SelectItem></SelectContent></Select>
-             
+             <Select value={sharingMode} onValueChange={(v) => handleAccessChange('sharingMode', v as ResourceSharingMode)}>
+                <SelectTrigger><SelectValue/></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="PUBLIC"><div className="flex items-center gap-2"><Globe className="h-4 w-4 text-green-500"/> Público (Todos)</SelectItem>
+                  <SelectItem value="PROCESS"><div className="flex items-center gap-2"><Briefcase className="h-4 w-4 text-purple-500"/> Por Proceso</div></SelectItem>
+                  <SelectItem value="PRIVATE"><div className="flex items-center gap-2"><Users className="h-4 w-4 text-blue-500"/> Privado (Usuarios Específicos)</div></SelectItem>
+                </SelectContent>
+              </Select>
+              
               <AnimatePresence>
-                 {sharingMode === 'PROCESS' && (
-                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                         <div className="space-y-1.5"><Label>Compartir con Procesos</Label><ScrollArea className="h-32 border rounded-md p-2">
-                             {allProcesses.map(p => (<div key={p.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`proc-${p.id}`} checked={sharedWithProcessIds.includes(p.id)} onCheckedChange={c => handleProcessShareChange(p.id, !!c)} /><Label htmlFor={`proc-${p.id}`} className="font-normal">{p.name}</Label></div>))}
-                         </ScrollArea></div>
-                     </motion.div>
-                 )}
-                 {sharingMode === 'PRIVATE' && (
-                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                          <div className="space-y-1.5"><Label>Compartir con Usuarios</Label><Input placeholder="Buscar usuarios..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
-                         <ScrollArea className="h-32 border rounded-md p-2">
-                            {filteredUsers.map(u => (<div key={u.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={c => handleUserShareChange(u.id, !!c)} /><Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(u.name)}</AvatarFallback></Avatar>{u.name}</Label></div>))}
-                         </ScrollArea></div>
-                     </motion.div>
-                 )}
+                {sharingMode === 'PROCESS' && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                      <div className="space-y-1.5"><Label>Compartir con Procesos</Label>
+                        <ScrollArea className="h-32 border rounded-md p-2">
+                            {allProcesses.map(p => (<div key={p.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`proc-${p.id}`} checked={sharedWithProcessIds.includes(p.id)} onCheckedChange={c => handleProcessShareChange(p.id, !!c)} /><Label htmlFor={`proc-${p.id}`} className="font-normal">{p.name}</Label></div>))}
+                        </ScrollArea>
+                      </div>
+                  </motion.div>
+                )}
+                {sharingMode === 'PRIVATE' && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                      <div className="space-y-1.5"><Label>Compartir con Usuarios</Label><Input placeholder="Buscar usuarios..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
+                        <ScrollArea className="h-32 border rounded-md p-2">
+                          {filteredUsers.map(u => (<div key={u.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={c => handleUserShareChange(u.id, !!c)} /><Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(u.name)}</AvatarFallback></Avatar>{u.name}</Label></div>))}
+                        </ScrollArea>
+                      </div>
+                  </motion.div>
+                )}
               </AnimatePresence>
           </CardContent>
      </Card>
   );
 
+  // --- Renderizado JSX Principal ---
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
+      {/* 💡 CONTENEDOR PRINCIPAL: Establece la altura máxima y el layout flex-col */}
       <DialogContent className="w-[95vw] sm:max-w-2xl p-0 gap-0 rounded-2xl max-h-[90vh] flex flex-col">
+        
+        {/* ENCABEZADO: Fijo (flex-shrink-0) */}
         <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
           <DialogTitle>{resource ? 'Editar Recurso' : 'Nuevo Recurso'}</DialogTitle>
           <DialogDescription>
@@ -302,9 +332,11 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
           </DialogDescription>
         </DialogHeader>
         
+        {/* 💡 ÁREA DE SCROLL: Ocupa todo el espacio disponible (flex-1) y permite el desborde (min-h-0) */}
         <ScrollArea className="flex-1 min-h-0 custom-scrollbar">
           <form id="resource-form" onSubmit={handleSave} className="space-y-6 px-6 py-4">
             
+            {/* Selector de Tipo de Recurso */}
             {!isEditing && (
               <RadioGroup value={resourceType} onValueChange={(v) => handleResourceDetailChange('resourceType', v as AppResourceType['type'])} className="grid grid-cols-1 md:grid-cols-3 gap-2">
                   <div className="relative"><RadioGroupItem value="DOCUMENT" id="type-doc" className="sr-only"/><Label htmlFor="type-doc" className={cn("flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full", resourceType === 'DOCUMENT' && 'border-primary ring-2 ring-primary')}><UploadCloud className="mb-2 h-6 w-6"/>Subir Archivo</Label></div>
@@ -313,6 +345,9 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
               </RadioGroup>
             )}
             
+            <Separator />
+
+            {/* Contenido del Recurso (Condicional con Animación) */}
             <AnimatePresence mode="wait">
               <motion.div key={resourceType} initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -10}} transition={{duration: 0.2}}>
                 {resourceType === 'DOCUMENT' && renderUploadArea()}
@@ -321,6 +356,9 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
               </motion.div>
             </AnimatePresence>
             
+            <Separator />
+            
+            {/* Detalles del Recurso (Solo si es nuevo o si se permite la edición de detalles) */}
             {(isEditing || (uploads.length <= 1 && resourceType !== 'DOCUMENT')) && (
               <Card>
                 <CardHeader><CardTitle className="text-base">Detalles del Recurso</CardTitle></CardHeader>
@@ -336,8 +374,10 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
               </Card>
             )}
 
+            {/* Visibilidad y Acceso (Modular) */}
             {renderAccessSection()}
 
+            {/* Colaboradores (Modular) */}
             {(resourceType === 'DOCUMENTO_EDITABLE' || resourceType === 'VIDEO_PLAYLIST') && (
               <Card>
                 <CardHeader><CardTitle className="text-base">Colaboradores</CardTitle><CardDescription className="text-xs">Usuarios que pueden editar este recurso.</CardDescription></CardHeader>
@@ -352,9 +392,15 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
 
           </form>
         </ScrollArea>
+        
+        {/* PIE DE PÁGINA: Fijo (flex-shrink-0) */}
         <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2">
           <Button variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
-          <Button type="submit" form="resource-form" disabled={isSubmitting || !title || (resourceType === 'EXTERNAL_LINK' && !externalLink) || (resourceType === 'DOCUMENT' && uploads.some(u => u.status === 'uploading' || u.status === 'processing'))}>
+          <Button 
+            type="submit" 
+            form="resource-form" 
+            disabled={isSubmitting || !title || (resourceType === 'EXTERNAL_LINK' && !externalLink) || (resourceType === 'DOCUMENT' && uploads.some(u => u.status === 'uploading' || u.status === 'processing'))}
+          >
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
             <Save className="mr-2 h-4 w-4" />
             Guardar
