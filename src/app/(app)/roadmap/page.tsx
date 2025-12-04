@@ -44,8 +44,8 @@ export default function RoadmapPage() {
             <PhaseSection title="Fase 1: Concepción y Planificación Estratégica">
                 <Milestone title="Definición del Problema y Roles">
                     <li>Identificación de la necesidad de una plataforma de e-learning corporativa robusta y segura.</li>
-                    <li>Definición de los tres perfiles clave: **Administrador**, **Instructor** y **Estudiante**.</li>
-                    <li>Listado de características para el **Producto Mínimo Viable (MVP)**: gestión de usuarios, creación de cursos y biblioteca de recursos.</li>
+                    <li>Definición de los tres perfiles clave: <strong>Administrador</strong>, <strong>Instructor</strong> y <strong>Estudiante</strong>.</li>
+                    <li>Listado de características para el <strong>Producto Mínimo Viable (MVP)</strong>: gestión de usuarios, creación de cursos y biblioteca de recursos.</li>
                 </Milestone>
             </PhaseSection>
 
@@ -53,9 +53,8 @@ export default function RoadmapPage() {
 
             <PhaseSection title="Fase 2: Arquitectura y Desarrollo del Núcleo">
                  <Milestone title="Inicialización y Backend">
-                    <li>Creación del proyecto con **Next.js** y **TypeScript**.</li>
-                    <li>Implementación del `schema.prisma` para la base de datos.</li>
-                    <li>Desarrollo de los endpoints de la API para las **operaciones CRUD** básicas (usuarios, cursos, autenticación).</li>
+                    <li>Creación del proyecto con <strong>Next.js</strong> y <strong>TypeScript</strong>.</li>
+                    <li>Modelado de la base de datos con <strong>Prisma</strong> y creación de los endpoints de la API para las <strong>operaciones CRUD</strong> básicas.</li>
                  </Milestone>
                  <Milestone title="Interfaz Base">
                     <li>Construcción del layout principal, incluyendo la barra lateral y las páginas de gestión iniciales.</li>
@@ -66,13 +65,13 @@ export default function RoadmapPage() {
 
             <PhaseSection title="Fase 3: Transformación y Funcionalidades Avanzadas">
                 <Milestone title="Gamificación y Reconocimiento">
-                    <li>Implementación de **certificados con plantillas personalizables**.</li>
-                    <li>Creación de **mensajes de motivación automáticos** para hitos.</li>
+                    <li>Implementación de <strong>certificados con plantillas personalizables</strong>.</li>
+                    <li>Creación de <strong>mensajes de motivación automáticos</strong> para hitos.</li>
                     <li>Desarrollo de "Pausas Activas" interactivas para ganar XP.</li>
                 </Milestone>
                  <Milestone title="Interactividad y Colaboración">
-                    <li>Desarrollo del modo de juego **Quizz-IT** en tiempo real.</li>
-                    <li>Habilitación de una sección de **comentarios** en los cursos.</li>
+                    <li>Desarrollo del modo de juego <strong>Quizz-IT</strong> en tiempo real.</li>
+                    <li>Habilitación de una sección de <strong>comentarios</strong> en los cursos y un sistema de <strong>chat 1-a-1</strong>.</li>
                 </Milestone>
             </PhaseSection>
             
@@ -80,10 +79,10 @@ export default function RoadmapPage() {
 
             <PhaseSection title="Fase 4: Consolidación y Madurez">
                  <Milestone title="Experiencia de Usuario y Personalización">
-                    <li>Rediseño del **Dashboard** principal con vistas personalizadas para cada rol.</li>
-                    <li>Transformación de la página de usuarios en un **Control Central** para gestionar colaboradores y estructura organizacional.</li>
-                    <li>Introducción de una paleta de **temas de color** para la interfaz.</li>
-                    <li>Creación de una **Hoja de Ruta Interactiva** para visualizar la evolución del proyecto.</li>
+                    <li>Rediseño del <strong>Dashboard</strong> principal con vistas personalizadas para cada rol.</li>
+                    <li>Transformación de la página de usuarios en un <strong>Control Central</strong> para gestionar colaboradores y la estructura organizacional.</li>
+                    <li>Introducción de una paleta de <strong>temas de color</strong> para la interfaz.</li>
+                    <li>Creación de una <strong>Hoja de Ruta Interactiva</strong> para visualizar la evolución del proyecto.</li>
                 </Milestone>
             </PhaseSection>
         </div>
