@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Loader2, Save, UploadCloud, Link as LinkIcon, FilePen, Briefcase, Calendar as CalendarIcon, Globe, Users, ExternalLink, FileText, Archive, FileCode, List, X, Edit, RotateCcw, PlusCircle } from 'lucide-react';
 import type { AppResourceType, User as AppUser, ResourceSharingMode, Process } from '@/types';
 import { UploadArea } from '@/components/ui/upload-area';
@@ -29,10 +30,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../ui/card';
-import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Separator } from '@/components/ui/separator';
+import { FileIcon } from '@/components/ui/file-icon';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { QuizViewer } from '@/components/quiz-viewer';
 
 // 💡 Se asume que estos se encuentran en un archivo modularizado auxiliar
 import { getInitials, UploadItem, UploadState, ResourceEditorModalProps } from './resource-editor-modal-parts'; 
