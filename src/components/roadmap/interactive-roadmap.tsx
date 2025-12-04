@@ -217,7 +217,7 @@ export const InteractiveRoadmap = ({ items, onEdit, onDelete }: { items: Roadmap
     }
   
     return (
-        <div className="w-full relative px-8 md:px-24 py-16">
+        <div className="w-full relative px-12 md:px-28 py-16">
             {/* Línea de tiempo central */}
             <div 
                 className="absolute top-1/2 left-0 w-full h-2 -translate-y-1/2 bg-gradient-to-r from-primary/20 via-accent/30 to-primary/20"
