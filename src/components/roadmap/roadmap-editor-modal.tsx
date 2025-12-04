@@ -29,6 +29,7 @@ import Image from 'next/image';
 import { RichTextEditor } from '../ui/rich-text-editor';
 import { Trash } from 'lucide-react';
 
+
 const ICONS = ['Lightbulb', 'Code', 'Database', 'Paintbrush', 'Rocket', 'CheckCircle', 'Award', 'Sparkles', 'UsersRound', 'FileText', 'Shield', 'MessageSquare', 'ScreenShare', 'Network', 'ListChecks', 'Megaphone', 'Folder', 'Users', 'TestTube2'];
 
 const iconTranslations: { [key: string]: string } = {
