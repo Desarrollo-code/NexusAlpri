@@ -1,10 +1,10 @@
 // src/components/roadmap/interactive-roadmap.tsx
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import type { RoadmapItem } from '@/types';
 import { Button } from '../ui/button';
-import { Edit, MoreVertical, Trash2, X } from 'lucide-react';
+import { Edit, MoreVertical, Trash2, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -26,6 +26,8 @@ import { Card, CardContent, CardHeader, CardDescription, CardTitle } from '../ui
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { ScrollArea } from '../ui/scroll-area';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '../ui/carousel';
 
 const getPhaseColor = (phase: string) => {
     const hash = phase.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -44,23 +46,23 @@ const RoadmapGridCard = ({ item, onSelect }: { item: RoadmapItem, onSelect: () =
     const phaseColor = getPhaseColor(item.phase);
 
     return (
-        <motion.div layoutId={`roadmap-card-${item.id}`} onClick={onSelect} className="cursor-pointer">
-            <Card className="h-full flex flex-col group overflow-hidden transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1.5">
+        <motion.div layoutId={`roadmap-card-${item.id}`} onClick={onSelect} className="cursor-pointer h-full">
+            <Card className="h-full flex flex-col group overflow-hidden transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1.5 border-2 border-transparent hover:border-primary/50">
                  <CardHeader className="p-4 border-b">
                     <div className="flex items-center gap-3">
                          <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: phaseColor }}>
                             <Icon className="w-6 h-6 text-primary-foreground"/>
                          </div>
                         <div>
-                            <CardTitle className="text-base font-bold text-foreground leading-tight">{item.title}</CardTitle>
+                            <CardTitle className="text-base font-bold text-foreground leading-tight line-clamp-2 group-hover:text-primary transition-colors">{item.title}</CardTitle>
                             <p className="text-xs font-semibold" style={{ color: phaseColor }}>
-                              {item.phase.replace('_', ' ')}
+                              {item.phase.replace(/_/g, ' ')}
                             </p>
                         </div>
                     </div>
                  </CardHeader>
                  <CardContent className="p-4 flex-grow">
-                    <p className="text-sm text-muted-foreground line-clamp-3" dangerouslySetInnerHTML={{ __html: item.description.replace(/<[^>]+>/g, '') }}/>
+                    <p className="text-sm text-muted-foreground line-clamp-3 prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: item.description.replace(/<[^>]+>/g, ' ') }}/>
                  </CardContent>
                  <CardFooter className="p-3 border-t text-xs text-muted-foreground font-medium">
                     {format(new Date(item.date), "dd MMMM, yyyy", { locale: es })}
@@ -75,8 +77,26 @@ export const InteractiveRoadmap = ({ items, onEdit, onDelete }: { items: Roadmap
     const [itemToDelete, setItemToDelete] = useState<RoadmapItem | null>(null);
     const { user } = useAuth();
     const { toast } = useToast();
+    const isMobile = useIsMobile();
 
-    const selectedItem = items.find(item => item.id === selectedId);
+    const selectedIndex = useMemo(() => {
+        if (!selectedId) return -1;
+        return items.findIndex(item => item.id === selectedId);
+    }, [selectedId, items]);
+
+    const selectedItem = items[selectedIndex];
+
+    const handleNext = useCallback(() => {
+        if (selectedIndex === -1) return;
+        const nextIndex = (selectedIndex + 1) % items.length;
+        setSelectedId(items[nextIndex].id);
+    }, [selectedIndex, items]);
+
+    const handlePrevious = useCallback(() => {
+        if (selectedIndex === -1) return;
+        const prevIndex = (selectedIndex - 1 + items.length) % items.length;
+        setSelectedId(items[prevIndex].id);
+    }, [selectedIndex, items]);
     
     const handleDelete = async () => {
         if (!itemToDelete) return;
@@ -102,6 +122,24 @@ export const InteractiveRoadmap = ({ items, onEdit, onDelete }: { items: Roadmap
         e.stopPropagation();
         setItemToDelete(item);
     }
+    
+    if (isMobile) {
+        return (
+            <Carousel className="w-full max-w-xs sm:max-w-sm mx-auto">
+                <CarouselContent>
+                    {items.map(item => (
+                        <CarouselItem key={item.id}>
+                            <div className="p-1">
+                                <RoadmapGridCard item={item} onSelect={() => setSelectedId(item.id)} />
+                            </div>
+                        </CarouselItem>
+                    ))}
+                </CarouselContent>
+                <CarouselPrevious />
+                <CarouselNext />
+            </Carousel>
+        )
+    }
 
     return (
         <div className="w-full">
@@ -122,6 +160,15 @@ export const InteractiveRoadmap = ({ items, onEdit, onDelete }: { items: Roadmap
                             onClick={() => setSelectedId(null)}
                         />
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                             <Button variant="ghost" size="icon" className="fixed top-6 right-6 h-10 w-10 rounded-full bg-background/80 hover:bg-background text-foreground shadow-lg z-[51]" onClick={() => setSelectedId(null)}><X className="h-5 w-5"/></Button>
+                            
+                             {items.length > 1 && (
+                                <>
+                                 <Button variant="ghost" size="icon" className="fixed left-4 md:left-8 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-background/50 hover:bg-background text-foreground shadow-lg z-[51]" onClick={handlePrevious}><ChevronLeft className="h-6 w-6"/></Button>
+                                 <Button variant="ghost" size="icon" className="fixed right-4 md:right-8 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-background/50 hover:bg-background text-foreground shadow-lg z-[51]" onClick={handleNext}><ChevronRight className="h-6 w-6"/></Button>
+                                </>
+                             )}
+                            
                             <motion.div layoutId={`roadmap-card-${selectedItem.id}`} className="w-full max-w-2xl max-h-[80vh] flex">
                                 <Card className="w-full flex flex-col overflow-hidden shadow-2xl">
                                     <CardHeader className="relative p-0">
@@ -152,7 +199,6 @@ export const InteractiveRoadmap = ({ items, onEdit, onDelete }: { items: Roadmap
                                     </CardContent>
                                 </Card>
                             </motion.div>
-                            <Button variant="ghost" size="icon" className="fixed top-6 right-6 h-10 w-10 rounded-full bg-background/80 hover:bg-background text-foreground shadow-lg" onClick={() => setSelectedId(null)}><X className="h-5 w-5"/></Button>
                         </div>
                     </>
                 )}
