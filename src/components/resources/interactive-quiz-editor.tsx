@@ -1,4 +1,4 @@
-// src/components/resources/interactive-content-studio.tsx
+// src/components/resources/interactive-quiz-editor.tsx
 'use client';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -19,6 +19,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
+import { useAuth } from '@/contexts/auth-context';
 
 interface ContentBlock {
   id: string;
