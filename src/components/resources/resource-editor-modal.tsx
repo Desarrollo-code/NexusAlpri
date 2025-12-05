@@ -33,6 +33,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { QuizViewer } from '@/components/quiz-viewer';
 
 // Se asumen que estos se encuentran en un archivo modularizado auxiliar
 import { getInitials, UploadState, ResourceEditorModalProps, renderUploads } from './resource-editor-modal-parts';
@@ -374,25 +375,10 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     <Card>
       <CardHeader><CardTitle className="text-base">Visibilidad y Acceso</CardTitle></CardHeader>
       <CardContent className="space-y-4">
-        <RadioGroup value={sharingMode} onValueChange={(v) => handleAccessChange('sharingMode', v as ResourceSharingMode)} className="grid grid-cols-1 md:grid-cols-3 gap-2">
-          <div className="relative">
-            <RadioGroupItem value="PUBLIC" id="share-public" className="sr-only peer" />
-            <Label htmlFor="share-public" className={cn("flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full transition-all", sharingMode === 'PUBLIC' && 'border-primary ring-2 ring-primary text-primary')}>
-              <Globe className="mb-2 h-6 w-6" />Público
-            </Label>
-          </div>
-          <div className="relative">
-            <RadioGroupItem value="PROCESS" id="share-process" className="sr-only peer" />
-            <Label htmlFor="share-process" className={cn("flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full transition-all", sharingMode === 'PROCESS' && 'border-primary ring-2 ring-primary text-primary')}>
-              <Briefcase className="mb-2 h-6 w-6" />Por Proceso
-            </Label>
-          </div>
-          <div className="relative">
-            <RadioGroupItem value="PRIVATE" id="share-private" className="sr-only peer" />
-            <Label htmlFor="share-private" className={cn("flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full transition-all", sharingMode === 'PRIVATE' && 'border-primary ring-2 ring-primary text-primary')}>
-              <Users className="mb-2 h-6 w-6" />Privado
-            </Label>
-          </div>
+        <RadioGroup value={sharingMode} onValueChange={(v) => handleAccessChange('sharingMode', v as ResourceSharingMode)} className="grid grid-cols-3 gap-2">
+          <div className="flex items-center space-x-2"><RadioGroupItem value="PUBLIC" id="share-public" /><Label htmlFor="share-public">Público</Label></div>
+          <div className="flex items-center space-x-2"><RadioGroupItem value="PROCESS" id="share-process" /><Label htmlFor="share-process">Por Proceso</Label></div>
+          <div className="flex items-center space-x-2"><RadioGroupItem value="PRIVATE" id="share-private" /><Label htmlFor="share-private">Privado</Label></div>
         </RadioGroup>
 
         <AnimatePresence>
