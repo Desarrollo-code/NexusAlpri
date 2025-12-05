@@ -336,7 +336,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] sm:max-w-6xl p-0 gap-0 rounded-2xl max-h-[90vh] flex flex-col">
+      <DialogContent className="w-[95vw] sm:max-w-6xl p-0 gap-0 rounded-2xl h-[90vh] flex flex-col">
         
         <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
           <DialogTitle>{resource ? 'Editar Recurso' : 'Nuevo Recurso'}</DialogTitle>
@@ -368,7 +368,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                 </form>
             </ScrollArea>
              {/* --- COLUMNA 2: CONTENIDO --- */}
-            <ScrollArea className="md:col-span-5 lg:col-span-6 h-full bg-muted/20">
+            <ScrollArea className="relative md:col-span-5 lg:col-span-6 h-full bg-muted/20">
                  <div className="p-4 flex-1 min-h-0">
                     <AnimatePresence mode="wait">
                       <motion.div key={resourceType} initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -10}} transition={{duration: 0.2}} className="h-full">
