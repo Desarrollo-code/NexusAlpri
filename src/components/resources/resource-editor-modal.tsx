@@ -65,9 +65,9 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   // Estados funcionales
   const [uploads, setUploads] = useState<UploadState[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [allUsers, setAllUsers = useState<AppUser[]>([]);
-  const [allProcesses, setAllProcesses = useState<Process[]>([]);
-  const [userSearch, setUserSearch = useState('');
+  const [allUsers, setAllUsers] = useState<AppUser[]>([]);
+  const [allProcesses, setAllProcesses] = useState<Process[]>([]);
+  const [userSearch, setUserSearch] = useState('');
   
   const isEditing = !!resource;
   const { title, description, content, category, externalLink, resourceType, observations } = resourceDetails;
@@ -368,7 +368,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                 </form>
             </ScrollArea>
              {/* --- COLUMNA 2: CONTENIDO --- */}
-            <div className="md:col-span-5 lg:col-span-6 flex flex-col h-full bg-muted/20">
+            <ScrollArea className="md:col-span-5 lg:col-span-6 h-full bg-muted/20">
                  <div className="p-4 flex-1 min-h-0">
                     <AnimatePresence mode="wait">
                       <motion.div key={resourceType} initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -10}} transition={{duration: 0.2}} className="h-full">
@@ -378,12 +378,12 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                       </motion.div>
                     </AnimatePresence>
                  </div>
-            </div>
+            </ScrollArea>
              {/* --- COLUMNA 3: ACCESO --- */}
             <ScrollArea className="md:col-span-3 lg:col-span-3 border-l h-full">
                 <div className="p-6 space-y-6">
                     {renderAccessSection()}
-                    {(resourceType === 'DOCUMENTO_EDITABLE' || resourceType === 'VIDEO_PLAYLIST') && (
+                    {(resourceType === 'DOCUMENTO_EDITABLE' || resource?.type === 'VIDEO_PLAYLIST') && (
                         <Card>
                             <CardHeader><CardTitle className="text-base">Colaboradores</CardTitle><CardDescription className="text-xs">Usuarios que pueden editar este recurso.</CardDescription></CardHeader>
                             <CardContent>
@@ -398,7 +398,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             </ScrollArea>
         </div>
         
-        <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2 bg-background/90 backdrop-blur-sm">
+        <DialogFooter className="px-6 py-4 border-t flex-shrink-0 flex-row justify-end gap-2 bg-background/90 backdrop-blur-sm">
           <Button variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
           <Button 
             type="submit" 
