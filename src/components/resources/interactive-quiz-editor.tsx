@@ -100,6 +100,7 @@ export const InteractiveContentStudio: React.FC<{ folderId: string }> = ({ folde
     const [isSaving, setIsSaving] = useState(false);
     
     const { toast } = useToast();
+    const { user } = useAuth();
     const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
     
     const activeBlock = contentBlocks.find(b => b.id === activeBlockId);
