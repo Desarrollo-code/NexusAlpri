@@ -17,10 +17,10 @@ import { Loader2, ListVideo, PlusCircle, Trash2, Youtube, UploadCloud } from 'lu
 import { useAuth } from '@/contexts/auth-context';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import Image from 'next/image';
-import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
-import { UploadArea } from '../ui/upload-area';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
-import { Progress } from '../ui/progress';
+import { Progress } from '@/components/ui/progress';
 
 interface PlaylistCreatorModalProps {
     isOpen: boolean;
