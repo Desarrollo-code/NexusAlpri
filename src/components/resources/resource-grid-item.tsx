@@ -139,15 +139,15 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                 </div>
                 <div className="p-3 flex-grow flex flex-col">
                     <div className="flex justify-between items-start gap-1 flex-grow">
-                         <div className="flex items-start gap-1.5 flex-grow overflow-hidden">
+                         <div className="flex items-start gap-1.5 flex-grow overflow-hidden text-left">
                             {canModify && !isFolder && resource.status === 'ACTIVE' ? (
                                 <div {...listeners} {...attributes} className="p-1 cursor-grab touch-none -ml-1">
                                     <Grip className="h-4 w-4 text-muted-foreground/50" />
                                 </div>
                             ) : (
-                                <div className="w-6 h-4"/>
+                                <div className="w-6 h-4 flex-shrink-0"/>
                             )}
-                            <p className="font-medium text-xs leading-tight break-words text-left flex-grow">{resource.title}</p>
+                            <p className="font-medium text-xs leading-tight break-words flex-grow">{resource.title}</p>
                         </div>
                         {canModify && (
                             <DropdownMenu>
