@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -32,7 +32,7 @@ import { FileIcon } from '../ui/file-icon';
 import { formatFileSize } from '@/lib/utils';
 import { Alert, AlertDescription } from '../ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription as ShadcnCardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -259,67 +259,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
 
     const isStep1Valid = !!title && ((resourceType === 'DOCUMENT' && upload?.status === 'completed') || (resourceType === 'EXTERNAL_LINK' && externalLink) || (resourceType === 'DOCUMENTO_EDITABLE' && editableContent));
 
-    const renderCreationWizard = () => (
-        <>
-            <ProgressBar currentStep={creationStep} />
-            <ScrollArea className="flex-1 min-h-0">
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={creationStep}
-                        initial={{ x: 300, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        exit={{ x: -300, opacity: 0 }}
-                        transition={{ duration: 0.3, ease: 'easeInOut' }}
-                        className="px-6 py-4"
-                    >
-                        {creationStep === 1 && <ContentStep />}
-                        {creationStep === 2 && <ConfigStep />}
-                        {creationStep === 3 && <QuizStep />}
-                    </motion.div>
-                </AnimatePresence>
-            </ScrollArea>
-            <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-between">
-                <Button variant="outline" onClick={() => creationStep === 1 ? onClose() : setCreationStep(p => p-1)} disabled={isSaving}>
-                   {creationStep > 1 && <ArrowLeft className="mr-2 h-4 w-4"/>} {creationStep === 1 ? 'Cancelar' : 'Anterior'}
-                </Button>
-                {creationStep < STEPS.length ? (
-                    <Button onClick={() => setCreationStep(p => p+1)} disabled={!isStep1Valid}>Siguiente <ArrowRight className="ml-2 h-4 w-4"/></Button>
-                ) : (
-                    <Button type="submit" form="resource-form" disabled={isSaving || !isStep1Valid}>
-                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
-                        {isEditing ? 'Guardar Cambios' : 'Crear Recurso'}
-                    </Button>
-                )}
-            </DialogFooter>
-        </>
-    );
-
-    const renderEditTabs = () => (
-        <Tabs defaultValue="content" className="flex flex-col h-full">
-            <div className="px-6 pt-2 flex-shrink-0">
-                <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="content">Contenido</TabsTrigger>
-                    <TabsTrigger value="config">Configuración</TabsTrigger>
-                    <TabsTrigger value="quiz">Quiz</TabsTrigger>
-                </TabsList>
-            </div>
-            <ScrollArea className="flex-1 min-h-0">
-                <div className="px-6 py-4">
-                    <TabsContent value="content" className="mt-0"><ContentStep /></TabsContent>
-                    <TabsContent value="config" className="mt-0"><ConfigStep /></TabsContent>
-                    <TabsContent value="quiz" className="mt-0"><QuizStep /></TabsContent>
-                </div>
-            </ScrollArea>
-            <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2">
-                <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
-                <Button type="submit" form="resource-form" disabled={isSaving || !isStep1Valid}>
-                    {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                    <Save className="mr-2 h-4 w-4"/>Guardar Cambios
-                </Button>
-            </DialogFooter>
-        </Tabs>
-    );
-
     const ContentStep = () => (
         <div className="space-y-4">
             <div className="space-y-2"><Label htmlFor="title">Título del Recurso</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
@@ -357,7 +296,67 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             </CardContent>
         </Card>
     );
+    
+    const renderCreationWizard = () => (
+        <>
+            <ProgressBar currentStep={creationStep} />
+            <ScrollArea className="flex-1 min-h-0">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={creationStep}
+                        initial={{ x: 300, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        exit={{ x: -300, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                        className="px-6 py-4"
+                    >
+                        {creationStep === 1 && <ContentStep />}
+                        {creationStep === 2 && <ConfigStep />}
+                        {creationStep === 3 && <QuizStep />}
+                    </motion.div>
+                </AnimatePresence>
+            </ScrollArea>
+            <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-between">
+                <Button variant="outline" onClick={() => creationStep === 1 ? onClose() : setCreationStep(p => p - 1)} disabled={isSaving}>
+                   {creationStep > 1 && <ArrowLeft className="mr-2 h-4 w-4"/>} {creationStep === 1 ? 'Cancelar' : 'Anterior'}
+                </Button>
+                {creationStep < STEPS.length ? (
+                    <Button onClick={() => setCreationStep(p => p + 1)} disabled={!isStep1Valid}>Siguiente <ArrowRight className="ml-2 h-4 w-4"/></Button>
+                ) : (
+                    <Button type="submit" form="resource-form" disabled={isSaving || !isStep1Valid}>
+                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
+                        Crear Recurso
+                    </Button>
+                )}
+            </DialogFooter>
+        </>
+    );
 
+    const renderEditTabs = () => (
+      <Tabs defaultValue="content" className="flex-1 min-h-0 flex flex-col">
+        <div className="px-6 pt-2 flex-shrink-0">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="content">Contenido</TabsTrigger>
+            <TabsTrigger value="config">Configuración</TabsTrigger>
+            <TabsTrigger value="quiz">Quiz</TabsTrigger>
+          </TabsList>
+        </div>
+        <ScrollArea className="flex-1 min-h-0">
+          <div className="px-6 py-4">
+            <TabsContent value="content" className="mt-0"><ContentStep /></TabsContent>
+            <TabsContent value="config" className="mt-0"><ConfigStep /></TabsContent>
+            <TabsContent value="quiz" className="mt-0"><QuizStep /></TabsContent>
+          </div>
+        </ScrollArea>
+        <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2">
+            <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
+            <Button type="submit" form="resource-form" disabled={isSaving || !isStep1Valid}>
+                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                <Save className="mr-2 h-4 w-4"/>Guardar Cambios
+            </Button>
+        </DialogFooter>
+      </Tabs>
+    );
 
     return (
         <>
