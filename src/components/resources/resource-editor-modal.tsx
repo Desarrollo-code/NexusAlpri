@@ -1,10 +1,9 @@
-
 // src/components/resources/resource-editor-modal.tsx
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -32,7 +31,7 @@ import { FileIcon } from '../ui/file-icon';
 import { formatFileSize } from '@/lib/utils';
 import { Alert, AlertDescription } from '../ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -41,7 +40,6 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
 import type { DateRange } from 'react-day-picker';
-
 
 interface ResourceEditorModalProps {
   isOpen: boolean;
@@ -370,12 +368,14 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                     </form>
                 </DialogContent>
             </Dialog>
-            <QuizEditorModal 
+            {isQuizModalOpen && (
+              <QuizEditorModal 
                 isOpen={isQuizModalOpen} 
                 onClose={() => setIsQuizModalOpen(false)} 
                 quiz={quiz}
                 onSave={handleQuizSave}
             />
+            )}
         </>
     );
 }
@@ -409,5 +409,4 @@ const UserOrProcessList = ({ type, items, selectedIds, onSelectionChange }: { ty
         </Card>
     );
 };
-
-    
+```
