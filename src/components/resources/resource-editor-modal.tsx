@@ -271,7 +271,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     if (uploads.length > 0 && resourceType === 'DOCUMENT') {
       const isStillUploading = uploads.some(u => u.status === 'uploading' || u.status === 'processing');
       if (isStillUploading) {
-        toast({ description: "Por favor, espera a que finalicen todas las subidas." });
+        toast({description: "Por favor, espera a que finalicen todas las subidas." });
       } else {
         // Ya se guardaron en la DB dentro de uploadFileAndSave
         onClose();
@@ -290,7 +290,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
       status: resource?.status || 'ACTIVE', type: resourceType,
       url: resourceType === 'EXTERNAL_LINK' ? externalLink : resource?.url,
     };
-
+    
     const success = await saveResourceToDb(payload);
     if (success) {
       toast({ title: '¡Éxito!', description: `Recurso ${isEditing ? 'actualizado' : 'creado'}.` });
