@@ -262,67 +262,69 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                     <DialogDescription>Agrupa videos en una secuencia de aprendizaje.</DialogDescription>
                 </DialogHeader>
                 <ScrollArea className="flex-1 min-h-0">
-                    <form id="playlist-form" onSubmit={handleSubmit} className="space-y-4 px-6 py-4">
-                        {/* --- BASIC INFO --- */}
-                        <div className="space-y-1.5"><Label htmlFor="playlist-title">Título de la Lista</Label><Input id="playlist-title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
-                        <div className="space-y-1.5"><Label htmlFor="playlist-description">Descripción (Opcional)</Label><Input id="playlist-description" value={description} onChange={(e) => setDescription(e.target.value)} /></div>
-                        
-                        <Separator/>
+                    <div className="px-6 -mr-6">
+                        <form id="playlist-form" onSubmit={handleSubmit} className="space-y-4 py-4 pr-6">
+                            {/* --- BASIC INFO --- */}
+                            <div className="space-y-1.5"><Label htmlFor="playlist-title">Título de la Lista</Label><Input id="playlist-title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
+                            <div className="space-y-1.5"><Label htmlFor="playlist-description">Descripción (Opcional)</Label><Input id="playlist-description" value={description} onChange={(e) => setDescription(e.target.value)} /></div>
+                            
+                            <Separator/>
 
-                        {/* --- VIDEOS SECTION --- */}
-                        <div className="space-y-1.5">
-                            <Label>Añadir Videos</Label>
-                            <RadioGroup value={videoSource} onValueChange={(v) => setVideoSource(v as 'youtube' | 'upload')} className="grid grid-cols-2 gap-2">
-                               <div><RadioGroupItem value="youtube" id="src-youtube" className="sr-only"/><Label htmlFor="src-youtube" className={`flex items-center justify-center gap-2 p-2 border-2 rounded-lg cursor-pointer ${videoSource === 'youtube' ? 'border-primary' : 'border-muted'}`}><Youtube className="h-5 w-5"/> YouTube</Label></div>
-                               <div><RadioGroupItem value="upload" id="src-upload" className="sr-only"/><Label htmlFor="src-upload" className={`flex items-center justify-center gap-2 p-2 border-2 rounded-lg cursor-pointer ${videoSource === 'upload' ? 'border-primary' : 'border-muted'}`}><UploadCloud className="h-5 w-5"/> Subir Video</Label></div>
-                            </RadioGroup>
-                            {videoSource === 'youtube' ? (
-                              <div className="flex gap-2"><Input value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="Pega una URL de YouTube"/><Button type="button" onClick={handleAddVideoFromUrl} disabled={!videoUrl}><PlusCircle className="h-4 w-4"/></Button></div>
-                            ) : (
-                              <div className="space-y-2"><UploadArea onFileSelect={handleVideoFileUpload} disabled={isUploading} inputId="video-upload-input" multiple={true} /></div>
-                            )}
-                            <div className="space-y-2 mt-2 max-h-48 overflow-y-auto pr-2">
-                                {videos.map(video => (
-                                    <div key={video.id} className="flex items-center gap-2 p-2 border rounded-md">
-                                        <div className="w-20 h-12 bg-black rounded flex-shrink-0 relative">
-                                            {video.thumbnail ? (
-                                                <Image src={video.thumbnail} alt={video.title} fill className="object-cover"/>
-                                            ) : (<div className="flex items-center justify-center h-full"><Youtube className="h-6 w-6 text-red-500"/></div>)}
-                                        </div>
-                                        <div className="flex-grow min-w-0">
-                                           <p className="text-sm font-medium truncate">{video.title}</p>
-                                           {uploadProgress[video.id] < 100 && <Progress value={uploadProgress[video.id] || 0} className="h-1 mt-1"/>}
-                                        </div>
-                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleRemoveVideo(video.id)}><Trash2 className="h-4 w-4"/></Button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <Separator/>
-                        
-                        {/* --- PERMISSIONS SECTION --- */}
-                        <div className="space-y-4">
-                           <div className="space-y-2">
-                                <Label>Visibilidad</Label>
-                                <RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-3 gap-2">
-                                    <Label htmlFor="share-public" className={`flex flex-col items-center justify-center p-2 text-xs border-2 rounded-lg cursor-pointer ${sharingMode === 'PUBLIC' ? 'border-primary' : 'border-muted'}`}><Globe className="mb-1 h-5 w-5"/>Público</Label>
-                                    <RadioGroupItem value="PUBLIC" id="share-public" className="sr-only"/>
-                                    <Label htmlFor="share-process" className={`flex flex-col items-center justify-center p-2 text-xs border-2 rounded-lg cursor-pointer ${sharingMode === 'PROCESS' ? 'border-primary' : 'border-muted'}`}><Briefcase className="mb-1 h-5 w-5"/>Por Proceso</Label>
-                                    <RadioGroupItem value="PROCESS" id="share-process" className="sr-only"/>
-                                    <Label htmlFor="share-private" className={`flex flex-col items-center justify-center p-2 text-xs border-2 rounded-lg cursor-pointer ${sharingMode === 'PRIVATE' ? 'border-primary' : 'border-muted'}`}><Users className="mb-1 h-5 w-5"/>Privado</Label>
-                                    <RadioGroupItem value="PRIVATE" id="share-private" className="sr-only"/>
+                            {/* --- VIDEOS SECTION --- */}
+                            <div className="space-y-1.5">
+                                <Label>Añadir Videos</Label>
+                                <RadioGroup value={videoSource} onValueChange={(v) => setVideoSource(v as 'youtube' | 'upload')} className="grid grid-cols-2 gap-2">
+                                   <div><RadioGroupItem value="youtube" id="src-youtube" className="sr-only"/><Label htmlFor="src-youtube" className={`flex items-center justify-center gap-2 p-2 border-2 rounded-lg cursor-pointer ${videoSource === 'youtube' ? 'border-primary' : 'border-muted'}`}><Youtube className="h-5 w-5"/> YouTube</Label></div>
+                                   <div><RadioGroupItem value="upload" id="src-upload" className="sr-only"/><Label htmlFor="src-upload" className={`flex items-center justify-center gap-2 p-2 border-2 rounded-lg cursor-pointer ${videoSource === 'upload' ? 'border-primary' : 'border-muted'}`}><UploadCloud className="h-5 w-5"/> Subir Video</Label></div>
                                 </RadioGroup>
-                                {sharingMode === 'PROCESS' && <UserOrProcessList type="process" items={allProcesses} selectedIds={sharedWithProcessIds} onSelectionChange={setSharedWithProcessIds} search={userSearch} onSearchChange={setUserSearch} />}
-                                {sharingMode === 'PRIVATE' && <UserOrProcessList type="user" items={allUsers} selectedIds={sharedWithUserIds} onSelectionChange={setSharedWithUserIds} search={userSearch} onSearchChange={setUserSearch} />}
-                           </div>
-                            <div className="space-y-2">
-                                <Label>Colaboradores</Label>
-                                <p className="text-xs text-muted-foreground">Usuarios que pueden editar esta lista.</p>
-                                <UserOrProcessList type="user" items={allUsers} selectedIds={collaboratorIds} onSelectionChange={setCollaboratorIds} search={userSearch} onSearchChange={setUserSearch} />
+                                {videoSource === 'youtube' ? (
+                                  <div className="flex gap-2"><Input value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="Pega una URL de YouTube"/><Button type="button" onClick={handleAddVideoFromUrl} disabled={!videoUrl}><PlusCircle className="h-4 w-4"/></Button></div>
+                                ) : (
+                                  <div className="space-y-2"><UploadArea onFileSelect={handleVideoFileUpload} disabled={isUploading} inputId="video-upload-input" multiple={true} /></div>
+                                )}
+                                <div className="space-y-2 mt-2 max-h-48 overflow-y-auto pr-2">
+                                    {videos.map(video => (
+                                        <div key={video.id} className="flex items-center gap-2 p-2 border rounded-md">
+                                            <div className="w-20 h-12 bg-black rounded flex-shrink-0 relative">
+                                                {video.thumbnail ? (
+                                                    <Image src={video.thumbnail} alt={video.title} fill className="object-cover"/>
+                                                ) : (<div className="flex items-center justify-center h-full"><Youtube className="h-6 w-6 text-red-500"/></div>)}
+                                            </div>
+                                            <div className="flex-grow min-w-0">
+                                               <p className="text-sm font-medium truncate">{video.title}</p>
+                                               {uploadProgress[video.id] < 100 && <Progress value={uploadProgress[video.id] || 0} className="h-1 mt-1"/>}
+                                            </div>
+                                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleRemoveVideo(video.id)}><Trash2 className="h-4 w-4"/></Button>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    </form>
+
+                            <Separator/>
+                            
+                            {/* --- PERMISSIONS SECTION --- */}
+                            <div className="space-y-4">
+                               <div className="space-y-2">
+                                    <Label>Visibilidad</Label>
+                                    <RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-3 gap-2">
+                                        <Label htmlFor="share-public" className={`flex flex-col items-center justify-center p-2 text-xs border-2 rounded-lg cursor-pointer ${sharingMode === 'PUBLIC' ? 'border-primary' : 'border-muted'}`}><Globe className="mb-1 h-5 w-5"/>Público</Label>
+                                        <RadioGroupItem value="PUBLIC" id="share-public" className="sr-only"/>
+                                        <Label htmlFor="share-process" className={`flex flex-col items-center justify-center p-2 text-xs border-2 rounded-lg cursor-pointer ${sharingMode === 'PROCESS' ? 'border-primary' : 'border-muted'}`}><Briefcase className="mb-1 h-5 w-5"/>Por Proceso</Label>
+                                        <RadioGroupItem value="PROCESS" id="share-process" className="sr-only"/>
+                                        <Label htmlFor="share-private" className={`flex flex-col items-center justify-center p-2 text-xs border-2 rounded-lg cursor-pointer ${sharingMode === 'PRIVATE' ? 'border-primary' : 'border-muted'}`}><Users className="mb-1 h-5 w-5"/>Privado</Label>
+                                        <RadioGroupItem value="PRIVATE" id="share-private" className="sr-only"/>
+                                    </RadioGroup>
+                                    {sharingMode === 'PROCESS' && <UserOrProcessList type="process" items={allProcesses} selectedIds={sharedWithProcessIds} onSelectionChange={setSharedWithProcessIds} search={userSearch} onSearchChange={setUserSearch} />}
+                                    {sharingMode === 'PRIVATE' && <UserOrProcessList type="user" items={allUsers} selectedIds={sharedWithUserIds} onSelectionChange={setSharedWithUserIds} search={userSearch} onSearchChange={setUserSearch} />}
+                               </div>
+                                <div className="space-y-2">
+                                    <Label>Colaboradores</Label>
+                                    <p className="text-xs text-muted-foreground">Usuarios que pueden editar esta lista.</p>
+                                    <UserOrProcessList type="user" items={allUsers} selectedIds={collaboratorIds} onSelectionChange={setCollaboratorIds} search={userSearch} onSearchChange={setUserSearch} />
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </ScrollArea>
                 <DialogFooter className="p-6 pt-4 border-t flex-shrink-0">
                     <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
