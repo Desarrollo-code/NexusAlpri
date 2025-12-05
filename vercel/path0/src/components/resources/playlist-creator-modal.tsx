@@ -22,11 +22,11 @@ import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
 import type { AppResourceType, User as AppUser, Process, ResourceSharingMode } from '@/types';
-import { ScrollArea } from '../ui/scroll-area';
-import { Checkbox } from '../ui/checkbox';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Identicon } from '../ui/identicon';
-import { Separator } from '../ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Identicon } from '@/components/ui/identicon';
+import { Separator } from '@/components/ui/separator';
 
 interface PlaylistCreatorModalProps {
     isOpen: boolean;
