@@ -264,7 +264,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                     <DialogDescription>Agrupa videos en una secuencia de aprendizaje.</DialogDescription>
                 </DialogHeader>
                 <div className="flex-1 min-h-0">
-                    <ScrollArea className="h-full">
+                    <ScrollArea className="h-full pr-6">
                         <form id="playlist-form" onSubmit={handleSubmit} className="space-y-4 px-6 py-4">
                             {/* --- BASIC INFO --- */}
                             <div className="space-y-1.5"><Label htmlFor="playlist-title">Título de la Lista</Label><Input id="playlist-title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
