@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useCallback, ChangeEvent } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -38,7 +38,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { QuizEditorModal } from '../quizz-it/quiz-editor-modal';
+import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
 import { BrainCircuit, Edit } from 'lucide-react';
 
 interface ResourceEditorModalProps {
@@ -228,7 +228,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex-1 min-h-0 flex flex-col">
                             <div className="px-6 pt-2 flex-shrink-0">
                                 <TabsList className="grid w-full grid-cols-3">
-                                    <TabsTrigger value="content" disabled={!isStep1Valid}>1. Contenido</TabsTrigger>
+                                    <TabsTrigger value="content">1. Contenido</TabsTrigger>
                                     <TabsTrigger value="config" disabled={!isStep1Valid || !isStep2Valid}>2. Configuración</TabsTrigger>
                                     <TabsTrigger value="quiz" disabled={!isStep1Valid || !isStep2Valid}>3. Quiz</TabsTrigger>
                                 </TabsList>
@@ -274,6 +274,13 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                             </ScrollArea>
                         </Tabs>
                     </form>
+                    <DialogFooter className="p-6 pt-4 border-t flex-shrink-0">
+                         <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
+                         <Button type="submit" form="resource-form" disabled={isSaving}>
+                            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                            {isEditing ? 'Guardar Cambios' : 'Crear Recurso'}
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
             {quiz && (
