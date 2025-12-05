@@ -27,6 +27,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+
 
 interface PlaylistCreatorModalProps {
     isOpen: boolean;
@@ -256,7 +258,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-xl max-h-[90vh] flex flex-col p-0 gap-0 rounded-2xl">
+            <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0 rounded-2xl">
                 <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
                     <DialogTitle>{isEditing ? 'Editar Lista de Videos' : 'Crear Nueva Lista de Videos'}</DialogTitle>
                     <DialogDescription>Agrupa videos en una secuencia de aprendizaje.</DialogDescription>
@@ -324,8 +326,8 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                                 </div>
                             </div>
                         </form>
-                    </div>
-                </ScrollArea>
+                    </ScrollArea>
+                </div>
                 <DialogFooter className="p-6 pt-4 border-t flex-shrink-0">
                     <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
                     <Button type="submit" form="playlist-form" disabled={isSaving || !title || videos.length === 0}>
