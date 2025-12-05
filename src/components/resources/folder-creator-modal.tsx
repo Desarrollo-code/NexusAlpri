@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Folder, GripVertical, ListVideo, Loader2, PlusCircle } from 'lucide-react';
+import { Folder, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
@@ -50,7 +50,7 @@ export function FolderCreatorModal({ isOpen, onClose, onSave, parentId }: Folder
         title: folderName,
         type: 'FOLDER',
         category,
-        isPublic: true,
+        sharingMode: 'PUBLIC', // Por defecto, las carpetas son públicas en su acceso
         parentId,
       };
 
@@ -73,35 +73,45 @@ export function FolderCreatorModal({ isOpen, onClose, onSave, parentId }: Folder
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2"><Folder className="h-5 w-5 text-amber-500"/>Crear Nueva Carpeta</DialogTitle>
+      <DialogContent className="sm:max-w-xl p-0 gap-0 rounded-2xl">
+        <DialogHeader className="p-6 pb-4 border-b">
+          <DialogTitle className="flex items-center gap-2 text-xl font-bold">
+            <Folder className="h-5 w-5 text-amber-500"/>
+            Crear Nueva Carpeta
+          </DialogTitle>
           <DialogDescription>
-            Crea una carpeta para organizar tus archivos y recursos.
+            Organiza tus archivos y recursos en carpetas temáticas.
           </DialogDescription>
         </DialogHeader>
         <form id="folder-form" onSubmit={handleCreate}>
-          <div className="py-4 space-y-4">
-            <div className="space-y-1.5">
-                <Label htmlFor="folder-name">Título</Label>
-                <Input id="folder-name" value={folderName} onChange={(e) => setFolderName(e.target.value)} placeholder={'Ej: Documentos de RRHH'} autoFocus required />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
+            <div className="md:col-span-1 flex flex-col items-center justify-center">
+              <div className="w-24 h-24 flex items-center justify-center bg-amber-500/10 rounded-lg">
+                <Folder className="w-12 h-12 text-amber-500"/>
+              </div>
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="category">Categoría</Label>
-              <Select name="category" required value={category} onValueChange={setCategory}>
-                <SelectTrigger id="category"><SelectValue placeholder="Selecciona..." /></SelectTrigger>
-                <SelectContent>
-                  {(settings?.resourceCategories || []).sort().map((cat) => ( <SelectItem key={cat} value={cat}>{cat}</SelectItem> ))}
-                </SelectContent>
-              </Select>
+            <div className="md:col-span-2 space-y-4">
+              <div className="space-y-1.5">
+                  <Label htmlFor="folder-name">Nombre de la Carpeta</Label>
+                  <Input id="folder-name" value={folderName} onChange={(e) => setFolderName(e.target.value)} placeholder={'Ej: Documentos de RRHH'} autoFocus required />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="category">Categoría</Label>
+                <Select name="category" required value={category} onValueChange={setCategory}>
+                  <SelectTrigger id="category"><SelectValue placeholder="Selecciona..." /></SelectTrigger>
+                  <SelectContent>
+                    {(settings?.resourceCategories || []).sort().map((cat) => ( <SelectItem key={cat} value={cat}>{cat}</SelectItem> ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </form>
-        <DialogFooter>
+        <DialogFooter className="p-6 pt-4 border-t flex-row justify-end gap-2">
           <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
           <Button type="submit" form="folder-form" disabled={isSaving || !folderName.trim()}>
             {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Crear
+            Crear Carpeta
           </Button>
         </DialogFooter>
       </DialogContent>

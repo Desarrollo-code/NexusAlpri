@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Folder, GripVertical, ListVideo, Loader2, PlusCircle, Trash2, Youtube, UploadCloud, Users } from 'lucide-react';
+import { GripVertical, ListVideo, Loader2, PlusCircle, Trash2, Youtube, UploadCloud } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
@@ -26,10 +26,7 @@ import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Identicon } from '@/components/ui/identicon';
-import type { User as AppUser, AppResourceType } from '@/types';
+import type { AppResourceType } from '@/types';
 
 interface PlaylistCreatorModalProps {
   isOpen: boolean;
@@ -78,15 +75,13 @@ const SortableVideoItem = ({ video, onDelete }: { video: VideoItem; onDelete: ()
 
 export function PlaylistCreatorModal({ isOpen, onClose, onSave, parentId, playlistToEdit }: PlaylistCreatorModalProps) {
   const { toast } = useToast();
-  const { user, settings } = useAuth();
+  const { settings } = useAuth();
   const [playlistName, setPlaylistName] = useState('');
   const [category, setCategory] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
-  const [allUsers, setAllUsers] = useState<AppUser[]>([]);
-  const [userSearch, setUserSearch] = useState('');
-
+  
   const [isSaving, setIsSaving] = useState(false);
   const [isAddingVideo, setIsAddingVideo] = useState(false);
   const [videoSource, setVideoSource] = useState<'youtube' | 'upload'>('youtube');
@@ -201,62 +196,70 @@ export function PlaylistCreatorModal({ isOpen, onClose, onSave, parentId, playli
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-xl max-h-[90vh] flex flex-col p-0 gap-0 rounded-2xl">
+      <DialogContent className="sm:max-w-2xl p-0 gap-0 rounded-2xl max-h-[90vh] flex flex-col">
         <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
-          <DialogTitle className="flex items-center gap-2"><ListVideo className="h-5 w-5 text-primary"/>{playlistToEdit ? 'Editar' : 'Crear'} Lista de Reproducción</DialogTitle>
+          <DialogTitle className="flex items-center gap-2 text-xl font-bold"><ListVideo className="h-5 w-5 text-primary"/>{playlistToEdit ? 'Editar' : 'Crear'} Lista de Reproducción</DialogTitle>
           <DialogDescription>
-            Agrupa videos de YouTube o sube los tuyos para crear una experiencia de aprendizaje secuencial.
+            Agrupa videos para crear una experiencia de aprendizaje secuencial.
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="flex-1 min-h-0">
-          <form id="playlist-form" onSubmit={handleCreatePlaylist} className="space-y-4 px-6 py-4">
-              <div className="space-y-1.5">
-                  <Label htmlFor="playlist-name">Nombre de la Lista</Label>
-                  <Input id="playlist-name" value={playlistName} onChange={(e) => setPlaylistName(e.target.value)} required />
+          <form id="playlist-form" onSubmit={handleCreatePlaylist} className="grid grid-cols-1 md:grid-cols-5 gap-6 px-6 py-4">
+              <div className="md:col-span-2 flex flex-col items-center justify-center space-y-4">
+                  <div className="w-28 h-28 flex items-center justify-center bg-primary/10 rounded-lg">
+                      <ListVideo className="w-16 h-16 text-primary"/>
+                  </div>
+                  <div className="space-y-1.5 w-full">
+                      <Label htmlFor="playlist-name">Nombre de la Lista</Label>
+                      <Input id="playlist-name" value={playlistName} onChange={(e) => setPlaylistName(e.target.value)} required />
+                  </div>
+                  <div className="space-y-1.5 w-full">
+                      <Label htmlFor="category-playlist">Categoría</Label>
+                      <Select name="category-playlist" required value={category} onValueChange={setCategory}>
+                          <SelectTrigger id="category-playlist"><SelectValue placeholder="Selecciona..." /></SelectTrigger>
+                          <SelectContent>
+                          {(settings?.resourceCategories || []).sort().map((cat) => ( <SelectItem key={cat} value={cat}>{cat}</SelectItem> ))}
+                          </SelectContent>
+                      </Select>
+                  </div>
               </div>
-              <div className="space-y-1.5">
-                  <Label htmlFor="category-playlist">Categoría</Label>
-                  <Select name="category-playlist" required value={category} onValueChange={setCategory}>
-                      <SelectTrigger id="category-playlist"><SelectValue placeholder="Selecciona..." /></SelectTrigger>
-                      <SelectContent>
-                      {(settings?.resourceCategories || []).sort().map((cat) => ( <SelectItem key={cat} value={cat}>{cat}</SelectItem> ))}
-                      </SelectContent>
-                  </Select>
-              </div>
-              
-               <div className="space-y-2 pt-2">
-                 <Label className="flex items-center justify-between">
-                    <span>Añadir Video</span>
-                    <div className="flex items-center gap-2 text-xs">
-                        <Youtube className="h-5 w-5 text-red-500"/>
-                        <Switch checked={videoSource === 'upload'} onCheckedChange={(c) => setVideoSource(c ? 'upload' : 'youtube')}/>
-                        <UploadCloud className="h-5 w-5 text-blue-500"/>
-                    </div>
-                </Label>
-                {videoSource === 'youtube' ? (
-                    <div className="flex gap-2">
-                        <Input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="Pega una URL de YouTube"/>
-                        <Button type="button" onClick={handleAddYoutubeVideo} disabled={isAddingVideo || !videoUrl}>
-                            {isAddingVideo ? <Loader2 className="h-4 w-4 animate-spin"/> : 'Añadir'}
-                        </Button>
-                    </div>
-                ) : (
-                    <UploadArea onFileSelect={handleFileUpload} multiple compact disabled={isAddingVideo} accept="video/*" />
-                )}
-            </div>
+              <div className="md:col-span-3 space-y-4">
+                 <div className="space-y-2 pt-2">
+                     <Label className="flex items-center justify-between">
+                        <span>Añadir Video</span>
+                        <div className="flex items-center gap-2 text-xs">
+                            <Youtube className="h-5 w-5 text-red-500"/>
+                            <Switch checked={videoSource === 'upload'} onCheckedChange={(c) => setVideoSource(c ? 'upload' : 'youtube')}/>
+                            <UploadCloud className="h-5 w-5 text-blue-500"/>
+                        </div>
+                    </Label>
+                    {videoSource === 'youtube' ? (
+                        <div className="flex gap-2">
+                            <Input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="Pega una URL de YouTube"/>
+                            <Button type="button" onClick={handleAddYoutubeVideo} disabled={isAddingVideo || !videoUrl}>
+                                {isAddingVideo ? <Loader2 className="h-4 w-4 animate-spin"/> : 'Añadir'}
+                            </Button>
+                        </div>
+                    ) : (
+                        <UploadArea onFileSelect={handleFileUpload} multiple compact disabled={isAddingVideo} accept="video/*" />
+                    )}
+                </div>
 
-            <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
-                <DndContext onDragEnd={handleDragEnd}>
-                    <SortableContext items={videos.map(v => v.id)} strategy={verticalListSortingStrategy}>
-                        {videos.map(v => (
-                            <SortableVideoItem key={v.id} video={v} onDelete={() => setVideos(vs => vs.filter(item => item.id !== v.id))} />
-                        ))}
-                    </SortableContext>
-                </DndContext>
-            </div>
+                <div className="space-y-2 h-64 border rounded-md p-2">
+                    <ScrollArea className="h-full">
+                        <DndContext onDragEnd={handleDragEnd}>
+                            <SortableContext items={videos.map(v => v.id)} strategy={verticalListSortingStrategy}>
+                                {videos.map(v => (
+                                    <SortableVideoItem key={v.id} video={v} onDelete={() => setVideos(vs => vs.filter(item => item.id !== v.id))} />
+                                ))}
+                            </SortableContext>
+                        </DndContext>
+                    </ScrollArea>
+                </div>
+              </div>
           </form>
         </ScrollArea>
-        <DialogFooter className="p-6 pt-4 border-t flex-shrink-0">
+        <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2">
           <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
           <Button type="submit" form="playlist-form" disabled={isSaving || !playlistName || videos.length === 0}>
             {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
