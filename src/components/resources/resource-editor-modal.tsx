@@ -65,9 +65,9 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   // Estados funcionales
   const [uploads, setUploads] = useState<UploadState[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [allUsers, setAllUsers = useState<AppUser[]>([]);
-  const [allProcesses, setAllProcesses = useState<Process[]>([]);
-  const [userSearch, setUserSearch = useState('');
+  const [allUsers, setAllUsers] = useState<AppUser[]>([]);
+  const [allProcesses, setAllProcesses] = useState<Process[]>([]);
+  const [userSearch, setUserSearch] = useState('');
   
   const isEditing = !!resource;
   const { title, description, content, category, externalLink, resourceType, observations } = resourceDetails;
@@ -290,19 +290,19 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
              <RadioGroup value={sharingMode} onValueChange={(v) => handleAccessChange('sharingMode', v as ResourceSharingMode)} className="grid grid-cols-1 md:grid-cols-3 gap-2">
                 <div className="relative">
                     <RadioGroupItem value="PUBLIC" id="share-public" className="sr-only peer" />
-                    <Label htmlFor="share-public" className={cn("flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full transition-all", sharingMode === 'PUBLIC' && 'border-primary ring-2 ring-primary text-primary')}>
+                    <Label htmlFor="share-public" className={cn("flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full transition-all", sharingMode === 'PUBLIC' && 'border-primary ring-2 ring-primary text-primary)}>
                         <Globe className="mb-2 h-6 w-6"/>Público
                     </Label>
                 </div>
                 <div className="relative">
                     <RadioGroupItem value="PROCESS" id="share-process" className="sr-only peer" />
-                    <Label htmlFor="share-process" className={cn("flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full transition-all", sharingMode === 'PROCESS' && 'border-primary ring-2 ring-primary text-primary')}>
+                    <Label htmlFor="share-process" className={cn("flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full transition-all", sharingMode === 'PROCESS' && 'border-primary ring-2 ring-primary text-primary)}>
                         <Briefcase className="mb-2 h-6 w-6"/>Por Proceso
                     </Label>
                 </div>
                 <div className="relative">
                     <RadioGroupItem value="PRIVATE" id="share-private" className="sr-only peer" />
-                    <Label htmlFor="share-private" className={cn("flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full transition-all", sharingMode === 'PRIVATE' && 'border-primary ring-2 ring-primary text-primary')}>
+                    <Label htmlFor="share-private" className={cn("flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full transition-all", sharingMode === 'PRIVATE' && 'border-primary ring-2 ring-primary text-primary)}>
                         <Users className="mb-2 h-6 w-6"/>Privado
                     </Label>
                 </div>
@@ -421,3 +421,4 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     </Dialog>
   );
 }
+    
