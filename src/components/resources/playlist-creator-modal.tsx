@@ -13,10 +13,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ListVideo, PlusCircle, Trash2 } from 'lucide-react';
+import { Loader2, ListVideo, PlusCircle, Trash2, Youtube, UploadCloud } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import Image from 'next/image';
+import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
+import { UploadArea } from '../ui/upload-area';
+import { uploadWithProgress } from '@/lib/upload-with-progress';
+import { Progress } from '../ui/progress';
 
 interface PlaylistCreatorModalProps {
     isOpen: boolean;
@@ -30,6 +34,7 @@ interface VideoItem {
     url: string;
     title: string;
     thumbnail: string;
+    source: 'youtube' | 'upload';
 }
 
 export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave }: PlaylistCreatorModalProps) {
@@ -42,6 +47,10 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave }: Play
     const [videoUrl, setVideoUrl] = useState('');
     const [videos, setVideos] = useState<VideoItem[]>([]);
     
+    const [videoSource, setVideoSource] = useState<'youtube' | 'upload'>('youtube');
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+
     const [isSaving, setIsSaving] = useState(false);
     
     useEffect(() => {
@@ -51,10 +60,11 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave }: Play
             setCategory(settings?.resourceCategories[0] || 'General');
             setVideoUrl('');
             setVideos([]);
+            setVideoSource('youtube');
         }
     }, [isOpen, settings]);
-    
-    const handleAddVideo = () => {
+
+    const handleAddVideoFromUrl = () => {
         const youtubeId = getYoutubeVideoId(videoUrl);
         if (!youtubeId) {
             toast({ title: 'URL inválida', description: 'Por favor, ingresa una URL de YouTube válida.', variant: 'destructive'});
@@ -62,7 +72,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave }: Play
         }
 
         // Placeholder para el título, se podría obtener de la API de YouTube en el futuro.
-        const videoTitle = `Video ${videos.length + 1}`;
+        const videoTitle = `Video de YouTube ${videos.length + 1}`;
 
         setVideos(prev => [
             ...prev,
@@ -70,10 +80,36 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave }: Play
                 id: `video-${Date.now()}`,
                 url: videoUrl,
                 title: videoTitle,
-                thumbnail: `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`
+                thumbnail: `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`,
+                source: 'youtube'
             }
         ]);
         setVideoUrl('');
+    };
+
+    const handleVideoFileUpload = async (file: File | null) => {
+      if (!file) return;
+
+      setIsUploading(true);
+      setUploadProgress(0);
+
+      try {
+        const result = await uploadWithProgress('/api/upload/resource-file', file, setUploadProgress);
+        setVideos(prev => [
+            ...prev,
+            {
+                id: `video-${Date.now()}`,
+                url: result.url,
+                title: file.name,
+                thumbnail: '', // Podríamos generar un thumbnail en el backend en el futuro
+                source: 'upload'
+            }
+        ]);
+      } catch (err) {
+        toast({ title: 'Error de subida', description: (err as Error).message, variant: 'destructive'});
+      } finally {
+        setIsUploading(false);
+      }
     };
     
     const handleRemoveVideo = (id: string) => {
@@ -111,21 +147,46 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave }: Play
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
                     <DialogTitle>Crear Nueva Lista de Videos</DialogTitle>
-                    <DialogDescription>Agrupa videos de YouTube en una secuencia de aprendizaje.</DialogDescription>
+                    <DialogDescription>Agrupa videos en una secuencia de aprendizaje.</DialogDescription>
                 </DialogHeader>
                 <form id="playlist-form" onSubmit={handleSubmit} className="space-y-4 py-4">
                     <div className="space-y-1.5"><Label htmlFor="playlist-title">Título de la Lista</Label><Input id="playlist-title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
                     <div className="space-y-1.5"><Label htmlFor="playlist-description">Descripción (Opcional)</Label><Input id="playlist-description" value={description} onChange={(e) => setDescription(e.target.value)} /></div>
                     <div className="space-y-1.5">
-                        <Label>Videos de YouTube</Label>
-                        <div className="flex gap-2">
-                           <Input value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="Pega una URL de YouTube"/>
-                           <Button type="button" onClick={handleAddVideo}><PlusCircle className="h-4 w-4"/></Button>
-                        </div>
+                        <Label>Añadir Videos</Label>
+                        <RadioGroup value={videoSource} onValueChange={(v) => setVideoSource(v as 'youtube' | 'upload')} className="grid grid-cols-2 gap-2">
+                           <div>
+                             <RadioGroupItem value="youtube" id="src-youtube" className="sr-only"/>
+                             <Label htmlFor="src-youtube" className={`flex items-center justify-center gap-2 p-2 border-2 rounded-lg cursor-pointer ${videoSource === 'youtube' ? 'border-primary' : 'border-muted'}`}><Youtube className="h-5 w-5"/> YouTube</Label>
+                           </div>
+                           <div>
+                             <RadioGroupItem value="upload" id="src-upload" className="sr-only"/>
+                             <Label htmlFor="src-upload" className={`flex items-center justify-center gap-2 p-2 border-2 rounded-lg cursor-pointer ${videoSource === 'upload' ? 'border-primary' : 'border-muted'}`}><UploadCloud className="h-5 w-5"/> Subir Video</Label>
+                           </div>
+                        </RadioGroup>
+
+                        {videoSource === 'youtube' ? (
+                          <div className="flex gap-2">
+                            <Input value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="Pega una URL de YouTube"/>
+                            <Button type="button" onClick={handleAddVideoFromUrl} disabled={!videoUrl}><PlusCircle className="h-4 w-4"/></Button>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <UploadArea onFileSelect={(files) => files && handleVideoFileUpload(files[0])} disabled={isUploading} inputId="video-upload-input" />
+                            {isUploading && <Progress value={uploadProgress} className="h-2"/>}
+                          </div>
+                        )}
+                        
                         <div className="space-y-2 mt-2 max-h-48 overflow-y-auto pr-2">
                             {videos.map(video => (
                                 <div key={video.id} className="flex items-center gap-2 p-2 border rounded-md">
-                                    <Image src={video.thumbnail} alt={video.title} width={80} height={45} className="rounded aspect-video object-cover"/>
+                                    <div className="w-20 h-12 bg-black rounded flex-shrink-0 relative">
+                                        {video.thumbnail ? (
+                                            <Image src={video.thumbnail} alt={video.title} fill className="object-cover"/>
+                                        ) : (
+                                            <div className="flex items-center justify-center h-full"><Youtube className="h-6 w-6 text-red-500"/></div>
+                                        )}
+                                    </div>
                                     <span className="text-sm font-medium truncate flex-grow">{video.title}</span>
                                     <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleRemoveVideo(video.id)}><Trash2 className="h-4 w-4"/></Button>
                                 </div>
