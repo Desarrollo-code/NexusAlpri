@@ -42,7 +42,6 @@ import { es } from 'date-fns/locale';
 import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
 import { cn } from '@/lib/utils';
 
-
 interface ResourceEditorModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -296,7 +295,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     );
 
     const renderEditTabs = () => (
-        <>
+        <Tabs defaultValue="content" className="flex flex-col h-full">
             <div className="px-6 pt-2 flex-shrink-0">
                 <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="content">Contenido</TabsTrigger>
@@ -363,7 +362,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     return (
         <>
             <Dialog open={isOpen} onOpenChange={onClose}>
-                <DialogContent className="w-[95vw] sm:max-w-3xl p-0 gap-0 rounded-2xl max-h-[90vh] flex flex-col">
+                <DialogContent className="w-[95vw] sm:max-w-4xl p-0 gap-0 rounded-2xl max-h-[90vh] flex flex-col">
                     <DialogHeader className="p-6 pb-2 border-b flex-shrink-0">
                         <DialogTitle>{isEditing ? 'Editar Recurso' : 'Nuevo Recurso'}</DialogTitle>
                     </DialogHeader>
@@ -372,14 +371,12 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                     </form>
                 </DialogContent>
             </Dialog>
-            {quiz && (
-                 <QuizEditorModal 
-                    isOpen={isQuizModalOpen} 
-                    onClose={() => setIsQuizModalOpen(false)} 
-                    quiz={quiz}
-                    onSave={handleQuizSave}
-                />
-            )}
+            <QuizEditorModal 
+                isOpen={isQuizModalOpen} 
+                onClose={() => setIsQuizModalOpen(false)} 
+                quiz={quiz}
+                onSave={handleQuizSave}
+            />
         </>
     );
 }
