@@ -290,19 +290,19 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
              <RadioGroup value={sharingMode} onValueChange={(v) => handleAccessChange('sharingMode', v as ResourceSharingMode)} className="grid grid-cols-1 md:grid-cols-3 gap-2">
                 <div className="relative">
                     <RadioGroupItem value="PUBLIC" id="share-public" className="sr-only peer" />
-                    <Label htmlFor="share-public" className={cn("flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:ring-2 peer-data-[state=checked]:ring-primary transition-all", sharingMode === 'PUBLIC' && 'text-primary')}>
+                    <Label htmlFor="share-public" className={cn("flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full transition-all", sharingMode === 'PUBLIC' && 'border-primary ring-2 ring-primary text-primary')}>
                         <Globe className="mb-2 h-6 w-6"/>Público
                     </Label>
                 </div>
                 <div className="relative">
                     <RadioGroupItem value="PROCESS" id="share-process" className="sr-only peer" />
-                    <Label htmlFor="share-process" className={cn("flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:ring-2 peer-data-[state=checked]:ring-primary transition-all", sharingMode === 'PROCESS' && 'text-primary')}>
+                    <Label htmlFor="share-process" className={cn("flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full transition-all", sharingMode === 'PROCESS' && 'border-primary ring-2 ring-primary text-primary')}>
                         <Briefcase className="mb-2 h-6 w-6"/>Por Proceso
                     </Label>
                 </div>
                 <div className="relative">
                     <RadioGroupItem value="PRIVATE" id="share-private" className="sr-only peer" />
-                    <Label htmlFor="share-private" className={cn("flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:ring-2 peer-data-[state=checked]:ring-primary transition-all", sharingMode === 'PRIVATE' && 'text-primary')}>
+                    <Label htmlFor="share-private" className={cn("flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full transition-all", sharingMode === 'PRIVATE' && 'border-primary ring-2 ring-primary text-primary')}>
                         <Users className="mb-2 h-6 w-6"/>Privado
                     </Label>
                 </div>
@@ -336,7 +336,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] sm:max-w-2xl p-0 gap-0 rounded-2xl max-h-[90vh] flex flex-col">
+      <DialogContent className="w-[95vw] sm:max-w-6xl p-0 gap-0 rounded-2xl max-h-[90vh] flex flex-col">
         
         <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
           <DialogTitle>{resource ? 'Editar Recurso' : 'Nuevo Recurso'}</DialogTitle>
@@ -345,73 +345,60 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
           </DialogDescription>
         </DialogHeader>
         
-        <ScrollArea className="flex-1 min-h-0">
-          <form id="resource-form" onSubmit={handleSave} className="space-y-6 px-6 py-4">
-            
-            {/* Selector de Tipo de Recurso */}
-            {!isEditing && (
-              <RadioGroup value={resourceType} onValueChange={(v) => handleResourceDetailChange('resourceType', v as AppResourceType['type'])} className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <div className="relative"><RadioGroupItem value="DOCUMENT" id="type-doc" className="sr-only peer" />
-                  <Label htmlFor="type-doc" className={cn("flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full transition-all", resourceType === 'DOCUMENT' && 'border-primary ring-2 ring-primary text-primary')}>
-                      <UploadCloud className="mb-2 h-6 w-6"/>Subir Archivo(s)</Label></div>
-                  <div className="relative"><RadioGroupItem value="EXTERNAL_LINK" id="type-link" className="sr-only peer" />
-                  <Label htmlFor="type-link" className={cn("flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full transition-all", resourceType === 'EXTERNAL_LINK' && 'border-primary ring-2 ring-primary text-primary')}>
-                      <LinkIcon className="mb-2 h-6 w-6"/>Enlace Externo</Label></div>
-                  <div className="relative"><RadioGroupItem value="DOCUMENTO_EDITABLE" id="type-edit" className="sr-only peer" />
-                  <Label htmlFor="type-edit" className={cn("flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full transition-all", resourceType === 'DOCUMENTO_EDITABLE' && 'border-primary ring-2 ring-primary text-primary')}>
-                      <FilePen className="mb-2 h-6 w-6"/>Documento Editable</Label></div>
-              </RadioGroup>
-            )}
-            
-            <Separator />
-
-            {/* Contenido del Recurso (Condicional con Animación) */}
-            <AnimatePresence mode="wait">
-              <motion.div key={resourceType} initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -10}} transition={{duration: 0.2}}>
-                {resourceType === 'DOCUMENT' && renderUploadArea()}
-                {resourceType === 'EXTERNAL_LINK' && <div className="space-y-1.5"><Label htmlFor="externalLink">URL del Enlace</Label><Input type="url" id="externalLink" value={externalLink} onChange={e => handleResourceDetailChange('externalLink', e.target.value)} placeholder="https://..." required /></div>}
-                {resourceType === 'DOCUMENTO_EDITABLE' && <div className="space-y-1.5"><Label htmlFor="content-editor">Contenido</Label><RichTextEditor id="content-editor" value={content} onChange={(v) => handleResourceDetailChange('content', v)} className="min-h-[200px]" /></div>}
-              </motion.div>
-            </AnimatePresence>
-            
-            <Separator />
-            
-            {/* Detalles del Recurso (Solo si es nuevo o si se permite la edición de detalles) */}
-            {(isEditing || (uploads.length <= 1 && resourceType !== 'DOCUMENT')) && (
-              <Card>
-                <CardHeader><CardTitle className="text-base">Detalles del Recurso</CardTitle></CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-1.5"><Label htmlFor="title">Título</Label><Input id="title" value={title} onChange={(e) => handleResourceDetailChange('title', e.target.value)} required autoComplete="off" /></div>
-                  <div className="space-y-1.5"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => handleResourceDetailChange('description', e.target.value)} placeholder="Un resumen breve del contenido del recurso..."/></div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-12 overflow-hidden">
+            {/* --- COLUMNA 1: DETALLES --- */}
+            <ScrollArea className="md:col-span-4 lg:col-span-3 border-r h-full">
+                <form id="resource-form" onSubmit={handleSave} className="space-y-6 p-6">
+                    {!isEditing && (
+                        <div className="space-y-2">
+                            <Label>Tipo de Recurso</Label>
+                            <RadioGroup value={resourceType} onValueChange={(v) => handleResourceDetailChange('resourceType', v as AppResourceType['type'])} className="grid grid-cols-3 gap-1">
+                                <Tooltip><TooltipTrigger asChild><Label htmlFor="type-doc" className={cn("flex flex-col items-center justify-center p-2 border-2 rounded-lg cursor-pointer h-16 transition-all", resourceType === 'DOCUMENT' && 'border-primary ring-1 ring-primary text-primary')}><UploadCloud className="h-5 w-5"/><span className="text-[10px] mt-1">Archivo</span></Label></TooltipTrigger><TooltipContent>Subir archivo</TooltipContent></Tooltip>
+                                <RadioGroupItem value="DOCUMENT" id="type-doc" className="sr-only peer" />
+                                <Tooltip><TooltipTrigger asChild><Label htmlFor="type-link" className={cn("flex flex-col items-center justify-center p-2 border-2 rounded-lg cursor-pointer h-16 transition-all", resourceType === 'EXTERNAL_LINK' && 'border-primary ring-1 ring-primary text-primary')}><LinkIcon className="h-5 w-5"/><span className="text-[10px] mt-1">Enlace</span></Label></TooltipTrigger><TooltipContent>Enlace externo</TooltipContent></Tooltip>
+                                <RadioGroupItem value="EXTERNAL_LINK" id="type-link" className="sr-only peer" />
+                                <Tooltip><TooltipTrigger asChild><Label htmlFor="type-edit" className={cn("flex flex-col items-center justify-center p-2 border-2 rounded-lg cursor-pointer h-16 transition-all", resourceType === 'DOCUMENTO_EDITABLE' && 'border-primary ring-1 ring-primary text-primary')}><FilePen className="h-5 w-5"/><span className="text-[10px] mt-1">Editor</span></Label></TooltipTrigger><TooltipContent>Documento editable</TooltipContent></Tooltip>
+                                <RadioGroupItem value="DOCUMENTO_EDITABLE" id="type-edit" className="sr-only peer" />
+                            </RadioGroup>
+                        </div>
+                    )}
+                    <div className="space-y-1.5"><Label htmlFor="title">Título</Label><Input id="title" value={title} onChange={(e) => handleResourceDetailChange('title', e.target.value)} required autoComplete="off" /></div>
+                    <div className="space-y-1.5"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => handleResourceDetailChange('description', e.target.value)} placeholder="Un resumen breve del contenido del recurso..."/></div>
                     <div className="space-y-1.5"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={(v) => handleResourceDetailChange('category', v)}><SelectTrigger id="category"><SelectValue placeholder="Seleccionar..." /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).sort().map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select></div>
-                    <div className="space-y-1.5"><Label>Expiración</Label><Popover><PopoverTrigger asChild><Button variant="outline" className="w-full justify-start font-normal">{expiresAt ? format(expiresAt, "PPP", {locale: es}) : <span>Sin fecha de expiración</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50"/></Button></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={expiresAt} onSelect={(date) => handleAccessChange('expiresAt', date)} initialFocus /></PopoverContent></Popover></div>
-                  </div>
-                  {resourceType === 'DOCUMENTO_EDITABLE' && <div className="space-y-1.5"><Label htmlFor="observations">Observaciones (Uso interno)</Label><Textarea id="observations" value={resourceDetails.observations} onChange={e => handleResourceDetailChange('observations', e.target.value)} placeholder="Notas para otros colaboradores o administradores..."/></div>}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Visibilidad y Acceso (Modular) */}
-            {renderAccessSection()}
-
-            {/* Colaboradores (Modular) */}
-            {(resourceType === 'DOCUMENTO_EDITABLE' || resourceType === 'VIDEO_PLAYLIST') && (
-              <Card>
-                <CardHeader><CardTitle className="text-base">Colaboradores</CardTitle><CardDescription className="text-xs">Usuarios que pueden editar este recurso.</CardDescription></CardHeader>
-                <CardContent>
-                  <Input placeholder="Buscar usuarios..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
-                  <ScrollArea className="h-32 border rounded-md p-2">
-                      {filteredUsers.map(u => (<div key={u.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`collab-${u.id}`} checked={collaboratorIds.includes(u.id)} onCheckedChange={c => handleCollaboratorChange(u.id, !!c)} /><Label htmlFor={`collab-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(u.name)}</AvatarFallback></Avatar>{u.name}</Label></div>))}
-                  </ScrollArea>
-                </CardContent>
-              </Card>
-            )}
-
-          </form>
-        </ScrollArea>
+                </form>
+            </ScrollArea>
+             {/* --- COLUMNA 2: CONTENIDO --- */}
+            <div className="md:col-span-5 lg:col-span-6 flex flex-col h-full bg-muted/20">
+                 <div className="p-4 flex-1 min-h-0">
+                    <AnimatePresence mode="wait">
+                      <motion.div key={resourceType} initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -10}} transition={{duration: 0.2}} className="h-full">
+                        {resourceType === 'DOCUMENT' && renderUploadArea()}
+                        {resourceType === 'EXTERNAL_LINK' && <div className="p-4 h-full flex flex-col justify-center"><div className="space-y-1.5"><Label htmlFor="externalLink">URL del Enlace</Label><Input type="url" id="externalLink" value={externalLink} onChange={e => handleResourceDetailChange('externalLink', e.target.value)} placeholder="https://..." required /></div></div>}
+                        {resourceType === 'DOCUMENTO_EDITABLE' && <div className="h-full"><Label htmlFor="content-editor">Contenido</Label><RichTextEditor id="content-editor" value={content} onChange={(v) => handleResourceDetailChange('content', v)} className="h-[calc(100%-2rem)]" /></div>}
+                      </motion.div>
+                    </AnimatePresence>
+                 </div>
+            </div>
+             {/* --- COLUMNA 3: ACCESO --- */}
+            <ScrollArea className="md:col-span-3 lg:col-span-3 border-l h-full">
+                <div className="p-6 space-y-6">
+                    {renderAccessSection()}
+                    {(resourceType === 'DOCUMENTO_EDITABLE' || resourceType === 'VIDEO_PLAYLIST') && (
+                        <Card>
+                            <CardHeader><CardTitle className="text-base">Colaboradores</CardTitle><CardDescription className="text-xs">Usuarios que pueden editar este recurso.</CardDescription></CardHeader>
+                            <CardContent>
+                              <Input placeholder="Buscar usuarios..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
+                              <ScrollArea className="h-32 border rounded-md p-2">
+                                  {filteredUsers.map(u => (<div key={u.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`collab-${u.id}`} checked={collaboratorIds.includes(u.id)} onCheckedChange={c => handleCollaboratorChange(u.id, !!c)} /><Label htmlFor={`collab-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(u.name)}</AvatarFallback></Avatar>{u.name}</Label></div>))}
+                              </ScrollArea>
+                            </CardContent>
+                        </Card>
+                    )}
+                </div>
+            </ScrollArea>
+        </div>
         
-        <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2">
+        <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2 bg-background/90 backdrop-blur-sm">
           <Button variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
           <Button 
             type="submit" 
