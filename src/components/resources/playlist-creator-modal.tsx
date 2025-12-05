@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
-import { Loader2, FolderPlus, Video, XCircle, Trash2, Edit, Save, Globe, Users, Briefcase } from 'lucide-react';
+import { Loader2, FolderPlus, Video, XCircle, Trash2, Edit, Save, Globe, Users, Briefcase, MoreVertical } from 'lucide-react';
 import type { AppResourceType, User as AppUser, Process, ResourceSharingMode } from '@/types';
 import { DndContext, DragEndEvent, closestCenter, useSensor, PointerSensor, TouchSensor } from '@dnd-kit/core';
 import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -200,7 +200,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
             });
             if (!response.ok) throw new Error((await response.json()).message || 'No se pudo guardar la lista.');
             
-            toast({ title: 'Éxito', description: `Lista de videos ${isEditing ? 'actualizada' : 'creada'}.` });
+            toast({ title: 'Éxito!', description: `Lista de videos ${isEditing ? 'actualizada' : 'creada'}.` });
             onSave();
             onClose();
         } catch (err) {
