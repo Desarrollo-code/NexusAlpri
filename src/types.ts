@@ -213,7 +213,7 @@ export type ResourceType = 'FOLDER' | 'DOCUMENT' | 'GUIDE' | 'MANUAL' | 'POLICY'
 export type ResourceStatus = 'ACTIVE' | 'ARCHIVED';
 export type ResourceSharingMode = 'PUBLIC' | 'PRIVATE' | 'PROCESS';
 
-export interface AppResourceType extends Omit<Prisma.EnterpriseResourceGetPayload<{ include: { quiz: { include: { questions: { include: { options: true }}}}, sharedWithProcesses: true }}>, 'tags' | 'status' | 'filetype'> {
+export interface AppResourceType extends Omit<Prisma.EnterpriseResourceGetPayload<{ include: { quiz: { include: { questions: { include: { options: true }}}}, sharedWithProcesses: true, collaborators: true }}>, 'tags' | 'status' | 'filetype'> {
     tags: string[];
     uploaderName: string;
     hasPin: boolean;
