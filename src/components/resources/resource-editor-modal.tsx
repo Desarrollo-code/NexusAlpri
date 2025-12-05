@@ -1,7 +1,7 @@
 // src/components/resources/resource-editor-modal.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, ChangeEvent } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -32,8 +32,9 @@ import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { FileIcon } from '../ui/file-icon';
 import { formatFileSize } from '@/lib/utils';
 import { Alert, AlertDescription } from '../ui/alert';
+import { Info } from 'lucide-react';
 
-const TOTAL_STEPS = 2; // Reducido a 2 pasos
+const TOTAL_STEPS = 2;
 
 interface ResourceEditorModalProps {
   isOpen: boolean;
@@ -42,8 +43,6 @@ interface ResourceEditorModalProps {
   parentId: string | null;
   onSave: () => void;
 }
-
-// ... (El resto de las importaciones y componentes auxiliares se mantienen igual)
 
 const stepVariants = {
   enter: (direction: number) => ({
@@ -64,11 +63,9 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     const { toast } = useToast();
     const { settings } = useAuth();
     
-    // Step management
     const [step, setStep] = useState(1);
     const [direction, setDirection] = useState(1);
     
-    // Form state
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [category, setCategory] = useState('');
@@ -80,12 +77,10 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     const [upload, setUpload] = useState<any>(null);
     const [isUploading, setIsUploading] = useState(false);
 
-    // Permissions state
     const [sharingMode, setSharingMode] = useState<ResourceSharingMode>('PUBLIC');
     const [sharedWithUserIds, setSharedWithUserIds] = useState<string[]>([]);
     const [sharedWithProcessIds, setSharedWithProcessIds] = useState<string[]>([]);
 
-    // API related state
     const [allUsers, setAllUsers] = useState<AppUser[]>([]);
     const [allProcesses, setAllProcesses] = useState<Process[]>([]);
     const [isSaving, setIsSaving] = useState(false);
@@ -97,8 +92,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         setTitle('');
         setDescription('');
         setCategory(settings?.resourceCategories[0] || 'General');
-        // El resourceType ya no se elige aquí
-        setResourceType('DOCUMENT'); // O se puede basar en lo que abrió el modal
+        setResourceType('DOCUMENT');
         setExternalLink('');
         setEditableContent('');
         setUpload(null);
@@ -109,11 +103,17 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     
     useEffect(() => {
         if (isOpen) {
-            // El primer paso ahora es el contenido.
             setStep(1); 
-
             if (isEditing && resource) {
-                // ... (lógica para editar existente)
+                setTitle(resource.title || '');
+                setDescription(resource.description || '');
+                setCategory(resource.category || settings?.resourceCategories[0] || 'General');
+                setResourceType(resource.type);
+                setSharingMode(resource.sharingMode || 'PUBLIC');
+                setSharedWithUserIds(resource.sharedWith?.map(u => u.id) || []);
+                setSharedWithProcessIds(resource.sharedWithProcesses?.map(p => p.id) || []);
+                if (resource.type === 'EXTERNAL_LINK') setExternalLink(resource.url || '');
+                if (resource.type === 'DOCUMENTO_EDITABLE') setEditableContent(resource.content || '');
             } else {
                 resetForm();
             }
@@ -126,7 +126,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                 setAllProcesses(processesData || []);
             }).catch(console.error);
         }
-    }, [isEditing, resource, isOpen, resetForm]);
+    }, [isEditing, resource, isOpen, resetForm, settings?.resourceCategories]);
 
     const handleNextStep = () => {
         setDirection(1);
@@ -142,19 +142,11 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         if (!files || files.length === 0) return;
         setIsUploading(true);
         const file = files[0];
-        const newUpload = {
-            id: `upload-${file.name}-${Date.now()}`,
-            file,
-            progress: 0,
-            error: null,
-            status: 'uploading' as const,
-        };
+        const newUpload = { id: `upload-${file.name}-${Date.now()}`, file, progress: 0, error: null, status: 'uploading' as const };
         setUpload(newUpload);
         
         try {
-            const result = await uploadWithProgress('/api/upload/resource-file', file, (p) => {
-                setUpload(prev => ({...prev, progress: p}));
-            });
+            const result = await uploadWithProgress('/api/upload/resource-file', file, (p) => setUpload(prev => ({...prev, progress: p})));
             setUpload(prev => ({...prev, url: result.url, status: 'completed'}));
             setTitle(prevTitle => prevTitle || file.name.split('.').slice(0,-1).join('.'));
             setResourceType('DOCUMENT');
@@ -174,20 +166,15 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             let url: string | undefined = undefined;
             let content: string | undefined = undefined;
             
-            if (externalLink) {
-                determinedType = 'EXTERNAL_LINK';
-                url = externalLink;
-            } else if (upload) {
-                determinedType = 'DOCUMENT';
-                url = upload.url;
-            } else {
-                 determinedType = 'DOCUMENTO_EDITABLE';
-                 content = editableContent;
-            }
-
+            if (resourceType === 'EXTERNAL_LINK') url = externalLink;
+            else if (resourceType === 'DOCUMENT') url = upload?.url;
+            else if (resourceType === 'DOCUMENTO_EDITABLE') content = editableContent;
+            
             const payload: any = {
                 title, description, category, type: determinedType, url, content,
-                sharingMode, sharedWithUserIds, sharedWithProcessIds,
+                sharingMode, 
+                sharedWithUserIds: sharingMode === 'PRIVATE' ? sharedWithUserIds : [],
+                sharedWithProcessIds: sharingMode === 'PROCESS' ? sharedWithProcessIds : [],
                 parentId,
                 size: upload?.file.size,
                 fileType: upload?.file.type,
@@ -210,85 +197,70 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             setIsSaving(false);
         }
     };
-    
-    // Componente Step1 (Contenido)
+
     const Step1Content = () => (
          <div className="space-y-6">
-            <div className="text-center"><h3 className="text-lg font-semibold">Contenido del Recurso</h3><p className="text-sm text-muted-foreground">Sube un archivo, pega un enlace o crea un documento.</p></div>
-             <div className="space-y-1"><Label htmlFor="title">Título</Label><Input id="title" value={title} onChange={e => setTitle(e.target.value)} required /></div>
-             <div className="space-y-1"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} /></div>
-             <div className="space-y-1"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select></div>
-             
-             <Separator />
+            <div className="space-y-1"><Label htmlFor="title">Título</Label><Input id="title" value={title} onChange={e => setTitle(e.target.value)} required /></div>
+            <div className="space-y-1"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} /></div>
+            <div className="space-y-1"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select></div>
+             <Separator/>
+             <RadioGroup value={resourceType} onValueChange={(v) => setResourceType(v as any)} className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <div className="flex-1"><RadioGroupItem value="DOCUMENT" id="type-doc" className="sr-only" /><Label htmlFor="type-doc" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${resourceType === 'DOCUMENT' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><FileUp className="mb-2 h-6 w-6"/><span className="font-semibold">Archivo</span></Label></div>
+                <div className="flex-1"><RadioGroupItem value="EXTERNAL_LINK" id="type-link" className="sr-only"/><Label htmlFor="type-link" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${resourceType === 'EXTERNAL_LINK' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><LinkIcon className="mb-2 h-6 w-6"/><span className="font-semibold">Enlace Web</span></Label></div>
+                <div className="flex-1"><RadioGroupItem value="DOCUMENTO_EDITABLE" id="type-editable" className="sr-only"/><Label htmlFor="type-editable" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${resourceType === 'DOCUMENTO_EDITABLE' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><FilePenLine className="mb-2 h-6 w-6"/><span className="font-semibold">Documento</span></Label></div>
+             </RadioGroup>
 
-             <Alert variant="default" className="text-sm">
-                <Info className="h-4 w-4" />
-                <AlertDescription>Puedes proporcionar **solo una** de las siguientes opciones.</AlertDescription>
-             </Alert>
-
-             <div className="space-y-4">
-                 <div className="space-y-1"><Label>Subir Archivo</Label><UploadArea onFileSelect={(f) => handleFileSelect(f)} disabled={isUploading} /></div>
-                 {upload && <div className="p-2 border rounded-md bg-muted/50 relative"><div className="flex items-center gap-2"><FileIcon displayMode="list" type={upload.file.type.split('/')[1]} /><div className="min-w-0"><p className="text-sm font-medium truncate">{upload.file.name}</p><p className="text-xs text-muted-foreground">{formatFileSize(upload.file.size)}</p></div></div>{upload.status === 'uploading' && <Progress value={upload.progress} className="h-1 mt-1" />}</div>}
-
-                 <div className="relative flex items-center"><Separator className="flex-1"/><span className="mx-2 text-xs text-muted-foreground">O</span><Separator className="flex-1"/></div>
-                 
-                 <div className="space-y-1"><Label>Enlace Externo</Label><Input type="url" value={externalLink} onChange={e => setExternalLink(e.target.value)} placeholder="https://..."/></div>
-
-                 <div className="relative flex items-center"><Separator className="flex-1"/><span className="mx-2 text-xs text-muted-foreground">O</span><Separator className="flex-1"/></div>
-
-                 <div className="space-y-1"><Label>Documento Editable</Label><RichTextEditor value={editableContent} onChange={setEditableContent} className="h-48" /></div>
-             </div>
+            <AnimatePresence mode="wait">
+              <motion.div key={resourceType} initial={{opacity: 0, height: 0}} animate={{opacity: 1, height: 'auto'}} exit={{opacity: 0, height: 0}} transition={{duration: 0.3}}>
+                {resourceType === 'DOCUMENT' && <div className="pt-4"><UploadArea onFileSelect={(f) => handleFileSelect(f)} disabled={isUploading} />{upload && <div className="p-2 border rounded-md mt-2"><div className="flex justify-between items-start"><p className="text-sm font-medium truncate pr-2">{upload.file.name}</p><Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground" onClick={() => setUpload(null)}><XCircle className="h-4 w-4"/></Button></div><div className="flex items-center gap-2 mt-1"><Progress value={upload.progress} className="h-1 flex-grow"/>{upload.status === 'uploading' && <span className="text-xs font-semibold">{upload.progress}%</span>}{upload.status === 'completed' && <Check className="h-4 w-4 text-green-500"/>}{upload.status === 'error' && <AlertTriangle className="h-4 w-4 text-destructive"/>}</div></div>}</div>}
+                {resourceType === 'EXTERNAL_LINK' && <div className="pt-4"><Input type="url" value={externalLink} onChange={e => setExternalLink(e.target.value)} placeholder="https://..."/></div>}
+                {resourceType === 'DOCUMENTO_EDITABLE' && <div className="pt-4"><RichTextEditor value={editableContent} onChange={setEditableContent} className="h-48" /></div>}
+              </motion.div>
+            </AnimatePresence>
         </div>
     );
     
-    // Componente Step2 (Permisos)
-    const Step2Permissions = () => {
-        const [userSearch, setUserSearch] = useState('');
-        const filteredUsers = allUsers.filter((u: AppUser) => u.name.toLowerCase().includes(userSearch.toLowerCase()));
-    
-        return (
-            <div className="space-y-6">
-                 <div className="text-center"><h3 className="text-lg font-semibold">Visibilidad y Permisos</h3><p className="text-sm text-muted-foreground">Elige quién podrá ver este recurso.</p></div>
-                 <RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div className="flex-1"><RadioGroupItem value="PUBLIC" id="share-public" className="sr-only" /><Label htmlFor="share-public" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PUBLIC' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Globe className="mb-2 h-6 w-6"/><span className="font-semibold">Público</span></Label></div>
-                    <div className="flex-1"><RadioGroupItem value="PROCESS" id="share-process" className="sr-only"/><Label htmlFor="share-process" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PROCESS' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Briefcase className="mb-2 h-6 w-6"/><span className="font-semibold">Por Proceso</span></Label></div>
-                    <div className="flex-1"><RadioGroupItem value="PRIVATE" id="share-private" className="sr-only"/><Label htmlFor="share-private" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PRIVATE' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Users className="mb-2 h-6 w-6"/><span className="font-semibold">Privado</span></Label></div>
-                </RadioGroup>
-                
-                <AnimatePresence>
-                    {sharingMode === 'PROCESS' && (
-                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                            <UserOrProcessList type="process" items={allProcesses} selectedIds={sharedWithProcessIds} onSelectionChange={setSharedWithProcessIds} />
-                        </motion.div>
-                    )}
-                    {sharingMode === 'PRIVATE' && (
-                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                            <UserOrProcessList type="user" items={allUsers} selectedIds={sharedWithUserIds} onSelectionChange={setSharedWithUserIds} />
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
-        );
-    };
+    const Step2Permissions = () => (
+        <div className="space-y-6">
+            <RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="flex-1"><RadioGroupItem value="PUBLIC" id="share-public" className="sr-only" /><Label htmlFor="share-public" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PUBLIC' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Globe className="mb-2 h-6 w-6"/><span className="font-semibold">Público</span></Label></div>
+                <div className="flex-1"><RadioGroupItem value="PROCESS" id="share-process" className="sr-only"/><Label htmlFor="share-process" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PROCESS' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Briefcase className="mb-2 h-6 w-6"/><span className="font-semibold">Por Proceso</span></Label></div>
+                <div className="flex-1"><RadioGroupItem value="PRIVATE" id="share-private" className="sr-only"/><Label htmlFor="share-private" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PRIVATE' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Users className="mb-2 h-6 w-6"/><span className="font-semibold">Privado</span></Label></div>
+            </RadioGroup>
+            
+            <AnimatePresence>
+                {sharingMode === 'PROCESS' && <motion.div initial={{opacity:0,height:0}} animate={{opacity:1,height:'auto'}} exit={{opacity:0,height:0}}><UserOrProcessList type="process" items={allProcesses} selectedIds={sharedWithProcessIds} onSelectionChange={setSharedWithProcessIds} /></motion.div>}
+                {sharingMode === 'PRIVATE' && <motion.div initial={{opacity:0,height:0}} animate={{opacity:1,height:'auto'}} exit={{opacity:0,height:0}}><UserOrProcessList type="user" items={allUsers} selectedIds={sharedWithUserIds} onSelectionChange={setSharedWithUserIds} /></motion.div>}
+            </AnimatePresence>
+        </div>
+    );
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-xl max-h-[90vh] flex flex-col p-0 gap-0 rounded-2xl">
-                 <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
+                 <DialogHeader className="p-6 pb-2 flex-shrink-0">
                     <DialogTitle>{isEditing ? 'Editar Recurso' : 'Añadir Nuevo Recurso'}</DialogTitle>
+                     <div className="flex items-center gap-4 pt-2">
+                        <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                            <motion.div className="h-full bg-primary rounded-full" initial={{width: '0%'}} animate={{width: `${(step / TOTAL_STEPS) * 100}%`}} />
+                        </div>
+                        <span className="text-sm font-semibold text-muted-foreground whitespace-nowrap">Paso {step} de {TOTAL_STEPS}</span>
+                    </div>
                 </DialogHeader>
-                <div className="flex-1 min-h-0 relative px-6 py-4">
-                     <AnimatePresence initial={false} custom={direction}>
-                        <motion.div
-                            key={step} custom={direction} variants={stepVariants}
-                            initial="enter" animate="center" exit="exit"
-                            transition={{ type: 'tween', ease: 'easeInOut', duration: 0.4 }}
-                            className="absolute w-full px-6"
-                         >
-                            {step === 1 && <Step1Content />}
-                            {step === 2 && <Step2Permissions />}
-                        </motion.div>
-                     </AnimatePresence>
+                <div className="flex-1 min-h-0 relative overflow-hidden">
+                    <ScrollArea className="h-full">
+                         <AnimatePresence initial={false} custom={direction}>
+                            <motion.div
+                                key={step} custom={direction} variants={stepVariants}
+                                initial="enter" animate="center" exit="exit"
+                                transition={{ type: 'tween', ease: 'easeInOut', duration: 0.4 }}
+                                className="w-full px-6 py-4"
+                             >
+                                {step === 1 && <Step1Content />}
+                                {step === 2 && <Step2Permissions />}
+                            </motion.div>
+                         </AnimatePresence>
+                    </ScrollArea>
                 </div>
                  <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-between sm:justify-between items-center">
                     <Button variant="ghost" onClick={handlePrevStep} disabled={step === 1 || isSaving}>
