@@ -6,8 +6,8 @@ import { useAuth } from '@/contexts/auth-context';
 import { PlusCircle, Loader2, AlertTriangle, Edit, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import type { CalendarEvent } from '@/types';
-import { startOfToday, startOfMonth, endOfMonth, startOfWeek, endOfWeek } from 'date-fns';
+import type { CalendarEvent, EventAudienceType, Attachment } from '@/types';
+import { startOfToday } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTitle } from '@/contexts/title-context';
@@ -19,8 +19,6 @@ import { DatePickerSidebar } from '@/components/calendar/date-picker-sidebar';
 import { MonthView } from '@/components/calendar/month-view';
 import { WeekView } from '@/components/calendar/week-view';
 import { DayView } from '@/components/calendar/day-view';
-import { ColorfulLoader } from '@/components/ui/colorful-loader';
-import { Skeleton } from '@/components/ui/skeleton';
 
 export type CalendarView = 'month' | 'week' | 'day';
 
@@ -31,7 +29,7 @@ export default function CalendarPage() {
   const { setPageTitle } = useTitle();
   const { startTour, forceStartTour } = useTour();
 
-  const [baseEvents, setBaseEvents] = useState<CalendarEvent[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -56,7 +54,7 @@ export default function CalendarPage() {
       const response = await fetch('/api/events', { cache: 'no-store' });
       if (!response.ok) throw new Error((await response.json()).message || 'Failed to fetch events');
       const data: CalendarEvent[] = await response.json();
-      setBaseEvents(data);
+      setEvents(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
       toast({ title: 'Error', description: `No se pudieron cargar los eventos: ${err instanceof Error ? err.message : ''}`, variant: 'destructive' });
@@ -71,33 +69,14 @@ export default function CalendarPage() {
     }
   }, [fetchEvents, user]);
 
-  const displayedEvents = useMemo(() => {
-      let rangeStart, rangeEnd;
-      switch(view) {
-          case 'month':
-              rangeStart = startOfWeek(startOfMonth(currentDate));
-              rangeEnd = endOfWeek(endOfMonth(currentDate));
-              break;
-          case 'week':
-              rangeStart = startOfWeek(currentDate, { weekStartsOn: 1 });
-              rangeEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
-              break;
-          case 'day':
-              rangeStart = startOfDay(currentDate);
-              rangeEnd = endOfDay(currentDate);
-              break;
-      }
-      return expandRecurringEvents(baseEvents, rangeStart, rangeEnd);
-  }, [baseEvents, currentDate, view]);
-
   const handleEventUpdate = (updatedEvent: CalendarEvent) => {
-    // Re-fetch all events to correctly handle recurring event updates
-    fetchEvents();
+    setEvents(prev => prev.map(e => e.id === updatedEvent.id ? updatedEvent : e));
+    fetchEvents(); // Re-fetch to ensure consistency
   };
 
   const handleEventDelete = (eventId: string) => {
-    // Re-fetch all events to correctly handle recurring event deletions
-    fetchEvents();
+    setEvents(prev => prev.filter(e => e.id !== eventId));
+    fetchEvents(); // Re-fetch
   };
   
   const handleOpenModal = (eventOrDate?: CalendarEvent | Date) => {
@@ -106,8 +85,7 @@ export default function CalendarPage() {
         setSelectedEvent(null);
         setModalDate(eventOrDate);
       } else if (eventOrDate) { // Clicked on an existing event
-        const originalEvent = baseEvents.find(e => e.id === (eventOrDate.parentId || eventOrDate.id));
-        setSelectedEvent(originalEvent || eventOrDate);
+        setSelectedEvent(eventOrDate);
         setModalDate(new Date(eventOrDate.start));
       } else { // Clicked "Create Event" button
          if (!canCreateEvent) return;
@@ -118,7 +96,7 @@ export default function CalendarPage() {
   }
 
   const renderView = () => {
-    const viewProps = { currentDate, events: displayedEvents, onEventClick: handleOpenModal, onSlotClick: handleOpenModal };
+    const viewProps = { currentDate, events, onEventClick: handleOpenModal, onSlotClick: handleOpenModal };
     switch (view) {
         case 'month': return <MonthView {...viewProps} />;
         case 'week': return <WeekView {...viewProps} />;
@@ -126,19 +104,6 @@ export default function CalendarPage() {
         default: return <MonthView {...viewProps} />;
     }
   }
-  
-  const CalendarSkeleton = () => (
-     <div className="flex flex-col md:flex-row h-full gap-6">
-        {!isMobile && (
-             <aside className="md:col-span-1 lg:col-span-1 w-full md:w-1/4">
-                <Skeleton className="h-full w-full rounded-lg" />
-             </aside>
-        )}
-        <div className="flex-1">
-             <Skeleton className="h-full w-full rounded-lg" />
-        </div>
-     </div>
-  );
 
   return (
     <div className={cn("flex flex-col h-[calc(100vh-8rem)] gap-4 md:gap-6")}>
@@ -162,30 +127,28 @@ export default function CalendarPage() {
         </div>
       </header>
 
-      <main className={cn("flex-grow min-h-0", isMobile ? 'flex flex-col gap-4' : '')}>
+      <main className={cn("flex-grow min-h-0", isMobile ? 'flex flex-col gap-4' : 'grid grid-cols-1 md:grid-cols-4 gap-6')}>
+        {!isMobile && (
+             <aside className="md:col-span-1 lg:col-span-1" id="calendar-sidebar">
+                <DatePickerSidebar
+                    selectedDate={currentDate}
+                    onDateSelect={setCurrentDate}
+                    events={events}
+                    onEventClick={handleOpenModal}
+                 />
+             </aside>
+        )}
+        <div className={cn("md:col-span-3 lg:col-span-3 flex flex-col min-h-0 bg-card rounded-lg border shadow-sm", isMobile ? "" : "p-0")} id="calendar-main-view">
           {isLoading ? (
-             <CalendarSkeleton />
+            <div className="flex items-center justify-center h-full"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center h-full text-destructive"><AlertTriangle className="h-8 w-8 mb-2" />Error al cargar: {error}</div>
           ) : (
-             <div className={cn("h-full w-full", isMobile ? 'flex flex-col gap-4' : 'grid grid-cols-1 md:grid-cols-4 gap-6')}>
-                 {!isMobile && (
-                     <aside className="md:col-span-1 lg:col-span-1" id="calendar-sidebar">
-                        <DatePickerSidebar
-                            selectedDate={currentDate}
-                            onDateSelect={setCurrentDate}
-                            events={displayedEvents}
-                            onEventClick={handleOpenModal}
-                         />
-                     </aside>
-                 )}
-                <div className={cn("md:col-span-3 lg:col-span-3 flex flex-col min-h-0 bg-card rounded-lg border shadow-sm", isMobile ? "" : "p-0")} id="calendar-main-view">
-                    <div className={cn("h-full w-full", view !== 'month' && "overflow-auto thin-scrollbar")}>
-                        {renderView()}
-                    </div>
-                </div>
-            </div>
+             <div className={cn("h-full w-full", view !== 'month' && "overflow-auto thin-scrollbar")}>
+                {renderView()}
+             </div>
           )}
+        </div>
       </main>
       
       <EventEditorModal
