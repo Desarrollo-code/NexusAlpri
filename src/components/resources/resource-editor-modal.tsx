@@ -65,9 +65,9 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   // Estados funcionales
   const [uploads, setUploads] = useState<UploadState[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [allUsers, setAllUsers] = useState<AppUser[]>([]);
-  const [allProcesses, setAllProcesses] = useState<Process[]>([]);
-  const [userSearch, setUserSearch] = useState('');
+  const [allUsers, setAllUsers = useState<AppUser[]>([]);
+  const [allProcesses, setAllProcesses = useState<Process[]>([]);
+  const [userSearch, setUserSearch = useState('');
   
   const isEditing = !!resource;
   const { title, description, content, category, externalLink, resourceType, observations } = resourceDetails;
@@ -368,17 +368,24 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                 </form>
             </ScrollArea>
              {/* --- COLUMNA 2: CONTENIDO --- */}
-            <ScrollArea className="relative md:col-span-5 lg:col-span-6 h-full bg-muted/20">
-                 <div className="p-4 flex-1 min-h-0">
-                    <AnimatePresence mode="wait">
-                      <motion.div key={resourceType} initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -10}} transition={{duration: 0.2}} className="h-full">
-                        {resourceType === 'DOCUMENT' && renderUploadArea()}
-                        {resourceType === 'EXTERNAL_LINK' && <div className="p-4 h-full flex flex-col justify-center"><div className="space-y-1.5"><Label htmlFor="externalLink">URL del Enlace</Label><Input type="url" id="externalLink" value={externalLink} onChange={e => handleResourceDetailChange('externalLink', e.target.value)} placeholder="https://..." required /></div></div>}
-                        {resourceType === 'DOCUMENTO_EDITABLE' && <div className="h-full"><Label htmlFor="content-editor">Contenido</Label><RichTextEditor id="content-editor" value={content} onChange={(v) => handleResourceDetailChange('content', v)} className="h-[calc(100%-2rem)]" /></div>}
-                      </motion.div>
-                    </AnimatePresence>
-                 </div>
-            </ScrollArea>
+            <div className="relative md:col-span-5 lg:col-span-6 h-full bg-muted/20 flex flex-col">
+              <ScrollArea className="relative flex-1 min-h-0">
+                <AnimatePresence mode="wait">
+                  <motion.div key={resourceType} initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -10}} transition={{duration: 0.2}} className="h-full p-4">
+                    {resourceType === 'DOCUMENT' && renderUploadArea()}
+                    {resourceType === 'EXTERNAL_LINK' && <div className="p-4 h-full flex flex-col justify-center"><div className="space-y-1.5"><Label htmlFor="externalLink">URL del Enlace</Label><Input type="url" id="externalLink" value={externalLink} onChange={e => handleResourceDetailChange('externalLink', e.target.value)} placeholder="https://..." required /></div></div>}
+                    {resourceType === 'DOCUMENTO_EDITABLE' && (
+                        <div className="h-full flex flex-col">
+                           <div className="flex-1 min-h-0">
+                              <Label htmlFor="content-editor">Contenido Principal del Documento</Label>
+                              <RichTextEditor id="content-editor" value={content} onChange={(v) => handleResourceDetailChange('content', v)} className="h-[calc(100%-2rem)]"/>
+                           </div>
+                       </div>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              </ScrollArea>
+            </div>
              {/* --- COLUMNA 3: ACCESO --- */}
             <ScrollArea className="md:col-span-3 lg:col-span-3 border-l h-full">
                 <div className="p-6 space-y-6">
