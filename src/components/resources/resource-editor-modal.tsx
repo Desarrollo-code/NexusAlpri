@@ -411,19 +411,19 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     <Card>
       <CardHeader><CardTitle className="text-base">Visibilidad y Acceso</CardTitle></CardHeader>
       <CardContent className="space-y-4">
-        <RadioGroup value={sharingMode} onValueChange={(v) => handleAccessChange('sharingMode', v as ResourceSharingMode)} className="grid grid-cols-3 gap-2">
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="PUBLIC" id="share-public" />
-            <Label htmlFor="share-public" className="font-normal flex items-center gap-1.5 cursor-pointer"><Globe className="h-4 w-4"/>Público</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="PROCESS" id="share-process" />
-            <Label htmlFor="share-process" className="font-normal flex items-center gap-1.5 cursor-pointer"><Briefcase className="h-4 w-4"/>Por Proceso</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="PRIVATE" id="share-private" />
-            <Label htmlFor="share-private" className="font-normal flex items-center gap-1.5 cursor-pointer"><Users className="h-4 w-4"/>Privado</Label>
-          </div>
+        <RadioGroup value={sharingMode} onValueChange={(v) => handleAccessChange('sharingMode', v as ResourceSharingMode)} className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+                <RadioGroupItem value="PUBLIC" id="share-public" />
+                <Label htmlFor="share-public" className="font-normal flex items-center gap-1.5 cursor-pointer"><Globe className="h-4 w-4"/>Público</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+                <RadioGroupItem value="PROCESS" id="share-process" />
+                <Label htmlFor="share-process" className="font-normal flex items-center gap-1.5 cursor-pointer"><Briefcase className="h-4 w-4"/>Por Proceso</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+                <RadioGroupItem value="PRIVATE" id="share-private" />
+                <Label htmlFor="share-private" className="font-normal flex items-center gap-1.5 cursor-pointer"><Users className="h-4 w-4"/>Privado</Label>
+            </div>
         </RadioGroup>
 
         <AnimatePresence>
