@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useCallback, ChangeEvent } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Save, FileUp, Link as LinkIcon, FilePenLine, ArrowLeft, ArrowRight, UploadCloud, Info, Globe, Users, Briefcase, FileIcon as FileGenericIcon } from 'lucide-react';
+import { Loader2, Save, FileUp, Link as LinkIcon, FilePenLine, ArrowLeft, ArrowRight, UploadCloud, Info, Globe, Users, Briefcase, FileIcon as FileGenericIcon, BrainCircuit, Edit } from 'lucide-react';
 import type { AppResourceType, User as AppUser, Process, ResourceSharingMode, AppQuiz } from '@/types';
 import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
@@ -28,10 +28,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { motion, AnimatePresence } from 'framer-motion';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import { getFileTypeDetails, formatFileSize } from '@/lib/utils';
+import { FileIcon } from '../ui/file-icon';
+import { formatFileSize } from '@/lib/utils';
+import { Alert, AlertDescription } from '../ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -39,7 +42,7 @@ import { Calendar as CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
-import { BrainCircuit, Edit } from 'lucide-react';
+
 
 interface ResourceEditorModalProps {
   isOpen: boolean;
@@ -168,7 +171,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         } finally {
             setIsUploading(false);
         }
-    };
+     };
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -202,6 +205,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             toast({ title: "¡Éxito!", description: `Recurso ${isEditing ? 'actualizado' : 'creado'}.` });
             onSave();
             onClose();
+
         } catch (err) {
             toast({ title: "Error", description: (err as Error).message, variant: "destructive" });
         } finally {
@@ -220,7 +224,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     return (
         <>
             <Dialog open={isOpen} onOpenChange={onClose}>
-                <DialogContent className="w-[95vw] sm:max-w-4xl p-0 gap-0 rounded-2xl max-h-[90vh] flex flex-col">
+                <DialogContent className="w-[95vw] sm:max-w-xl p-0 gap-0 rounded-2xl max-h-[90vh] flex flex-col">
                     <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
                         <DialogTitle>{isEditing ? 'Editar Recurso' : 'Nuevo Recurso'}</DialogTitle>
                     </DialogHeader>
@@ -228,9 +232,9 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex-1 min-h-0 flex flex-col">
                             <div className="px-6 pt-2 flex-shrink-0">
                                 <TabsList className="grid w-full grid-cols-3">
-                                    <TabsTrigger value="content">1. Contenido</TabsTrigger>
-                                    <TabsTrigger value="config" disabled={!isStep1Valid || !isStep2Valid}>2. Configuración</TabsTrigger>
-                                    <TabsTrigger value="quiz" disabled={!isStep1Valid || !isStep2Valid}>3. Quiz</TabsTrigger>
+                                    <TabsTrigger value="content">Contenido</TabsTrigger>
+                                    <TabsTrigger value="config" disabled={!isStep1Valid || !isStep2Valid}>Configuración</TabsTrigger>
+                                    <TabsTrigger value="quiz" disabled={!isStep1Valid || !isStep2Valid}>Quiz</TabsTrigger>
                                 </TabsList>
                             </div>
                             <ScrollArea className="flex-1 min-h-0">
@@ -276,7 +280,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                     </form>
                     <DialogFooter className="p-6 pt-4 border-t flex-shrink-0">
                          <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
-                         <Button type="submit" form="resource-form" disabled={isSaving}>
+                         <Button type="submit" form="resource-form" disabled={isSaving || !isStep1Valid || !isStep2Valid}>
                             {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                             {isEditing ? 'Guardar Cambios' : 'Crear Recurso'}
                         </Button>
