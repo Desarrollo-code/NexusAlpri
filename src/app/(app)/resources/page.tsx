@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { useTitle } from '@/contexts/title-context';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Move, Trash2, FolderOpen, Filter, ChevronRight, Pin, ListVideo, FileText, Image as ImageIcon, Video as VideoIcon, FileQuestion, Archive as ZipIcon, PlusCircle } from 'lucide-react';
+import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Move, Trash2, FolderOpen, Filter, ChevronRight, Pin, ListVideo, FileText, Image as ImageIcon, Video as VideoIcon, FileQuestion, Archive as ZipIcon, PlusCircle, Edit } from 'lucide-react';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { ResourceListItem } from '@/components/resources/resource-list-item';
 import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
@@ -61,6 +61,7 @@ export default function ResourcesPage() {
 
   const [isFolderCreatorOpen, setIsFolderCreatorOpen] = useState(false);
   const [isPlaylistCreatorOpen, setIsPlaylistCreatorOpen] = useState(false);
+  const [playlistToEdit, setPlaylistToEdit] = useState<AppResourceType | null>(null);
   const [isUploaderOpen, setIsUploaderOpen] = useState(false);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -170,6 +171,7 @@ export default function ResourcesPage() {
     setResourceToEdit(null);
     setIsFolderCreatorOpen(false);
     setIsPlaylistCreatorOpen(false);
+    setPlaylistToEdit(null);
     setIsUploaderOpen(false);
     fetchResources();
   };
@@ -308,7 +310,7 @@ export default function ResourcesPage() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                               <DropdownMenuItem onSelect={() => setIsFolderCreatorOpen(true)}><FolderIcon className="mr-2 h-4 w-4"/>Nueva Carpeta</DropdownMenuItem>
-                              <DropdownMenuItem onSelect={() => setIsPlaylistCreatorOpen(true)}><ListVideo className="mr-2 h-4 w-4"/>Nueva Lista de Videos</DropdownMenuItem>
+                              <DropdownMenuItem onSelect={() => { setPlaylistToEdit(null); setIsPlaylistCreatorOpen(true); }}><ListVideo className="mr-2 h-4 w-4"/>Nueva Lista de Videos</DropdownMenuItem>
                               <DropdownMenuItem onSelect={() => setIsUploaderOpen(true)}><UploadCloud className="mr-2 h-4 w-4"/>Subir Archivo/Enlace</DropdownMenuItem>
                           </DropdownMenuContent>
                       </DropdownMenu>
@@ -350,7 +352,7 @@ export default function ResourcesPage() {
                         <section>
                             <h3 className="text-lg font-semibold mb-3">Carpetas y Listas</h3>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                                {folders.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={true} onSelect={() => {}} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onNavigate={handleNavigateFolder} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
+                                {folders.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={true} onSelect={() => {}} onEdit={() => res.type === 'VIDEO_PLAYLIST' ? (setPlaylistToEdit(res), setIsPlaylistCreatorOpen(true)) : setResourceToEdit(res)} onDelete={setResourceToDelete} onNavigate={handleNavigateFolder} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
                             </div>
                         </section>
                     )}
@@ -422,9 +424,10 @@ export default function ResourcesPage() {
         
         <PlaylistCreatorModal
             isOpen={isPlaylistCreatorOpen}
-            onClose={() => setIsPlaylistCreatorOpen(false)}
+            onClose={() => { setIsPlaylistCreatorOpen(false); setPlaylistToEdit(null); }}
             onSave={handleSaveSuccess}
             parentId={currentFolderId}
+            playlistToEdit={playlistToEdit}
         />
 
          <AlertDialog open={!!resourceToDelete} onOpenChange={(open) => !open && setResourceToDelete(null)}>
@@ -454,3 +457,4 @@ export default function ResourcesPage() {
     
 
     
+

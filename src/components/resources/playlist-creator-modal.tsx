@@ -21,12 +21,14 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
+import type { AppResourceType } from '@/types';
 
 interface PlaylistCreatorModalProps {
     isOpen: boolean;
     onClose: () => void;
     parentId: string | null;
     onSave: () => void;
+    playlistToEdit?: AppResourceType | null;
 }
 
 interface VideoItem {
@@ -37,9 +39,10 @@ interface VideoItem {
     source: 'youtube' | 'upload';
 }
 
-export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave }: PlaylistCreatorModalProps) {
+export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playlistToEdit }: PlaylistCreatorModalProps) {
     const { toast } = useToast();
     const { settings } = useAuth();
+    const isEditing = !!playlistToEdit;
     
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -55,14 +58,34 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave }: Play
     
     useEffect(() => {
         if (isOpen) {
-            setTitle('');
-            setDescription('');
-            setCategory(settings?.resourceCategories[0] || 'General');
+            if (isEditing && playlistToEdit) {
+                setTitle(playlistToEdit.title);
+                setDescription(playlistToEdit.description || '');
+                setCategory(playlistToEdit.category || settings?.resourceCategories[0] || 'General');
+                
+                // Cargar los videos existentes.
+                // Esta es una simplificación. En una app real, podrías necesitar hacer un fetch
+                // para obtener los detalles de los videos si no vienen en el objeto inicial.
+                const existingVideos = (playlistToEdit as any).children?.map((v: any) => ({
+                    id: v.id,
+                    url: v.url,
+                    title: v.title,
+                    thumbnail: v.type === 'VIDEO' ? `https://img.youtube.com/vi/${getYoutubeVideoId(v.url)}/mqdefault.jpg` : '',
+                    source: v.type === 'VIDEO' ? 'youtube' : 'upload',
+                })) || [];
+                setVideos(existingVideos);
+
+            } else {
+                setTitle('');
+                setDescription('');
+                setCategory(settings?.resourceCategories[0] || 'General');
+                setVideos([]);
+            }
             setVideoUrl('');
-            setVideos([]);
             setVideoSource('youtube');
         }
-    }, [isOpen, settings]);
+    }, [isOpen, playlistToEdit, isEditing, settings]);
+
 
     const handleAddVideoFromUrl = () => {
         const youtubeId = getYoutubeVideoId(videoUrl);
@@ -71,7 +94,6 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave }: Play
             return;
         }
 
-        // Placeholder para el título, se podría obtener de la API de YouTube en el futuro.
         const videoTitle = `Video de YouTube ${videos.length + 1}`;
 
         setVideos(prev => [
@@ -114,7 +136,6 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave }: Play
         })
         .catch(err => {
             toast({ title: `Error subiendo ${file.name}`, description: (err as Error).message, variant: 'destructive' });
-            // Eliminar el video fallido de la lista de videos a añadir
             setVideos(prev => prev.filter(v => v.id !== tempId));
         });
       }
@@ -135,8 +156,11 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave }: Play
                 throw new Error("Añade al menos un video válido a la lista.");
             }
 
-            const response = await fetch('/api/resources', {
-                method: 'POST',
+            const endpoint = isEditing ? `/api/resources/${playlistToEdit?.id}` : '/api/resources';
+            const method = isEditing ? 'PUT' : 'POST';
+
+            const response = await fetch(endpoint, {
+                method: method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     title, description, category, parentId,
@@ -144,9 +168,9 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave }: Play
                     videos: finalVideos.map(v => ({ url: v.url, title: v.title })),
                 }),
             });
-            if (!response.ok) throw new Error('No se pudo crear la lista de reproducción.');
+            if (!response.ok) throw new Error(`No se pudo ${isEditing ? 'actualizar' : 'crear'} la lista de reproducción.`);
             
-            toast({ title: "Lista de Reproducción Creada" });
+            toast({ title: `Lista de Reproducción ${isEditing ? 'Actualizada' : 'Creada'}` });
             onSave();
             onClose();
         } catch (err) {
@@ -161,7 +185,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave }: Play
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
-                    <DialogTitle>Crear Nueva Lista de Videos</DialogTitle>
+                    <DialogTitle>{isEditing ? 'Editar Lista de Videos' : 'Crear Nueva Lista de Videos'}</DialogTitle>
                     <DialogDescription>Agrupa videos en una secuencia de aprendizaje.</DialogDescription>
                 </DialogHeader>
                 <form id="playlist-form" onSubmit={handleSubmit} className="space-y-4 py-4">
@@ -215,7 +239,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave }: Play
                     <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
                     <Button type="submit" form="playlist-form" disabled={isSaving || !title || videos.length === 0}>
                         {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <ListVideo className="mr-2 h-4 w-4"/>}
-                        Crear Lista
+                        {isEditing ? 'Guardar Cambios' : 'Crear Lista'}
                     </Button>
                 </DialogFooter>
             </DialogContent>
