@@ -32,7 +32,7 @@ import { FileIcon } from '../ui/file-icon';
 import { formatFileSize } from '@/lib/utils';
 import { Alert, AlertDescription } from '../ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -317,7 +317,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                     <Save className="mr-2 h-4 w-4"/>Guardar Cambios
                 </Button>
             </DialogFooter>
-        </Tabs>
+        </>
     );
 
     const ContentStep = () => (
@@ -357,7 +357,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             </CardContent>
         </Card>
     );
-
 
     return (
         <>
