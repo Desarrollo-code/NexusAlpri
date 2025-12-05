@@ -86,7 +86,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
           !isMobile && (isCollapsed ? "ml-20" : "ml-72")
         )}>
           <TopBar />
-          <main className="relative flex-1 overflow-y-auto" style={{ transform: 'translateZ(0)' }}>
+          <main className="relative flex-1 overflow-y-auto" style={{ transform: 'translateZ(0px)' }}>
             <div className="relative z-10 p-4 md:p-6 lg:p-8">
               {children}
             </div>
