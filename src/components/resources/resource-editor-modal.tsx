@@ -37,6 +37,32 @@ import { RichTextEditor } from '@/components/ui/rich-text-editor';
 // Se asumen que estos se encuentran en un archivo modularizado auxiliar
 import { getInitials, UploadState, ResourceEditorModalProps, renderUploads } from './resource-editor-modal-parts';
 
+const UserSelectionList = ({ allUsers, selectedIds, onSelectionChange }: { allUsers: AppUser[], selectedIds: string[], onSelectionChange: (id: string, checked: boolean) => void }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const filteredUsers = useMemo(() => {
+    return allUsers.filter(u => u.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  }, [allUsers, searchTerm]);
+
+  return (
+    <div className="space-y-1.5">
+      <Input placeholder="Buscar usuarios..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="mb-2" />
+      <ScrollArea className="h-32 border rounded-md p-2">
+        <div className="space-y-1">
+          {filteredUsers.map(u => (
+            <div key={u.id} className="flex items-center space-x-3 py-1.5 px-2 rounded-md hover:bg-muted">
+              <Checkbox id={`user-select-${u.id}`} checked={selectedIds.includes(u.id)} onCheckedChange={checked => onSelectionChange(u.id, !!checked)} />
+              <Label htmlFor={`user-select-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer">
+                <Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(u.name)}</AvatarFallback></Avatar>
+                {u.name}
+              </Label>
+            </div>
+          ))}
+        </div>
+      </ScrollArea>
+    </div>
+  );
+};
+
 // ====================================================================================================
 // ============================= COMPONENTE PRINCIPAL =================================================
 // ====================================================================================================
@@ -65,7 +91,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [allUsers, setAllUsers] = useState<AppUser[]>([]);
   const [allProcesses, setAllProcesses] = useState<Process[]>([]);
-  const [userSearch, setUserSearch] = useState('');
 
   const isEditing = !!resource;
   const { title, description, content, category, externalLink, resourceType, observations } = resourceDetails;
@@ -238,10 +263,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
 
   // --- Lógica de Manejo de Acceso y Colaboradores ---
 
-  const filteredUsers = useMemo(() => {
-    return allUsers.filter(u => u.name.toLowerCase().includes(userSearch.toLowerCase()));
-  }, [allUsers, userSearch]);
-
   const handleProcessShareChange = (id: string, checked: boolean) => {
     setAccess(prev => ({
       ...prev,
@@ -295,10 +316,10 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
-          className="h-full flex flex-col p-4"
+          className="h-full flex flex-col"
         >
           {resourceType === 'DOCUMENTO_EDITABLE' ? (
-            <div className="h-full flex flex-col gap-4">
+            <div className="h-full flex flex-col gap-4 p-4">
               <div className="flex-1 min-h-0">
                 <Label htmlFor="content-editor">Contenido Principal del Documento</Label>
                 <RichTextEditor
@@ -376,24 +397,20 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         <AnimatePresence>
           {sharingMode === 'PROCESS' && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-              <div className="space-y-1.5"><Label>Compartir con Procesos</Label>
-                <ScrollArea className="h-32 border rounded-md p-2">
-                  <div className="space-y-1">
-                    {allProcesses.map(p => (<div key={p.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`proc-${p.id}`} checked={sharedWithProcessIds.includes(p.id)} onCheckedChange={c => handleProcessShareChange(p.id, !!c)} /><Label htmlFor={`proc-${p.id}`} className="font-normal">{p.name}</Label></div>))}
-                  </div>
-                </ScrollArea>
-              </div>
+              <UserSelectionList 
+                  allUsers={allProcesses}
+                  selectedIds={sharedWithProcessIds}
+                  onSelectionChange={handleProcessShareChange}
+              />
             </motion.div>
           )}
           {sharingMode === 'PRIVATE' && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-              <div className="space-y-1.5"><Label>Compartir con Usuarios</Label><Input placeholder="Buscar usuarios..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2" />
-                <ScrollArea className="h-32 border rounded-md p-2">
-                  <div className="space-y-1">
-                    {filteredUsers.map(u => (<div key={u.id} className="flex items-center space-x-3 py-1.5"><Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={c => handleUserShareChange(u.id, !!c)} /><Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer"><Avatar className="h-6 w-6"><AvatarImage src={u.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(u.name)}</AvatarFallback></Avatar>{u.name}</Label></div>))}
-                  </div>
-                </ScrollArea>
-              </div>
+              <UserSelectionList 
+                  allUsers={allUsers}
+                  selectedIds={sharedWithUserIds}
+                  onSelectionChange={handleUserShareChange}
+              />
             </motion.div>
           )}
         </AnimatePresence>
@@ -425,6 +442,22 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     </Card>
   );
 
+  const renderCollaboratorsSection = () => (
+     <Card>
+        <CardHeader>
+            <CardTitle className="text-base">Colaboradores</CardTitle>
+            <CardDescription className="text-xs">Permite que otros instructores o administradores editen este recurso.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <UserSelectionList 
+                allUsers={allUsers.filter(u => u.role !== 'STUDENT')}
+                selectedIds={collaboratorIds}
+                onSelectionChange={handleCollaboratorChange}
+            />
+        </CardContent>
+     </Card>
+  )
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[95vw] sm:max-w-6xl p-0 gap-0 rounded-2xl h-[90vh] flex flex-col">
@@ -434,35 +467,36 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         </DialogHeader>
         
         <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-12 overflow-hidden">
-          <ScrollArea className="md:col-span-4 lg:col-span-3 border-r h-full">
-            <form id="resource-form" onSubmit={handleSave} className="space-y-6 p-6">
-              {!isEditing && renderCreationOptions()}
-              {(isEditing || resourceType !== 'DOCUMENT') && (
-                <>
-                  <div className="space-y-1.5"><Label htmlFor="title">Título</Label><Input id="title" value={title} onChange={(e) => handleResourceDetailChange('title', e.target.value)} required autoComplete="off" /></div>
-                  <div className="space-y-1.5"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => handleResourceDetailChange('description', e.target.value)} placeholder="Un resumen breve del contenido del recurso..."/></div>
-                  <div className="space-y-1.5"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={(v) => handleResourceDetailChange('category', v)}><SelectTrigger id="category"><SelectValue placeholder="Seleccionar..." /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).sort().map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select></div>
-                </>
-              )}
-            </form>
+          <ScrollArea className="md:col-span-4 lg:col-span-3 border-r h-full relative">
+             <div className="p-6 space-y-6">
+                {!isEditing && renderCreationOptions()}
+                {(isEditing || resourceType !== 'DOCUMENT') && (
+                  <>
+                    <div className="space-y-1.5"><Label htmlFor="title">Título</Label><Input id="title" value={title} onChange={(e) => handleResourceDetailChange('title', e.target.value)} required autoComplete="off" /></div>
+                    <div className="space-y-1.5"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => handleResourceDetailChange('description', e.target.value)} placeholder="Un resumen breve del contenido del recurso..."/></div>
+                    <div className="space-y-1.5"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={(v) => handleResourceDetailChange('category', v)}><SelectTrigger id="category"><SelectValue placeholder="Seleccionar..." /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).sort().map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select></div>
+                  </>
+                )}
+              </div>
           </ScrollArea>
           
-          <div className="md:col-span-5 lg:col-span-6 bg-muted/20 relative overflow-hidden h-full">
-            <ScrollArea className="absolute inset-0">
+          <div className="md:col-span-5 lg:col-span-6 bg-muted/20 relative h-full flex flex-col">
+             <ScrollArea className="flex-1 relative">
                 {renderContentEditor()}
             </ScrollArea>
           </div>
           
-          <ScrollArea className="md:col-span-3 lg:col-span-3 border-l h-full bg-card/50">
+          <ScrollArea className="md:col-span-3 lg:col-span-3 border-l h-full bg-card/50 relative">
             <div className="p-6 space-y-6">
               {renderAccessSection()}
+              {renderCollaboratorsSection()}
             </div>
           </ScrollArea>
         </div>
         
         <DialogFooter className="px-6 py-4 border-t flex-shrink-0 flex-row justify-end gap-2 bg-background/90 backdrop-blur-sm">
           <Button variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
-          <Button type="submit" form="resource-form" disabled={isSubmitting || (resourceType !== 'DOCUMENT' && !title) || (resourceType === 'EXTERNAL_LINK' && !externalLink) || (uploads.length > 0 && uploads.some(u => u.status === 'uploading'))}>
+          <Button type="submit" onClick={handleSave} disabled={isSubmitting || (resourceType !== 'DOCUMENT' && !title) || (resourceType === 'EXTERNAL_LINK' && !externalLink) || (uploads.length > 0 && uploads.some(u => u.status === 'uploading'))}>
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} <Save className="mr-2 h-4 w-4" /> Guardar
           </Button>
         </DialogFooter>
@@ -470,3 +504,4 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     </Dialog>
   );
 }
+
