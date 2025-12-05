@@ -65,9 +65,9 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   // Estados funcionales
   const [uploads, setUploads] = useState<UploadState[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [allUsers, setAllUsers] = useState<AppUser[]>([]);
-  const [allProcesses, setAllProcesses] = useState<Process[]>([]);
-  const [userSearch, setUserSearch] = useState('');
+  const [allUsers, setAllUsers = useState<AppUser[]>([]);
+  const [allProcesses, setAllProcesses = useState<Process[]>([]);
+  const [userSearch, setUserSearch = useState('');
   
   const isEditing = !!resource;
   const { title, description, content, category, externalLink, resourceType, observations } = resourceDetails;
@@ -235,7 +235,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   };
   
   const filteredUsers = useMemo(() => {
-    return allUsers.filter(u => u.name?.toLowerCase().includes(userSearch.toLowerCase()));
+    return allUsers.filter(u => u.name.toLowerCase().includes(userSearch.toLowerCase()));
   }, [allUsers, userSearch]);
 
   // --- Lógica de Manejo de Acceso ---
