@@ -140,19 +140,17 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                 <div className="p-3 flex-grow flex flex-col">
                     <div className="flex justify-between items-start gap-1 flex-grow">
                          <div className="flex items-start gap-1.5 flex-grow overflow-hidden text-left">
-                            {canModify && !isFolder && resource.status === 'ACTIVE' ? (
+                            {canModify && !isFolder && resource.status === 'ACTIVE' && (
                                 <div {...listeners} {...attributes} className="p-1 cursor-grab touch-none -ml-1">
                                     <Grip className="h-4 w-4 text-muted-foreground/50" />
                                 </div>
-                            ) : (
-                                <div className="w-6 h-4 flex-shrink-0"/>
                             )}
                             <p className="font-medium text-xs leading-tight break-words flex-grow">{resource.title}</p>
                         </div>
                         {canModify && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 -mr-1 text-muted-foreground" aria-label={`Opciones para ${resource.title}`} onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
+                                    <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 text-muted-foreground" aria-label={`Opciones para ${resource.title}`} onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                                     {resource.status === 'ACTIVE' && (
@@ -170,7 +168,7 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                             </DropdownMenu>
                         )}
                     </div>
-                     <p className={cn("text-xs text-muted-foreground mt-1 text-left", canModify && !isFolder && "pl-7")}>
+                     <p className="text-xs text-muted-foreground mt-1 text-left">
                         {new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>
                 </div>
