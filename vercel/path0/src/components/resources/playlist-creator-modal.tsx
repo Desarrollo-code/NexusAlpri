@@ -261,9 +261,9 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                     <DialogTitle>{isEditing ? 'Editar Lista de Videos' : 'Crear Nueva Lista de Videos'}</DialogTitle>
                     <DialogDescription>Agrupa videos en una secuencia de aprendizaje.</DialogDescription>
                 </DialogHeader>
-                <ScrollArea className="flex-1 min-h-0">
-                    <div className="px-6">
-                        <form id="playlist-form" onSubmit={handleSubmit} className="space-y-4 py-4">
+                <div className="flex-1 min-h-0">
+                    <ScrollArea className="h-full">
+                        <form id="playlist-form" onSubmit={handleSubmit} className="space-y-4 px-6 py-4">
                             {/* --- BASIC INFO --- */}
                             <div className="space-y-1.5"><Label htmlFor="playlist-title">Título de la Lista</Label><Input id="playlist-title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
                             <div className="space-y-1.5"><Label htmlFor="playlist-description">Descripción (Opcional)</Label><Input id="playlist-description" value={description} onChange={(e) => setDescription(e.target.value)} /></div>
@@ -324,8 +324,8 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                                 </div>
                             </div>
                         </form>
-                    </div>
-                </ScrollArea>
+                    </ScrollArea>
+                </div>
                 <DialogFooter className="p-6 pt-4 border-t flex-shrink-0">
                     <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
                     <Button type="submit" form="playlist-form" disabled={isSaving || !title || videos.length === 0}>
