@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import { Loader2, FolderPlus, Video, XCircle, Trash2, Edit, Save, Globe, Users, Briefcase, MoreVertical } from 'lucide-react';
 import type { AppResourceType, User as AppUser, Process, ResourceSharingMode } from '@/types';
-import { DndContext, DragEndEvent, closestCenter, useSensor, PointerSensor, TouchSensor } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, closestCenter, useSensor, useSensors, PointerSensor, TouchSensor } from '@dnd-kit/core';
 import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
