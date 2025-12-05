@@ -188,7 +188,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         resetForm();
       }
 
-      // Nota: En una aplicación real, estas llamadas API deberían ser más robustas
       if (user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR' || isEditing) {
         fetch('/api/users/list').then(res => res.json()).then(data => setAllUsers(data.users || []));
         fetch('/api/processes').then(res => res.json()).then(data => setAllProcesses(data || []));
@@ -419,24 +418,31 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     <Card>
       <CardHeader><CardTitle className="text-base">Visibilidad y Acceso</CardTitle></CardHeader>
       <CardContent className="space-y-4">
-        <RadioGroup value={sharingMode} onValueChange={(v) => handleAccessChange('sharingMode', v as ResourceSharingMode)} className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-                <RadioGroupItem value="PUBLIC" id="share-public" />
-                <Label htmlFor="share-public" className="font-normal flex items-center gap-1.5 cursor-pointer"><Globe className="h-4 w-4"/>Público</Label>
+        <RadioGroup value={sharingMode} onValueChange={(v) => handleAccessChange('sharingMode', v as ResourceSharingMode)} className="grid grid-cols-3 gap-2">
+            <div>
+              <RadioGroupItem value="PUBLIC" id="share-public" className="sr-only peer" />
+              <Label htmlFor="share-public" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary text-center cursor-pointer">
+                <Globe className="mb-2 h-6 w-6"/>Público
+              </Label>
             </div>
-            <div className="flex items-center space-x-2">
-                <RadioGroupItem value="PROCESS" id="share-process" />
-                <Label htmlFor="share-process" className="font-normal flex items-center gap-1.5 cursor-pointer"><Briefcase className="h-4 w-4"/>Por Proceso</Label>
+             <div>
+              <RadioGroupItem value="PROCESS" id="share-process" className="sr-only peer" />
+              <Label htmlFor="share-process" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary text-center cursor-pointer">
+                <Briefcase className="mb-2 h-6 w-6"/>Por Proceso
+              </Label>
             </div>
-            <div className="flex items-center space-x-2">
-                <RadioGroupItem value="PRIVATE" id="share-private" />
-                <Label htmlFor="share-private" className="font-normal flex items-center gap-1.5 cursor-pointer"><Users className="h-4 w-4"/>Privado</Label>
+             <div>
+              <RadioGroupItem value="PRIVATE" id="share-private" className="sr-only peer" />
+              <Label htmlFor="share-private" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary text-center cursor-pointer">
+                <Users className="mb-2 h-6 w-6"/>Privado
+              </Label>
             </div>
         </RadioGroup>
 
         <AnimatePresence>
           {sharingMode === 'PROCESS' && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+               <Separator className="my-4" />
               <ProcessSelectionList 
                   allProcesses={allProcesses}
                   selectedIds={sharedWithProcessIds}
@@ -446,6 +452,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
           )}
           {sharingMode === 'PRIVATE' && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+               <Separator className="my-4" />
               <UserSelectionList 
                   allUsers={allUsers}
                   selectedIds={sharedWithUserIds}
@@ -546,3 +553,385 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     </Dialog>
   );
 }
+
+```
+- vercel/path0/src/lib/types.ts:
+```ts
+// src/lib/types.ts
+import type { Prisma, User as PrismaUser } from '@prisma/client';
+
+// --- USER & AUTH ---
+export type UserRole = 'ADMINISTRATOR' | 'INSTRUCTOR' | 'STUDENT';
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string | null;
+  role: UserRole;
+  isTwoFactorEnabled?: boolean;
+  registeredDate?: string | Date;
+  theme?: string | null;
+  xp?: number | null;
+  isActive?: boolean;
+}
+
+export interface PlatformSettings {
+    platformName: string;
+    allowPublicRegistration: boolean;
+    enableEmailNotifications: boolean;
+    emailWhitelist: string;
+    require2faForAdmins: boolean;
+    idleTimeoutMinutes: number;
+    enableIdleTimeout: boolean;
+    passwordMinLength: number;
+    passwordRequireUppercase: boolean;
+    passwordRequireLowercase: boolean;
+    passwordRequireNumber: boolean;
+    passwordRequireSpecialChar: boolean;
+    resourceCategories: string[];
+    primaryColor?: string;
+    secondaryColor?: string;
+    accentColor?: string;
+    backgroundColorLight?: string;
+    fontHeadline?: string;
+    fontBody?: string;
+    primaryColorDark?: string;
+    backgroundColorDark?: string;
+    logoUrl?: string | null;
+    watermarkUrl?: string | null;
+    landingImageUrl?: string | null;
+    authImageUrl?: string | null;
+    aboutImageUrl?: string | null;
+    benefitsImageUrl?: string | null;
+}
+
+// --- NAVIGATION ---
+export interface NavItem {
+    id: string;
+    label: string;
+    icon: React.ElementType;
+    roles: UserRole[];
+    path?: string;
+    badge?: string;
+    color?: string;
+    children?: NavItem[];
+}
+
+
+// --- COURSE CONTENT ---
+export type LessonType = 'TEXT' | 'VIDEO' | 'QUIZ' | 'FILE';
+export type CourseStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+export type QuestionType = 'MULTIPLE_CHOICE' | 'SINGLE_CHOICE' | 'TRUE_FALSE' | 'OPEN_ENDED';
+
+
+export interface AnswerOption {
+    id: string;
+    text: string;
+    isCorrect: boolean;
+    feedback?: string | null;
+    points: number;
+}
+
+export interface Question {
+    id: string;
+    text: string;
+    type: QuestionType;
+    order: number;
+    options: AnswerOption[];
+}
+
+export interface Quiz {
+    id: string;
+    title: string;
+    description?: string;
+    questions: Question[];
+    contentBlockId?: string | null; // From original schema
+    resourceId?: string | null; // New for resource quizzes
+}
+
+
+export interface ContentBlock {
+  id: string;
+  type: LessonType;
+  content?: string;
+  order: number;
+  quiz?: Quiz;
+}
+
+export interface Lesson {
+  id: string;
+  title: string;
+  order: number;
+  contentBlocks: ContentBlock[];
+}
+
+export interface Module {
+  id: string;
+  title: string;
+  order: number;
+  lessons: Lesson[];
+}
+
+export type CoursePrerequisiteInfo = {
+  id: string;
+  title: string;
+} | null;
+
+export interface Course extends Omit<Prisma.CourseGetPayload<{}>, 'instructor' | 'prerequisite' | 'isMandatory' | 'startDate' | 'endDate' | 'certificateTemplateId'> {
+  instructor: {
+      id: string;
+      name: string;
+      avatar: string | null;
+  };
+  modulesCount: number;
+  lessonsCount?: number;
+  modules: Module[];
+  isEnrolled?: boolean;
+  enrollmentsCount?: number;
+  averageCompletion?: number;
+  publicationDate?: Date | null;
+  startDate?: Date | string | null;
+  endDate?: Date | string | null;
+  prerequisite: CoursePrerequisiteInfo;
+  userProgress?: {
+      completedAt: Date | null;
+  }[] | null;
+  prerequisiteCompleted?: boolean;
+  isMandatory: boolean;
+  certificateTemplateId?: string | null;
+}
+
+
+export interface EnrolledCourse extends Course {
+    enrollmentId: string;
+    enrolledAt: string;
+    progressPercentage?: number;
+}
+
+export type LessonCompletionRecord = {
+    lessonId: string;
+    type: 'view' | 'quiz' | 'video';
+    score?: number | null;
+};
+
+export interface CourseProgress {
+    userId: string;
+    courseId: string;
+    completedLessons: LessonCompletionRecord[];
+    progressPercentage: number;
+    completedAt?: Date | null;
+    id: string;
+}
+
+export interface UserNote {
+    id: string;
+    userId: string;
+    lessonId: string;
+    content: string;
+    color: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+// --- RESOURCES ---
+export type ResourceType = 'FOLDER' | 'DOCUMENT' | 'GUIDE' | 'MANUAL' | 'POLICY' | 'VIDEO' | 'EXTERNAL_LINK' | 'OTHER' | 'DOCUMENTO_EDITABLE' | 'VIDEO_PLAYLIST';
+export type ResourceStatus = 'ACTIVE' | 'ARCHIVED';
+export type ResourceSharingMode = 'PUBLIC' | 'PRIVATE' | 'PROCESS';
+
+export interface AppResourceType extends Omit<Prisma.EnterpriseResourceGetPayload<{ include: { quiz: true, sharedWithProcesses: true }}>, 'tags' | 'status' | 'filetype' | 'isPublic'> {
+    tags: string[];
+    uploaderName: string;
+    hasPin: boolean;
+    status: ResourceStatus;
+    filetype: string | null;
+    ispublic: boolean;
+    uploader?: { id: string, name: string | null, avatar: string | null } | null;
+    sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
+    sharedWithProcesses?: Pick<Process, 'id' | 'name'>[];
+    collaborators?: Pick<User, 'id' | 'name' | 'avatar'>[]; // Added for playlist collaborators
+    quiz?: Quiz | null;
+    version: number;
+}
+
+
+
+// --- ANNOUNCEMENTS ---
+export interface Reaction {
+    userId: string;
+    reaction: string;
+    user: {
+      id: string;
+      name: string | null;
+      avatar?: string | null;
+    };
+}
+
+export interface Attachment {
+    id?: string;
+    name: string;
+    url: string;
+    type: string;
+    size: number;
+}
+
+export interface Announcement {
+    id: string;
+    title: string;
+    content: string;
+    date: string;
+    author: { id: string; name: string | null; avatar?: string | null; } | null;
+    audience: UserRole[] | 'ALL' | string;
+    priority?: 'Normal' | 'Urgente';
+    isPinned: boolean;
+    attachments: Attachment[];
+    reads: { id: string; name: string | null; avatar?: string | null; }[];
+    reactions: Reaction[];
+    _count: {
+      reads: number;
+      reactions: number;
+    };
+}
+
+// --- NOTIFICATIONS ---
+export interface Notification {
+    id: string;
+    userId: string;
+    title: string;
+    description?: string;
+    date: string; // ISO string from DB
+    link?: string;
+    read: boolean;
+}
+
+// --- CALENDAR ---
+export type EventAudienceType = 'ALL' | UserRole | 'SPECIFIC';
+
+export interface CalendarEvent {
+    id: string;
+    title: string;
+    start: string;
+    end: string;
+    allDay: boolean;
+    description?: string | null;
+    location?: string | null;
+    audienceType: EventAudienceType;
+    attendees: Pick<User, 'id' | 'name' | 'email'>[];
+    color: string;
+    creatorId: string;
+    creator?: { id: string, name: string | null };
+    videoConferenceLink?: string | null;
+    attachments: Attachment[];
+}
+
+// --- SECURITY ---
+export type SecurityLogEvent = 
+    | 'SUCCESSFUL_LOGIN'
+    | 'FAILED_LOGIN_ATTEMPT' 
+    | 'PASSWORD_CHANGE_SUCCESS'
+    | 'TWO_FACTOR_ENABLED'
+    | 'TWO_FACTOR_DISABLED'
+    | 'USER_ROLE_CHANGED'
+    | 'COURSE_CREATED'
+    | 'COURSE_UPDATED'
+    | 'COURSE_DELETED';
+
+export type SecurityLog = Prisma.SecurityLogGetPayload<{
+    include: { user: { select: { id: true, name: true, avatar: true, email: true } } }
+}> & {
+    userAgent: string | null;
+    city: string | null;
+    country: string | null;
+    lat?: number | null;
+    lng?: number | null;
+};
+
+export type SecurityStats = {
+    successfulLogins24h: number;
+    failedLogins24h: number;
+    roleChanges24h: number;
+    browsers: { name: string, count: number }[];
+    os: { name: string, count: number }[];
+    topIps: { ipAddress: string | null, country: string | null, _count: { ipAddress: number } }[];
+};
+
+
+// --- ANALYTICS ---
+type TrendData = { date: string, count: number };
+export interface AdminDashboardStats {
+    totalUsers: number;
+    totalCourses: number;
+    totalPublishedCourses: number;
+    totalEnrollments: number;
+    averageCompletionRate: number;
+    userRegistrationTrend: TrendData[];
+    enrollmentTrend: TrendData[];
+    usersByRole: { role: UserRole; count: number }[];
+    coursesByStatus: { status: CourseStatus; count: number }[];
+    topCoursesByEnrollment: any[];
+    topCoursesByCompletion: any[];
+    lowestCoursesByCompletion: any[];
+    topStudentsByEnrollment: any[];
+    topStudentsByCompletion: any[];
+    topInstructorsByCourses: any[];
+}
+
+// --- TEMPLATES ---
+export type TemplateType = 'SYSTEM' | 'USER';
+export { type LessonTemplate, type TemplateBlock, type CertificateTemplate } from '@prisma/client';
+
+// --- GAMIFICATION ---
+export type UserAchievement = Prisma.UserAchievementGetPayload<{
+    include: {
+        achievement: true;
+    }
+}>;
+export { type AchievementSlug } from '@prisma/client';
+
+// --- MOTIVATIONAL MESSAGES ---
+export type MotivationalMessage = Prisma.MotivationalMessageGetPayload<{}>;
+export { type MotivationalMessageTriggerType } from '@prisma/client';
+
+
+// --- FORMS ---
+export type FormFieldOption = Omit<Prisma.FormFieldOptionGetPayload<{}>, 'id'> & {
+  id: string; // Ensure id is always a string on the client
+};
+
+export type AppQuestion = Omit<Prisma.FormFieldGetPayload<{
+  include: { options: true }
+}>, 'options' | 'id'> & {
+    id: string; // Client-side ID
+    options: FormFieldOption[];
+};
+
+
+export type AppForm = Omit<Prisma.FormGetPayload<{
+  include: {
+    fields: { include: { options: true } },
+    _count: { select: { responses: true } },
+    creator: { select: { name: true } },
+    sharedWith: { select: { id: true, name: true, avatar: true } }
+  }
+}>, 'fields'> & {
+  fields: AppQuestion[];
+};
+
+// --- PROCESSES ---
+export type Process = Prisma.ProcessGetPayload<{
+    include: {
+        children: true,
+        users: true
+    }
+}>;
+
+// --- ROADMAP ---
+export type RoadmapItem = Prisma.RoadmapItemGetPayload<{}>;
+
+
+export { type FormStatus, type FormFieldType, type AnnouncementAttachment, type RecurrenceType } from '@prisma/client';
+
+// Agregado para que no de error
+export type MotivationalMessageTrigger = 'COURSE_ENROLLMENT' | 'COURSE_MID_PROGRESS' | 'COURSE_NEAR_COMPLETION' | 'COURSE_COMPLETION' | 'LEVEL_UP';
+
+```
