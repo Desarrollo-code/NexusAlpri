@@ -176,7 +176,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     } catch (err) {
       setUploads(prev => prev.map(u => u.id === upload.id ? { ...u, status: 'error', error: (err as Error).message } : u));
     }
-  }, [access, parentId, resourceDetails, uploads.length, saveResourceToDb, sharedWithUserIds, sharedWithProcessIds, expiresAt, category, description, title, sharingMode]);
+  }, [sharingMode, parentId, title, description, category, sharedWithUserIds, sharedWithProcessIds, expiresAt, uploads.length, saveResourceToDb]);
   
   const handleFileSelect = (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -287,14 +287,26 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
      <Card>
           <CardHeader><CardTitle className="text-base">Visibilidad y Acceso</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-             <Select value={sharingMode} onValueChange={(v) => handleAccessChange('sharingMode', v as ResourceSharingMode)}>
-                <SelectTrigger><SelectValue/></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="PUBLIC"><div className="flex items-center gap-2"><Globe className="h-4 w-4 text-green-500"/> Público (Todos)</SelectItem>
-                  <SelectItem value="PROCESS"><div className="flex items-center gap-2"><Briefcase className="h-4 w-4 text-purple-500"/> Por Proceso</div></SelectItem>
-                  <SelectItem value="PRIVATE"><div className="flex items-center gap-2"><Users className="h-4 w-4 text-blue-500"/> Privado (Usuarios Específicos)</div></SelectItem>
-                </SelectContent>
-              </Select>
+             <RadioGroup value={sharingMode} onValueChange={(v) => handleAccessChange('sharingMode', v as ResourceSharingMode)} className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <div className="relative">
+                    <RadioGroupItem value="PUBLIC" id="share-public" className="sr-only peer" />
+                    <Label htmlFor="share-public" className={cn("flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:ring-2 peer-data-[state=checked]:ring-primary transition-all", sharingMode === 'PUBLIC' && 'text-primary')}>
+                        <Globe className="mb-2 h-6 w-6"/>Público
+                    </Label>
+                </div>
+                <div className="relative">
+                    <RadioGroupItem value="PROCESS" id="share-process" className="sr-only peer" />
+                    <Label htmlFor="share-process" className={cn("flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:ring-2 peer-data-[state=checked]:ring-primary transition-all", sharingMode === 'PROCESS' && 'text-primary')}>
+                        <Briefcase className="mb-2 h-6 w-6"/>Por Proceso
+                    </Label>
+                </div>
+                <div className="relative">
+                    <RadioGroupItem value="PRIVATE" id="share-private" className="sr-only peer" />
+                    <Label htmlFor="share-private" className={cn("flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:ring-2 peer-data-[state=checked]:ring-primary transition-all", sharingMode === 'PRIVATE' && 'text-primary')}>
+                        <Users className="mb-2 h-6 w-6"/>Privado
+                    </Label>
+                </div>
+            </RadioGroup>
               
               <AnimatePresence>
                 {sharingMode === 'PROCESS' && (
@@ -339,9 +351,15 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             {/* Selector de Tipo de Recurso */}
             {!isEditing && (
               <RadioGroup value={resourceType} onValueChange={(v) => handleResourceDetailChange('resourceType', v as AppResourceType['type'])} className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <div className="relative"><RadioGroupItem value="DOCUMENT" id="type-doc" className="sr-only"/><Label htmlFor="type-doc" className={cn("flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full", resourceType === 'DOCUMENT' && 'border-primary ring-2 ring-primary')}><UploadCloud className="mb-2 h-6 w-6"/>Subir Archivo(s)</Label></div>
-                  <div className="relative"><RadioGroupItem value="EXTERNAL_LINK" id="type-link" className="sr-only"/><Label htmlFor="type-link" className={cn("flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full", resourceType === 'EXTERNAL_LINK' && 'border-primary ring-2 ring-primary')}><LinkIcon className="mb-2 h-6 w-6"/>Enlace Externo</Label></div>
-                  <div className="relative"><RadioGroupItem value="DOCUMENTO_EDITABLE" id="type-edit" className="sr-only"/><Label htmlFor="type-edit" className={cn("flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full", resourceType === 'DOCUMENTO_EDITABLE' && 'border-primary ring-2 ring-primary')}><FilePen className="mb-2 h-6 w-6"/>Documento Editable</Label></div>
+                  <div className="relative"><RadioGroupItem value="DOCUMENT" id="type-doc" className="sr-only peer" />
+                  <Label htmlFor="type-doc" className={cn("flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full transition-all", resourceType === 'DOCUMENT' && 'border-primary ring-2 ring-primary text-primary')}>
+                      <UploadCloud className="mb-2 h-6 w-6"/>Subir Archivo(s)</Label></div>
+                  <div className="relative"><RadioGroupItem value="EXTERNAL_LINK" id="type-link" className="sr-only peer" />
+                  <Label htmlFor="type-link" className={cn("flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full transition-all", resourceType === 'EXTERNAL_LINK' && 'border-primary ring-2 ring-primary text-primary')}>
+                      <LinkIcon className="mb-2 h-6 w-6"/>Enlace Externo</Label></div>
+                  <div className="relative"><RadioGroupItem value="DOCUMENTO_EDITABLE" id="type-edit" className="sr-only peer" />
+                  <Label htmlFor="type-edit" className={cn("flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full transition-all", resourceType === 'DOCUMENTO_EDITABLE' && 'border-primary ring-2 ring-primary text-primary')}>
+                      <FilePen className="mb-2 h-6 w-6"/>Documento Editable</Label></div>
               </RadioGroup>
             )}
             
