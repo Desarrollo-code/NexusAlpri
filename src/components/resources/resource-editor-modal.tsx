@@ -1,4 +1,4 @@
-
+// src/components/resources/resource-editor-modal.tsx
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -32,11 +32,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
-import { FileIcon } from '@/components/ui/file-icon';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import {
-  Card, CardContent, CardDescription, CardHeader, CardTitle 
-} from '@/components/ui/card';
 
 // Se asumen que estos se encuentran en un archivo modularizado auxiliar
 import { getInitials, UploadState, ResourceEditorModalProps, renderUploads } from './resource-editor-modal-parts';
@@ -273,17 +269,17 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
       <div className="space-y-4">
         <h3 className="text-lg font-semibold mb-4 text-center">Selecciona el tipo de recurso</h3>
         <Card className={cn("transition-colors", resourceType === 'DOCUMENT' ? 'border-primary ring-2 ring-primary/50' : 'hover:border-primary/50')}>
-            <CardHeader onClick={() => handleResourceDetailChange('resourceType', 'DOCUMENT')} className="cursor-pointer">
+            <CardHeader onClick={() => handleResourceDetailChange('resourceType', 'DOCUMENT')} className="cursor-pointer p-4">
                 <CardTitle className="text-base flex items-center gap-2"><UploadCloud className="h-5 w-5" />Subir Archivo(s)</CardTitle>
             </CardHeader>
         </Card>
         <Card className={cn("transition-colors", resourceType === 'EXTERNAL_LINK' ? 'border-primary ring-2 ring-primary/50' : 'hover:border-primary/50')}>
-            <CardHeader onClick={() => handleResourceDetailChange('resourceType', 'EXTERNAL_LINK')} className="cursor-pointer">
+            <CardHeader onClick={() => handleResourceDetailChange('resourceType', 'EXTERNAL_LINK')} className="cursor-pointer p-4">
                 <CardTitle className="text-base flex items-center gap-2"><LinkIcon className="h-5 w-5" />Enlace Externo</CardTitle>
             </CardHeader>
         </Card>
         <Card className={cn("transition-colors", resourceType === 'DOCUMENTO_EDITABLE' ? 'border-primary ring-2 ring-primary/50' : 'hover:border-primary/50')}>
-            <CardHeader onClick={() => handleResourceDetailChange('resourceType', 'DOCUMENTO_EDITABLE')} className="cursor-pointer">
+            <CardHeader onClick={() => handleResourceDetailChange('resourceType', 'DOCUMENTO_EDITABLE')} className="cursor-pointer p-4">
                 <CardTitle className="text-base flex items-center gap-2"><FilePen className="h-5 w-5" />Documento Editable</CardTitle>
             </CardHeader>
         </Card>
@@ -299,20 +295,20 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
-          className="h-full flex flex-col"
+          className="h-full flex flex-col p-4"
         >
           {resourceType === 'DOCUMENTO_EDITABLE' ? (
-            <>
-              <div className="flex-1 min-h-0 mb-4">
-                <Label htmlFor="content-editor">Contenido Principal</Label>
+            <div className="h-full flex flex-col gap-4">
+              <div className="flex-1 min-h-0">
+                <Label htmlFor="content-editor">Contenido Principal del Documento</Label>
                 <RichTextEditor
                   id="content-editor"
                   value={content}
                   onChange={(v) => handleResourceDetailChange('content', v)}
-                  className="h-[calc(100%-2rem)] min-h-[300px]"
+                  className="h-[calc(100%-2rem)] min-h-[250px]"
                 />
               </div>
-              <div className="flex-none h-1/3 min-h-[100px] mt-4">
+              <div className="flex-none h-1/3 min-h-[100px]">
                 <Label htmlFor="observations-editor">Observaciones (Internas)</Label>
                 <Textarea
                   id="observations-editor"
@@ -322,7 +318,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                   placeholder="Notas internas no visibles para estudiantes..."
                 />
               </div>
-            </>
+            </div>
           ) : resourceType === 'EXTERNAL_LINK' ? (
             <div className="flex flex-col items-center justify-center h-full text-center p-8">
               <LinkIcon className="w-16 h-16 text-primary mb-4" />
@@ -444,17 +440,17 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
               {(isEditing || resourceType !== 'DOCUMENT') && (
                 <>
                   <div className="space-y-1.5"><Label htmlFor="title">Título</Label><Input id="title" value={title} onChange={(e) => handleResourceDetailChange('title', e.target.value)} required autoComplete="off" /></div>
-                  <div className="space-y-1.5"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => handleResourceDetailChange('description', e.target.value)} placeholder="Un resumen breve..." /></div>
+                  <div className="space-y-1.5"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => handleResourceDetailChange('description', e.target.value)} placeholder="Un resumen breve del contenido del recurso..."/></div>
                   <div className="space-y-1.5"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={(v) => handleResourceDetailChange('category', v)}><SelectTrigger id="category"><SelectValue placeholder="Seleccionar..." /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).sort().map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select></div>
                 </>
               )}
             </form>
           </ScrollArea>
           
-          <div className="md:col-span-5 lg:col-span-6 bg-muted/20 flex flex-col h-full">
-            <div className="flex-1 min-h-0">
-              {renderContentEditor()}
-            </div>
+          <div className="md:col-span-5 lg:col-span-6 bg-muted/20 relative overflow-hidden h-full">
+            <ScrollArea className="absolute inset-0">
+                {renderContentEditor()}
+            </ScrollArea>
           </div>
           
           <ScrollArea className="md:col-span-3 lg:col-span-3 border-l h-full bg-card/50">
@@ -474,4 +470,3 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     </Dialog>
   );
 }
-```
