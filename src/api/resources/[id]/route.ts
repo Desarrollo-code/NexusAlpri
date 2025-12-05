@@ -1,4 +1,4 @@
-// src/app/api/resources/[id]/route.ts
+// src/api/resources/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -104,18 +104,23 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                     }
                     : undefined;
                 
-                const quizPayload = {
+                const quizPayloadForUpdate = {
                     title: quiz.title || 'Evaluación del Recurso',
                     description: quiz.description,
                     maxAttempts: quiz.maxAttempts,
                     questions: questionsData,
                 };
                 
+                const quizPayloadForCreate = {
+                    ...quizPayloadForUpdate,
+                    resource: { connect: { id: id } } // Conexión correcta al crear
+                };
+                
                 updateData.quiz = {
                     upsert: {
                         where: { resourceId: id },
-                        create: { ...quizPayload, resource: { connect: { id } } },
-                        update: quizPayload,
+                        create: quizPayloadForCreate,
+                        update: quizPayloadForUpdate,
                     }
                 };
             } else if (existingQuiz) {
