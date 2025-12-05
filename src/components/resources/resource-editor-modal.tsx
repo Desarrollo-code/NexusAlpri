@@ -67,7 +67,7 @@ const UserSelectionList = ({ allUsers, selectedIds, onSelectionChange, placehold
 const ProcessSelectionList = ({ allProcesses, selectedIds, onSelectionChange, placeholder = "Buscar procesos..." }: { allProcesses: Process[], selectedIds: string[], onSelectionChange: (id: string, checked: boolean) => void, placeholder?: string }) => {
     const [searchTerm, setSearchTerm] = useState('');
 
-    const flattenProcesses = (processes: Process[], level = 0) => {
+    const flattenProcesses = (processes: Process[], level = 0): { id: string; name: string; level: number }[] => {
         let list: { id: string; name: string; level: number }[] = [];
         processes.forEach(p => {
             list.push({ id: p.id, name: p.name, level });
@@ -412,9 +412,18 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
       <CardHeader><CardTitle className="text-base">Visibilidad y Acceso</CardTitle></CardHeader>
       <CardContent className="space-y-4">
         <RadioGroup value={sharingMode} onValueChange={(v) => handleAccessChange('sharingMode', v as ResourceSharingMode)} className="grid grid-cols-3 gap-2">
-          <div className="flex items-center space-x-2"><RadioGroupItem value="PUBLIC" id="share-public" /><Label htmlFor="share-public" className="font-normal">Público</Label></div>
-          <div className="flex items-center space-x-2"><RadioGroupItem value="PROCESS" id="share-process" /><Label htmlFor="share-process" className="font-normal">Por Proceso</Label></div>
-          <div className="flex items-center space-x-2"><RadioGroupItem value="PRIVATE" id="share-private" /><Label htmlFor="share-private" className="font-normal">Privado</Label></div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="PUBLIC" id="share-public" />
+            <Label htmlFor="share-public" className="font-normal flex items-center gap-1.5 cursor-pointer"><Globe className="h-4 w-4"/>Público</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="PROCESS" id="share-process" />
+            <Label htmlFor="share-process" className="font-normal flex items-center gap-1.5 cursor-pointer"><Briefcase className="h-4 w-4"/>Por Proceso</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="PRIVATE" id="share-private" />
+            <Label htmlFor="share-private" className="font-normal flex items-center gap-1.5 cursor-pointer"><Users className="h-4 w-4"/>Privado</Label>
+          </div>
         </RadioGroup>
 
         <AnimatePresence>
@@ -493,7 +502,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
           <ScrollArea className="md:col-span-4 lg:col-span-3 border-r h-full relative">
              <div className="p-6 space-y-6">
                 {!isEditing && renderCreationOptions()}
-                {(isEditing || resourceType !== 'DOCUMENT') && (
+                {(isEditing || (resourceType !== 'DOCUMENT' && resourceType !== 'VIDEO_PLAYLIST')) && (
                   <>
                     <div className="space-y-1.5"><Label htmlFor="title">Título</Label><Input id="title" value={title} onChange={(e) => handleResourceDetailChange('title', e.target.value)} required autoComplete="off" /></div>
                     <div className="space-y-1.5"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => handleResourceDetailChange('description', e.target.value)} placeholder="Un resumen breve del contenido del recurso..."/></div>
