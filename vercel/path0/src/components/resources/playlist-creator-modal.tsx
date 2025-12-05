@@ -1,7 +1,7 @@
 // src/components/resources/playlist-creator-modal.tsx
 'use client';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -12,22 +12,46 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ListVideo, PlusCircle, Trash2, Youtube, UploadCloud, Globe, Briefcase, Users } from 'lucide-react';
-import { useAuth } from '@/contexts/auth-context';
+import { Loader2, FolderPlus, Video, XCircle, Trash2, Edit, Save, Globe, Users, Briefcase } from 'lucide-react';
+import type { AppResourceType, User as AppUser, Process, ResourceSharingMode } from '@/types';
+import { DndContext, DragEndEvent, closestCenter, useSensor, PointerSensor, TouchSensor } from '@dnd-kit/core';
+import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import Image from 'next/image';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { UploadArea } from '@/components/ui/upload-area';
-import { uploadWithProgress } from '@/lib/upload-with-progress';
-import { Progress } from '@/components/ui/progress';
-import type { AppResourceType, User as AppUser, Process, ResourceSharingMode } from '@/types';
+import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
-import { Separator } from '@/components/ui/separator';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+
+const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
+const SortableVideoItem = ({ video, onRemove }: { video: { id: string, title: string, url: string }, onRemove: () => void }) => {
+    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: video.id });
+    const style = { transform: CSS.Transform.toString(transform), transition };
+    const thumbnailUrl = `https://img.youtube.com/vi/${getYoutubeVideoId(video.url)}/mqdefault.jpg`;
+    
+    return (
+        <div ref={setNodeRef} style={style} {...attributes} className="p-2 bg-card border rounded-lg flex items-center gap-3">
+             <div {...listeners} className="cursor-grab p-1">
+                <MoreVertical className="h-5 w-5 text-muted-foreground" />
+            </div>
+             <Image src={thumbnailUrl} alt={video.title} width={80} height={45} className="w-20 h-auto aspect-video rounded-md object-cover bg-muted" />
+            <div className="flex-grow min-w-0">
+                <p className="text-sm font-medium truncate">{video.title}</p>
+                 <a href={video.url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-primary truncate">{video.url}</a>
+            </div>
+             <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={onRemove}>
+                <Trash2 className="h-4 w-4"/>
+            </Button>
+        </div>
+    );
+};
 
 
 interface PlaylistCreatorModalProps {
@@ -35,116 +59,78 @@ interface PlaylistCreatorModalProps {
     onClose: () => void;
     parentId: string | null;
     onSave: () => void;
-    playlistToEdit?: AppResourceType | null;
+    playlistToEdit?: AppResourceType & { children?: AppResourceType[] } | null;
 }
 
-interface VideoItem {
+interface FlatProcess {
     id: string;
-    url: string;
-    title: string;
-    thumbnail: string;
-    source: 'youtube' | 'upload';
+    name: string;
+    level: number;
 }
-
-const UserOrProcessList = ({ type, items, selectedIds, onSelectionChange, search, onSearchChange }: { 
-    type: 'user' | 'process', 
-    items: any[], 
-    selectedIds: string[], 
-    onSelectionChange: (ids: string[]) => void,
-    search: string;
-    onSearchChange: (value: string) => void;
-}) => {
-    const filteredItems = items.filter(item => item.name.toLowerCase().includes(search.toLowerCase()));
-
-    const handleSelection = (id: string, checked: boolean) => {
-        onSelectionChange(checked ? [...selectedIds, id] : selectedIds.filter(i => i !== id));
-    };
-
-    return (
-        <div className="mt-2 space-y-2">
-            <Input placeholder={`Buscar ${type === 'user' ? 'usuario' : 'proceso'}...`} value={search} onChange={e => onSearchChange(e.target.value)} />
-            <ScrollArea className="h-32 border rounded-md p-2">
-                <div className="space-y-2">
-                    {filteredItems.map(item => (
-                        <div key={item.id} className="flex items-center space-x-3 p-1.5 rounded-md hover:bg-muted">
-                            <Checkbox id={`${type}-${item.id}`} checked={selectedIds.includes(item.id)} onCheckedChange={(c) => handleSelection(item.id, !!c)}/>
-                            <Label htmlFor={`${type}-${item.id}`} className="flex items-center gap-2 font-normal cursor-pointer text-sm">
-                                {type === 'user' && <Avatar className="h-7 w-7"><AvatarImage src={item.avatar || undefined} /><AvatarFallback><Identicon userId={item.id}/></AvatarFallback></Avatar>}
-                                {item.name}
-                            </Label>
-                        </div>
-                    ))}
-                </div>
-            </ScrollArea>
-        </div>
-    );
-};
 
 
 export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playlistToEdit }: PlaylistCreatorModalProps) {
     const { toast } = useToast();
-    const { user, settings } = useAuth();
-    const isEditing = !!playlistToEdit;
+    const { user } = useAuth();
     
     // Form state
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [category, setCategory] = useState('');
-    const [videoUrl, setVideoUrl] = useState('');
-    const [videos, setVideos] = useState<VideoItem[]>([]);
+    const [videos, setVideos] = useState<{id: string, title: string, url: string}[]>([]);
+    const [newVideoUrl, setNewVideoUrl] = useState('');
     
-    // Permissions
+    // Permissions state
     const [sharingMode, setSharingMode] = useState<ResourceSharingMode>('PUBLIC');
     const [sharedWithUserIds, setSharedWithUserIds] = useState<string[]>([]);
     const [sharedWithProcessIds, setSharedWithProcessIds] = useState<string[]>([]);
     const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
-
+    
+    // API data
     const [allUsers, setAllUsers] = useState<AppUser[]>([]);
     const [allProcesses, setAllProcesses] = useState<Process[]>([]);
 
-    // UI State
-    const [videoSource, setVideoSource] = useState<'youtube' | 'upload'>('youtube');
-    const [isUploading, setIsUploading] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
+    const [isFetchingInfo, setIsFetchingInfo] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-    const [userSearch, setUserSearch] = useState('');
+
+    const isEditing = !!playlistToEdit;
+    
+    const flattenProcesses = (processList: Process[], level = 0): FlatProcess[] => {
+      let list: FlatProcess[] = [];
+      processList.forEach(p => {
+        list.push({ id: p.id, name: p.name, level });
+        if (p.children && p.children.length > 0) {
+          list.push(...flattenProcesses(p.children, level + 1));
+        }
+      });
+      return list;
+    };
+    const flattenedProcesses = flattenProcesses(allProcesses);
 
 
     useEffect(() => {
         if (isOpen) {
-            if (isEditing && playlistToEdit) {
+             if (isEditing && playlistToEdit) {
                 setTitle(playlistToEdit.title);
                 setDescription(playlistToEdit.description || '');
-                setCategory(playlistToEdit.category || settings?.resourceCategories[0] || 'General');
-                
-                const existingVideos = (playlistToEdit as any).children?.map((v: any) => ({
-                    id: v.id,
-                    url: v.url,
-                    title: v.title,
-                    thumbnail: v.url && getYoutubeVideoId(v.url) ? `https://img.youtube.com/vi/${getYoutubeVideoId(v.url)}/mqdefault.jpg` : '',
-                    source: v.url && getYoutubeVideoId(v.url) ? 'youtube' : 'upload',
-                })) || [];
-                setVideos(existingVideos);
-
-                setSharingMode(playlistToEdit.sharingMode || 'PUBLIC');
+                setCategory(playlistToEdit.category || '');
+                setVideos(playlistToEdit.children?.map(c => ({ id: c.id, title: c.title, url: c.url || '' })) || []);
+                setSharingMode(playlistToEdit.sharingMode);
                 setSharedWithUserIds(playlistToEdit.sharedWith?.map(u => u.id) || []);
                 setSharedWithProcessIds(playlistToEdit.sharedWithProcesses?.map(p => p.id) || []);
-                setCollaboratorIds(playlistToEdit.collaborators?.map(c => c.id) || []);
-
-            } else {
+                setCollaboratorIds(playlistToEdit.collaborators?.map(u => u.id) || []);
+             } else {
                 setTitle('');
                 setDescription('');
-                setCategory(settings?.resourceCategories[0] || 'General');
+                setCategory('');
                 setVideos([]);
                 setSharingMode('PUBLIC');
                 setSharedWithUserIds([]);
                 setSharedWithProcessIds([]);
                 setCollaboratorIds([]);
-            }
-            setVideoUrl('');
-            setVideoSource('youtube');
-
-             if (user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') {
+             }
+             
+            if (user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') {
                 Promise.all([
                   fetch('/api/users/list').then(res => res.json()),
                   fetch('/api/processes?format=flat').then(res => res.json())
@@ -154,98 +140,66 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                 }).catch(console.error);
             }
         }
-    }, [isOpen, playlistToEdit, isEditing, settings, user]);
-
-
-    const handleAddVideoFromUrl = () => {
-        const youtubeId = getYoutubeVideoId(videoUrl);
-        if (!youtubeId) {
-            toast({ title: 'URL inválida', description: 'Por favor, ingresa una URL de YouTube válida.', variant: 'destructive'});
+    }, [playlistToEdit, isOpen, isEditing, user]);
+    
+    const handleAddVideo = async () => {
+        if (!newVideoUrl.trim()) return;
+        const videoId = getYoutubeVideoId(newVideoUrl);
+        if (!videoId) {
+            toast({ title: 'URL Inválida', description: 'Por favor, ingresa una URL de YouTube válida.', variant: 'destructive'});
             return;
         }
-
-        const videoTitle = `Video de YouTube ${videos.length + 1}`;
-
-        setVideos(prev => [
-            ...prev,
-            {
-                id: `video-${Date.now()}`,
-                url: videoUrl,
-                title: videoTitle,
-                thumbnail: `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`,
-                source: 'youtube'
-            }
-        ]);
-        setVideoUrl('');
-    };
-
-    const handleVideoFileUpload = async (files: FileList | null) => {
-      if (!files) return;
-      
-      setIsUploading(true);
-      const newUploads: VideoItem[] = [];
-      const fileArray = Array.from(files);
-
-      for (const file of fileArray) {
-        const tempId = `upload-${file.name}-${Date.now()}`;
-        const newUploadItem: VideoItem = {
-            id: tempId,
-            url: '',
-            title: file.name,
-            thumbnail: '',
-            source: 'upload',
-        };
-        newUploads.push(newUploadItem);
-
-        uploadWithProgress('/api/upload/resource-file', file, (progress) => {
-            setUploadProgress(prev => ({ ...prev, [tempId]: progress }));
-        })
-        .then(result => {
-             setVideos(prev => prev.map(v => v.id === tempId ? {...v, url: result.url} : v));
-             setUploadProgress(prev => ({ ...prev, [tempId]: 100 }));
-        })
-        .catch(err => {
-            toast({ title: `Error subiendo ${file.name}`, description: (err as Error).message, variant: 'destructive' });
-            setVideos(prev => prev.filter(v => v.id !== tempId));
-        });
-      }
-      setVideos(prev => [...prev, ...newUploads.map(u => ({...u, url: '#placeholder'}))]);
-      setIsUploading(false);
-    };
+        setIsFetchingInfo(true);
+        try {
+            const response = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
+            if (!response.ok) throw new Error('No se pudo obtener la información del video.');
+            const data = await response.json();
+            setVideos(prev => [...prev, { id: generateUniqueId('vid'), title: data.title, url: newVideoUrl }]);
+            setNewVideoUrl('');
+        } catch(err) {
+            toast({ title: 'Error', description: (err as Error).message, variant: 'destructive'});
+        } finally {
+            setIsFetchingInfo(false);
+        }
+    }
     
-    const handleRemoveVideo = (id: string) => {
-        setVideos(prev => prev.filter(v => v.id !== id));
+    const handleRemoveVideo = (idToRemove: string) => {
+        setVideos(prev => prev.filter(v => v.id !== idToRemove));
+    }
+    
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (over && active.id !== over.id) {
+            setVideos((items) => {
+                const oldIndex = items.findIndex(item => item.id === active.id);
+                const newIndex = items.findIndex(item => item.id === over.id);
+                return arrayMove(items, oldIndex, newIndex);
+            });
+        }
     };
+    const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSaving(true);
         try {
-            const finalVideos = videos.filter(v => v.url && v.url !== '#placeholder');
-            if (finalVideos.length === 0) {
-                throw new Error("Añade al menos un video válido a la lista.");
-            }
-
-            const endpoint = isEditing ? `/api/resources/${playlistToEdit?.id}` : '/api/resources';
+            const endpoint = isEditing ? `/api/resources/${playlistToEdit.id}` : '/api/resources';
             const method = isEditing ? 'PUT' : 'POST';
 
             const payload = {
-                title, description, category, parentId, type: 'VIDEO_PLAYLIST',
-                sharingMode,
-                sharedWithUserIds: sharingMode === 'PRIVATE' ? sharedWithUserIds : [],
-                sharedWithProcessIds: sharingMode === 'PROCESS' ? sharedWithProcessIds : [],
-                collaboratorIds,
-                videos: finalVideos.map(v => ({ url: v.url, title: v.title })),
+                title, description, category, parentId,
+                type: 'VIDEO_PLAYLIST', videos,
+                sharingMode, sharedWithUserIds, sharedWithProcessIds, collaboratorIds
             };
 
             const response = await fetch(endpoint, {
-                method: method,
+                method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             });
-            if (!response.ok) throw new Error(`No se pudo ${isEditing ? 'actualizar' : 'crear'} la lista de reproducción.`);
+            if (!response.ok) throw new Error((await response.json()).message || 'No se pudo guardar la lista.');
             
-            toast({ title: `Lista de Reproducción ${isEditing ? 'Actualizada' : 'Creada'}` });
+            toast({ title: 'Éxito', description: `Lista de videos ${isEditing ? 'actualizada' : 'creada'}.` });
             onSave();
             onClose();
         } catch (err) {
@@ -255,83 +209,63 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
         }
     };
     
-
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-2xl max-h-[90vh] p-0 flex flex-col gap-0 rounded-2xl">
+            <DialogContent className="w-[95vw] sm:max-w-4xl p-0 gap-0 rounded-2xl max-h-[90vh] flex flex-col">
                 <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
                     <DialogTitle>{isEditing ? 'Editar Lista de Videos' : 'Crear Nueva Lista de Videos'}</DialogTitle>
-                    <DialogDescription>Agrupa videos en una secuencia de aprendizaje.</DialogDescription>
+                     <DialogDescription>
+                        Agrupa videos en una secuencia ordenada para crear un micro-curso.
+                    </DialogDescription>
                 </DialogHeader>
+
                 <div className="flex-1 min-h-0">
-                  <ScrollArea className="h-full pr-6">
-                    <form id="playlist-form" onSubmit={handleSubmit} className="space-y-4 pl-6 py-4">
-                        {/* --- BASIC INFO --- */}
-                        <div className="space-y-1.5"><Label htmlFor="playlist-title">Título de la Lista</Label><Input id="playlist-title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
-                        <div className="space-y-1.5"><Label htmlFor="playlist-description">Descripción (Opcional)</Label><Input id="playlist-description" value={description} onChange={(e) => setDescription(e.target.value)} /></div>
-                        
-                        <Separator/>
-
-                        {/* --- VIDEOS SECTION --- */}
-                        <div className="space-y-1.5">
-                            <Label>Añadir Videos</Label>
-                            <RadioGroup value={videoSource} onValueChange={(v) => setVideoSource(v as 'youtube' | 'upload')} className="grid grid-cols-2 gap-2">
-                               <div><RadioGroupItem value="youtube" id="src-youtube" className="sr-only"/><Label htmlFor="src-youtube" className={`flex items-center justify-center gap-2 p-2 border-2 rounded-lg cursor-pointer ${videoSource === 'youtube' ? 'border-primary' : 'border-muted'}`}><Youtube className="h-5 w-5"/> YouTube</Label></div>
-                               <div><RadioGroupItem value="upload" id="src-upload" className="sr-only"/><Label htmlFor="src-upload" className={`flex items-center justify-center gap-2 p-2 border-2 rounded-lg cursor-pointer ${videoSource === 'upload' ? 'border-primary' : 'border-muted'}`}><UploadCloud className="h-5 w-5"/> Subir Video</Label></div>
-                            </RadioGroup>
-                            {videoSource === 'youtube' ? (
-                              <div className="flex gap-2"><Input value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="Pega una URL de YouTube"/><Button type="button" onClick={handleAddVideoFromUrl} disabled={!videoUrl}><PlusCircle className="h-4 w-4"/></Button></div>
-                            ) : (
-                              <div className="space-y-2"><UploadArea onFileSelect={handleVideoFileUpload} disabled={isUploading} inputId="video-upload-input" multiple={true} /></div>
-                            )}
-                            <div className="space-y-2 mt-2 max-h-48 overflow-y-auto pr-2">
-                                {videos.map(video => (
-                                    <div key={video.id} className="flex items-center gap-2 p-2 border rounded-md">
-                                        <div className="w-20 h-12 bg-black rounded flex-shrink-0 relative">
-                                            {video.thumbnail ? (
-                                                <Image src={video.thumbnail} alt={video.title} fill className="object-cover"/>
-                                            ) : (<div className="flex items-center justify-center h-full"><Youtube className="h-6 w-6 text-red-500"/></div>)}
-                                        </div>
-                                        <div className="flex-grow min-w-0">
-                                           <p className="text-sm font-medium truncate">{video.title}</p>
-                                           {uploadProgress[video.id] < 100 && <Progress value={uploadProgress[video.id] || 0} className="h-1 mt-1"/>}
-                                        </div>
-                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleRemoveVideo(video.id)}><Trash2 className="h-4 w-4"/></Button>
+                    <ScrollArea className="h-full">
+                        <form id="playlist-form" onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 px-6 py-4">
+                            {/* Columna Izquierda: Detalles e Hijos */}
+                            <div className="space-y-4">
+                                <div className="space-y-1"><Label htmlFor="title">Título de la Lista</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
+                                <div className="space-y-1"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} /></div>
+                                <div className="space-y-1"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory} required><SelectTrigger><SelectValue placeholder="Selecciona..."/></SelectTrigger><SelectContent><SelectItem value="Capacitación Interna">Capacitación Interna</SelectItem><SelectItem value="Tutoriales de Software">Tutoriales de Software</SelectItem><SelectItem value="Marketing y Ventas">Marketing y Ventas</SelectItem></SelectContent></Select></div>
+                                <Separator />
+                                <div className="space-y-2">
+                                    <Label>Videos de la Lista</Label>
+                                    <div className="flex gap-2">
+                                        <Input value={newVideoUrl} onChange={e => setNewVideoUrl(e.target.value)} placeholder="Pega una URL de YouTube..."/>
+                                        <Button type="button" variant="outline" onClick={handleAddVideo} disabled={isFetchingInfo}>{isFetchingInfo ? <Loader2 className="h-4 w-4 animate-spin"/> : 'Añadir'}</Button>
                                     </div>
-                                ))}
+                                    <div className="h-64 border rounded-lg p-2 bg-muted/50">
+                                       <ScrollArea className="h-full pr-3">
+                                        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                                            <SortableContext items={videos.map(v => v.id)} strategy={verticalListSortingStrategy}>
+                                                <div className="space-y-2">
+                                                {videos.map((video) => (
+                                                    <SortableVideoItem key={video.id} video={video} onRemove={() => handleRemoveVideo(video.id)} />
+                                                ))}
+                                                </div>
+                                            </SortableContext>
+                                        </DndContext>
+                                       </ScrollArea>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
 
-                        <Separator/>
-                        
-                        {/* --- PERMISSIONS SECTION --- */}
-                        <div className="space-y-4">
-                           <div className="space-y-2">
-                                <Label>Visibilidad</Label>
-                                <RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-3 gap-2">
-                                    <Label htmlFor="share-public" className={`flex flex-col items-center justify-center p-2 text-xs border-2 rounded-lg cursor-pointer ${sharingMode === 'PUBLIC' ? 'border-primary' : 'border-muted'}`}><Globe className="mb-1 h-5 w-5"/>Público</Label>
-                                    <RadioGroupItem value="PUBLIC" id="share-public" className="sr-only"/>
-                                    <Label htmlFor="share-process" className={`flex flex-col items-center justify-center p-2 text-xs border-2 rounded-lg cursor-pointer ${sharingMode === 'PROCESS' ? 'border-primary' : 'border-muted'}`}><Briefcase className="mb-1 h-5 w-5"/>Por Proceso</Label>
-                                    <RadioGroupItem value="PROCESS" id="share-process" className="sr-only"/>
-                                    <Label htmlFor="share-private" className={`flex flex-col items-center justify-center p-2 text-xs border-2 rounded-lg cursor-pointer ${sharingMode === 'PRIVATE' ? 'border-primary' : 'border-muted'}`}><Users className="mb-1 h-5 w-5"/>Privado</Label>
-                                    <RadioGroupItem value="PRIVATE" id="share-private" className="sr-only"/>
-                                </RadioGroup>
-                                {sharingMode === 'PROCESS' && <UserOrProcessList type="process" items={allProcesses} selectedIds={sharedWithProcessIds} onSelectionChange={setSharedWithProcessIds} search={userSearch} onSearchChange={setUserSearch} />}
-                                {sharingMode === 'PRIVATE' && <UserOrProcessList type="user" items={allUsers} selectedIds={sharedWithUserIds} onSelectionChange={setSharedWithUserIds} search={userSearch} onSearchChange={setUserSearch} />}
-                           </div>
-                            <div className="space-y-2">
-                                <Label>Colaboradores</Label>
-                                <p className="text-xs text-muted-foreground">Usuarios que pueden editar esta lista.</p>
-                                <UserOrProcessList type="user" items={allUsers} selectedIds={collaboratorIds} onSelectionChange={setCollaboratorIds} search={userSearch} onSearchChange={setUserSearch} />
+                            {/* Columna Derecha: Permisos */}
+                            <div className="space-y-4">
+                               <Card><CardHeader><CardTitle className="text-base flex items-center gap-2"><Globe className="h-4 w-4 text-primary"/>Visibilidad</CardTitle></CardHeader><CardContent><RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-1 sm:grid-cols-3 gap-2"><RadioGroupItem value="PUBLIC" id="share-public" className="sr-only" /><Label htmlFor="share-public" className={`flex flex-col items-center justify-center p-3 text-center border-2 rounded-lg cursor-pointer ${sharingMode === 'PUBLIC' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Globe className={`mb-1 h-5 w-5 ${sharingMode === 'PUBLIC' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="text-xs font-semibold">Público</span></Label><RadioGroupItem value="PROCESS" id="share-process" className="sr-only"/><Label htmlFor="share-process" className={`flex flex-col items-center justify-center p-3 text-center border-2 rounded-lg cursor-pointer ${sharingMode === 'PROCESS' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Briefcase className={`mb-1 h-5 w-5 ${sharingMode === 'PROCESS' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="text-xs font-semibold">Por Proceso</span></Label><RadioGroupItem value="PRIVATE" id="share-private" className="sr-only"/><Label htmlFor="share-private" className={`flex flex-col items-center justify-center p-3 text-center border-2 rounded-lg cursor-pointer ${sharingMode === 'PRIVATE' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Users className={`mb-1 h-5 w-5 ${sharingMode === 'PRIVATE' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="text-xs font-semibold">Privado</span></Label></RadioGroup>
+                                   {sharingMode === 'PROCESS' && (<UserOrProcessList type="process" items={flattenedProcesses} selectedIds={sharedWithProcessIds} onSelectionChange={setSharedWithProcessIds} />)}
+                                   {sharingMode === 'PRIVATE' && (<UserOrProcessList type="user" items={allUsers} selectedIds={sharedWithUserIds} onSelectionChange={setSharedWithUserIds} />)}
+                               </CardContent></Card>
+                               <Card><CardHeader><CardTitle className="text-base flex items-center gap-2"><Edit className="h-4 w-4 text-primary"/>Colaboradores</CardTitle><CardDescription className="text-xs">Permite a otros instructores o administradores editar esta lista de reproducción.</CardDescription></CardHeader><CardContent><UserOrProcessList type="user" items={allUsers.filter(u => u.role !== 'STUDENT')} selectedIds={collaboratorIds} onSelectionChange={setCollaboratorIds} /></CardContent></Card>
                             </div>
-                        </div>
-                    </form>
-                  </ScrollArea>
+                        </form>
+                    </ScrollArea>
                 </div>
-                <DialogFooter className="p-6 pt-4 border-t flex-shrink-0">
+                
+                 <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2">
                     <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
-                    <Button type="submit" form="playlist-form" disabled={isSaving || !title || videos.length === 0}>
-                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <ListVideo className="mr-2 h-4 w-4"/>}
+                    <Button type="submit" form="playlist-form" disabled={isSaving || !title.trim() || videos.length === 0}>
+                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
                         {isEditing ? 'Guardar Cambios' : 'Crear Lista'}
                     </Button>
                 </DialogFooter>
@@ -339,3 +273,32 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
         </Dialog>
     );
 }
+
+
+const UserOrProcessList = ({ type, items, selectedIds, onSelectionChange }: { type: 'user' | 'process', items: any[], selectedIds: string[], onSelectionChange: (ids: string[]) => void }) => {
+    const [search, setSearch] = useState('');
+    const filteredItems = items.filter(item => item.name.toLowerCase().includes(search.toLowerCase()));
+
+    const handleSelection = (id: string, checked: boolean) => {
+        onSelectionChange(checked ? [...selectedIds, id] : selectedIds.filter(i => i !== id));
+    };
+    
+    return (
+        <div className="mt-4 border rounded-lg p-3">
+             <Input placeholder={`Buscar ${type === 'user' ? 'usuario' : 'proceso'}...`} value={search} onChange={e => setSearch(e.target.value)} className="mb-2"/>
+             <ScrollArea className="h-32">
+                <div className="space-y-1 pr-3">
+                    {filteredItems.map(item => (
+                        <div key={item.id} className="flex items-center space-x-3 p-1.5 rounded-md hover:bg-muted">
+                            <Checkbox id={`${type}-${item.id}`} checked={selectedIds.includes(item.id)} onCheckedChange={(c) => handleSelection(item.id, !!c)}/>
+                            <Label htmlFor={`${type}-${item.id}`} className="flex items-center gap-2 font-normal cursor-pointer text-sm">
+                                {type === 'user' && <Avatar className="h-7 w-7"><AvatarImage src={item.avatar || undefined} /><AvatarFallback><Identicon userId={item.id}/></AvatarFallback></Avatar>}
+                                <span style={{ paddingLeft: `${(item.level || 0) * 1.5}rem` }}>{item.name}</span>
+                            </Label>
+                        </div>
+                    ))}
+                </div>
+             </ScrollArea>
+        </div>
+    );
+};
