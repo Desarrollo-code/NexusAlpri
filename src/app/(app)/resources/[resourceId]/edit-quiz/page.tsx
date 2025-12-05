@@ -1,7 +1,7 @@
 // src/app/(app)/resources/[resourceId]/edit-quiz/page.tsx
 'use client';
 
-import { InteractiveContentStudio } from '@/components/resources/interactive-content-studio';
+import { InteractiveContentStudio } from '@/components/resources/interactive-quiz-editor';
 import { useTitle } from '@/contexts/title-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import React, { Suspense, useEffect } from 'react';
