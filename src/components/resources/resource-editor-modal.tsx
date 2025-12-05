@@ -1,311 +1,422 @@
 // src/components/resources/resource-editor-modal.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback, ChangeEvent } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button'; // Se eliminó buttonVariants, no era necesario aquí
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Save, FileUp, Link as LinkIcon, FilePenLine, ArrowLeft, ArrowRight, Globe, Users, Briefcase } from 'lucide-react';
-import type { AppResourceType, User as AppUser, Process, ResourceSharingMode } from '@/types';
+import { Switch } from '@/components/ui/switch';
+import { Loader2, Save, UploadCloud, Link as LinkIcon, XCircle, RotateCcw, Globe, Users, FilePen, Briefcase } from 'lucide-react'; // Se eliminaron iconos no utilizados
+import type { AppResourceType, User as AppUser, Process } from '@/types'; // Se añadió Process
 import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Identicon } from '@/components/ui/identicon';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'; // Se eliminó AvatarImage, no se usa
+import { Identicon } from '@/components/ui/identicon'; // Se eliminó, no se usa
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Separator } from '@/components/ui/separator';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import { FileIcon } from '../ui/file-icon';
-import { formatFileSize } from '@/lib/utils';
-import { Alert, AlertDescription } from '../ui/alert';
-import { Info } from 'lucide-react';
+// Se eliminó Image, QuizViewer, cn, FileIcon
 
-const TOTAL_STEPS = 2;
+// Define el tipo de compartición para mayor claridad
+type ResourceSharingMode = 'PUBLIC' | 'PROCESS' | 'PRIVATE';
 
 interface ResourceEditorModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  resource: AppResourceType | null;
-  parentId: string | null;
-  onSave: () => void;
+  isOpen: boolean;
+  onClose: () => void;
+  resource: AppResourceType | null;
+  parentId: string | null;
+  onSave: () => void;
 }
 
-const stepVariants = {
-  enter: (direction: number) => ({
-    x: direction > 0 ? '100%' : '-100%',
-    opacity: 0,
-  }),
-  center: {
-    x: 0,
-    opacity: 1,
-  },
-  exit: (direction: number) => ({
-    x: direction < 0 ? '100%' : '-100%',
-    opacity: 0,
-  }),
+interface UploadState {
+  id: string;
+  file: File;
+  progress: number;
+  error: string | null;
+  status: 'uploading' | 'processing' | 'completed' | 'error';
+  url?: string;
+}
+
+const getInitials = (name?: string | null): string => {
+  if (!name) return '??';
+  const names = name.trim().split(/\s+/);
+  if (names.length > 1 && names[0] && names[names.length - 1]) {
+    return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+  }
+  if (names.length === 1 && names[0]) {
+    return names[0].substring(0, 2).toUpperCase();
+  }
+  return name.substring(0, 2).toUpperCase();
 };
 
 export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSave }: ResourceEditorModalProps) {
-    const { toast } = useToast();
-    const { settings } = useAuth();
-    
-    const [step, setStep] = useState(1);
-    const [direction, setDirection] = useState(1);
-    
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [category, setCategory] = useState('');
-    const [resourceType, setResourceType] = useState<AppResourceType['type']>('DOCUMENT');
-    
-    const [externalLink, setExternalLink] = useState('');
-    const [editableContent, setEditableContent] = useState('');
-    
-    const [upload, setUpload] = useState<any>(null);
-    const [isUploading, setIsUploading] = useState(false);
+  const { toast } = useToast();
+  const { user, settings } = useAuth();
+  
+  // Estados principales del formulario
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [content, setContent] = useState('');
+  const [observations, setObservations] = useState('');
+  const [category, setCategory] = useState('');
+  const [expiresAt, setExpiresAt] = useState<Date | undefined>(undefined);
+  const [resourceType, setResourceType] = useState<AppResourceType['type']>('DOCUMENT');
+  const [externalLink, setExternalLink] = useState('');
+  
+  // ESTADO ACTUALIZADO PARA VISIBILIDAD
+  const [sharingMode, setSharingMode] = useState<ResourceSharingMode>('PUBLIC');
+  const [sharedWithUserIds, setSharedWithUserIds] = useState<string[]>([]);
+  const [sharedWithProcessIds, setSharedWithProcessIds] = useState<string[]>([]); // Nuevo estado para procesos
+  
+  // Estados de gestión y API
+  const [uploads, setUploads] = useState<UploadState[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [allUsers, setAllUsers] = useState<AppUser[]>([]);
+  const [allProcesses, setAllProcesses] = useState<Process[]>([]); // Lista de Procesos
+  const [userSearch, setUserSearch] = useState('');
+  const [processSearch, setProcessSearch] = useState('');
+  
+  // Estados eliminados: collaboratorIds, pin, confirmPin, showPin, isSettingPin, isPublic
 
-    const [sharingMode, setSharingMode] = useState<ResourceSharingMode>('PUBLIC');
-    const [sharedWithUserIds, setSharedWithUserIds] = useState<string[]>([]);
-    const [sharedWithProcessIds, setSharedWithProcessIds] = useState<string[]>([]);
+  const isEditing = !!resource;
 
-    const [allUsers, setAllUsers] = useState<AppUser[]>([]);
-    const [allProcesses, setAllProcesses] = useState<Process[]>([]);
-    const [isSaving, setIsSaving] = useState(false);
-    
-    const isEditing = !!resource;
+  const resetForm = useCallback(() => {
+    setTitle('');
+    setDescription('');
+    setContent('');
+    setObservations('');
+    setCategory(settings?.resourceCategories[0] || 'General');
+    setSharingMode('PUBLIC'); // Reiniciar modo de compartición
+    setSharedWithUserIds([]);
+    setSharedWithProcessIds([]); // Reiniciar procesos
+    setExpiresAt(undefined);
+    setResourceType('DOCUMENT');
+    setExternalLink('');
+    setUploads([]);
+  }, [settings?.resourceCategories]);
 
-    const resetForm = useCallback(() => {
-        setStep(1);
-        setTitle('');
-        setDescription('');
-        setCategory(settings?.resourceCategories[0] || 'General');
-        setResourceType('DOCUMENT');
-        setExternalLink('');
-        setEditableContent('');
-        setUpload(null);
-        setSharingMode('PUBLIC');
-        setSharedWithUserIds([]);
-        setSharedWithProcessIds([]);
-    }, [settings?.resourceCategories]);
-    
-    useEffect(() => {
-        if (isOpen) {
-            setStep(1); 
-            if (isEditing && resource) {
-                setTitle(resource.title || '');
-                setDescription(resource.description || '');
-                setCategory(resource.category || settings?.resourceCategories[0] || 'General');
-                setResourceType(resource.type);
-                setSharingMode(resource.sharingMode || 'PUBLIC');
-                setSharedWithUserIds(resource.sharedWith?.map(u => u.id) || []);
-                setSharedWithProcessIds(resource.sharedWithProcesses?.map(p => p.id) || []);
-                if (resource.type === 'EXTERNAL_LINK') setExternalLink(resource.url || '');
-                if (resource.type === 'DOCUMENTO_EDITABLE') setEditableContent(resource.content || '');
-            } else {
-                resetForm();
-            }
+  useEffect(() => {
+    if (isOpen) {
+      if (resource) {
+        setTitle(resource.title || '');
+        setDescription(resource.description || '');
+        setContent(resource.content || '');
+        setObservations(resource.observations || '');
+        setCategory(resource.category || settings?.resourceCategories[0] || 'General');
+        // Mapeo de la antigua 'isPublic' al nuevo 'sharingMode'
+        if (resource.ispublic) {
+          setSharingMode('PUBLIC');
+        } else if (resource.sharedWithProcesses && resource.sharedWithProcesses.length > 0) {
+          setSharingMode('PROCESS');
+          setSharedWithProcessIds(resource.sharedWithProcesses.map(p => p.id));
+        } else {
+          setSharingMode('PRIVATE');
+          setSharedWithUserIds(resource.sharedWith?.map(u => u.id) || []);
+        }
+        
+        // setCollaboratorIds se elimina
+        setExpiresAt(resource.expiresAt ? new Date(resource.expiresAt) : undefined);
+        setResourceType(resource.type);
+        setExternalLink(resource.type === 'EXTERNAL_LINK' ? resource.url || '' : '');
+        setUploads([]);
+      } else {
+        resetForm();
+      }
 
-            Promise.all([
-              fetch('/api/users/list').then(res => res.json()),
-              fetch('/api/processes').then(res => res.json())
-            ]).then(([usersData, processesData]) => {
-                setAllUsers(usersData.users || []);
-                setAllProcesses(processesData || []);
-            }).catch(console.error);
-        }
-    }, [isEditing, resource, isOpen, resetForm, settings?.resourceCategories]);
+      if (user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') {
+          Promise.all([
+            fetch('/api/users/list').then(res => res.json()),
+            fetch('/api/processes/list').then(res => res.json()), // Supuesta API para Procesos
+          ]).then(([usersData, processesData]) => {
+            setAllUsers(usersData.users || []);
+            setAllProcesses(processesData.processes || []);
+          }).catch(console.error);
+      }
+    }
+  }, [resource, isOpen, resetForm, settings, user]);
 
-    const handleNextStep = () => {
-        setDirection(1);
-        setStep(prev => Math.min(prev + 1, TOTAL_STEPS));
-    };
+  const saveResourceToDb = async (payload: any): Promise<boolean> => {
+    const endpoint = isEditing ? `/api/resources/${resource!.id}` : '/api/resources';
+    const method = isEditing ? 'PUT' : 'POST';
+    
+    try {
+        const response = await fetch(endpoint, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Error al guardar en la base de datos.');
+        }
+        return true;
+    } catch(err) {
+        console.error("DB Save Error:", err);
+        toast({ title: 'Error de Sincronización', description: `No se pudo guardar "${payload.title}": ${(err as Error).message}`, variant: 'destructive'});
+        return false;
+    }
+  };
 
-    const handlePrevStep = () => {
-        setDirection(-1);
-        setStep(prev => Math.max(prev - 1, 1));
-    };
-    
-    const handleFileSelect = async (files: FileList | null) => {
-        if (!files || files.length === 0) return;
-        setIsUploading(true);
-        const file = files[0];
-        const newUpload = { id: `upload-${file.name}-${Date.now()}`, file, progress: 0, error: null, status: 'uploading' as const };
-        setUpload(newUpload);
-        
-        try {
-            const result = await uploadWithProgress('/api/upload/resource-file', file, (p) => setUpload(prev => ({...prev, progress: p})));
-            setUpload(prev => ({...prev, url: result.url, status: 'completed'}));
-            setTitle(prevTitle => prevTitle || file.name.split('.').slice(0,-1).join('.'));
-            setResourceType('DOCUMENT');
-        } catch(err) {
-            setUpload(prev => ({ ...prev, status: 'error', error: (err as Error).message }));
-            toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
-        } finally {
-            setIsUploading(false);
-        }
-    };
+  const uploadFileAndSave = async (upload: UploadState) => {
+    try {
+      const result = await uploadWithProgress('/api/upload/resource-file', upload.file, (p) => {
+        setUploads(prev => prev.map(u => u.id === upload.id ? { ...u, progress: p } : u));
+      });
+      
+      setUploads(prev => prev.map(u => u.id === upload.id ? { ...u, progress: 100, status: 'completed', url: result.url } : u));
 
-    const handleSave = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSaving(true);
-        try {
-            let determinedType = resourceType;
-            let url: string | undefined = undefined;
-            let content: string | undefined = undefined;
-            
-            if (resourceType === 'EXTERNAL_LINK') url = externalLink;
-            else if (resourceType === 'DOCUMENT') url = upload?.url;
-            else if (resourceType === 'DOCUMENTO_EDITABLE') content = editableContent;
-            
-            const payload: any = {
-                title, description, category, type: determinedType, url, content,
-                sharingMode, 
-                sharedWithUserIds: sharingMode === 'PRIVATE' ? sharedWithUserIds : [],
-                sharedWithProcessIds: sharingMode === 'PROCESS' ? sharedWithProcessIds : [],
-                parentId,
-                size: upload?.file.size,
-                fileType: upload?.file.type,
-                filename: upload?.file.name,
-            };
-            
-            const endpoint = isEditing ? `/api/resources/${resource!.id}` : '/api/resources';
-            const method = isEditing ? 'PUT' : 'POST';
-            
-            const response = await fetch(endpoint, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-            if (!response.ok) throw new Error((await response.json()).message || 'No se pudo guardar.');
-            
-            toast({ title: "¡Éxito!", description: `Recurso ${isEditing ? 'actualizado' : 'creado'}.` });
-            onSave();
-            onClose();
+      // Lógica de guardado para archivos subidos
+      let shareUsers: string[] = [];
+      let shareProcesses: string[] = [];
+      let isPublicFlag = sharingMode === 'PUBLIC';
 
-        } catch (err) {
-            toast({ title: "Error", description: (err as Error).message, variant: "destructive" });
-        } finally {
-            setIsSaving(false);
-        }
-    };
+      if (sharingMode === 'PRIVATE') shareUsers = sharedWithUserIds;
+      if (sharingMode === 'PROCESS') shareProcesses = sharedWithProcessIds;
 
-    const Step1Content = () => (
-         <div className="space-y-6">
-            <div className="space-y-1"><Label htmlFor="title">Título</Label><Input id="title" value={title} onChange={e => setTitle(e.target.value)} required /></div>
-            <div className="space-y-1"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} /></div>
-            <div className="space-y-1"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select></div>
-             <Separator/>
-             <RadioGroup value={resourceType} onValueChange={(v) => setResourceType(v as any)} className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                <div className="flex-1"><RadioGroupItem value="DOCUMENT" id="type-doc" className="sr-only" /><Label htmlFor="type-doc" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${resourceType === 'DOCUMENT' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><FileUp className="mb-2 h-6 w-6"/><span className="font-semibold">Archivo</span></Label></div>
-                <div className="flex-1"><RadioGroupItem value="EXTERNAL_LINK" id="type-link" className="sr-only"/><Label htmlFor="type-link" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${resourceType === 'EXTERNAL_LINK' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><LinkIcon className="mb-2 h-6 w-6"/><span className="font-semibold">Enlace Web</span></Label></div>
-                <div className="flex-1"><RadioGroupItem value="DOCUMENTO_EDITABLE" id="type-editable" className="sr-only"/><Label htmlFor="type-editable" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${resourceType === 'DOCUMENTO_EDITABLE' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><FilePenLine className="mb-2 h-6 w-6"/><span className="font-semibold">Documento</span></Label></div>
-             </RadioGroup>
+      const payload = {
+          title: uploads.length > 1 ? upload.file.name.split('.').slice(0,-1).join('.') : title,
+          filename: upload.file.name,
+          description, category, 
+          ispublic: isPublicFlag, // Usar el campo original de la API
+          sharedWithUserIds: shareUsers,
+          sharedWithProcessIds: shareProcesses,
+          collaboratorIds: [], // Eliminado
+          expiresAt: expiresAt ? expiresAt.toISOString() : null,
+          status: 'ACTIVE', type: 'DOCUMENT', url: result.url,
+          size: upload.file.size, fileType: upload.file.type, parentId,
+      };
+      
+      const success = await saveResourceToDb(payload);
+      if (!success) {
+          setUploads(prev => prev.map(u => u.id === upload.id ? { ...u, status: 'error', error: 'Fallo al guardar en la base de datos.' } : u));
+      }
 
-            <AnimatePresence mode="wait">
-              <motion.div key={resourceType} initial={{opacity: 0, height: 0}} animate={{opacity: 1, height: 'auto'}} exit={{opacity: 0, height: 0}} transition={{duration: 0.3}}>
-                {resourceType === 'DOCUMENT' && <div className="pt-4"><UploadArea onFileSelect={(f) => handleFileSelect(f)} disabled={isUploading} />{upload && <div className="p-2 border rounded-md mt-2"><div className="flex justify-between items-start"><p className="text-sm font-medium truncate pr-2">{upload.file.name}</p><Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground" onClick={() => setUpload(null)}><XCircle className="h-4 w-4"/></Button></div><div className="flex items-center gap-2 mt-1"><Progress value={upload.progress} className="h-1 flex-grow"/>{upload.status === 'uploading' && <span className="text-xs font-semibold">{upload.progress}%</span>}{upload.status === 'completed' && <Check className="h-4 w-4 text-green-500"/>}{upload.status === 'error' && <AlertTriangle className="h-4 w-4 text-destructive"/>}</div></div>}</div>}
-                {resourceType === 'EXTERNAL_LINK' && <div className="pt-4"><Input type="url" value={externalLink} onChange={e => setExternalLink(e.target.value)} placeholder="https://..."/></div>}
-                {resourceType === 'DOCUMENTO_EDITABLE' && <div className="pt-4"><RichTextEditor value={editableContent} onChange={setEditableContent} className="h-48" /></div>}
-              </motion.div>
-            </AnimatePresence>
-        </div>
-    );
-    
-    const Step2Permissions = () => (
-        <div className="space-y-6">
-            <RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div className="flex-1"><RadioGroupItem value="PUBLIC" id="share-public" className="sr-only" /><Label htmlFor="share-public" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PUBLIC' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Globe className="mb-2 h-6 w-6"/><span className="font-semibold">Público</span></Label></div>
-                <div className="flex-1"><RadioGroupItem value="PROCESS" id="share-process" className="sr-only"/><Label htmlFor="share-process" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PROCESS' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Briefcase className="mb-2 h-6 w-6"/><span className="font-semibold">Por Proceso</span></Label></div>
-                <div className="flex-1"><RadioGroupItem value="PRIVATE" id="share-private" className="sr-only"/><Label htmlFor="share-private" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PRIVATE' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Users className="mb-2 h-6 w-6"/><span className="font-semibold">Privado</span></Label></div>
-            </RadioGroup>
-            
-            <AnimatePresence>
-                {sharingMode === 'PROCESS' && <motion.div initial={{opacity:0,height:0}} animate={{opacity:1,height:'auto'}} exit={{opacity:0,height:0}}><UserOrProcessList type="process" items={allProcesses} selectedIds={sharedWithProcessIds} onSelectionChange={setSharedWithProcessIds} /></motion.div>}
-                {sharingMode === 'PRIVATE' && <motion.div initial={{opacity:0,height:0}} animate={{opacity:1,height:'auto'}} exit={{opacity:0,height:0}}><UserOrProcessList type="user" items={allUsers} selectedIds={sharedWithUserIds} onSelectionChange={setSharedWithUserIds} /></motion.div>}
-            </AnimatePresence>
-        </div>
-    );
+    } catch (err) {
+      setUploads(prev => prev.map(u => u.id === upload.id ? { ...u, status: 'error', error: (err as Error).message } : u));
+    }
+  };
+  
+  const handleFileSelect = (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    
+    const newUploads = Array.from(files).map(file => ({
+        id: `${file.name}-${Date.now()}`,
+        file, progress: 0, error: null,
+        status: 'uploading' as const,
+    }));
+    
+    setUploads(prev => [...prev, ...newUploads]);
+    
+    if (newUploads.length === 1 && !title) {
+        setTitle(newUploads[0].file.name.split('.').slice(0,-1).join('.'));
+    }
 
-    return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-xl max-h-[90vh] flex flex-col p-0 gap-0 rounded-2xl">
-                 <DialogHeader className="p-6 pb-2 flex-shrink-0">
-                    <DialogTitle>{isEditing ? 'Editar Recurso' : 'Añadir Nuevo Recurso'}</DialogTitle>
-                     <div className="flex items-center gap-4 pt-2">
-                        <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-                            <motion.div className="h-full bg-primary rounded-full" initial={{width: '0%'}} animate={{width: `${(step / TOTAL_STEPS) * 100}%`}} />
-                        </div>
-                        <span className="text-sm font-semibold text-muted-foreground whitespace-nowrap">Paso {step} de {TOTAL_STEPS}</span>
-                    </div>
-                </DialogHeader>
-                <div className="flex-1 min-h-0 relative overflow-hidden">
-                    <ScrollArea className="h-full">
-                         <AnimatePresence initial={false} custom={direction}>
-                            <motion.div
-                                key={step} custom={direction} variants={stepVariants}
-                                initial="enter" animate="center" exit="exit"
-                                transition={{ type: 'tween', ease: 'easeInOut', duration: 0.4 }}
-                                className="w-full px-6 py-4"
-                             >
-                                {step === 1 && <Step1Content />}
-                                {step === 2 && <Step2Permissions />}
-                            </motion.div>
-                         </AnimatePresence>
-                    </ScrollArea>
-                </div>
-                 <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-between sm:justify-between items-center">
-                    <Button variant="ghost" onClick={handlePrevStep} disabled={step === 1 || isSaving}>
-                        <ArrowLeft className="mr-2 h-4 w-4"/> Anterior
-                    </Button>
-                    {step < TOTAL_STEPS ? (
-                        <Button onClick={handleNextStep}>Siguiente <ArrowRight className="ml-2 h-4 w-4"/></Button>
-                    ) : (
-                        <Button onClick={handleSave} disabled={isSaving || !title}>
-                            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                            Guardar Recurso
-                        </Button>
-                    )}
-                 </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
+    newUploads.forEach(uploadFileAndSave);
+  };
+  
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (uploads.length > 0 && resourceType === 'DOCUMENT') {
+        const isStillUploading = uploads.some(u => u.status === 'uploading' || u.status === 'processing');
+        if (isStillUploading) {
+            toast({description: "Por favor, espera a que finalicen todas las subidas."});
+        } else {
+            onSave();
+            onClose();
+        }
+        return;
+    }
+    
+    setIsSubmitting(true);
+    
+    // LÓGICA DE COMPARTICIÓN REEMPLAZADA
+    let shareUsers: string[] = [];
+    let shareProcesses: string[] = [];
+    let isPublicFlag = sharingMode === 'PUBLIC';
+
+    if (sharingMode === 'PRIVATE') shareUsers = sharedWithUserIds;
+    if (sharingMode === 'PROCESS') shareProcesses = sharedWithProcessIds;
+
+    const payload = {
+      title, description, content, observations, category, 
+      ispublic: isPublicFlag, // Usar el campo original de la API
+      sharedWithUserIds: shareUsers,
+      sharedWithProcessIds: shareProcesses,
+      collaboratorIds: [], // Eliminado
+      expiresAt: expiresAt ? expiresAt.toISOString() : null,
+      status: resource?.status || 'ACTIVE', type: resourceType,
+      url: resourceType === 'EXTERNAL_LINK' ? externalLink : resource?.url,
+    };
+    
+    const success = await saveResourceToDb(payload);
+    if (success) {
+        toast({ title: '¡Éxito!', description: `Recurso ${isEditing ? 'actualizado' : 'creado'}.` });
+        onSave();
+        onClose();
+    }
+    setIsSubmitting(false);
+  };
+  
+  const filteredUsers = allUsers.filter(u => u.name.toLowerCase().includes(userSearch.toLowerCase()));
+  const filteredProcesses = allProcesses.filter(p => p.name.toLowerCase().includes(processSearch.toLowerCase()));
+
+  const renderUploadArea = () => (
+    <div className="space-y-4">
+      <UploadArea onFileSelect={(files) => handleFileSelect(files)} multiple={!isEditing} disabled={isSubmitting}/>
+      {uploads.length > 0 && (
+        <div className="space-y-2 max-h-48 overflow-y-auto pr-2 thin-scrollbar">
+          {uploads.map(upload => (
+            <div key={upload.id} className="p-2 border rounded-md">
+              <div className="flex justify-between items-start">
+                <p className="text-sm font-medium truncate pr-2">{upload.file.name}</p>
+                <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive shrink-0" onClick={() => setUploads(p => p.filter(item => item.id !== upload.id))}>
+                  <XCircle className="h-4 w-4"/>
+                </Button>
+              </div>
+              <div className="flex items-center gap-2 mt-1">
+                <Progress value={upload.progress} className="h-1 flex-grow"/>
+                <div className="w-16 text-right">
+                  {upload.status === 'uploading' && <span className="text-xs font-semibold">{upload.progress}%</span>}
+                  {upload.status === 'processing' && <Loader2 className="h-4 w-4 animate-spin text-primary inline-block"/>}
+                  {upload.status === 'completed' && <Globe className="h-4 w-4 text-green-500 inline-block"/>}
+                  {upload.status === 'error' && (
+                    <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => uploadFileAndSave(upload)}>
+                      <RotateCcw className="h-4 w-4"/>
+                    </Button>
+                  )}
+                </div>
+              </div>
+              {upload.error && <p className="text-xs text-destructive mt-1">{upload.error}</p>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="w-[95vw] sm:max-w-2xl p-0 gap-0 rounded-2xl max-h-[90vh] flex flex-col">
+          <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
+            <DialogTitle>{resource ? 'Editar Recurso' : 'Subir Nuevo Recurso'}</DialogTitle>
+            <DialogDescription>{resource ? 'Modifica los detalles de tu recurso.' : 'Añade archivos, enlaces o documentos a la biblioteca.'}</DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="flex-1 min-h-0">
+            <form id="resource-form" onSubmit={handleSave} className="space-y-6 px-6 py-4">
+              {!isEditing && (
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg text-center">Selecciona el tipo de recurso a crear</h3>
+                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="p-4 border rounded-lg space-y-2">
+                        <Label className="font-semibold flex items-center gap-2"><UploadCloud/> Subir Archivo(s)</Label>
+                        <p className="text-xs text-muted-foreground">Sube documentos, imágenes o videos desde tu dispositivo.</p>
+                        {renderUploadArea()}
+                      </div>
+                      <div className="p-4 border rounded-lg space-y-2">
+                        <Label className="font-semibold flex items-center gap-2"><LinkIcon/> Enlace Externo</Label>
+                        <p className="text-xs text-muted-foreground">Añade una URL a un sitio web o recurso externo.</p>
+                        <Input type="url" value={externalLink} onChange={e => {setExternalLink(e.target.value); setResourceType('EXTERNAL_LINK');}} placeholder="https://..."/>
+                      </div>
+                       <div className="p-4 border rounded-lg space-y-2 flex flex-col items-center justify-center">
+                        <Label className="font-semibold flex items-center gap-2"><FilePen/> Documento Editable</Label>
+                        <p className="text-xs text-muted-foreground text-center">Crea y edita un documento directamente en la plataforma.</p>
+                        <Button type="button" variant="secondary" onClick={() => setResourceType('DOCUMENTO_EDITABLE')}>Crear Documento</Button>
+                      </div>
+                  </div>
+                </div>
+              )}
+                
+              {resourceType === 'DOCUMENTO_EDITABLE' && (
+                 <div className="space-y-4">
+                   <div className="space-y-1.5"><Label htmlFor="content-editor">Contenido</Label><RichTextEditor value={content} onChange={setContent} className="h-48" /></div>
+                   <div className="space-y-1.5"><Label htmlFor="observations-editor">Observaciones (Privado)</Label><Textarea id="observations-editor" value={observations} onChange={e => setObservations(e.target.value)} placeholder="Notas internas, no visibles para estudiantes..." /></div>
+                 </div>
+              )}
+              
+              {(isEditing || (uploads.length <= 1 && resourceType !== 'DOCUMENT')) && (
+                  <>
+                  <div className="space-y-1.5"><Label htmlFor="title">Título</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required autoComplete="off" /></div>
+                  <div className="space-y-1.5"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} placeholder="Un resumen breve del contenido del recurso..."/></div>
+                  </>
+              )}
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory}><SelectTrigger id="category"><SelectValue placeholder="Seleccionar..." /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select></div>
+                <div className="space-y-1.5"><Label>Expiración</Label><Popover><PopoverTrigger asChild><Button variant="outline" className="w-full justify-start font-normal">{expiresAt ? format(expiresAt, "PPP", {locale: es}) : <span>Sin fecha de expiración</span>}</Button></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={expiresAt} onSelect={setExpiresAt} initialFocus /></PopoverContent></Popover></div>
+              </div>
+              
+              <Separator />
+              
+              {/* NUEVO SELECTOR DE VISIBILIDAD */}
+              <div className="space-y-4">
+                 <Label className="font-semibold text-base flex items-center gap-2">Visibilidad del Recurso</Label>
+                 <RadioGroup value={sharingMode} onValueChange={(v: ResourceSharingMode) => setSharingMode(v)} className="grid grid-cols-3 gap-3">
+                    <div className="flex-1"><RadioGroupItem value="PUBLIC" id="share-public" className="sr-only" /><Label htmlFor="share-public" className={`flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer text-sm transition-colors ${sharingMode === 'PUBLIC' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Globe className="mb-1 h-5 w-5"/>Público</Label></div>
+                    <div className="flex-1"><RadioGroupItem value="PROCESS" id="share-process" className="sr-only"/><Label htmlFor="share-process" className={`flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer text-sm transition-colors ${sharingMode === 'PROCESS' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Briefcase className="mb-1 h-5 w-5"/>Por Proceso</Label></div>
+                    <div className="flex-1"><RadioGroupItem value="PRIVATE" id="share-private" className="sr-only"/><Label htmlFor="share-private" className={`flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer text-sm transition-colors ${sharingMode === 'PRIVATE' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Users className="mb-1 h-5 w-5"/>Privado</Label></div>
+                 </RadioGroup>
+                  <p className="text-xs text-muted-foreground -mt-2">Define la audiencia para este recurso.</p>
+              </div>
+
+              {sharingMode === 'PROCESS' && (
+                  <div className="space-y-1.5">
+                    <Label>Procesos Seleccionados</Label>
+                    <Input placeholder="Buscar procesos..." value={processSearch} onChange={e => setProcessSearch(e.target.value)} className="mb-2"/>
+                    <ScrollArea className="h-32 border rounded-md p-2">
+                      {filteredProcesses.map(p => (
+                          <div key={p.id} className="flex items-center space-x-3 py-1.5">
+                            <Checkbox id={`share-process-${p.id}`} checked={sharedWithProcessIds.includes(p.id)} onCheckedChange={(c) => setSharedWithProcessIds(prev => c ? [...prev, p.id] : prev.filter(id => id !== p.id))} />
+                            <Label htmlFor={`share-process-${p.id}`} className="flex items-center gap-2 font-normal cursor-pointer text-sm">{p.name}</Label>
+                          </div>
+                      ))}
+                    </ScrollArea>
+                </div>
+              )}
+              
+              {sharingMode === 'PRIVATE' && (
+                  <div className="space-y-1.5">
+                    <Label>Usuarios Seleccionados</Label>
+                    <Input placeholder="Buscar usuarios..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
+                    <ScrollArea className="h-32 border rounded-md p-2">
+                      {filteredUsers.map(u => (
+                          <div key={u.id} className="flex items-center space-x-3 py-1.5">
+                            <Checkbox id={`share-user-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={(c) => setSharedWithUserIds(prev => c ? [...prev, u.id] : prev.filter(id => id !== u.id))} />
+                            <Label htmlFor={`share-user-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer text-sm">
+                              <Avatar className="h-6 w-6"><AvatarFallback className="text-xs">{getInitials(u.name)}</AvatarFallback></Avatar>{u.name}
+                            </Label>
+                          </div>
+                      ))}
+                    </ScrollArea>
+                </div>
+              )}
+              
+            </form>
+          </ScrollArea>
+          <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-center sm:justify-center gap-2">
+            <Button variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
+            <Button type="submit" form="resource-form" disabled={isSubmitting || (resourceType !== 'DOCUMENT' && !title) || (resourceType === 'EXTERNAL_LINK' && !externalLink) }>
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+              <Save className="mr-2 h-4 w-4" />
+              Guardar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+    </Dialog>
+  );
 }
-
-const UserOrProcessList = ({ type, items, selectedIds, onSelectionChange }: { type: 'user' | 'process', items: any[], selectedIds: string[], onSelectionChange: (ids: string[]) => void }) => {
-    const [search, setSearch] = useState('');
-    const filteredItems = items.filter(item => item.name.toLowerCase().includes(search.toLowerCase()));
-
-    const handleSelection = (id: string, checked: boolean) => {
-        onSelectionChange(checked ? [...selectedIds, id] : selectedIds.filter(i => i !== id));
-    };
-
-    return (
-        <Card className="mt-4">
-            <CardContent className="p-4 space-y-3">
-                 <Input placeholder={`Buscar ${type === 'user' ? 'usuario' : 'proceso'}...`} value={search} onChange={e => setSearch(e.target.value)} />
-                 <ScrollArea className="h-40">
-                    <div className="space-y-2 pr-2">
-                        {filteredItems.map(item => (
-                            <div key={item.id} className="flex items-center space-x-3 p-1.5 rounded-md hover:bg-muted">
-                                <Checkbox id={`${type}-${item.id}`} checked={selectedIds.includes(item.id)} onCheckedChange={(c) => handleSelection(item.id, !!c)}/>
-                                <Label htmlFor={`${type}-${item.id}`} className="flex items-center gap-2 font-normal cursor-pointer">
-                                    {type === 'user' && <Avatar className="h-7 w-7"><AvatarImage src={item.avatar || undefined} /><AvatarFallback><Identicon userId={item.id}/></AvatarFallback></Avatar>}
-                                    {item.name}
-                                </Label>
-                            </div>
-                        ))}
-                    </div>
-                 </ScrollArea>
-            </CardContent>
-        </Card>
-    );
-};
