@@ -64,6 +64,42 @@ const UserSelectionList = ({ allUsers, selectedIds, onSelectionChange, placehold
   );
 };
 
+const ProcessSelectionList = ({ allProcesses, selectedIds, onSelectionChange, placeholder = "Buscar procesos..." }: { allProcesses: Process[], selectedIds: string[], onSelectionChange: (id: string, checked: boolean) => void, placeholder?: string }) => {
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const flattenProcesses = (processes: Process[], level = 0) => {
+        let list: { id: string; name: string; level: number }[] = [];
+        processes.forEach(p => {
+            list.push({ id: p.id, name: p.name, level });
+            if (p.children && p.children.length > 0) {
+                list.push(...flattenProcesses(p.children, level + 1));
+            }
+        });
+        return list;
+    };
+
+    const filteredProcesses = useMemo(() => {
+        const flatList = flattenProcesses(allProcesses);
+        return flatList.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    }, [allProcesses, searchTerm]);
+
+    return (
+        <div className="space-y-1.5">
+            <Input placeholder={placeholder} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="mb-2" />
+            <ScrollArea className="h-32 border rounded-md p-2">
+                <div className="space-y-1">
+                    {filteredProcesses.map(p => (
+                        <div key={p.id} className="flex items-center space-x-3 py-1.5 px-2 rounded-md hover:bg-muted" style={{ paddingLeft: `${p.level * 1.5 + 0.5}rem` }}>
+                            <Checkbox id={`process-select-${p.id}`} checked={selectedIds.includes(p.id)} onCheckedChange={checked => onSelectionChange(p.id, !!checked)} />
+                            <Label htmlFor={`process-select-${p.id}`} className="font-normal cursor-pointer">{p.name}</Label>
+                        </div>
+                    ))}
+                </div>
+            </ScrollArea>
+        </div>
+    );
+};
+
 
 // ====================================================================================================
 // ============================= COMPONENTE PRINCIPAL =================================================
@@ -376,19 +412,18 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
       <CardHeader><CardTitle className="text-base">Visibilidad y Acceso</CardTitle></CardHeader>
       <CardContent className="space-y-4">
         <RadioGroup value={sharingMode} onValueChange={(v) => handleAccessChange('sharingMode', v as ResourceSharingMode)} className="grid grid-cols-3 gap-2">
-          <div className="flex items-center space-x-2"><RadioGroupItem value="PUBLIC" id="share-public" /><Label htmlFor="share-public">Público</Label></div>
-          <div className="flex items-center space-x-2"><RadioGroupItem value="PROCESS" id="share-process" /><Label htmlFor="share-process">Por Proceso</Label></div>
-          <div className="flex items-center space-x-2"><RadioGroupItem value="PRIVATE" id="share-private" /><Label htmlFor="share-private">Privado</Label></div>
+          <div className="flex items-center space-x-2"><RadioGroupItem value="PUBLIC" id="share-public" /><Label htmlFor="share-public" className="font-normal">Público</Label></div>
+          <div className="flex items-center space-x-2"><RadioGroupItem value="PROCESS" id="share-process" /><Label htmlFor="share-process" className="font-normal">Por Proceso</Label></div>
+          <div className="flex items-center space-x-2"><RadioGroupItem value="PRIVATE" id="share-private" /><Label htmlFor="share-private" className="font-normal">Privado</Label></div>
         </RadioGroup>
 
         <AnimatePresence>
           {sharingMode === 'PROCESS' && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-              <UserSelectionList 
-                  allUsers={allProcesses}
+              <ProcessSelectionList 
+                  allProcesses={allProcesses}
                   selectedIds={sharedWithProcessIds}
                   onSelectionChange={handleProcessShareChange}
-                  placeholder="Buscar procesos..."
               />
             </motion.div>
           )}
