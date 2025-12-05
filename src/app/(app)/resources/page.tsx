@@ -1,4 +1,3 @@
-
 // src/app/(app)/resources/page.tsx
 'use client';
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
@@ -12,7 +11,6 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Move, Trash2, FolderOpen, Filter, ChevronRight, Pin, ListVideo, FileText, Image as ImageIcon, Video as VideoIcon, FileQuestion, Archive as ZipIcon, PlusCircle } from 'lucide-react';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { ResourceListItem } from '@/components/resources/resource-list-item';
-import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
 import { DndContext, type DragEndEvent, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Input } from '@/components/ui/input';
@@ -23,7 +21,6 @@ import { FolderCreatorModal } from '@/components/resources/folder-creator-modal'
 import { PlaylistCreatorModal } from '@/components/resources/playlist-creator-modal';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { getYoutubeVideoId } from '@/lib/resource-utils';
 import { VideoPlaylistView } from '@/components/resources/video-playlist-view';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -367,10 +364,10 @@ export default function ResourcesPage() {
                              </div>
                             {viewMode === 'grid' ? (
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                                    {files.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={false} onSelect={() => {}} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onTogglePin={onTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
+                                    {files.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={false} onSelect={() => {}} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
                                 </div>
                             ) : (
-                                <ResourceListItem resources={files} onSelect={()=>{}} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onTogglePin={onTogglePin} selectedIds={selectedIds} onSelectionChange={handleSelectionChange} />
+                                <ResourceListItem resources={files} onSelect={()=>{}} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onTogglePin={handleTogglePin} selectedIds={selectedIds} onSelectionChange={handleSelectionChange} />
                             )}
                         </section>
                     )}
@@ -455,5 +452,3 @@ export default function ResourcesPage() {
     
 
     
-
-
