@@ -1,11 +1,10 @@
-
 // src/components/resources/resource-editor-modal.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -18,7 +17,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Save, UploadCloud, Link as LinkIcon, FilePen, Globe, Users, Briefcase, Calendar as CalendarIcon, Tag, BrainCircuit, FileText, Settings, BookOpen } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Loader2, Save, UploadCloud, Link as LinkIcon, XCircle, Globe, Users, Briefcase, FilePen, Edit, BrainCircuit, PlusCircle } from 'lucide-react';
 import type { AppResourceType, User as AppUser, Process, AppQuiz } from '@/types';
 import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
@@ -49,7 +49,7 @@ interface ResourceEditorModalProps {
   resource: AppResourceType | null;
   parentId: string | null;
   onSave: () => void;
-  initialStep?: 'content' | 'config';
+  initialStep?: 'content' | 'config' | 'quiz';
 }
 
 interface FlatProcess {
@@ -65,6 +65,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [content, setContent] = useState('');
+  const [observations, setObservations] = useState('');
   const [category, setCategory] = useState('');
   const [expiresAt, setExpiresAt] = useState<Date | undefined>(undefined);
   const [resourceType, setResourceType] = useState<AppResourceType['type']>('DOCUMENT');
@@ -90,6 +91,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     setTitle('');
     setDescription('');
     setContent('');
+    setObservations('');
     setCategory(settings?.resourceCategories[0] || 'General');
     setSharingMode('PUBLIC');
     setSharedWithUserIds([]);
@@ -107,6 +109,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         setTitle(resource.title || '');
         setDescription(resource.description || '');
         setContent(resource.content || '');
+        setObservations(resource.observations || '');
         setCategory(resource.category || settings?.resourceCategories[0] || 'General');
         setSharingMode(resource.sharingMode || 'PUBLIC');
         setSharedWithUserIds(resource.sharedWith?.map(u => u.id) || []);
@@ -137,7 +140,8 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     setIsSubmitting(true);
     
     const payload = {
-      title, description, content, category, sharingMode,
+      title, description, content, observations, category,
+      sharingMode,
       sharedWithUserIds: sharingMode === 'PRIVATE' ? sharedWithUserIds : [],
       sharedWithProcessIds: sharingMode === 'PROCESS' ? sharedWithProcessIds : [],
       expiresAt: expiresAt ? expiresAt.toISOString() : null,
@@ -177,16 +181,17 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         <DialogContent className="w-[95vw] sm:max-w-4xl p-0 gap-0 rounded-2xl max-h-[90vh] flex flex-col">
           <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
             <DialogTitle>{resource ? 'Editar Recurso' : 'Nuevo Recurso'}</DialogTitle>
+            <DialogDescription>{resource ? 'Modifica los detalles de tu recurso.' : 'Añade archivos, enlaces o documentos a la biblioteca.'}</DialogDescription>
           </DialogHeader>
-          <Tabs defaultValue={initialStep} className="flex-1 min-h-0 flex flex-col">
-            <div className="px-6 flex-shrink-0">
-                <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="content">1. Contenido</TabsTrigger>
-                    <TabsTrigger value="config">2. Configuración</TabsTrigger>
-                    <TabsTrigger value="quiz">3. Quiz</TabsTrigger>
-                </TabsList>
-            </div>
-            <form id="resource-form" onSubmit={handleSave} className="flex-1 min-h-0 flex flex-col">
+          <form id="resource-form" onSubmit={handleSave} className="flex-1 min-h-0 flex flex-col">
+            <Tabs defaultValue={initialStep} className="flex-1 min-h-0 flex flex-col">
+                <div className="px-6 flex-shrink-0">
+                    <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="content">1. Contenido</TabsTrigger>
+                        <TabsTrigger value="config">2. Configuración</TabsTrigger>
+                        <TabsTrigger value="quiz">3. Quiz</TabsTrigger>
+                    </TabsList>
+                </div>
                 <ScrollArea className="flex-1 min-h-0">
                     <div className="px-6 py-4">
                         <TabsContent value="content" className="space-y-4 mt-0">
@@ -278,7 +283,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
           isOpen={isQuizEditorOpen} 
           onClose={() => setIsQuizEditorOpen(false)}
           quiz={localQuiz}
-          onSave={(updatedQuiz) => { setLocalQuiz(updatedQuiz); setIsDirty(true); setIsQuizEditorOpen(false); }}
+          onSave={(updatedQuiz) => { setLocalQuiz(updatedQuiz); setIsQuizEditorOpen(false); }}
         />
       )}
     </>
