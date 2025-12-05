@@ -11,7 +11,6 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Move, Trash2, FolderOpen, Filter, ChevronRight, Pin, ListVideo, FileText, Image as ImageIcon, Video as VideoIcon, FileQuestion, Archive as ZipIcon, PlusCircle, Edit } from 'lucide-react';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { ResourceListItem } from '@/components/resources/resource-list-item';
-import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
 import { DndContext, type DragEndEvent, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Input } from '@/components/ui/input';
@@ -166,6 +165,20 @@ export default function ResourcesPage() {
       }
     }
   };
+  
+  const handleOpenPlaylistEditor = async (resource: AppResourceType) => {
+    try {
+      const response = await fetch(`/api/resources?parentId=${resource.id}`);
+      if (!response.ok) throw new Error('No se pudieron cargar los videos de la lista.');
+      const data = await response.json();
+      const playlistWithChildren = { ...resource, children: data.resources || [] };
+      setPlaylistToEdit(playlistWithChildren);
+      setIsPlaylistCreatorOpen(true);
+    } catch(err) {
+       toast({ title: "Error", description: (err as Error).message, variant: "destructive"});
+    }
+  };
+
 
   const handleSaveSuccess = () => {
     setResourceToEdit(null);
@@ -352,7 +365,7 @@ export default function ResourcesPage() {
                         <section>
                             <h3 className="text-lg font-semibold mb-3">Carpetas y Listas</h3>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                                {folders.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={true} onSelect={() => {}} onEdit={() => res.type === 'VIDEO_PLAYLIST' ? (setPlaylistToEdit(res), setIsPlaylistCreatorOpen(true)) : setResourceToEdit(res)} onDelete={setResourceToDelete} onNavigate={handleNavigateFolder} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
+                                {folders.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={true} onSelect={() => {}} onEdit={() => res.type === 'VIDEO_PLAYLIST' ? handleOpenPlaylistEditor(res) : setResourceToEdit(res)} onDelete={setResourceToDelete} onNavigate={handleNavigateFolder} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
                             </div>
                         </section>
                     )}
@@ -457,4 +470,3 @@ export default function ResourcesPage() {
     
 
     
-

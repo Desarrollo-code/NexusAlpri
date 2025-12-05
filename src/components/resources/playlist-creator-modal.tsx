@@ -63,15 +63,12 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                 setDescription(playlistToEdit.description || '');
                 setCategory(playlistToEdit.category || settings?.resourceCategories[0] || 'General');
                 
-                // Cargar los videos existentes.
-                // Esta es una simplificación. En una app real, podrías necesitar hacer un fetch
-                // para obtener los detalles de los videos si no vienen en el objeto inicial.
                 const existingVideos = (playlistToEdit as any).children?.map((v: any) => ({
                     id: v.id,
                     url: v.url,
                     title: v.title,
-                    thumbnail: v.type === 'VIDEO' ? `https://img.youtube.com/vi/${getYoutubeVideoId(v.url)}/mqdefault.jpg` : '',
-                    source: v.type === 'VIDEO' ? 'youtube' : 'upload',
+                    thumbnail: v.url && getYoutubeVideoId(v.url) ? `https://img.youtube.com/vi/${getYoutubeVideoId(v.url)}/mqdefault.jpg` : '',
+                    source: v.url && getYoutubeVideoId(v.url) ? 'youtube' : 'upload',
                 })) || [];
                 setVideos(existingVideos);
 
