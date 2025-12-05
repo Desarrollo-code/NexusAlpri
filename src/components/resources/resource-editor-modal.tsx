@@ -37,7 +37,7 @@ import { RichTextEditor } from '@/components/ui/rich-text-editor';
 // Se asumen que estos se encuentran en un archivo modularizado auxiliar
 import { getInitials, UploadState, ResourceEditorModalProps, renderUploads } from './resource-editor-modal-parts';
 
-const UserSelectionList = ({ allUsers, selectedIds, onSelectionChange }: { allUsers: AppUser[], selectedIds: string[], onSelectionChange: (id: string, checked: boolean) => void }) => {
+const UserSelectionList = ({ allUsers, selectedIds, onSelectionChange, placeholder = "Buscar usuarios..." }: { allUsers: AppUser[], selectedIds: string[], onSelectionChange: (id: string, checked: boolean) => void, placeholder?: string }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const filteredUsers = useMemo(() => {
     return allUsers.filter(u => u.name.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -45,7 +45,7 @@ const UserSelectionList = ({ allUsers, selectedIds, onSelectionChange }: { allUs
 
   return (
     <div className="space-y-1.5">
-      <Input placeholder="Buscar usuarios..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="mb-2" />
+      <Input placeholder={placeholder} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="mb-2" />
       <ScrollArea className="h-32 border rounded-md p-2">
         <div className="space-y-1">
           {filteredUsers.map(u => (
@@ -62,6 +62,7 @@ const UserSelectionList = ({ allUsers, selectedIds, onSelectionChange }: { allUs
     </div>
   );
 };
+
 
 // ====================================================================================================
 // ============================= COMPONENTE PRINCIPAL =================================================
@@ -401,6 +402,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                   allUsers={allProcesses}
                   selectedIds={sharedWithProcessIds}
                   onSelectionChange={handleProcessShareChange}
+                  placeholder="Buscar procesos..."
               />
             </motion.div>
           )}
@@ -481,9 +483,11 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
           </ScrollArea>
           
           <div className="md:col-span-5 lg:col-span-6 bg-muted/20 relative h-full flex flex-col">
-             <ScrollArea className="flex-1 relative">
-                {renderContentEditor()}
-            </ScrollArea>
+             <div className="relative flex-1 min-h-0">
+                <div className="absolute inset-0">
+                    {renderContentEditor()}
+                </div>
+            </div>
           </div>
           
           <ScrollArea className="md:col-span-3 lg:col-span-3 border-l h-full bg-card/50 relative">
@@ -504,4 +508,3 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     </Dialog>
   );
 }
-
