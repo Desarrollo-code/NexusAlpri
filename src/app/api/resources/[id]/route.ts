@@ -114,7 +114,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 updateData.quiz = {
                     upsert: {
                         where: { resourceId: id },
-                        create: { ...quizPayload, resource: { connect: { id } } },
+                        create: { ...quizPayload, resource: { connect: { id } } }, // Correctly connect to resource on create
                         update: quizPayload,
                     }
                 };
