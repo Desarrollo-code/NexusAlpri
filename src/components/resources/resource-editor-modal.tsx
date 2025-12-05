@@ -262,24 +262,13 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
   };
 
   // --- Funciones de Renderizado Modular ---
-
-  const renderUploads = () => (
-    <div className="space-y-2 max-h-48 overflow-y-auto pr-2 thin-scrollbar">
-      {uploads.map(upload => (
-        <UploadItem 
-          key={upload.id} 
-          upload={upload} 
-          onRemove={handleRemoveUpload} 
-          onRetry={uploadFileAndSave}
-        />
-      ))}
-    </div>
-  );
-
+  
   const renderUploadArea = () => (
-    <div className="space-y-4">
-      <UploadArea onFileSelect={(files) => handleFileSelect(files)} multiple={!isEditing} disabled={isSubmitting}/>
-      {uploads.length > 0 && renderUploads()}
+    <div className="flex flex-col h-full items-center justify-center p-4">
+      <div className="flex-grow w-full flex flex-col justify-center">
+        <UploadArea onFileSelect={handleFileSelect} multiple={!isEditing} disabled={isSubmitting}/>
+      </div>
+      {uploads.length > 0 && <div className="w-full mt-4">{renderUploads()}</div>}
     </div>
   );
 
@@ -290,19 +279,19 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
              <RadioGroup value={sharingMode} onValueChange={(v) => handleAccessChange('sharingMode', v as ResourceSharingMode)} className="grid grid-cols-1 md:grid-cols-3 gap-2">
                 <div className="relative">
                     <RadioGroupItem value="PUBLIC" id="share-public" className="sr-only peer" />
-                    <Label htmlFor="share-public" className={cn("flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full transition-all", sharingMode === 'PUBLIC' && 'border-primary ring-2 ring-primary text-primary)}>
+                    <Label htmlFor="share-public" className={cn("flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full transition-all", sharingMode === 'PUBLIC' && 'border-primary ring-2 ring-primary text-primary')}>
                         <Globe className="mb-2 h-6 w-6"/>Público
                     </Label>
                 </div>
                 <div className="relative">
                     <RadioGroupItem value="PROCESS" id="share-process" className="sr-only peer" />
-                    <Label htmlFor="share-process" className={cn("flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full transition-all", sharingMode === 'PROCESS' && 'border-primary ring-2 ring-primary text-primary)}>
+                    <Label htmlFor="share-process" className={cn("flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full transition-all", sharingMode === 'PROCESS' && 'border-primary ring-2 ring-primary text-primary')}>
                         <Briefcase className="mb-2 h-6 w-6"/>Por Proceso
                     </Label>
                 </div>
                 <div className="relative">
                     <RadioGroupItem value="PRIVATE" id="share-private" className="sr-only peer" />
-                    <Label htmlFor="share-private" className={cn("flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full transition-all", sharingMode === 'PRIVATE' && 'border-primary ring-2 ring-primary text-primary)}>
+                    <Label htmlFor="share-private" className={cn("flex flex-col items-center justify-center p-3 border-2 rounded-lg cursor-pointer hover:bg-accent hover:text-accent-foreground h-full transition-all", sharingMode === 'PRIVATE' && 'border-primary ring-2 ring-primary text-primary')}>
                         <Users className="mb-2 h-6 w-6"/>Privado
                     </Label>
                 </div>
@@ -350,16 +339,28 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             <ScrollArea className="md:col-span-4 lg:col-span-3 border-r h-full">
                 <form id="resource-form" onSubmit={handleSave} className="space-y-6 p-6">
                     {!isEditing && (
-                        <div className="space-y-2">
-                            <Label>Tipo de Recurso</Label>
-                            <RadioGroup value={resourceType} onValueChange={(v) => handleResourceDetailChange('resourceType', v as AppResourceType['type'])} className="grid grid-cols-3 gap-1">
-                                <Tooltip><TooltipTrigger asChild><Label htmlFor="type-doc" className={cn("flex flex-col items-center justify-center p-2 border-2 rounded-lg cursor-pointer h-16 transition-all", resourceType === 'DOCUMENT' && 'border-primary ring-1 ring-primary text-primary')}><UploadCloud className="h-5 w-5"/><span className="text-[10px] mt-1">Archivo</span></Label></TooltipTrigger><TooltipContent>Subir archivo</TooltipContent></Tooltip>
-                                <RadioGroupItem value="DOCUMENT" id="type-doc" className="sr-only peer" />
-                                <Tooltip><TooltipTrigger asChild><Label htmlFor="type-link" className={cn("flex flex-col items-center justify-center p-2 border-2 rounded-lg cursor-pointer h-16 transition-all", resourceType === 'EXTERNAL_LINK' && 'border-primary ring-1 ring-primary text-primary')}><LinkIcon className="h-5 w-5"/><span className="text-[10px] mt-1">Enlace</span></Label></TooltipTrigger><TooltipContent>Enlace externo</TooltipContent></Tooltip>
-                                <RadioGroupItem value="EXTERNAL_LINK" id="type-link" className="sr-only peer" />
-                                <Tooltip><TooltipTrigger asChild><Label htmlFor="type-edit" className={cn("flex flex-col items-center justify-center p-2 border-2 rounded-lg cursor-pointer h-16 transition-all", resourceType === 'DOCUMENTO_EDITABLE' && 'border-primary ring-1 ring-primary text-primary')}><FilePen className="h-5 w-5"/><span className="text-[10px] mt-1">Editor</span></Label></TooltipTrigger><TooltipContent>Documento editable</TooltipContent></Tooltip>
-                                <RadioGroupItem value="DOCUMENTO_EDITABLE" id="type-edit" className="sr-only peer" />
-                            </RadioGroup>
+                        <div className="space-y-4">
+                             <Card className="hover:border-primary/50 transition-colors">
+                                 <CardHeader onClick={() => handleResourceDetailChange('resourceType', 'DOCUMENT')} className="cursor-pointer">
+                                     <CardTitle className="text-base flex items-center gap-2"><UploadCloud className="h-5 w-5 text-primary"/>Subir Archivo(s)</CardTitle>
+                                     <CardDescription className="text-xs">Sube documentos, imágenes o videos desde tu dispositivo.</CardDescription>
+                                 </CardHeader>
+                                 {resourceType === 'DOCUMENT' && <CardContent>{renderUploadArea()}</CardContent>}
+                             </Card>
+                             <Card className="hover:border-primary/50 transition-colors">
+                                 <CardHeader onClick={() => handleResourceDetailChange('resourceType', 'EXTERNAL_LINK')} className="cursor-pointer">
+                                     <CardTitle className="text-base flex items-center gap-2"><LinkIcon className="h-5 w-5 text-primary"/>Enlace Externo</CardTitle>
+                                      <CardDescription className="text-xs">Añade una URL a un sitio web o recurso externo.</CardDescription>
+                                 </CardHeader>
+                                 {resourceType === 'EXTERNAL_LINK' && <CardContent><Input type="url" value={externalLink} onChange={e => handleResourceDetailChange('externalLink', e.target.value)} placeholder="https://..." required /></CardContent>}
+                             </Card>
+                              <Card className="hover:border-primary/50 transition-colors">
+                                 <CardHeader onClick={() => handleResourceDetailChange('resourceType', 'DOCUMENTO_EDITABLE')} className="cursor-pointer">
+                                     <CardTitle className="text-base flex items-center gap-2"><FilePen className="h-5 w-5 text-primary"/>Documento Editable</CardTitle>
+                                      <CardDescription className="text-xs">Crea y edita un documento directamente en la plataforma.</CardDescription>
+                                 </CardHeader>
+                                  {resourceType === 'DOCUMENTO_EDITABLE' && <CardContent><Button type="button" className="w-full">Crear Documento</Button></CardContent>}
+                             </Card>
                         </div>
                     )}
                     <div className="space-y-1.5"><Label htmlFor="title">Título</Label><Input id="title" value={title} onChange={(e) => handleResourceDetailChange('title', e.target.value)} required autoComplete="off" /></div>
@@ -371,17 +372,23 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             <div className="relative md:col-span-5 lg:col-span-6 h-full bg-muted/20 flex flex-col">
               <ScrollArea className="relative flex-1 min-h-0">
                 <AnimatePresence mode="wait">
-                  <motion.div key={resourceType} initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -10}} transition={{duration: 0.2}} className="h-full p-4">
-                    {resourceType === 'DOCUMENT' && renderUploadArea()}
-                    {resourceType === 'EXTERNAL_LINK' && <div className="p-4 h-full flex flex-col justify-center"><div className="space-y-1.5"><Label htmlFor="externalLink">URL del Enlace</Label><Input type="url" id="externalLink" value={externalLink} onChange={e => handleResourceDetailChange('externalLink', e.target.value)} placeholder="https://..." required /></div></div>}
-                    {resourceType === 'DOCUMENTO_EDITABLE' && (
-                        <div className="h-full flex flex-col">
-                           <div className="flex-1 min-h-0">
-                              <Label htmlFor="content-editor">Contenido Principal del Documento</Label>
-                              <RichTextEditor id="content-editor" value={content} onChange={(v) => handleResourceDetailChange('content', v)} className="h-[calc(100%-2rem)]"/>
-                           </div>
+                  <motion.div key={resourceType} initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -10}} transition={{duration: 0.2}} className="h-full">
+                    {isEditing ? (
+                       <div className="p-4 h-full flex flex-col">
+                          {resourceType === 'DOCUMENTO_EDITABLE' ? (
+                             <>
+                                <div className="flex-1 min-h-0 mb-4">
+                                  <Label htmlFor="content-editor">Contenido Principal</Label>
+                                  <RichTextEditor id="content-editor" value={content} onChange={(v) => handleResourceDetailChange('content', v)} className="h-[calc(100%-1.5rem)]"/>
+                               </div>
+                                <div className="flex-none h-[120px]">
+                                   <Label htmlFor="observations-editor">Observaciones (Privado)</Label>
+                                   <Textarea id="observations-editor" value={observations} onChange={(e) => handleResourceDetailChange('observations', e.target.value)} className="h-[calc(100%-1.5rem)] resize-none" />
+                                </div>
+                             </>
+                          ) : <div className="flex items-center justify-center h-full"><FileIcon displayMode="grid" type={resource?.filetype || 'file'} thumbnailUrl={resource?.url} className="w-48 h-56"/></div>}
                        </div>
-                    )}
+                    ) : null}
                   </motion.div>
                 </AnimatePresence>
               </ScrollArea>
@@ -410,7 +417,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
           <Button 
             type="submit" 
             form="resource-form" 
-            disabled={isSubmitting || !title || (resourceType === 'EXTERNAL_LINK' && !externalLink) || (resourceType === 'DOCUMENT' && uploads.some(u => u.status === 'uploading' || u.status === 'processing'))}
+            disabled={isSubmitting || (resourceType !== 'DOCUMENT' && !title) || (resourceType === 'EXTERNAL_LINK' && !externalLink) || (uploads.length > 0 && uploads.some(u => u.status === 'uploading')) }
           >
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
             <Save className="mr-2 h-4 w-4" />
@@ -421,4 +428,3 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     </Dialog>
   );
 }
-    
