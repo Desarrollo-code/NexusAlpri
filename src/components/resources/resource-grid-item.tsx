@@ -69,8 +69,8 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
             return (
                 <div className="w-full h-full relative" onClick={handleClick}>
                     <DecorativeFolder patternId={resource.id} className="absolute inset-0" />
-                    <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1.5 rounded-full">
-                       {resource.ispublic ? <Globe className="h-3.5 w-3.5 text-green-500"/> : <Users className="h-3.5 w-3.5 text-blue-500" />}
+                    <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm p-2 rounded-full">
+                       {resource.ispublic ? <Globe className="h-5 w-5 text-white"/> : <Users className="h-5 w-5 text-white" />}
                     </div>
                     {isOver && (
                         <div className="absolute inset-0 bg-primary/20 border-2 border-dashed border-primary flex items-center justify-center">
