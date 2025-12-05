@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -10,7 +11,7 @@ import { es } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Componentes de UI
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
@@ -33,6 +34,7 @@ import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { FileIcon } from '@/components/ui/file-icon';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { QuizViewer } from '@/components/quiz-viewer';
 import {
   Card, CardContent, CardDescription, CardHeader, CardTitle // 💡 Agregados
 } from '@/components/ui/card';
@@ -401,91 +403,57 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      {/* sm:max-w-6xl y h-[90vh] para un editor grande, tipo panel. p-0 gap-0 para control total del layout */}
       <DialogContent className="w-[95vw] sm:max-w-6xl p-0 gap-0 rounded-2xl h-[90vh] flex flex-col">
-
-        {/* Encabezado fijo */}
         <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
           <DialogTitle>{resource ? 'Editar Recurso' : 'Nuevo Recurso'}</DialogTitle>
           <DialogDescription>
             {isEditing ? 'Actualiza la información y el acceso de tu recurso.' : 'Crea un nuevo recurso y define su tipo y visibilidad.'}
           </DialogDescription>
         </DialogHeader>
-
-        {/* Contenido Principal con Grid - flex-1 min-h-0 es clave para el scroll en el flex container padre */}
         <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-12 overflow-hidden">
-
-          {/* --- COLUMNA 1: DETALLES (Filtro/Menú) --- */}
-          {/* Se usa ScrollArea para hacer scroll solo dentro de esta columna */}
           <ScrollArea className="md:col-span-4 lg:col-span-3 border-r h-full">
             <form id="resource-form" onSubmit={handleSave} className="space-y-6 p-6">
               {!isEditing && (
                 <>
                   <h3 className="text-lg font-semibold mb-4">Tipo de Recurso</h3>
                   <div className="space-y-4">
-                    {/* Tarjeta Subir Archivo */}
                     <Card className={cn("transition-colors", resourceType === 'DOCUMENT' ? 'border-primary ring-2 ring-primary/50' : 'hover:border-primary/50')}>
                       <CardHeader onClick={() => handleResourceDetailChange('resourceType', 'DOCUMENT')} className="cursor-pointer">
                         <CardTitle className="text-base flex items-center gap-2"><UploadCloud className="h-5 w-5" />Subir Archivo(s)</CardTitle>
-                        <CardDescription className="text-xs">Sube documentos, imágenes o videos desde tu dispositivo.</CardDescription>
                       </CardHeader>
-                      <AnimatePresence>
-                        {resourceType === 'DOCUMENT' && <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden"><CardContent>{renderUploadArea()}</CardContent></motion.div>}
-                      </AnimatePresence>
                     </Card>
-
-                    {/* Tarjeta Enlace Externo */}
                     <Card className={cn("transition-colors", resourceType === 'EXTERNAL_LINK' ? 'border-primary ring-2 ring-primary/50' : 'hover:border-primary/50')}>
                       <CardHeader onClick={() => handleResourceDetailChange('resourceType', 'EXTERNAL_LINK')} className="cursor-pointer">
                         <CardTitle className="text-base flex items-center gap-2"><LinkIcon className="h-5 w-5" />Enlace Externo</CardTitle>
-                        <CardDescription className="text-xs">Añade una URL a un sitio web o recurso externo.</CardDescription>
                       </CardHeader>
-                      <AnimatePresence>
-                        {resourceType === 'EXTERNAL_LINK' && <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden"><CardContent><Input type="url" value={externalLink} onChange={e => handleResourceDetailChange('externalLink', e.target.value)} placeholder="https://..." required /></CardContent></motion.div>}
-                      </AnimatePresence>
                     </Card>
-
-                    {/* Tarjeta Documento Editable */}
                     <Card className={cn("transition-colors", resourceType === 'DOCUMENTO_EDITABLE' ? 'border-primary ring-2 ring-primary/50' : 'hover:border-primary/50')}>
                       <CardHeader onClick={() => handleResourceDetailChange('resourceType', 'DOCUMENTO_EDITABLE')} className="cursor-pointer">
                         <CardTitle className="text-base flex items-center gap-2"><FilePen className="h-5 w-5" />Documento Editable</CardTitle>
-                        <CardDescription className="text-xs">Crea y edita un documento directamente en la plataforma.</CardDescription>
                       </CardHeader>
                     </Card>
-
                   </div>
                   <Separator className="my-6" />
                 </>
               )}
-              {/* Campos comunes a todos los tipos */}
               <div className="space-y-1.5"><Label htmlFor="title">Título</Label><Input id="title" value={title} onChange={(e) => handleResourceDetailChange('title', e.target.value)} required autoComplete="off" disabled={resourceType === 'DOCUMENT' && uploads.length > 0 && !isEditing} /></div>
               <div className="space-y-1.5"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => handleResourceDetailChange('description', e.target.value)} placeholder="Un resumen breve del contenido del recurso..." /></div>
               <div className="space-y-1.5"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={(v) => handleResourceDetailChange('category', v)}><SelectTrigger id="category"><SelectValue placeholder="Seleccionar..." /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).sort().map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select></div>
-
-              {/* Si es un enlace externo, muestra el campo de URL en la columna de detalles también en modo edición */}
               {(resourceType === 'EXTERNAL_LINK' && isEditing) && <div className="space-y-1.5"><Label htmlFor="externalLink">URL del Recurso</Label><Input id="externalLink" type="url" value={externalLink} onChange={e => handleResourceDetailChange('externalLink', e.target.value)} placeholder="https://..." required /></div>}
-
             </form>
           </ScrollArea>
-
-          {/* --- COLUMNA 2: CONTENIDO/VISTA PREVIA (Principal) --- */}
-          <div className="relative md:col-span-5 lg:col-span-6 h-full bg-muted/20 flex flex-col">
-            <ScrollArea className="relative flex-1 min-h-0">
+          
+          <ScrollArea className="md:col-span-5 lg:col-span-6 h-full bg-muted/20">
+            <div className="p-4 h-full flex flex-col">
               <AnimatePresence mode="wait">
-                <motion.div key={resourceType} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="h-full">
-                  <div className="p-4 h-full flex flex-col">
-                    <h3 className="text-xl font-bold mb-4">{title || 'Vista Previa del Contenido'}</h3>
-                    <Separator className="mb-4" />
-
-                    {/* Lógica de renderizado según el tipo de recurso */}
-                    {resourceType === 'DOCUMENTO_EDITABLE' ? (
+                <motion.div key={resourceType} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="h-full flex flex-col">
+                  {resourceType === 'DOCUMENTO_EDITABLE' ? (
                       <>
                         <div className="flex-1 min-h-0 mb-4">
                           <Label htmlFor="content-editor">Contenido Principal</Label>
-                          {/* Rich Text Editor toma la mayor parte del espacio */}
                           <RichTextEditor id="content-editor" value={content} onChange={(v) => handleResourceDetailChange('content', v)} className="h-[calc(100%-1.5rem)] min-h-[300px]" />
                         </div>
-                        <div className="flex-none h-[120px] mt-4">
+                        <div className="flex-none h-1/3 min-h-[100px] mt-4">
                           <Label htmlFor="observations-editor">Observaciones (Privado)</Label>
                           <Textarea id="observations-editor" value={observations} onChange={(e) => handleResourceDetailChange('observations', e.target.value)} className="h-[calc(100%-1.5rem)] resize-none" />
                         </div>
@@ -495,33 +463,18 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                         <LinkIcon className="w-16 h-16 text-primary mb-4" />
                         <p className="text-lg font-medium">Enlace Externo</p>
                         <a href={externalLink} target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground underline truncate max-w-full">{externalLink || 'URL no especificada'}</a>
-                        <Button variant="outline" className="mt-4" disabled={!externalLink} asChild><a href={externalLink} target="_blank" rel="noopener noreferrer">Abrir Enlace</a></Button>
                       </div>
                     ) : (
-                      // Tipo DOCUMENT o no seleccionado en modo creación
-                      <div className="flex items-center justify-center h-full">
-                        {isEditing ? (
-                          <FileIcon displayMode="grid" type={resource?.filetype || 'file'} thumbnailUrl={resource?.url} className="w-48 h-56" />
-                        ) : (uploads.length > 0 ? (
-                          <p className="text-muted-foreground">Archivos listos para subir. Completa los detalles en la columna izquierda.</p>
-                        ) : (
-                          <p className="text-muted-foreground">Selecciona un tipo de recurso para empezar o edita los detalles.</p>
-                        ))}
-                      </div>
+                      renderUploadArea()
                     )}
-                  </div>
                 </motion.div>
               </AnimatePresence>
-            </ScrollArea>
-          </div>
-
-          {/* --- COLUMNA 3: ACCESO/CONFIGURACIÓN (Secundaria) --- */}
-          {/* Se usa ScrollArea para hacer scroll solo dentro de esta columna */}
+            </div>
+          </ScrollArea>
+          
           <ScrollArea className="md:col-span-3 lg:col-span-3 border-l h-full bg-card/50">
             <div className="p-6 space-y-6">
               {renderAccessSection()}
-
-              {/* Sección de Colaboradores - solo visible para ciertos tipos */}
               {(resourceType === 'DOCUMENTO_EDITABLE' || resource?.type === 'VIDEO_PLAYLIST') && (
                 <Card>
                   <CardHeader><CardTitle className="text-base">Colaboradores</CardTitle><CardDescription className="text-xs">Usuarios que pueden editar este recurso.</CardDescription></CardHeader>
@@ -535,12 +488,9 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                   </CardContent>
                 </Card>
               )}
-
             </div>
           </ScrollArea>
         </div>
-
-        {/* Pie de página fijo */}
         <DialogFooter className="px-6 py-4 border-t flex-shrink-0 flex-row justify-end gap-2 bg-background/90 backdrop-blur-sm">
           <Button variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
           <Button
@@ -548,9 +498,9 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             form="resource-form"
             disabled={
               isSubmitting ||
-              (resourceType !== 'DOCUMENT' && !title) || // Requiere título si no es un documento subido
+              (resourceType !== 'DOCUMENT' && !title) || 
               (resourceType === 'EXTERNAL_LINK' && !externalLink) ||
-              (uploads.length > 0 && uploads.some(u => u.status === 'uploading')) // Deshabilitar si hay subidas pendientes
+              (uploads.length > 0 && uploads.some(u => u.status === 'uploading'))
             }
           >
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
