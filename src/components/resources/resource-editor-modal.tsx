@@ -36,7 +36,7 @@ import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { QuizViewer } from '@/components/quiz-viewer';
 
 // Se asumen que estos se encuentran en un archivo modularizado auxiliar
-import { getInitials, UploadState, ResourceEditorModalProps, renderUploads } from './resource-editor-modal-parts';
+import { getInitials, UploadState, renderUploads } from './resource-editor-modal-parts';
 
 const UserSelectionList = ({ allUsers, selectedIds, onSelectionChange, placeholder = "Buscar usuarios..." }: { allUsers: AppUser[], selectedIds: string[], onSelectionChange: (id: string, checked: boolean) => void, placeholder?: string }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -104,6 +104,14 @@ const ProcessSelectionList = ({ allProcesses, selectedIds, onSelectionChange, pl
 // ====================================================================================================
 // ============================= COMPONENTE PRINCIPAL =================================================
 // ====================================================================================================
+
+interface ResourceEditorModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    resource: AppResourceType | null;
+    parentId: string | null;
+    onSave: (savedResource: AppResourceType) => void;
+}
 
 export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSave }: ResourceEditorModalProps) {
   const { toast } = useToast();
