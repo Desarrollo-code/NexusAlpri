@@ -36,10 +36,10 @@ import { UserProfileCard, UserProfileCardSkeleton } from '@/components/users/use
 import { getRoleInSpanish, getRoleBadgeVariant } from '@/lib/security-log-utils';
 import { getProcessColors } from '@/lib/utils';
 import { Identicon } from '@/components/ui/identicon';
-import { EmptyState } from '@/components/empty-state';
+import { EmptyState } from '../empty-state';
 import { useTour } from '@/contexts/tour-context';
 import { usersTour } from '@/lib/tour-steps';
-import { ColorfulLoader } from '@/components/ui/colorful-loader';
+import { ColorfulLoader } from '../ui/colorful-loader';
 import { format, differenceInSeconds } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -52,7 +52,9 @@ interface UserWithProcess extends User {
     process: { id: string; name: string } | null;
 }
 
-const PAGE_SIZE = 12;
+const DESKTOP_PAGE_SIZE = 15;
+const MOBILE_PAGE_SIZE = 14;
+
 
 const DraggableUserPreview = ({ user }: { user: UserWithProcess }) => (
     <Card className="flex items-center gap-2 p-2 shadow-lg w-48">
@@ -97,6 +99,8 @@ function UsersPageComponent() {
     const { setPageTitle } = useTitle();
     const isMobile = useIsMobile();
     const { startTour, forceStartTour } = useTour();
+
+    const PAGE_SIZE = isMobile ? MOBILE_PAGE_SIZE : DESKTOP_PAGE_SIZE;
 
     const [usersList, setUsersList] = useState<UserWithProcess[]>([]);
     const [totalUsers, setTotalUsers] = useState(0);
@@ -186,7 +190,7 @@ function UsersPageComponent() {
         } finally {
             setIsLoading(false);
         }
-    }, [currentUser, debouncedSearchTerm, currentPage, role, status, processId, toast]);
+    }, [currentUser, debouncedSearchTerm, currentPage, role, status, processId, toast, PAGE_SIZE]);
     
     useEffect(() => {
         setPageTitle('Control Central');
@@ -210,7 +214,7 @@ function UsersPageComponent() {
                 }
             } else {
                 if (isSelected) newSet.add(userId);
-                else newSet.delete(userId);
+                else newSet.delete(id);
             }
             return newSet;
         });
