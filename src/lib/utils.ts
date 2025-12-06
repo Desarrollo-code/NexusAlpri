@@ -173,7 +173,7 @@ export const getProcessColors = (id: string) => {
     const hueVariation = (hash % 60) - 30; // Reduced variation for more harmony
     const newHue = (primaryHsl.h + hueVariation + 360) % 360;
 
-    // Ajustado para un fondo más suave (mayor luminosidad)
+    // Ajustado para un fondo más suave (mayor luminosidad) y texto negro
     const lightRgb = hslToRgb(newHue, primaryHsl.s * 0.7, 92); // Aumentada la luminosidad a 92%
     const mediumRgb = hslToRgb(newHue, primaryHsl.s * 0.8, 80); // Tono medio más claro
 
