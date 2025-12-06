@@ -260,6 +260,9 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                                     <Label>Añadir Videos</Label>
                                     <div className="flex gap-2">
                                         <Input value={newVideoUrl} onChange={e => setNewVideoUrl(e.target.value)} placeholder="Pega una URL de YouTube..."/>
+                                        <Button type="button" variant="outline" size="icon" onClick={() => document.getElementById('local-video-upload')?.click()} disabled={isUploading}>
+                                            <UploadCloud className="h-4 w-4"/>
+                                        </Button>
                                         <Button type="button" variant="outline" onClick={handleAddYoutubeVideo} disabled={isFetchingInfo}>{isFetchingInfo ? <Loader2 className="h-4 w-4 animate-spin"/> : 'Añadir'}</Button>
                                     </div>
                                     <div className="relative flex items-center justify-center">
@@ -267,7 +270,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                                        <span className="flex-shrink mx-4 text-xs text-muted-foreground">O</span>
                                        <div className="flex-grow border-t"></div>
                                     </div>
-                                    <UploadArea onFileSelect={(files) => files && handleLocalVideoUpload(files[0])} disabled={isUploading} className="h-20">
+                                    <UploadArea onFileSelect={(files) => files && handleLocalVideoUpload(files[0])} disabled={isUploading} className="h-20" inputId="local-video-upload">
                                          <div className="text-center text-muted-foreground"><UploadCloud className="mx-auto h-6 w-6 mb-1"/><p className="text-sm font-semibold">Subir video local</p></div>
                                     </UploadArea>
                                     {isUploading && <Progress value={uploadProgress} className="h-1"/>}
@@ -323,7 +326,7 @@ const UserOrProcessList = ({ type, items, selectedIds, onSelectionChange }: { ty
     return (
         <div className="mt-4 border rounded-lg p-3">
              <Input placeholder={`Buscar ${type === 'user' ? 'usuario' : 'proceso'}...`} value={search} onChange={e => setSearch(e.target.value)} className="mb-2"/>
-             <ScrollArea className="h-32">
+             <ScrollArea className="h-48">
                 <div className="space-y-1 pr-3">
                     {filteredItems.map(item => (
                         <div key={item.id} className="flex items-center space-x-3 p-1.5 rounded-md hover:bg-muted">
