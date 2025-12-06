@@ -54,7 +54,7 @@ const SortableVideoItem = ({ video, onRemove }: { video: { id: string, title: st
             </div>
             <div className="flex-grow min-w-0">
                 <p className="text-sm font-medium truncate">{video.title}</p>
-                 <a href={video.url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-primary truncate">{video.title}</a>
+                 <a href={video.url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-primary truncate">{video.url}</a>
             </div>
              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={onRemove}>
                 <Trash2 className="h-4 w-4"/>
@@ -104,6 +104,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
     const [isSaving, setIsSaving] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const isEditing = !!playlistToEdit;
     
@@ -261,16 +262,11 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                                     <div className="flex gap-2">
                                         <Input value={newVideoUrl} onChange={e => setNewVideoUrl(e.target.value)} placeholder="Pega una URL de YouTube..."/>
                                         <Button type="button" variant="outline" onClick={handleAddYoutubeVideo} disabled={isFetchingInfo}>{isFetchingInfo ? <Loader2 className="h-4 w-4 animate-spin"/> : 'Añadir'}</Button>
+                                        <Button type="button" variant="outline" size="icon" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+                                            <UploadCloud className="h-4 w-4"/>
+                                        </Button>
+                                        <input type="file" ref={fileInputRef} onChange={e => handleLocalVideoUpload(e.target.files ? e.target.files[0] : null)} className="hidden" accept="video/mp4,video/webm" />
                                     </div>
-                                    <div className="relative flex items-center justify-center">
-                                       <div className="flex-grow border-t"></div>
-                                       <span className="flex-shrink mx-4 text-xs text-muted-foreground">O</span>
-                                       <div className="flex-grow border-t"></div>
-                                    </div>
-                                    <UploadArea onFileSelect={(files) => files && handleLocalVideoUpload(files[0])} disabled={isUploading} className="h-20">
-                                         <div className="text-center text-muted-foreground"><UploadCloud className="mx-auto h-6 w-6 mb-1"/><p className="text-sm font-semibold">Subir video local</p></div>
-                                    </UploadArea>
-                                    {isUploading && <Progress value={uploadProgress} className="h-1"/>}
                                     <div className="h-64 border rounded-lg p-2 bg-muted/50">
                                        <ScrollArea className="h-full pr-3">
                                         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -284,6 +280,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                                         </DndContext>
                                        </ScrollArea>
                                     </div>
+                                    {isUploading && <Progress value={uploadProgress} className="h-1"/>}
                                 </div>
                             </div>
 
