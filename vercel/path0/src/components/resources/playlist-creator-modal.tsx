@@ -1,6 +1,6 @@
 // src/components/resources/playlist-creator-modal.tsx
 'use client';
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Dialog,
@@ -17,7 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
-import { Loader2, FolderPlus, Video, XCircle, Trash2, Edit, Save, Globe, Users, Briefcase, MoreVertical } from 'lucide-react';
+import { Loader2, FolderPlus, Video, XCircle, Trash2, Edit, Save, Globe, Users, Briefcase, MoreVertical, UploadCloud } from 'lucide-react';
 import type { AppResourceType, User as AppUser, Process, ResourceSharingMode } from '@/types';
 import { DndContext, DragEndEvent, closestCenter, useSensor, useSensors, PointerSensor, TouchSensor } from '@dnd-kit/core';
 import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -31,23 +31,30 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { FileIcon } from '../ui/file-icon';
+import { UploadArea } from '../ui/upload-area';
+import { uploadWithProgress } from '@/lib/upload-with-progress';
+import { Progress } from '../ui/progress';
 
 const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
 const SortableVideoItem = ({ video, onRemove }: { video: { id: string, title: string, url: string }, onRemove: () => void }) => {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: video.id });
     const style = { transform: CSS.Transform.toString(transform), transition };
-    const thumbnailUrl = `https://img.youtube.com/vi/${getYoutubeVideoId(video.url)}/mqdefault.jpg`;
-    
+    const youtubeId = getYoutubeVideoId(video.url);
+    const fileExtension = youtubeId ? 'youtube' : (video.url?.split('.').pop() || 'file');
+
     return (
         <div ref={setNodeRef} style={style} {...attributes} className="p-2 bg-card border rounded-lg flex items-center gap-3">
              <div {...listeners} className="cursor-grab p-1">
                 <MoreVertical className="h-5 w-5 text-muted-foreground" />
             </div>
-             <Image src={thumbnailUrl} alt={video.title} width={80} height={45} className="w-20 h-auto aspect-video rounded-md object-cover bg-muted" />
+            <div className="w-20 h-12 flex-shrink-0 bg-muted rounded-md overflow-hidden relative">
+                <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={video.url} />
+            </div>
             <div className="flex-grow min-w-0">
                 <p className="text-sm font-medium truncate">{video.title}</p>
-                 <a href={video.url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-primary truncate">{video.url}</a>
+                 <a href={video.url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-primary truncate">{video.title}</a>
             </div>
              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={onRemove}>
                 <Trash2 className="h-4 w-4"/>
@@ -74,7 +81,7 @@ interface FlatProcess {
 
 export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playlistToEdit }: PlaylistCreatorModalProps) {
     const { toast } = useToast();
-    const { user } = useAuth();
+    const { user, settings } = useAuth();
     
     // Form state
     const [title, setTitle] = useState('');
@@ -95,6 +102,8 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
 
     const [isFetchingInfo, setIsFetchingInfo] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
     const isEditing = !!playlistToEdit;
     
@@ -116,7 +125,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
              if (isEditing && playlistToEdit) {
                 setTitle(playlistToEdit.title);
                 setDescription(playlistToEdit.description || '');
-                setCategory(playlistToEdit.category || '');
+                setCategory(playlistToEdit.category || (settings?.resourceCategories[0] || 'General'));
                 setVideos(playlistToEdit.children?.map(c => ({ id: c.id, title: c.title, url: c.url || '' })) || []);
                 setSharingMode(playlistToEdit.sharingMode);
                 setSharedWithUserIds(playlistToEdit.sharedWith?.map(u => u.id) || []);
@@ -125,7 +134,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
              } else {
                 setTitle('');
                 setDescription('');
-                setCategory('');
+                setCategory(settings?.resourceCategories[0] || 'General');
                 setVideos([]);
                 setSharingMode('PUBLIC');
                 setSharedWithUserIds([]);
@@ -143,9 +152,9 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                 }).catch(console.error);
             }
         }
-    }, [playlistToEdit, isOpen, isEditing, user]);
+    }, [playlistToEdit, isOpen, isEditing, user, settings]);
     
-    const handleAddVideo = async () => {
+    const handleAddYoutubeVideo = async () => {
         if (!newVideoUrl.trim()) return;
         const videoId = getYoutubeVideoId(newVideoUrl);
         if (!videoId) {
@@ -163,6 +172,22 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
             toast({ title: 'Error', description: (err as Error).message, variant: 'destructive'});
         } finally {
             setIsFetchingInfo(false);
+        }
+    }
+    
+    const handleLocalVideoUpload = async (file: File | null) => {
+        if (!file) return;
+        
+        setIsUploading(true);
+        setUploadProgress(0);
+        try {
+            const result = await uploadWithProgress('/api/upload/resource-file', file, setUploadProgress);
+            setVideos(prev => [...prev, { id: generateUniqueId('vid'), title: file.name, url: result.url }]);
+            toast({ title: "Video Subido", description: `${file.name} se ha añadido a la lista.` });
+        } catch(err) {
+            toast({ title: 'Error de subida', description: (err as Error).message, variant: 'destructive' });
+        } finally {
+            setIsUploading(false);
         }
     }
     
@@ -202,7 +227,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
             });
             if (!response.ok) throw new Error((await response.json()).message || 'No se pudo guardar la lista.');
             
-            toast({ title: 'Éxito!', description: `Lista de videos ${isEditing ? 'actualizada' : 'creada'}.` });
+            toast({ title: '¡Éxito!', description: `Lista de videos ${isEditing ? 'actualizada' : 'creada'}.` });
             onSave();
             onClose();
         } catch (err) {
@@ -229,14 +254,23 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                             <div className="space-y-4">
                                 <div className="space-y-1"><Label htmlFor="title">Título de la Lista</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
                                 <div className="space-y-1"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} /></div>
-                                <div className="space-y-1"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory} required><SelectTrigger><SelectValue placeholder="Selecciona..."/></SelectTrigger><SelectContent><SelectItem value="Capacitación Interna">Capacitación Interna</SelectItem><SelectItem value="Tutoriales de Software">Tutoriales de Software</SelectItem><SelectItem value="Marketing y Ventas">Marketing y Ventas</SelectItem></SelectContent></Select></div>
+                                <div className="space-y-1"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory} required><SelectTrigger><SelectValue placeholder="Selecciona..."/></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
                                 <Separator />
                                 <div className="space-y-2">
-                                    <Label>Videos de la Lista</Label>
+                                    <Label>Añadir Videos</Label>
                                     <div className="flex gap-2">
                                         <Input value={newVideoUrl} onChange={e => setNewVideoUrl(e.target.value)} placeholder="Pega una URL de YouTube..."/>
-                                        <Button type="button" variant="outline" onClick={handleAddVideo} disabled={isFetchingInfo}>{isFetchingInfo ? <Loader2 className="h-4 w-4 animate-spin"/> : 'Añadir'}</Button>
+                                        <Button type="button" variant="outline" onClick={handleAddYoutubeVideo} disabled={isFetchingInfo}>{isFetchingInfo ? <Loader2 className="h-4 w-4 animate-spin"/> : 'Añadir'}</Button>
                                     </div>
+                                    <div className="relative flex items-center justify-center">
+                                       <div className="flex-grow border-t"></div>
+                                       <span className="flex-shrink mx-4 text-xs text-muted-foreground">O</span>
+                                       <div className="flex-grow border-t"></div>
+                                    </div>
+                                    <UploadArea onFileSelect={(files) => files && handleLocalVideoUpload(files[0])} disabled={isUploading} className="h-20">
+                                         <div className="text-center text-muted-foreground"><UploadCloud className="mx-auto h-6 w-6 mb-1"/><p className="text-sm font-semibold">Subir video local</p></div>
+                                    </UploadArea>
+                                    {isUploading && <Progress value={uploadProgress} className="h-1"/>}
                                     <div className="h-64 border rounded-lg p-2 bg-muted/50">
                                        <ScrollArea className="h-full pr-3">
                                         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
