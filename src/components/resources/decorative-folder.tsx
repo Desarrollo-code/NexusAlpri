@@ -19,9 +19,9 @@ const stringToHash = (str: string): number => {
     return Math.abs(hash);
 };
 
-// Definición de los patrones usando CSS background-image
+// Paleta de patrones geométricos implementados con CSS
 const patterns = [
-  // 1. Rejilla (Grid)
+  // 1. Grid (Rejilla Fina)
   (color: string) => ({
     backgroundImage: `linear-gradient(${color} 1px, transparent 1px), linear-gradient(90deg, ${color} 1px, transparent 1px)`,
     backgroundSize: '20px 20px',
@@ -42,23 +42,23 @@ const patterns = [
   }),
   // 5. Romboides / Diamantes (Área Rellena)
   (color: string) => ({
-    backgroundImage: `linear-gradient(45deg, ${color} 50%, transparent 50%), linear-gradient(-45deg, ${color} 50%, transparent 50%)`,
-    backgroundSize: '20px 20px',
+    backgroundImage: `linear-gradient(45deg, ${color} 25%, transparent 25%), linear-gradient(-45deg, ${color} 25%, transparent 25%)`,
+    backgroundSize: '20px 30px',
   }),
   // 6. Hexágonos / Panal (Área Rellena)
   (color: string) => ({
-    backgroundImage: `linear-gradient(60deg, transparent 40%, ${color} 40%, ${color} 60%, transparent 60%), linear-gradient(-60deg, transparent 40%, ${color} 40%, ${color} 60%, transparent 60%)`,
-    backgroundSize: '20px 23px',
+    backgroundImage: `linear-gradient(60deg, ${color} 1px, transparent 1px), linear-gradient(-60deg, ${color} 1px, transparent 1px), linear-gradient(180deg, ${color} 1px, transparent 1px)`,
+    backgroundSize: '20px 35px',
   }),
   // 7. Triángulos Apilados / Chevron (Área Rellena)
   (color: string) => ({
     backgroundImage: `linear-gradient(45deg, ${color} 50%, transparent 50%), linear-gradient(135deg, transparent 50%, ${color} 50%)`,
-    backgroundSize: '20px 20px',
+    backgroundSize: '30px 30px',
   }),
   // 8. Escamas / Arcos (Área Rellena)
   (color: string) => ({
-    backgroundImage: `radial-gradient(circle at 50% 0, transparent 25%, ${color} 25%, ${color} 35%, transparent 35%)`,
-    backgroundSize: '30px 30px',
+     backgroundImage: `radial-gradient(circle at 0 0, transparent 14px, ${color} 15px), radial-gradient(circle at 100% 100%, transparent 14px, ${color} 15px)`,
+     backgroundSize: '30px 30px',
   }),
   // 9. Rayas Diagonales Gruesas (Bandas)
   (color: string) => ({
@@ -78,6 +78,34 @@ const patterns = [
   (color: string) => ({
      backgroundImage: `radial-gradient(circle at 100% 100%, transparent 14px, ${color} 15px), radial-gradient(circle at 0 0, transparent 14px, ${color} 15px), radial-gradient(circle at 100% 0, transparent 14px, ${color} 15px), radial-gradient(circle at 0 100%, transparent 14px, ${color} 15px)`,
      backgroundSize: '30px 30px',
+  }),
+  // 13. Círculos Concéntricos
+  (color: string) => ({
+    backgroundImage: `radial-gradient(circle, ${color} 2px, transparent 3px), radial-gradient(circle, ${color} 2px, transparent 3px)`,
+    backgroundSize: '20px 20px',
+    backgroundPosition: '0 0, 10px 10px',
+  }),
+  // 14. Ladrillos (Bricks)
+  (color: string) => ({
+    backgroundImage: `linear-gradient(335deg, ${color} 23px, transparent 23px), linear-gradient(155deg, ${color} 23px, transparent 23px), linear-gradient(335deg, ${color} 23px, transparent 23px), linear-gradient(155deg, ${color} 23px, transparent 23px)`,
+    backgroundSize: '58px 58px',
+    backgroundPosition: '0px 2px, 4px 35px, 29px 31px, 34px 6px',
+  }),
+  // 15. Escalones (Steps)
+  (color: string) => ({
+    backgroundImage: `linear-gradient(to right, ${color} 2px, transparent 2px), linear-gradient(to bottom, ${color} 2px, transparent 2px)`,
+    backgroundSize: '20px 20px',
+  }),
+  // 16. Ondas Verticales
+  (color: string) => ({
+    backgroundImage: `radial-gradient(circle at 50% 0, ${color} 5px, transparent 6px), radial-gradient(circle at 50% 100%, ${color} 5px, transparent 6px)`,
+    backgroundSize: '20px 15px',
+  }),
+  // 17. Plaid / Tartan
+  (color: string) => ({
+    backgroundImage: `linear-gradient(${color} 2px, transparent 2px), linear-gradient(90deg, ${color} 2px, transparent 2px), linear-gradient(${color} 1px, transparent 1px), linear-gradient(90deg, ${color} 1px, transparent 1px)`,
+    backgroundSize: '40px 40px, 40px 40px, 10px 10px, 10px 10px',
+    backgroundPosition: '-2px -2px, -2px -2px, -1px -1px, -1px -1px',
   }),
 ];
 
