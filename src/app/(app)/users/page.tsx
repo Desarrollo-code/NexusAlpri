@@ -106,7 +106,7 @@ function UsersPageComponent() {
     const [userToEdit, setUserToEdit] = useState<User | null>(null);
     const [showUserModal, setShowUserModal] = useState(false);
     
-    const [viewMode, setViewMode] = useState<'grid' | 'table'>(isMobile ? 'grid' : 'table');
+    const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
     
     const [userToDeactivate, setUserToDeactivate] = useState<User | null>(null);
     const [isDeactivating, setIsDeactivating] = useState(false);
@@ -210,7 +210,7 @@ function UsersPageComponent() {
                 }
             } else {
                 if (isSelected) newSet.add(userId);
-                else newSet.delete(id);
+                else newSet.delete(userId);
             }
             return newSet;
         });
