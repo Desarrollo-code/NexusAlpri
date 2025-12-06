@@ -259,7 +259,7 @@ export const VideoPlaylistView: React.FC<{ resources: AppResourceType[], folder:
             </CardHeader>
             <Separator />
             <CardContent className="p-2 flex-1 min-h-0">
-                <ScrollArea className="h-full max-h-[60vh] pr-2">
+                <ScrollArea className="h-full max-h-[60vh] pr-2 thin-scrollbar">
                     {playlistResources.length > 0 ? (
                         <div className="p-2 space-y-1">
                             {playlistResources.map((resource) => (
