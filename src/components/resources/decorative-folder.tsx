@@ -107,6 +107,67 @@ const patterns = [
     backgroundSize: '40px 40px, 40px 40px, 10px 10px, 10px 10px',
     backgroundPosition: '-2px -2px, -2px -2px, -1px -1px, -1px -1px',
   }),
+  // 18. Cubos 3D
+  (color: string, darkColor: string) => ({
+    backgroundImage: `linear-gradient(45deg, ${darkColor} 50%, ${color} 50%)`,
+    backgroundSize: '20px 20px',
+  }),
+  // 19. Pirámides
+  (color: string, darkColor: string) => ({
+    backgroundImage: `linear-gradient(45deg, ${darkColor} 50%, transparent 50%), linear-gradient(135deg, transparent 50%, ${darkColor} 50%)`,
+    backgroundSize: '20px 20px',
+  }),
+  // 20. Tejido (Woven)
+  (color: string, darkColor: string) => ({
+    backgroundImage: `linear-gradient(0deg, ${color} 50%, transparent 50%), linear-gradient(90deg, ${darkColor} 50%, transparent 50%)`,
+    backgroundSize: '20px 20px',
+  }),
+  // 21. Círculos Solapados
+  (color: string) => ({
+    backgroundImage: `radial-gradient(circle, ${color} 10px, transparent 11px)`,
+    backgroundSize: '25px 25px',
+  }),
+  // 22. Acolchado
+  (color: string, darkColor: string) => ({
+    backgroundImage: `linear-gradient(45deg, ${darkColor} 25%, transparent 25%, transparent 75%, ${darkColor} 75%, ${darkColor}), linear-gradient(45deg, ${darkColor} 25%, transparent 25%, transparent 75%, ${darkColor} 75%, ${darkColor})`,
+    backgroundSize: '30px 30px',
+    backgroundPosition: '0 0, 15px 15px',
+  }),
+  // 23. Chevrons 3D
+  (color: string, darkColor: string) => ({
+    backgroundImage: `linear-gradient(45deg, ${color} 50%, transparent 50%), linear-gradient(135deg, ${darkColor} 50%, transparent 50%)`,
+    backgroundSize: '30px 15px',
+  }),
+   // 24. Engranajes
+  (color: string) => ({
+    backgroundImage: `radial-gradient(circle at 0% 50%, ${color} 4px, transparent 5px), radial-gradient(circle at 100% 50%, ${color} 4px, transparent 5px)`,
+    backgroundSize: '20px 20px',
+  }),
+  // 25. Ondas Cuadradas
+  (color: string) => ({
+    backgroundImage: `linear-gradient(45deg, ${color} 25%, transparent 25%), linear-gradient(135deg, ${color} 25%, transparent 25%), linear-gradient(45deg, transparent 75%, ${color} 75%), linear-gradient(135deg, transparent 75%, ${color} 75%)`,
+    backgroundSize: '20px 20px',
+  }),
+   // 26. Cubos Isométricos
+  (color: string, darkColor: string) => ({
+    backgroundImage: `
+      linear-gradient(30deg, ${color} 12%, transparent 12.5%, transparent 87%, ${color} 87.5%, ${color}),
+      linear-gradient(150deg, ${color} 12%, transparent 12.5%, transparent 87%, ${color} 87.5%, ${color}),
+      linear-gradient(30deg, ${color} 12%, transparent 12.5%, transparent 87%, ${color} 87.5%, ${color}),
+      linear-gradient(150deg, ${color} 12%, transparent 12.5%, transparent 87%, ${color} 87.5%, ${color}),
+      linear-gradient(60deg, ${darkColor} 25%, transparent 25.5%, transparent 75%, ${darkColor} 75%, ${darkColor}),
+      linear-gradient(60deg, ${darkColor} 25%, transparent 25.5%, transparent 75%, ${darkColor} 75%, ${darkColor})
+    `,
+    backgroundSize: '40px 70px',
+    backgroundPosition: '0 0, 0 0, 20px 35px, 20px 35px, 0 0, 20px 35px',
+  }),
+   // 27. Ilusión Óptica
+  (color: string) => ({
+    backgroundImage: 'radial-gradient(circle at center, black 1px, transparent 1px), radial-gradient(circle at center, black 1px, transparent 1px)',
+    backgroundSize: '20px 20px',
+    backgroundPosition: '0 0, 10px 10px',
+    backgroundColor: color,
+  }),
 ];
 
 /**
@@ -121,7 +182,7 @@ const getUniqueFolderStyle = (id: number | string): React.CSSProperties => {
     const numericId = typeof id === 'string' ? stringToHash(id) : id;
     const patternGenerator = patterns[numericId % patterns.length];
     
-    const patternStyle = patternGenerator(patternColor);
+    const patternStyle = patternGenerator(patternColor, raw.dark); // Pasar un tono más oscuro para los patrones 3D
     
     return {
         backgroundColor: raw.light,
