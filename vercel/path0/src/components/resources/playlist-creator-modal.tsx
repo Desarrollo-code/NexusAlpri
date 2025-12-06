@@ -31,10 +31,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { FileIcon } from '../ui/file-icon';
-import { UploadArea } from '../ui/upload-area';
+import { FileIcon } from '@/components/ui/file-icon';
+import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
-import { Progress } from '../ui/progress';
+import { Progress } from '@/components/ui/progress';
 
 const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
