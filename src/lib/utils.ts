@@ -1,4 +1,3 @@
-
 // src/lib/utils.ts
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
@@ -171,19 +170,17 @@ export const getProcessColors = (id: string) => {
     }
     
     const hash = stringToHash(id);
-    const hueVariation = (hash % 90) - 45; // Aumentamos el rango de variación de color
+    const hueVariation = (hash % 90) - 45;
     const newHue = (primaryHsl.h + hueVariation + 360) % 360;
 
-    // Colores más saturados y un poco más oscuros para el fondo
-    const mediumRgb = hslToRgb(newHue, primaryHsl.s * 0.9, 50);
+    // Ajustado para un fondo más suave (mayor luminosidad)
+    const mediumRgb = hslToRgb(newHue, primaryHsl.s * 0.8, 75);
 
     return {
         raw: {
-            // El color de fondo ahora es el 'medium'
             light: `rgb(${mediumRgb.r.toFixed(0)}, ${mediumRgb.g.toFixed(0)}, ${mediumRgb.b.toFixed(0)})`,
-            // El color del texto ahora es blanco para asegurar contraste
-            dark: `#FFFFFF`, 
-            // Mantenemos el 'medium' para consistencia
+            // Texto cambiado a negro para mejor contraste
+            dark: `#000000`, 
             medium: `rgb(${mediumRgb.r.toFixed(0)}, ${mediumRgb.g.toFixed(0)}, ${mediumRgb.b.toFixed(0)})`
         }
     };
