@@ -1,6 +1,6 @@
 // src/components/resources/playlist-creator-modal.tsx
 'use client';
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Dialog,
@@ -31,23 +31,27 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { FileIcon } from '../ui/file-icon';
 
 const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
 const SortableVideoItem = ({ video, onRemove }: { video: { id: string, title: string, url: string }, onRemove: () => void }) => {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: video.id });
     const style = { transform: CSS.Transform.toString(transform), transition };
-    const thumbnailUrl = `https://img.youtube.com/vi/${getYoutubeVideoId(video.url)}/mqdefault.jpg`;
-    
+    const youtubeId = getYoutubeVideoId(video.url);
+    const fileExtension = youtubeId ? 'youtube' : (video.url?.split('.').pop() || 'file');
+
     return (
         <div ref={setNodeRef} style={style} {...attributes} className="p-2 bg-card border rounded-lg flex items-center gap-3">
              <div {...listeners} className="cursor-grab p-1">
                 <MoreVertical className="h-5 w-5 text-muted-foreground" />
             </div>
-             <Image src={thumbnailUrl} alt={video.title} width={80} height={45} className="w-20 h-auto aspect-video rounded-md object-cover bg-muted" />
+            <div className="w-20 h-12 flex-shrink-0 bg-muted rounded-md overflow-hidden relative">
+                <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={video.url} />
+            </div>
             <div className="flex-grow min-w-0">
                 <p className="text-sm font-medium truncate">{video.title}</p>
-                 <a href={video.url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-primary truncate">{video.url}</a>
+                 <a href={video.url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-primary truncate">{video.title}</a>
             </div>
              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={onRemove}>
                 <Trash2 className="h-4 w-4"/>
