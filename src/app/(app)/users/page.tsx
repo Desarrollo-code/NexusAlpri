@@ -40,6 +40,8 @@ import { EmptyState } from '@/components/empty-state';
 import { useTour } from '@/contexts/tour-context';
 import { usersTour } from '@/lib/tour-steps';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
+import { format, differenceInSeconds } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 // --- TYPES & CONTEXT ---
 interface ProcessWithChildren extends Process {
