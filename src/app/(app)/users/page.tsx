@@ -1,3 +1,4 @@
+
 // src/app/(app)/users/page.tsx
 'use client';
 
@@ -521,7 +522,7 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
             <div className="space-y-3">
                 {users.map((u: UserWithProcess) => (
                     <Card key={u.id} className="flex items-center p-3 gap-3">
-                         <Checkbox checked={selectedUserIds.has(u.id)} onCheckedChange={(checked) => onSelectionChange(u.id, !!checked)} />
+                         <Checkbox id={`check-${u.id}`} checked={selectedUserIds.has(u.id)} onCheckedChange={(checked) => onSelectionChange(u.id, !!checked)} />
                          <Avatar className="h-10 w-10"><AvatarImage src={u.avatar || undefined} /><AvatarFallback><Identicon userId={u.id}/></AvatarFallback></Avatar>
                         <div className="flex-grow min-w-0">
                             <p className="font-semibold truncate">{u.name}</p>
@@ -547,7 +548,7 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
     return (
         <Card>
             <Table>
-                <TableHeader className="bg-muted/50">
+                <TableHeader>
                     <TableRow>
                         <TableHead className="w-12 px-4"><Checkbox checked={isAllOnPageSelected} onCheckedChange={(checked) => onSelectionChange('all', !!checked)}/></TableHead>
                         <TableHead className="w-[25%]"><div className="flex items-center gap-2 font-medium text-muted-foreground"><UsersIcon className="h-4 w-4"/>Colaborador</div></TableHead>
@@ -565,9 +566,12 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                             if (!u.updatedAt || !u.registeredDate) return "Pendiente";
                             const updatedAt = new Date(u.updatedAt);
                             const registeredDate = new Date(u.registeredDate);
+                            
+                            // Si la diferencia es menor a 10 segundos, asumimos que es el momento de la creación.
                             if (differenceInSeconds(updatedAt, registeredDate) < 10) {
                                 return "Pendiente de primer ingreso";
                             }
+                            
                             return format(updatedAt, "dd MMM yyyy, HH:mm", { locale: es });
                         }, [u.updatedAt, u.registeredDate]);
                         
@@ -575,9 +579,9 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                         const accessCount = navItems.reduce((acc, item) => acc + (item.children ? item.children.length : 1), 0);
 
                         return (
-                            <TableRow key={u.id} className="even:bg-muted/50 hover:bg-primary/5">
-                                <TableCell className="px-4"><Checkbox checked={selectedUserIds.has(u.id)} onCheckedChange={(checked) => onSelectionChange(u.id, !!checked)} /></TableCell>
-                                <TableCell className="py-3">
+                            <TableRow key={u.id} className="hover:bg-muted/50">
+                                <TableCell className="px-4"><Checkbox id={`check-${u.id}`} checked={selectedUserIds.has(u.id)} onCheckedChange={(checked) => onSelectionChange(u.id, !!checked)} /></TableCell>
+                                <TableCell className="py-2">
                                     <div className="flex items-center gap-3">
                                         <Avatar className="h-9 w-9"><AvatarImage src={u.avatar || undefined} /><AvatarFallback><Identicon userId={u.id}/></AvatarFallback></Avatar>
                                         <div><p className="font-semibold">{u.name}</p><p className="text-xs text-muted-foreground">{u.email}</p></div>
@@ -610,7 +614,7 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                                         <DropdownMenuContent align="end">
                                             <DropdownMenuItem onSelect={() => onEdit(u)}><Edit className="mr-2 h-4 w-4"/>Editar Perfil</DropdownMenuItem>
                                             <DropdownMenuItem onSelect={() => onRoleChange(u)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol/Permisos</DropdownMenuItem>
-                                            <DropdownMenuItem onSelect={() => onStatusChange(u, !u.isActive)} className={u.isActive ? "text-destructive focus:bg-destructive/10" : ""}>
+                                            <DropdownMenuItem onSelect={() => onStatusChange(u, !u.isActive)} className={u.isActive ? "text-destructive" : ""}>
                                                 <UserX className="mr-2 h-4 w-4"/>{u.isActive ? 'Inactivar' : 'Activar'}
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
@@ -632,4 +636,3 @@ export default function UsersPage() {
         </Suspense>
     )
 }
-
