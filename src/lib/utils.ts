@@ -170,15 +170,16 @@ export const getProcessColors = (id: string) => {
     }
     
     const hash = stringToHash(id);
-    const hueVariation = (hash % 90) - 45;
+    const hueVariation = (hash % 60) - 30; // Reduced variation for more harmony
     const newHue = (primaryHsl.h + hueVariation + 360) % 360;
 
     // Ajustado para un fondo más suave (mayor luminosidad)
-    const mediumRgb = hslToRgb(newHue, primaryHsl.s * 0.8, 75);
+    const lightRgb = hslToRgb(newHue, primaryHsl.s * 0.7, 92); // Aumentada la luminosidad a 92%
+    const mediumRgb = hslToRgb(newHue, primaryHsl.s * 0.8, 80); // Tono medio más claro
 
     return {
         raw: {
-            light: `rgb(${mediumRgb.r.toFixed(0)}, ${mediumRgb.g.toFixed(0)}, ${mediumRgb.b.toFixed(0)})`,
+            light: `rgb(${lightRgb.r.toFixed(0)}, ${lightRgb.g.toFixed(0)}, ${lightRgb.b.toFixed(0)})`,
             // Texto cambiado a negro para mejor contraste
             dark: `#000000`, 
             medium: `rgb(${mediumRgb.r.toFixed(0)}, ${mediumRgb.g.toFixed(0)}, ${mediumRgb.b.toFixed(0)})`
