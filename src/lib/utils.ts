@@ -121,6 +121,7 @@ export const getMotivationalTriggerLabel = (
     COURSE_NEAR_COMPLETION: "Al 90% del curso:",
     COURSE_COMPLETION: "Al completar el curso:",
     LEVEL_UP: "Al alcanzar el:",
+    LESSON_COMPLETION: 'Al completar una lección',
   };
 
   const baseLabel = labels[triggerType] || "Disparador desconocido:";
@@ -170,16 +171,19 @@ export const getProcessColors = (id: string) => {
     }
     
     const hash = stringToHash(id);
-    const hueVariation = (hash % 60) - 30;
+    const hueVariation = (hash % 90) - 45; // Aumentamos el rango de variación de color
     const newHue = (primaryHsl.h + hueVariation + 360) % 360;
 
-    const lightRgb = hslToRgb(newHue, primaryHsl.s * 0.85, 96.5);
-    const mediumRgb = hslToRgb(newHue, primaryHsl.s * 0.85, 75);
+    // Colores más saturados y un poco más oscuros para el fondo
+    const mediumRgb = hslToRgb(newHue, primaryHsl.s * 0.9, 50);
 
     return {
         raw: {
-            light: `rgb(${lightRgb.r.toFixed(0)}, ${lightRgb.g.toFixed(0)}, ${lightRgb.b.toFixed(0)})`,
-            dark: `rgb(0, 0, 0)`,
+            // El color de fondo ahora es el 'medium'
+            light: `rgb(${mediumRgb.r.toFixed(0)}, ${mediumRgb.g.toFixed(0)}, ${mediumRgb.b.toFixed(0)})`,
+            // El color del texto ahora es blanco para asegurar contraste
+            dark: `#FFFFFF`, 
+            // Mantenemos el 'medium' para consistencia
             medium: `rgb(${mediumRgb.r.toFixed(0)}, ${mediumRgb.g.toFixed(0)}, ${mediumRgb.b.toFixed(0)})`
         }
     };
