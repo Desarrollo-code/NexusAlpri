@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import React, { useMemo } from 'react';
+import { Skeleton } from '../ui/skeleton';
 
 
 interface UserProfileCardProps {
@@ -29,6 +30,25 @@ interface UserProfileCardProps {
     onRoleChange?: (user: User) => void;
     onStatusChange?: (user: User, status: boolean) => void;
 }
+
+export const UserProfileCardSkeleton = () => (
+    <Card className="flex flex-col h-full bg-card shadow-md text-center overflow-hidden">
+        <div className="h-14 w-full relative bg-muted" />
+        <CardContent className="pt-12 px-2 pb-3 flex-grow flex flex-col items-center">
+            <Skeleton className="h-5 w-32" />
+            <Skeleton className="h-4 w-20 mt-1" />
+            <Skeleton className="h-3 w-28 mt-1" />
+            <div className="mt-2 flex items-center flex-wrap justify-center gap-1.5">
+                <Skeleton className="h-5 w-16 rounded-full" />
+                <Skeleton className="h-5 w-20 rounded-full" />
+            </div>
+        </CardContent>
+        <CardFooter className="p-1 border-t mt-auto">
+            <Skeleton className="h-7 w-full" />
+        </CardFooter>
+    </Card>
+);
+
 
 export const UserProfileCard = ({ user, onEdit, onRoleChange, onStatusChange }: UserProfileCardProps) => {
     const router = useRouter();

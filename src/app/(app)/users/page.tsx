@@ -1,4 +1,3 @@
-
 // src/app/(app)/users/page.tsx
 'use client';
 
@@ -6,13 +5,13 @@ import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'reac
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, List, Grid, Filter, UserPlus, MoreVertical, Loader2, Briefcase, MessageSquare, Edit, Trash2, UserCog, UserX, Users as UsersIcon, Key, HelpCircle, Clock } from 'lucide-react';
+import { PlusCircle, Search, List, Grid, Filter, UserPlus, MoreVertical, Loader2, Briefcase, MessageSquare, Edit, Trash2, UserCog, UserX, Users as UsersIcon, Key, HelpCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import type { User, UserRole, Process, NavItem } from '@/types';
+import type { User, UserRole, Process } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -33,16 +32,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { UserProfileCard } from '@/components/users/user-profile-card';
-import { getRoleInSpanish, getRoleBadgeVariant, getUserNavItems } from '@/lib/security-log-utils';
+import { UserProfileCard, UserProfileCardSkeleton } from '@/components/users/user-profile-card';
+import { getRoleInSpanish, getRoleBadgeVariant } from '@/lib/security-log-utils';
 import { getProcessColors } from '@/lib/utils';
 import { Identicon } from '@/components/ui/identicon';
-import { EmptyState } from '@/components/empty-state';
+import { EmptyState } from '../empty-state';
 import { useTour } from '@/contexts/tour-context';
 import { usersTour } from '@/lib/tour-steps';
-import { ColorfulLoader } from '@/components/ui/colorful-loader';
-import { format, differenceInSeconds } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { ColorfulLoader } from '../ui/colorful-loader';
 
 // --- TYPES & CONTEXT ---
 interface ProcessWithChildren extends Process {
@@ -51,11 +48,9 @@ interface ProcessWithChildren extends Process {
 }
 interface UserWithProcess extends User {
     process: { id: string; name: string } | null;
-    updatedAt: string | Date;
-    registeredDate: string | Date;
 }
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 12;
 
 const DraggableUserPreview = ({ user }: { user: UserWithProcess }) => (
     <Card className="flex items-center gap-2 p-2 shadow-lg w-48">
@@ -109,7 +104,7 @@ function UsersPageComponent() {
     const [userToEdit, setUserToEdit] = useState<User | null>(null);
     const [showUserModal, setShowUserModal] = useState(false);
     
-    const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
+    const [viewMode, setViewMode] = useState<'grid' | 'table'>(isMobile ? 'grid' : 'table');
     
     const [userToDeactivate, setUserToDeactivate] = useState<User | null>(null);
     const [isDeactivating, setIsDeactivating] = useState(false);
@@ -213,7 +208,7 @@ function UsersPageComponent() {
                 }
             } else {
                 if (isSelected) newSet.add(userId);
-                else newSet.delete(userId);
+                else newSet.delete(id);
             }
             return newSet;
         });
@@ -439,7 +434,9 @@ function UsersPageComponent() {
                          <div className="mb-24 md:mb-4">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">{[...Array(10)].map((_,i) => <Skeleton key={i} className="h-56 w-full rounded-2xl" />)}</div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                                        {[...Array(PAGE_SIZE)].map((_,i) => <UserProfileCardSkeleton key={i} />)}
+                                    </div>
                                 ) : (
                                     <Card><CardContent className="p-4"><Skeleton className="h-96 w-full rounded-2xl"/></CardContent></Card>
                                 )
@@ -503,7 +500,7 @@ function UsersPageComponent() {
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isDeactivating}>Cancelar</AlertDialogCancel>
                         <AlertDialogAction onClick={confirmStatusChange} disabled={isDeactivating} className={cn(!userToDeactivate?.isActive && 'bg-green-600 hover:bg-green-700', userToDeactivate?.isActive && 'bg-destructive hover:bg-destructive/90')}>
-                            {isDeactivating ? <div className="w-4 h-4 mr-2"><ColorfulLoader /></div> : null}
+                            {isDeactivating && <div className="w-4 h-4 mr-2"><ColorfulLoader /></div>}
                             Sí, {userToDeactivate?.isActive ? 'Inactivar' : 'Activar'}
                         </AlertDialogAction>
                     </AlertDialogFooter>
@@ -551,12 +548,11 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                 <TableHeader>
                     <TableRow>
                         <TableHead className="w-12 px-4"><Checkbox checked={isAllOnPageSelected} onCheckedChange={(checked) => onSelectionChange('all', !!checked)}/></TableHead>
-                        <TableHead className="w-[25%]"><div className="flex items-center gap-2 font-medium text-muted-foreground"><UsersIcon className="h-4 w-4"/>Colaborador</div></TableHead>
-                        <TableHead><div className="flex items-center gap-2 font-medium text-muted-foreground"><UserCog className="h-4 w-4"/>Rol</div></TableHead>
-                        <TableHead><div className="flex items-center gap-2 font-medium text-muted-foreground"><Briefcase className="h-4 w-4"/>Proceso</div></TableHead>
-                        <TableHead><div className="flex items-center gap-2 font-medium text-muted-foreground"><Key className="h-4 w-4" />Acceso</div></TableHead>
-                        <TableHead><div className="flex items-center gap-2 font-medium text-muted-foreground"><Clock className="h-4 w-4" />Última Actividad</div></TableHead>
-                        <TableHead className="w-20 text-center">Estado</TableHead>
+                        <TableHead className="w-[30%]">Colaborador</TableHead>
+                        <TableHead>Rol</TableHead>
+                        <TableHead>Proceso</TableHead>
+                        <TableHead>Acceso</TableHead>
+                        <TableHead className="text-center">Estado</TableHead>
                         <TableHead className="text-right px-4"><span className="sr-only">Acciones</span></TableHead>
                     </TableRow>
                 </TableHeader>
@@ -574,19 +570,16 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                             return format(updatedAt, "dd MMM yyyy, HH:mm", { locale: es });
                         }, [u.updatedAt, u.registeredDate]);
                         
-                        const navItems = getUserNavItems(u);
-                        const accessCount = navItems.reduce((acc, item) => acc + (item.children ? item.children.length : 1), 0);
-
                         return (
                             <TableRow key={u.id} className="hover:bg-muted/50">
-                                <TableCell className="px-4" onClick={(e) => e.stopPropagation()}><Checkbox id={`check-${u.id}`} checked={selectedUserIds.has(u.id)} onCheckedChange={(checked) => onSelectionChange(u.id, !!checked)} /></TableCell>
+                                <TableCell className="px-4"><Checkbox checked={selectedUserIds.has(u.id)} onCheckedChange={(checked) => onSelectionChange(u.id, !!checked)} /></TableCell>
                                 <TableCell className="py-2">
                                     <div className="flex items-center gap-3">
                                         <Avatar className="h-9 w-9"><AvatarImage src={u.avatar || undefined} /><AvatarFallback><Identicon userId={u.id}/></AvatarFallback></Avatar>
                                         <div><p className="font-semibold">{u.name}</p><p className="text-xs text-muted-foreground">{u.email}</p></div>
                                     </div>
                                 </TableCell>
-                                <TableCell><p className="font-medium">{getRoleInSpanish(u.role)}</p></TableCell>
+                                <TableCell><Badge variant={getRoleBadgeVariant(u.role)}>{getRoleInSpanish(u.role)}</Badge></TableCell>
                                 <TableCell>
                                     {u.process ? (
                                         <Badge 
@@ -599,8 +592,7 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                                         </Badge>
                                     ) : <span className="text-xs text-muted-foreground">N/A</span>}
                                 </TableCell>
-                                <TableCell className="text-sm text-muted-foreground">{u.customPermissions && u.customPermissions.length > 0 ? `${accessCount} páginas` : 'Rol estándar'}</TableCell>
-                                <TableCell className="text-sm text-muted-foreground">{lastActivityText}</TableCell>
+                                <TableCell className="text-sm text-muted-foreground">Rol estándar</TableCell>
                                 <TableCell className="text-center">
                                     <div className="flex items-center justify-center gap-2">
                                         <div className={cn("h-2.5 w-2.5 rounded-full", u.isActive ? 'bg-green-500' : 'bg-red-500')} />
@@ -635,5 +627,3 @@ export default function UsersPage() {
         </Suspense>
     )
 }
-
-    
