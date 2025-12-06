@@ -213,7 +213,7 @@ function UsersPageComponent() {
                 }
             } else {
                 if (isSelected) newSet.add(userId);
-                else newSet.delete(id);
+                else newSet.delete(userId);
             }
             return newSet;
         });
@@ -563,11 +563,10 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                 <TableBody>
                     {users.map((u: UserWithProcess) => {
                         const lastActivityText = useMemo(() => {
-                            if (!u.updatedAt || !u.registeredDate) return "Pendiente";
+                            if (!u.updatedAt || !u.registeredDate) return "Pendiente de primer ingreso";
                             const updatedAt = new Date(u.updatedAt);
                             const registeredDate = new Date(u.registeredDate);
                             
-                            // Si la diferencia es menor a 10 segundos, asumimos que es el momento de la creación.
                             if (differenceInSeconds(updatedAt, registeredDate) < 10) {
                                 return "Pendiente de primer ingreso";
                             }
@@ -580,7 +579,7 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
 
                         return (
                             <TableRow key={u.id} className="hover:bg-muted/50">
-                                <TableCell className="px-4"><Checkbox id={`check-${u.id}`} checked={selectedUserIds.has(u.id)} onCheckedChange={(checked) => onSelectionChange(u.id, !!checked)} /></TableCell>
+                                <TableCell className="px-4" onClick={(e) => e.stopPropagation()}><Checkbox id={`check-${u.id}`} checked={selectedUserIds.has(u.id)} onCheckedChange={(checked) => onSelectionChange(u.id, !!checked)} /></TableCell>
                                 <TableCell className="py-2">
                                     <div className="flex items-center gap-3">
                                         <Avatar className="h-9 w-9"><AvatarImage src={u.avatar || undefined} /><AvatarFallback><Identicon userId={u.id}/></AvatarFallback></Avatar>
@@ -636,3 +635,5 @@ export default function UsersPage() {
         </Suspense>
     )
 }
+
+    
