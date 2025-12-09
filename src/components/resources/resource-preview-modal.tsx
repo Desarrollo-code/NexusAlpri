@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogFooter } from '@/components/ui/dialog';
 import type { AppResourceType } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Download, Share2, ChevronLeft, ChevronRight, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users, ExternalLink, FileText, Archive, FileCode, List, X, Edit, Save, Expand, Minimize } from 'lucide-react';
+import { Download, Share2, ChevronLeft, ChevronRight, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users, ExternalLink, FileText, Archive as ZipIcon, FileCode, List, X, Edit, Save, Expand, Minimize } from 'lucide-react';
 import { getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
@@ -90,7 +90,7 @@ const ZipPreviewer = ({ url }: { url: string }) => {
     return (
         <div className="flex flex-col h-full bg-muted/30">
             <div className="p-4 border-b bg-background/70">
-                <h4 className="font-semibold flex items-center gap-2"><Archive className="h-5 w-5 text-primary"/>Contenido del Archivo ZIP</h4>
+                <h4 className="font-semibold flex items-center gap-2"><ZipIcon className="h-5 w-5 text-primary"/>Contenido del Archivo ZIP</h4>
             </div>
             <ScrollArea className="flex-grow">
                 <ul className="p-4 text-sm">
@@ -357,7 +357,7 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
                   <div className="flex-grow flex relative overflow-hidden">
                     <div className="flex-grow flex-1 relative">
                       <div className="absolute inset-0 flex items-center justify-center bg-muted/20">
-                          <ContentPreview resource={resource} pinVerifiedUrl={pinVerifiedUrl} onPinVerified={setPinVerifiedUrl} />
+                          <ContentPreview resource={resource} onPinVerified={setPinVerifiedUrl} />
                       </div>
                     </div>
                     {!isMobile && showDetails && (
