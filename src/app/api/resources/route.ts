@@ -1,3 +1,4 @@
+
 // src/app/api/resources/route.ts
 import { NextResponse, NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
@@ -99,7 +100,7 @@ export async function GET(req: NextRequest) {
                 uploader: { select: { id: true, name: true, avatar: true } },
                 sharedWith: { select: { id: true, name: true, avatar: true } }
             },
-            orderBy: [ { type: 'asc' }, { uploadDate: 'desc' } ],
+            orderBy: [ { isPinned: 'desc' }, { type: 'asc' }, { uploadDate: 'desc' } ],
         });
         
         const safeResources = resources.map(({ pin, tags, uploader, ...resource }) => ({
@@ -213,3 +214,5 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: 'Error al crear el recurso' }, { status: 500 });
     }
 }
+
+    
