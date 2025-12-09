@@ -76,8 +76,9 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
 
   // --- GRID VIEW (main library view) ---
   if (type === 'FOLDER' && resourceId) {
+      const colors = getProcessColors(resourceId);
       return (
-        <div className="flex h-full w-full items-center justify-center p-4 bg-black">
+        <div className="flex h-full w-full items-center justify-center p-4" style={{ background: `linear-gradient(135deg, ${colors.raw.light}, ${colors.raw.medium})` }}>
              <IconFolderDynamic resourceId={resourceId} className="w-20 h-20 text-muted-foreground/60" />
         </div>
       );
@@ -85,8 +86,8 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
   
   if (type === 'VIDEO_PLAYLIST') {
       return (
-          <div className="flex h-full w-full items-center justify-center p-4 bg-black">
-              <IconVideoPlaylist className="w-24 h-24 text-muted-foreground/60" />
+          <div className="flex h-full w-full items-center justify-center p-4 bg-gradient-to-br from-primary/20 to-primary/30">
+              <IconVideoPlaylist className="w-28 h-28 text-muted-foreground/60" />
           </div>
       )
   }
