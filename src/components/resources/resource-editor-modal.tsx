@@ -251,17 +251,31 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         }
     };
     
-    const isStep1Valid = !!title && ((resourceType === 'DOCUMENT' && upload?.status === 'completed') || (resourceType === 'EXTERNAL_LINK' && externalLink) || (resourceType === 'DOCUMENTO_EDITABLE' && editableContent));
+    const isStep1Valid = !!title && (
+        (resourceType === 'DOCUMENT' && upload?.status === 'completed') || 
+        (resourceType === 'EXTERNAL_LINK' && externalLink) || 
+        (resourceType === 'DOCUMENTO_EDITABLE' && editableContent) ||
+        // A folder is also valid in step 1 if it has a title
+        (resourceType === 'FOLDER') 
+    );
+    
+    // --- Vistas de Formulario ---
+    const isEditingFolder = isEditing && resource?.type === 'FOLDER';
 
     const ContentStep = () => (
         <div className="space-y-4">
             <div className="space-y-2"><Label htmlFor="title">Título del Recurso</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
-            <div className="space-y-2"><Label>Tipo de Recurso</Label><RadioGroup value={resourceType} onValueChange={(v) => setResourceType(v as any)} className="grid grid-cols-1 md:grid-cols-3 gap-3"><div className="flex-1"><RadioGroupItem value="DOCUMENT" id="type-doc" className="sr-only" /><Label htmlFor="type-doc" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${resourceType === 'DOCUMENT' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><FileUp className={`mb-2 h-6 w-6 ${resourceType === 'DOCUMENT' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="font-semibold text-sm">Archivo</span></Label></div><div className="flex-1"><RadioGroupItem value="EXTERNAL_LINK" id="type-link" className="sr-only"/><Label htmlFor="type-link" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${resourceType === 'EXTERNAL_LINK' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><LinkIcon className={`mb-2 h-6 w-6 ${resourceType === 'EXTERNAL_LINK' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="font-semibold text-sm">Enlace Web</span></Label></div><div className="flex-1"><RadioGroupItem value="DOCUMENTO_EDITABLE" id="type-editable" className="sr-only"/><Label htmlFor="type-editable" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${resourceType === 'DOCUMENTO_EDITABLE' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><FilePenLine className={`mb-2 h-6 w-6 ${resourceType === 'DOCUMENTO_EDITABLE' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="font-semibold text-sm">Documento</span></Label></div></RadioGroup></div>
+            
+            {/* Solo muestra el tipo de recurso si NO es una carpeta */}
+            {!isEditingFolder && (
+                 <div className="space-y-2"><Label>Tipo de Recurso</Label><RadioGroup value={resourceType} onValueChange={(v) => setResourceType(v as any)} className="grid grid-cols-1 md:grid-cols-3 gap-3"><div className="flex-1"><RadioGroupItem value="DOCUMENT" id="type-doc" className="sr-only" /><Label htmlFor="type-doc" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${resourceType === 'DOCUMENT' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><FileUp className={`mb-2 h-6 w-6 ${resourceType === 'DOCUMENT' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="font-semibold text-sm">Archivo</span></Label></div><div className="flex-1"><RadioGroupItem value="EXTERNAL_LINK" id="type-link" className="sr-only"/><Label htmlFor="type-link" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${resourceType === 'EXTERNAL_LINK' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><LinkIcon className={`mb-2 h-6 w-6 ${resourceType === 'EXTERNAL_LINK' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="font-semibold text-sm">Enlace Web</span></Label></div><div className="flex-1"><RadioGroupItem value="DOCUMENTO_EDITABLE" id="type-editable" className="sr-only"/><Label htmlFor="type-editable" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${resourceType === 'DOCUMENTO_EDITABLE' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><FilePenLine className={`mb-2 h-6 w-6 ${resourceType === 'DOCUMENTO_EDITABLE' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="font-semibold text-sm">Documento</span></Label></div></RadioGroup></div>
+            )}
+
             <div className="space-y-2">
-                <Label>Contenido</Label>
-                {resourceType === 'DOCUMENT' && (upload ? (<div className="p-2 border rounded-md bg-muted/50 relative"><div className="flex items-center gap-2"><FileGenericIcon className="h-5 w-5 text-primary shrink-0" /><div className="min-w-0"><p className="text-sm font-medium truncate">{upload.file.name}</p><p className="text-xs text-muted-foreground">{formatFileSize(upload.file.size)}</p></div></div>{upload.status === 'uploading' && <Progress value={upload.progress} className="h-1 mt-1" />}{upload.status === 'error' && <p className="text-xs text-destructive mt-1">{upload.error}</p>}</div>) : (<UploadArea onFileSelect={(files) => files && handleFileSelect(files[0])} disabled={isUploading} />))}
-                {resourceType === 'EXTERNAL_LINK' && <Input type="url" value={externalLink} onChange={e => setExternalLink(e.target.value)} placeholder="https://ejemplo.com"/>}
-                {resourceType === 'DOCUMENTO_EDITABLE' && <RichTextEditor value={editableContent} onChange={setEditableContent} className="min-h-[200px]" />}
+                {!isEditingFolder && <Label>Contenido</Label>}
+                {resourceType === 'DOCUMENT' && !isEditingFolder && (upload ? (<div className="p-2 border rounded-md bg-muted/50 relative"><div className="flex items-center gap-2"><FileGenericIcon className="h-5 w-5 text-primary shrink-0" /><div className="min-w-0"><p className="text-sm font-medium truncate">{upload.file.name}</p><p className="text-xs text-muted-foreground">{formatFileSize(upload.file.size)}</p></div></div>{upload.status === 'uploading' && <Progress value={upload.progress} className="h-1 mt-1" />}{upload.status === 'error' && <p className="text-xs text-destructive mt-1">{upload.error}</p>}</div>) : (<UploadArea onFileSelect={(files) => files && handleFileSelect(files[0])} disabled={isUploading} />))}
+                {resourceType === 'EXTERNAL_LINK' && !isEditingFolder && <Input type="url" value={externalLink} onChange={e => setExternalLink(e.target.value)} placeholder="https://ejemplo.com"/>}
+                {resourceType === 'DOCUMENTO_EDITABLE' && !isEditingFolder && <RichTextEditor value={editableContent} onChange={setEditableContent} className="min-h-[200px]" />}
             </div>
         </div>
     );
