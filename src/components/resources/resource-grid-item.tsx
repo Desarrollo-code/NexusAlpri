@@ -24,6 +24,9 @@ import { DecorativeFolder } from './decorative-folder';
 import { ExternalLink } from 'lucide-react';
 import { Checkbox } from '../ui/checkbox';
 import Link from 'next/link';
+import { getProcessColors } from '@/lib/utils';
+import { IconFolderDynamic } from '../icons/icon-folder-dynamic';
+
 
 // --- Sub-components for Page ---
 const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onDelete, onNavigate, onRestore, onTogglePin, isSelected, onSelectionChange }: { 
@@ -65,20 +68,22 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
     };
     
     const Thumbnail = () => {
+        const folderColor = getProcessColors(resource.id).raw.medium;
+
         if (isFolder) {
             return (
                 <div className="w-full h-full relative" onClick={handleClick}>
-                    <DecorativeFolder patternId={resource.id} className="absolute inset-0" />
-                    <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm p-2 rounded-full">
-                       {resource.sharingMode === 'PUBLIC' ? <Globe className="h-5 w-5 text-white"/> : <Users className="h-5 w-5 text-white" />}
+                    <IconFolderDynamic color={folderColor} className="w-full h-full p-4 drop-shadow-md" />
+                    <div className="absolute top-2 right-2 bg-black/30 backdrop-blur-sm p-1.5 rounded-full">
+                       {resource.sharingMode === 'PUBLIC' ? <Globe className="h-4 w-4 text-white"/> : <Users className="h-4 w-4 text-white" />}
                     </div>
                     {isOver && (
-                        <div className="absolute inset-0 bg-primary/20 border-2 border-dashed border-primary flex items-center justify-center">
+                        <div className="absolute inset-0 bg-primary/20 border-2 border-dashed border-primary flex items-center justify-center rounded-lg">
                             <Move className="h-8 w-8 text-primary/80 animate-pulse" />
                         </div>
                     )}
                     {resource.type === 'VIDEO_PLAYLIST' && (
-                        <div className="absolute bottom-2 left-2 bg-black text-white text-xs font-semibold px-2 py-1 rounded-md flex items-center gap-1">
+                        <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs font-semibold px-2 py-1 rounded-md flex items-center gap-1">
                             <ListVideo className="h-3 w-3"/>
                             <span>Playlist</span>
                         </div>
@@ -107,7 +112,7 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
         <div ref={setNodeRef} className={cn("w-full touch-none", isDragging && 'opacity-50 z-10')}>
             <Card 
                 className={cn(
-                    "group w-full h-full transition-all duration-200 bg-card hover:border-primary/50 hover:shadow-lg relative",
+                    "group w-full h-full transition-all duration-300 bg-card hover:border-primary/50 hover:shadow-lg relative",
                     isFolder ? "hover:-translate-y-1" : "",
                     isOver && "ring-2 ring-primary ring-offset-2",
                     resource.status === 'ARCHIVED' && 'opacity-60 bg-muted/50',
@@ -124,7 +129,7 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                     />
                   </div>
                 )}
-                <div className="aspect-[3/2] w-full flex items-center justify-center relative border-b overflow-hidden rounded-t-lg bg-muted cursor-pointer" onClick={handleClick}>
+                <div className="aspect-[3/2] w-full flex items-center justify-center relative border-b overflow-hidden rounded-t-lg bg-transparent cursor-pointer" onClick={handleClick}>
                     <Thumbnail />
                      {resource.hasPin && !isFolder && (
                         <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1 rounded-full">
