@@ -59,7 +59,6 @@ interface FlatProcess {
 const STEPS = [
   { id: 'content', name: 'Contenido' },
   { id: 'config', name: 'Configuración' },
-  { id: 'quiz', name: 'Quiz' },
 ];
 
 const ProgressBar = ({ currentStep }: { currentStep: number }) => {
@@ -118,16 +117,14 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     const [sharingMode, setSharingMode] = useState<ResourceSharingMode>('PUBLIC');
     const [sharedWithUserIds, setSharedWithUserIds] = useState<string[]>([]);
     const [sharedWithProcessIds, setSharedWithProcessIds] = useState<string[]>([]);
-
+    const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
+    
     // API related state
     const [allUsers, setAllUsers] = useState<AppUser[]>([]);
     const [allProcesses, setAllProcesses] = useState<Process[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     
     const isEditing = !!resource;
-    
-    const [quiz, setQuiz] = useState<AppQuiz | null>(null);
-    const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
     
     // Tab management for EDITING
     const [activeEditTab, setActiveEditTab] = useState('content');
@@ -147,7 +144,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         setSharingMode('PUBLIC');
         setSharedWithUserIds([]);
         setSharedWithProcessIds([]);
-        setQuiz(null);
+        setCollaboratorIds([]);
     }, [settings?.resourceCategories]);
     
     useEffect(() => {
@@ -161,13 +158,15 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                 setSharingMode(resource.sharingMode);
                 setSharedWithUserIds(resource.sharedWith?.map(u => u.id) || []);
                 setSharedWithProcessIds(resource.sharedWithProcesses?.map(p => p.id) || []);
+                setCollaboratorIds(resource.collaborators?.map(c => c.id) || []);
                 setObservations(resource.observations || '');
-                setQuiz(resource.quiz || null);
                 
                 if (resource.type === 'EXTERNAL_LINK') setExternalLink(resource.url || '');
                 if (resource.type === 'DOCUMENTO_EDITABLE') setEditableContent(resource.content || '');
-                if (resource.type === 'DOCUMENT' && resource.url) {
+                if ((resource.type === 'DOCUMENT' || resource.type === 'VIDEO') && resource.url) {
                     setUpload({ url: resource.url, file: { name: resource.title, type: resource.filetype, size: resource.size }});
+                } else {
+                    setUpload(null);
                 }
             } else {
                 resetForm();
@@ -220,7 +219,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             let size: number | undefined = undefined;
 
             if(resourceType === 'EXTERNAL_LINK') url = externalLink;
-            if(resourceType === 'DOCUMENT' && upload) {
+            if((resourceType === 'DOCUMENT' || resourceType === 'VIDEO') && upload) {
                 url = upload.url;
                 fileType = upload.file.type;
                 size = upload.file.size;
@@ -229,9 +228,10 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             const payload: any = {
                 title, description, category, type: resourceType, url, filetype: fileType, size,
                 content: resourceType === 'DOCUMENTO_EDITABLE' ? editableContent : null,
-                sharingMode, sharedWithUserIds, sharedWithProcessIds,
+                sharingMode, sharedWithUserIds, sharedWithProcessIds, collaboratorIds,
                 parentId, expiresAt: expiresAt?.toISOString() || null,
-                observations, quiz
+                observations,
+                // El quiz se gestiona en otra parte, no aquí.
             };
             
             const endpoint = isEditing ? `/api/resources/${resource!.id}` : '/api/resources';
@@ -251,11 +251,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         }
     };
     
-    const handleQuizSave = (updatedQuiz: AppQuiz) => {
-        setQuiz(updatedQuiz);
-        setIsQuizModalOpen(false);
-    };
-
     const isStep1Valid = !!title && ((resourceType === 'DOCUMENT' && upload?.status === 'completed') || (resourceType === 'EXTERNAL_LINK' && externalLink) || (resourceType === 'DOCUMENTO_EDITABLE' && editableContent));
 
     const ContentStep = () => (
@@ -274,28 +269,15 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     const ConfigStep = () => (
          <div className="space-y-6">
             <Card><CardHeader><CardTitle className="text-base">Detalles Adicionales</CardTitle></CardHeader><CardContent className="space-y-4"><div className="space-y-2"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} /></div><div className="space-y-2"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory}><SelectTrigger id="category"><SelectValue placeholder="Seleccionar..." /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select></div><div className="space-y-2"><Label>Fecha de Expiración (Opcional)</Label><Popover><PopoverTrigger asChild><Button variant="outline" className="w-full justify-start font-normal">{expiresAt ? format(expiresAt, "PPP", {locale: es}) : <span>Nunca</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50"/></Button></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={expiresAt} onSelect={setExpiresAt} initialFocus locale={es}/></PopoverContent></Popover></div><div className="space-y-2"><Label htmlFor="observations">Observaciones (Privado)</Label><Textarea id="observations" value={observations} onChange={(e) => setObservations(e.target.value)} rows={2} /></div></CardContent></Card>
-            <Card><CardHeader><CardTitle className="text-base">Permisos de Visibilidad</CardTitle></CardHeader><CardContent><RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-1 md:grid-cols-3 gap-3"><div className="flex-1"><RadioGroupItem value="PUBLIC" id="share-public" className="sr-only" /><Label htmlFor="share-public" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PUBLIC' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Globe className={`mb-2 h-6 w-6 ${sharingMode === 'PUBLIC' ? 'text-primary' : 'text-muted-foreground'}`}/>Público</Label></div><div className="flex-1"><RadioGroupItem value="PROCESS" id="share-process" className="sr-only"/><Label htmlFor="share-process" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PROCESS' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Briefcase className={`mb-2 h-6 w-6 ${sharingMode === 'PROCESS' ? 'text-primary' : 'text-muted-foreground'}`}/>Por Proceso</Label></div><div className="flex-1"><RadioGroupItem value="PRIVATE" id="share-private" className="sr-only"/><Label htmlFor="share-private" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PRIVATE' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Users className={`mb-2 h-6 w-6 ${sharingMode === 'PRIVATE' ? 'text-primary' : 'text-muted-foreground'}`}/>Privado</Label></div></RadioGroup>
+            <Card><CardHeader><CardTitle className="text-base">Permisos</CardTitle></CardHeader><CardContent><RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-1 md:grid-cols-3 gap-3"><div className="flex-1"><RadioGroupItem value="PUBLIC" id="share-public" className="sr-only" /><Label htmlFor="share-public" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PUBLIC' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Globe className={`mb-2 h-6 w-6 ${sharingMode === 'PUBLIC' ? 'text-primary' : 'text-muted-foreground'}`}/>Público</Label></div><div className="flex-1"><RadioGroupItem value="PROCESS" id="share-process" className="sr-only"/><Label htmlFor="share-process" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PROCESS' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Briefcase className={`mb-2 h-6 w-6 ${sharingMode === 'PROCESS' ? 'text-primary' : 'text-muted-foreground'}`}/>Por Proceso</Label></div><div className="flex-1"><RadioGroupItem value="PRIVATE" id="share-private" className="sr-only"/><Label htmlFor="share-private" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PRIVATE' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Users className={`mb-2 h-6 w-6 ${sharingMode === 'PRIVATE' ? 'text-primary' : 'text-muted-foreground'}`}/>Privado</Label></div></RadioGroup>
             {sharingMode === 'PROCESS' && (<UserOrProcessList type="process" items={allProcesses} selectedIds={sharedWithProcessIds} onSelectionChange={setSharedWithProcessIds} />)}
             {sharingMode === 'PRIVATE' && (<UserOrProcessList type="user" items={allUsers} selectedIds={sharedWithUserIds} onSelectionChange={setSharedWithUserIds} />)}
             </CardContent></Card>
+            <Card><CardHeader><CardTitle className="text-base flex items-center gap-2"><Edit className="h-4 w-4 text-primary"/>Colaboradores</CardTitle><CardDescription className="text-xs">Permite a otros instructores o administradores editar este recurso.</CardDescription></CardHeader><CardContent><UserOrProcessList type="user" items={allUsers.filter(u => u.role !== 'STUDENT')} selectedIds={collaboratorIds} onSelectionChange={setCollaboratorIds} /></CardContent></Card>
         </div>
     );
     
-    const QuizStep = () => (
-         <Card>
-            <CardHeader>
-                <CardTitle>Evaluación del Recurso</CardTitle>
-                <CardDescription>Añade un quiz para validar el conocimiento sobre este recurso. Se mostrará al finalizar el contenido principal.</CardDescription>
-            </CardHeader>
-            <CardContent className="text-center">
-                <Button type="button" onClick={() => setIsQuizModalOpen(true)}>
-                    <BrainCircuit className="mr-2 h-4 w-4"/>
-                    {quiz ? 'Editar Quiz' : 'Crear Quiz'}
-                </Button>
-            </CardContent>
-        </Card>
-    );
-    
+
     const renderCreationWizard = () => (
         <form id="resource-form" onSubmit={handleSave} className="flex-1 min-h-0 flex flex-col">
             <ProgressBar currentStep={creationStep} />
@@ -311,7 +293,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                     >
                         {creationStep === 1 && <ContentStep />}
                         {creationStep === 2 && <ConfigStep />}
-                        {creationStep === 3 && <QuizStep />}
                     </motion.div>
                 </AnimatePresence>
             </ScrollArea>
@@ -333,19 +314,17 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
 
     const renderEditTabs = () => (
       <form id="resource-form" onSubmit={handleSave} className="flex-1 min-h-0 flex flex-col">
-        <Tabs defaultValue="content" className="flex-1 min-h-0 flex flex-col">
+        <Tabs value={activeEditTab} onValueChange={setActiveEditTab} className="flex-1 min-h-0 flex flex-col">
             <div className="px-6 pt-2 flex-shrink-0">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="content">Contenido</TabsTrigger>
                 <TabsTrigger value="config">Configuración</TabsTrigger>
-                <TabsTrigger value="quiz">Quiz</TabsTrigger>
               </TabsList>
             </div>
             <ScrollArea className="flex-1 min-h-0">
               <div className="px-6 py-4">
                 <TabsContent value="content" className="mt-0"><ContentStep /></TabsContent>
                 <TabsContent value="config" className="mt-0"><ConfigStep /></TabsContent>
-                <TabsContent value="quiz" className="mt-0"><QuizStep /></TabsContent>
               </div>
             </ScrollArea>
             <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2">
@@ -369,14 +348,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                     {isEditing ? renderEditTabs() : renderCreationWizard()}
                 </DialogContent>
             </Dialog>
-            {isQuizModalOpen && (
-              <QuizEditorModal 
-                isOpen={isQuizModalOpen} 
-                onClose={() => setIsQuizModalOpen(false)} 
-                quiz={quiz}
-                onSave={handleQuizSave}
-            />
-            )}
         </>
     );
 }
@@ -388,7 +359,7 @@ const UserOrProcessList = ({ type, items, selectedIds, onSelectionChange }: { ty
     const handleSelection = (id: string, checked: boolean) => {
         onSelectionChange(checked ? [...selectedIds, id] : selectedIds.filter(i => i !== id));
     };
-
+    
     return (
         <Card className="mt-4">
             <CardContent className="p-4 space-y-3">
@@ -400,7 +371,7 @@ const UserOrProcessList = ({ type, items, selectedIds, onSelectionChange }: { ty
                                 <Checkbox id={`${type}-${item.id}`} checked={selectedIds.includes(item.id)} onCheckedChange={(c) => handleSelection(item.id, !!c)}/>
                                 <Label htmlFor={`${type}-${item.id}`} className="flex items-center gap-2 font-normal cursor-pointer text-sm">
                                     {type === 'user' && <Avatar className="h-7 w-7"><AvatarImage src={item.avatar || undefined} /><AvatarFallback><Identicon userId={item.id}/></AvatarFallback></Avatar>}
-                                    {item.name}
+                                    <span style={{ paddingLeft: `${type === 'process' ? (item.level || 0) * 1.5 : 0}rem` }}>{item.name}</span>
                                 </Label>
                             </div>
                         ))}
