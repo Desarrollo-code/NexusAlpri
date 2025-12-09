@@ -99,7 +99,7 @@ export const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEd
                         {isFolder ? (
                              <div className="w-full h-full relative flex items-center justify-center">
                                 {resource.type === 'VIDEO_PLAYLIST' ? (
-                                    <IconVideoPlaylist className="w-24 h-24 text-primary drop-shadow-md" />
+                                    <IconVideoPlaylist className="w-28 h-28 text-primary drop-shadow-md" />
                                 ) : (
                                     <IconFolderDynamic color={getProcessColors(resource.id).raw.medium} className="w-full h-full drop-shadow-md" />
                                 )}
