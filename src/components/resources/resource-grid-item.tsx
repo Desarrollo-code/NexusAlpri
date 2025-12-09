@@ -20,7 +20,6 @@ import { DownloadButton } from '../ui/download-button';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '../ui/tooltip';
 import { FileIcon } from '../ui/file-icon';
-import { DecorativeFolder } from './decorative-folder';
 import { ExternalLink } from 'lucide-react';
 import { Checkbox } from '../ui/checkbox';
 import Link from 'next/link';
