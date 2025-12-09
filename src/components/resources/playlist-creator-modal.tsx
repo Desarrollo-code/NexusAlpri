@@ -54,7 +54,7 @@ const SortableVideoItem = ({ video, onRemove }: { video: { id: string, title: st
             </div>
             <div className="flex-grow min-w-0">
                 <p className="text-sm font-medium truncate">{video.title}</p>
-                 <a href={video.url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-primary truncate">{video.title}</a>
+                 <a href={video.url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-primary truncate">{video.url}</a>
             </div>
              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={onRemove}>
                 <Trash2 className="h-4 w-4"/>
@@ -266,9 +266,6 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                                     <div className="flex gap-2">
                                         <Input value={newVideoUrl} onChange={e => setNewVideoUrl(e.target.value)} placeholder="Pega una URL de YouTube..."/>
                                         <Button type="button" variant="outline" onClick={handleAddYoutubeVideo} disabled={isFetchingInfo}>{isFetchingInfo ? <Loader2 className="h-4 w-4 animate-spin"/> : 'Añadir'}</Button>
-                                         <UploadArea onFileSelect={(files) => files && handleFileUpload(files[0])} compact disabled={isSaving} className="h-10 w-12 p-0 border-dashed">
-                                             <UploadCloud className="h-5 w-5 text-muted-foreground"/>
-                                        </UploadArea>
                                     </div>
                                     <div className="h-64 border rounded-lg p-2 bg-muted/50 mt-2">
                                        <ScrollArea className="h-full pr-3">
@@ -297,7 +294,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
 
                             {/* Columna Derecha: Permisos */}
                             <div className="space-y-4">
-                               <Card><CardHeader><CardTitle className="text-base flex items-center gap-2"><Globe className="h-4 w-4 text-primary"/>Visibilidad</CardTitle></CardHeader><CardContent><RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-1 sm:grid-cols-3 gap-2"><RadioGroupItem value="PUBLIC" id="share-public" className="sr-only" /><Label htmlFor="share-public" className={`flex flex-col items-center justify-center p-3 text-center border-2 rounded-lg cursor-pointer ${sharingMode === 'PUBLIC' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Globe className={`mb-1 h-5 w-5 ${sharingMode === 'PUBLIC' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="text-xs font-semibold">Público</span></Label><RadioGroupItem value="PROCESS" id="share-process" className="sr-only"/><Label htmlFor="share-process" className={`flex flex-col items-center justify-center p-3 text-center border-2 rounded-lg cursor-pointer ${sharingMode === 'PROCESS' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Briefcase className={`mb-1 h-5 w-5 ${sharingMode === 'PROCESS' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="text-xs font-semibold">Por Proceso</span></Label><RadioGroupItem value="PRIVATE" id="share-private" className="sr-only"/><Label htmlFor="share-private" className={`flex flex-col items-center justify-center p-3 text-center border-2 rounded-lg cursor-pointer ${sharingMode === 'PRIVATE' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Users className={`mb-1 h-5 w-5 ${sharingMode === 'PRIVATE' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="text-xs font-semibold">Privado</span></Label></RadioGroup>
+                               <Card><CardHeader><CardTitle className="text-base flex items-center gap-2"><Globe className="h-4 w-4 text-primary"/>Visibilidad</CardTitle></CardHeader><CardContent><RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-1 sm:grid-cols-3 gap-2"><RadioGroupItem value="PUBLIC" id="share-public" className="sr-only" /><Label htmlFor="share-public" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PUBLIC' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Globe className={`mb-2 h-6 w-6 ${sharingMode === 'PUBLIC' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="text-xs font-semibold">Público</span></Label><RadioGroupItem value="PROCESS" id="share-process" className="sr-only"/><Label htmlFor="share-process" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PROCESS' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Briefcase className={`mb-2 h-6 w-6 ${sharingMode === 'PROCESS' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="text-xs font-semibold">Por Proceso</span></Label><RadioGroupItem value="PRIVATE" id="share-private" className="sr-only"/><Label htmlFor="share-private" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PRIVATE' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Users className={`mb-2 h-6 w-6 ${sharingMode === 'PRIVATE' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="text-xs font-semibold">Privado</span></Label></RadioGroup>
                                    {sharingMode === 'PROCESS' && (<UserOrProcessList type="process" items={flattenedProcesses} selectedIds={sharedWithProcessIds} onSelectionChange={setSharedWithProcessIds} />)}
                                    {sharingMode === 'PRIVATE' && (<UserOrProcessList type="user" items={allUsers} selectedIds={sharedWithUserIds} onSelectionChange={setSharedWithUserIds} />)}
                                </CardContent></Card>
@@ -338,7 +335,7 @@ const UserOrProcessList = ({ type, items, selectedIds, onSelectionChange }: { ty
                             <Checkbox id={`${type}-${item.id}`} checked={selectedIds.includes(item.id)} onCheckedChange={(c) => handleSelection(item.id, !!c)}/>
                             <Label htmlFor={`${type}-${item.id}`} className="flex items-center gap-2 font-normal cursor-pointer text-sm">
                                 {type === 'user' && <Avatar className="h-7 w-7"><AvatarImage src={item.avatar || undefined} /><AvatarFallback><Identicon userId={item.id}/></AvatarFallback></Avatar>}
-                                <span style={{ paddingLeft: `${(item.level || 0) * 1.5}rem` }}>{item.name}</span>
+                                <span style={{ paddingLeft: `${type === 'process' ? (item.level || 0) * 1.5 : 0}rem` }}>{item.name}</span>
                             </Label>
                         </div>
                     ))}
