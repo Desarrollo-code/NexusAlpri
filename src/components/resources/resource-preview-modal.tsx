@@ -149,15 +149,9 @@ const FallbackPreview = ({ resource }: { resource: AppResourceType }) => {
     );
 };
 
-const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified, isEditing, editedContent, onContentChange, editedObservations, onObservationsChange }: { 
+const ContentPreview = ({ resource, onPinVerified }: { 
     resource: AppResourceType; 
-    pinVerifiedUrl: string | null; 
     onPinVerified: (url: string) => void;
-    isEditing: boolean;
-    editedContent: string;
-    onContentChange: (content: string) => void;
-    editedObservations: string;
-    onObservationsChange: (observations: string) => void;
 }) => {
     const { toast } = useToast();
     const [pin, setPin] = useState('');
@@ -167,18 +161,13 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified, isEditing, ed
     const [isFullScreen, setIsFullScreen] = useState(false);
     const previewContainerRef = useRef<HTMLDivElement>(null);
 
+    // This state will hold the verified URL after PIN entry
+    const [verifiedUrl, setVerifiedUrl] = useState<string | null>(resource.hasPin ? null : resource.url);
+    
     useEffect(() => {
+        setVerifiedUrl(resource.hasPin ? null : resource.url);
         setPin('');
         setError(null);
-        
-        const handleFullScreenChange = () => {
-            if (!document.fullscreenElement) {
-                setIsFullScreen(false);
-            }
-        };
-        document.addEventListener('fullscreenchange', handleFullScreenChange);
-        return () => document.removeEventListener('fullscreenchange', handleFullScreenChange);
-
     }, [resource]);
    
     const handlePinSubmit = async (e: React.FormEvent) => {
@@ -194,6 +183,7 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified, isEditing, ed
             const data = await response.json();
             if (!response.ok) throw new Error(data.message || 'Error al verificar');
             toast({ title: "Acceso Concedido" });
+            setVerifiedUrl(data.url); // Set the verified URL
             onPinVerified(data.url);
 
             if(user) {
@@ -226,22 +216,7 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified, isEditing, ed
         return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
     }, []);
     
-    if (isEditing) {
-        return (
-            <div className="w-full h-full flex flex-col gap-4 p-4">
-                <div className="flex-1 min-h-0">
-                    <Label htmlFor="content-editor">Contenido Principal del Documento</Label>
-                    <RichTextEditor value={editedContent} onChange={onContentChange} className="h-[calc(100%-2rem)]"/>
-                </div>
-                <div className="flex-none h-1/3 min-h-[100px]">
-                    <Label htmlFor="observations-editor">Observaciones (Visible solo para administradores/instructores)</Label>
-                    <Textarea id="observations-editor" value={editedObservations} onChange={(e) => onObservationsChange(e.target.value)} className="h-[calc(100%-2rem)] resize-none" />
-                </div>
-            </div>
-        )
-    }
-    
-    if (resource.hasPin && !pinVerifiedUrl) {
+    if (resource.hasPin && !verifiedUrl) {
        return (
          <div className="flex flex-col items-center justify-center h-full p-4 bg-muted/30">
             <Lock className="h-16 w-16 text-amber-500 mb-4"/>
@@ -258,7 +233,7 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified, isEditing, ed
        );
     }
     
-    const displayUrl = pinVerifiedUrl || resource.url;
+    const displayUrl = verifiedUrl || resource.url;
     
     const renderPreview = () => {
         if (resource.quiz) {
@@ -353,60 +328,15 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
     const [showDetails, setShowDetails] = useState(false);
     const isMobile = useIsMobile();
     const { user } = useAuth();
-    const { toast } = useToast();
-
-    // Estado para el modo de edición
-    const [isEditing, setIsEditing] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
-    const [editedContent, setEditedContent] = useState('');
-    const [editedObservations, setEditedObservations] = useState('');
-
-    const canEdit = useMemo(() => {
-        if (!user || !resource) return false;
-        if (resource.type !== 'DOCUMENTO_EDITABLE') return false;
-        if (user.role === 'ADMINISTRATOR') return true;
-        if (user.role === 'INSTRUCTOR' && resource.uploaderId === user.id) return true;
-        return false;
-    }, [user, resource]);
-
 
     useEffect(() => {
         if (resource) {
             setPinVerifiedUrl(null);
             setShowDetails(false);
-            setIsEditing(false); // Salir del modo edición al cambiar de recurso
-            setEditedContent(resource.content || '');
-            setEditedObservations(resource.observations || '');
         }
     }, [resource]);
     
     if (!resource) return null;
-    
-    const handleSaveChanges = async () => {
-        setIsSaving(true);
-        try {
-            const payload = {
-                content: editedContent,
-                observations: editedObservations,
-                // Incluir otros campos si también se pueden editar
-                title: resource.title,
-                description: resource.description,
-            }
-            const response = await fetch(`/api/resources/${resource.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
-            if (!response.ok) throw new Error((await response.json()).message || 'No se pudieron guardar los cambios.');
-            
-            toast({ title: "Recurso Actualizado" });
-            setIsEditing(false);
-        } catch(err) {
-            toast({ title: 'Error al Guardar', description: (err as Error).message, variant: 'destructive' });
-        } finally {
-            setIsSaving(false);
-        }
-    }
     
     const fileExtension = resource.filetype?.split('/')[1] || resource.url?.split('.').pop() || 'file';
     const { label, bgColor } = getFileTypeDetails(fileExtension);
@@ -427,16 +357,7 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
                   <div className="flex-grow flex relative overflow-hidden">
                     <div className="flex-grow flex-1 relative">
                       <div className="absolute inset-0 flex items-center justify-center bg-muted/20">
-                          <ContentPreview 
-                            resource={resource} 
-                            pinVerifiedUrl={pinVerifiedUrl} 
-                            onPinVerified={setPinVerifiedUrl} 
-                            isEditing={isEditing}
-                            editedContent={editedContent}
-                            onContentChange={setEditedContent}
-                            editedObservations={editedObservations}
-                            onObservationsChange={setEditedObservations}
-                          />
+                          <ContentPreview resource={resource} pinVerifiedUrl={pinVerifiedUrl} onPinVerified={setPinVerifiedUrl} />
                       </div>
                     </div>
                     {!isMobile && showDetails && (
@@ -453,21 +374,7 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
                         <span className="sr-only">Ver detalles</span>
                     </Button>
                     <div className="flex items-center gap-2">
-                         {canEdit && (
-                            isEditing ? (
-                                <>
-                                   <Button variant="outline" size="sm" onClick={() => setIsEditing(false)} disabled={isSaving}>Cancelar</Button>
-                                   <Button size="sm" onClick={handleSaveChanges} disabled={isSaving}>
-                                     {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin"/> : <Save className="h-4 w-4 mr-2"/>}Guardar
-                                   </Button>
-                                </>
-                            ) : (
-                                <Button variant="secondary" size="sm" onClick={() => setIsEditing(true)}>
-                                    <Edit className="h-4 w-4 mr-2"/> Editar Contenido
-                                </Button>
-                            )
-                         )}
-                         {!isEditing && <DownloadButton url={resource.url} resourceId={resource.id} hasPin={resource.hasPin} onDownloadSuccess={() => user && addXp(user.id, XP_CONFIG.DOWNLOAD_RESOURCE)} variant="default" size="sm" />}
+                         <DownloadButton url={resource.url} resourceId={resource.id} hasPin={resource.hasPin} onDownloadSuccess={() => user && addXp(user.id, XP_CONFIG.DOWNLOAD_RESOURCE)} variant="default" size="sm" />
                     </div>
                   </DialogFooter>
                 </DialogContent>

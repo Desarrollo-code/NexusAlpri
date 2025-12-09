@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu';
-import { MoreVertical, Edit, Trash2, Lock, Download, Globe, Users, Grip, ArchiveRestore, Tag, Calendar, Pin, FileText, BrainCircuit } from 'lucide-react';
+import { MoreVertical, Edit, Trash2, Lock, Download, Globe, Users, Grip, ArchiveRestore, Tag, Calendar, Pin, FileText, BrainCircuit, ListVideo, Brain, PlusCircle } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { DownloadButton } from '../ui/download-button';
 import { Identicon } from '../ui/identicon';

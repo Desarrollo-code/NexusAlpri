@@ -96,55 +96,38 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     const { toast } = useToast();
     const { user, settings } = useAuth();
     
-    // Step management for CREATION
     const [creationStep, setCreationStep] = useState(1);
-
-    // Common form state
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [category, setCategory] = useState('');
     const [expiresAt, setExpiresAt] = useState<Date | undefined>(undefined);
     const [resourceType, setResourceType] = useState<AppResourceType['type']>('DOCUMENT');
-    
     const [externalLink, setExternalLink] = useState('');
     const [editableContent, setEditableContent] = useState('');
     const [observations, setObservations] = useState('');
-    
     const [upload, setUpload] = useState<any>(null);
     const [isUploading, setIsUploading] = useState(false);
-
-    // Permissions state
     const [sharingMode, setSharingMode] = useState<ResourceSharingMode>('PUBLIC');
     const [sharedWithUserIds, setSharedWithUserIds] = useState<string[]>([]);
     const [sharedWithProcessIds, setSharedWithProcessIds] = useState<string[]>([]);
     const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
-    
-    // API related state
     const [allUsers, setAllUsers] = useState<AppUser[]>([]);
     const [allProcesses, setAllProcesses] = useState<Process[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     
     const isEditing = !!resource;
+    const isEditingFolder = isEditing && resource?.type === 'FOLDER';
     
-    // Tab management for EDITING
     const [activeEditTab, setActiveEditTab] = useState('content');
-
 
     const resetForm = useCallback(() => {
         setCreationStep(1);
-        setTitle('');
-        setDescription('');
+        setTitle(''); setDescription('');
         setCategory(settings?.resourceCategories[0] || 'General');
-        setExpiresAt(undefined);
-        setResourceType('DOCUMENT');
-        setExternalLink('');
-        setEditableContent('');
-        setObservations('');
-        setUpload(null);
-        setSharingMode('PUBLIC');
-        setSharedWithUserIds([]);
-        setSharedWithProcessIds([]);
-        setCollaboratorIds([]);
+        setExpiresAt(undefined); setResourceType('DOCUMENT');
+        setExternalLink(''); setEditableContent(''); setObservations('');
+        setUpload(null); setSharingMode('PUBLIC');
+        setSharedWithUserIds([]); setSharedWithProcessIds([]); setCollaboratorIds([]);
     }, [settings?.resourceCategories]);
     
     useEffect(() => {
@@ -168,6 +151,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                 } else {
                     setUpload(null);
                 }
+                setActiveEditTab(isEditingFolder ? 'config' : 'content');
             } else {
                 resetForm();
             }
@@ -182,7 +166,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                 }).catch(console.error);
             }
         }
-    }, [isEditing, resource, isOpen, resetForm, settings, user]);
+    }, [isEditing, resource, isOpen, resetForm, settings, user, isEditingFolder]);
 
     const handleFileSelect = async (file: File | null) => {
         if (!file) return;
@@ -231,7 +215,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                 sharingMode, sharedWithUserIds, sharedWithProcessIds, collaboratorIds,
                 parentId, expiresAt: expiresAt?.toISOString() || null,
                 observations,
-                // El quiz se gestiona en otra parte, no aquí.
             };
             
             const endpoint = isEditing ? `/api/resources/${resource!.id}` : '/api/resources';
@@ -255,18 +238,14 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         (resourceType === 'DOCUMENT' && upload?.status === 'completed') || 
         (resourceType === 'EXTERNAL_LINK' && externalLink) || 
         (resourceType === 'DOCUMENTO_EDITABLE' && editableContent) ||
-        // A folder is also valid in step 1 if it has a title
-        (resourceType === 'FOLDER') 
+        (isEditingFolder) // Una carpeta que se edita también es válida
     );
     
-    // --- Vistas de Formulario ---
-    const isEditingFolder = isEditing && resource?.type === 'FOLDER';
-
     const ContentStep = () => (
         <div className="space-y-4">
             <div className="space-y-2"><Label htmlFor="title">Título del Recurso</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
             
-            {/* Solo muestra el tipo de recurso si NO es una carpeta */}
+            {/* Solo muestra el tipo de recurso si NO se está editando una carpeta */}
             {!isEditingFolder && (
                  <div className="space-y-2"><Label>Tipo de Recurso</Label><RadioGroup value={resourceType} onValueChange={(v) => setResourceType(v as any)} className="grid grid-cols-1 md:grid-cols-3 gap-3"><div className="flex-1"><RadioGroupItem value="DOCUMENT" id="type-doc" className="sr-only" /><Label htmlFor="type-doc" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${resourceType === 'DOCUMENT' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><FileUp className={`mb-2 h-6 w-6 ${resourceType === 'DOCUMENT' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="font-semibold text-sm">Archivo</span></Label></div><div className="flex-1"><RadioGroupItem value="EXTERNAL_LINK" id="type-link" className="sr-only"/><Label htmlFor="type-link" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${resourceType === 'EXTERNAL_LINK' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><LinkIcon className={`mb-2 h-6 w-6 ${resourceType === 'EXTERNAL_LINK' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="font-semibold text-sm">Enlace Web</span></Label></div><div className="flex-1"><RadioGroupItem value="DOCUMENTO_EDITABLE" id="type-editable" className="sr-only"/><Label htmlFor="type-editable" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${resourceType === 'DOCUMENTO_EDITABLE' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><FilePenLine className={`mb-2 h-6 w-6 ${resourceType === 'DOCUMENTO_EDITABLE' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="font-semibold text-sm">Documento</span></Label></div></RadioGroup></div>
             )}
@@ -331,7 +310,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         <Tabs value={activeEditTab} onValueChange={setActiveEditTab} className="flex-1 min-h-0 flex flex-col">
             <div className="px-6 pt-2 flex-shrink-0">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="content">Contenido</TabsTrigger>
+                <TabsTrigger value="content" disabled={isEditingFolder}>Contenido</TabsTrigger>
                 <TabsTrigger value="config">Configuración</TabsTrigger>
               </TabsList>
             </div>
