@@ -89,6 +89,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
     const [category, setCategory] = useState('');
     const [videos, setVideos] = useState<{id: string, title: string, url: string}[]>([]);
     const [newVideoUrl, setNewVideoUrl] = useState('');
+    const [uploads, setUploads] = useState<any[]>([]);
     
     // Permissions state
     const [sharingMode, setSharingMode] = useState<ResourceSharingMode>('PUBLIC');
@@ -139,6 +140,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                 setSharedWithProcessIds([]);
                 setCollaboratorIds([]);
              }
+             setUploads([]);
              
             if (user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') {
                 Promise.all([
@@ -172,6 +174,27 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
             setIsFetchingInfo(false);
         }
     }
+    
+    const handleFileUpload = async (file: File) => {
+        const newUpload = {
+            id: `upload-${file.name}-${Date.now()}`,
+            file,
+            progress: 0,
+            error: null,
+        };
+        setUploads(prev => [...prev, newUpload]);
+
+        try {
+            const result = await uploadWithProgress('/api/upload/resource-file', file, (progress) => {
+                setUploads(prev => prev.map(up => up.id === newUpload.id ? { ...up, progress } : up));
+            });
+            setVideos(prev => [...prev, { id: generateUniqueId('vid'), title: file.name, url: result.url }]);
+            setUploads(prev => prev.filter(up => up.id !== newUpload.id));
+        } catch(err) {
+            setUploads(prev => prev.map(up => up.id === newUpload.id ? { ...up, error: (err as Error).message, progress: 100 } : up));
+            toast({ title: "Error de subida", description: (err as Error).message, variant: 'destructive' });
+        }
+    };
     
     const handleRemoveVideo = (idToRemove: string) => {
         setVideos(prev => prev.filter(v => v.id !== idToRemove));
@@ -239,22 +262,34 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                                 <div className="space-y-1"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory} required><SelectTrigger><SelectValue placeholder="Selecciona..."/></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
                                 <Separator />
                                 <div className="space-y-2">
-                                    <Label>Añadir Videos de YouTube</Label>
+                                    <Label>Añadir Videos</Label>
                                     <div className="flex gap-2">
                                         <Input value={newVideoUrl} onChange={e => setNewVideoUrl(e.target.value)} placeholder="Pega una URL de YouTube..."/>
                                         <Button type="button" variant="outline" onClick={handleAddYoutubeVideo} disabled={isFetchingInfo}>{isFetchingInfo ? <Loader2 className="h-4 w-4 animate-spin"/> : 'Añadir'}</Button>
+                                         <UploadArea onFileSelect={(files) => files && handleFileUpload(files[0])} compact disabled={isSaving} className="h-10 w-12 p-0 border-dashed">
+                                             <UploadCloud className="h-5 w-5 text-muted-foreground"/>
+                                        </UploadArea>
                                     </div>
                                     <div className="h-64 border rounded-lg p-2 bg-muted/50 mt-2">
                                        <ScrollArea className="h-full pr-3">
-                                        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                                            <SortableContext items={videos.map(v => v.id)} strategy={verticalListSortingStrategy}>
-                                                <div className="space-y-2">
-                                                {videos.map((video) => (
-                                                    <SortableVideoItem key={video.id} video={video} onRemove={() => handleRemoveVideo(video.id)} />
+                                            <div className="space-y-2">
+                                                {uploads.map(up => (
+                                                    <div key={up.id} className="p-2 border rounded-md bg-background relative">
+                                                        <div className="flex items-center gap-2">
+                                                            <FileIcon displayMode="list" type={up.file.type.split('/')[1]} />
+                                                            <span className="text-xs font-medium truncate">{up.file.name}</span>
+                                                        </div>
+                                                        <Progress value={up.progress} className="h-1 mt-1" />
+                                                    </div>
                                                 ))}
-                                                </div>
-                                            </SortableContext>
-                                        </DndContext>
+                                                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                                                    <SortableContext items={videos.map(v => v.id)} strategy={verticalListSortingStrategy}>
+                                                        {videos.map((video) => (
+                                                            <SortableVideoItem key={video.id} video={video} onRemove={() => handleRemoveVideo(video.id)} />
+                                                        ))}
+                                                    </SortableContext>
+                                                </DndContext>
+                                            </div>
                                        </ScrollArea>
                                     </div>
                                 </div>
