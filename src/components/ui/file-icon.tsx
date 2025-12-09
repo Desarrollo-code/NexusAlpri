@@ -41,11 +41,10 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
   
   // --- HEADER MODE ---
   if (displayMode === 'header') {
-    const { label, bgColor } = getFileTypeDetails(type);
     return (
-        <div className={cn("w-auto h-8 flex items-center justify-center rounded-md px-2", bgColor, className)} >
-           <span className="text-xs font-bold uppercase text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.2)' }}>{label}</span>
-        </div>
+      <div className={cn("w-5 h-5 flex items-center justify-center rounded-md", className)}>
+        {renderIconPath(type, 'text-muted-foreground')}
+      </div>
     );
   }
 
@@ -78,7 +77,7 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
   if (type === 'FOLDER' && resourceId) {
       return (
         <div className="flex h-full w-full items-center justify-center p-4">
-             <IconFolderDynamic color={getProcessColors(resourceId).raw.medium} className="w-20 h-20 text-muted-foreground/60" />
+             <IconFolderDynamic color={getProcessColors(resourceId).raw.medium} className="w-24 h-24 text-muted-foreground/60" />
         </div>
       );
   }
@@ -92,7 +91,7 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
   }
 
   return (
-    <div className={cn("relative w-full h-full overflow-hidden bg-card", className)}>
+    <div className={cn("relative w-full h-full overflow-hidden bg-black", className)}>
        {finalThumbnailUrl ? (
           <>
             <Image src={finalThumbnailUrl} alt={type} fill className="object-cover transition-transform duration-300 group-hover:scale-105" quality={80} />
@@ -103,7 +102,7 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
             )}
           </>
        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-black/90 p-4">
+          <div className="flex h-full w-full items-center justify-center p-4">
               {renderIconPath(type, 'w-16 h-16 text-white/80')}
           </div>
        )}
@@ -113,6 +112,8 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
 
 // Se mantiene esta función por si se usa en otro lugar, pero se simplifica.
 export const getFileTypeDetails = (type: string) => {
-  const upperType = (type || 'file').toUpperCase();
+  if (!type) return { label: 'FILE', bgColor: '#757575' };
+  const upperType = type.toUpperCase();
+  // Esta función puede ser expandida en el futuro si se necesita de nuevo
   return { label: upperType, bgColor: '#757575' };
 };

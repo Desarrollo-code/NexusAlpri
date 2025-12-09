@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import type { AppResourceType } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Edit, MoreVertical, Trash2, Lock, Globe, Users, ArchiveRestore, Pin, BrainCircuit, Link as LinkIcon, ListVideo } from 'lucide-react';
+import { Edit, MoreVertical, Trash2, Lock, Download, Globe, Users, ArchiveRestore, Pin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -16,9 +16,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { FileIcon } from '../ui/file-icon';
-import { Checkbox } from '../ui/checkbox';
 import Link from 'next/link';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { IconFolderDynamic } from '../icons/icon-folder-dynamic';
 import { IconVideoPlaylist } from '../icons/icon-video-playlist';
@@ -73,13 +72,10 @@ export const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDele
         }
     };
     
-    const isQuizEnabled = resource.type === 'FOLDER' && resource.category === 'Formación Interna';
-    const hasQuiz = !!resource.quiz;
-
     const fileExtension = resource.filetype?.split('/')[1] || resource.url?.split('.').pop() || 'file';
 
     return (
-        <div ref={setNodeRef} {...attributes} {...listeners} className={cn("w-full touch-none", isDragging && 'opacity-50 z-10')}>
+        <div ref={setNodeRef} {...attributes} className={cn("w-full touch-none", isDragging && 'opacity-50 z-10')}>
             <Card
                 className={cn(
                     "group w-full h-full transition-all duration-300 ease-in-out cursor-pointer relative border flex flex-col",
@@ -91,8 +87,8 @@ export const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDele
             >
                  <CardHeader className="flex flex-row items-center justify-between p-2">
                     <div className="flex items-center gap-2 flex-grow min-w-0">
-                         {isFolder 
-                            ? <IconFolderDynamic className="w-5 h-5 flex-shrink-0" resourceId={resource.id} /> 
+                        {isFolder 
+                            ? <IconFolderDynamic resourceId={resource.id} className="w-5 h-5 flex-shrink-0" />
                             : isPlaylist 
                             ? <IconVideoPlaylist className="w-5 h-5 flex-shrink-0"/>
                             : <FileIcon displayMode="header" type={fileExtension}/>
@@ -108,11 +104,6 @@ export const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDele
                                 <>
                                     <DropdownMenuItem onSelect={() => onTogglePin(resource)}><Pin className="mr-2 h-4 w-4"/>{resource.isPinned ? 'Desfijar' : 'Fijar'}</DropdownMenuItem>
                                     <DropdownMenuItem onClick={()=> onEdit(resource)}><Edit className="mr-2 h-4 w-4" /> Editar / Compartir</DropdownMenuItem>
-                                    {isQuizEnabled && (
-                                        <DropdownMenuItem asChild>
-                                            <Link href={`/resources/${resource.id}/edit-quiz`}><BrainCircuit className="mr-2 h-4 w-4"/> {hasQuiz ? 'Editar Quiz' : 'Añadir Quiz'}</Link>
-                                        </DropdownMenuItem>
-                                    )}
                                 </>
                             )}
                             {resource.status === 'ARCHIVED' && (
