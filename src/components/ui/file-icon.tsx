@@ -2,7 +2,7 @@
 'use client';
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { getFileTypeDetails, getYoutubeVideoId } from '@/lib/resource-utils';
+import { getYoutubeVideoId } from '@/lib/resource-utils';
 import Image from 'next/image';
 import { PlayCircle, FileText, BarChart3, Music, Image as ImageIcon, Video as VideoIcon, ListVideo, BrainCircuit } from 'lucide-react';
 import { IconFolderDynamic } from '../icons/icon-folder-dynamic';
@@ -35,22 +35,23 @@ const renderIconPath = (type: string, className?: string) => {
 };
 
 export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUrl, displayMode = 'grid', resourceId }) => {
-  const { label, bgColor } = getFileTypeDetails(type);
   const isYoutube = type.toLowerCase() === 'youtube';
   const isVideo = type.toLowerCase() === 'mp4' || type.toLowerCase() === 'webm';
   const finalThumbnailUrl = isYoutube ? `https://img.youtube.com/vi/${getYoutubeVideoId(thumbnailUrl)}/mqdefault.jpg` : thumbnailUrl;
   
   // --- HEADER MODE ---
   if (displayMode === 'header') {
+    const { label, bgColor } = getFileTypeDetails(type);
     return (
-        <div className={cn("w-5 h-5 flex items-center justify-center rounded", bgColor, className)} >
-           <span className="text-[10px] font-bold text-white uppercase">{label.substring(0, 3)}</span>
+        <div className={cn("w-auto h-8 flex items-center justify-center rounded-md px-2", bgColor, className)} >
+           <span className="text-xs font-bold uppercase text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.2)' }}>{label}</span>
         </div>
     );
   }
 
   // --- LIST MODE (for playlist editor, etc.) ---
   if (displayMode === 'list') {
+     const { label, bgColor } = getFileTypeDetails(type);
      return (
         <div className={cn("w-full h-full flex items-center justify-center rounded-md overflow-hidden group relative", className)}>
             {finalThumbnailUrl ? (
@@ -74,11 +75,27 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
   }
 
   // --- GRID VIEW (main library view) ---
+  if (type === 'FOLDER' && resourceId) {
+      return (
+        <div className="flex h-full w-full items-center justify-center p-4">
+             <IconFolderDynamic color={getProcessColors(resourceId).raw.medium} className="w-20 h-20 text-muted-foreground/60" />
+        </div>
+      );
+  }
+  
+  if (type === 'VIDEO_PLAYLIST') {
+      return (
+          <div className="flex h-full w-full items-center justify-center p-4">
+              <IconVideoPlaylist className="w-28 h-28 text-muted-foreground/60" />
+          </div>
+      )
+  }
+
   return (
     <div className={cn("relative w-full h-full overflow-hidden bg-card", className)}>
        {finalThumbnailUrl ? (
           <>
-            <Image src={finalThumbnailUrl} alt={label} fill className="object-cover transition-transform duration-300 group-hover:scale-105" quality={80} />
+            <Image src={finalThumbnailUrl} alt={type} fill className="object-cover transition-transform duration-300 group-hover:scale-105" quality={80} />
              {(isVideo || isYoutube) && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-colors">
                     <PlayCircle className="h-10 w-10 text-white/70 drop-shadow-lg" />
@@ -86,10 +103,16 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
             )}
           </>
        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-muted/20 p-4">
-              {renderIconPath(type, 'w-16 h-16 text-muted-foreground/60')}
+          <div className="flex h-full w-full items-center justify-center bg-black/90 p-4">
+              {renderIconPath(type, 'w-16 h-16 text-white/80')}
           </div>
        )}
     </div>
   );
+};
+
+// Se mantiene esta función por si se usa en otro lugar, pero se simplifica.
+export const getFileTypeDetails = (type: string) => {
+  const upperType = (type || 'file').toUpperCase();
+  return { label: upperType, bgColor: '#757575' };
 };

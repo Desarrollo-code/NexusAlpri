@@ -4,8 +4,8 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import type { AppResourceType } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
-import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
-import { Edit, MoreVertical, Trash2, Lock, Download, Globe, Users, Move, Grip, ArchiveRestore, Pin, BrainCircuit, ListVideo, Edit2, Link as LinkIcon } from 'lucide-react';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Edit, MoreVertical, Trash2, Lock, Globe, Users, ArchiveRestore, Pin, BrainCircuit, Link as LinkIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -18,17 +18,12 @@ import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { FileIcon } from '../ui/file-icon';
 import { Checkbox } from '../ui/checkbox';
 import Link from 'next/link';
-import { getProcessColors } from '@/lib/utils';
-import { IconFolderDynamic } from '../icons/icon-folder-dynamic';
-import { IconVideoPlaylist } from '../icons/icon-video-playlist';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Identicon } from '../ui/identicon';
-
+import { formatDistanceToNow } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 // --- Sub-components for Page ---
-export const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onDelete, onNavigate, onRestore, onTogglePin, isSelected, onSelectionChange }: { 
+export const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onNavigate, onRestore, onTogglePin, isSelected, onSelectionChange }: { 
     resource: AppResourceType, 
-    isFolder: boolean, 
     onSelect: () => void, 
     onEdit: (r: AppResourceType) => void, 
     onDelete: (r: AppResourceType) => void, 
@@ -39,12 +34,13 @@ export const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEd
     onSelectionChange: (id: string, checked: boolean) => void,
 }) => {
     const { user } = useAuth();
+    const isFolder = resource.type === 'FOLDER' || resource.type === 'VIDEO_PLAYLIST';
     const canModify = user && (user.role === 'ADMINISTRATOR' || user.role === 'INSTRUCTOR');
 
     const { attributes, listeners, setNodeRef: setDraggableNodeRef, isDragging } = useDraggable({
         id: resource.id,
         data: { type: 'resource', resource: resource },
-        disabled: isFolder || !canModify || resource.status === 'ARCHIVED',
+        disabled: !canModify || resource.status === 'ARCHIVED',
     });
 
     const { isOver, setNodeRef: setDroppableNodeRef } = useDroppable({
@@ -71,26 +67,28 @@ export const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEd
         }
     };
     
-    const isQuizEnabled = isFolder && resource.category === 'Formación Interna';
+    const isQuizEnabled = resource.type === 'FOLDER' && resource.category === 'Formación Interna';
     const hasQuiz = !!resource.quiz;
 
-    const fileExtension = resource.filetype?.split('/')[1] || resource.url?.split('.').pop() || 'file';
+    const fileExtension = resource.filetype?.split('/')[1] || resource.url?.split('.').pop() || (isFolder ? resource.type : 'file');
+    
+    const lastActivity = resource.updatedAt ? `Modificado ${formatDistanceToNow(new Date(resource.updatedAt), { addSuffix: true, locale: es })}` : `Subido ${formatDistanceToNow(new Date(resource.uploadDate), { addSuffix: true, locale: es })}`;
+
 
     return (
-        <div ref={setNodeRef} className={cn("w-full touch-none", isDragging && 'opacity-50 z-10')}>
+        <div ref={setNodeRef} {...attributes} {...listeners} className={cn("w-full touch-none", isDragging && 'opacity-50 z-10')}>
             <Card
                 className={cn(
-                    "group w-full h-full transition-all duration-300 ease-in-out cursor-pointer relative border",
-                    isFolder ? "hover:-translate-y-1 bg-transparent" : "hover:shadow-lg",
+                    "group w-full h-full transition-all duration-300 ease-in-out cursor-pointer relative border-2",
                     isOver && "ring-2 ring-primary ring-offset-2",
                     resource.status === 'ARCHIVED' && 'opacity-60 cursor-default',
-                    isSelected && "ring-2 ring-primary"
+                    isSelected ? "border-primary shadow-lg" : "border-border/50 hover:border-primary/50 hover:shadow-md"
                 )}
                 onClick={handleClick}
             >
-                <CardHeader className="flex flex-row items-center justify-between p-2">
+                 <CardHeader className="flex flex-row items-center justify-between p-2">
                     <div className="flex items-center gap-2 flex-grow min-w-0">
-                         <FileIcon displayMode="header" type={fileExtension} className="w-5 h-5 flex-shrink-0" />
+                         <FileIcon displayMode="header" type={fileExtension} resourceId={resource.id}/>
                          <span className="text-sm font-medium truncate">{resource.title}</span>
                     </div>
                      <DropdownMenu>
@@ -117,10 +115,9 @@ export const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEd
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </CardHeader>
-
-                <CardContent className="p-0 border-t border-b">
-                    <div className="aspect-video w-full flex items-center justify-center relative rounded-none overflow-hidden bg-muted/20">
-                       <FileIcon displayMode="grid" type={fileExtension} thumbnailUrl={resource.url} />
+                <CardContent className="p-0 border-y">
+                     <div className="aspect-[4/3] w-full flex items-center justify-center relative rounded-none overflow-hidden bg-muted/20">
+                       <FileIcon displayMode="grid" type={fileExtension} thumbnailUrl={resource.url} resourceId={resource.id}/>
                        {resource.hasPin && (
                            <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm p-1 rounded-full">
                                <Lock className="h-3 w-3 text-white"/>
@@ -128,17 +125,8 @@ export const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEd
                        )}
                     </div>
                 </CardContent>
-                
-                <CardFooter className="p-2">
-                    <div className="flex items-center gap-2">
-                        <Avatar className="h-6 w-6">
-                            <AvatarImage src={resource.uploader?.avatar || ''} />
-                            <AvatarFallback><Identicon userId={resource.uploaderId!} /></AvatarFallback>
-                        </Avatar>
-                        <span className="text-xs text-muted-foreground">
-                            {resource.uploaderName} • {new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
-                        </span>
-                    </div>
+                <CardFooter className="p-2 text-xs text-muted-foreground">
+                    <p>{lastActivity}</p>
                 </CardFooter>
             </Card>
         </div>
