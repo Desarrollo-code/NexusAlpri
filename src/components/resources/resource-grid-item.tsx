@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import type { AppResourceType } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
 import { Card } from '@/components/ui/card';
-import { Edit, MoreVertical, Trash2, Lock, Download, Globe, Users, Move, Grip, ArchiveRestore, Pin, BrainCircuit, FileText, ListVideo, Brain, PlusCircle } from 'lucide-react';
+import { Edit, MoreVertical, Trash2, Lock, Download, Globe, Users, Move, Grip, ArchiveRestore, Pin, BrainCircuit, FileText, ListVideo, Brain, PlusCircle, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -97,9 +97,9 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                     )}
                     <div className="aspect-[3/2.5] w-full flex items-center justify-center relative rounded-lg overflow-hidden">
                         {isFolder ? (
-                             <div className="w-full h-full relative">
+                             <div className="w-full h-full relative flex items-center justify-center">
                                 {resource.type === 'VIDEO_PLAYLIST' ? (
-                                    <IconVideoPlaylist className="w-full h-full drop-shadow-md" />
+                                    <IconVideoPlaylist className="w-24 h-24 text-primary drop-shadow-md" />
                                 ) : (
                                     <IconFolderDynamic color={getProcessColors(resource.id).raw.medium} className="w-full h-full drop-shadow-md" />
                                 )}
@@ -139,7 +139,7 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                             )}
                             <div className="flex-grow min-w-0">
                                 <p className="font-medium text-xs leading-tight break-words">{resource.title}</p>
-                                <p className="text-xs text-muted-foreground">{resource.category}</p>
+                                <p className="text-xs text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3"/>{new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</p>
                             </div>
                         </div>
                         {canModify && (
@@ -174,4 +174,3 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
     );
 });
 ResourceGridItem.displayName = 'ResourceGridItem';
-export { ResourceGridItem };
