@@ -21,6 +21,7 @@ import { Checkbox } from '../ui/checkbox';
 import Link from 'next/link';
 import { getProcessColors } from '@/lib/utils';
 import { IconFolderDynamic } from '../icons/icon-folder-dynamic';
+import { IconVideoPlaylist } from '../icons/icon-video-playlist';
 
 
 // --- Sub-components for Page ---
@@ -97,19 +98,17 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                     <div className="aspect-[3/2.5] w-full flex items-center justify-center relative rounded-lg overflow-hidden">
                         {isFolder ? (
                              <div className="w-full h-full relative">
-                                <IconFolderDynamic color={getProcessColors(resource.id).raw.medium} className="w-full h-full drop-shadow-md" />
+                                {resource.type === 'VIDEO_PLAYLIST' ? (
+                                    <IconVideoPlaylist className="w-full h-full drop-shadow-md" />
+                                ) : (
+                                    <IconFolderDynamic color={getProcessColors(resource.id).raw.medium} className="w-full h-full drop-shadow-md" />
+                                )}
                                 <div className="absolute top-2 right-2 bg-black/30 backdrop-blur-sm p-1.5 rounded-full">
                                    {resource.sharingMode === 'PUBLIC' ? <Globe className="h-4 w-4 text-white"/> : <Users className="h-4 w-4 text-white" />}
                                 </div>
                                 {isOver && (
                                     <div className="absolute inset-0 bg-primary/20 border-2 border-dashed border-primary flex items-center justify-center rounded-lg">
                                         <Move className="h-8 w-8 text-primary/80 animate-pulse" />
-                                    </div>
-                                )}
-                                {resource.type === 'VIDEO_PLAYLIST' && (
-                                    <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs font-semibold px-2 py-1 rounded-md flex items-center gap-1">
-                                        <ListVideo className="h-3 w-3"/>
-                                        <span>Playlist</span>
                                     </div>
                                 )}
                                 {hasQuiz && (
