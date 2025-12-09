@@ -415,7 +415,7 @@ function UsersPageComponent() {
     }
 
     const GridView = () => (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {usersList.map(u => (
                 <DraggableUserCard 
                     key={u.id} 
@@ -440,7 +440,7 @@ function UsersPageComponent() {
                          <div className="min-h-[400px]">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                                         {[...Array(PAGE_SIZE)].map((_,i) => <UserProfileCardSkeleton key={i} />)}
                                     </div>
                                 ) : (
@@ -476,7 +476,7 @@ function UsersPageComponent() {
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: 100, opacity: 0 }}
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        className="fixed bottom-20 left-4 right-4 z-50 pointer-events-none flex justify-center"
+                        className="fixed bottom-24 left-4 right-4 z-50 pointer-events-none flex justify-center"
                     >
                        <div className="pointer-events-auto">
                            <BulkActionsBar />
@@ -590,4 +590,3 @@ export default function UsersPage() {
         </Suspense>
     )
 }
-
