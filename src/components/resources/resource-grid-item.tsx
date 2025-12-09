@@ -87,6 +87,12 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                             <span>Playlist</span>
                         </div>
                     )}
+                     {resource.quiz && (
+                        <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs font-semibold px-2 py-1 rounded-md flex items-center gap-1">
+                            <BrainCircuit className="h-3 w-3" />
+                            <span>Quiz</span>
+                        </div>
+                    )}
                 </div>
             );
         }
@@ -111,7 +117,7 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
         <div ref={setNodeRef} className={cn("w-full touch-none", isDragging && 'opacity-50 z-10')}>
             <div
                  className={cn(
-                    "group w-full h-full transition-all duration-300 ease-in-out cursor-pointer",
+                    "group w-full h-full transition-all duration-300 ease-in-out cursor-pointer relative",
                     isFolder ? "hover:-translate-y-1" : "hover:shadow-lg",
                     isOver && "ring-2 ring-primary ring-offset-2 rounded-xl",
                     resource.status === 'ARCHIVED' && 'opacity-60 cursor-default',
@@ -119,7 +125,18 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                 )}
                  onClick={handleClick}
             >
-                <div className="aspect-[3/2.5] w-full flex items-center justify-center relative rounded-xl overflow-hidden bg-transparent">
+                {canModify && (
+                    <div className="absolute top-2 left-2 z-20" onClick={e => e.stopPropagation()}>
+                        <Checkbox 
+                            checked={isSelected} 
+                            onCheckedChange={(checked) => onSelectionChange(resource.id, !!checked)} 
+                            className="bg-background/80 backdrop-blur-sm border-accent"
+                            aria-label={`Seleccionar ${resource.title}`}
+                        />
+                    </div>
+                )}
+
+                <div className="aspect-[3/2.5] w-full flex items-center justify-center relative rounded-xl overflow-hidden bg-transparent border">
                     <Thumbnail />
                      {resource.hasPin && !isFolder && (
                         <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1 rounded-full">
@@ -152,6 +169,11 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                                         <>
                                             <DropdownMenuItem onSelect={() => onTogglePin(resource)}><Pin className="mr-2 h-4 w-4"/>{resource.isPinned ? 'Desfijar' : 'Fijar'}</DropdownMenuItem>
                                             <DropdownMenuItem onClick={()=> onEdit(resource)}><Edit className="mr-2 h-4 w-4" /> Editar / Compartir</DropdownMenuItem>
+                                             {isQuizEnabled && (
+                                                <DropdownMenuItem asChild>
+                                                    <Link href={`/resources/${resource.id}/edit-quiz`}><BrainCircuit className="mr-2 h-4 w-4"/> {hasQuiz ? 'Editar Quiz' : 'Añadir Quiz'}</Link>
+                                                </DropdownMenuItem>
+                                            )}
                                         </>
                                     )}
                                     {resource.status === 'ARCHIVED' && (
