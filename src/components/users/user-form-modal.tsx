@@ -203,92 +203,94 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="w-[95vw] sm:max-w-3xl p-0 gap-0 rounded-2xl max-h-[90vh] flex flex-col">
+            <DialogContent className="w-[95vw] sm:max-w-3xl p-0 gap-0 rounded-2xl h-[90vh] flex flex-col">
                  <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
                     <DialogTitle>{user ? 'Editar Colaborador' : 'Añadir Nuevo Colaborador'}</DialogTitle>
                 </DialogHeader>
-                <ScrollArea className="flex-1 min-h-0">
-                  <form id="user-form" onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 px-6 py-4">
-                      {/* Columna Izquierda */}
-                      <div className="space-y-4">
-                           <div className="flex flex-col items-center gap-4">
-                            <div className="relative">
-                                 <Avatar className="h-24 w-24">
-                                    <AvatarImage src={localAvatarPreview || avatarUrl || undefined}/>
-                                    <AvatarFallback className="text-3xl"><Identicon userId={user?.id || name}/></AvatarFallback>
-                                </Avatar>
-                                 <Label htmlFor="avatar-upload" className="absolute -bottom-1 -right-1 bg-secondary text-secondary-foreground rounded-full p-1.5 cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors shadow-md">
-                                    <Camera className="h-5 w-5" />
-                                    <input id="avatar-upload" type="file" className="hidden" onChange={handleAvatarChange} accept="image/*" disabled={isUploading}/>
-                                </Label>
-                            </div>
-                            {isUploading && (
-                                <div className="w-full max-w-xs space-y-1">
-                                   <Progress value={uploadProgress} />
-                                   <p className="text-xs text-center text-muted-foreground">Subiendo...</p>
+                <div className="flex-1 min-h-0">
+                  <ScrollArea className="h-full">
+                      <form id="user-form" onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 px-6 py-4">
+                          {/* Columna Izquierda */}
+                          <div className="space-y-4">
+                               <div className="flex flex-col items-center gap-4">
+                                <div className="relative">
+                                     <Avatar className="h-24 w-24">
+                                        <AvatarImage src={localAvatarPreview || avatarUrl || undefined}/>
+                                        <AvatarFallback className="text-3xl"><Identicon userId={user?.id || name}/></AvatarFallback>
+                                    </Avatar>
+                                     <Label htmlFor="avatar-upload" className="absolute -bottom-1 -right-1 bg-secondary text-secondary-foreground rounded-full p-1.5 cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors shadow-md">
+                                        <Camera className="h-5 w-5" />
+                                        <input id="avatar-upload" type="file" className="hidden" onChange={handleAvatarChange} accept="image/*" disabled={isUploading}/>
+                                    </Label>
                                 </div>
-                            )}
-                        </div>
-                         <div className="space-y-2">
-                            <Label htmlFor="name">Nombre Completo</Label>
-                            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required autoComplete="off" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="email">Correo Electrónico</Label>
-                            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="off" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="password">{user ? 'Nueva Contraseña (Opcional)' : 'Contraseña'}</Label>
-                            <div className="relative">
-                                <Input id="password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} required={!user} autoComplete="new-password" />
-                                <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground" onClick={() => setShowPassword(!showPassword)}>
-                                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                </Button>
+                                {isUploading && (
+                                    <div className="w-full max-w-xs space-y-1">
+                                       <Progress value={uploadProgress} />
+                                       <p className="text-xs text-center text-muted-foreground">Subiendo...</p>
+                                    </div>
+                                )}
                             </div>
-                            {password && <PasswordStrengthIndicator password={password} isVisible={true} />}
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                              <Label htmlFor="role">Rol</Label>
-                              <Select value={role} onValueChange={(value) => handleRoleChange(value as UserRole)}>
-                                  <SelectTrigger id="role"><SelectValue placeholder="Seleccionar rol" /></SelectTrigger>
-                                  <SelectContent><SelectItem value="STUDENT">Estudiante</SelectItem><SelectItem value="INSTRUCTOR">Instructor</SelectItem><SelectItem value="ADMINISTRATOR">Administrador</SelectItem></SelectContent>
-                              </Select>
+                             <div className="space-y-2">
+                                <Label htmlFor="name">Nombre Completo</Label>
+                                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required autoComplete="off" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="email">Correo Electrónico</Label>
+                                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="off" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="password">{user ? 'Nueva Contraseña (Opcional)' : 'Contraseña'}</Label>
+                                <div className="relative">
+                                    <Input id="password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} required={!user} autoComplete="new-password" />
+                                    <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground" onClick={() => setShowPassword(!showPassword)}>
+                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </Button>
+                                </div>
+                                {password && <PasswordStrengthIndicator password={password} isVisible={true} />}
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                  <Label htmlFor="role">Rol</Label>
+                                  <Select value={role} onValueChange={(value) => handleRoleChange(value as UserRole)}>
+                                      <SelectTrigger id="role"><SelectValue placeholder="Seleccionar rol" /></SelectTrigger>
+                                      <SelectContent><SelectItem value="STUDENT">Estudiante</SelectItem><SelectItem value="INSTRUCTOR">Instructor</SelectItem><SelectItem value="ADMINISTRATOR">Administrador</SelectItem></SelectContent>
+                                  </Select>
+                              </div>
+                               <div className="space-y-2">
+                                    <Label htmlFor="process">Proceso Asignado</Label>
+                                     <Select value={processId || 'unassigned'} onValueChange={(value) => setProcessId(value === 'unassigned' ? null : value)}>
+                                      <SelectTrigger id="process"><SelectValue placeholder="Sin asignar" /></SelectTrigger>
+                                      <SelectContent><SelectItem value="unassigned">Sin Asignar</SelectItem>{flattenedProcesses.map(p => (<SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem` }}>{p.name}</SelectItem>))}</SelectContent>
+                                  </Select>
+                              </div>
+                            </div>
                           </div>
-                           <div className="space-y-2">
-                                <Label htmlFor="process">Proceso Asignado</Label>
-                                 <Select value={processId || 'unassigned'} onValueChange={(value) => setProcessId(value === 'unassigned' ? null : value)}>
-                                  <SelectTrigger id="process"><SelectValue placeholder="Sin asignar" /></SelectTrigger>
-                                  <SelectContent><SelectItem value="unassigned">Sin Asignar</SelectItem>{flattenedProcesses.map(p => (<SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem` }}>{p.name}</SelectItem>))}</SelectContent>
-                              </Select>
-                          </div>
-                        </div>
-                      </div>
-                      {/* Columna Derecha */}
-                       <div className="space-y-4">
-                            <Card>
-                                <CardHeader><CardTitle className="text-base flex items-center gap-2"><UserCheck className="h-4 w-4"/>Permisos Granulares</CardTitle><CardDescription className="text-xs">Sobreescribe los permisos del rol y concede acceso a páginas específicas.</CardDescription></CardHeader>
-                                <CardContent>
-                                    <ScrollArea className="h-72 border rounded-md">
-                                        <div className="p-4 space-y-2">
-                                        {allNavItems.map(item => (
-                                            <React.Fragment key={item.id}>
-                                                <p className="font-semibold text-sm pt-2">{item.label}</p>
-                                                {(item.children || [item]).filter(child => child.path).map(child => (
-                                                     <div key={child.id} className="flex items-center space-x-3 ml-2">
-                                                         <Checkbox id={`perm-${child.id}`} checked={customPermissions.includes(child.path!)} onCheckedChange={checked => handlePermissionChange(child.path!, !!checked)}/>
-                                                         <Label htmlFor={`perm-${child.id}`} className="font-normal">{child.label}</Label>
-                                                     </div>
-                                                ))}
-                                            </React.Fragment>
-                                        ))}
-                                        </div>
-                                    </ScrollArea>
-                                </CardContent>
-                            </Card>
-                       </div>
-                  </form>
-                </ScrollArea>
+                          {/* Columna Derecha */}
+                           <div className="space-y-4">
+                                <Card>
+                                    <CardHeader><CardTitle className="text-base flex items-center gap-2"><UserCheck className="h-4 w-4"/>Permisos Granulares</CardTitle><CardDescription className="text-xs">Sobreescribe los permisos del rol y concede acceso a páginas específicas.</CardDescription></CardHeader>
+                                    <CardContent>
+                                        <ScrollArea className="h-72 border rounded-md">
+                                            <div className="p-4 space-y-2">
+                                            {allNavItems.map(item => (
+                                                <React.Fragment key={item.id}>
+                                                    <p className="font-semibold text-sm pt-2">{item.label}</p>
+                                                    {(item.children || [item]).filter(child => child.path).map(child => (
+                                                         <div key={child.id} className="flex items-center space-x-3 ml-2">
+                                                             <Checkbox id={`perm-${child.id}`} checked={customPermissions.includes(child.path!)} onCheckedChange={checked => handlePermissionChange(child.path!, !!checked)}/>
+                                                             <Label htmlFor={`perm-${child.id}`} className="font-normal">{child.label}</Label>
+                                                         </div>
+                                                    ))}
+                                                </React.Fragment>
+                                            ))}
+                                            </div>
+                                        </ScrollArea>
+                                    </CardContent>
+                                </Card>
+                           </div>
+                      </form>
+                    </ScrollArea>
+                </div>
                 <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2">
                     <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
                     <Button type="submit" form="user-form" disabled={isSaving || !name.trim() || !email.trim() || (!user && !password)}>

@@ -415,7 +415,7 @@ function UsersPageComponent() {
     }
 
     const GridView = () => (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 grid-auto-rows-[1fr]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {usersList.map(u => (
                 <DraggableUserCard 
                     key={u.id} 
@@ -437,7 +437,7 @@ function UsersPageComponent() {
 
                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
                     <div className="lg:col-span-3" id="users-main-view">
-                         <div className="mb-24 md:mb-4">
+                         <div className="min-h-[400px]">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -476,7 +476,7 @@ function UsersPageComponent() {
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: 100, opacity: 0 }}
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        className="fixed bottom-24 left-4 right-4 z-50 pointer-events-none flex justify-center"
+                        className="fixed bottom-20 left-4 right-4 z-50 pointer-events-none flex justify-center"
                     >
                        <div className="pointer-events-auto">
                            <BulkActionsBar />
@@ -517,36 +517,7 @@ function UsersPageComponent() {
 }
 
 const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleChange, onStatusChange }: any) => {
-    const isMobile = useIsMobile();
     const isAllOnPageSelected = users.length > 0 && users.every((u: User) => selectedUserIds.has(u.id));
-
-    if (isMobile) {
-        return (
-            <div className="space-y-3">
-                {users.map((u: UserWithProcess) => (
-                    <Card key={u.id} className="flex items-center p-3 gap-3">
-                         <Checkbox id={`check-${u.id}`} checked={selectedUserIds.has(u.id)} onCheckedChange={(checked) => onSelectionChange(u.id, !!checked)} />
-                         <Avatar className="h-10 w-10"><AvatarImage src={u.avatar || undefined} /><AvatarFallback><Identicon userId={u.id}/></AvatarFallback></Avatar>
-                        <div className="flex-grow min-w-0">
-                            <p className="font-semibold truncate">{u.name}</p>
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                               <p className="text-xs text-muted-foreground truncate">{u.email}</p>
-                               <Badge variant={getRoleBadgeVariant(u.role)} className="text-xs py-0.5 px-1.5">{getRoleInSpanish(u.role)}</Badge>
-                            </div>
-                        </div>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4"/></Button></DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onSelect={() => onEdit(u)}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => onRoleChange(u)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol/Permisos</DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => onStatusChange(u, !u.isActive)} className={u.isActive ? "text-destructive" : ""}>{u.isActive ? 'Inactivar' : 'Activar'}</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </Card>
-                ))}
-            </div>
-        )
-    }
 
     return (
         <Card>
@@ -563,63 +534,49 @@ const UserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleCh
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {users.map((u: UserWithProcess) => {
-                        const lastActivityText = useMemo(() => {
-                            if (!u.updatedAt || !u.registeredDate) return "Pendiente de primer ingreso";
-                            const updatedAt = new Date(u.updatedAt);
-                            const registeredDate = new Date(u.registeredDate);
-                            
-                            if (differenceInSeconds(updatedAt, registeredDate) < 10) {
-                                return "Pendiente de primer ingreso";
-                            }
-                            
-                            return format(updatedAt, "dd MMM yyyy, HH:mm", { locale: es });
-                        }, [u.updatedAt, u.registeredDate]);
-                        
-                        return (
-                            <TableRow key={u.id} className="hover:bg-muted/50">
-                                <TableCell className="px-4"><Checkbox checked={selectedUserIds.has(u.id)} onCheckedChange={(checked) => onSelectionChange(u.id, !!checked)} /></TableCell>
-                                <TableCell className="py-2">
-                                    <div className="flex items-center gap-3">
-                                        <Avatar className="h-9 w-9"><AvatarImage src={u.avatar || undefined} /><AvatarFallback><Identicon userId={u.id}/></AvatarFallback></Avatar>
-                                        <div><p className="font-semibold">{u.name}</p><p className="text-xs text-muted-foreground">{u.email}</p></div>
-                                    </div>
-                                </TableCell>
-                                <TableCell><Badge variant={getRoleBadgeVariant(u.role)}>{getRoleInSpanish(u.role)}</Badge></TableCell>
-                                <TableCell>
-                                    {u.process ? (
-                                        <Badge 
-                                            style={{
-                                                backgroundColor: getProcessColors(u.process.id).raw.light,
-                                                color: getProcessColors(u.process.id).raw.dark,
-                                            }}
-                                        >
-                                            {u.process.name}
-                                        </Badge>
-                                    ) : <span className="text-xs text-muted-foreground">N/A</span>}
-                                </TableCell>
-                                <TableCell className="text-sm text-muted-foreground">Rol estándar</TableCell>
-                                <TableCell className="text-center">
-                                    <div className="flex items-center justify-center gap-2">
-                                        <div className={cn("h-2.5 w-2.5 rounded-full", u.isActive ? 'bg-green-500' : 'bg-red-500')} />
-                                        <span className="hidden xl:inline">{u.isActive ? 'Activo' : 'Inactivo'}</span>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="text-right px-4">
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4"/></Button></DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onSelect={() => onEdit(u)}><Edit className="mr-2 h-4 w-4"/>Editar Perfil</DropdownMenuItem>
-                                            <DropdownMenuItem onSelect={() => onRoleChange(u)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol/Permisos</DropdownMenuItem>
-                                            <DropdownMenuItem onSelect={() => onStatusChange(u, !u.isActive)} className={u.isActive ? "text-destructive" : ""}>
-                                                <UserX className="mr-2 h-4 w-4"/>{u.isActive ? 'Inactivar' : 'Activar'}
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </TableCell>
-                            </TableRow>
-                        );
-                    })}
+                    {users.map((u: UserWithProcess) => (
+                        <TableRow key={u.id} className="hover:bg-muted/50">
+                            <TableCell className="px-4"><Checkbox checked={selectedUserIds.has(u.id)} onCheckedChange={(checked) => onSelectionChange(u.id, !!checked)} /></TableCell>
+                            <TableCell className="py-2">
+                                <div className="flex items-center gap-3">
+                                    <Avatar className="h-9 w-9"><AvatarImage src={u.avatar || undefined} /><AvatarFallback><Identicon userId={u.id}/></AvatarFallback></Avatar>
+                                    <div><p className="font-semibold">{u.name}</p><p className="text-xs text-muted-foreground">{u.email}</p></div>
+                                </div>
+                            </TableCell>
+                            <TableCell><Badge variant={getRoleBadgeVariant(u.role)}>{getRoleInSpanish(u.role)}</Badge></TableCell>
+                            <TableCell>
+                                {u.process ? (
+                                    <Badge 
+                                        style={{
+                                            backgroundColor: getProcessColors(u.process.id).raw.light,
+                                            color: getProcessColors(u.process.id).raw.dark,
+                                        }}
+                                    >
+                                        {u.process.name}
+                                    </Badge>
+                                ) : <span className="text-xs text-muted-foreground">N/A</span>}
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">Rol estándar</TableCell>
+                            <TableCell className="text-center">
+                                <div className="flex items-center justify-center gap-2">
+                                    <div className={cn("h-2.5 w-2.5 rounded-full", u.isActive ? 'bg-green-500' : 'bg-red-500')} />
+                                    <span className="hidden xl:inline">{u.isActive ? 'Activo' : 'Inactivo'}</span>
+                                </div>
+                            </TableCell>
+                            <TableCell className="text-right px-4">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4"/></Button></DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onSelect={() => onEdit(u)}><Edit className="mr-2 h-4 w-4"/>Editar Perfil</DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => onRoleChange(u)}><UserCog className="mr-2 h-4 w-4"/>Cambiar Rol/Permisos</DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => onStatusChange(u, !u.isActive)} className={u.isActive ? "text-destructive" : ""}>
+                                            <UserX className="mr-2 h-4 w-4"/>{u.isActive ? 'Inactivar' : 'Activar'}
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </TableCell>
+                        </TableRow>
+                    ))}
                 </TableBody>
             </Table>
         </Card>
@@ -633,3 +590,4 @@ export default function UsersPage() {
         </Suspense>
     )
 }
+
