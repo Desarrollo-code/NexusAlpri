@@ -29,7 +29,7 @@ function EditQuizPageComponent({ params }: { params: { resourceId: string } }) {
         setPageTitle('Estudio de Contenido Interactivo');
     }, [setPageTitle]);
 
-    return <InteractiveContentStudio folderId={params.resourceId} />;
+    return <InteractiveContentStudio resourceId={params.resourceId} />;
 }
 
 export default function EditQuizPage({ params }: { params: { resourceId: string } }) {
