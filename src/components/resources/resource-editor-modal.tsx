@@ -43,7 +43,7 @@ import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
 import type { DateRange } from 'react-day-picker';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import Image from 'next/image';
-import { IconFolderYellow } from '../icons/icon-folder-yellow';
+import { IconFolderYellow } from '@/components/icons/icon-folder-yellow';
 
 interface ResourceEditorModalProps {
   isOpen: boolean;
