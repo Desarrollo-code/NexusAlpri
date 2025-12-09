@@ -102,8 +102,6 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
 
     const [isFetchingInfo, setIsFetchingInfo] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState(0);
 
     const isEditing = !!playlistToEdit;
     
@@ -175,22 +173,6 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
         }
     }
     
-    const handleLocalVideoUpload = async (file: File | null) => {
-        if (!file) return;
-        
-        setIsUploading(true);
-        setUploadProgress(0);
-        try {
-            const result = await uploadWithProgress('/api/upload/resource-file', file, setUploadProgress);
-            setVideos(prev => [...prev, { id: generateUniqueId('vid'), title: file.name, url: result.url }]);
-            toast({ title: "Video Subido", description: `${file.name} se ha añadido a la lista.` });
-        } catch(err) {
-            toast({ title: 'Error de subida', description: (err as Error).message, variant: 'destructive' });
-        } finally {
-            setIsUploading(false);
-        }
-    }
-    
     const handleRemoveVideo = (idToRemove: string) => {
         setVideos(prev => prev.filter(v => v.id !== idToRemove));
     }
@@ -257,18 +239,12 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                                 <div className="space-y-1"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory} required><SelectTrigger><SelectValue placeholder="Selecciona..."/></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
                                 <Separator />
                                 <div className="space-y-2">
-                                    <Label>Añadir Videos</Label>
+                                    <Label>Añadir Videos de YouTube</Label>
                                     <div className="flex gap-2">
                                         <Input value={newVideoUrl} onChange={e => setNewVideoUrl(e.target.value)} placeholder="Pega una URL de YouTube..."/>
-                                        <Button type="button" variant="outline" size="icon" onClick={() => document.getElementById('local-video-upload')?.click()} disabled={isUploading}>
-                                            <UploadCloud className="h-4 w-4"/>
-                                        </Button>
                                         <Button type="button" variant="outline" onClick={handleAddYoutubeVideo} disabled={isFetchingInfo}>{isFetchingInfo ? <Loader2 className="h-4 w-4 animate-spin"/> : 'Añadir'}</Button>
                                     </div>
-                                    <div className="relative flex items-center justify-center">
-                                       <div className="flex-grow border-t"></div>
-                                    {isUploading && <Progress value={uploadProgress} className="h-1"/>}
-                                    <div className="h-64 border rounded-lg p-2 bg-muted/50">
+                                    <div className="h-64 border rounded-lg p-2 bg-muted/50 mt-2">
                                        <ScrollArea className="h-full pr-3">
                                         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                                             <SortableContext items={videos.map(v => v.id)} strategy={verticalListSortingStrategy}>
