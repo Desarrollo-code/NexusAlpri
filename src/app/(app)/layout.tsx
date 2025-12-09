@@ -1,7 +1,7 @@
 // src/app/(app)/layout.tsx
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useIdleTimeout } from '@/hooks/use-idle-timeout';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -19,7 +19,6 @@ import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, A
 import { Button } from '@/components/ui/button';
 import { Clock } from 'lucide-react';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
-
 
 function IdleTimeoutDialog({ isOpen, onStay, countdown }: { isOpen: boolean, onStay: () => void, countdown: number }) {
   return (
@@ -45,7 +44,6 @@ function IdleTimeoutDialog({ isOpen, onStay, countdown }: { isOpen: boolean, onS
     </AlertDialog>
   );
 }
-
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const { isMobile, isCollapsed } = useSidebar();
