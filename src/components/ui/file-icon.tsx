@@ -36,8 +36,10 @@ const renderIconPath = (type: string, className?: string) => {
 
 export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUrl, displayMode = 'grid', resourceId }) => {
   const isYoutube = type.toLowerCase() === 'youtube';
-  const isVideo = type.toLowerCase() === 'mp4' || type.toLowerCase() === 'webm';
-  const finalThumbnailUrl = isYoutube ? `https://img.youtube.com/vi/${getYoutubeVideoId(thumbnailUrl)}/mqdefault.jpg` : thumbnailUrl;
+  const isVideoFile = type.toLowerCase() === 'mp4' || type.toLowerCase() === 'webm' || type.toLowerCase() === 'mov';
+  const finalThumbnailUrl = isYoutube 
+      ? `https://img.youtube.com/vi/${getYoutubeVideoId(thumbnailUrl)}/sddefault.jpg` 
+      : thumbnailUrl;
   
   // --- HEADER MODE ---
   if (displayMode === 'header') {
@@ -49,15 +51,15 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
     );
   }
 
-  // --- LIST MODE (for playlist editor, etc.) ---
+  // --- LIST MODE ---
   if (displayMode === 'list') {
      const { label, bgColor } = getFileTypeDetails(type);
      return (
         <div className={cn("w-full h-full flex items-center justify-center rounded-md overflow-hidden group relative", className)}>
-            {finalThumbnailUrl ? (
+            {finalThumbnailUrl && !isVideoFile ? (
                 <>
                     <Image src={finalThumbnailUrl} alt={label} fill className="object-cover transition-transform duration-300 group-hover:scale-105" quality={75} />
-                    {(isVideo || isYoutube) && (
+                    {isYoutube && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
                             <PlayCircle className="h-6 w-6 text-white/80 drop-shadow-lg" />
                         </div>
@@ -65,16 +67,17 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
                 </>
             ) : (
                 <div className="w-full h-full flex items-center justify-center rounded-md" style={{ backgroundColor: bgColor }}>
-                    <span className="text-xs font-bold uppercase tracking-wider text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.2)' }}>
+                    {isVideoFile ? <VideoIcon className="h-6 w-6 text-white"/> : 
+                     <span className="text-xs font-bold uppercase tracking-wider text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.2)' }}>
                         {label}
-                    </span>
+                    </span>}
                 </div>
             )}
         </div>
     );
   }
 
-  // --- GRID VIEW (main library view) ---
+  // --- GRID VIEW ---
   if (type === 'FOLDER' && resourceId) {
       const colors = getProcessColors(resourceId);
       return (
@@ -92,14 +95,14 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
       )
   }
 
-  const isActuallyImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(thumbnailUrl || '');
+  const isActuallyImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(finalThumbnailUrl || '');
   
   return (
     <div className={cn("relative w-full h-full overflow-hidden bg-black", className)}>
        {isActuallyImage && finalThumbnailUrl ? (
           <>
             <Image src={finalThumbnailUrl} alt={type} fill className="object-cover transition-transform duration-300 group-hover:scale-105" quality={80} />
-             {(isVideo || isYoutube) && (
+             {(isYoutube) && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-colors">
                     <PlayCircle className="h-10 w-10 text-white/70 drop-shadow-lg" />
                 </div>
@@ -114,10 +117,15 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
   );
 };
 
-// Se mantiene esta función por si se usa en otro lugar, pero se simplifica.
 export const getFileTypeDetails = (type: string) => {
   if (!type) return { label: 'FILE', bgColor: '#757575' };
   const upperType = type.toUpperCase();
-  // Esta función puede ser expandida en el futuro si se necesita de nuevo
-  return { label: upperType, bgColor: '#757575' };
+  const fileTypeMap: Record<string, { label: string, bgColor: string }> = {
+      PDF: { label: 'PDF', bgColor: '#D94336' },
+      DOCX: { label: 'DOCX', bgColor: '#2A5699' },
+      XLSX: { label: 'XLSX', bgColor: '#0F7D40' },
+      YOUTUBE: { label: 'YT', bgColor: '#FF3D00' },
+      DEFAULT: { label: 'FILE', bgColor: '#757575' },
+  };
+  return fileTypeMap[upperType] || { label: upperType, bgColor: '#757575' };
 };
