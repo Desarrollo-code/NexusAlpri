@@ -81,7 +81,7 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({ resource, onSelect, isActiv
             <FileIcon 
                 displayMode="list" 
                 type={fileExtension} 
-                thumbnailUrl={resource.url} 
+                thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/sddefault.jpg` : resource.url}
                 className="w-full h-full"
              />
              {isActive && (
