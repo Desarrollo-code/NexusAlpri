@@ -267,12 +267,6 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                                     </div>
                                     <div className="relative flex items-center justify-center">
                                        <div className="flex-grow border-t"></div>
-                                       <span className="flex-shrink mx-4 text-xs text-muted-foreground">O</span>
-                                       <div className="flex-grow border-t"></div>
-                                    </div>
-                                    <UploadArea onFileSelect={(files) => files && handleLocalVideoUpload(files[0])} disabled={isUploading} className="h-20" inputId="local-video-upload">
-                                         <div className="text-center text-muted-foreground"><UploadCloud className="mx-auto h-6 w-6 mb-1"/><p className="text-sm font-semibold">Subir video local</p></div>
-                                    </UploadArea>
                                     {isUploading && <Progress value={uploadProgress} className="h-1"/>}
                                     <div className="h-64 border rounded-lg p-2 bg-muted/50">
                                        <ScrollArea className="h-full pr-3">
