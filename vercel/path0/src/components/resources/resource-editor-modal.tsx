@@ -1,4 +1,3 @@
-
 // src/components/resources/resource-editor-modal.tsx
 'use client';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -43,6 +42,8 @@ import { es } from 'date-fns/locale';
 import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
 import type { DateRange } from 'react-day-picker';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
+import Image from 'next/image';
+import { IconFolderYellow } from '../icons/icon-folder-yellow';
 
 interface ResourceEditorModalProps {
   isOpen: boolean;
@@ -310,7 +311,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                         {isLoadingFolderContent ? <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin"/></div> 
                         : folderContent.length > 0 ? folderContent.map(item => (
                             <div key={item.id} className="flex items-center gap-2 text-sm p-2 rounded-md bg-card">
-                                <FileIcon displayMode="list" type={item.type === 'FOLDER' ? 'folder' : item.filetype?.split('/')[1] || 'file'} />
+                                {item.type === 'FOLDER' ? <IconFolderYellow className="w-8 h-8 shrink-0"/> : <FileIcon displayMode="list" type={item.filetype?.split('/')[1] || 'file'} className="w-8 h-8 shrink-0"/>}
                                 <span className="truncate">{item.title}</span>
                             </div>
                         )) : <p className="text-xs text-center text-muted-foreground p-4">Esta carpeta está vacía.</p>}
