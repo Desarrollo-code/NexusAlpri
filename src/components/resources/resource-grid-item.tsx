@@ -115,15 +115,15 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
 
     return (
         <div ref={setNodeRef} className={cn("w-full touch-none", isDragging && 'opacity-50 z-10')}>
-            <div
-                 className={cn(
+            <Card
+                className={cn(
                     "group w-full h-full transition-all duration-300 ease-in-out cursor-pointer relative",
                     isFolder ? "hover:-translate-y-1" : "hover:shadow-lg",
-                    isOver && "ring-2 ring-primary ring-offset-2 rounded-xl",
+                    isOver && "ring-2 ring-primary ring-offset-2",
                     resource.status === 'ARCHIVED' && 'opacity-60 cursor-default',
-                    isSelected && "ring-2 ring-primary ring-offset-2 rounded-xl"
+                    isSelected && "ring-2 ring-primary"
                 )}
-                 onClick={handleClick}
+                onClick={handleClick}
             >
                 {canModify && (
                     <div className="absolute top-2 left-2 z-20" onClick={e => e.stopPropagation()}>
@@ -136,7 +136,7 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                     </div>
                 )}
 
-                <div className="aspect-[3/2.5] w-full flex items-center justify-center relative rounded-xl overflow-hidden bg-transparent border">
+                <div className="aspect-[3/2.5] w-full flex items-center justify-center relative rounded-t-lg overflow-hidden bg-transparent">
                     <Thumbnail />
                      {resource.hasPin && !isFolder && (
                         <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1 rounded-full">
@@ -149,7 +149,7 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                         </div>
                     )}
                 </div>
-                <div className="pt-2 px-1">
+                <div className="p-2 pt-2 border-t">
                     <div className="flex justify-between items-start gap-1">
                          <div className="flex items-start gap-1 flex-grow overflow-hidden text-left">
                              {canModify && !isFolder && resource.status === 'ACTIVE' && (
@@ -189,7 +189,7 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                         {new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>
                 </div>
-            </div>
+            </Card>
         </div>
     );
 });
