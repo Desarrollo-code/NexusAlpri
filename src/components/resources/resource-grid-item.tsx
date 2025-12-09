@@ -84,7 +84,7 @@ export const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEd
                     isSelected && "ring-2 ring-primary"
                 )}
             >
-                <div className="relative p-2" onClick={handleClick}>
+                <div className="relative p-1.5" onClick={handleClick}>
                     {canModify && (
                         <div className="absolute top-2 left-2 z-20" onClick={e => e.stopPropagation()}>
                             <Checkbox 
@@ -95,11 +95,11 @@ export const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEd
                             />
                         </div>
                     )}
-                    <div className="aspect-[3/2.5] w-full flex items-center justify-center relative rounded-lg overflow-hidden">
+                    <div className="aspect-[4/3] w-full flex items-center justify-center relative rounded-lg overflow-hidden">
                         {isFolder ? (
                              <div className="w-full h-full relative flex items-center justify-center">
                                 {resource.type === 'VIDEO_PLAYLIST' ? (
-                                    <IconVideoPlaylist className="w-28 h-28 text-primary drop-shadow-md" />
+                                    <IconVideoPlaylist className="w-24 h-24 text-primary drop-shadow-md" />
                                 ) : (
                                     <IconFolderDynamic color={getProcessColors(resource.id).raw.medium} className="w-full h-full drop-shadow-md" />
                                 )}
@@ -129,7 +129,7 @@ export const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEd
                     </div>
                 </div>
 
-                <div className="p-2 pt-1 border-t">
+                <div className="p-2 pt-0.5 border-t">
                     <div className="flex justify-between items-start gap-1">
                         <div className="flex items-start gap-1 flex-grow overflow-hidden text-left" onClick={handleClick}>
                              {canModify && !isFolder && resource.status === 'ACTIVE' && (
