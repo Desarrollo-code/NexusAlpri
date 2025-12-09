@@ -37,7 +37,6 @@ const renderIconPath = (type: string) => {
     }
 };
 
-
 export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUrl, displayMode = 'grid' }) => {
   const { label, bgColor } = getFileTypeDetails(type);
   const isYoutube = type.toLowerCase() === 'youtube';
@@ -69,35 +68,37 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
 
   // Grid View Logic
   return (
-    <div className={cn("relative w-full h-full", className)}>
-      <svg viewBox="0 0 100 120" className="w-full h-full drop-shadow-sm">
-        <defs>
-          <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="#000" floodOpacity="0.1" />
-          </filter>
-        </defs>
-        
-        {/* Main Body */}
-        <path d="M10,0 L70,0 L90,20 L90,110 C90,115.523 85.523,120 80,120 L10,120 C4.477,120 0,115.523 0,110 L0,10 C0,4.477 4.477,0 10,0 Z" fill="hsl(var(--card))" filter="url(#shadow)" />
-        
-        {/* Folded Corner */}
-        <path d="M70,0 L90,20 L70,20 Z" fill="hsl(var(--border))" fillOpacity="0.5" />
-        
-        {/* Color Label */}
-        <path d="M0,80 L90,80 L90,110 C90,115.523 85.523,120 80,120 L10,120 C4.477,120 0,115.523 0,110 L0,80 Z" fill={bgColor} />
-        
-        {/* File Type Text */}
-        <text x="45" y="102" textAnchor="middle" fill="white" fontSize="18" fontWeight="bold" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.3)' }}>
-          {label}
-        </text>
-        
-        {/* Content Icon */}
-        <foreignObject x="25" y="25" width="50" height="50">
-            <div className="w-full h-full flex items-center justify-center text-muted-foreground opacity-70">
-                {renderIconPath(type)}
-            </div>
-        </foreignObject>
-      </svg>
+    <div className={cn("relative w-full h-full rounded-xl overflow-hidden", className)}>
+       <div className="absolute inset-0 bg-black" />
+       <div className="absolute inset-0 flex items-center justify-center p-4">
+            <svg viewBox="0 0 80 100" className="w-full h-full drop-shadow-lg">
+                <defs>
+                    <filter id="icon-shadow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodColor="#000" floodOpacity="0.3" />
+                    </filter>
+                </defs>
+                <g filter="url(#icon-shadow)">
+                    {/* Bottom colored part */}
+                    <path d="M5,40 H75 V90 C75,95.523 70.523,100 65,100 H15 C9.477,100 5,95.523 5,90 V40 Z" fill={bgColor} />
+                    {/* Top white part */}
+                    <path d="M5,40 V10 C5,4.477 9.477,0 15,0 H55 L75,20 V40 H5 Z" fill="white" />
+                    {/* Folded corner */}
+                    <path d="M55,0 L75,20 L55,20 Z" fill="#e0e0e0" />
+
+                    {/* Text Label */}
+                    <text x="40" y="73" textAnchor="middle" fill="white" fontSize="22" fontWeight="bold" fontFamily="sans-serif">
+                        {label}
+                    </text>
+                    
+                    {/* Content Icon */}
+                     <foreignObject x="25" y="10" width="30" height="30">
+                        <div className="w-full h-full flex items-center justify-center text-gray-500">
+                           {renderIconPath(type)}
+                        </div>
+                    </foreignObject>
+                </g>
+            </svg>
+       </div>
     </div>
   );
 };

@@ -109,26 +109,17 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
 
     return (
         <div ref={setNodeRef} className={cn("w-full touch-none", isDragging && 'opacity-50 z-10')}>
-            <Card 
-                className={cn(
-                    "group w-full h-full transition-all duration-300 bg-card hover:border-primary/50 hover:shadow-lg relative",
-                    isFolder ? "hover:-translate-y-1" : "",
-                    isOver && "ring-2 ring-primary ring-offset-2",
-                    resource.status === 'ARCHIVED' && 'opacity-60 bg-muted/50',
-                    isSelected && "ring-2 ring-primary ring-offset-2 border-primary/80"
+            <div
+                 className={cn(
+                    "group w-full h-full transition-all duration-300 ease-in-out cursor-pointer",
+                    isFolder ? "hover:-translate-y-1" : "hover:shadow-lg",
+                    isOver && "ring-2 ring-primary ring-offset-2 rounded-xl",
+                    resource.status === 'ARCHIVED' && 'opacity-60 cursor-default',
+                    isSelected && "ring-2 ring-primary ring-offset-2 rounded-xl"
                 )}
+                 onClick={handleClick}
             >
-                {canModify && (
-                  <div className="absolute top-2 left-2 z-20">
-                     <Checkbox
-                        checked={isSelected}
-                        onCheckedChange={(checked) => onSelectionChange(resource.id, !!checked)}
-                        onClick={e => e.stopPropagation()}
-                        className="bg-background/80 backdrop-blur-sm data-[state=checked]:bg-primary"
-                    />
-                  </div>
-                )}
-                <div className="aspect-[3/2] w-full flex items-center justify-center relative border-b overflow-hidden rounded-t-lg bg-transparent cursor-pointer" onClick={handleClick}>
+                <div className="aspect-[3/2.5] w-full flex items-center justify-center relative rounded-xl overflow-hidden bg-transparent">
                     <Thumbnail />
                      {resource.hasPin && !isFolder && (
                         <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1 rounded-full">
@@ -141,10 +132,10 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                         </div>
                     )}
                 </div>
-                <div className="p-3 flex-grow flex flex-col">
-                    <div className="flex justify-between items-start gap-1 flex-grow">
-                         <div className="flex items-start gap-1.5 flex-grow overflow-hidden text-left">
-                            {canModify && !isFolder && resource.status === 'ACTIVE' && (
+                <div className="pt-2 px-1">
+                    <div className="flex justify-between items-start gap-1">
+                         <div className="flex items-start gap-1 flex-grow overflow-hidden text-left">
+                             {canModify && !isFolder && resource.status === 'ACTIVE' && (
                                 <div {...listeners} {...attributes} className="p-1 cursor-grab touch-none -ml-1">
                                     <Grip className="h-4 w-4 text-muted-foreground/50" />
                                 </div>
@@ -172,21 +163,11 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                             </DropdownMenu>
                         )}
                     </div>
-                     <p className="text-xs text-muted-foreground mt-1 text-left">
+                     <p className="text-xs text-muted-foreground mt-0.5 text-left ml-1">
                         {new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>
                 </div>
-                 {isQuizEnabled && (
-                    <div className="px-2 pb-2">
-                        <Button asChild size="sm" className="w-full">
-                           <Link href={canModify ? `/resources/${resource.id}/edit-quiz` : (hasQuiz ? `/forms/${resource.quiz?.id}/view` : '#')}>
-                              {hasQuiz ? <BrainCircuit className="mr-2 h-4 w-4"/> : <PlusCircle className="mr-2 h-4 w-4"/>}
-                              {canModify ? (hasQuiz ? 'Editar Quiz' : 'Crear Quiz') : (hasQuiz ? 'Realizar Quiz' : 'Quiz no disponible')}
-                           </Link>
-                        </Button>
-                    </div>
-                 )}
-            </Card>
+            </div>
         </div>
     );
 });

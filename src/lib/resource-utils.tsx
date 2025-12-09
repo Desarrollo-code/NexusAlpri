@@ -19,11 +19,10 @@ const fileTypeMap: Record<string, FileTypeDetails> = {
   MP3: { label: 'MP3', bgColor: '#E91E63' },
   MOV: { label: 'MOV', bgColor: '#E91E63' },
   SVG: { label: 'SVG', bgColor: '#E91E63' },
-  CSV: { label: 'CSV', bgColor: '#D32F2F' },
 
   // Azules y Grises
   ZIP: { label: 'ZIP', bgColor: '#607D8B' },
-  DOC: { label: 'DOC', bgColor: '#2A5699' },
+  DOC: { label: 'DOCX', bgColor: '#2A5699' },
   DOCX: { label: 'DOCX', bgColor: '#2A5699' },
   AVI: { label: 'AVI', bgColor: '#3F51B5' },
   TIFF: { label: 'TIFF', bgColor: '#3F51B5' },
@@ -46,6 +45,7 @@ const fileTypeMap: Record<string, FileTypeDetails> = {
   GIF: { label: 'GIF', bgColor: '#4CAF50' },
   XLS: { label: 'XLS', bgColor: '#0F7D40' },
   XLSX: { label: 'XLSX', bgColor: '#0F7D40' },
+  CSV: { label: 'CSV', bgColor: '#0F7D40' },
 
   // Naranjas y Amarillos
   EPS: { label: 'EPS', bgColor: '#FF9800' },
@@ -54,7 +54,6 @@ const fileTypeMap: Record<string, FileTypeDetails> = {
   HTML: { label: 'HTML', bgColor: '#FF5722' },
   AI: { label: 'AI', bgColor: '#FFC107' },
   PNG: { label: 'PNG', bgColor: '#03A9F4' },
-
 
   // Video
   VIDEO: { label: 'VID', bgColor: '#00796B' }, // para MP4, etc.

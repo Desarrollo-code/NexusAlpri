@@ -52,7 +52,9 @@ export const ResourceListItem = React.memo(({ resources, onSelect, onEdit, onDel
                         <Card key={resource.id} onClick={() => onSelect(resource)} className="w-full flex flex-col shadow-sm">
                             <CardHeader className="flex flex-row items-center gap-4 p-3 relative">
                                 {canManage && <Checkbox checked={selectedIds.has(resource.id)} onCheckedChange={(checked) => onSelectionChange(resource.id, !!checked)} onClick={e => e.stopPropagation()} className="shrink-0" />}
-                                <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : resource.url} />
+                                <div className="w-16 h-16 shrink-0">
+                                  <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : resource.url} />
+                                </div>
                                 <div className="flex-grow min-w-0">
                                    <p className="font-semibold truncate text-foreground">{resource.title}</p>
                                    <p className="text-xs text-muted-foreground">{resource.description || 'Sin descripción'}</p>
