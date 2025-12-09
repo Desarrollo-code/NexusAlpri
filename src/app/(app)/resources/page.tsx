@@ -129,9 +129,20 @@ export default function ResourcesPage() {
     setSelectedIds(new Set());
   }, [fetchResources]);
 
-  const filteredResources = useMemo(() => allApiResources, [allApiResources]);
-  const folders = useMemo(() => filteredResources.filter(r => r.type === 'FOLDER' || r.type === 'VIDEO_PLAYLIST'), [filteredResources]);
-  const files = useMemo(() => filteredResources.filter(r => r.type !== 'FOLDER' && r.type !== 'VIDEO_PLAYLIST'), [filteredResources]);
+  const groupedResources = useMemo(() => {
+    return allApiResources.reduce((acc, resource) => {
+        const category = resource.category || 'General';
+        if (!acc[category]) {
+            acc[category] = { folders: [], files: [] };
+        }
+        if (resource.type === 'FOLDER' || resource.type === 'VIDEO_PLAYLIST') {
+            acc[category].folders.push(resource);
+        } else {
+            acc[category].files.push(resource);
+        }
+        return acc;
+    }, {} as Record<string, { folders: AppResourceType[], files: AppResourceType[] }>);
+  }, [allApiResources]);
 
   const handleNavigateFolder = (resource: AppResourceType) => {
     setCurrentFolderId(resource.id);
@@ -358,43 +369,44 @@ export default function ResourcesPage() {
             ) : error ? (
                 <div className="text-center py-10"><AlertTriangle className="mx-auto h-8 w-8 text-destructive" /><p className="mt-2 font-semibold text-destructive">{error}</p></div>
             ) : isPlaylistView && currentFolder ? (
-                <VideoPlaylistView resources={files} folder={currentFolder} />
+                <VideoPlaylistView resources={allApiResources} folder={currentFolder} />
             ) : (
                 <div className="space-y-8">
-                    {folders.length > 0 && (
-                        <section>
-                            <h3 className="text-lg font-semibold mb-3">Carpetas y Listas</h3>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                                {folders.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={true} onSelect={() => {}} onEdit={() => res.type === 'VIDEO_PLAYLIST' ? handleOpenPlaylistEditor(res) : setResourceToEdit(res)} onDelete={setResourceToDelete} onNavigate={handleNavigateFolder} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
-                            </div>
-                        </section>
-                    )}
-                     {(folders.length > 0 && files.length > 0) && <Separator />}
-                    {files.length > 0 && (
-                        <section>
-                             <div className="flex items-center justify-between mb-3">
-                                <h3 className="text-lg font-semibold">Archivos</h3>
-                                <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
-                                    <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')}><List className="h-4 w-4"/></Button>
-                                    <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')}><Grid className="h-4 w-4"/></Button>
-                                </div>
-                             </div>
-                            {viewMode === 'grid' ? (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                                    {files.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={false} onSelect={() => {}} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
-                                </div>
-                            ) : (
-                                <ResourceListItem resources={files} onSelect={()=>{}} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onTogglePin={onTogglePin} selectedIds={selectedIds} onSelectionChange={handleSelectionChange} />
-                            )}
-                        </section>
-                    )}
-                    {filteredResources.length === 0 && (
+                     {Object.keys(groupedResources).length === 0 ? (
                          <EmptyState 
                             icon={FolderOpen} 
                             title={debouncedSearchTerm ? "No se encontraron resultados" : "Esta carpeta está vacía"}
                             description={debouncedSearchTerm ? "Intenta con otros filtros de búsqueda." : "Sube un archivo o crea una nueva carpeta para empezar."}
                             imageUrl={settings?.emptyStateResourcesUrl}
                          />
+                    ) : (
+                        Object.entries(groupedResources).map(([category, { folders, files }]) => (
+                            <section key={category}>
+                                <h3 className="text-xl font-semibold mb-4 border-b pb-2">{category}</h3>
+                                {folders.length > 0 && (
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mb-6">
+                                        {folders.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={true} onSelect={() => {}} onEdit={() => res.type === 'VIDEO_PLAYLIST' ? handleOpenPlaylistEditor(res) : setResourceToEdit(res)} onDelete={setResourceToDelete} onNavigate={handleNavigateFolder} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
+                                    </div>
+                                )}
+                                {files.length > 0 && (
+                                    <>
+                                        <div className="flex items-center justify-end mb-3">
+                                            <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
+                                                <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')}><List className="h-4 w-4"/></Button>
+                                                <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')}><Grid className="h-4 w-4"/></Button>
+                                            </div>
+                                        </div>
+                                        {viewMode === 'grid' ? (
+                                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                                                {files.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={false} onSelect={() => {}} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
+                                            </div>
+                                        ) : (
+                                            <ResourceListItem resources={files} onSelect={()=>{}} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onTogglePin={handleTogglePin} selectedIds={selectedIds} onSelectionChange={handleSelectionChange} />
+                                        )}
+                                    </>
+                                )}
+                            </section>
+                        ))
                     )}
                 </div>
             )}
@@ -470,3 +482,4 @@ export default function ResourcesPage() {
     
 
     
+
