@@ -298,19 +298,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             <div className="md:col-span-1 h-full flex flex-col">
                 <ScrollArea className="h-full">
                     <div className="px-6 py-4">
-                        {/* Aquí solo ponemos los campos de configuración, no el stepper completo */}
-                        <div className="space-y-4">
-                            <div className="space-y-2"><Label htmlFor="title">Título de la Carpeta</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
-                             <div className="space-y-2"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} /></div>
-                             <div className="space-y-2"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory}><SelectTrigger id="category"><SelectValue placeholder="Seleccionar..." /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select></div>
-                             <div className="space-y-2"><Label>Fecha de Expiración (Opcional)</Label><Popover><PopoverTrigger asChild><Button variant="outline" className="w-full justify-start font-normal">{expiresAt ? format(expiresAt, "PPP", {locale: es}) : <span>Nunca</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50"/></Button></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={expiresAt} onSelect={setExpiresAt} initialFocus locale={es}/></PopoverContent></Popover></div>
-                            <div className="space-y-2"><Label htmlFor="observations">Observaciones (Privado)</Label><Textarea id="observations" value={observations} onChange={(e) => setObservations(e.target.value)} rows={2} /></div>
-                             <Card><CardHeader><CardTitle className="text-base">Permisos</CardTitle></CardHeader><CardContent><RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-1 sm:grid-cols-3 gap-3"><RadioGroupItem value="PUBLIC" id="share-public" className="sr-only" /><Label htmlFor="share-public" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PUBLIC' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Globe className={`mb-2 h-6 w-6 ${sharingMode === 'PUBLIC' ? 'text-primary' : 'text-muted-foreground'}`}/>Público</Label><RadioGroupItem value="PROCESS" id="share-process" className="sr-only"/><Label htmlFor="share-process" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PROCESS' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Briefcase className={`mb-2 h-6 w-6 ${sharingMode === 'PROCESS' ? 'text-primary' : 'text-muted-foreground'}`}/>Por Proceso</Label><RadioGroupItem value="PRIVATE" id="share-private" className="sr-only"/><Label htmlFor="share-private" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PRIVATE' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Users className={`mb-2 h-6 w-6 ${sharingMode === 'PRIVATE' ? 'text-primary' : 'text-muted-foreground'}`}/>Privado</Label></RadioGroup>
-                            {sharingMode === 'PROCESS' && (<UserOrProcessList type="process" items={allProcesses} selectedIds={sharedWithProcessIds} onSelectionChange={setSharedWithProcessIds} />)}
-                            {sharingMode === 'PRIVATE' && (<UserOrProcessList type="user" items={allUsers} selectedIds={sharedWithUserIds} onSelectionChange={setSharedWithUserIds} />)}
-                            </CardContent></Card>
-                            <Card><CardHeader><CardTitle className="text-base flex items-center gap-2"><Edit className="h-4 w-4 text-primary"/>Colaboradores</CardTitle></CardHeader><CardContent><UserOrProcessList type="user" items={allUsers.filter(u => u.role !== 'STUDENT')} selectedIds={collaboratorIds} onSelectionChange={setCollaboratorIds} /></CardContent></Card>
-                        </div>
+                        <ConfigStep />
                     </div>
                 </ScrollArea>
             </div>
@@ -323,7 +311,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                         {isLoadingFolderContent ? <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin"/></div> 
                         : folderContent.length > 0 ? folderContent.map(item => (
                             <div key={item.id} className="flex items-center gap-2 text-sm p-2 rounded-md bg-card">
-                                {item.type === 'FOLDER' ? <IconFolderYellow className="w-6 h-6 shrink-0"/> : <FileIcon displayMode="list" type={item.filetype?.split('/')[1] || 'file'} className="w-8 h-8 shrink-0"/>}
+                                {item.type === 'FOLDER' ? <IconFolderYellow className="w-8 h-8 shrink-0"/> : <FileIcon displayMode="list" type={item.filetype?.split('/')[1] || 'file'} className="w-8 h-8 shrink-0"/>}
                                 <span className="truncate">{item.title}</span>
                             </div>
                         )) : <p className="text-xs text-center text-muted-foreground p-4">Esta carpeta está vacía.</p>}
