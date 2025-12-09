@@ -43,7 +43,7 @@ import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
 import type { DateRange } from 'react-day-picker';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import Image from 'next/image';
-import { FolderContentView } from './folder-content-view';
+import { FolderContentView } from '@/components/resources/folder-content-view';
 import {
   AlertDialog,
   AlertDialogAction,
