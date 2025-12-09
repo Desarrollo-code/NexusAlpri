@@ -269,7 +269,23 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             <Card><CardHeader><CardTitle className="text-base flex items-center gap-2"><Edit className="h-4 w-4 text-primary"/>Colaboradores</CardTitle><CardDescription className="text-xs">Permite a otros instructores o administradores editar este recurso.</CardDescription></CardHeader><CardContent><UserOrProcessList type="user" items={allUsers.filter(u => u.role !== 'STUDENT')} selectedIds={collaboratorIds} onSelectionChange={setCollaboratorIds} /></CardContent></Card>
         </div>
     );
-    
+
+    const renderFolderEdit = () => (
+        <form id="resource-form" onSubmit={handleSave} className="flex-1 min-h-0 flex flex-col">
+             <ScrollArea className="flex-1 min-h-0">
+                <div className="px-6 py-4">
+                    <ConfigStep />
+                </div>
+            </ScrollArea>
+             <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2">
+                <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
+                <Button type="submit" disabled={isSaving || !title.trim()}>
+                    {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                    <Save className="mr-2 h-4 w-4"/>Guardar Cambios
+                </Button>
+            </DialogFooter>
+        </form>
+    );
 
     const renderCreationWizard = () => (
         <form id="resource-form" onSubmit={handleSave} className="flex-1 min-h-0 flex flex-col">
@@ -310,7 +326,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         <Tabs value={activeEditTab} onValueChange={setActiveEditTab} className="flex-1 min-h-0 flex flex-col">
             <div className="px-6 pt-2 flex-shrink-0">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="content" disabled={isEditingFolder}>Contenido</TabsTrigger>
+                <TabsTrigger value="content">Contenido</TabsTrigger>
                 <TabsTrigger value="config">Configuración</TabsTrigger>
               </TabsList>
             </div>
@@ -336,9 +352,9 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             <Dialog open={isOpen} onOpenChange={onClose}>
                 <DialogContent className="w-[95vw] sm:max-w-4xl p-0 gap-0 rounded-2xl max-h-[90vh] flex flex-col">
                     <DialogHeader className="p-6 pb-2 border-b flex-shrink-0">
-                        <DialogTitle>{isEditing ? 'Editar Recurso' : 'Nuevo Recurso'}</DialogTitle>
+                        <DialogTitle>{isEditing ? (isEditingFolder ? 'Editar Carpeta' : 'Editar Recurso') : 'Nuevo Recurso'}</DialogTitle>
                     </DialogHeader>
-                    {isEditing ? renderEditTabs() : renderCreationWizard()}
+                    {isEditing ? (isEditingFolder ? renderFolderEdit() : renderEditTabs()) : renderCreationWizard()}
                 </DialogContent>
             </Dialog>
         </>
