@@ -41,9 +41,10 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
   
   // --- HEADER MODE ---
   if (displayMode === 'header') {
+    const Icon = renderIconPath(type);
     return (
       <div className={cn("w-5 h-5 flex items-center justify-center rounded-md", className)}>
-        {renderIconPath(type, 'text-muted-foreground')}
+        {React.cloneElement(Icon as React.ReactElement, { className: 'text-muted-foreground' })}
       </div>
     );
   }
@@ -76,16 +77,16 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
   // --- GRID VIEW (main library view) ---
   if (type === 'FOLDER' && resourceId) {
       return (
-        <div className="flex h-full w-full items-center justify-center p-4">
-             <IconFolderDynamic color={getProcessColors(resourceId).raw.medium} className="w-24 h-24 text-muted-foreground/60" />
+        <div className="flex h-full w-full items-center justify-center p-4 bg-black">
+             <IconFolderDynamic resourceId={resourceId} className="w-20 h-20 text-muted-foreground/60" />
         </div>
       );
   }
   
   if (type === 'VIDEO_PLAYLIST') {
       return (
-          <div className="flex h-full w-full items-center justify-center p-4">
-              <IconVideoPlaylist className="w-28 h-28 text-muted-foreground/60" />
+          <div className="flex h-full w-full items-center justify-center p-4 bg-black">
+              <IconVideoPlaylist className="w-24 h-24 text-muted-foreground/60" />
           </div>
       )
   }
