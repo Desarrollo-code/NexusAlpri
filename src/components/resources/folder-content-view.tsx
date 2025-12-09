@@ -8,6 +8,7 @@ import { FileIcon } from '../ui/file-icon';
 import { Button } from '../ui/button';
 import { Edit, Trash2 } from 'lucide-react';
 import { getProcessColors } from '@/lib/utils';
+import { IconFolderYellow } from '../icons/icon-folder-yellow';
 
 interface FolderContentViewProps {
     items: AppResourceType[];
@@ -17,7 +18,7 @@ interface FolderContentViewProps {
 
 const FolderItem = ({ item, onEdit, onDelete }: { item: AppResourceType, onEdit: (item: AppResourceType) => void, onDelete: (item: AppResourceType) => void }) => (
     <div className="flex items-center gap-2 py-1 pl-2 group">
-        <IconFolderDynamic color={getProcessColors(item.id).raw.medium} className="w-5 h-5 flex-shrink-0" />
+        <IconFolderYellow className="w-5 h-5 flex-shrink-0" />
         <span className="text-sm font-medium truncate flex-grow">{item.title}</span>
         <div className="opacity-0 group-hover:opacity-100 transition-opacity">
             <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => onEdit(item)}><Edit className="h-3 w-3" /></Button>
