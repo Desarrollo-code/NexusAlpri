@@ -16,24 +16,47 @@ const fileTypeMap: Record<string, FileTypeDetails> = {
   PPT: { label: 'PPT', bgColor: '#D24726' },
   PPTX: { label: 'PPTX', bgColor: '#D24726' },
   YOUTUBE: { label: 'YT', bgColor: '#FF3D00' },
+  MP3: { label: 'MP3', bgColor: '#E91E63' },
+  MOV: { label: 'MOV', bgColor: '#E91E63' },
+  SVG: { label: 'SVG', bgColor: '#E91E63' },
+  CSV: { label: 'CSV', bgColor: '#D32F2F' },
 
   // Azules y Grises
   ZIP: { label: 'ZIP', bgColor: '#607D8B' },
   DOC: { label: 'DOC', bgColor: '#2A5699' },
   DOCX: { label: 'DOCX', bgColor: '#2A5699' },
-  
-  // Morado
-  PNG: { label: 'PNG', bgColor: '#5E35B1' },
+  AVI: { label: 'AVI', bgColor: '#3F51B5' },
+  TIFF: { label: 'TIFF', bgColor: '#3F51B5' },
+  PSD: { label: 'PSD', bgColor: '#3F51B5' },
+  TXT: { label: 'TXT', bgColor: '#03A9F4' },
+  EXE: { label: 'EXE', bgColor: '#607D8B' },
+  DLL: { label: 'DLL', bgColor: '#607D8B' },
+  RAW: { label: 'RAW', bgColor: '#9E9E9E' },
 
+  // Púrpuras
+  MPG: { label: 'MPG', bgColor: '#673AB7' },
+  WAV: { label: 'WAV', bgColor: '#673AB7' },
+  RAR: { label: 'RAR', bgColor: '#673AB7' },
+  EML: { label: 'EML', bgColor: '#673AB7' },
+  
   // Verdes
+  JPG: { label: 'JPG', bgColor: '#4CAF50' },
+  JPEG: { label: 'JPG', bgColor: '#4CAF50' },
+  BMP: { label: 'BMP', bgColor: '#4CAF50' },
+  GIF: { label: 'GIF', bgColor: '#4CAF50' },
   XLS: { label: 'XLS', bgColor: '#0F7D40' },
   XLSX: { label: 'XLSX', bgColor: '#0F7D40' },
-  
-  // Naranja
-  JPG: { label: 'JPG', bgColor: '#F47C00' },
-  JPEG: { label: 'JPG', bgColor: '#F47C00' },
-  
-  // Cian
+
+  // Naranjas y Amarillos
+  EPS: { label: 'EPS', bgColor: '#FF9800' },
+  FLV: { label: 'FLV', bgColor: '#FF9800' },
+  CSS: { label: 'CSS', bgColor: '#FF5722' },
+  HTML: { label: 'HTML', bgColor: '#FF5722' },
+  AI: { label: 'AI', bgColor: '#FFC107' },
+  PNG: { label: 'PNG', bgColor: '#03A9F4' },
+
+
+  // Video
   VIDEO: { label: 'VID', bgColor: '#00796B' }, // para MP4, etc.
   MP4: { label: 'MP4', bgColor: '#00796B' },
 
