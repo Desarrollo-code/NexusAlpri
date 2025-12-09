@@ -68,8 +68,8 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
 
   // Grid View Logic
   return (
-    <div className={cn("relative w-full h-full rounded-xl overflow-hidden", className)}>
-       <div className="absolute inset-0 bg-black" />
+    <div className={cn("relative w-full h-full overflow-hidden", className)}>
+       <div className="absolute inset-0 bg-black rounded-xl" />
        <div className="absolute inset-0 flex items-center justify-center p-4">
             <svg viewBox="0 0 80 100" className="w-full h-full drop-shadow-lg">
                 <defs>
@@ -78,20 +78,20 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
                     </filter>
                 </defs>
                 <g filter="url(#icon-shadow)">
-                    {/* Bottom colored part */}
-                    <path d="M5,40 H75 V90 C75,95.523 70.523,100 65,100 H15 C9.477,100 5,95.523 5,90 V40 Z" fill={bgColor} />
-                    {/* Top white part */}
-                    <path d="M5,40 V10 C5,4.477 9.477,0 15,0 H55 L75,20 V40 H5 Z" fill="white" />
-                    {/* Folded corner */}
+                    {/* Top white part with folded corner */}
+                    <path d="M5,0 H55 L75,20 V90 H5 V0 Z" fill="white" />
                     <path d="M55,0 L75,20 L55,20 Z" fill="#e0e0e0" />
 
+                    {/* Bottom colored label part */}
+                    <rect x="5" y="80" width="70" height="20" fill={bgColor} />
+
                     {/* Text Label */}
-                    <text x="40" y="73" textAnchor="middle" fill="white" fontSize="22" fontWeight="bold" fontFamily="sans-serif">
+                    <text x="40" y="94" textAnchor="middle" fill="white" fontSize="12" fontWeight="bold" fontFamily="sans-serif">
                         {label}
                     </text>
                     
                     {/* Content Icon */}
-                     <foreignObject x="25" y="10" width="30" height="30">
+                     <foreignObject x="25" y="25" width="30" height="30">
                         <div className="w-full h-full flex items-center justify-center text-gray-500">
                            {renderIconPath(type)}
                         </div>

@@ -52,7 +52,7 @@ export const ResourceListItem = React.memo(({ resources, onSelect, onEdit, onDel
                         <Card key={resource.id} onClick={() => onSelect(resource)} className="w-full flex flex-col shadow-sm">
                             <CardHeader className="flex flex-row items-center gap-4 p-3 relative">
                                 {canManage && <Checkbox checked={selectedIds.has(resource.id)} onCheckedChange={(checked) => onSelectionChange(resource.id, !!checked)} onClick={e => e.stopPropagation()} className="shrink-0" />}
-                                <div className="w-16 h-16 shrink-0">
+                                <div className="w-16 h-16 shrink-0 rounded-md overflow-hidden">
                                   <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : resource.url} />
                                 </div>
                                 <div className="flex-grow min-w-0">
@@ -131,7 +131,7 @@ const SingleRowItem = ({ resource, onSelect, onEdit, onDelete, onRestore, onTogg
              <TableCell className="w-[40%]">
                 <div className="flex items-center gap-4">
                     {canModify && <div {...listeners} {...attributes} className="p-1 cursor-grab touch-none"><Grip className="h-4 w-4 text-muted-foreground/50"/></div>}
-                    <div className="w-10 h-10 flex-shrink-0">
+                    <div className="w-10 h-10 flex-shrink-0 rounded-md overflow-hidden">
                       <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : resource.url} />
                     </div>
                     <div className="min-w-0">
