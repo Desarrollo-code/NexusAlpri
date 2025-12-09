@@ -45,7 +45,7 @@ export const ResourceListItem = React.memo(({ resources, onSelect, onEdit, onDel
             <div className="w-full space-y-3">
                 {resources.map(resource => {
                     const youtubeId = getYoutubeVideoId(resource.url);
-                    const fileExtension = youtubeId ? 'youtube' : (resource.fileType?.split('/')[1] || resource.url?.split('.').pop() || 'file');
+                    const fileExtension = youtubeId ? 'youtube' : (resource.filetype?.split('/')[1] || resource.url?.split('.').pop() || 'file');
                     const canModify = user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && resource.uploaderId === user.id));
 
                     return (
@@ -110,7 +110,7 @@ const SingleRowItem = ({ resource, onSelect, onEdit, onDelete, onRestore, onTogg
     const { user } = useAuth();
     const canModify = user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && resource.uploaderId === user.id));
     const youtubeId = getYoutubeVideoId(resource.url);
-    const fileExtension = youtubeId ? 'youtube' : (resource.fileType?.split('/')[1] || resource.url?.split('.').pop() || 'file');
+    const fileExtension = youtubeId ? 'youtube' : (resource.filetype?.split('/')[1] || resource.url?.split('.').pop() || 'file');
 
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
         id: resource.id,
@@ -129,7 +129,9 @@ const SingleRowItem = ({ resource, onSelect, onEdit, onDelete, onRestore, onTogg
              <TableCell className="w-[40%]">
                 <div className="flex items-center gap-4">
                     {canModify && <div {...listeners} {...attributes} className="p-1 cursor-grab touch-none"><Grip className="h-4 w-4 text-muted-foreground/50"/></div>}
-                    <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : resource.url} />
+                    <div className="w-10 h-10 flex-shrink-0">
+                      <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : resource.url} />
+                    </div>
                     <div className="min-w-0">
                         <p className="font-semibold truncate text-foreground flex items-center gap-1.5">
                             {resource.title}
