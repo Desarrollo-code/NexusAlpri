@@ -78,8 +78,8 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
   if (type === 'FOLDER' && resourceId) {
       const colors = getProcessColors(resourceId);
       return (
-        <div className="flex h-full w-full items-center justify-center p-4" style={{ background: `linear-gradient(135deg, ${colors.raw.light}, ${colors.raw.medium})` }}>
-             <IconFolderDynamic resourceId={resourceId} className="w-20 h-20 text-muted-foreground/60" />
+        <div className="flex h-full w-full items-center justify-center p-4" style={{ background: `radial-gradient(circle, ${colors.raw.medium} 0%, ${colors.raw.light} 100%)` }}>
+             <IconFolderDynamic resourceId={resourceId} className="w-20 h-20 text-muted-foreground/60 drop-shadow-lg" />
         </div>
       );
   }
@@ -92,9 +92,11 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
       )
   }
 
+  const isActuallyImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(thumbnailUrl || '');
+  
   return (
     <div className={cn("relative w-full h-full overflow-hidden bg-black", className)}>
-       {finalThumbnailUrl ? (
+       {isActuallyImage && finalThumbnailUrl ? (
           <>
             <Image src={finalThumbnailUrl} alt={type} fill className="object-cover transition-transform duration-300 group-hover:scale-105" quality={80} />
              {(isVideo || isYoutube) && (
