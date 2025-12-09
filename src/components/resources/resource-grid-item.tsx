@@ -25,7 +25,7 @@ import { IconVideoPlaylist } from '../icons/icon-video-playlist';
 
 
 // --- Sub-components for Page ---
-const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onDelete, onNavigate, onRestore, onTogglePin, isSelected, onSelectionChange }: { 
+export const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onDelete, onNavigate, onRestore, onTogglePin, isSelected, onSelectionChange }: { 
     resource: AppResourceType, 
     isFolder: boolean, 
     onSelect: () => void, 
