@@ -4,8 +4,8 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import type { AppResourceType } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
-import { Card } from '@/components/ui/card';
-import { Edit, MoreVertical, Trash2, Lock, Download, Globe, Users, Move, Grip, ArchiveRestore, Pin, BrainCircuit, FileText, ListVideo, Brain, PlusCircle, Calendar } from 'lucide-react';
+import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
+import { Edit, MoreVertical, Trash2, Lock, Download, Globe, Users, Move, Grip, ArchiveRestore, Pin, BrainCircuit, ListVideo, Edit2, Link as LinkIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -14,7 +14,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DownloadButton } from '../ui/download-button';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { FileIcon } from '../ui/file-icon';
 import { Checkbox } from '../ui/checkbox';
@@ -22,6 +21,8 @@ import Link from 'next/link';
 import { getProcessColors } from '@/lib/utils';
 import { IconFolderDynamic } from '../icons/icon-folder-dynamic';
 import { IconVideoPlaylist } from '../icons/icon-video-playlist';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Identicon } from '../ui/identicon';
 
 
 // --- Sub-components for Page ---
@@ -73,6 +74,8 @@ export const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEd
     const isQuizEnabled = isFolder && resource.category === 'Formación Interna';
     const hasQuiz = !!resource.quiz;
 
+    const fileExtension = resource.filetype?.split('/')[1] || resource.url?.split('.').pop() || 'file';
+
     return (
         <div ref={setNodeRef} className={cn("w-full touch-none", isDragging && 'opacity-50 z-10')}>
             <Card
@@ -83,92 +86,60 @@ export const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEd
                     resource.status === 'ARCHIVED' && 'opacity-60 cursor-default',
                     isSelected && "ring-2 ring-primary"
                 )}
+                onClick={handleClick}
             >
-                <div className="relative p-1.5" onClick={handleClick}>
-                    {canModify && (
-                        <div className="absolute top-2 left-2 z-20" onClick={e => e.stopPropagation()}>
-                            <Checkbox 
-                                checked={isSelected} 
-                                onCheckedChange={(checked) => onSelectionChange(resource.id, !!checked)} 
-                                className="bg-background/80 backdrop-blur-sm border-2 border-white shadow-lg"
-                                aria-label={`Seleccionar ${resource.title}`}
-                            />
-                        </div>
-                    )}
-                    <div className="aspect-[4/3] w-full flex items-center justify-center relative rounded-lg overflow-hidden">
-                        {isFolder ? (
-                             <div className="w-full h-full relative flex items-center justify-center">
-                                {resource.type === 'VIDEO_PLAYLIST' ? (
-                                    <IconVideoPlaylist className="w-24 h-24 text-primary drop-shadow-md" />
-                                ) : (
-                                    <IconFolderDynamic color={getProcessColors(resource.id).raw.medium} className="w-full h-full drop-shadow-md" />
-                                )}
-                                <div className="absolute top-2 right-2 bg-black/30 backdrop-blur-sm p-1.5 rounded-full">
-                                   {resource.sharingMode === 'PUBLIC' ? <Globe className="h-4 w-4 text-white"/> : <Users className="h-4 w-4 text-white" />}
-                                </div>
-                                {isOver && (
-                                    <div className="absolute inset-0 bg-primary/20 border-2 border-dashed border-primary flex items-center justify-center rounded-lg">
-                                        <Move className="h-8 w-8 text-primary/80 animate-pulse" />
-                                    </div>
-                                )}
-                                {hasQuiz && (
-                                    <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs font-semibold px-2 py-1 rounded-md flex items-center gap-1">
-                                        <BrainCircuit className="h-3 w-3" />
-                                        <span>Quiz</span>
-                                    </div>
-                                )}
-                            </div>
-                        ) : (
-                            <FileIcon displayMode="grid" type={resource.filetype?.split('/')[1] || resource.url?.split('.').pop() || 'file'} thumbnailUrl={resource.url} />
-                        )}
-                        {resource.isPinned && (
-                            <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm p-2 rounded-full">
-                                <Pin className="h-4 w-4 text-white fill-white" />
-                            </div>
-                        )}
+                <CardHeader className="flex flex-row items-center justify-between p-2">
+                    <div className="flex items-center gap-2 flex-grow min-w-0">
+                         <FileIcon displayMode="header" type={fileExtension} className="w-5 h-5 flex-shrink-0" />
+                         <span className="text-sm font-medium truncate">{resource.title}</span>
                     </div>
-                </div>
-
-                <div className="p-2 pt-0.5 border-t">
-                    <div className="flex justify-between items-start gap-1">
-                        <div className="flex items-start gap-1 flex-grow overflow-hidden text-left" onClick={handleClick}>
-                             {canModify && !isFolder && resource.status === 'ACTIVE' && (
-                                <div {...listeners} {...attributes} className="p-1 cursor-grab touch-none -ml-1">
-                                    <Grip className="h-4 w-4 text-muted-foreground/50" />
-                                </div>
+                     <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-muted-foreground" aria-label={`Opciones para ${resource.title}`} onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                            {resource.status === 'ACTIVE' && (
+                                <>
+                                    <DropdownMenuItem onSelect={() => onTogglePin(resource)}><Pin className="mr-2 h-4 w-4"/>{resource.isPinned ? 'Desfijar' : 'Fijar'}</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={()=> onEdit(resource)}><Edit className="mr-2 h-4 w-4" /> Editar / Compartir</DropdownMenuItem>
+                                    {isQuizEnabled && (
+                                        <DropdownMenuItem asChild>
+                                            <Link href={`/resources/${resource.id}/edit-quiz`}><BrainCircuit className="mr-2 h-4 w-4"/> {hasQuiz ? 'Editar Quiz' : 'Añadir Quiz'}</Link>
+                                        </DropdownMenuItem>
+                                    )}
+                                </>
                             )}
-                            <div className="flex-grow min-w-0">
-                                <p className="font-medium text-xs leading-tight break-words">{resource.title}</p>
-                                <p className="text-xs text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3"/>{new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</p>
-                            </div>
-                        </div>
-                        {canModify && (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 text-muted-foreground" aria-label={`Opciones para ${resource.title}`} onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                                    {resource.status === 'ACTIVE' && (
-                                        <>
-                                            <DropdownMenuItem onSelect={() => onTogglePin(resource)}><Pin className="mr-2 h-4 w-4"/>{resource.isPinned ? 'Desfijar' : 'Fijar'}</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={()=> onEdit(resource)}><Edit className="mr-2 h-4 w-4" /> Editar / Compartir</DropdownMenuItem>
-                                            {isQuizEnabled && (
-                                                <DropdownMenuItem asChild>
-                                                    <Link href={`/resources/${resource.id}/edit-quiz`}><BrainCircuit className="mr-2 h-4 w-4"/> {hasQuiz ? 'Editar Quiz' : 'Añadir Quiz'}</Link>
-                                                </DropdownMenuItem>
-                                            )}
-                                        </>
-                                    )}
-                                    {resource.status === 'ARCHIVED' && (
-                                        <DropdownMenuItem onClick={() => onRestore(resource)}><ArchiveRestore className="mr-2 h-4 w-4" /> Restaurar</DropdownMenuItem>
-                                    )}
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem onClick={() => onDelete(resource)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        )}
+                            {resource.status === 'ARCHIVED' && (
+                                <DropdownMenuItem onClick={() => onRestore(resource)}><ArchiveRestore className="mr-2 h-4 w-4" /> Restaurar</DropdownMenuItem>
+                            )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => onDelete(resource)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </CardHeader>
+
+                <CardContent className="p-0 border-t border-b">
+                    <div className="aspect-video w-full flex items-center justify-center relative rounded-none overflow-hidden bg-muted/20">
+                       <FileIcon displayMode="grid" type={fileExtension} thumbnailUrl={resource.url} />
+                       {resource.hasPin && (
+                           <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm p-1 rounded-full">
+                               <Lock className="h-3 w-3 text-white"/>
+                           </div>
+                       )}
                     </div>
-                </div>
+                </CardContent>
+                
+                <CardFooter className="p-2">
+                    <div className="flex items-center gap-2">
+                        <Avatar className="h-6 w-6">
+                            <AvatarImage src={resource.uploader?.avatar || ''} />
+                            <AvatarFallback><Identicon userId={resource.uploaderId!} /></AvatarFallback>
+                        </Avatar>
+                        <span className="text-xs text-muted-foreground">
+                            {resource.uploaderName} • {new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                        </span>
+                    </div>
+                </CardFooter>
             </Card>
         </div>
     );
