@@ -43,7 +43,17 @@ import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
 import type { DateRange } from 'react-day-picker';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import Image from 'next/image';
-import { IconFolderYellow } from '@/components/icons/icon-folder-yellow';
+import { FolderContentView } from './folder-content-view';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ResourceEditorModalProps {
   isOpen: boolean;
@@ -294,7 +304,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
 
     const renderFolderEdit = () => (
       <form id="resource-form" onSubmit={handleSave} className="flex-1 min-h-0 flex flex-col">
-        <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-hidden">
+        <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 gap-x-6 overflow-hidden">
             <div className="md:col-span-1 h-full flex flex-col">
                 <ScrollArea className="h-full">
                     <div className="px-6 py-4">
@@ -303,23 +313,16 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                 </ScrollArea>
             </div>
              <div className="md:col-span-1 h-full flex flex-col bg-muted/50 border-l">
-                <div className="p-4 border-b flex-shrink-0">
+                <div className="p-4 border-b flex-shrink-0 flex items-center justify-between">
                     <h3 className="font-semibold">Contenido de la Carpeta</h3>
+                    <Button type="button" size="sm"><UploadCloud className="mr-2 h-4 w-4"/>Subir Archivos</Button>
                 </div>
                 <ScrollArea className="flex-1 min-h-0">
-                    <div className="p-4 space-y-2">
+                    <div className="p-4">
                         {isLoadingFolderContent ? <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin"/></div> 
-                        : folderContent.length > 0 ? folderContent.map(item => (
-                            <div key={item.id} className="flex items-center gap-2 text-sm p-2 rounded-md bg-card">
-                                {item.type === 'FOLDER' ? <IconFolderYellow className="w-8 h-8 shrink-0"/> : <FileIcon displayMode="list" type={item.filetype?.split('/')[1] || 'file'} className="w-8 h-8 shrink-0"/>}
-                                <span className="truncate">{item.title}</span>
-                            </div>
-                        )) : <p className="text-xs text-center text-muted-foreground p-4">Esta carpeta está vacía.</p>}
+                        : <FolderContentView items={folderContent} onEdit={() => {}} onDelete={() => {}} />}
                     </div>
                 </ScrollArea>
-                 <div className="p-4 border-t">
-                    <Button type="button" className="w-full" variant="outline"><UploadCloud className="mr-2 h-4 w-4"/>Subir Archivos</Button>
-                </div>
             </div>
         </div>
         <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2">
