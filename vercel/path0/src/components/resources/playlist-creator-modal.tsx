@@ -36,6 +36,7 @@ import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
 import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
@@ -249,7 +250,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
     return (
         <>
             <Dialog open={isOpen} onOpenChange={onClose}>
-                <DialogContent className="w-[95vw] sm:max-w-7xl p-0 gap-0 rounded-2xl h-[90vh] flex flex-col">
+                <DialogContent className="w-[95vw] sm:max-w-6xl p-0 gap-0 rounded-2xl h-[90vh] flex flex-col">
                     <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
                         <DialogTitle>{isEditing ? 'Editar Lista de Videos' : 'Crear Nueva Lista de Videos'}</DialogTitle>
                          <DialogDescription>
@@ -258,78 +259,106 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                     </DialogHeader>
 
                     <div className="flex-1 min-h-0 overflow-hidden">
-                      <form id="playlist-form" onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 h-full gap-x-6">
-                        <ScrollArea className="h-full">
-                           <div className="p-6 space-y-6">
-                                {/* Columna Izquierda: Detalles */}
-                                <div className="space-y-4">
-                                    <div className="space-y-1"><Label htmlFor="title">Título de la Lista</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
-                                    <div className="space-y-1"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} /></div>
-                                    <div className="space-y-1"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory} required><SelectTrigger><SelectValue placeholder="Selecciona..."/></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
-                                </div>
-                           </div>
-                        </ScrollArea>
+                      <form id="playlist-form" onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 h-full gap-x-0">
+                        {/* Columna Izquierda: Detalles */}
+                         <div className="lg:col-span-4 h-full border-r">
+                             <ScrollArea className="h-full">
+                               <div className="p-6 space-y-6">
+                                    <div className="space-y-4">
+                                        <div className="space-y-1"><Label htmlFor="title">Título de la Lista</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
+                                        <div className="space-y-1"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} /></div>
+                                        <div className="space-y-1"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory} required><SelectTrigger><SelectValue placeholder="Selecciona..."/></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
+                                    </div>
+                               </div>
+                            </ScrollArea>
+                         </div>
                         
                         {/* Columna Central: Hijos */}
-                        <ScrollArea className="h-full">
-                            <div className="p-6 space-y-4">
-                                <div className="space-y-2">
-                                <Label>Añadir Videos</Label>
-                                <div className="flex gap-2">
-                                    <Input value={newVideoUrl} onChange={e => setNewVideoUrl(e.target.value)} placeholder="Pega una URL de YouTube..."/>
-                                    <Button type="button" variant="outline" onClick={handleAddYoutubeVideo} disabled={isFetchingInfo}>{isFetchingInfo ? <Loader2 className="h-4 w-4 animate-spin"/> : 'Añadir'}</Button>
-                                </div>
-                                <UploadArea onFileSelect={(files) => files && handleFileUpload(files[0])} compact disabled={isSaving} className="h-16 border-dashed">
-                                    <div className="text-center text-muted-foreground text-xs p-1">
-                                        <UploadCloud className="h-5 w-5 mx-auto"/>
-                                        <p>o sube un archivo de video</p>
-                                    </div>
-                                </UploadArea>
-                                 <div className="h-72 border rounded-lg p-2 bg-muted/50 mt-2">
-                                   <ScrollArea className="h-full pr-3">
-                                        <div className="space-y-2">
-                                            {uploads.map(up => (
-                                                <div key={up.id} className="p-2 border rounded-md bg-background relative">
-                                                    <div className="flex items-center gap-2">
-                                                        <FileIcon displayMode="list" type={up.file.type.split('/')[1]} />
-                                                        <span className="text-xs font-medium truncate">{up.file.name}</span>
-                                                    </div>
-                                                    <Progress value={up.progress} className="h-1 mt-1" />
-                                                </div>
-                                            ))}
-                                            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                                                <SortableContext items={videos.map(v => v.id)} strategy={verticalListSortingStrategy}>
-                                                    {videos.map((video) => (
-                                                        <SortableVideoItem key={video.id} video={video} onRemove={() => handleRemoveVideo(video.id)} />
-                                                    ))}
-                                                </SortableContext>
-                                            </DndContext>
+                        <div className="lg:col-span-5 h-full">
+                           <ScrollArea className="h-full">
+                                <div className="p-6 space-y-4">
+                                    <div className="space-y-2">
+                                        <Label>Añadir Videos</Label>
+                                        <div className="flex gap-2">
+                                            <Input value={newVideoUrl} onChange={e => setNewVideoUrl(e.target.value)} placeholder="Pega una URL de YouTube..."/>
+                                            <Button type="button" variant="outline" onClick={handleAddYoutubeVideo} disabled={isFetchingInfo}>{isFetchingInfo ? <Loader2 className="h-4 w-4 animate-spin"/> : 'Añadir'}</Button>
                                         </div>
-                                   </ScrollArea>
+                                        <UploadArea onFileSelect={(files) => files && handleFileUpload(files[0])} compact disabled={isSaving} className="h-16 border-dashed">
+                                            <div className="text-center text-muted-foreground text-xs p-1">
+                                                <UploadCloud className="h-5 w-5 mx-auto"/>
+                                                <p>o sube un archivo de video</p>
+                                            </div>
+                                        </UploadArea>
+                                    </div>
+                                    <div className="h-[28rem] border rounded-lg p-2 bg-muted/50 mt-2">
+                                       <ScrollArea className="h-full pr-3">
+                                            <div className="space-y-2">
+                                                {uploads.map(up => (
+                                                    <div key={up.id} className="p-2 border rounded-md bg-background relative">
+                                                        <div className="flex items-center gap-2">
+                                                            <FileIcon displayMode="list" type={up.file.type.split('/')[1]} />
+                                                            <span className="text-xs font-medium truncate">{up.file.name}</span>
+                                                        </div>
+                                                        <Progress value={up.progress} className="h-1 mt-1" />
+                                                    </div>
+                                                ))}
+                                                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                                                    <SortableContext items={videos.map(v => v.id)} strategy={verticalListSortingStrategy}>
+                                                        {videos.map((video) => (
+                                                            <SortableVideoItem key={video.id} video={video} onRemove={() => handleRemoveVideo(video.id)} />
+                                                        ))}
+                                                    </SortableContext>
+                                                </DndContext>
+                                            </div>
+                                       </ScrollArea>
+                                    </div>
                                 </div>
-                            </div>
-                            </div>
-                        </ScrollArea>
-
+                            </ScrollArea>
+                        </div>
+                        
                         {/* Columna Derecha: Permisos y Quiz */}
-                         <ScrollArea className="h-full bg-muted/50 border-l">
-                            <div className="p-6 space-y-6">
-                                <Card><CardHeader><CardTitle className="text-base flex items-center gap-2"><Globe className="h-4 w-4 text-primary"/>Visibilidad</CardTitle></CardHeader><CardContent><RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-1 sm:grid-cols-3 gap-2"><RadioGroupItem value="PUBLIC" id="share-public" className="sr-only" /><Label htmlFor="share-public" className={`flex flex-col items-center justify-center p-3 text-center border-2 rounded-lg cursor-pointer ${sharingMode === 'PUBLIC' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Globe className={`mb-1 h-5 w-5 ${sharingMode === 'PUBLIC' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="text-xs font-semibold">Público</span></Label><RadioGroupItem value="PROCESS" id="share-process" className="sr-only"/><Label htmlFor="share-process" className={`flex flex-col items-center justify-center p-3 text-center border-2 rounded-lg cursor-pointer ${sharingMode === 'PROCESS' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Briefcase className={`mb-1 h-5 w-5 ${sharingMode === 'PROCESS' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="text-xs font-semibold">Por Proceso</span></Label><RadioGroupItem value="PRIVATE" id="share-private" className="sr-only"/><Label htmlFor="share-private" className={`flex flex-col items-center justify-center p-3 text-center border-2 rounded-lg cursor-pointer ${sharingMode === 'PRIVATE' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Users className={`mb-1 h-5 w-5 ${sharingMode === 'PRIVATE' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="text-xs font-semibold">Privado</span></Label></RadioGroup>
-                                {sharingMode === 'PROCESS' && (<UserOrProcessList type="process" items={flattenedProcesses} selectedIds={sharedWithProcessIds} onSelectionChange={setSharedWithProcessIds} />)}
-                                {sharingMode === 'PRIVATE' && (<UserOrProcessList type="user" items={allUsers} selectedIds={sharedWithUserIds} onSelectionChange={setSharedWithUserIds} />)}
-                                </CardContent></Card>
-                                <Card><CardHeader><CardTitle className="text-base flex items-center gap-2"><Edit className="h-4 w-4 text-primary"/>Colaboradores</CardTitle><CardDescription className="text-xs">Permite a otros instructores o administradores editar esta lista de reproducción.</CardDescription></CardHeader><CardContent><UserOrProcessList type="user" items={allUsers.filter(u => u.role !== 'STUDENT')} selectedIds={collaboratorIds} onSelectionChange={setCollaboratorIds} /></CardContent></Card>
-                                <Card>
-                                    <CardHeader><CardTitle className="text-base flex items-center gap-2"><BrainCircuit className="h-4 w-4 text-primary"/>Evaluación (Quiz)</CardTitle></CardHeader>
-                                    <CardContent>
-                                        <Button className="w-full" variant="outline" onClick={() => setIsQuizEditorOpen(true)}>
-                                            {quiz ? <Edit className="mr-2 h-4 w-4"/> : <PlusCircle className="mr-2 h-4 w-4"/>}
-                                            {quiz ? 'Editar Quiz' : 'Añadir Quiz'}
-                                        </Button>
-                                    </CardContent>
-                                </Card>
-                            </div>
-                        </ScrollArea>
+                         <div className="lg:col-span-3 h-full bg-muted/50 border-l">
+                            <Tabs defaultValue="access" className="flex flex-col h-full">
+                                <TabsList className="grid w-full grid-cols-3 mx-4 mt-4">
+                                    <TabsTrigger value="access">Acceso</TabsTrigger>
+                                    <TabsTrigger value="collabs">Colaboradores</TabsTrigger>
+                                    <TabsTrigger value="quiz">Evaluación</TabsTrigger>
+                                </TabsList>
+                                <ScrollArea className="flex-grow p-4">
+                                     <TabsContent value="access" className="m-0 space-y-4">
+                                        <Card>
+                                            <CardHeader><CardTitle className="text-base">Visibilidad</CardTitle></CardHeader>
+                                            <CardContent>
+                                                <RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-1 gap-2">
+                                                    <div className="flex items-center space-x-2"><RadioGroupItem value="PUBLIC" id="share-public"/><Label htmlFor="share-public">Público</Label></div>
+                                                    <div className="flex items-center space-x-2"><RadioGroupItem value="PROCESS" id="share-process"/><Label htmlFor="share-process">Por Proceso</Label></div>
+                                                    <div className="flex items-center space-x-2"><RadioGroupItem value="PRIVATE" id="share-private"/><Label htmlFor="share-private">Privado</Label></div>
+                                                </RadioGroup>
+                                                {sharingMode === 'PROCESS' && (<UserOrProcessList type="process" items={flattenedProcesses} selectedIds={sharedWithProcessIds} onSelectionChange={setSharedWithProcessIds} />)}
+                                                {sharingMode === 'PRIVATE' && (<UserOrProcessList type="user" items={allUsers} selectedIds={sharedWithUserIds} onSelectionChange={setSharedWithUserIds} />)}
+                                            </CardContent>
+                                        </Card>
+                                    </TabsContent>
+                                    <TabsContent value="collabs" className="m-0">
+                                         <Card>
+                                            <CardHeader><CardTitle className="text-base">Colaboradores</CardTitle><CardDescription className="text-xs">Permite a otros editar esta lista.</CardDescription></CardHeader>
+                                            <CardContent><UserOrProcessList type="user" items={allUsers.filter(u => u.role !== 'STUDENT')} selectedIds={collaboratorIds} onSelectionChange={setCollaboratorIds} /></CardContent>
+                                        </Card>
+                                    </TabsContent>
+                                    <TabsContent value="quiz" className="m-0">
+                                        <Card>
+                                            <CardHeader><CardTitle className="text-base">Evaluación</CardTitle></CardHeader>
+                                            <CardContent>
+                                                <Button className="w-full" variant="outline" onClick={() => setIsQuizEditorOpen(true)}>
+                                                    {quiz ? <Edit className="mr-2 h-4 w-4"/> : <PlusCircle className="mr-2 h-4 w-4"/>}
+                                                    {quiz ? 'Editar Quiz' : 'Añadir Quiz'}
+                                                </Button>
+                                            </CardContent>
+                                        </Card>
+                                    </TabsContent>
+                                </ScrollArea>
+                            </Tabs>
+                         </div>
                       </form>
                     </div>
                     
