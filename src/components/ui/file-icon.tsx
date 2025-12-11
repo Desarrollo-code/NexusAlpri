@@ -110,7 +110,9 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
           </>
        ) : isVideoFile && finalThumbnailUrl ? (
           <>
-            <video src={finalThumbnailUrl} className="w-full h-full object-cover" muted preload="metadata" />
+            <video key={finalThumbnailUrl} preload="metadata" className="w-full h-full object-cover">
+              <source src={`${finalThumbnailUrl}#t=0.1`} type={type === 'mp4' ? 'video/mp4' : 'video/webm'} />
+            </video>
             <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-colors">
               <PlayCircle className="h-10 w-10 text-white/70 drop-shadow-lg" />
             </div>

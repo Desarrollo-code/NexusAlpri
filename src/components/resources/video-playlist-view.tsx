@@ -14,7 +14,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '../ui/input';
-import { FileIcon } from '../ui/file-icon';
+import { FileIcon } from '@/components/ui/file-icon';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useAuth } from '@/contexts/auth-context';
 
@@ -36,7 +36,7 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({ resource, onSelect, isActiv
   const canModify = user?.role === 'ADMINISTRATOR' || user?.id === resource.uploaderId;
 
   const youtubeId = getYoutubeVideoId(resource.url);
-  const fileExtension = youtubeId ? 'youtube' : (resource.fileType?.split('/')[1] || resource.url?.split('.').pop() || 'file');
+  const fileExtension = youtubeId ? 'youtube' : (resource.filetype?.split('/')[1] || resource.url?.split('.').pop() || 'file');
 
   const handleTitleSave = async () => {
     if (title.trim() === resource.title) {
