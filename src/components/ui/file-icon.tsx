@@ -36,7 +36,7 @@ const renderIconPath = (type: string, className?: string) => {
 
 export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUrl, displayMode = 'grid', resourceId }) => {
   const isYoutube = type.toLowerCase() === 'youtube';
-  const isVideoFile = ['mp4', 'webm', 'mov', 'video'].includes(type.toLowerCase());
+  const isVideoFile = ['mp4', 'webm', 'mov', 'video', 'youtube'].includes(type.toLowerCase());
   const finalThumbnailUrl = isYoutube 
       ? `https://img.youtube.com/vi/${getYoutubeVideoId(thumbnailUrl)}/sddefault.jpg` 
       : thumbnailUrl;
@@ -54,9 +54,20 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
   // --- LIST MODE ---
   if (displayMode === 'list') {
      const { label, bgColor } = getFileTypeDetails(type);
+     const isActuallyVideoFile = isVideoFile && finalThumbnailUrl && !isYoutube;
+
      return (
         <div className={cn("w-full h-full flex items-center justify-center rounded-md overflow-hidden group relative", className)}>
-            {(finalThumbnailUrl && !isVideoFile) ? (
+            {isActuallyVideoFile ? (
+                <>
+                    <video key={finalThumbnailUrl} preload="metadata" className="w-full h-full object-cover">
+                        <source src={`${finalThumbnailUrl}#t=0.1`} type="video/mp4" />
+                    </video>
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
+                        <PlayCircle className="h-6 w-6 text-white/80 drop-shadow-lg" />
+                    </div>
+                </>
+            ) : finalThumbnailUrl ? (
                 <>
                     <Image src={finalThumbnailUrl} alt={label} fill className="object-cover transition-transform duration-300 group-hover:scale-105" quality={75} />
                     {isYoutube && (
@@ -131,14 +142,54 @@ export const getFileTypeDetails = (type: string) => {
   const upperType = type.toUpperCase();
   const extension = upperType.split('.').pop() || 'DEFAULT';
   const fileTypeMap: Record<string, { label: string, bgColor: string }> = {
+      // Rojos y Rosas
       PDF: { label: 'PDF', bgColor: '#D94336' },
-      DOCX: { label: 'DOCX', bgColor: '#2A5699' },
-      DOC: { label: 'DOC', bgColor: '#2A5699' },
-      XLSX: { label: 'XLSX', bgColor: '#0F7D40' },
-      XLS: { label: 'XLS', bgColor: '#0F7D40' },
+      PPT: { label: 'PPT', bgColor: '#D24726' },
+      PPTX: { label: 'PPTX', bgColor: '#D24726' },
       YOUTUBE: { label: 'YT', bgColor: '#FF3D00' },
+      MP3: { label: 'MP3', bgColor: '#E91E63' },
+      MOV: { label: 'MOV', bgColor: '#E91E63' },
+      SVG: { label: 'SVG', bgColor: '#E91E63' },
+
+      // Azules y Grises
+      ZIP: { label: 'ZIP', bgColor: '#607D8B' },
+      DOC: { label: 'DOCX', bgColor: '#2A5699' },
+      DOCX: { label: 'DOCX', bgColor: '#2A5699' },
+      AVI: { label: 'AVI', bgColor: '#3F51B5' },
+      TIFF: { label: 'TIFF', bgColor: '#3F51B5' },
+      PSD: { label: 'PSD', bgColor: '#3F51B5' },
+      TXT: { label: 'TXT', bgColor: '#03A9F4' },
+      EXE: { label: 'EXE', bgColor: '#607D8B' },
+      DLL: { label: 'DLL', bgColor: '#607D8B' },
+      RAW: { label: 'RAW', bgColor: '#9E9E9E' },
+
+      // Púrpuras
+      MPG: { label: 'MPG', bgColor: '#673AB7' },
+      WAV: { label: 'WAV', bgColor: '#673AB7' },
+      RAR: { label: 'RAR', bgColor: '#673AB7' },
+      EML: { label: 'EML', bgColor: '#673AB7' },
+      
+      // Verdes
+      JPG: { label: 'JPG', bgColor: '#4CAF50' },
+      JPEG: { label: 'JPG', bgColor: '#4CAF50' },
+      BMP: { label: 'BMP', bgColor: '#4CAF50' },
+      GIF: { label: 'GIF', bgColor: '#4CAF50' },
+      XLS: { label: 'XLS', bgColor: '#0F7D40' },
+      XLSX: { label: 'XLSX', bgColor: '#0F7D40' },
+      CSV: { label: 'CSV', bgColor: '#0F7D40' },
+
+      // Naranjas y Amarillos
+      EPS: { label: 'EPS', bgColor: '#FF9800' },
+      FLV: { label: 'FLV', bgColor: '#FF9800' },
+      CSS: { label: 'CSS', bgColor: '#FF5722' },
+      HTML: { label: 'HTML', bgColor: '#FF5722' },
+      AI: { label: 'AI', bgColor: '#FFC107' },
+      PNG: { label: 'PNG', bgColor: '#03A9F4' },
+
+      // Video
+      VIDEO: { label: 'VID', bgColor: '#00796B' }, // para MP4, etc.
       MP4: { label: 'MP4', bgColor: '#00796B' },
-      WEBM: { label: 'WEBM', bgColor: '#00796B' },
+
       DEFAULT: { label: 'FILE', bgColor: '#757575' },
   };
   return fileTypeMap[extension] || { label: extension.substring(0,4), bgColor: '#757575' };

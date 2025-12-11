@@ -1,6 +1,6 @@
 // src/components/resources/video-playlist-view.tsx
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import type { AppResourceType } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -81,7 +81,7 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({ resource, onSelect, isActiv
             <FileIcon 
                 displayMode="list" 
                 type={fileExtension} 
-                thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/sddefault.jpg` : resource.url}
+                thumbnailUrl={resource.url}
                 className="w-full h-full"
              />
              {isActive && (
