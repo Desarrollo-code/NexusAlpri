@@ -17,8 +17,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
-import { Loader2, FolderPlus, Video, XCircle, Trash2, Edit, Save, Globe, Users, Briefcase, MoreVertical, UploadCloud } from 'lucide-react';
-import type { AppResourceType, User as AppUser, Process, ResourceSharingMode } from '@/types';
+import { Loader2, FolderPlus, Video, XCircle, Trash2, Edit, Save, Globe, Users, Briefcase, MoreVertical, UploadCloud, BrainCircuit } from 'lucide-react';
+import type { AppResourceType, User as AppUser, Process, ResourceSharingMode, AppQuiz, Quiz as PrismaQuiz } from '@/types';
 import { DndContext, DragEndEvent, closestCenter, useSensor, useSensors, PointerSensor, TouchSensor } from '@dnd-kit/core';
 import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -35,6 +35,7 @@ import { FileIcon } from '@/components/ui/file-icon';
 import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
+import { QuizEditorModal } from '../quizz-it/quiz-editor-modal';
 
 const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
@@ -45,16 +46,15 @@ const SortableVideoItem = ({ video, onRemove }: { video: { id: string, title: st
     const fileExtension = youtubeId ? 'youtube' : (video.url?.split('.').pop() || 'file');
 
     return (
-        <div ref={setNodeRef} style={style} {...attributes} className="p-2 bg-card border rounded-lg flex items-center gap-3">
+        <div ref={setNodeRef} style={style} {...attributes} className="p-1.5 bg-card border rounded-lg flex items-center gap-2">
              <div {...listeners} className="cursor-grab p-1">
-                <MoreVertical className="h-5 w-5 text-muted-foreground" />
+                <MoreVertical className="h-4 w-4 text-muted-foreground" />
             </div>
-            <div className="w-20 h-12 flex-shrink-0 bg-muted rounded-md overflow-hidden relative">
+            <div className="w-16 h-10 flex-shrink-0 bg-muted rounded-md overflow-hidden relative">
                 <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={video.url} />
             </div>
             <div className="flex-grow min-w-0">
-                <p className="text-sm font-medium truncate">{video.title}</p>
-                 <a href={video.url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-primary truncate">{video.title}</a>
+                <a href={video.url} target="_blank" rel="noopener noreferrer" className="text-xs font-medium truncate hover:text-primary">{video.title}</a>
             </div>
              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={onRemove}>
                 <Trash2 className="h-4 w-4"/>
@@ -90,6 +90,8 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
     const [videos, setVideos] = useState<{id: string, title: string, url: string}[]>([]);
     const [newVideoUrl, setNewVideoUrl] = useState('');
     const [uploads, setUploads] = useState<any[]>([]);
+    const [quiz, setQuiz] = useState<AppQuiz | null>(null);
+    const [isQuizEditorOpen, setIsQuizEditorOpen] = useState(false);
     
     // Permissions state
     const [sharingMode, setSharingMode] = useState<ResourceSharingMode>('PUBLIC');
@@ -126,6 +128,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                 setDescription(playlistToEdit.description || '');
                 setCategory(playlistToEdit.category || (settings?.resourceCategories[0] || 'General'));
                 setVideos(playlistToEdit.children?.map(c => ({ id: c.id, title: c.title, url: c.url || '' })) || []);
+                setQuiz(playlistToEdit.quiz || null);
                 setSharingMode(playlistToEdit.sharingMode);
                 setSharedWithUserIds(playlistToEdit.sharedWith?.map(u => u.id) || []);
                 setSharedWithProcessIds(playlistToEdit.sharedWithProcesses?.map(p => p.id) || []);
@@ -135,6 +138,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                 setDescription('');
                 setCategory(settings?.resourceCategories[0] || 'General');
                 setVideos([]);
+                setQuiz(null);
                 setSharingMode('PUBLIC');
                 setSharedWithUserIds([]);
                 setSharedWithProcessIds([]);
@@ -221,7 +225,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
 
             const payload = {
                 title, description, category, parentId,
-                type: 'VIDEO_PLAYLIST', videos,
+                type: 'VIDEO_PLAYLIST', videos, quiz,
                 sharingMode, sharedWithUserIds, sharedWithProcessIds, collaboratorIds
             };
 
@@ -243,79 +247,112 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
     };
     
     return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="w-[95vw] sm:max-w-4xl p-0 gap-0 rounded-2xl h-[90vh] flex flex-col">
-                <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
-                    <DialogTitle>{isEditing ? 'Editar Lista de Videos' : 'Crear Nueva Lista de Videos'}</DialogTitle>
-                     <DialogDescription>
-                        Agrupa videos en una secuencia ordenada para crear un micro-curso.
-                    </DialogDescription>
-                </DialogHeader>
+        <>
+            <Dialog open={isOpen} onOpenChange={onClose}>
+                <DialogContent className="w-[95vw] sm:max-w-4xl p-0 gap-0 rounded-2xl h-[90vh] flex flex-col">
+                    <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
+                        <DialogTitle>{isEditing ? 'Editar Lista de Videos' : 'Crear Nueva Lista de Videos'}</DialogTitle>
+                         <DialogDescription>
+                            Agrupa videos en una secuencia ordenada para crear un micro-curso.
+                        </DialogDescription>
+                    </DialogHeader>
 
-                <div className="flex-1 min-h-0">
-                    <ScrollArea className="h-full">
-                        <form id="playlist-form" onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 px-6 py-4">
-                            {/* Columna Izquierda: Detalles e Hijos */}
-                            <div className="space-y-4">
-                                <div className="space-y-1"><Label htmlFor="title">Título de la Lista</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
-                                <div className="space-y-1"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} /></div>
-                                <div className="space-y-1"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory} required><SelectTrigger><SelectValue placeholder="Selecciona..."/></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
-                                <Separator />
-                                <div className="space-y-2">
-                                    <Label>Añadir Videos</Label>
-                                    <div className="flex gap-2">
-                                        <Input value={newVideoUrl} onChange={e => setNewVideoUrl(e.target.value)} placeholder="Pega una URL de YouTube..."/>
-                                        <Button type="button" variant="outline" onClick={handleAddYoutubeVideo} disabled={isFetchingInfo}>{isFetchingInfo ? <Loader2 className="h-4 w-4 animate-spin"/> : 'Añadir'}</Button>
-                                         <UploadArea onFileSelect={(files) => files && handleFileUpload(files[0])} compact disabled={isSaving} className="h-10 w-12 p-0 border-dashed">
-                                             <UploadCloud className="h-5 w-5 text-muted-foreground"/>
-                                        </UploadArea>
-                                    </div>
-                                    <div className="h-64 border rounded-lg p-2 bg-muted/50 mt-2">
-                                       <ScrollArea className="h-full pr-3">
-                                            <div className="space-y-2">
-                                                {uploads.map(up => (
-                                                    <div key={up.id} className="p-2 border rounded-md bg-background relative">
-                                                        <div className="flex items-center gap-2">
-                                                            <FileIcon displayMode="list" type={up.file.type.split('/')[1]} />
-                                                            <span className="text-xs font-medium truncate">{up.file.name}</span>
+                    <div className="flex-1 min-h-0">
+                        <ScrollArea className="h-full">
+                            <form id="playlist-form" onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 px-6 py-4">
+                                {/* Columna Izquierda: Detalles e Hijos */}
+                                <div className="space-y-4">
+                                    <div className="space-y-1"><Label htmlFor="title">Título de la Lista</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
+                                    <div className="space-y-1"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} /></div>
+                                    <div className="space-y-1"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory} required><SelectTrigger><SelectValue placeholder="Selecciona..."/></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
+                                    <Separator />
+                                    <div className="space-y-2">
+                                        <Label>Añadir Videos</Label>
+                                        <div className="flex gap-2">
+                                            <Input value={newVideoUrl} onChange={e => setNewVideoUrl(e.target.value)} placeholder="Pega una URL de YouTube..."/>
+                                            <Button type="button" variant="outline" onClick={handleAddYoutubeVideo} disabled={isFetchingInfo}>{isFetchingInfo ? <Loader2 className="h-4 w-4 animate-spin"/> : 'Añadir'}</Button>
+                                             <UploadArea onFileSelect={(files) => files && handleFileUpload(files[0])} compact disabled={isSaving} className="h-10 w-12 p-0 border-dashed">
+                                                 <UploadCloud className="h-5 w-5 text-muted-foreground"/>
+                                            </UploadArea>
+                                        </div>
+                                        <div className="h-64 border rounded-lg p-2 bg-muted/50 mt-2">
+                                           <ScrollArea className="h-full pr-3">
+                                                <div className="space-y-2">
+                                                    {uploads.map(up => (
+                                                        <div key={up.id} className="p-2 border rounded-md bg-background relative">
+                                                            <div className="flex items-center gap-2">
+                                                                <FileIcon displayMode="list" type={up.file.type.split('/')[1]} />
+                                                                <span className="text-xs font-medium truncate">{up.file.name}</span>
+                                                            </div>
+                                                            <Progress value={up.progress} className="h-1 mt-1" />
                                                         </div>
-                                                        <Progress value={up.progress} className="h-1 mt-1" />
-                                                    </div>
-                                                ))}
-                                                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                                                    <SortableContext items={videos.map(v => v.id)} strategy={verticalListSortingStrategy}>
-                                                        {videos.map((video) => (
-                                                            <SortableVideoItem key={video.id} video={video} onRemove={() => handleRemoveVideo(video.id)} />
-                                                        ))}
-                                                    </SortableContext>
-                                                </DndContext>
-                                            </div>
-                                       </ScrollArea>
+                                                    ))}
+                                                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                                                        <SortableContext items={videos.map(v => v.id)} strategy={verticalListSortingStrategy}>
+                                                            {videos.map((video) => (
+                                                                <SortableVideoItem key={video.id} video={video} onRemove={() => handleRemoveVideo(video.id)} />
+                                                            ))}
+                                                        </SortableContext>
+                                                    </DndContext>
+                                                </div>
+                                           </ScrollArea>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* Columna Derecha: Permisos */}
-                            <div className="space-y-4">
-                               <Card><CardHeader><CardTitle className="text-base flex items-center gap-2"><Globe className="h-4 w-4 text-primary"/>Visibilidad</CardTitle></CardHeader><CardContent><RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-1 sm:grid-cols-3 gap-2"><RadioGroupItem value="PUBLIC" id="share-public" className="sr-only" /><Label htmlFor="share-public" className={`flex flex-col items-center justify-center p-3 text-center border-2 rounded-lg cursor-pointer ${sharingMode === 'PUBLIC' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Globe className={`mb-1 h-5 w-5 ${sharingMode === 'PUBLIC' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="text-xs font-semibold">Público</span></Label><RadioGroupItem value="PROCESS" id="share-process" className="sr-only"/><Label htmlFor="share-process" className={`flex flex-col items-center justify-center p-3 text-center border-2 rounded-lg cursor-pointer ${sharingMode === 'PROCESS' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Briefcase className={`mb-1 h-5 w-5 ${sharingMode === 'PROCESS' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="text-xs font-semibold">Por Proceso</span></Label><RadioGroupItem value="PRIVATE" id="share-private" className="sr-only"/><Label htmlFor="share-private" className={`flex flex-col items-center justify-center p-3 text-center border-2 rounded-lg cursor-pointer ${sharingMode === 'PRIVATE' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Users className={`mb-1 h-5 w-5 ${sharingMode === 'PRIVATE' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="text-xs font-semibold">Privado</span></Label></RadioGroup>
-                                   {sharingMode === 'PROCESS' && (<UserOrProcessList type="process" items={flattenedProcesses} selectedIds={sharedWithProcessIds} onSelectionChange={setSharedWithProcessIds} />)}
-                                   {sharingMode === 'PRIVATE' && (<UserOrProcessList type="user" items={allUsers} selectedIds={sharedWithUserIds} onSelectionChange={setSharedWithUserIds} />)}
-                               </CardContent></Card>
-                               <Card><CardHeader><CardTitle className="text-base flex items-center gap-2"><Edit className="h-4 w-4 text-primary"/>Colaboradores</CardTitle><CardDescription className="text-xs">Permite a otros instructores o administradores editar esta lista de reproducción.</CardDescription></CardHeader><CardContent><UserOrProcessList type="user" items={allUsers.filter(u => u.role !== 'STUDENT')} selectedIds={collaboratorIds} onSelectionChange={setCollaboratorIds} /></CardContent></Card>
-                            </div>
-                        </form>
-                    </ScrollArea>
-                </div>
-                
-                 <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2">
-                    <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
-                    <Button type="submit" form="playlist-form" disabled={isSaving || !title.trim() || videos.length === 0}>
-                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
-                        {isEditing ? 'Guardar Cambios' : 'Crear Lista'}
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                                {/* Columna Derecha: Permisos */}
+                                <div className="space-y-4">
+                                   <Card><CardHeader><CardTitle className="text-base flex items-center gap-2"><Globe className="h-4 w-4 text-primary"/>Visibilidad</CardTitle></CardHeader><CardContent><RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-1 sm:grid-cols-3 gap-2"><RadioGroupItem value="PUBLIC" id="share-public" className="sr-only" /><Label htmlFor="share-public" className={`flex flex-col items-center justify-center p-3 text-center border-2 rounded-lg cursor-pointer ${sharingMode === 'PUBLIC' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Globe className={`mb-1 h-5 w-5 ${sharingMode === 'PUBLIC' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="text-xs font-semibold">Público</span></Label><RadioGroupItem value="PROCESS" id="share-process" className="sr-only"/><Label htmlFor="share-process" className={`flex flex-col items-center justify-center p-3 text-center border-2 rounded-lg cursor-pointer ${sharingMode === 'PROCESS' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Briefcase className={`mb-1 h-5 w-5 ${sharingMode === 'PROCESS' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="text-xs font-semibold">Por Proceso</span></Label><RadioGroupItem value="PRIVATE" id="share-private" className="sr-only"/><Label htmlFor="share-private" className={`flex flex-col items-center justify-center p-3 text-center border-2 rounded-lg cursor-pointer ${sharingMode === 'PRIVATE' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Users className={`mb-1 h-5 w-5 ${sharingMode === 'PRIVATE' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="text-xs font-semibold">Privado</span></Label></RadioGroup>
+                                       {sharingMode === 'PROCESS' && (<UserOrProcessList type="process" items={flattenedProcesses} selectedIds={sharedWithProcessIds} onSelectionChange={setSharedWithProcessIds} />)}
+                                       {sharingMode === 'PRIVATE' && (<UserOrProcessList type="user" items={allUsers} selectedIds={sharedWithUserIds} onSelectionChange={setSharedWithUserIds} />)}
+                                   </CardContent></Card>
+                                   <Card><CardHeader><CardTitle className="text-base flex items-center gap-2"><Edit className="h-4 w-4 text-primary"/>Colaboradores</CardTitle><CardDescription className="text-xs">Permite a otros instructores o administradores editar esta lista de reproducción.</CardDescription></CardHeader><CardContent><UserOrProcessList type="user" items={allUsers.filter(u => u.role !== 'STUDENT')} selectedIds={collaboratorIds} onSelectionChange={setCollaboratorIds} /></CardContent></Card>
+                                   <Card>
+                                        <CardHeader>
+                                            <CardTitle className="text-base flex items-center gap-2">
+                                                <BrainCircuit className="h-4 w-4 text-primary"/>
+                                                Evaluación (Quiz)
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <Button className="w-full" variant="outline" onClick={() => setIsQuizEditorOpen(true)}>
+                                                {quiz ? <Edit className="mr-2 h-4 w-4"/> : <PlusCircle className="mr-2 h-4 w-4"/>}
+                                                {quiz ? 'Editar Quiz' : 'Añadir Quiz'}
+                                            </Button>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                            </form>
+                        </ScrollArea>
+                    </div>
+                    
+                     <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2">
+                        <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
+                        <Button type="submit" form="playlist-form" disabled={isSaving || !title.trim() || videos.length === 0}>
+                            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
+                            {isEditing ? 'Guardar Cambios' : 'Crear Lista'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {isQuizEditorOpen && (
+                <QuizEditorModal
+                    isOpen={isQuizEditorOpen}
+                    onClose={() => setIsQuizEditorOpen(false)}
+                    quiz={quiz || {
+                        id: `new-quiz-${Date.now()}`,
+                        title: `Evaluación de ${title || 'la lista'}`,
+                        questions: [],
+                        maxAttempts: null,
+                    }}
+                    onSave={(updatedQuiz) => {
+                        setQuiz(updatedQuiz);
+                        setIsQuizEditorOpen(false);
+                    }}
+                />
+            )}
+        </>
     );
 }
 
@@ -338,7 +375,7 @@ const UserOrProcessList = ({ type, items, selectedIds, onSelectionChange }: { ty
                             <Checkbox id={`${type}-${item.id}`} checked={selectedIds.includes(item.id)} onCheckedChange={(c) => handleSelection(item.id, !!c)}/>
                             <Label htmlFor={`${type}-${item.id}`} className="flex items-center gap-2 font-normal cursor-pointer text-sm">
                                 {type === 'user' && <Avatar className="h-7 w-7"><AvatarImage src={item.avatar || undefined} /><AvatarFallback><Identicon userId={item.id}/></AvatarFallback></Avatar>}
-                                <span style={{ paddingLeft: `${(item.level || 0) * 1.5}rem` }}>{item.name}</span>
+                                <span style={{ paddingLeft: `${type === 'process' ? (item.level || 0) * 1.5 : 0}rem` }}>{item.name}</span>
                             </Label>
                         </div>
                     ))}
