@@ -9,7 +9,7 @@ import { PlayCircle, Folder, Video, Edit, ListVideo, BrainCircuit, Trash2, Loade
 import { getYoutubeVideoId } from '@/lib/resource-utils';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-is-mobile';
 import { Button, buttonVariants } from '@/components/ui/button';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
@@ -250,11 +250,6 @@ export const VideoPlaylistView: React.FC<{ resources: AppResourceType[], folder:
                     </div>
                     </div>
                 </div>
-                <Button asChild size="sm" variant="secondary">
-                    <Link href={`/resources/${folder.id}/edit-quiz`}>
-                        <BrainCircuit className="mr-2 h-4 w-4" /> Quiz
-                    </Link>
-                </Button>
                 </div>
             </CardHeader>
             <Separator />
