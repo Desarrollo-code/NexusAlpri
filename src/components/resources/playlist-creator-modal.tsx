@@ -35,7 +35,7 @@ import { FileIcon } from '@/components/ui/file-icon';
 import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
-import { QuizEditorModal } from '../quizz-it/quiz-editor-modal';
+import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
 
 const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
