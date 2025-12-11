@@ -286,7 +286,7 @@ export default function ResourcesPage() {
       return <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>
   }
   
-  const sensors = useSensors(useSensor(MouseSensor), useSensor(TouchSensor));
+  const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
 
   return (
     <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
@@ -357,7 +357,7 @@ export default function ResourcesPage() {
         
         <div>
             {isLoadingData ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
                   {[...Array(12)].map((_, i) => (
                     <div key={i} className="space-y-2">
                         <Skeleton className="aspect-[3/2] w-full" />
@@ -384,7 +384,7 @@ export default function ResourcesPage() {
                             <section key={category}>
                                 <h3 className="text-xl font-semibold mb-4 border-b pb-2">{category}</h3>
                                 {folders.length > 0 && (
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mb-6">
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 mb-6">
                                         {folders.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={true} onSelect={() => {}} onEdit={() => res.type === 'VIDEO_PLAYLIST' ? handleOpenPlaylistEditor(res) : setResourceToEdit(res)} onDelete={setResourceToDelete} onNavigate={handleNavigateFolder} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
                                     </div>
                                 )}
@@ -397,7 +397,7 @@ export default function ResourcesPage() {
                                             </div>
                                         </div>
                                         {viewMode === 'grid' ? (
-                                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
                                                 {files.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={false} onSelect={() => {}} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
                                             </div>
                                         ) : (
@@ -482,4 +482,5 @@ export default function ResourcesPage() {
     
 
     
+
 
