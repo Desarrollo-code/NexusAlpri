@@ -1,4 +1,3 @@
-
 // src/components/resources/playlist-creator-modal.tsx
 'use client';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -47,7 +46,7 @@ const SortableVideoItem = ({ video, onRemove }: { video: { id: string, title: st
     const fileExtension = youtubeId ? 'youtube' : (video.url?.split('.').pop() || 'file');
 
     return (
-        <div ref={setNodeRef} style={style} {...attributes} className="p-1.5 bg-card border rounded-lg flex items-center gap-2">
+        <div ref={setNodeRef} style={style} {...attributes} className="p-1 bg-card border rounded-lg flex items-center gap-2">
              <div {...listeners} className="cursor-grab p-1">
                 <MoreVertical className="h-4 w-4 text-muted-foreground" />
             </div>
@@ -250,7 +249,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
     return (
         <>
             <Dialog open={isOpen} onOpenChange={onClose}>
-                <DialogContent className="w-[95vw] sm:max-w-4xl p-0 gap-0 rounded-2xl h-[90vh] flex flex-col">
+                <DialogContent className="w-[95vw] sm:max-w-6xl p-0 gap-0 rounded-2xl h-[90vh] flex flex-col">
                     <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
                         <DialogTitle>{isEditing ? 'Editar Lista de Videos' : 'Crear Nueva Lista de Videos'}</DialogTitle>
                          <DialogDescription>
@@ -260,14 +259,17 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
 
                     <div className="flex-1 min-h-0">
                         <ScrollArea className="h-full">
-                            <form id="playlist-form" onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 px-6 py-4">
-                                {/* Columna Izquierda: Detalles e Hijos */}
+                            <form id="playlist-form" onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-x-6 gap-y-4 px-6 py-4">
+                                {/* Columna Izquierda: Detalles */}
                                 <div className="space-y-4">
                                     <div className="space-y-1"><Label htmlFor="title">Título de la Lista</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
                                     <div className="space-y-1"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} /></div>
                                     <div className="space-y-1"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory} required><SelectTrigger><SelectValue placeholder="Selecciona..."/></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
-                                    <Separator />
-                                    <div className="space-y-2">
+                                </div>
+                                
+                                {/* Columna Central: Hijos */}
+                                 <div className="space-y-4">
+                                     <div className="space-y-2">
                                         <Label>Añadir Videos</Label>
                                         <div className="flex gap-2">
                                             <Input value={newVideoUrl} onChange={e => setNewVideoUrl(e.target.value)} placeholder="Pega una URL de YouTube..."/>
@@ -276,7 +278,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                                                  <UploadCloud className="h-5 w-5 text-muted-foreground"/>
                                             </UploadArea>
                                         </div>
-                                        <div className="h-64 border rounded-lg p-2 bg-muted/50 mt-2">
+                                        <div className="h-72 border rounded-lg p-2 bg-muted/50 mt-2">
                                            <ScrollArea className="h-full pr-3">
                                                 <div className="space-y-2">
                                                     {uploads.map(up => (
@@ -301,7 +303,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                                     </div>
                                 </div>
 
-                                {/* Columna Derecha: Permisos */}
+                                {/* Columna Derecha: Permisos y Quiz */}
                                 <div className="space-y-4">
                                    <Card><CardHeader><CardTitle className="text-base flex items-center gap-2"><Globe className="h-4 w-4 text-primary"/>Visibilidad</CardTitle></CardHeader><CardContent><RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-1 sm:grid-cols-3 gap-2"><RadioGroupItem value="PUBLIC" id="share-public" className="sr-only" /><Label htmlFor="share-public" className={`flex flex-col items-center justify-center p-3 text-center border-2 rounded-lg cursor-pointer ${sharingMode === 'PUBLIC' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Globe className={`mb-1 h-5 w-5 ${sharingMode === 'PUBLIC' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="text-xs font-semibold">Público</span></Label><RadioGroupItem value="PROCESS" id="share-process" className="sr-only"/><Label htmlFor="share-process" className={`flex flex-col items-center justify-center p-3 text-center border-2 rounded-lg cursor-pointer ${sharingMode === 'PROCESS' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Briefcase className={`mb-1 h-5 w-5 ${sharingMode === 'PROCESS' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="text-xs font-semibold">Por Proceso</span></Label><RadioGroupItem value="PRIVATE" id="share-private" className="sr-only"/><Label htmlFor="share-private" className={`flex flex-col items-center justify-center p-3 text-center border-2 rounded-lg cursor-pointer ${sharingMode === 'PRIVATE' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Users className={`mb-1 h-5 w-5 ${sharingMode === 'PRIVATE' ? 'text-primary' : 'text-muted-foreground'}`}/><span className="text-xs font-semibold">Privado</span></Label></RadioGroup>
                                        {sharingMode === 'PROCESS' && (<UserOrProcessList type="process" items={flattenedProcesses} selectedIds={sharedWithProcessIds} onSelectionChange={setSharedWithProcessIds} />)}
