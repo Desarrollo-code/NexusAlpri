@@ -369,21 +369,23 @@ const UserOrProcessList = ({ type, items, selectedIds, onSelectionChange }: { ty
     };
     
     return (
-        <div className="mt-4 border rounded-lg p-3">
-             <Input placeholder={`Buscar ${type === 'user' ? 'usuario' : 'proceso'}...`} value={search} onChange={e => setSearch(e.target.value)} className="mb-2"/>
-             <ScrollArea className="h-48">
-                <div className="space-y-1 pr-3">
-                    {filteredItems.map(item => (
-                        <div key={item.id} className="flex items-center space-x-3 p-1.5 rounded-md hover:bg-muted">
-                            <Checkbox id={`${type}-${item.id}`} checked={selectedIds.includes(item.id)} onCheckedChange={(c) => handleSelection(item.id, !!c)}/>
-                            <Label htmlFor={`${type}-${item.id}`} className="flex items-center gap-2 font-normal cursor-pointer text-sm">
-                                {type === 'user' && <Avatar className="h-7 w-7"><AvatarImage src={item.avatar || undefined} /><AvatarFallback><Identicon userId={item.id}/></AvatarFallback></Avatar>}
-                                <span style={{ paddingLeft: `${type === 'process' ? (item.level || 0) * 1.5 : 0}rem` }}>{item.name}</span>
-                            </Label>
-                        </div>
-                    ))}
-                </div>
-             </ScrollArea>
-        </div>
+        <Card className="mt-4">
+            <CardContent className="p-4 space-y-3">
+                 <Input placeholder={`Buscar ${type === 'user' ? 'usuario' : 'proceso'}...`} value={search} onChange={e => setSearch(e.target.value)} />
+                 <ScrollArea className="h-40">
+                    <div className="space-y-1 pr-3">
+                        {filteredItems.map(item => (
+                            <div key={item.id} className="flex items-center space-x-3 p-1.5 rounded-md hover:bg-muted">
+                                <Checkbox id={`${type}-${item.id}`} checked={selectedIds.includes(item.id)} onCheckedChange={(c) => handleSelection(item.id, !!c)}/>
+                                <Label htmlFor={`${type}-${item.id}`} className="flex items-center gap-2 font-normal cursor-pointer text-sm">
+                                    {type === 'user' && <Avatar className="h-7 w-7"><AvatarImage src={item.avatar || undefined} /><AvatarFallback><Identicon userId={item.id}/></AvatarFallback></Avatar>}
+                                    <span style={{ paddingLeft: `${type === 'process' ? (item.level || 0) * 1.5 : 0}rem` }}>{item.name}</span>
+                                </Label>
+                            </div>
+                        ))}
+                    </div>
+                 </ScrollArea>
+            </CardContent>
+        </Card>
     );
 };
