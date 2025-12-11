@@ -1,3 +1,4 @@
+
 // src/components/resources/playlist-creator-modal.tsx
 'use client';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -17,7 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
-import { Loader2, FolderPlus, Video, XCircle, Trash2, Edit, Save, Globe, Users, Briefcase, MoreVertical, UploadCloud, BrainCircuit } from 'lucide-react';
+import { Loader2, FolderPlus, Video, XCircle, Trash2, Edit, Save, Globe, Users, Briefcase, MoreVertical, UploadCloud, BrainCircuit, PlusCircle } from 'lucide-react';
 import type { AppResourceType, User as AppUser, Process, ResourceSharingMode, AppQuiz, Quiz as PrismaQuiz } from '@/types';
 import { DndContext, DragEndEvent, closestCenter, useSensor, useSensors, PointerSensor, TouchSensor } from '@dnd-kit/core';
 import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
