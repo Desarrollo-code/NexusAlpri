@@ -184,7 +184,6 @@ export const VideoPlaylistView: React.FC<{ resources: AppResourceType[], folder:
 
 
   const playlistHeight = isMobile ? 'h-64' : 'h-[calc(100vh-22rem)]';
-  const hasQuiz = !!folder.quiz;
 
   const handleTitleChange = (id: string, newTitle: string) => {
       setPlaylistResources(prev => prev.map(r => r.id === id ? {...r, title: newTitle} : r));
