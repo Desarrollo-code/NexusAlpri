@@ -151,6 +151,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 }
                 await tx.enterpriseResource.update({ where: { id }, data: updateData });
             }
+        }, {
+          maxWait: 20000, // default 2000
+          timeout: 40000, // default 5000
         });
         
         const updatedResource = await prisma.enterpriseResource.findUnique({ 
@@ -176,45 +179,15 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
 
     try {
-        // Helper function to find all descendant IDs
-        const findAllDescendantIds = async (folderId: string): Promise<string[]> => {
-            const children = await prisma.enterpriseResource.findMany({
-                where: { parentId: folderId },
-                select: { id: true, type: true }
-            });
-
-            let descendantIds: string[] = children.map(c => c.id);
-
-            for (const child of children) {
-                if (child.type === 'FOLDER' || child.type === 'VIDEO_PLAYLIST') {
-                    const subDescendants = await findAllDescendantIds(child.id);
-                    descendantIds = [...descendantIds, ...subDescendants];
-                }
-            }
-            return descendantIds;
-        };
-
         const resourceToDelete = await prisma.enterpriseResource.findUnique({ where: { id } });
         if (!resourceToDelete) {
             return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });
         }
         
-        const idsToDelete = [id];
-
-        if (resourceToDelete.type === 'FOLDER' || resourceToDelete.type === 'VIDEO_PLAYLIST') {
-            const descendantIds = await findAllDescendantIds(id);
-            idsToDelete.push(...descendantIds);
-        }
-        
         await prisma.$transaction([
             prisma.notification.deleteMany({
-                where: { link: { in: idsToDelete.map(id => `/resources?id=${id}`) } }
+                where: { link: { contains: `/resources?id=${id}` } }
             }),
-            // Delete descendants first (from deepest to shallowest is handled by DB if constraints are set up, but doing it explicitly is safer)
-            prisma.enterpriseResource.deleteMany({
-                where: { id: { in: idsToDelete.filter(i => i !== id) } }
-            }),
-            // Finally delete the parent resource
             prisma.enterpriseResource.delete({
                 where: { id: id }
             })
