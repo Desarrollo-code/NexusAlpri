@@ -293,6 +293,18 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             {sharingMode === 'PRIVATE' && (<UserOrProcessList type="user" items={allUsers} selectedIds={sharedWithUserIds} onSelectionChange={setSharedWithUserIds} />)}
             </CardContent></Card>
             <Card><CardHeader><CardTitle className="text-base flex items-center gap-2"><Edit className="h-4 w-4 text-primary"/>Colaboradores</CardTitle><CardDescription className="text-xs">Permite a otros instructores o administradores editar este recurso.</CardDescription></CardHeader><CardContent><UserOrProcessList type="user" items={allUsers.filter(u => u.role !== 'STUDENT')} selectedIds={collaboratorIds} onSelectionChange={setCollaboratorIds} /></CardContent></Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base">Evaluación (Opcional)</CardTitle>
+                    <CardDescription className="text-xs">Añade un quiz para validar el conocimiento del recurso.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button className="w-full" variant="outline" type="button" onClick={() => setIsQuizEditorOpen(true)}>
+                        {quiz ? <Edit className="mr-2 h-4 w-4"/> : <PlusCircle className="mr-2 h-4 w-4"/>}
+                        {quiz ? 'Editar Quiz' : 'Añadir Quiz'}
+                    </Button>
+                </CardContent>
+            </Card>
         </div>
     );
 
