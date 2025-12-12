@@ -80,7 +80,7 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPrev
         }
         setGameState('finished');
       }
-    }, 2000);
+    }, 2000); // 2-second delay to show correct/incorrect answer
   }, [currentQuestionIndex, quiz?.questions.length, quiz?.id, score, lessonId, courseId, user, isCreatorPreview, onQuizCompleted, toast, currentQuestion?.id]);
 
   const handleTimeUp = useCallback(() => {
