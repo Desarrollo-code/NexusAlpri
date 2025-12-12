@@ -29,25 +29,6 @@ export async function POST(req: NextRequest) {
                 return NextResponse.json({ message: 'No tienes permiso para eliminar uno o más de los recursos seleccionados.' }, { status: 403 });
             }
         }
-        
-        // Check for non-empty folders before attempting deletion
-        const foldersToDelete = await prisma.enterpriseResource.findMany({
-            where: { id: { in: ids }, type: 'FOLDER' },
-            select: { id: true, title: true }
-        });
-
-        if (foldersToDelete.length > 0) {
-            const childrenCounts = await prisma.enterpriseResource.groupBy({
-                by: ['parentId'],
-                where: { parentId: { in: foldersToDelete.map(f => f.id) } },
-                _count: { id: true }
-            });
-            const nonEmptyFolders = childrenCounts.filter(c => c._count.id > 0);
-            if(nonEmptyFolders.length > 0) {
-                const folderNames = nonEmptyFolders.map(f => foldersToDelete.find(folder => folder.id === f.parentId)?.title).join(', ');
-                return NextResponse.json({ message: `No se pueden eliminar las carpetas "${folderNames}" porque no están vacías.` }, { status: 409 });
-            }
-        }
 
         // Proceed with deletion in a transaction
         const deleteResult = await prisma.$transaction([
