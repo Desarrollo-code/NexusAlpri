@@ -16,8 +16,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Save, FileUp, Link as LinkIcon, FilePenLine, ArrowLeft, ArrowRight, UploadCloud, Info, Globe, Users, Briefcase, FileText as FileGenericIcon, Edit } from 'lucide-react';
-import type { AppResourceType, User as AppUser, Process, ResourceSharingMode } from '@/types';
+import { Loader2, Save, FileUp, Link as LinkIcon, FilePenLine, ArrowLeft, ArrowRight, UploadCloud, Info, Globe, Users, Briefcase, FileText as FileGenericIcon, Edit, BrainCircuit, PlusCircle } from 'lucide-react';
+import type { AppResourceType, User as AppUser, Process, ResourceSharingMode, AppQuiz } from '@/types';
 import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
@@ -39,21 +39,9 @@ import { Calendar } from '@/components/ui/calendar';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
 import type { DateRange } from 'react-day-picker';
-import { getYoutubeVideoId } from '@/lib/resource-utils';
-import Image from 'next/image';
 import { FolderContentView } from '@/components/resources/folder-content-view';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
 
 interface ResourceEditorModalProps {
   isOpen: boolean;
@@ -125,6 +113,9 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     
     const [upload, setUpload] = useState<any>(null);
     const [isUploading, setIsUploading] = useState(false);
+    
+    const [quiz, setQuiz] = useState<AppQuiz | null>(null);
+    const [isQuizEditorOpen, setIsQuizEditorOpen] = useState(false);
 
     // Permissions state
     const [sharingMode, setSharingMode] = useState<ResourceSharingMode>('PUBLIC');
@@ -155,6 +146,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         setExternalLink(''); setEditableContent(''); setObservations('');
         setUpload(null); setSharingMode('PUBLIC');
         setSharedWithUserIds([]); setSharedWithProcessIds([]); setCollaboratorIds([]);
+        setQuiz(null);
     }, [settings?.resourceCategories]);
     
     useEffect(() => {
@@ -170,6 +162,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                 setSharedWithProcessIds(resource.sharedWithProcesses?.map(p => p.id) || []);
                 setCollaboratorIds(resource.collaborators?.map(c => c.id) || []);
                 setObservations(resource.observations || '');
+                setQuiz(resource.quiz || null);
                 
                 if (resource.type === 'EXTERNAL_LINK') setExternalLink(resource.url || '');
                 if (resource.type === 'DOCUMENTO_EDITABLE') setEditableContent(resource.content || '');
@@ -252,6 +245,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                 sharingMode, sharedWithUserIds, sharedWithProcessIds, collaboratorIds,
                 parentId, expiresAt: expiresAt?.toISOString() || null,
                 observations,
+                quiz,
             };
             
             const endpoint = isEditing ? `/api/resources/${resource!.id}` : '/api/resources';
@@ -295,7 +289,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
          <div className="space-y-6">
             <Card><CardHeader><CardTitle className="text-base">Detalles Adicionales</CardTitle></CardHeader><CardContent className="space-y-4"><div className="space-y-2"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} /></div><div className="space-y-2"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory}><SelectTrigger id="category"><SelectValue placeholder="Seleccionar..." /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select></div><div className="space-y-2"><Label>Fecha de Expiración (Opcional)</Label><Popover><PopoverTrigger asChild><Button variant="outline" className="w-full justify-start font-normal">{expiresAt ? format(expiresAt, "PPP", {locale: es}) : <span>Nunca</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50"/></Button></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={expiresAt} onSelect={setExpiresAt} initialFocus locale={es}/></PopoverContent></Popover></div><div className="space-y-2"><Label htmlFor="observations">Observaciones (Privado)</Label><Textarea id="observations" value={observations} onChange={(e) => setObservations(e.target.value)} rows={2} /></div></CardContent></Card>
             <Card><CardHeader><CardTitle className="text-base">Permisos</CardTitle></CardHeader><CardContent><RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-1 md:grid-cols-3 gap-3"><div className="flex-1"><RadioGroupItem value="PUBLIC" id="share-public" className="sr-only" /><Label htmlFor="share-public" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PUBLIC' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Globe className={`mb-2 h-6 w-6 ${sharingMode === 'PUBLIC' ? 'text-primary' : 'text-muted-foreground'}`}/>Público</Label></div><div className="flex-1"><RadioGroupItem value="PROCESS" id="share-process" className="sr-only"/><Label htmlFor="share-process" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PROCESS' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Briefcase className={`mb-2 h-6 w-6 ${sharingMode === 'PROCESS' ? 'text-primary' : 'text-muted-foreground'}`}/>Por Proceso</Label></div><div className="flex-1"><RadioGroupItem value="PRIVATE" id="share-private" className="sr-only"/><Label htmlFor="share-private" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PRIVATE' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Users className={`mb-2 h-6 w-6 ${sharingMode === 'PRIVATE' ? 'text-primary' : 'text-muted-foreground'}`}/>Privado</Label></div></RadioGroup>
-            {sharingMode === 'PROCESS' && (<UserOrProcessList type="process" items={allProcesses} selectedIds={sharedWithProcessIds} onSelectionChange={setSharedWithProcessIds} />)}
+            {sharingMode === 'PROCESS' && (<UserOrProcessList type="process" items={flattenedProcesses} selectedIds={sharedWithProcessIds} onSelectionChange={setSharedWithProcessIds} />)}
             {sharingMode === 'PRIVATE' && (<UserOrProcessList type="user" items={allUsers} selectedIds={sharedWithUserIds} onSelectionChange={setSharedWithUserIds} />)}
             </CardContent></Card>
             <Card><CardHeader><CardTitle className="text-base flex items-center gap-2"><Edit className="h-4 w-4 text-primary"/>Colaboradores</CardTitle><CardDescription className="text-xs">Permite a otros instructores o administradores editar este recurso.</CardDescription></CardHeader><CardContent><UserOrProcessList type="user" items={allUsers.filter(u => u.role !== 'STUDENT')} selectedIds={collaboratorIds} onSelectionChange={setCollaboratorIds} /></CardContent></Card>
@@ -396,6 +390,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     );
 
     return (
+        <>
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="w-[95vw] sm:max-w-4xl p-0 gap-0 rounded-2xl max-h-[90vh] flex flex-col">
                 <DialogHeader className="p-6 pb-2 border-b flex-shrink-0">
@@ -404,6 +399,23 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                 {isEditing && isEditingFolder ? renderFolderEdit() : isEditing ? renderEditTabs() : renderCreationWizard()}
             </DialogContent>
         </Dialog>
+        {isQuizEditorOpen && (
+                <QuizEditorModal
+                    isOpen={isQuizEditorOpen}
+                    onClose={() => setIsQuizEditorOpen(false)}
+                    quiz={quiz || {
+                        id: `new-quiz-${Date.now()}`,
+                        title: `Evaluación de ${title || 'el recurso'}`,
+                        questions: [],
+                        maxAttempts: null,
+                    }}
+                    onSave={(updatedQuiz) => {
+                        setQuiz(updatedQuiz);
+                        setIsQuizEditorOpen(false);
+                    }}
+                />
+            )}
+        </>
     );
 }
 
