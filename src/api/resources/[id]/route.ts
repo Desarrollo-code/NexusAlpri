@@ -1,4 +1,3 @@
-
 // src/app/api/resources/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -10,7 +9,7 @@ import { checkResourceOwnership } from '@/lib/auth-utils';
 
 export const dynamic = 'force-dynamic';
 
-// GET a specific resource
+// GET a specific resource (SIN CAMBIOS)
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
     try {
         const { id } = params;
@@ -58,39 +57,26 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         const body = await req.json();
         const { title, category, description, sharingMode, sharedWithUserIds, sharedWithProcessIds, expiresAt, status, content, observations, quiz, collaboratorIds, videos } = body;
         
+        const isPlaylist = resourceToUpdate.type === 'VIDEO_PLAYLIST';
+
         await prisma.$transaction(async (tx) => {
-            const isPlaylist = resourceToUpdate.type === 'VIDEO_PLAYLIST';
-            
-            // --- UPDATE GENERAL RESOURCE INFO ---
-            const updateData: any = {
-                title, category, description, sharingMode, status, observations,
-                expiresAt: expiresAt ? new Date(expiresAt) : null,
-                sharedWith: { set: sharingMode === 'PRIVATE' ? (sharedWithUserIds ?? []).map((id: string) => ({ id })) : [] },
-                sharedWithProcesses: { set: sharingMode === 'PROCESS' ? (sharedWithProcessIds ?? []).map((id: string) => ({ id })) : [] },
-                collaborators: { set: (collaboratorIds ?? []).map((id: string) => ({ id })) },
-            };
-
-            // --- VERSIONING & CONTENT (for non-playlists) ---
-            if (!isPlaylist && content !== undefined) {
-                const createVersion = resourceToUpdate.type === 'DOCUMENTO_EDITABLE' && resourceToUpdate.content !== content;
-                if (createVersion && session) {
-                    updateData.version = { increment: 1 };
-                    await tx.resourceVersion.create({
-                        data: {
-                            resourceId: resourceToUpdate.id,
-                            version: resourceToUpdate.version,
-                            content: resourceToUpdate.content,
-                            authorId: session.id,
-                        }
-                    });
+            // 1. Actualizar la información general del recurso
+            await tx.enterpriseResource.update({
+                where: { id },
+                data: {
+                    title, category, description, sharingMode, status, observations,
+                    content: isPlaylist ? null : content, // El contenido de texto no aplica a playlists
+                    expiresAt: expiresAt ? new Date(expiresAt) : null,
+                    sharedWith: { set: sharingMode === 'PRIVATE' ? (sharedWithUserIds ?? []).map((id: string) => ({ id })) : [] },
+                    sharedWithProcesses: { set: sharingMode === 'PROCESS' ? (sharedWithProcessIds ?? []).map((id: string) => ({ id })) : [] },
+                    collaborators: { set: (collaboratorIds ?? []).map((id: string) => ({ id })) },
                 }
-                updateData.content = content;
-            }
+            });
 
-            // --- UPDATE VIDEOS (ONLY FOR VIDEO_PLAYLIST) ---
+            // 2. Manejar videos de la lista de reproducción
             if (isPlaylist && videos) {
                 const existingVideos = await tx.enterpriseResource.findMany({ where: { parentId: id }, select: { id: true } });
-                const newVideoIds = videos.map((v: any) => v.id).filter(Boolean);
+                const newVideoIds = videos.map((v: any) => v.id).filter((id: string) => !id.startsWith('vid-'));
                 const videosToDelete = existingVideos.filter(ev => !newVideoIds.includes(ev.id));
                 if (videosToDelete.length > 0) {
                     await tx.enterpriseResource.deleteMany({ where: { id: { in: videosToDelete.map(v => v.id) } } });
@@ -105,70 +91,52 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 }
             }
 
-            // --- HANDLE QUIZ LOGIC (for ANY resource type) ---
+            // 3. Manejar el Quiz
+            const existingQuiz = await tx.quiz.findUnique({ where: { resourceId: id }, include: { questions: true } });
+            
             if (quiz) {
-                const upsertedQuiz = await tx.quiz.upsert({
-                    where: { resourceId: id },
-                    create: {
-                        title: quiz.title || `Evaluación de ${title}`,
+                if (existingQuiz) {
+                    // Si existe, borrarlo completamente para recrearlo (lógica más simple y segura)
+                    await tx.quiz.delete({ where: { id: existingQuiz.id } });
+                }
+                // Crear el nuevo quiz con sus preguntas y opciones
+                await tx.quiz.create({
+                    data: {
+                        title: quiz.title,
                         description: quiz.description,
                         maxAttempts: quiz.maxAttempts,
-                        resource: { connect: { id } },
-                    },
-                    update: {
-                        title: quiz.title || `Evaluación de ${title}`,
-                        description: quiz.description,
-                        maxAttempts: quiz.maxAttempts,
-                    },
-                });
-
-                await tx.question.deleteMany({ where: { quizId: upsertedQuiz.id } });
-                
-                if (quiz.questions && quiz.questions.length > 0) {
-                    for (const [qIndex, q] of (quiz.questions as AppQuestion[]).entries()) {
-                         const newQuestion = await tx.question.create({
-                            data: {
+                        resourceId: id,
+                        questions: {
+                            create: (quiz.questions || []).map((q: AppQuestion, qIndex: number) => ({
                                 text: q.text,
                                 order: qIndex,
                                 type: q.type,
-                                template: q.template,
                                 imageUrl: q.imageUrl,
-                                quizId: upsertedQuiz.id,
-                            }
-                        });
-
-                        if (q.options && q.options.length > 0) {
-                            await tx.answerOption.createMany({
-                                data: q.options.map(opt => ({
-                                    text: opt.text,
-                                    isCorrect: opt.isCorrect,
-                                    points: opt.points || 0,
-                                    imageUrl: opt.imageUrl,
-                                    questionId: newQuestion.id,
-                                }))
-                            });
+                                template: q.template,
+                                options: {
+                                    create: (q.options || []).map((opt: any) => ({
+                                        text: opt.text,
+                                        isCorrect: opt.isCorrect,
+                                        points: opt.points || 0,
+                                        imageUrl: opt.imageUrl,
+                                    }))
+                                }
+                            }))
                         }
                     }
-                }
-                updateData.quizId = upsertedQuiz.id;
-
-            } else {
-                const existingQuiz = await tx.quiz.findUnique({ where: { resourceId: id } });
-                if (existingQuiz) {
-                    await tx.quiz.delete({ where: { id: existingQuiz.id } });
-                }
-                 updateData.quizId = null;
+                });
+            } else if (existingQuiz) {
+                // Si no se envía un quiz pero existe uno, eliminarlo
+                await tx.quiz.delete({ where: { id: existingQuiz.id } });
             }
-            
-            await tx.enterpriseResource.update({
-                where: { id },
-                data: updateData,
-            });
         });
         
         const updatedResource = await prisma.enterpriseResource.findUnique({ 
             where: { id },
-            include: { quiz: { include: { questions: { include: { options: true }}}}} 
+            include: { 
+                children: true, 
+                quiz: { include: { questions: { include: { options: true }}}}
+            } 
         });
 
         return NextResponse.json(updatedResource);
@@ -178,7 +146,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
 }
 
-// DELETE a resource
+// DELETE a resource (SIN CAMBIOS)
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
     const { id } = params;
