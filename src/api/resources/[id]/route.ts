@@ -99,7 +99,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 }
             }
             
-            // --- LOGICA CORREGIDA PARA QUIZZES ---
             if (quiz) {
                 const questionsToCreate = (quiz.questions || []).map((q: AppQuestion, qIndex: number) => ({
                     text: q.text,
@@ -117,37 +116,38 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                     }
                 }));
 
+                const quizUpsertPayload = {
+                    where: { resourceId: id },
+                    create: {
+                        title: quiz.title || 'Evaluación del Recurso',
+                        description: quiz.description,
+                        maxAttempts: quiz.maxAttempts,
+                        resourceId: id,
+                        questions: {
+                            create: questionsToCreate
+                        }
+                    },
+                    update: {
+                        title: quiz.title || 'Evaluación del Recurso',
+                        description: quiz.description,
+                        maxAttempts: quiz.maxAttempts,
+                        questions: {
+                            deleteMany: {},
+                            create: questionsToCreate
+                        }
+                    },
+                };
+
                 await tx.enterpriseResource.update({
                     where: { id },
                     data: {
                         ...updateData,
                         quiz: {
-                            upsert: {
-                                where: { resourceId: id },
-                                // CREATE branch: Only create questions
-                                create: {
-                                    title: quiz.title || 'Evaluación del Recurso',
-                                    description: quiz.description,
-                                    maxAttempts: quiz.maxAttempts,
-                                    resourceId: id, // Link back to the resource
-                                    questions: {
-                                        create: questionsToCreate
-                                    }
-                                },
-                                // UPDATE branch: Delete old questions, then create new ones
-                                update: {
-                                    title: quiz.title || 'Evaluación del Recurso',
-                                    description: quiz.description,
-                                    maxAttempts: quiz.maxAttempts,
-                                    questions: {
-                                        deleteMany: {}, // This is valid here
-                                        create: questionsToCreate
-                                    }
-                                },
-                            },
+                            upsert: quizUpsertPayload,
                         },
                     },
                 });
+
             } else {
                  // If no quiz in payload, but one exists, delete it
                 const existingQuiz = await tx.quiz.findUnique({ where: { resourceId: id } });
