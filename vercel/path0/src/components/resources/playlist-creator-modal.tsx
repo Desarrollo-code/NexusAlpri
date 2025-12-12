@@ -250,7 +250,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
     return (
         <>
             <Dialog open={isOpen} onOpenChange={onClose}>
-                <DialogContent className="w-[95vw] sm:max-w-3xl p-0 gap-0 rounded-2xl h-[90vh] flex flex-col">
+                <DialogContent className="w-[95vw] sm:max-w-2xl p-0 gap-0 rounded-2xl h-[90vh] flex flex-col">
                     <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
                         <DialogTitle>{isEditing ? 'Editar Lista de Videos' : 'Crear Nueva Lista de Videos'}</DialogTitle>
                          <DialogDescription>
