@@ -17,7 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
-import { Loader2, FolderPlus, Video, XCircle, Trash2, Edit, Save, Globe, Users, Briefcase, MoreVertical, UploadCloud, BrainCircuit, PlusCircle, Image as ImageIcon, Replace } from 'lucide-react';
+import { Loader2, FolderPlus, Video, XCircle, Trash2, Edit, Save, Globe, Users, Briefcase, MoreVertical, UploadCloud, BrainCircuit, PlusCircle } from 'lucide-react';
 import type { AppResourceType, User as AppUser, Process, ResourceSharingMode, AppQuiz, Quiz as PrismaQuiz } from '@/types';
 import { DndContext, DragEndEvent, closestCenter, useSensor, useSensors, PointerSensor, TouchSensor } from '@dnd-kit/core';
 import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -288,48 +288,53 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                                <TabsContent value="content" className="space-y-6 m-0">
                                     <Card>
                                         <CardHeader>
-                                            <CardTitle className="text-base">Contenido de la Lista</CardTitle>
+                                            <CardTitle className="text-base">Añadir Videos</CardTitle>
                                         </CardHeader>
-                                        <CardContent className="space-y-4">
-                                             <div className="flex items-center gap-2">
-                                                <Input value={newVideoUrl} onChange={e => setNewVideoUrl(e.target.value)} placeholder="Pega una URL de YouTube..." className="h-10" />
-                                                <Button type="button" variant="outline" size="icon" onClick={handleAddYoutubeVideo} disabled={isFetchingInfo} className="h-10 w-10 shrink-0">{isFetchingInfo ? <Loader2 className="h-4 w-4 animate-spin"/> : <PlusCircle className="h-4 w-4"/>}</Button>
-                                                <UploadArea onFileSelect={(files) => files && handleFileUpload(files[0])} disabled={isSaving} className="h-10 w-10 p-0 shrink-0">
+                                        <CardContent>
+                                            <div className="flex items-center gap-2">
+                                                <Input value={newVideoUrl} onChange={e => setNewVideoUrl(e.target.value)} placeholder="Pega una URL de YouTube..." className="h-9" />
+                                                <Button type="button" variant="outline" size="icon" onClick={handleAddYoutubeVideo} disabled={isFetchingInfo} className="h-9 w-9 shrink-0">{isFetchingInfo ? <Loader2 className="h-4 w-4 animate-spin"/> : <PlusCircle className="h-4 w-4"/>}</Button>
+                                                <UploadArea onFileSelect={(files) => files && handleFileUpload(files[0])} disabled={isSaving} className="h-9 w-9 p-0 shrink-0">
                                                     <UploadCloud className="h-5 w-5"/>
                                                 </UploadArea>
                                             </div>
-
-                                            <div className="border rounded-lg p-2 bg-muted/50 mt-2">
-                                               <ScrollArea className="h-72 pr-3">
-                                                    <div className="space-y-2">
-                                                        {uploads.map(up => (
-                                                            <div key={up.id} className="p-2 border rounded-md bg-background relative">
-                                                                <div className="flex items-center gap-2">
-                                                                    <FileIcon displayMode="list" type={up.file.type.split('/')[1]} />
-                                                                    <span className="text-xs font-medium truncate">{up.file.name}</span>
-                                                                </div>
-                                                                <Progress value={up.progress} className="h-1 mt-1" />
-                                                            </div>
-                                                        ))}
-                                                        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                                                            <SortableContext items={videos.map(v => v.id)} strategy={verticalListSortingStrategy}>
-                                                                {videos.map((video) => (
-                                                                    <SortableVideoItem key={video.id} video={video} onRemove={() => handleRemoveVideo(video.id)} />
-                                                                ))}
-                                                            </SortableContext>
-                                                        </DndContext>
-                                                        {videos.length === 0 && uploads.length === 0 && (
-                                                            <div className="text-center text-muted-foreground text-sm py-12">La lista está vacía.</div>
-                                                        )}
-                                                    </div>
-                                               </ScrollArea>
-                                            </div>
                                         </CardContent>
                                     </Card>
-                                     <Card>
+
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="text-base">Contenido de la Lista</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                           <ScrollArea className="h-72 pr-3 border rounded-lg bg-muted/50 p-2">
+                                                <div className="space-y-2">
+                                                    {uploads.map(up => (
+                                                        <div key={up.id} className="p-2 border rounded-md bg-background relative">
+                                                            <div className="flex items-center gap-2">
+                                                                <FileIcon displayMode="list" type={up.file.type.split('/')[1]} />
+                                                                <span className="text-xs font-medium truncate">{up.file.name}</span>
+                                                            </div>
+                                                            <Progress value={up.progress} className="h-1 mt-1" />
+                                                        </div>
+                                                    ))}
+                                                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                                                        <SortableContext items={videos.map(v => v.id)} strategy={verticalListSortingStrategy}>
+                                                            {videos.map((video) => (
+                                                                <SortableVideoItem key={video.id} video={video} onRemove={() => handleRemoveVideo(video.id)} />
+                                                            ))}
+                                                        </SortableContext>
+                                                    </DndContext>
+                                                    {videos.length === 0 && uploads.length === 0 && (
+                                                        <div className="text-center text-muted-foreground text-sm py-12">La lista está vacía.</div>
+                                                    )}
+                                                </div>
+                                           </ScrollArea>
+                                        </CardContent>
+                                    </Card>
+                                    <Card>
                                         <CardHeader><CardTitle className="text-base">Evaluación Final (Opcional)</CardTitle></CardHeader>
                                         <CardContent>
-                                            <Button className="w-full" variant="outline" onClick={() => setIsQuizEditorOpen(true)}>
+                                            <Button className="w-full" variant="outline" type="button" onClick={() => setIsQuizEditorOpen(true)}>
                                                 {quiz ? <Edit className="mr-2 h-4 w-4"/> : <PlusCircle className="mr-2 h-4 w-4"/>}
                                                 {quiz ? 'Editar Quiz' : 'Añadir Quiz'}
                                             </Button>

@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu';
-import { MoreVertical, Edit, Trash2, Lock, Download, Globe, Users, Grip, ArchiveRestore, Tag, Calendar, Pin, FileText, BrainCircuit, ListVideo, Brain, PlusCircle } from 'lucide-react';
+import { MoreVertical, Edit, Trash2, Lock, Download, Globe, Users, Grip, ArchiveRestore, Tag, Calendar, Pin } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { DownloadButton } from '../ui/download-button';
 import { Identicon } from '../ui/identicon';
@@ -20,7 +20,6 @@ import { Card, CardHeader, CardContent } from '../ui/card';
 import { TableRow, TableCell } from '../ui/table';
 import { Table, TableBody, TableHead, TableHeader } from '@/components/ui/table';
 import { Checkbox } from '../ui/checkbox';
-import Link from 'next/link';
 
 interface ResourceListItemProps {
     resources: AppResourceType[];
@@ -47,8 +46,6 @@ export const ResourceListItem = React.memo(({ resources, onSelect, onEdit, onDel
                     const youtubeId = getYoutubeVideoId(resource.url);
                     const fileExtension = youtubeId ? 'youtube' : (resource.filetype?.split('/')[1] || resource.url?.split('.').pop() || 'file');
                     const canModify = user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && resource.uploaderId === user.id));
-                    const isQuizEnabled = resource.type === 'FOLDER' && resource.category === 'Formación Interna';
-                    const hasQuiz = !!resource.quiz;
 
                     return (
                         <Card key={resource.id} onClick={() => onSelect(resource)} className="w-full flex flex-col shadow-sm">
@@ -70,11 +67,6 @@ export const ResourceListItem = React.memo(({ resources, onSelect, onEdit, onDel
                                             <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
                                                 <DropdownMenuItem onSelect={() => onTogglePin(resource)}><Pin className="mr-2 h-4 w-4"/>{resource.isPinned ? 'Desfijar' : 'Fijar'}</DropdownMenuItem>
                                                 <DropdownMenuItem onSelect={() => onEdit(resource)}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
-                                                 {isQuizEnabled && (
-                                                    <DropdownMenuItem asChild>
-                                                        <Link href={`/resources/${resource.id}/edit-quiz`}><BrainCircuit className="mr-2 h-4 w-4"/> {hasQuiz ? 'Editar Quiz' : 'Añadir Quiz'}</Link>
-                                                    </DropdownMenuItem>
-                                                )}
                                                 <DropdownMenuItem onSelect={() => onDelete(resource)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
@@ -131,9 +123,6 @@ const SingleRowItem = ({ resource, onSelect, onEdit, onDelete, onRestore, onTogg
         e.stopPropagation();
         action();
     }
-    
-    const isQuizEnabled = resource.type === 'FOLDER' && resource.category === 'Formación Interna';
-    const hasQuiz = !!resource.quiz;
 
     return (
         <TableRow ref={setNodeRef} onClick={() => onSelect(resource)} className={cn("cursor-pointer", isDragging && 'opacity-50', isSelected && 'bg-primary/10')}>
@@ -191,11 +180,6 @@ const SingleRowItem = ({ resource, onSelect, onEdit, onDelete, onRestore, onTogg
                                     <>
                                       <DropdownMenuItem onSelect={(e) => handleAction(e, () => onTogglePin(resource))}><Pin className="mr-2 h-4 w-4"/>{resource.isPinned ? 'Desfijar' : 'Fijar'}</DropdownMenuItem>
                                       <DropdownMenuItem onSelect={(e) => handleAction(e, () => onEdit(resource))}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
-                                       {isQuizEnabled && (
-                                            <DropdownMenuItem asChild>
-                                                <Link href={`/resources/${resource.id}/edit-quiz`}><BrainCircuit className="mr-2 h-4 w-4"/> {hasQuiz ? 'Editar Quiz' : 'Añadir Quiz'}</Link>
-                                            </DropdownMenuItem>
-                                        )}
                                       <DropdownMenuSeparator />
                                       <DropdownMenuItem onSelect={(e) => handleAction(e, () => onDelete(resource))} className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
                                     </>

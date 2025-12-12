@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import type { AppResourceType } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Edit, MoreVertical, Trash2, Lock, Download, Globe, Users, ArchiveRestore, Pin } from 'lucide-react';
+import { Edit, MoreVertical, Trash2, Lock, Download, Globe, Users, ArchiveRestore, Pin, Checkbox } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -40,7 +40,8 @@ export const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDele
     const { user } = useAuth();
     const isFolder = resource.type === 'FOLDER';
     const isPlaylist = resource.type === 'VIDEO_PLAYLIST';
-    const canModify = user && (user.role === 'ADMINISTRATOR' || user.role === 'INSTRUCTOR');
+    const canManage = user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR';
+    const canModify = canManage && (user.role === 'ADMINISTRATOR' || resource.uploaderId === user.id);
 
     const { attributes, listeners, setNodeRef: setDraggableNodeRef, isDragging } = useDraggable({
         id: resource.id,
@@ -87,32 +88,29 @@ export const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDele
             >
                  <CardHeader className="flex flex-row items-center justify-between p-2">
                     <div className="flex items-center gap-2 flex-grow min-w-0">
-                        {isFolder 
-                            ? <IconFolderDynamic resourceId={resource.id} className="w-5 h-5 flex-shrink-0" />
-                            : isPlaylist 
-                            ? <IconVideoPlaylist className="w-5 h-5 flex-shrink-0"/>
-                            : <FileIcon displayMode="header" type={fileExtension}/>
-                         }
+                        {canManage && <Checkbox checked={isSelected} onCheckedChange={(checked) => onSelectionChange(resource.id, !!checked)} onClick={e => e.stopPropagation()} className="ml-1" />}
                          <span className="text-sm font-semibold truncate">{resource.title}</span>
                     </div>
-                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-muted-foreground" aria-label={`Opciones para ${resource.title}`} onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                            {resource.status === 'ACTIVE' && (
-                                <>
-                                    <DropdownMenuItem onSelect={() => onTogglePin(resource)}><Pin className="mr-2 h-4 w-4"/>{resource.isPinned ? 'Desfijar' : 'Fijar'}</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={()=> onEdit(resource)}><Edit className="mr-2 h-4 w-4" /> Editar / Compartir</DropdownMenuItem>
-                                </>
-                            )}
-                            {resource.status === 'ARCHIVED' && (
-                                <DropdownMenuItem onClick={() => onRestore(resource)}><ArchiveRestore className="mr-2 h-4 w-4" /> Restaurar</DropdownMenuItem>
-                            )}
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => onDelete(resource)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                     {canModify && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-muted-foreground" aria-label={`Opciones para ${resource.title}`} onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                {resource.status === 'ACTIVE' && (
+                                    <>
+                                        <DropdownMenuItem onSelect={() => onTogglePin(resource)}><Pin className="mr-2 h-4 w-4"/>{resource.isPinned ? 'Desfijar' : 'Fijar'}</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={()=> onEdit(resource)}><Edit className="mr-2 h-4 w-4" /> Editar / Compartir</DropdownMenuItem>
+                                    </>
+                                )}
+                                {resource.status === 'ARCHIVED' && (
+                                    <DropdownMenuItem onClick={() => onRestore(resource)}><ArchiveRestore className="mr-2 h-4 w-4" /> Restaurar</DropdownMenuItem>
+                                )}
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => onDelete(resource)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                     )}
                 </CardHeader>
                 <CardContent className="p-0 border-y flex-grow">
                      <div className="aspect-[4/3] w-full flex items-center justify-center relative rounded-none overflow-hidden bg-muted/20">

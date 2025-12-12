@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
-import type { Quiz } from '@/types';
+import type { Quiz, AppQuestion } from '@/types';
 import { checkResourceOwnership } from '@/lib/auth-utils';
 
 
@@ -55,7 +55,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         }
         
         const body = await req.json();
-        const { title, category, description, sharingMode, sharedWithUserIds, sharedWithProcessIds, expiresAt, status, content, observations, quiz, collaboratorIds } = body;
+        const { title, category, description, sharingMode, sharedWithUserIds, sharedWithProcessIds, expiresAt, status, content, observations, quiz, collaboratorIds, videos } = body;
 
         const createVersion = resourceToUpdate.type === 'DOCUMENTO_EDITABLE' && resourceToUpdate.content !== content;
         
@@ -79,58 +79,78 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                     }
                 });
             }
-            
-            const existingQuiz = await tx.quiz.findUnique({ where: { resourceId: id } });
 
+            if (videos) {
+                // Get existing video IDs to delete ones that are not in the new list
+                const existingVideos = await tx.enterpriseResource.findMany({ where: { parentId: id }, select: { id: true } });
+                const newVideoIds = videos.map((v: any) => v.id).filter(Boolean);
+                const videosToDelete = existingVideos.filter(ev => !newVideoIds.includes(ev.id));
+                if (videosToDelete.length > 0) {
+                    await tx.enterpriseResource.deleteMany({ where: { id: { in: videosToDelete.map(v => v.id) } } });
+                }
+
+                // Upsert new/updated videos
+                for (const video of videos) {
+                    await tx.enterpriseResource.upsert({
+                        where: { id: video.id.startsWith('vid-') ? '' : video.id }, // Force create for new videos
+                        create: { title: video.title, url: video.url, type: 'VIDEO', uploaderId: session!.id, parentId: id },
+                        update: { title: video.title, url: video.url },
+                    });
+                }
+            }
+            
             if (quiz) {
-                const questionsData = (Array.isArray(quiz.questions))
-                    ? {
-                        deleteMany: {},
-                        create: quiz.questions.map((q: any, qIndex: number) => ({
-                            text: q.text,
-                            order: qIndex,
-                            type: q.type,
-                            template: q.template,
-                            imageUrl: q.imageUrl,
-                            options: (Array.isArray(q.options)) ? {
-                                create: q.options.map((opt: any) => ({
-                                    text: opt.text,
-                                    isCorrect: opt.isCorrect,
-                                    points: opt.points || 0,
-                                    imageUrl: opt.imageUrl
-                                }))
-                            } : undefined,
-                        }))
-                    }
-                    : undefined;
+                const questionsData = {
+                    deleteMany: {}, // Borra todas las preguntas existentes
+                    create: (quiz.questions || []).map((q: AppQuestion, qIndex: number) => ({
+                        text: q.text,
+                        order: qIndex,
+                        type: q.type,
+                        template: q.template,
+                        imageUrl: q.imageUrl,
+                        options: {
+                            create: (q.options || []).map((opt: any) => ({
+                                text: opt.text,
+                                isCorrect: opt.isCorrect,
+                                points: opt.points || 0,
+                                imageUrl: opt.imageUrl
+                            }))
+                        }
+                    }))
+                };
                 
-                const quizPayloadForUpdate = {
+                const quizPayload = {
                     title: quiz.title || 'Evaluación del Recurso',
                     description: quiz.description,
                     maxAttempts: quiz.maxAttempts,
                     questions: questionsData,
                 };
-                
-                const quizPayloadForCreate = {
-                    ...quizPayloadForUpdate,
-                    resource: { connect: { id: id } } // Conexión correcta al crear
-                };
-                
-                updateData.quiz = {
-                    upsert: {
-                        where: { resourceId: id },
-                        create: quizPayloadForCreate,
-                        update: quizPayloadForUpdate,
-                    }
-                };
-            } else if (existingQuiz) {
-                await tx.quiz.delete({ where: { id: existingQuiz.id } });
-            }
 
-            await tx.enterpriseResource.update({
-                where: { id },
-                data: updateData,
-            });
+                await tx.enterpriseResource.update({
+                    where: { id },
+                    data: {
+                        ...updateData,
+                        quiz: {
+                            upsert: {
+                                where: { resourceId: id },
+                                create: {
+                                    ...quizPayload,
+                                },
+                                update: {
+                                    ...quizPayload,
+                                },
+                            },
+                        },
+                    },
+                });
+            } else {
+                 // Si no hay quiz en el payload, pero existe uno, eliminarlo
+                const existingQuiz = await tx.quiz.findUnique({ where: { resourceId: id } });
+                if (existingQuiz) {
+                    await tx.quiz.delete({ where: { id: existingQuiz.id } });
+                }
+                await tx.enterpriseResource.update({ where: { id }, data: updateData });
+            }
         });
         
         const updatedResource = await prisma.enterpriseResource.findUnique({ 

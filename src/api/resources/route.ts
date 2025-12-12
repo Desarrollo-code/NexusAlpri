@@ -58,8 +58,8 @@ export async function GET(req: NextRequest) {
             baseWhere.title = { contains: searchTerm, mode: 'insensitive' };
         }
         
-        if (startDate) baseWhere.uploadDate = { ...baseWhere.uploadDate, gte: new Date(startDate) };
-        if (endDate) baseWhere.uploadDate = { ...baseWhere.uploadDate, lte: new Date(endDate) };
+        if (startDate) baseWhere.uploadDate = { ...baseWhere.uploadDate as object, gte: new Date(startDate) };
+        if (endDate) baseWhere.uploadDate = { ...baseWhere.uploadDate as object, lte: new Date(endDate) };
         if (fileType && fileType !== 'all') {
             const fileTypeFilter = getFileTypeFilter(fileType);
             if (baseWhere.AND) {
@@ -75,10 +75,11 @@ export async function GET(req: NextRequest) {
         if (session.role === 'ADMINISTRATOR') {
             whereClause = baseWhere;
         } else {
-            const userProcessIds = await prisma.user.findUnique({
+            const userWithProcess = await prisma.user.findUnique({
                 where: { id: session.id },
                 select: { processId: true }
-            }).then(u => u?.processId ? [u.processId] : []);
+            });
+            const userProcessIds = userWithProcess?.processId ? [userWithProcess.processId] : [];
 
             whereClause.AND = [
                 baseWhere,
@@ -99,7 +100,7 @@ export async function GET(req: NextRequest) {
                 uploader: { select: { id: true, name: true, avatar: true } },
                 sharedWith: { select: { id: true, name: true, avatar: true } }
             },
-            orderBy: [ { type: 'asc' }, { uploadDate: 'desc' } ],
+            orderBy: [ { isPinned: 'desc' }, { type: 'asc' }, { uploadDate: 'desc' } ],
         });
         
         const safeResources = resources.map(({ pin, tags, uploader, ...resource }) => ({
