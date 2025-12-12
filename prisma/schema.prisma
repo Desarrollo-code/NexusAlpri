@@ -267,6 +267,7 @@ model Question {
   quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
   options   AnswerOption[]
   imageUrl  String?
+  template String? @default("default")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   answerAttempts AnswerAttempt[] 
