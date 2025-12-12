@@ -1,4 +1,4 @@
-// src/app/api/resources/bulk-delete/route.ts
+// src/api/resources/bulk-delete/route.ts
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -30,32 +30,41 @@ export async function POST(req: NextRequest) {
             }
         }
         
-        // Check for non-empty folders before attempting deletion
-        const foldersToDelete = await prisma.enterpriseResource.findMany({
-            where: { id: { in: ids }, type: 'FOLDER' },
-            select: { id: true, title: true }
-        });
+        // Helper function to find all descendant IDs
+        const findAllDescendantIds = async (folderIds: string[]): Promise<string[]> => {
+            if (folderIds.length === 0) return [];
 
-        if (foldersToDelete.length > 0) {
-            const childrenCounts = await prisma.enterpriseResource.groupBy({
-                by: ['parentId'],
-                where: { parentId: { in: foldersToDelete.map(f => f.id) } },
-                _count: { id: true }
+            const children = await prisma.enterpriseResource.findMany({
+                where: { parentId: { in: folderIds } },
+                select: { id: true, type: true }
             });
-            const nonEmptyFolders = childrenCounts.filter(c => c._count.id > 0);
-            if(nonEmptyFolders.length > 0) {
-                const folderNames = nonEmptyFolders.map(f => foldersToDelete.find(folder => folder.id === f.parentId)?.title).join(', ');
-                return NextResponse.json({ message: `No se pueden eliminar las carpetas "${folderNames}" porque no están vacías.` }, { status: 409 });
-            }
-        }
+
+            if (children.length === 0) return [];
+            
+            const childrenIds = children.map(c => c.id);
+            const subFolderIds = children.filter(c => c.type === 'FOLDER' || c.type === 'VIDEO_PLAYLIST').map(c => c.id);
+            
+            const descendantIds = await findAllDescendantIds(subFolderIds);
+
+            return [...childrenIds, ...descendantIds];
+        };
+
+        const topLevelFolders = await prisma.enterpriseResource.findMany({
+            where: { id: { in: ids }, type: { in: ['FOLDER', 'VIDEO_PLAYLIST'] } },
+            select: { id: true }
+        });
+        
+        const allDescendantIds = await findAllDescendantIds(topLevelFolders.map(f => f.id));
+        
+        const allIdsToDelete = [...new Set([...ids, ...allDescendantIds])];
 
         // Proceed with deletion in a transaction
         const deleteResult = await prisma.$transaction([
             prisma.notification.deleteMany({
-                where: { link: { in: ids.map(id => `/resources?id=${id}`) } }
+                where: { link: { in: allIdsToDelete.map(id => `/resources?id=${id}`) } }
             }),
             prisma.enterpriseResource.deleteMany({
-                where: { id: { in: ids } },
+                where: { id: { in: allIdsToDelete } },
             })
         ]);
 
