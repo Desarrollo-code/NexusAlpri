@@ -98,7 +98,6 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
     const { toast } = useToast();
     const { user, settings } = useAuth();
     
-    // Form state
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [category, setCategory] = useState('');
@@ -108,16 +107,13 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
     const [newVideoUrl, setNewVideoUrl] = useState('');
     const [uploads, setUploads] = useState<any[]>([]);
     
-    const [quizToEdit, setQuizToEdit] = useState<AppQuiz | null>(null);
     const [isQuizEditorOpen, setIsQuizEditorOpen] = useState(false);
     
-    // Permissions state
     const [sharingMode, setSharingMode] = useState<ResourceSharingMode>('PUBLIC');
     const [sharedWithUserIds, setSharedWithUserIds] = useState<string[]>([]);
     const [sharedWithProcessIds, setSharedWithProcessIds] = useState<string[]>([]);
     const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
     
-    // API data
     const [allUsers, setAllUsers] = useState<AppUser[]>([]);
     const [allProcesses, setAllProcesses] = useState<Process[]>([]);
 
@@ -242,7 +238,6 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
         e.preventDefault();
         setIsSaving(true);
         const videosToSave = contentBlocks.filter(b => b.type === 'VIDEO');
-        // AHORA SÍ: se busca el quiz en el estado local de los bloques.
         const quizToSave = contentBlocks.find(b => b.type === 'QUIZ')?.quiz || null;
 
         try {
@@ -253,7 +248,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                 title, description, category, parentId,
                 type: 'VIDEO_PLAYLIST', 
                 videos: videosToSave.map(v => ({ id: v.id, title: v.title, url: v.url })),
-                quiz: quizToSave, // Se incluye el quiz en el payload.
+                quiz: quizToSave,
                 sharingMode, sharedWithUserIds, sharedWithProcessIds, collaboratorIds
             };
 
@@ -423,16 +418,11 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                 </DialogContent>
             </Dialog>
 
-            {isQuizEditorOpen && (
+            {isQuizEditorOpen && quizToEdit && (
                 <QuizEditorModal
                     isOpen={isQuizEditorOpen}
                     onClose={() => setIsQuizEditorOpen(false)}
-                    quiz={contentBlocks.find(b => b.type === 'QUIZ')?.quiz || {
-                        id: `new-quiz-${Date.now()}`,
-                        title: `Evaluación de ${title || 'la lista'}`,
-                        questions: [],
-                        maxAttempts: null,
-                    }}
+                    quiz={quizToEdit}
                     onSave={handleSaveQuiz}
                 />
             )}
@@ -470,3 +460,4 @@ const UserOrProcessList = ({ type, items, selectedIds, onSelectionChange }: { ty
         </Card>
     );
 };
+```
