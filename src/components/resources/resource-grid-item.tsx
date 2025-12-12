@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import type { AppResourceType } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Edit, MoreVertical, Trash2, Lock, Download, Globe, Users, ArchiveRestore, Pin, Checkbox } from 'lucide-react';
+import { Edit, MoreVertical, Trash2, Lock, Download, Globe, Users, ArchiveRestore, Pin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -23,6 +23,7 @@ import { IconFolderDynamic } from '../icons/icon-folder-dynamic';
 import { IconVideoPlaylist } from '../icons/icon-video-playlist';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Identicon } from '../ui/identicon';
+import { Checkbox } from '@/components/ui/checkbox';
 
 
 // --- Sub-components for Page ---
