@@ -98,8 +98,10 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                     });
                 }
             }
+            
+            // Primero, actualiza el recurso sin la lógica del quiz
+             await tx.enterpriseResource.update({ where: { id }, data: updateData });
 
-            // --- LÓGICA DE QUIZ CORREGIDA ---
             if (quiz) {
                 const quizPayload = {
                     title: quiz.title || 'Evaluación del Recurso',
@@ -140,20 +142,13 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                          });
                      }
                 }
-                
-                // Asegurarse de que el recurso esté conectado al quiz
-                updateData.quiz = { connect: { id: upsertedQuiz.id } };
 
             } else {
-                 // Si no hay quiz en el payload, pero existe uno, eliminarlo
                 const existingQuiz = await tx.quiz.findUnique({ where: { resourceId: id } });
                 if (existingQuiz) {
                     await tx.quiz.delete({ where: { id: existingQuiz.id } });
                 }
             }
-            
-            // Finalmente, actualizar el recurso
-            await tx.enterpriseResource.update({ where: { id }, data: updateData });
         });
         
         const updatedResource = await prisma.enterpriseResource.findUnique({ 
