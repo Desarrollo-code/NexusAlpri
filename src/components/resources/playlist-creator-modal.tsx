@@ -38,7 +38,7 @@ import { Progress } from '@/components/ui/progress';
 import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const generateUniqueId = (prefix: string): string => `${'prefix'}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
 interface ContentBlock {
   id: string;
@@ -107,6 +107,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
     
     const [newVideoUrl, setNewVideoUrl] = useState('');
     const [uploads, setUploads] = useState<any[]>([]);
+    
     const [quizToEdit, setQuizToEdit] = useState<AppQuiz | null>(null);
     const [isQuizEditorOpen, setIsQuizEditorOpen] = useState(false);
     
@@ -468,3 +469,4 @@ const UserOrProcessList = ({ type, items, selectedIds, onSelectionChange }: { ty
         </Card>
     );
 };
+```

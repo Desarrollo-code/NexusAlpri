@@ -1,3 +1,4 @@
+
 // src/api/resources/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -9,7 +10,7 @@ import { checkResourceOwnership } from '@/lib/auth-utils';
 
 export const dynamic = 'force-dynamic';
 
-// GET a specific resource
+// GET a specific resource (SIN CAMBIOS)
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
     try {
         const { id } = params;
@@ -80,7 +81,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 });
             }
 
-            if (videos) {
+            if (videos) { // Si estamos editando una lista de reproducción
                 const existingVideos = await tx.enterpriseResource.findMany({ where: { parentId: id }, select: { id: true } });
                 const newVideoIds = videos.map((v: any) => v.id).filter(Boolean);
                 const videosToDelete = existingVideos.filter(ev => !newVideoIds.includes(ev.id));
@@ -90,29 +91,30 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
                 for (const video of videos) {
                     await tx.enterpriseResource.upsert({
-                        where: { id: video.id.startsWith('vid-') ? '' : video.id },
+                        where: { id: video.id.startsWith('vid-') ? '' : video.id }, // Force create for new videos
                         create: { title: video.title, url: video.url, type: 'VIDEO', uploaderId: session!.id, parentId: id },
                         update: { title: video.title, url: video.url },
                     });
                 }
             }
             
+            // Lógica del Quiz movida aquí para aplicar a todos los tipos de recursos
             if (quiz) {
-                 const quizPayload = {
-                    title: quiz.title || 'Evaluación del Recurso',
-                    description: quiz.description,
-                    maxAttempts: quiz.maxAttempts,
-                };
-                
                 const upsertedQuiz = await tx.quiz.upsert({
                     where: { resourceId: id },
                     create: {
-                        ...quizPayload,
+                        title: quiz.title || 'Evaluación del Recurso',
+                        description: quiz.description,
+                        maxAttempts: quiz.maxAttempts,
                         resourceId: id,
                     },
-                    update: quizPayload,
+                    update: {
+                        title: quiz.title || 'Evaluación del Recurso',
+                        description: quiz.description,
+                        maxAttempts: quiz.maxAttempts,
+                    },
                 });
-                
+
                 // Borrar preguntas viejas y crear las nuevas
                 await tx.question.deleteMany({ where: { quizId: upsertedQuiz.id } });
 
@@ -151,7 +153,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 }
             }
             
-            // Actualizar el recurso principal con toda la información
             await tx.enterpriseResource.update({
                 where: { id },
                 data: updateData,
@@ -209,6 +210,4 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
         return new NextResponse(null, { status: 204 });
     } catch (error) {
         console.error('[RESOURCE_DELETE_ERROR]', error);
-        return NextResponse.json({ message: 'Error al eliminar el recurso' }, { status: 500 });
-    }
-}
+        return NextResponse.json({ message: 'Error al eliminar el recurso' }, { status
