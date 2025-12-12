@@ -38,22 +38,19 @@ import { Progress } from '@/components/ui/progress';
 import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const generateUniqueId = (prefix: string): string => `${'prefix'}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
 interface ContentBlock {
   id: string;
-  type: 'VIDEO' | 'QUIZ';
+  type: 'VIDEO';
   title: string;
-  url?: string; // Para videos
-  quiz?: AppQuiz; // Para quizzes
+  url: string;
 }
-
 
 const SortableItem = ({ block, onRemove }: { block: ContentBlock, onRemove: () => void }) => {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: block.id });
     const style = { transform: CSS.Transform.toString(transform), transition };
-    const isVideo = block.type === 'VIDEO';
-    const youtubeId = isVideo ? getYoutubeVideoId(block.url) : null;
+    const youtubeId = getYoutubeVideoId(block.url);
     const fileExtension = youtubeId ? 'youtube' : (block.url?.split('.').pop() || 'file');
 
     return (
@@ -62,11 +59,7 @@ const SortableItem = ({ block, onRemove }: { block: ContentBlock, onRemove: () =
                 <MoreVertical className="h-5 w-5 text-muted-foreground" />
             </div>
             <div className="w-20 h-12 flex-shrink-0 bg-muted rounded-md overflow-hidden relative">
-                {isVideo ? (
-                    <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={block.url} />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary"><BrainCircuit className="h-6 w-6"/></div>
-                )}
+                <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={block.url} />
             </div>
             <div className="flex-grow min-w-0">
                 <p className="text-sm font-medium truncate">{block.title}</p>
@@ -103,20 +96,19 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
     const [description, setDescription] = useState('');
     const [category, setCategory] = useState('');
     
-    const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([]);
+    const [videos, setVideos] = useState<ContentBlock[]>([]);
+    const [quiz, setQuiz] = useState<AppQuiz | null>(null); // Estado centralizado para el quiz
     
     const [newVideoUrl, setNewVideoUrl] = useState('');
     const [uploads, setUploads] = useState<any[]>([]);
-    const [quizToEdit, setQuizToEdit] = useState<AppQuiz | null>(null);
+    
     const [isQuizEditorOpen, setIsQuizEditorOpen] = useState(false);
     
-    // Permissions state
     const [sharingMode, setSharingMode] = useState<ResourceSharingMode>('PUBLIC');
     const [sharedWithUserIds, setSharedWithUserIds] = useState<string[]>([]);
     const [sharedWithProcessIds, setSharedWithProcessIds] = useState<string[]>([]);
     const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
     
-    // API data
     const [allUsers, setAllUsers] = useState<AppUser[]>([]);
     const [allProcesses, setAllProcesses] = useState<Process[]>([]);
 
@@ -144,11 +136,8 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                 setTitle(playlistToEdit.title);
                 setDescription(playlistToEdit.description || '');
                 setCategory(playlistToEdit.category || (settings?.resourceCategories[0] || 'General'));
-                const videoBlocks: ContentBlock[] = (playlistToEdit.children || [])
-                    .map(c => ({ id: c.id, type: 'VIDEO', title: c.title, url: c.url || '' }));
-                const quizBlock = playlistToEdit.quiz ? [{ id: `quiz-${playlistToEdit.quiz.id}`, type: 'QUIZ' as const, title: playlistToEdit.quiz.title, quiz: playlistToEdit.quiz }] : [];
-                setContentBlocks([...videoBlocks, ...quizBlock]);
-                
+                setVideos((playlistToEdit.children || []).map(c => ({ id: c.id, type: 'VIDEO', title: c.title, url: c.url || '' })));
+                setQuiz(playlistToEdit.quiz || null);
                 setSharingMode(playlistToEdit.sharingMode);
                 setSharedWithUserIds(playlistToEdit.sharedWith?.map(u => u.id) || []);
                 setSharedWithProcessIds(playlistToEdit.sharedWithProcesses?.map(p => p.id) || []);
@@ -157,7 +146,8 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                 setTitle('');
                 setDescription('');
                 setCategory(settings?.resourceCategories[0] || 'General');
-                setContentBlocks([]);
+                setVideos([]);
+                setQuiz(null);
                 setSharingMode('PUBLIC');
                 setSharedWithUserIds([]);
                 setSharedWithProcessIds([]);
@@ -190,7 +180,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
             if (!response.ok) throw new Error('No se pudo obtener la información del video.');
             const data = await response.json();
             const newVideoBlock: ContentBlock = { id: generateUniqueId('vid'), type: 'VIDEO', title: data.title, url: newVideoUrl };
-            setContentBlocks(prev => [...prev, newVideoBlock]);
+            setVideos(prev => [...prev, newVideoBlock]);
             setNewVideoUrl('');
         } catch(err) {
             toast({ title: 'Error', description: (err as Error).message, variant: 'destructive'});
@@ -213,7 +203,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                 setUploads(prev => prev.map(up => up.id === newUpload.id ? { ...up, progress } : up));
             });
             const newVideoBlock: ContentBlock = { id: generateUniqueId('vid'), type: 'VIDEO', title: file.name, url: result.url };
-            setContentBlocks(prev => [...prev, newVideoBlock]);
+            setVideos(prev => [...prev, newVideoBlock]);
             setUploads(prev => prev.filter(up => up.id !== newUpload.id));
         } catch(err) {
             setUploads(prev => prev.map(up => up.id === newUpload.id ? { ...up, error: (err as Error).message, progress: 100 } : up));
@@ -222,13 +212,13 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
     };
     
     const handleRemoveBlock = (idToRemove: string) => {
-        setContentBlocks(prev => prev.filter(v => v.id !== idToRemove));
+        setVideos(prev => prev.filter(v => v.id !== idToRemove));
     }
     
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
         if (over && active.id !== over.id) {
-            setContentBlocks((items) => {
+            setVideos((items) => {
                 const oldIndex = items.findIndex(item => item.id === active.id);
                 const newIndex = items.findIndex(item => item.id === over.id);
                 return arrayMove(items, oldIndex, newIndex);
@@ -240,9 +230,6 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSaving(true);
-        const videosToSave = contentBlocks.filter(b => b.type === 'VIDEO');
-        const quizToSave = contentBlocks.find(b => b.type === 'QUIZ')?.quiz || null;
-
         try {
             const endpoint = isEditing ? `/api/resources/${playlistToEdit!.id}` : '/api/resources';
             const method = isEditing ? 'PUT' : 'POST';
@@ -250,8 +237,8 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
             const payload = {
                 title, description, category, parentId,
                 type: 'VIDEO_PLAYLIST', 
-                videos: videosToSave.map(v => ({ id: v.id, title: v.title, url: v.url })),
-                quiz: quizToSave,
+                videos: videos.map(v => ({ id: v.id, title: v.title, url: v.url })),
+                quiz: quiz,
                 sharingMode, sharedWithUserIds, sharedWithProcessIds, collaboratorIds
             };
 
@@ -270,33 +257,6 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
         } finally {
             setIsSaving(false);
         }
-    };
-
-    const handleSaveQuiz = (updatedQuiz: AppQuiz) => {
-        const quizExists = contentBlocks.some(b => b.type === 'QUIZ');
-        
-        if (quizExists) {
-             setContentBlocks(prev => prev.map(block =>
-                block.type === 'QUIZ' ? { ...block, title: updatedQuiz.title, quiz: updatedQuiz } : block
-            ));
-        } else {
-             const newQuizBlock: ContentBlock = { id: `quiz-${updatedQuiz.id}`, type: 'QUIZ', title: updatedQuiz.title, quiz: updatedQuiz };
-             setContentBlocks(prev => [...prev, newQuizBlock]);
-        }
-       
-        setIsQuizEditorOpen(false);
-        toast({ description: "Quiz actualizado. Recuerda guardar los cambios de la lista." });
-    };
-
-    const handleEditQuiz = () => {
-        const existingQuiz = contentBlocks.find(b => b.type === 'QUIZ')?.quiz;
-        setQuizToEdit(existingQuiz || {
-            id: generateUniqueId('quiz'),
-            title: `Evaluación de ${title || 'la lista'}`,
-            questions: [],
-            maxAttempts: null,
-        });
-        setIsQuizEditorOpen(true);
     };
     
     return (
@@ -365,13 +325,13 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                                                         </div>
                                                     ))}
                                                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                                                        <SortableContext items={contentBlocks.map(v => v.id)} strategy={verticalListSortingStrategy}>
-                                                            {contentBlocks.map((block) => (
+                                                        <SortableContext items={videos.map(v => v.id)} strategy={verticalListSortingStrategy}>
+                                                            {videos.map((block) => (
                                                                 <SortableItem key={block.id} block={block} onRemove={() => handleRemoveBlock(block.id)} />
                                                             ))}
                                                         </SortableContext>
                                                     </DndContext>
-                                                    {contentBlocks.length === 0 && uploads.length === 0 && (
+                                                    {videos.length === 0 && uploads.length === 0 && (
                                                         <div className="text-center text-muted-foreground text-sm py-12">La lista está vacía.</div>
                                                     )}
                                                 </div>
@@ -381,9 +341,9 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                                     <Card>
                                         <CardHeader><CardTitle className="text-base">Evaluación Final (Opcional)</CardTitle></CardHeader>
                                         <CardContent>
-                                            <Button className="w-full" variant="outline" type="button" onClick={handleEditQuiz}>
-                                                {contentBlocks.some(b => b.type === 'QUIZ') ? <Edit className="mr-2 h-4 w-4"/> : <PlusCircle className="mr-2 h-4 w-4"/>}
-                                                {contentBlocks.some(b => b.type === 'QUIZ') ? 'Editar Quiz' : 'Añadir Quiz'}
+                                            <Button className="w-full" variant="outline" type="button" onClick={() => setIsQuizEditorOpen(true)}>
+                                                {quiz ? <Edit className="mr-2 h-4 w-4"/> : <PlusCircle className="mr-2 h-4 w-4"/>}
+                                                {quiz ? 'Editar Quiz' : 'Añadir Quiz'}
                                             </Button>
                                         </CardContent>
                                     </Card>
@@ -412,7 +372,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                       </Tabs>
                       <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2 bg-background">
                         <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
-                        <Button type="submit" form="playlist-form" disabled={isSaving || !title.trim() || contentBlocks.filter(b=>b.type==='VIDEO').length === 0}>
+                        <Button type="submit" form="playlist-form" disabled={isSaving || !title.trim() || videos.length === 0}>
                             {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
                             {isEditing ? 'Guardar Cambios' : 'Crear Lista'}
                         </Button>
@@ -425,13 +385,13 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                 <QuizEditorModal
                     isOpen={isQuizEditorOpen}
                     onClose={() => setIsQuizEditorOpen(false)}
-                    quiz={contentBlocks.find(b => b.type === 'QUIZ')?.quiz || {
+                    quiz={quiz || {
                         id: `new-quiz-${Date.now()}`,
                         title: `Evaluación de ${title || 'la lista'}`,
                         questions: [],
                         maxAttempts: null,
                     }}
-                    onSave={handleSaveQuiz}
+                    onSave={setQuiz}
                 />
             )}
         </>
