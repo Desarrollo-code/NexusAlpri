@@ -17,7 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
-import { Loader2, FolderPlus, Video, XCircle, Trash2, Edit, Save, Globe, Users, Briefcase, MoreVertical, UploadCloud, BrainCircuit, PlusCircle, Image as ImageIcon } from 'lucide-react';
+import { Loader2, FolderPlus, Video, XCircle, Trash2, Edit, Save, Globe, Users, Briefcase, MoreVertical, UploadCloud, BrainCircuit, PlusCircle, Image as ImageIcon, Replace } from 'lucide-react';
 import type { AppResourceType, User as AppUser, Process, ResourceSharingMode, AppQuiz, Quiz as PrismaQuiz } from '@/types';
 import { DndContext, DragEndEvent, closestCenter, useSensor, useSensors, PointerSensor, TouchSensor } from '@dnd-kit/core';
 import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -258,18 +258,23 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="flex-1 min-h-0 overflow-hidden">
-                      <form id="playlist-form" onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 h-full gap-x-0">
-                        {/* Columna Izquierda: Detalles y Contenido */}
-                         <div className="lg:col-span-7 h-full border-r">
-                             <ScrollArea className="h-full">
-                               <div className="p-6 space-y-6">
-                                    <Card>
+                    <form id="playlist-form" onSubmit={handleSubmit} className="flex-1 min-h-0 flex flex-col">
+                      <Tabs defaultValue="main" className="flex-1 min-h-0 flex flex-col">
+                        <TabsList className="mx-6 mt-4 grid w-auto grid-cols-3">
+                          <TabsTrigger value="main">Información Principal</TabsTrigger>
+                          <TabsTrigger value="content">Contenido</TabsTrigger>
+                          <TabsTrigger value="access">Acceso y Permisos</TabsTrigger>
+                        </TabsList>
+                        <div className="flex-1 min-h-0">
+                          <ScrollArea className="h-full">
+                            <div className="px-6 py-4">
+                               <TabsContent value="main" className="space-y-6 m-0">
+                                   <Card>
                                         <CardHeader>
                                             <CardTitle className="text-base">Información General</CardTitle>
                                         </CardHeader>
                                         <CardContent className="space-y-4">
-                                            <div className="relative w-full aspect-[16/9] rounded-lg border bg-muted flex items-center justify-center">
+                                             <div className="relative w-full aspect-[16/9] rounded-lg border bg-muted flex items-center justify-center">
                                                 <ImageIcon className="h-10 w-10 text-muted-foreground"/>
                                             </div>
                                             <div className="space-y-1"><Label htmlFor="title">Título de la Lista</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
@@ -277,12 +282,14 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                                             <div className="space-y-1"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory} required><SelectTrigger><SelectValue placeholder="Selecciona..."/></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
                                         </CardContent>
                                     </Card>
+                               </TabsContent>
+                               <TabsContent value="content" className="space-y-6 m-0">
                                     <Card>
                                         <CardHeader>
                                             <CardTitle className="text-base">Contenido de la Lista</CardTitle>
                                         </CardHeader>
                                         <CardContent className="space-y-4">
-                                            <div className="flex items-center gap-2">
+                                             <div className="flex items-center gap-2">
                                                 <Input value={newVideoUrl} onChange={e => setNewVideoUrl(e.target.value)} placeholder="Pega una URL de YouTube..." className="h-10" />
                                                 <Button type="button" variant="outline" size="icon" onClick={handleAddYoutubeVideo} disabled={isFetchingInfo} className="h-10 w-10 shrink-0">{isFetchingInfo ? <Loader2 className="h-4 w-4 animate-spin"/> : <PlusCircle className="h-4 w-4"/>}</Button>
                                                 <UploadArea onFileSelect={(files) => files && handleFileUpload(files[0])} disabled={isSaving} className="h-10 w-10 p-0 shrink-0">
@@ -317,63 +324,46 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                                             </div>
                                         </CardContent>
                                     </Card>
-                               </div>
-                            </ScrollArea>
-                         </div>
-                        
-                        {/* Columna Derecha: Permisos y Quiz */}
-                         <div className="lg:col-span-5 h-full bg-muted/50">
-                            <Tabs defaultValue="access" className="flex flex-col h-full">
-                                <TabsList className="grid w-full grid-cols-3 mx-4 mt-4 flex-shrink-0">
-                                    <TabsTrigger value="access">Acceso</TabsTrigger>
-                                    <TabsTrigger value="collabs">Colaboradores</TabsTrigger>
-                                    <TabsTrigger value="quiz">Evaluación</TabsTrigger>
-                                </TabsList>
-                                <ScrollArea className="flex-grow p-4">
-                                     <TabsContent value="access" className="m-0 space-y-4">
-                                        <Card>
-                                            <CardHeader><CardTitle className="text-base">Visibilidad</CardTitle></CardHeader>
-                                            <CardContent>
-                                                <RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-1 gap-2">
-                                                    <div className="flex items-center space-x-2"><RadioGroupItem value="PUBLIC" id="share-public"/><Label htmlFor="share-public">Público</Label></div>
-                                                    <div className="flex items-center space-x-2"><RadioGroupItem value="PROCESS" id="share-process"/><Label htmlFor="share-process">Por Proceso</Label></div>
-                                                    <div className="flex items-center space-x-2"><RadioGroupItem value="PRIVATE" id="share-private"/><Label htmlFor="share-private">Privado</Label></div>
-                                                </RadioGroup>
-                                                {sharingMode === 'PROCESS' && (<UserOrProcessList type="process" items={flattenedProcesses} selectedIds={sharedWithProcessIds} onSelectionChange={setSharedWithProcessIds} />)}
-                                                {sharingMode === 'PRIVATE' && (<UserOrProcessList type="user" items={allUsers} selectedIds={sharedWithUserIds} onSelectionChange={setSharedWithUserIds} />)}
-                                            </CardContent>
-                                        </Card>
-                                    </TabsContent>
-                                    <TabsContent value="collabs" className="m-0">
-                                         <Card>
-                                            <CardHeader><CardTitle className="text-base">Colaboradores</CardTitle><CardDescription className="text-xs">Permite a otros editar esta lista.</CardDescription></CardHeader>
-                                            <CardContent><UserOrProcessList type="user" items={allUsers.filter(u => u.role !== 'STUDENT')} selectedIds={collaboratorIds} onSelectionChange={setCollaboratorIds} /></CardContent>
-                                        </Card>
-                                    </TabsContent>
-                                    <TabsContent value="quiz" className="m-0">
-                                        <Card>
-                                            <CardHeader><CardTitle className="text-base">Evaluación</CardTitle></CardHeader>
-                                            <CardContent>
-                                                <Button className="w-full" variant="outline" onClick={() => setIsQuizEditorOpen(true)}>
-                                                    {quiz ? <Edit className="mr-2 h-4 w-4"/> : <PlusCircle className="mr-2 h-4 w-4"/>}
-                                                    {quiz ? 'Editar Quiz' : 'Añadir Quiz'}
-                                                </Button>
-                                            </CardContent>
-                                        </Card>
-                                    </TabsContent>
-                                </ScrollArea>
-                            </Tabs>
-                         </div>
-                      </form>
-                    </div>
-                    
-                     <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2 bg-background">
+                                     <Card>
+                                        <CardHeader><CardTitle className="text-base">Evaluación Final (Opcional)</CardTitle></CardHeader>
+                                        <CardContent>
+                                            <Button className="w-full" variant="outline" onClick={() => setIsQuizEditorOpen(true)}>
+                                                {quiz ? <Edit className="mr-2 h-4 w-4"/> : <PlusCircle className="mr-2 h-4 w-4"/>}
+                                                {quiz ? 'Editar Quiz' : 'Añadir Quiz'}
+                                            </Button>
+                                        </CardContent>
+                                    </Card>
+                               </TabsContent>
+                               <TabsContent value="access" className="space-y-6 m-0">
+                                   <Card>
+                                        <CardHeader><CardTitle className="text-base">Visibilidad</CardTitle></CardHeader>
+                                        <CardContent>
+                                            <RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-1 gap-2">
+                                                <div className="flex items-center space-x-2"><RadioGroupItem value="PUBLIC" id="share-public"/><Label htmlFor="share-public">Público</Label></div>
+                                                <div className="flex items-center space-x-2"><RadioGroupItem value="PROCESS" id="share-process"/><Label htmlFor="share-process">Por Proceso</Label></div>
+                                                <div className="flex items-center space-x-2"><RadioGroupItem value="PRIVATE" id="share-private"/><Label htmlFor="share-private">Privado</Label></div>
+                                            </RadioGroup>
+                                            {sharingMode === 'PROCESS' && (<UserOrProcessList type="process" items={flattenedProcesses} selectedIds={sharedWithProcessIds} onSelectionChange={setSharedWithProcessIds} />)}
+                                            {sharingMode === 'PRIVATE' && (<UserOrProcessList type="user" items={allUsers} selectedIds={sharedWithUserIds} onSelectionChange={setSharedWithUserIds} />)}
+                                        </CardContent>
+                                    </Card>
+                                    <Card>
+                                        <CardHeader><CardTitle className="text-base">Colaboradores</CardTitle><CardDescription className="text-xs">Permite a otros editar esta lista.</CardDescription></CardHeader>
+                                        <CardContent><UserOrProcessList type="user" items={allUsers.filter(u => u.role !== 'STUDENT')} selectedIds={collaboratorIds} onSelectionChange={setCollaboratorIds} /></CardContent>
+                                    </Card>
+                               </TabsContent>
+                            </div>
+                          </ScrollArea>
+                        </div>
+                      </Tabs>
+                      <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2 bg-background">
                         <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
                         <Button type="submit" form="playlist-form" disabled={isSaving || !title.trim() || videos.length === 0}>
                             {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
                             {isEditing ? 'Guardar Cambios' : 'Crear Lista'}
                         </Button>
-                    </DialogFooter>
+                      </DialogFooter>
+                    </form>
                 </DialogContent>
             </Dialog>
 
