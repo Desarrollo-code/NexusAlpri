@@ -1,9 +1,9 @@
-// src/app/api/resources/[id]/route.ts
+// src/api/resources/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
-import type { Quiz } from '@/types';
+import type { Quiz, AppQuestion } from '@/types';
 import { checkResourceOwnership } from '@/lib/auth-utils';
 
 
@@ -55,7 +55,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         }
         
         const body = await req.json();
-        const { title, category, description, sharingMode, sharedWithUserIds, sharedWithProcessIds, expiresAt, status, content, observations, quiz, collaboratorIds } = body;
+        const { title, category, description, sharingMode, sharedWithUserIds, sharedWithProcessIds, expiresAt, status, content, observations, quiz, collaboratorIds, videos } = body;
 
         const createVersion = resourceToUpdate.type === 'DOCUMENTO_EDITABLE' && resourceToUpdate.content !== content;
         
@@ -79,6 +79,21 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                     }
                 });
             }
+
+            if (videos) {
+                await tx.enterpriseResource.deleteMany({ where: { parentId: id }});
+                if (videos.length > 0) {
+                     await tx.enterpriseResource.createMany({
+                         data: videos.map((video: { title: string, url: string }) => ({
+                             title: video.title,
+                             url: video.url,
+                             type: 'VIDEO',
+                             parentId: id,
+                             uploaderId: session.id,
+                         }))
+                     })
+                }
+            }
             
             const existingQuiz = await tx.quiz.findUnique({ where: { resourceId: id } });
 
@@ -86,7 +101,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 const questionsData = (Array.isArray(quiz.questions))
                     ? {
                         deleteMany: {},
-                        create: quiz.questions.map((q: any, qIndex: number) => ({
+                        create: quiz.questions.map((q: AppQuestion, qIndex: number) => ({
                             text: q.text,
                             order: qIndex,
                             type: q.type,
@@ -113,7 +128,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 
                 const quizPayloadForCreate = {
                     ...quizPayloadForUpdate,
-                    resource: { connect: { id: id } } // Conexión correcta al crear
+                    resource: { connect: { id: id } }
                 };
                 
                 updateData.quiz = {

@@ -345,7 +345,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                                         </CardContent>
                                     </Card>
                                     <Card>
-                                        <CardHeader><CardTitle className="text-base">Colaboradores</CardTitle><CardDescription className="text-xs">Permite a otros editar esta lista.</CardDescription></CardHeader>
+                                        <CardHeader><CardTitle className="text-base flex items-center gap-2"><Edit className="h-4 w-4 text-primary"/>Colaboradores</CardTitle><CardDescription className="text-xs">Permite a otros instructores o administradores editar esta lista.</CardDescription></CardHeader>
                                         <CardContent><UserOrProcessList type="user" items={allUsers.filter(u => u.role !== 'STUDENT')} selectedIds={collaboratorIds} onSelectionChange={setCollaboratorIds} /></CardContent>
                                     </Card>
                                </TabsContent>
