@@ -517,7 +517,6 @@ model EnterpriseResource {
   updatedAt   DateTime           @updatedAt
   expiresAt   DateTime?
   uploaderId  String
-  parentId    String?
   content      String?           @db.Text
   observations String?           @db.Text
   version      Int               @default(1)
@@ -528,8 +527,9 @@ model EnterpriseResource {
   size        Int?
   isPinned    Boolean  @default(false)
   uploader    User               @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
-  parent EnterpriseResource? @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
-  children    EnterpriseResource[] @relation("FolderChildren")
+  parentId  String? @map("parentId")
+  parent    EnterpriseResource? @relation("EnterpriseChildren", fields: [parentId], references: [id], onDelete: SetNull) // <-- ADD onDelete: SetNull
+  children  EnterpriseResource[] @relation("EnterpriseChildren")
   sharedWith  User[]             @relation("SharedWithUsers")
   sharedWithProcesses Process[] @relation("ProcessResourceShares")
   collaborators          User[]             @relation("Collaborators")
