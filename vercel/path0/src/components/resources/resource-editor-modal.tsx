@@ -432,7 +432,7 @@ const UserOrProcessList = ({ type, items, selectedIds, onSelectionChange }: { ty
             <CardContent className="p-4 space-y-3">
                  <Input placeholder={`Buscar ${type === 'user' ? 'usuario' : 'proceso'}...`} value={search} onChange={e => setSearch(e.target.value)} />
                  <ScrollArea className="h-40">
-                    <div className="space-y-2 pr-2">
+                    <div className="space-y-1 pr-3">
                         {filteredItems.map(item => (
                             <div key={item.id} className="flex items-center space-x-3 p-1.5 rounded-md hover:bg-muted">
                                 <Checkbox id={`${type}-${item.id}`} checked={selectedIds.includes(item.id)} onCheckedChange={(c) => handleSelection(item.id, !!c)}/>
