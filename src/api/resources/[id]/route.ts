@@ -176,9 +176,30 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
 
     try {
-        await prisma.enterpriseResource.delete({
-            where: { id: id }
-        });
+        const resourceToDelete = await prisma.enterpriseResource.findUnique({ where: { id }, include: { children: true } });
+        if (!resourceToDelete) {
+            return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });
+        }
+        
+        // Si es una carpeta, eliminamos su contenido recursivamente
+        if (resourceToDelete.type === 'FOLDER' || resourceToDelete.type === 'VIDEO_PLAYLIST') {
+            const childrenIds = await prisma.enterpriseResource.findMany({
+                where: { parentId: id },
+                select: { id: true }
+            });
+            const idsToDelete = childrenIds.map(c => c.id);
+            // Podríamos hacer esto recursivo para sub-carpetas, pero por ahora eliminamos un nivel.
+            await prisma.enterpriseResource.deleteMany({ where: { id: { in: idsToDelete } } });
+        }
+        
+        await prisma.$transaction([
+            prisma.notification.deleteMany({
+                where: {
+                    link: `/resources?id=${id}` 
+                }
+            }),
+            prisma.enterpriseResource.delete({ where: { id } })
+        ]);
         
         return new NextResponse(null, { status: 204 });
     } catch (error) {
