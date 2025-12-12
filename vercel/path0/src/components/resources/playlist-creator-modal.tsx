@@ -221,7 +221,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
         e.preventDefault();
         setIsSaving(true);
         try {
-            const endpoint = isEditing ? `/api/resources/${playlistToEdit.id}` : '/api/resources';
+            const endpoint = isEditing ? `/api/resources/${playlistToEdit!.id}` : '/api/resources';
             const method = isEditing ? 'PUT' : 'POST';
 
             const payload = {
@@ -246,11 +246,16 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
             setIsSaving(false);
         }
     };
+
+    const handleSaveQuiz = (updatedQuiz: AppQuiz) => {
+        setQuiz(updatedQuiz);
+        setIsQuizEditorOpen(false);
+    };
     
     return (
         <>
             <Dialog open={isOpen} onOpenChange={onClose}>
-                <DialogContent className="w-[95vw] sm:max-w-2xl p-0 gap-0 rounded-2xl h-[90vh] flex flex-col">
+                <DialogContent className="w-[95vw] sm:max-w-3xl p-0 gap-0 rounded-2xl h-[90vh] flex flex-col">
                     <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
                         <DialogTitle>{isEditing ? 'Editar Lista de Videos' : 'Crear Nueva Lista de Videos'}</DialogTitle>
                          <DialogDescription>
@@ -374,10 +379,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                         questions: [],
                         maxAttempts: null,
                     }}
-                    onSave={(updatedQuiz) => {
-                        setQuiz(updatedQuiz);
-                        setIsQuizEditorOpen(false);
-                    }}
+                    onSave={handleSaveQuiz}
                 />
             )}
         </>
