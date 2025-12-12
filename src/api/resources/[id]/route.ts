@@ -1,5 +1,5 @@
 
-// src/app/api/resources/[id]/route.ts (CORREGIDO)
+// src/app/api/resources/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -10,7 +10,7 @@ import { checkResourceOwnership } from '@/lib/auth-utils';
 
 export const dynamic = 'force-dynamic';
 
-// GET a specific resource (SIN CAMBIOS)
+// GET a specific resource
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
     try {
         const { id } = params;
@@ -178,7 +178,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
 }
 
-// DELETE a resource (SIN CAMBIOS)
+// DELETE a resource
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
     const { id } = params;
