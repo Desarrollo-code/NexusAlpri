@@ -151,9 +151,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 }
                 await tx.enterpriseResource.update({ where: { id }, data: updateData });
             }
-        }, {
-          maxWait: 20000, // default 2000
-          timeout: 40000, // default 5000
         });
         
         const updatedResource = await prisma.enterpriseResource.findUnique({ 
@@ -179,19 +176,9 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
 
     try {
-        const resourceToDelete = await prisma.enterpriseResource.findUnique({ where: { id } });
-        if (!resourceToDelete) {
-            return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });
-        }
-        
-        await prisma.$transaction([
-            prisma.notification.deleteMany({
-                where: { link: { contains: `/resources?id=${id}` } }
-            }),
-            prisma.enterpriseResource.delete({
-                where: { id: id }
-            })
-        ]);
+        await prisma.enterpriseResource.delete({
+            where: { id: id }
+        });
         
         return new NextResponse(null, { status: 204 });
     } catch (error) {

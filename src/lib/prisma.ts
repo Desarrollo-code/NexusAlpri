@@ -9,6 +9,10 @@ const prismaClientSingleton = () => {
       process.env.NODE_ENV === 'development'
         ? ['query', 'error', 'warn']
         : ['error'],
+    transactionOptions: {
+      maxWait: 20000, // default 2000
+      timeout: 40000, // default 5000
+    },
   });
 };
 
