@@ -1,5 +1,5 @@
 
-// src/api/resources/[id]/route.ts
+// src/api/resources/[id]/route.ts (CORREGIDO)
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -58,9 +58,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         const body = await req.json();
         const { title, category, description, sharingMode, sharedWithUserIds, sharedWithProcessIds, expiresAt, status, content, observations, quiz, collaboratorIds, videos } = body;
 
-        const createVersion = resourceToUpdate.type === 'DOCUMENTO_EDITABLE' && resourceToUpdate.content !== content;
-        
         await prisma.$transaction(async (tx) => {
+            // --- UPDATE GENERAL RESOURCE INFO ---
             const updateData: any = {
                 title, category, content, observations, description, status, sharingMode,
                 expiresAt: expiresAt ? new Date(expiresAt) : null,
@@ -68,7 +67,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 sharedWithProcesses: { set: sharingMode === 'PROCESS' ? (sharedWithProcessIds ?? []).map((id: string) => ({ id })) : [] },
                 collaborators: { set: (collaboratorIds ?? []).map((id: string) => ({ id })) },
             };
-
+            
+            // --- VERSIONING FOR EDITABLE DOCUMENTS ---
+            const createVersion = resourceToUpdate.type === 'DOCUMENTO_EDITABLE' && resourceToUpdate.content !== content;
             if (createVersion && session) {
                 updateData.version = { increment: 1 };
                 await tx.resourceVersion.create({
@@ -81,7 +82,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 });
             }
 
-            if (videos) { // Si estamos editando una lista de reproducción
+            // --- UPDATE VIDEOS (ONLY FOR VIDEO_PLAYLIST) ---
+            if (resourceToUpdate.type === 'VIDEO_PLAYLIST' && videos) {
                 const existingVideos = await tx.enterpriseResource.findMany({ where: { parentId: id }, select: { id: true } });
                 const newVideoIds = videos.map((v: any) => v.id).filter(Boolean);
                 const videosToDelete = existingVideos.filter(ev => !newVideoIds.includes(ev.id));
@@ -97,27 +99,27 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                     });
                 }
             }
-            
-            // Lógica del Quiz movida aquí para aplicar a todos los tipos de recursos
+
+            // --- HANDLE QUIZ LOGIC (FOR ANY RESOURCE TYPE) ---
             if (quiz) {
                 const upsertedQuiz = await tx.quiz.upsert({
                     where: { resourceId: id },
                     create: {
-                        title: quiz.title || 'Evaluación del Recurso',
+                        title: quiz.title || `Evaluación de ${title}`,
                         description: quiz.description,
                         maxAttempts: quiz.maxAttempts,
-                        resourceId: id,
+                        resource: { connect: { id } },
                     },
                     update: {
-                        title: quiz.title || 'Evaluación del Recurso',
+                        title: quiz.title || `Evaluación de ${title}`,
                         description: quiz.description,
                         maxAttempts: quiz.maxAttempts,
                     },
                 });
 
-                // Borrar preguntas viejas y crear las nuevas
+                // Clear old questions and create new ones
                 await tx.question.deleteMany({ where: { quizId: upsertedQuiz.id } });
-
+                
                 if (quiz.questions && quiz.questions.length > 0) {
                     for (const [qIndex, q] of (quiz.questions as AppQuestion[]).entries()) {
                          const newQuestion = await tx.question.create({
@@ -125,7 +127,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                                 text: q.text,
                                 order: qIndex,
                                 type: q.type,
-                                template: q.template || 'default',
+                                template: q.template,
                                 imageUrl: q.imageUrl,
                                 quizId: upsertedQuiz.id,
                             }
@@ -151,6 +153,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 if (existingQuiz) {
                     await tx.quiz.delete({ where: { id: existingQuiz.id } });
                 }
+                 updateData.quizId = null;
             }
             
             await tx.enterpriseResource.update({
@@ -171,7 +174,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
 }
 
-// DELETE a resource
+// DELETE a resource (SIN CAMBIOS)
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
     const { id } = params;
@@ -210,4 +213,6 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
         return new NextResponse(null, { status: 204 });
     } catch (error) {
         console.error('[RESOURCE_DELETE_ERROR]', error);
-        return NextResponse.json({ message: 'Error al eliminar el recurso' }, { status
+        return NextResponse.json({ message: 'Error al eliminar el recurso' }, { status: 500 });
+    }
+}
