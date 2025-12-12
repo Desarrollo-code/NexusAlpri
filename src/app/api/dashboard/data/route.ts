@@ -44,7 +44,6 @@ async function getAdminDashboardData(session: PrismaUser, startDate?: Date, endD
         safeQuery(prisma.courseProgress.aggregate({
             _sum: { progressPercentage: true },
             _count: { progressPercentage: true },
-            where: { progressPercentage: { not: null } }
         }), { _sum: { progressPercentage: 0 }, _count: { progressPercentage: 0 } }, 'progressAggregates'),
         safeQuery(prisma.user.groupBy({ by: ['role'], _count: { _all: true } }), [], 'usersByRole'),
         safeQuery(prisma.course.groupBy({ by: ['status'], _count: { _all: true } }), [], 'coursesByStatus'),
