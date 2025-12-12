@@ -246,6 +246,11 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
             setIsSaving(false);
         }
     };
+
+    const handleSaveQuiz = (updatedQuiz: AppQuiz) => {
+        setQuiz(updatedQuiz);
+        setIsQuizEditorOpen(false);
+    };
     
     return (
         <>
@@ -374,10 +379,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                         questions: [],
                         maxAttempts: null,
                     }}
-                    onSave={(updatedQuiz) => {
-                        setQuiz(updatedQuiz);
-                        setIsQuizEditorOpen(false);
-                    }}
+                    onSave={handleSaveQuiz}
                 />
             )}
         </>
