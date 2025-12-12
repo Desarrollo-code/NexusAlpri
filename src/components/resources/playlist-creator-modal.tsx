@@ -231,7 +231,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
         if (over && active.id !== over.id) {
             setContentBlocks((items) => {
                 const oldIndex = items.findIndex(item => item.id === active.id);
-                const newIndex = items.findIndex(item => item.id === over.id);
+                const newIndex = items.findIndex(item => item.id === over!.id);
                 return arrayMove(items, oldIndex, newIndex);
             });
         }
@@ -242,6 +242,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
         e.preventDefault();
         setIsSaving(true);
         const videosToSave = contentBlocks.filter(b => b.type === 'VIDEO');
+        // AHORA SÍ: se busca el quiz en el estado local de los bloques.
         const quizToSave = contentBlocks.find(b => b.type === 'QUIZ')?.quiz || null;
 
         try {
@@ -252,7 +253,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                 title, description, category, parentId,
                 type: 'VIDEO_PLAYLIST', 
                 videos: videosToSave.map(v => ({ id: v.id, title: v.title, url: v.url })),
-                quiz: quizToSave,
+                quiz: quizToSave, // Se incluye el quiz en el payload.
                 sharingMode, sharedWithUserIds, sharedWithProcessIds, collaboratorIds
             };
 
