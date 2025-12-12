@@ -81,7 +81,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             }
 
             if (videos) {
-                // Get existing video IDs to delete ones that are not in the new list
                 const existingVideos = await tx.enterpriseResource.findMany({ where: { parentId: id }, select: { id: true } });
                 const newVideoIds = videos.map((v: any) => v.id).filter(Boolean);
                 const videosToDelete = existingVideos.filter(ev => !newVideoIds.includes(ev.id));
@@ -89,10 +88,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                     await tx.enterpriseResource.deleteMany({ where: { id: { in: videosToDelete.map(v => v.id) } } });
                 }
 
-                // Upsert new/updated videos
                 for (const video of videos) {
                     await tx.enterpriseResource.upsert({
-                        where: { id: video.id.startsWith('vid-') ? '' : video.id }, // Force create for new videos
+                        where: { id: video.id.startsWith('vid-') ? '' : video.id },
                         create: { title: video.title, url: video.url, type: 'VIDEO', uploaderId: session!.id, parentId: id },
                         update: { title: video.title, url: video.url },
                     });
@@ -100,63 +98,64 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             }
             
             if (quiz) {
-                const questionsToCreate = (quiz.questions || []).map((q: AppQuestion, qIndex: number) => ({
-                    text: q.text,
-                    order: qIndex,
-                    type: q.type,
-                    template: q.template,
-                    imageUrl: q.imageUrl,
-                    options: {
-                        create: (q.options || []).map((opt: any) => ({
-                            text: opt.text,
-                            isCorrect: opt.isCorrect,
-                            points: opt.points || 0,
-                            imageUrl: opt.imageUrl
-                        }))
-                    }
-                }));
-
-                const quizUpsertPayload = {
+                 const quizPayload = {
+                    title: quiz.title || 'Evaluación del Recurso',
+                    description: quiz.description,
+                    maxAttempts: quiz.maxAttempts,
+                };
+                
+                const upsertedQuiz = await tx.quiz.upsert({
                     where: { resourceId: id },
                     create: {
-                        title: quiz.title || 'Evaluación del Recurso',
-                        description: quiz.description,
-                        maxAttempts: quiz.maxAttempts,
+                        ...quizPayload,
                         resourceId: id,
-                        questions: {
-                            create: questionsToCreate
-                        }
                     },
-                    update: {
-                        title: quiz.title || 'Evaluación del Recurso',
-                        description: quiz.description,
-                        maxAttempts: quiz.maxAttempts,
-                        questions: {
-                            deleteMany: {},
-                            create: questionsToCreate
-                        }
-                    },
-                };
-
-                await tx.enterpriseResource.update({
-                    where: { id },
-                    data: {
-                        ...updateData,
-                        quiz: {
-                            upsert: quizUpsertPayload,
-                        },
-                    },
+                    update: quizPayload,
                 });
+                
+                // Borrar preguntas viejas y crear las nuevas
+                await tx.question.deleteMany({ where: { quizId: upsertedQuiz.id } });
+
+                if (quiz.questions && quiz.questions.length > 0) {
+                    for (const [qIndex, q] of (quiz.questions as AppQuestion[]).entries()) {
+                         const newQuestion = await tx.question.create({
+                            data: {
+                                text: q.text,
+                                order: qIndex,
+                                type: q.type,
+                                template: q.template || 'default',
+                                imageUrl: q.imageUrl,
+                                quizId: upsertedQuiz.id,
+                            }
+                        });
+
+                        if (q.options && q.options.length > 0) {
+                            await tx.answerOption.createMany({
+                                data: q.options.map(opt => ({
+                                    text: opt.text,
+                                    isCorrect: opt.isCorrect,
+                                    points: opt.points || 0,
+                                    imageUrl: opt.imageUrl,
+                                    questionId: newQuestion.id,
+                                }))
+                            });
+                        }
+                    }
+                }
+                updateData.quizId = upsertedQuiz.id;
 
             } else {
-                 // If no quiz in payload, but one exists, delete it
                 const existingQuiz = await tx.quiz.findUnique({ where: { resourceId: id } });
                 if (existingQuiz) {
                     await tx.quiz.delete({ where: { id: existingQuiz.id } });
                 }
-                // Update the resource without quiz data
-                await tx.enterpriseResource.update({ where: { id }, data: updateData });
             }
+            
+            // Actualizar el recurso principal con toda la información
+            await tx.enterpriseResource.update({
+                where: { id },
+                data: updateData,
+            });
         });
         
         const updatedResource = await prisma.enterpriseResource.findUnique({ 

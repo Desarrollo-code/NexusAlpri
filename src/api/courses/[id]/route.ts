@@ -156,7 +156,7 @@ export async function PUT(
                     order: qIndex,
                     type: questionData.type,
                     imageUrl: questionData.imageUrl,
-                    template: questionData.template,
+                    template: questionData.template || 'default',
                     quizId: newQuiz.id,
                   },
                 });
