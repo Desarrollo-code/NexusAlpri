@@ -17,7 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
-import { Loader2, FolderPlus, Video, XCircle, Trash2, Edit, Save, Globe, Users, Briefcase, MoreVertical, UploadCloud, BrainCircuit, PlusCircle } from 'lucide-react';
+import { Loader2, FolderPlus, Video, XCircle, Trash2, Edit, Save, Globe, Users, Briefcase, MoreVertical, UploadCloud, BrainCircuit, PlusCircle, Image as ImageIcon } from 'lucide-react';
 import type { AppResourceType, User as AppUser, Process, ResourceSharingMode, AppQuiz, Quiz as PrismaQuiz } from '@/types';
 import { DndContext, DragEndEvent, closestCenter, useSensor, useSensors, PointerSensor, TouchSensor } from '@dnd-kit/core';
 import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -250,7 +250,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
     return (
         <>
             <Dialog open={isOpen} onOpenChange={onClose}>
-                <DialogContent className="w-[95vw] sm:max-w-6xl p-0 gap-0 rounded-2xl h-[90vh] flex flex-col">
+                <DialogContent className="w-[95vw] sm:max-w-7xl p-0 gap-0 rounded-2xl h-[90vh] flex flex-col">
                     <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
                         <DialogTitle>{isEditing ? 'Editar Lista de Videos' : 'Crear Nueva Lista de Videos'}</DialogTitle>
                          <DialogDescription>
@@ -260,66 +260,71 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
 
                     <div className="flex-1 min-h-0 overflow-hidden">
                       <form id="playlist-form" onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 h-full gap-x-0">
-                        {/* Columna Izquierda: Detalles */}
-                         <div className="lg:col-span-4 h-full border-r">
+                        {/* Columna Izquierda: Detalles y Contenido */}
+                         <div className="lg:col-span-7 h-full border-r">
                              <ScrollArea className="h-full">
                                <div className="p-6 space-y-6">
-                                    <div className="space-y-4">
-                                        <div className="space-y-1"><Label htmlFor="title">Título de la Lista</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
-                                        <div className="space-y-1"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} /></div>
-                                        <div className="space-y-1"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory} required><SelectTrigger><SelectValue placeholder="Selecciona..."/></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
-                                    </div>
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="text-base">Información General</CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="space-y-4">
+                                            <div className="relative w-full aspect-[16/9] rounded-lg border bg-muted flex items-center justify-center">
+                                                <ImageIcon className="h-10 w-10 text-muted-foreground"/>
+                                            </div>
+                                            <div className="space-y-1"><Label htmlFor="title">Título de la Lista</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
+                                            <div className="space-y-1"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} /></div>
+                                            <div className="space-y-1"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory} required><SelectTrigger><SelectValue placeholder="Selecciona..."/></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
+                                        </CardContent>
+                                    </Card>
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="text-base">Contenido de la Lista</CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="space-y-4">
+                                            <div className="flex items-center gap-2">
+                                                <Input value={newVideoUrl} onChange={e => setNewVideoUrl(e.target.value)} placeholder="Pega una URL de YouTube..." className="h-10" />
+                                                <Button type="button" variant="outline" size="icon" onClick={handleAddYoutubeVideo} disabled={isFetchingInfo} className="h-10 w-10 shrink-0">{isFetchingInfo ? <Loader2 className="h-4 w-4 animate-spin"/> : <PlusCircle className="h-4 w-4"/>}</Button>
+                                                <UploadArea onFileSelect={(files) => files && handleFileUpload(files[0])} disabled={isSaving} className="h-10 w-10 p-0 shrink-0">
+                                                    <UploadCloud className="h-5 w-5"/>
+                                                </UploadArea>
+                                            </div>
+
+                                            <div className="border rounded-lg p-2 bg-muted/50 mt-2">
+                                               <ScrollArea className="h-72 pr-3">
+                                                    <div className="space-y-2">
+                                                        {uploads.map(up => (
+                                                            <div key={up.id} className="p-2 border rounded-md bg-background relative">
+                                                                <div className="flex items-center gap-2">
+                                                                    <FileIcon displayMode="list" type={up.file.type.split('/')[1]} />
+                                                                    <span className="text-xs font-medium truncate">{up.file.name}</span>
+                                                                </div>
+                                                                <Progress value={up.progress} className="h-1 mt-1" />
+                                                            </div>
+                                                        ))}
+                                                        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                                                            <SortableContext items={videos.map(v => v.id)} strategy={verticalListSortingStrategy}>
+                                                                {videos.map((video) => (
+                                                                    <SortableVideoItem key={video.id} video={video} onRemove={() => handleRemoveVideo(video.id)} />
+                                                                ))}
+                                                            </SortableContext>
+                                                        </DndContext>
+                                                        {videos.length === 0 && uploads.length === 0 && (
+                                                            <div className="text-center text-muted-foreground text-sm py-12">La lista está vacía.</div>
+                                                        )}
+                                                    </div>
+                                               </ScrollArea>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
                                </div>
                             </ScrollArea>
                          </div>
                         
-                        {/* Columna Central: Hijos */}
-                        <div className="lg:col-span-5 h-full">
-                           <ScrollArea className="h-full">
-                                <div className="p-6 space-y-4">
-                                    <div className="space-y-2">
-                                        <Label>Añadir Videos</Label>
-                                        <div className="flex gap-2">
-                                            <Input value={newVideoUrl} onChange={e => setNewVideoUrl(e.target.value)} placeholder="Pega una URL de YouTube..."/>
-                                            <Button type="button" variant="outline" onClick={handleAddYoutubeVideo} disabled={isFetchingInfo}>{isFetchingInfo ? <Loader2 className="h-4 w-4 animate-spin"/> : 'Añadir'}</Button>
-                                        </div>
-                                        <UploadArea onFileSelect={(files) => files && handleFileUpload(files[0])} compact disabled={isSaving} className="h-16 border-dashed">
-                                            <div className="text-center text-muted-foreground text-xs p-1">
-                                                <UploadCloud className="h-5 w-5 mx-auto"/>
-                                                <p>o sube un archivo de video</p>
-                                            </div>
-                                        </UploadArea>
-                                    </div>
-                                    <div className="h-[28rem] border rounded-lg p-2 bg-muted/50 mt-2">
-                                       <ScrollArea className="h-full pr-3">
-                                            <div className="space-y-2">
-                                                {uploads.map(up => (
-                                                    <div key={up.id} className="p-2 border rounded-md bg-background relative">
-                                                        <div className="flex items-center gap-2">
-                                                            <FileIcon displayMode="list" type={up.file.type.split('/')[1]} />
-                                                            <span className="text-xs font-medium truncate">{up.file.name}</span>
-                                                        </div>
-                                                        <Progress value={up.progress} className="h-1 mt-1" />
-                                                    </div>
-                                                ))}
-                                                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                                                    <SortableContext items={videos.map(v => v.id)} strategy={verticalListSortingStrategy}>
-                                                        {videos.map((video) => (
-                                                            <SortableVideoItem key={video.id} video={video} onRemove={() => handleRemoveVideo(video.id)} />
-                                                        ))}
-                                                    </SortableContext>
-                                                </DndContext>
-                                            </div>
-                                       </ScrollArea>
-                                    </div>
-                                </div>
-                            </ScrollArea>
-                        </div>
-                        
                         {/* Columna Derecha: Permisos y Quiz */}
-                         <div className="lg:col-span-3 h-full bg-muted/50 border-l">
+                         <div className="lg:col-span-5 h-full bg-muted/50">
                             <Tabs defaultValue="access" className="flex flex-col h-full">
-                                <TabsList className="grid w-full grid-cols-3 mx-4 mt-4">
+                                <TabsList className="grid w-full grid-cols-3 mx-4 mt-4 flex-shrink-0">
                                     <TabsTrigger value="access">Acceso</TabsTrigger>
                                     <TabsTrigger value="collabs">Colaboradores</TabsTrigger>
                                     <TabsTrigger value="quiz">Evaluación</TabsTrigger>
@@ -422,3 +427,4 @@ const UserOrProcessList = ({ type, items, selectedIds, onSelectionChange }: { ty
         </Card>
     );
 };
+```
