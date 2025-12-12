@@ -1,5 +1,5 @@
 
-// src/api/resources/[id]/route.ts (CORREGIDO)
+// src/app/api/resources/[id]/route.ts (CORREGIDO)
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -57,33 +57,38 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         
         const body = await req.json();
         const { title, category, description, sharingMode, sharedWithUserIds, sharedWithProcessIds, expiresAt, status, content, observations, quiz, collaboratorIds, videos } = body;
-
+        
         await prisma.$transaction(async (tx) => {
+            const isPlaylist = resourceToUpdate.type === 'VIDEO_PLAYLIST';
+            
             // --- UPDATE GENERAL RESOURCE INFO ---
             const updateData: any = {
-                title, category, content, observations, description, status, sharingMode,
+                title, category, description, sharingMode, status, observations,
                 expiresAt: expiresAt ? new Date(expiresAt) : null,
                 sharedWith: { set: sharingMode === 'PRIVATE' ? (sharedWithUserIds ?? []).map((id: string) => ({ id })) : [] },
                 sharedWithProcesses: { set: sharingMode === 'PROCESS' ? (sharedWithProcessIds ?? []).map((id: string) => ({ id })) : [] },
                 collaborators: { set: (collaboratorIds ?? []).map((id: string) => ({ id })) },
             };
-            
-            // --- VERSIONING FOR EDITABLE DOCUMENTS ---
-            const createVersion = resourceToUpdate.type === 'DOCUMENTO_EDITABLE' && resourceToUpdate.content !== content;
-            if (createVersion && session) {
-                updateData.version = { increment: 1 };
-                await tx.resourceVersion.create({
-                    data: {
-                        resourceId: resourceToUpdate.id,
-                        version: resourceToUpdate.version,
-                        content: resourceToUpdate.content,
-                        authorId: session.id,
-                    }
-                });
+
+            // --- VERSIONING & CONTENT (for non-playlists) ---
+            if (!isPlaylist && content !== undefined) {
+                const createVersion = resourceToUpdate.type === 'DOCUMENTO_EDITABLE' && resourceToUpdate.content !== content;
+                if (createVersion && session) {
+                    updateData.version = { increment: 1 };
+                    await tx.resourceVersion.create({
+                        data: {
+                            resourceId: resourceToUpdate.id,
+                            version: resourceToUpdate.version,
+                            content: resourceToUpdate.content,
+                            authorId: session.id,
+                        }
+                    });
+                }
+                updateData.content = content;
             }
 
             // --- UPDATE VIDEOS (ONLY FOR VIDEO_PLAYLIST) ---
-            if (resourceToUpdate.type === 'VIDEO_PLAYLIST' && videos) {
+            if (isPlaylist && videos) {
                 const existingVideos = await tx.enterpriseResource.findMany({ where: { parentId: id }, select: { id: true } });
                 const newVideoIds = videos.map((v: any) => v.id).filter(Boolean);
                 const videosToDelete = existingVideos.filter(ev => !newVideoIds.includes(ev.id));
@@ -93,14 +98,14 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
                 for (const video of videos) {
                     await tx.enterpriseResource.upsert({
-                        where: { id: video.id.startsWith('vid-') ? '' : video.id }, // Force create for new videos
+                        where: { id: video.id.startsWith('vid-') ? '' : video.id },
                         create: { title: video.title, url: video.url, type: 'VIDEO', uploaderId: session!.id, parentId: id },
                         update: { title: video.title, url: video.url },
                     });
                 }
             }
 
-            // --- HANDLE QUIZ LOGIC (FOR ANY RESOURCE TYPE) ---
+            // --- HANDLE QUIZ LOGIC (for ANY resource type) ---
             if (quiz) {
                 const upsertedQuiz = await tx.quiz.upsert({
                     where: { resourceId: id },
@@ -117,7 +122,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                     },
                 });
 
-                // Clear old questions and create new ones
                 await tx.question.deleteMany({ where: { quizId: upsertedQuiz.id } });
                 
                 if (quiz.questions && quiz.questions.length > 0) {
