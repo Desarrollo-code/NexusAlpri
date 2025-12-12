@@ -528,7 +528,7 @@ model EnterpriseResource {
   size        Int?
   isPinned    Boolean  @default(false)
   uploader    User               @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
-  parent      EnterpriseResource? @relation("FolderChildren", fields: [parentId], references: [id], onDelete: Restrict)
+  parent EnterpriseResource? @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
   children    EnterpriseResource[] @relation("FolderChildren")
   sharedWith  User[]             @relation("SharedWithUsers")
   sharedWithProcesses Process[] @relation("ProcessResourceShares")
