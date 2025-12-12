@@ -427,4 +427,3 @@ const UserOrProcessList = ({ type, items, selectedIds, onSelectionChange }: { ty
         </Card>
     );
 };
-```
