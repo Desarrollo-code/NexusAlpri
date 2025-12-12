@@ -250,7 +250,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
     return (
         <>
             <Dialog open={isOpen} onOpenChange={onClose}>
-                <DialogContent className="w-[95vw] sm:max-w-7xl p-0 gap-0 rounded-2xl h-[90vh] flex flex-col">
+                <DialogContent className="w-[95vw] sm:max-w-3xl p-0 gap-0 rounded-2xl h-[90vh] flex flex-col">
                     <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
                         <DialogTitle>{isEditing ? 'Editar Lista de Videos' : 'Crear Nueva Lista de Videos'}</DialogTitle>
                          <DialogDescription>
@@ -274,9 +274,6 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                                             <CardTitle className="text-base">Información General</CardTitle>
                                         </CardHeader>
                                         <CardContent className="space-y-4">
-                                             <div className="relative w-full aspect-[16/9] rounded-lg border bg-muted flex items-center justify-center">
-                                                <ImageIcon className="h-10 w-10 text-muted-foreground"/>
-                                            </div>
                                             <div className="space-y-1"><Label htmlFor="title">Título de la Lista</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
                                             <div className="space-y-1"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} /></div>
                                             <div className="space-y-1"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory} required><SelectTrigger><SelectValue placeholder="Selecciona..."/></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
