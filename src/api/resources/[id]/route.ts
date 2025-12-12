@@ -98,59 +98,62 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                     });
                 }
             }
-            
+
+            // --- LÓGICA DE QUIZ CORREGIDA ---
             if (quiz) {
-                const questionsData = {
-                    deleteMany: {}, // Borra todas las preguntas existentes
-                    create: (quiz.questions || []).map((q: AppQuestion, qIndex: number) => ({
-                        text: q.text,
-                        order: qIndex,
-                        type: q.type,
-                        template: q.template,
-                        imageUrl: q.imageUrl,
-                        options: {
-                            create: (q.options || []).map((opt: any) => ({
-                                text: opt.text,
-                                isCorrect: opt.isCorrect,
-                                points: opt.points || 0,
-                                imageUrl: opt.imageUrl
-                            }))
-                        }
-                    }))
-                };
-                
                 const quizPayload = {
                     title: quiz.title || 'Evaluación del Recurso',
                     description: quiz.description,
                     maxAttempts: quiz.maxAttempts,
-                    questions: questionsData,
                 };
-
-                await tx.enterpriseResource.update({
-                    where: { id },
-                    data: {
-                        ...updateData,
-                        quiz: {
-                            upsert: {
-                                where: { resourceId: id },
-                                create: {
-                                    ...quizPayload,
-                                },
-                                update: {
-                                    ...quizPayload,
-                                },
-                            },
-                        },
-                    },
+                
+                // 1. Upsert del Quiz principal (sin las preguntas)
+                const upsertedQuiz = await tx.quiz.upsert({
+                    where: { resourceId: id },
+                    create: { ...quizPayload, resourceId: id },
+                    update: { ...quizPayload },
                 });
+                
+                // 2. Borrar las preguntas antiguas
+                await tx.question.deleteMany({ where: { quizId: upsertedQuiz.id } });
+                
+                // 3. Crear las nuevas preguntas
+                if (quiz.questions && quiz.questions.length > 0) {
+                     for (const [qIndex, q] of (quiz.questions as AppQuestion[]).entries()) {
+                         await tx.question.create({
+                             data: {
+                                text: q.text,
+                                order: qIndex,
+                                type: q.type,
+                                template: q.template,
+                                imageUrl: q.imageUrl,
+                                quizId: upsertedQuiz.id,
+                                options: {
+                                    create: (q.options || []).map((opt: any) => ({
+                                        text: opt.text,
+                                        isCorrect: opt.isCorrect,
+                                        points: opt.points || 0,
+                                        imageUrl: opt.imageUrl
+                                    }))
+                                }
+                            }
+                         });
+                     }
+                }
+                
+                // Asegurarse de que el recurso esté conectado al quiz
+                updateData.quiz = { connect: { id: upsertedQuiz.id } };
+
             } else {
                  // Si no hay quiz en el payload, pero existe uno, eliminarlo
                 const existingQuiz = await tx.quiz.findUnique({ where: { resourceId: id } });
                 if (existingQuiz) {
                     await tx.quiz.delete({ where: { id: existingQuiz.id } });
                 }
-                await tx.enterpriseResource.update({ where: { id }, data: updateData });
             }
+            
+            // Finalmente, actualizar el recurso
+            await tx.enterpriseResource.update({ where: { id }, data: updateData });
         });
         
         const updatedResource = await prisma.enterpriseResource.findUnique({ 
