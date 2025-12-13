@@ -97,7 +97,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
     const [category, setCategory] = useState('');
     
     const [videos, setVideos] = useState<ContentBlock[]>([]);
-    const [quiz, setQuiz] = useState<AppQuiz | null>(null); // Estado centralizado para el quiz
+    const [quiz, setQuiz] = useState<AppQuiz | null>(null);
     
     const [newVideoUrl, setNewVideoUrl] = useState('');
     const [uploads, setUploads] = useState<any[]>([]);
@@ -238,7 +238,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                 title, description, category, parentId,
                 type: 'VIDEO_PLAYLIST', 
                 videos: videos.map(v => ({ id: v.id, title: v.title, url: v.url })),
-                quiz: quiz,
+                quiz,
                 sharingMode, sharedWithUserIds, sharedWithProcessIds, collaboratorIds
             };
 
@@ -252,6 +252,7 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
             toast({ title: '¡Éxito!', description: `Lista de videos ${isEditing ? 'actualizada' : 'creada'}.` });
             onSave();
             onClose();
+
         } catch (err) {
             toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
         } finally {
@@ -391,7 +392,10 @@ export function PlaylistCreatorModal({ isOpen, onClose, parentId, onSave, playli
                         questions: [],
                         maxAttempts: null,
                     }}
-                    onSave={setQuiz}
+                    onSave={async (updatedQuiz) => {
+                        setQuiz(updatedQuiz);
+                        return Promise.resolve();
+                    }}
                 />
             )}
         </>

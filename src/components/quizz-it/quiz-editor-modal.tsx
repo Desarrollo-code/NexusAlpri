@@ -174,18 +174,18 @@ const QuestionEditor = ({ question, isQuiz, onQuestionChange, onOptionChange, on
     );
 };
 
-export function QuizEditorModal({ isOpen, onClose, quiz, onSave, onPreview }: { isOpen: boolean, onClose: () => void, quiz: AppQuiz | null, onSave: (updatedQuiz: AppQuiz) => void, onPreview?: (quiz: AppQuiz) => void }) {
+export function QuizEditorModal({ isOpen, onClose, quiz, onSave, onPreview }: { isOpen: boolean, onClose: () => void, quiz: AppQuiz | null, onSave: (updatedQuiz: AppQuiz) => Promise<void>, onPreview?: (quiz: AppQuiz) => void }) {
     const [localQuiz, setLocalQuiz] = useState<AppQuiz | null>(quiz);
     const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
+    const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
-        // Deep copy of the quiz to avoid direct state mutation
         if (quiz) {
             setLocalQuiz(JSON.parse(JSON.stringify(quiz)));
             setActiveQuestionIndex(0);
         }
     }, [quiz, isOpen]);
-
+    
     const handleQuestionChange = (field: 'text' | 'imageUrl' | 'template', value: string | null) => {
         if (!localQuiz) return;
         const newQuestions = [...localQuiz.questions];
@@ -259,10 +259,16 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave, onPreview }: { 
         setActiveQuestionIndex(prev => Math.max(0, prev - 1));
     };
 
-    const handleSaveChanges = () => {
-        if (localQuiz) {
-            onSave(localQuiz);
+    const handleSaveChanges = async () => {
+        if (!localQuiz) return;
+        setIsSaving(true);
+        try {
+            await onSave(localQuiz);
             onClose();
+        } catch(e) {
+            console.error(e);
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -291,15 +297,15 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave, onPreview }: { 
                     <div className="md:col-span-3 border-l bg-muted/50 flex flex-col h-full">
                         <ScrollArea className="flex-grow p-4"><div className="space-y-4"><Card><CardHeader><CardTitle className="text-base">Detalles del Quiz</CardTitle></CardHeader><CardContent className="space-y-4"><div className="space-y-1"><Label>Título del Quiz</Label><Input value={localQuiz.title} onChange={e => setLocalQuiz(p => p ? ({...p, title: e.target.value}) : null)}/></div><div className="space-y-1"><Label>Descripción</Label><Textarea value={localQuiz.description || ''} onChange={e => setLocalQuiz(p => p ? ({...p, description: e.target.value}) : null)} rows={3}/></div></CardContent></Card><Card><CardHeader><CardTitle className="text-base">Configuración</CardTitle></CardHeader><CardContent className="space-y-4"><div className="space-y-1"><Label>Límite de Intentos</Label><Input type="number" value={localQuiz.maxAttempts || ''} onChange={e => setLocalQuiz(p => p ? ({...p, maxAttempts: e.target.value ? parseInt(e.target.value) : null}) : null)} placeholder="Ilimitados" /></div><div className="space-y-1"><Label>Estilo del Temporizador</Label><Select value={localQuiz.timerStyle || 'circular'} onValueChange={(v) => setLocalQuiz(p => p ? ({...p, timerStyle: v}) : null)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="circular">Circular</SelectItem><SelectItem value="bar">Barra</SelectItem><SelectItem value="pill">Píldora</SelectItem></SelectContent></Select></div></CardContent></Card></div></ScrollArea>
                         <DialogFooter className="p-4 border-t flex-col sm:flex-col sm:space-x-0 gap-2 bg-background/80">
-                            <Button onClick={handleSaveChanges}><Save className="mr-2 h-4 w-4"/>Guardar Quiz</Button>
+                            <Button onClick={handleSaveChanges} disabled={isSaving}>
+                                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
+                                Guardar Quiz
+                            </Button>
                             {onPreview && <Button variant="outline" onClick={handlePreview}><Eye className="mr-2 h-4 w-4"/>Previsualizar</Button>}
                         </DialogFooter>
                     </div>
                 </div>
             </DialogContent>
         </Dialog>
-      </>
     );
 }
-
-```
