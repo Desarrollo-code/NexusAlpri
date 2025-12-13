@@ -24,7 +24,7 @@ import { Progress } from '../ui/progress';
 import { Loader2 } from 'lucide-react';
 import { Label } from '../ui/label';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/select';
-import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '../ui/card';
+import { Card, CardHeader, CardContent, CardTitle, CardFooter, CardDescription } from '../ui/card';
 import { Alert, AlertDescription } from '../ui/alert';
 import { ColorfulLoader } from '../ui/colorful-loader';
 import { Separator } from '../ui/separator';
