@@ -174,7 +174,7 @@ const QuestionEditor = ({ question, isQuiz, onQuestionChange, onOptionChange, on
     );
 };
 
-export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, onClose: () => void, quiz: AppQuiz, onSave: (updatedQuiz: AppQuiz) => void }) {
+export function QuizEditorModal({ isOpen, onClose, quiz, onSave, onPreview }: { isOpen: boolean, onClose: () => void, quiz: AppQuiz, onSave: (updatedQuiz: AppQuiz) => void, onPreview: (quiz: AppQuiz) => void }) {
     const [localQuiz, setLocalQuiz] = useState<AppQuiz>(quiz);
     const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
 
@@ -252,7 +252,10 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
         setActiveQuestionIndex(prev => Math.max(0, prev - 1));
     };
 
-    const handleSaveChanges = () => { onSave(localQuiz); };
+    const handleSaveChanges = () => {
+        onSave(localQuiz);
+        onClose();
+    };
     
     if (!localQuiz || !localQuiz.questions) return null;
     const activeQuestion = localQuiz.questions[activeQuestionIndex];
@@ -326,8 +329,9 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                              </Card>
                         </div>
                     </ScrollArea>
-                    <DialogFooter className="p-4 border-t flex-shrink-0 bg-background/80">
+                    <DialogFooter className="p-4 border-t flex-col sm:flex-col sm:space-x-0 gap-2 bg-background/80">
                         <Button onClick={handleSaveChanges}><Save className="mr-2 h-4 w-4"/>Guardar Quiz</Button>
+                        <Button variant="outline" onClick={() => onPreview(localQuiz)}><Eye className="mr-2 h-4 w-4"/>Previsualizar</Button>
                     </DialogFooter>
                 </div>
             </div>

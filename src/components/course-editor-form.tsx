@@ -242,7 +242,7 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
                 }
                 return (
                     <div className="space-y-2">
-                        <UploadArea onFileSelect={handleFileSelect} disabled={isSaving || isFileUploading} />
+                        <UploadArea onFileSelect={(files) => files && handleFileSelect(files[0])} disabled={isSaving || isFileUploading} />
                         {isFileUploading && <div className="flex items-center gap-2 text-xs text-muted-foreground"><Progress value={fileUploadProgress} className="w-full h-1.5" /><span>{fileUploadProgress}%</span></div>}
                     </div>
                 );
@@ -303,6 +303,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
     
     const [quizToEdit, setQuizToEdit] = useState<{ quiz: AppQuiz; onSave: (updatedQuiz: AppQuiz) => void } | null>(null);
+    const [quizToPreview, setQuizToPreview] = useState<AppQuiz | null>(null);
 
 
     // --- Data Fetching ---
@@ -858,7 +859,16 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                     onClose={() => setQuizToEdit(null)} 
                     quiz={quizToEdit.quiz}
                     onSave={quizToEdit.onSave}
+                    onPreview={setQuizToPreview}
                 />
+            )}
+             {quizToPreview && (
+                 <Dialog open={!!quizToPreview} onOpenChange={() => setQuizToPreview(null)}>
+                    <DialogContent className="max-w-4xl h-[80vh]">
+                         <DialogHeader><DialogTitle>Vista Previa del Quiz: {quizToPreview.title}</DialogTitle></DialogHeader>
+                         <QuizGameView form={{...quizToPreview, fields: quizToPreview.questions}} isEditorPreview={true} />
+                    </DialogContent>
+                 </Dialog>
             )}
         </div>
     );
