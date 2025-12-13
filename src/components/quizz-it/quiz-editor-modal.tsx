@@ -24,7 +24,6 @@ import { Progress } from '../ui/progress';
 import { Loader2 } from 'lucide-react';
 import { Label } from '../ui/label';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/select';
-import { QuizGameView } from './quiz-game-view';
 import { Card, CardHeader, CardContent, CardTitle, CardFooter } from '../ui/card';
 import { Alert, AlertDescription } from '../ui/alert';
 import { ColorfulLoader } from '../ui/colorful-loader';
@@ -87,7 +86,7 @@ const ImageUploadWidget = ({ imageUrl, onUpload, onRemove, disabled, inputId, is
                     </div>
                 </div>
             ) : (
-                <UploadArea onFileSelect={handleFileSelect} disabled={disabled} inputId={inputId} className="h-full border-0 bg-transparent p-0">
+                <UploadArea onFileSelect={(files) => files && handleFileSelect(files[0])} disabled={disabled} inputId={inputId} className="h-full border-0 bg-transparent p-0">
                     <div className="text-center text-muted-foreground">
                         <ImageIcon className="mx-auto h-5 w-5"/>
                     </div>
@@ -178,7 +177,6 @@ const QuestionEditor = ({ question, isQuiz, onQuestionChange, onOptionChange, on
 export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, onClose: () => void, quiz: AppQuiz, onSave: (updatedQuiz: AppQuiz) => void }) {
     const [localQuiz, setLocalQuiz] = useState<AppQuiz>(quiz);
     const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
-    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
     useEffect(() => {
         setLocalQuiz(JSON.parse(JSON.stringify(quiz)));
@@ -258,12 +256,11 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
     
     if (!localQuiz || !localQuiz.questions) return null;
     const activeQuestion = localQuiz.questions[activeQuestionIndex];
-    const quizPreviewForm = { ...localQuiz, fields: localQuiz.questions.map(q => ({ ...q, label: q.text })) };
 
     return (
       <>
         <Dialog open={isOpen} onOpenChange={onClose}>
-          <DialogContent className="w-[95vw] max-w-7xl p-0 gap-0 rounded-2xl h-[90vh]">
+          <DialogContent className="w-[95vw] max-w-7xl p-0 gap-0 rounded-2xl h-[90vh] flex flex-col">
             <div className="grid grid-cols-1 md:grid-cols-12 h-full">
                 {/* Columna Izquierda: Lista de Preguntas */}
                 <div className="md:col-span-3 border-r flex flex-col bg-muted/50 h-full">
@@ -330,20 +327,11 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                         </div>
                     </ScrollArea>
                     <DialogFooter className="p-4 border-t flex-shrink-0 bg-background/80">
-                        <Button variant="outline" onClick={() => setIsPreviewOpen(true)}><Eye className="mr-2 h-4 w-4" />Previsualizar</Button>
                         <Button onClick={handleSaveChanges}><Save className="mr-2 h-4 w-4"/>Guardar Quiz</Button>
                     </DialogFooter>
                 </div>
             </div>
           </DialogContent>
-        </Dialog>
-
-        <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-            <DialogContent className="max-w-4xl p-0">
-                <div className="bg-gradient-to-br from-background via-muted to-background p-8 rounded-lg">
-                    <QuizGameView form={quizPreviewForm} isEditorPreview={true} activeQuestionIndex={activeQuestionIndex}/>
-                </div>
-            </DialogContent>
         </Dialog>
       </>
     );
