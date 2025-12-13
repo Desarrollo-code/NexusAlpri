@@ -24,7 +24,7 @@ import { Progress } from '../ui/progress';
 import { Loader2 } from 'lucide-react';
 import { Label } from '../ui/label';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/select';
-import { Card, CardHeader, CardContent, CardTitle, CardFooter } from '../ui/card';
+import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '../ui/card';
 import { Alert, AlertDescription } from '../ui/alert';
 import { ColorfulLoader } from '../ui/colorful-loader';
 import { Separator } from '../ui/separator';
@@ -174,16 +174,20 @@ const QuestionEditor = ({ question, isQuiz, onQuestionChange, onOptionChange, on
     );
 };
 
-export function QuizEditorModal({ isOpen, onClose, quiz, onSave, onPreview }: { isOpen: boolean, onClose: () => void, quiz: AppQuiz, onSave: (updatedQuiz: AppQuiz) => void, onPreview: (quiz: AppQuiz) => void }) {
-    const [localQuiz, setLocalQuiz] = useState<AppQuiz>(quiz);
+export function QuizEditorModal({ isOpen, onClose, quiz, onSave, onPreview }: { isOpen: boolean, onClose: () => void, quiz: AppQuiz | null, onSave: (updatedQuiz: AppQuiz) => void, onPreview?: (quiz: AppQuiz) => void }) {
+    const [localQuiz, setLocalQuiz] = useState<AppQuiz | null>(quiz);
     const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
 
     useEffect(() => {
-        setLocalQuiz(JSON.parse(JSON.stringify(quiz)));
-        setActiveQuestionIndex(0);
+        // Deep copy of the quiz to avoid direct state mutation
+        if (quiz) {
+            setLocalQuiz(JSON.parse(JSON.stringify(quiz)));
+            setActiveQuestionIndex(0);
+        }
     }, [quiz, isOpen]);
 
     const handleQuestionChange = (field: 'text' | 'imageUrl' | 'template', value: string | null) => {
+        if (!localQuiz) return;
         const newQuestions = [...localQuiz.questions];
         (newQuestions[activeQuestionIndex] as any)[field] = value;
 
@@ -202,141 +206,100 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave, onPreview }: { 
             }
         }
         
-        setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
+        setLocalQuiz(prev => prev ? ({ ...prev, questions: newQuestions }) : null);
     };
 
     const handleOptionChange = (oIndex: number, field: 'text' | 'imageUrl', value: string | null) => {
+        if (!localQuiz) return;
         const newQuestions = [...localQuiz.questions];
         (newQuestions[activeQuestionIndex].options[oIndex] as any)[field] = value;
-        setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
+        setLocalQuiz(prev => prev ? ({ ...prev, questions: newQuestions }) : null);
     };
 
     const handleSetCorrect = (optionId: string) => {
+        if (!localQuiz) return;
         const newQuestions = [...localQuiz.questions];
         const question = newQuestions[activeQuestionIndex];
         question.options = question.options.map(opt => ({
             ...opt,
             isCorrect: opt.id === optionId,
         }));
-        setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
+        setLocalQuiz(prev => prev ? ({ ...prev, questions: newQuestions }) : null);
     };
     
     const addQuestion = () => {
+        if (!localQuiz) return;
         const newQuestion: AppQuestion = {
             id: generateUniqueId('question'),
             text: 'Nueva Pregunta', order: localQuiz.questions.length, type: 'SINGLE_CHOICE', imageUrl: null, template: 'default',
             options: [{ id: generateUniqueId('option'), text: 'Opción Correcta', imageUrl: null, isCorrect: true, points: 10 }, { id: generateUniqueId('option'), text: 'Opción Incorrecta', imageUrl: null, isCorrect: false, points: 0 }]
         };
-        setLocalQuiz(prev => ({ ...prev, questions: [...prev.questions, newQuestion] }));
+        setLocalQuiz(prev => prev ? ({ ...prev, questions: [...prev.questions, newQuestion] }) : null);
         setActiveQuestionIndex(localQuiz.questions.length);
     };
 
     const addOption = () => {
+        if (!localQuiz) return;
         const newQuestions = [...localQuiz.questions];
         newQuestions[activeQuestionIndex].options.push({ id: generateUniqueId('option'), text: '', imageUrl: null, isCorrect: false, points: 0 });
-        setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
+        setLocalQuiz(prev => prev ? ({ ...prev, questions: newQuestions }) : null);
     };
     
     const deleteOption = (optionIndex: number) => {
+        if (!localQuiz) return;
         const newQuestions = [...localQuiz.questions];
         const currentOptions = newQuestions[activeQuestionIndex].options;
         currentOptions.splice(optionIndex, 1);
-        setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
+        setLocalQuiz(prev => prev ? ({ ...prev, questions: newQuestions }) : null);
     };
 
     const deleteQuestion = (indexToDelete: number) => {
-        if (localQuiz.questions.length <= 1) {
-            return;
-        }
-        setLocalQuiz(prev => ({ ...prev, questions: prev.questions.filter((_, i) => i !== indexToDelete) }));
+        if (!localQuiz || localQuiz.questions.length <= 1) return;
+        setLocalQuiz(prev => prev ? ({ ...prev, questions: prev.questions.filter((_, i) => i !== indexToDelete) }) : null);
         setActiveQuestionIndex(prev => Math.max(0, prev - 1));
     };
 
     const handleSaveChanges = () => {
-        onSave(localQuiz);
-        onClose();
+        if (localQuiz) {
+            onSave(localQuiz);
+            onClose();
+        }
+    };
+
+    const handlePreview = () => {
+        if (localQuiz && onPreview) {
+            onPreview(localQuiz);
+        }
     };
     
     if (!localQuiz || !localQuiz.questions) return null;
     const activeQuestion = localQuiz.questions[activeQuestionIndex];
 
     return (
-      <>
         <Dialog open={isOpen} onOpenChange={onClose}>
-          <DialogContent className="w-[95vw] max-w-7xl p-0 gap-0 rounded-2xl h-[90vh] flex flex-col">
-            <div className="grid grid-cols-1 md:grid-cols-12 h-full">
-                {/* Columna Izquierda: Lista de Preguntas */}
-                <div className="md:col-span-3 border-r flex flex-col bg-muted/50 h-full">
-                    <div className="p-4 border-b flex-shrink-0">
-                        <Button onClick={addQuestion} className="w-full"><PlusCircle className="mr-2 h-4 w-4"/>Añadir Pregunta</Button>
+            <DialogContent className="w-[95vw] max-w-7xl p-0 gap-0 rounded-2xl h-[90vh] flex flex-col">
+                 <DialogHeader className="p-4 border-b flex-shrink-0">
+                    <DialogTitle>Editor de Quiz</DialogTitle>
+                    <DialogDescription>Modifica las preguntas, opciones y configuración de tu quiz.</DialogDescription>
+                </DialogHeader>
+                <div className="grid grid-cols-1 md:grid-cols-12 flex-1 min-h-0">
+                    <div className="md:col-span-3 border-r flex flex-col bg-muted/50 h-full">
+                        <div className="p-4 border-b flex-shrink-0"><Button onClick={addQuestion} className="w-full"><PlusCircle className="mr-2 h-4 w-4"/>Añadir Pregunta</Button></div>
+                        <ScrollArea className="flex-1"><div className="p-2 space-y-1">{localQuiz.questions.map((q, index) => (<button key={q.id} onClick={() => setActiveQuestionIndex(index)} className={cn("w-full text-left p-2 rounded-md border flex gap-2 items-start", activeQuestionIndex === index ? "bg-primary/10 border-primary" : "bg-card hover:bg-muted")}><span className="font-bold text-primary mt-0.5">{index + 1}.</span><span className="truncate flex-grow">{q.text || "Pregunta sin título"}</span><Button variant="ghost" size="icon" className="h-6 w-6 text-destructive/70 hover:text-destructive shrink-0" onClick={(e) => {e.stopPropagation(); deleteQuestion(index)}}><Trash2 className="h-4 w-4"/></Button></button>))}</div></ScrollArea>
                     </div>
-                    <ScrollArea className="flex-1">
-                        <div className="p-2 space-y-1">
-                        {localQuiz.questions.map((q, index) => (
-                            <button key={q.id} onClick={() => setActiveQuestionIndex(index)} className={cn("w-full text-left p-2 rounded-md border flex gap-2 items-start", activeQuestionIndex === index ? "bg-primary/10 border-primary" : "bg-card hover:bg-muted")}>
-                                <span className="font-bold text-primary mt-0.5">{index + 1}.</span>
-                                <span className="truncate flex-grow">{q.text || "Pregunta sin título"}</span>
-                                <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive/70 hover:text-destructive shrink-0" onClick={(e) => {e.stopPropagation(); deleteQuestion(index)}}><Trash2 className="h-4 w-4"/></Button>
-                            </button>
-                        ))}
-                        </div>
-                    </ScrollArea>
+                    <div className="md:col-span-6 flex flex-col h-full"><ScrollArea className="flex-grow"><div className="p-4">{activeQuestion && (<QuestionEditor question={activeQuestion} isQuiz={true} onQuestionChange={handleQuestionChange} onOptionChange={handleOptionChange} onSetCorrect={handleSetCorrect} onOptionAdd={addOption} onOptionDelete={deleteOption} />)}</div></ScrollArea></div>
+                    <div className="md:col-span-3 border-l bg-muted/50 flex flex-col h-full">
+                        <ScrollArea className="flex-grow p-4"><div className="space-y-4"><Card><CardHeader><CardTitle className="text-base">Detalles del Quiz</CardTitle></CardHeader><CardContent className="space-y-4"><div className="space-y-1"><Label>Título del Quiz</Label><Input value={localQuiz.title} onChange={e => setLocalQuiz(p => p ? ({...p, title: e.target.value}) : null)}/></div><div className="space-y-1"><Label>Descripción</Label><Textarea value={localQuiz.description || ''} onChange={e => setLocalQuiz(p => p ? ({...p, description: e.target.value}) : null)} rows={3}/></div></CardContent></Card><Card><CardHeader><CardTitle className="text-base">Configuración</CardTitle></CardHeader><CardContent className="space-y-4"><div className="space-y-1"><Label>Límite de Intentos</Label><Input type="number" value={localQuiz.maxAttempts || ''} onChange={e => setLocalQuiz(p => p ? ({...p, maxAttempts: e.target.value ? parseInt(e.target.value) : null}) : null)} placeholder="Ilimitados" /></div><div className="space-y-1"><Label>Estilo del Temporizador</Label><Select value={localQuiz.timerStyle || 'circular'} onValueChange={(v) => setLocalQuiz(p => p ? ({...p, timerStyle: v}) : null)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="circular">Circular</SelectItem><SelectItem value="bar">Barra</SelectItem><SelectItem value="pill">Píldora</SelectItem></SelectContent></Select></div></CardContent></Card></div></ScrollArea>
+                        <DialogFooter className="p-4 border-t flex-col sm:flex-col sm:space-x-0 gap-2 bg-background/80">
+                            <Button onClick={handleSaveChanges}><Save className="mr-2 h-4 w-4"/>Guardar Quiz</Button>
+                            {onPreview && <Button variant="outline" onClick={handlePreview}><Eye className="mr-2 h-4 w-4"/>Previsualizar</Button>}
+                        </DialogFooter>
+                    </div>
                 </div>
-
-                {/* Columna Central: Editor de Pregunta */}
-                <div className="md:col-span-6 flex flex-col h-full">
-                   <ScrollArea className="flex-grow">
-                        <div className="p-4">
-                        {activeQuestion ? (
-                             <QuestionEditor
-                                question={activeQuestion}
-                                isQuiz={true}
-                                onQuestionChange={handleQuestionChange}
-                                onOptionChange={handleOptionChange}
-                                onSetCorrect={handleSetCorrect}
-                                onOptionAdd={addOption}
-                                onOptionDelete={deleteOption}
-                            />
-                        ) : (
-                            <div className="flex items-center justify-center h-full text-muted-foreground"><p>Selecciona una pregunta para editarla.</p></div>
-                        )}
-                        </div>
-                    </ScrollArea>
-                </div>
-
-                 {/* Columna Derecha: Configuración del Quiz */}
-                <div className="md:col-span-3 border-l bg-muted/50 flex flex-col h-full">
-                     <ScrollArea className="flex-grow p-4">
-                        <div className="space-y-4">
-                            <Card>
-                                <CardHeader><CardTitle className="text-base">Detalles del Quiz</CardTitle></CardHeader>
-                                <CardContent className="space-y-4">
-                                     <div className="space-y-1"><Label>Título del Quiz</Label><Input value={localQuiz.title} onChange={e => setLocalQuiz(p => ({...p, title: e.target.value}))}/></div>
-                                     <div className="space-y-1"><Label>Descripción</Label><Textarea value={localQuiz.description || ''} onChange={e => setLocalQuiz(p => ({...p, description: e.target.value}))} rows={3}/></div>
-                                </CardContent>
-                            </Card>
-                             <Card>
-                                <CardHeader><CardTitle className="text-base">Configuración de Jugabilidad</CardTitle></CardHeader>
-                                 <CardContent className="space-y-4">
-                                    <div className="space-y-1"><Label>Límite de Intentos</Label><Input type="number" value={localQuiz.maxAttempts || ''} onChange={e => setLocalQuiz(p => ({...p, maxAttempts: e.target.value ? parseInt(e.target.value) : null}))} placeholder="Ilimitados" /></div>
-                                    <div className="space-y-1"><Label>Estilo del Temporizador</Label>
-                                      <Select value={localQuiz.timerStyle || 'circular'} onValueChange={(v) => setLocalQuiz(p => ({...p, timerStyle: v}))}>
-                                         <SelectTrigger><SelectValue/></SelectTrigger>
-                                         <SelectContent><SelectItem value="circular">Circular</SelectItem><SelectItem value="bar">Barra</SelectItem><SelectItem value="pill">Píldora</SelectItem></SelectContent>
-                                      </Select>
-                                    </div>
-                                </CardContent>
-                             </Card>
-                        </div>
-                    </ScrollArea>
-                    <DialogFooter className="p-4 border-t flex-col sm:flex-col sm:space-x-0 gap-2 bg-background/80">
-                        <Button onClick={handleSaveChanges}><Save className="mr-2 h-4 w-4"/>Guardar Quiz</Button>
-                        <Button variant="outline" onClick={() => onPreview(localQuiz)}><Eye className="mr-2 h-4 w-4"/>Previsualizar</Button>
-                    </DialogFooter>
-                </div>
-            </div>
-          </DialogContent>
+            </DialogContent>
         </Dialog>
       </>
     );
 }
+
+```
