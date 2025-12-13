@@ -245,7 +245,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                 sharingMode, sharedWithUserIds, sharedWithProcessIds, collaboratorIds,
                 parentId, expiresAt: expiresAt?.toISOString() || null,
                 observations,
-                quiz,
+                quiz: quiz, // Siempre incluir el quiz
             };
             
             const endpoint = isEditing ? `/api/resources/${resource!.id}` : '/api/resources';
@@ -412,21 +412,16 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             </DialogContent>
         </Dialog>
         {isQuizEditorOpen && (
-                <QuizEditorModal
-                    isOpen={isQuizEditorOpen}
-                    onClose={() => setIsQuizEditorOpen(false)}
-                    quiz={quiz || {
-                        id: `new-quiz-${Date.now()}`,
-                        title: `Evaluación de ${title || 'el recurso'}`,
-                        questions: [],
-                        maxAttempts: null,
-                    }}
-                    onSave={(updatedQuiz) => {
-                        setQuiz(updatedQuiz);
-                        setIsQuizEditorOpen(false);
-                    }}
-                />
-            )}
+            <QuizEditorModal
+                isOpen={isQuizEditorOpen}
+                onClose={() => setIsQuizEditorOpen(false)}
+                quiz={quiz}
+                onSave={(updatedQuiz) => {
+                    setQuiz(updatedQuiz);
+                    setIsQuizEditorOpen(false);
+                }}
+            />
+        )}
         </>
     );
 }
@@ -460,3 +455,4 @@ const UserOrProcessList = ({ type, items, selectedIds, onSelectionChange }: { ty
         </Card>
     );
 };
+
