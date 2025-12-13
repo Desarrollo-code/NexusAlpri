@@ -29,6 +29,7 @@ import { Alert, AlertDescription } from '../ui/alert';
 import { ColorfulLoader } from '../ui/colorful-loader';
 import { Separator } from '../ui/separator';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
+import { QuizGameView } from './quiz-game-view';
 
 const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
@@ -178,6 +179,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave, onPreview }: { 
     const [localQuiz, setLocalQuiz] = useState<AppQuiz | null>(quiz);
     const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
     const [isSaving, setIsSaving] = useState(false);
+    const { toast } = useToast();
 
     useEffect(() => {
         if (quiz) {
@@ -264,9 +266,11 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave, onPreview }: { 
         setIsSaving(true);
         try {
             await onSave(localQuiz);
+            toast({ title: "Quiz Guardado", description: "Los cambios en el quiz se han guardado temporalmente. Guarda el recurso para hacerlo permanente." });
             onClose();
         } catch(e) {
             console.error(e);
+            toast({ title: "Error", description: "No se pudo guardar el quiz.", variant: "destructive" });
         } finally {
             setIsSaving(false);
         }
