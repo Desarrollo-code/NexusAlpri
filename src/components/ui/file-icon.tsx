@@ -101,7 +101,7 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
   if (type === 'VIDEO_PLAYLIST') {
       return (
           <div className="flex h-full w-full items-center justify-center p-4 bg-gradient-to-br from-primary/20 to-primary/30">
-              <IconVideoPlaylist className="w-28 h-28 text-muted-foreground/60" />
+              <IconVideoPlaylist className="w-20 h-20 text-primary drop-shadow-lg" />
           </div>
       )
   }
