@@ -79,7 +79,7 @@ const UploadWidget = ({
   useEffect(() => {
     // Revoke object URL on unmount or when currentImageUrl changes to prevent memory leaks
     if (localPreview) {
-      URL.revokeObjectURL(localPreview);
+      URL.revokeObjectURL(localPreview); 
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentImageUrl]);
@@ -129,7 +129,7 @@ const UploadWidget = ({
              <div className="relative w-full h-full">
                 <Image src={finalImageUrl} alt={`Previsualización de ${label}`} fill className="object-contain p-2 rounded-lg border bg-muted/20" />
                  <div className="absolute top-1 right-1 flex flex-col gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                     <UploadArea onFileSelect={handleFileSelectInternal} disabled={disabled} inputId={id} className="h-7 w-7 rounded-full shadow-md bg-secondary text-secondary-foreground hover:bg-secondary/80 p-0 border-0">
+                     <UploadArea onFileSelect={(files) => files && handleFileSelectInternal(files)} disabled={disabled} inputId={id} className="h-7 w-7 rounded-full shadow-md bg-secondary text-secondary-foreground hover:bg-secondary/80 p-0 border-0">
                          <Replace className="h-4 w-4" />
                      </UploadArea>
                      <Button type="button" variant="destructive" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={onRemove} disabled={disabled}>
@@ -362,7 +362,7 @@ export default function SettingsPageComponent() {
                             <CardTitle className="flex items-center gap-2 text-lg"><FolderOpen className="h-5 w-5 text-primary" />Imágenes de Estados Vacíos</CardTitle>
                         </CardHeader>
                         <CardContent>
-                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                                 <UploadWidget id="es-courses-upload" label="Catálogo" size="small" currentImageUrl={formState.emptyStateCoursesUrl} onFileSelect={(url) => handleImageUpload('emptyStateCoursesUrl', url)} onRemove={()=>handleRemoveImage('emptyStateCoursesUrl')} disabled={isSaving}/>
                                 <UploadWidget id="es-mycourses-upload" label="Mis Cursos" size="small" currentImageUrl={formState.emptyStateMyCoursesUrl} onFileSelect={(url) => handleImageUpload('emptyStateMyCoursesUrl', url)} onRemove={()=>handleRemoveImage('emptyStateMyCoursesUrl')} disabled={isSaving}/>
                                 <UploadWidget id="es-forms-upload" label="Formularios" size="small" currentImageUrl={formState.emptyStateFormsUrl} onFileSelect={(url) => handleImageUpload('emptyStateFormsUrl', url)} onRemove={()=>handleRemoveImage('emptyStateFormsUrl')} disabled={isSaving}/>
@@ -379,12 +379,16 @@ export default function SettingsPageComponent() {
                 </div>
                  <Card>
                     <CardHeader><CardTitle className="text-lg flex items-center gap-2"><ImageIcon className="h-5 w-5 text-primary"/>Imágenes de Navegación Pública</CardTitle></CardHeader>
-                    <CardContent className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 place-items-center">
-                        <UploadWidget id="landing-img-upload" label="Página de Inicio" currentImageUrl={formState.landingImageUrl} onFileSelect={(url) => handleImageUpload('landingImageUrl', url)} onRemove={()=>handleRemoveImage('landingImageUrl')} disabled={isSaving}/>
-                        <UploadWidget id="about-img-upload" label="Página 'Nosotros'" currentImageUrl={formState.aboutImageUrl} onFileSelect={(url) => handleImageUpload('aboutImageUrl', url)} onRemove={()=>handleRemoveImage('aboutImageUrl')} disabled={isSaving}/>
-                        <UploadWidget id="benefits-img-upload" label="Beneficios (Inicio)" currentImageUrl={formState.benefitsImageUrl} onFileSelect={(url) => handleImageUpload('benefitsImageUrl', url)} onRemove={()=>handleRemoveImage('benefitsImageUrl')} disabled={isSaving}/>
-                        <UploadWidget id="auth-img-upload" label="Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(url) => handleImageUpload('authImageUrl', url)} onRemove={()=>handleRemoveImage('authImageUrl')} disabled={isSaving}/>
-                        <UploadWidget id="announcements-img-upload" label="Fondo Anuncios" currentImageUrl={formState.announcementsImageUrl} onFileSelect={(url) => handleImageUpload('announcementsImageUrl', url)} onRemove={() => handleRemoveImage('announcementsImageUrl')} disabled={isSaving} />
+                    <CardContent>
+                        <ScrollArea>
+                            <div className="flex gap-4 pb-4">
+                                <UploadWidget id="landing-img-upload" label="Página de Inicio" currentImageUrl={formState.landingImageUrl} onFileSelect={(url) => handleImageUpload('landingImageUrl', url)} onRemove={()=>handleRemoveImage('landingImageUrl')} disabled={isSaving}/>
+                                <UploadWidget id="about-img-upload" label="Página 'Nosotros'" currentImageUrl={formState.aboutImageUrl} onFileSelect={(url) => handleImageUpload('aboutImageUrl', url)} onRemove={()=>handleRemoveImage('aboutImageUrl')} disabled={isSaving}/>
+                                <UploadWidget id="benefits-img-upload" label="Beneficios (Inicio)" currentImageUrl={formState.benefitsImageUrl} onFileSelect={(url) => handleImageUpload('benefitsImageUrl', url)} onRemove={()=>handleRemoveImage('benefitsImageUrl')} disabled={isSaving}/>
+                                <UploadWidget id="auth-img-upload" label="Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(url) => handleImageUpload('authImageUrl', url)} onRemove={()=>handleRemoveImage('authImageUrl')} disabled={isSaving}/>
+                                <UploadWidget id="announcements-img-upload" label="Fondo Anuncios" currentImageUrl={formState.announcementsImageUrl} onFileSelect={(url) => handleImageUpload('announcementsImageUrl', url)} onRemove={() => handleRemoveImage('announcementsImageUrl')} disabled={isSaving} />
+                            </div>
+                         </ScrollArea>
                     </CardContent>
                 </Card>
             </TabsContent>
