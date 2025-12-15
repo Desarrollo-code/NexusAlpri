@@ -1,5 +1,5 @@
 // src/lib/nav-items.ts
-import type { NavItem, UserRole } from '@/types';
+import type { NavItem, UserRole, PlatformSettings } from '@/types';
 import {
   LayoutGrid,
   BookOpen,
@@ -197,17 +197,31 @@ const NAVIGATION_ITEMS: NavItem[] = [
   }
 ];
 
-export const getNavItemsForRole = (role: UserRole): NavItem[] => {
-  return NAVIGATION_ITEMS
-    .filter(item => item.roles.includes(role))
-    .map(item => {
+export const getNavItemsForRole = (role: UserRole, settings?: PlatformSettings | null): NavItem[] => {
+  const filterByRole = (items: NavItem[]): NavItem[] => {
+    return items
+      .filter(item => {
+        // Regla general: el rol del usuario debe estar en la lista de roles del item.
+        const hasRoleAccess = item.roles.includes(role);
+        
+        // Regla específica para la hoja de ruta
+        if (item.id === 'roadmap' && settings?.roadmapVisibleTo) {
+          return settings.roadmapVisibleTo.includes(role);
+        }
+        
+        return hasRoleAccess;
+      })
+      .map(item => {
+        // Si el item tiene hijos, filtramos los hijos también.
         if (item.children) {
-            return {
-                ...item,
-                children: item.children.filter(sub => sub.roles.includes(role))
-            }
+          const filteredChildren = filterByRole(item.children);
+          // Solo devolvemos el item padre si tiene hijos visibles para este rol.
+          return filteredChildren.length > 0 ? { ...item, children: filteredChildren } : null;
         }
         return item;
-    })
-    .filter(item => !item.children || item.children.length > 0);
+      })
+      .filter((item): item is NavItem => item !== null);
+  };
+  
+  return filterByRole(NAVIGATION_ITEMS);
 };

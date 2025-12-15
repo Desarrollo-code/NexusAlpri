@@ -226,8 +226,8 @@ const SectionItem = ({ item }: { item: NavItem }) => {
 
 
 export const SidebarContent = () => {
-    const { user } = useAuth();
-    const navItems = getNavItemsForRole(user?.role || 'STUDENT');
+    const { user, settings } = useAuth();
+    const navItems = getNavItemsForRole(user?.role || 'STUDENT', settings);
 
     return (
         <TooltipProvider delayDuration={100}>
