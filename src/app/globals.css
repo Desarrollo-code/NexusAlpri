@@ -295,7 +295,7 @@
           hsl(var(--primary)/0.1) 0 300deg,
           #fff0 0 360deg
         )
-        50%/10vmin 12.5vmin,
+        50%/20vmin 25vmin,
       conic-gradient(
           from 0deg at 81.35% 35.5%,
           #fff0 0 22.75deg,
