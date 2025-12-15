@@ -26,12 +26,12 @@
     --ring: 221 83% 53%;
     --radius: 0.75rem;
 
-    /* Nueva paleta de gráficos cohesiva */
-    --chart-1: 221 83% 53%; /* Azul (Primario) */
-    --chart-2: 158 60% 45%; /* Verde */
-    --chart-3: 262 74% 55%; /* Púrpura */
-    --chart-4: 340 82% 58%; /* Rosa */
-    --chart-5: 25 91% 55%;  /* Naranja */
+    /* Paleta de gráficos menos saturada */
+    --chart-1: 221 70% 55%; /* Azul */
+    --chart-2: 158 50% 48%; /* Verde */
+    --chart-3: 262 60% 60%; /* Púrpura */
+    --chart-4: 340 65% 62%; /* Rosa */
+    --chart-5: 25 75% 58%;  /* Naranja */
     
     /* Colores para eventos del calendario */
     --event-blue: 210 90% 55%; --event-green: 145 63% 42%; --event-red: 0 80% 60%; --event-orange: 25 90% 60%;
