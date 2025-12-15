@@ -30,18 +30,23 @@ const backgroundPatterns = [
   'bg-pattern-blueprint',
   'bg-pattern-circuit',
   'bg-pattern-argyle',
-  'bg-pattern-burgundy',
+  'bg-pattern-longbar',
   'bg-pattern-woven',
   'bg-pattern-space',
 ];
 
+/**
+ * A simple and effective hashing function (djb2) to convert a string to a number.
+ * This provides a better distribution than a basic character code sum.
+ * @param str The string to hash (e.g., a resource ID).
+ * @returns A number hash.
+ */
 const stringToHash = (str: string): number => {
     if (!str) return 0;
-    let hash = 0;
+    let hash = 5381;
     for (let i = 0; i < str.length; i++) {
         const char = str.charCodeAt(i);
-        hash = (hash << 5) - hash + char;
-        hash = hash & hash;
+        hash = ((hash << 5) + hash) + char; /* hash * 33 + c */
     }
     return Math.abs(hash);
 };
