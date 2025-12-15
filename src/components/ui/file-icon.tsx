@@ -17,6 +17,27 @@ interface FileIconProps {
   resourceId?: string; // Optional, for dynamic coloring
 }
 
+const backgroundPatterns = [
+  'bg-pattern-dots',
+  'bg-pattern-lines',
+  'bg-pattern-cross',
+  'bg-pattern-circles',
+  'bg-pattern-zig-zag',
+  'bg-pattern-triangles',
+];
+
+const stringToHash = (str: string): number => {
+    if (!str) return 0;
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = (hash << 5) - hash + char;
+        hash = hash & hash;
+    }
+    return Math.abs(hash);
+};
+
+
 const renderIconPath = (type: string, className?: string) => {
     switch (type.toLowerCase()) {
         case 'png': case 'jpg': case 'jpeg': case 'gif': case 'webp':
@@ -89,21 +110,17 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
   }
 
   // --- GRID VIEW ---
-  if (type === 'FOLDER' && resourceId) {
-      const colors = getProcessColors(resourceId);
-      return (
-        <div className="flex h-full w-full items-center justify-center p-4" style={{ background: `radial-gradient(circle, ${colors.raw.medium} 0%, ${colors.raw.light} 100%)` }}>
-             <IconFolderDynamic resourceId={resourceId} className="w-20 h-20 text-muted-foreground/60 drop-shadow-lg" />
+  if ((type === 'FOLDER' || type === 'VIDEO_PLAYLIST') && resourceId) {
+    const hash = stringToHash(resourceId);
+    const patternClass = backgroundPatterns[hash % backgroundPatterns.length];
+    const IconComponent = type === 'FOLDER' ? IconFolderDynamic : IconVideoPlaylist;
+
+    return (
+        <div className={cn("flex h-full w-full items-center justify-center p-4 relative overflow-hidden", patternClass)}>
+             <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent" />
+             <IconComponent className="w-20 h-20 text-foreground/80 drop-shadow-lg relative z-10" />
         </div>
       );
-  }
-  
-  if (type === 'VIDEO_PLAYLIST') {
-      return (
-          <div className="flex h-full w-full items-center justify-center p-4 bg-gradient-to-br from-primary/20 to-primary/30">
-              <IconVideoPlaylist className="w-20 h-20 text-primary drop-shadow-lg" />
-          </div>
-      )
   }
 
   const isActuallyImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(finalThumbnailUrl || '');

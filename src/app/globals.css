@@ -196,8 +196,51 @@
   .profile-card .card__subtitle {
     @apply text-center text-sm text-muted-foreground mt-2;
   }
-}
 
+  /* --- Patrones de Fondo para Carpetas --- */
+  .bg-pattern-dots {
+    background-color: hsl(var(--secondary));
+    background-image: radial-gradient(hsl(var(--primary) / 0.2) 1px, transparent 1px);
+    background-size: 10px 10px;
+  }
+  .bg-pattern-lines {
+    background-color: hsl(var(--secondary));
+    background-image: linear-gradient(45deg, hsl(var(--primary) / 0.1) 25%, transparent 25%, transparent 75%, hsl(var(--primary) / 0.1) 75%, hsl(var(--primary) / 0.1)),
+                      linear-gradient(-45deg, hsl(var(--primary) / 0.1) 25%, transparent 25%, transparent 75%, hsl(var(--primary) / 0.1) 75%, hsl(var(--primary) / 0.1));
+    background-size: 20px 20px;
+  }
+  .bg-pattern-cross {
+    background-color: hsl(var(--secondary));
+    background-image: 
+      linear-gradient(hsl(var(--primary) / 0.15) 1px, transparent 1px),
+      linear-gradient(to right, hsl(var(--primary) / 0.15) 1px, transparent 1px);
+    background-size: 15px 15px;
+  }
+  .bg-pattern-circles {
+    background-color: hsl(var(--secondary));
+    background-image: radial-gradient(circle, hsl(var(--primary) / 0.1) 1px, transparent 1px);
+    background-size: 12px 12px;
+  }
+  .bg-pattern-zig-zag {
+    background-color: hsl(var(--secondary));
+    background-image:
+      linear-gradient(45deg, hsl(var(--primary) / 0.1) 4.55%, transparent 4.55%, transparent 50%, hsl(var(--primary) / 0.1) 50%, hsl(var(--primary) / 0.1) 54.55%, transparent 54.55%, transparent 100%),
+      linear-gradient(-45deg, hsl(var(--primary) / 0.1) 4.55%, transparent 4.55%, transparent 50%, hsl(var(--primary) / 0.1) 50%, hsl(var(--primary) / 0.1) 54.55%, transparent 54.55%, transparent 100%);
+    background-size: 16px 16px;
+  }
+   .bg-pattern-triangles {
+    background-color: hsl(var(--secondary));
+    background-image:
+      linear-gradient(30deg, hsl(var(--accent) / 0.1) 12%, transparent 12.5%, transparent 87%, hsl(var(--accent) / 0.1) 87.5%, hsl(var(--accent) / 0.1)),
+      linear-gradient(150deg, hsl(var(--accent) / 0.1) 12%, transparent 12.5%, transparent 87%, hsl(var(--accent) / 0.1) 87.5%, hsl(var(--accent) / 0.1)),
+      linear-gradient(30deg, hsl(var(--accent) / 0.1) 12%, transparent 12.5%, transparent 87%, hsl(var(--accent) / 0.1) 87.5%, hsl(var(--accent) / 0.1)),
+      linear-gradient(150deg, hsl(var(--accent) / 0.1) 12%, transparent 12.5%, transparent 87%, hsl(var(--accent) / 0.1) 87.5%, hsl(var(--accent) / 0.1)),
+      linear-gradient(60deg, hsl(var(--accent) / 0.2) 25%, transparent 25.5%, transparent 75%, hsl(var(--accent) / 0.2) 75%, hsl(var(--accent) / 0.2)),
+      linear-gradient(60deg, hsl(var(--accent) / 0.2) 25%, transparent 25.5%, transparent 75%, hsl(var(--accent) / 0.2) 75%, hsl(var(--accent) / 0.2));
+    background-size: 20px 35px;
+    background-position: 0 0, 0 0, 10px 17.5px, 10px 17.5px, 0 0, 10px 17.5px;
+  }
+}
 
 @property --angle {
   syntax: '<angle>';
@@ -373,5 +416,3 @@
   transform-origin: 70% 70%;
   display: inline-block;
 }
-
-    
