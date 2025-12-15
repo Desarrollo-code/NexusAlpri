@@ -344,7 +344,7 @@ export default function SettingsPageComponent() {
             </TabsList>
             
             <TabsContent value="appearance" className="mt-6 space-y-6">
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                     <Card id="settings-identity-card" className="h-full">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-lg"><Building className="h-5 w-5 text-primary"/>Identidad de Marca</CardTitle>
@@ -361,12 +361,12 @@ export default function SettingsPageComponent() {
                             </div>
                         </CardContent>
                     </Card>
-                     <Card id="settings-empty-states-card">
+                    <Card id="settings-empty-states-card">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-lg"><FolderOpen className="h-5 w-5 text-primary" />Imágenes de Estados Vacíos</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                            <div className="grid grid-cols-5 gap-2">
                                 <UploadWidget id="es-courses-upload" label="Catálogo" size="small" currentImageUrl={formState.emptyStateCoursesUrl} onFileSelect={(url) => handleImageUpload('emptyStateCoursesUrl', url)} onRemove={()=>handleRemoveImage('emptyStateCoursesUrl')} disabled={isSaving}/>
                                 <UploadWidget id="es-mycourses-upload" label="Mis Cursos" size="small" currentImageUrl={formState.emptyStateMyCoursesUrl} onFileSelect={(url) => handleImageUpload('emptyStateMyCoursesUrl', url)} onRemove={()=>handleRemoveImage('emptyStateMyCoursesUrl')} disabled={isSaving}/>
                                 <UploadWidget id="es-forms-upload" label="Formularios" size="small" currentImageUrl={formState.emptyStateFormsUrl} onFileSelect={(url) => handleImageUpload('emptyStateFormsUrl', url)} onRemove={()=>handleRemoveImage('emptyStateFormsUrl')} disabled={isSaving}/>
@@ -383,10 +383,10 @@ export default function SettingsPageComponent() {
                 </div>
                  <Card>
                     <CardHeader>
-                        <CardTitle className="text-lg flex items-center gap-2"><ImagePlay className="h-5 w-5 text-primary"/>Imágenes de Navegación Pública</CardTitle>
+                        <CardTitle className="text-lg flex items-center gap-2"><Eye className="h-5 w-5 text-primary"/>Imágenes de Navegación Pública</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="flex justify-between gap-4 pb-4 overflow-x-auto">
+                        <div className="flex justify-between gap-4 pb-4">
                            <UploadWidget id="public-bg-upload" label="Fondo Público" currentImageUrl={formState.publicPagesBgUrl} onFileSelect={(url) => handleImageUpload('publicPagesBgUrl', url)} onRemove={() => handleRemoveImage('publicPagesBgUrl')} disabled={isSaving} />
                            <UploadWidget id="landing-img-upload" label="Página de Inicio" currentImageUrl={formState.landingImageUrl} onFileSelect={(url) => handleImageUpload('landingImageUrl', url)} onRemove={()=>handleRemoveImage('landingImageUrl')} disabled={isSaving}/>
                            <UploadWidget id="about-img-upload" label="Página 'Nosotros'" currentImageUrl={formState.aboutImageUrl} onFileSelect={(url) => handleImageUpload('aboutImageUrl', url)} onRemove={()=>handleRemoveImage('aboutImageUrl')} disabled={isSaving}/>
@@ -420,7 +420,7 @@ export default function SettingsPageComponent() {
                     <CardHeader><CardTitle className="text-lg flex items-center gap-2"><ImageIcon className="h-5 w-5 text-primary"/>Imágenes Decorativas de la Aplicación</CardTitle></CardHeader>
                     <CardContent>
                         <ScrollArea>
-                           <div className="flex gap-4 pb-4">
+                           <div className="flex justify-between gap-4 pb-4">
                                 <UploadWidget id="announcements-img-upload" label="Fondo Anuncios" currentImageUrl={formState.announcementsImageUrl} onFileSelect={(url) => handleImageUpload('announcementsImageUrl', url)} onRemove={() => handleRemoveImage('announcementsImageUrl')} disabled={isSaving} />
                                 <UploadWidget id="security-audit-img-upload" label="Encabezado de Seguridad" currentImageUrl={formState.securityAuditImageUrl} onFileSelect={(url) => handleImageUpload('securityAuditImageUrl', url)} onRemove={() => handleRemoveImage('securityAuditImageUrl')} disabled={isSaving} />
                                 <UploadWidget id="tour-mascot-upload" label="Mascota del Tour" currentImageUrl={formState.tourMascotUrl} onFileSelect={(url) => handleImageUpload('tourMascotUrl', url)} onRemove={() => handleRemoveImage('tourMascotUrl')} disabled={isSaving} />
