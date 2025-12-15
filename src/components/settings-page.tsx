@@ -344,10 +344,10 @@ export default function SettingsPageComponent() {
             </TabsList>
             
             <TabsContent value="appearance" className="mt-6 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                     <Card id="settings-identity-card" className="h-full">
                         <CardHeader><CardTitle className="flex items-center gap-2 text-lg"><Building className="h-5 w-5 text-primary"/>Identidad de Marca</CardTitle></CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="space-y-4 pt-6">
                             <div className="space-y-1.5"><Label htmlFor="platformName">Nombre de la Plataforma</Label><Input id="platformName" value={formState.platformName} onChange={(e) => handleInputChange('platformName', e.target.value)} disabled={isSaving}/></div>
                             <div className="space-y-1.5"><Label htmlFor="projectVersion">Versión del Proyecto</Label><Input id="projectVersion" value={formState.projectVersion || ''} onChange={(e) => handleInputChange('projectVersion', e.target.value)} disabled={isSaving}/></div>
                             <div className="grid grid-cols-3 gap-4 pt-2">
@@ -362,7 +362,7 @@ export default function SettingsPageComponent() {
                             <CardTitle className="flex items-center gap-2 text-lg"><FolderOpen className="h-5 w-5 text-primary" />Imágenes de Estados Vacíos</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                            <div className="grid grid-cols-3 lg:grid-cols-5 gap-2">
                                 <UploadWidget id="es-courses-upload" label="Catálogo" size="small" currentImageUrl={formState.emptyStateCoursesUrl} onFileSelect={(url) => handleImageUpload('emptyStateCoursesUrl', url)} onRemove={()=>handleRemoveImage('emptyStateCoursesUrl')} disabled={isSaving}/>
                                 <UploadWidget id="es-mycourses-upload" label="Mis Cursos" size="small" currentImageUrl={formState.emptyStateMyCoursesUrl} onFileSelect={(url) => handleImageUpload('emptyStateMyCoursesUrl', url)} onRemove={()=>handleRemoveImage('emptyStateMyCoursesUrl')} disabled={isSaving}/>
                                 <UploadWidget id="es-forms-upload" label="Formularios" size="small" currentImageUrl={formState.emptyStateFormsUrl} onFileSelect={(url) => handleImageUpload('emptyStateFormsUrl', url)} onRemove={()=>handleRemoveImage('emptyStateFormsUrl')} disabled={isSaving}/>
@@ -378,7 +378,7 @@ export default function SettingsPageComponent() {
                     </Card>
                 </div>
                  <Card>
-                    <CardHeader><CardTitle className="text-lg flex items-center gap-2"><ImageIcon className="h-5 w-5 text-primary"/>Imágenes de Navegación Pública</CardTitle></CardHeader>
+                    <CardHeader><CardTitle className="text-lg flex items-center gap-2"><ImagePlay className="h-5 w-5 text-primary"/>Imágenes de Navegación Pública</CardTitle></CardHeader>
                     <CardContent>
                         <ScrollArea>
                             <div className="flex gap-4 pb-4">
