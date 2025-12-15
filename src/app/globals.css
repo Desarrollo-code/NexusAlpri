@@ -17,7 +17,7 @@
     --secondary-foreground: 220 25% 25%;
     --muted: 220 10% 95%;
     --muted-foreground: 220 5% 45%;
-    --accent: 220 20% 97%; /* Gris pálido y neutro para la barra superior */
+    --accent: 0 0% 100%; /* Color de la barra superior cambiado a blanco */
     --accent-foreground: 220 15% 15%;
     --destructive: 0 80% 60%; 
     --destructive-foreground: 0 0% 100%;
@@ -314,8 +314,8 @@
           #fff0 0 202.75deg,
           hsl(var(--primary)/0.15) 0 337.25deg,
           #fff0 0 360deg
-        )
-        50%/10vmin 12.5vmin,
+      )
+      50%/10vmin 12.5vmin,
       conic-gradient(
           from 0deg at 50% 50%,
           #fff0 0 60deg,

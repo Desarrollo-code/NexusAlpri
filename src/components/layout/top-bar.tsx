@@ -119,12 +119,12 @@ export const TopBar = () => {
             {/* Left side */}
             <div className="flex items-center gap-2 flex-1 min-w-0">
                  {isMobile ? (
-                    <Button onClick={toggleSidebar} variant="ghost" size="icon" className="h-8 w-8 text-accent-foreground hover:bg-black/10">
+                    <Button onClick={toggleSidebar} variant="ghost" size="icon" className="h-8 w-8 text-foreground hover:bg-black/10">
                         <PanelLeft className="h-5 w-5"/>
                         <span className="sr-only">Toggle Menu</span>
                     </Button>
                  ) : showBackButton ? (
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-accent-foreground hover:bg-black/10" onClick={() => router.back()}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-foreground hover:bg-black/10" onClick={() => router.back()}>
                         <ArrowLeft className="h-4 w-4"/>
                         <span className="sr-only">Volver</span>
                     </Button>
