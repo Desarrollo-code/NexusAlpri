@@ -241,7 +241,7 @@
     background-position: 0 0, 0 0, 10px 17.5px, 10px 17.5px, 0 0, 10px 17.5px;
   }
   .bg-pattern-designer {
-    --s: 60px;
+    --s: 30px;
     --c1: hsl(var(--background));
     --c2: hsl(var(--primary));
     --_g: radial-gradient(
@@ -259,7 +259,7 @@
   }
 
   .bg-pattern-cubes {
-    --s: 200px;
+    --s: 100px;
     --c1: hsl(var(--secondary));
     --c2: hsl(var(--muted));
     --c3: hsl(var(--accent) / 0.5);
@@ -288,7 +288,7 @@
           hsl(var(--primary)) 0 202.5deg,
           #fff0 0 360deg
         )
-        50%/20vmin 25vmin,
+        50%/10vmin 12.5vmin,
       conic-gradient(
           from 0deg at 31.6% 85.35%,
           #fff0 0 157.5deg,
@@ -296,21 +296,21 @@
           hsl(var(--primary)/0.8) 0 300deg,
           #fff0 0 360deg
         )
-        50%/20vmin 25vmin,
+        50%/10vmin 12.5vmin,
       conic-gradient(
           from 0deg at 81.35% 35.5%,
           #fff0 0 22.75deg,
           hsl(var(--primary)/0.6) 0 157.25deg,
           #fff0 0 360deg
         )
-        50%/20vmin 25vmin,
+        50%/10vmin 12.5vmin,
       conic-gradient(
           from 0deg at 18.65% 35.5%,
           #fff0 0 202.75deg,
           hsl(var(--primary)/0.4) 0 337.25deg,
           #fff0 0 360deg
         )
-        50%/20vmin 25vmin,
+        50%/10vmin 12.5vmin,
       conic-gradient(
           from 0deg at 50% 50%,
           #fff0 0 60deg,
@@ -320,7 +320,7 @@
           hsl(var(--primary)) 0 300deg,
           #fff0 0 360deg
         )
-        50%/20vmin 25vmin,
+        50%/10vmin 12.5vmin,
       conic-gradient(
           from 0deg at 50% 21.15%,
           #fff0 0 22.5deg,
@@ -329,31 +329,27 @@
           hsl(var(--primary)) 0 337.5deg,
           #fff0 0 360deg
         )
-        50%/20vmin 25vmin,
-      linear-gradient(90deg, hsl(var(--primary)/0.6) 0 50%, hsl(var(--primary)/0.4) 0 100%) 50%/20vmin 25vmin;
+        50%/10vmin 12.5vmin,
+      linear-gradient(90deg, hsl(var(--primary)/0.6) 0 50%, hsl(var(--primary)/0.4) 0 100%) 50%/10vmin 12.5vmin;
   }
   
   .bg-pattern-blueprint {
-    --s: 100px;
-    --c1: hsl(var(--primary));
-    --c2: hsl(var(--accent));
     background:
-      linear-gradient(135deg, var(--c2) 25%, transparent 25%) calc(-1 * var(--s) / 2) 0,
-      linear-gradient(225deg, var(--c2) 25%, transparent 25%) calc(-1 * var(--s) / 2) 0,
-      linear-gradient(315deg, var(--c2) 25%, transparent 25%),
-      linear-gradient(45deg, var(--c2) 25%, transparent 25%),
-      linear-gradient(to bottom, hsl(var(--primary)), hsl(var(--primary)/0.8));
+      linear-gradient(135deg, hsl(var(--accent)/0.8) 25%, transparent 25%) -50px 0,
+      linear-gradient(225deg, hsl(var(--accent)/0.8) 25%, transparent 25%) -50px 0,
+      linear-gradient(315deg, hsl(var(--accent)/0.8) 25%, transparent 25%),
+      linear-gradient(45deg,  hsl(var(--accent)/0.8) 25%, transparent 25%),
+      linear-gradient(to bottom, hsl(var(--primary)/0.8), hsl(var(--primary)/0.9));
     background-size:
-      var(--s) var(--s),
-      var(--s) var(--s),
-      var(--s) var(--s),
-      var(--s) var(--s),
+      50px 50px,
+      50px 50px,
+      50px 50px,
+      50px 50px,
       100% 100%;
-    background-color: var(--c1);
   }
 
   .bg-pattern-circuit {
-    --s: 60px;
+    --s: 30px;
     --c1: hsl(var(--background));
     --c2: hsl(var(--primary));
     --c3: hsl(var(--accent));
@@ -368,7 +364,7 @@
   }
 
   .bg-pattern-argyle {
-    --s: 82px;
+    --s: 41px;
     --c1: hsl(var(--muted));
     --c2: hsl(var(--background));
     --c3: hsl(var(--secondary));
@@ -393,16 +389,14 @@
     background-size: calc(1.732 * var(--s)) var(--s);
   }
 
-  .bg-pattern-burgundy {
-    --c1: hsl(var(--destructive) / 0.8);
-    --c2: hsl(var(--destructive));
-    background: linear-gradient(135deg, #0000 18.75%, var(--c2) 0 31.25%, #0000 0),
-      repeating-linear-gradient(45deg, var(--c2) -6.25% 6.25%, var(--c1) 0 18.75%);
-    background-size: 64px 64px;
+  .bg-pattern-longbar {
+    background: linear-gradient(135deg, #0000 18.75%, hsl(var(--destructive)/0.8) 0 31.25%, #0000 0),
+      repeating-linear-gradient(45deg, hsl(var(--destructive)/0.8) -6.25% 6.25%, hsl(var(--destructive)) 0 18.75%);
+    background-size: 32px 32px;
   }
   
   .bg-pattern-woven {
-    --s: 105px;
+    --s: 52px; 
     --c1: hsl(var(--secondary));
     --c2: hsl(var(--muted));
     --c3: hsl(var(--background));
@@ -438,6 +432,10 @@
     background: linear-gradient(135deg, hsl(var(--foreground)) 0%, hsl(var(--muted)) 100%);
     position: relative;
     overflow: hidden;
+    box-shadow:
+      50px 100px 1px rgba(255, 255, 255, 0.8),
+      150px 75px 2px rgba(255, 255, 255, 0.6),
+      250px 150px 1px rgba(255, 255, 255, 0.9);
   }
 }
 
