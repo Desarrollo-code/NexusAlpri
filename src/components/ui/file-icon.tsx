@@ -25,6 +25,14 @@ const backgroundPatterns = [
   'bg-pattern-zig-zag',
   'bg-pattern-triangles',
   'bg-pattern-designer',
+  'bg-pattern-cubes',
+  'bg-pattern-geometry',
+  'bg-pattern-blueprint',
+  'bg-pattern-circuit',
+  'bg-pattern-argyle',
+  'bg-pattern-burgundy',
+  'bg-pattern-woven',
+  'bg-pattern-space',
 ];
 
 const stringToHash = (str: string): number => {
