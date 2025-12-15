@@ -200,50 +200,50 @@
   /* --- Patrones de Fondo para Carpetas --- */
   .bg-pattern-dots {
     background-color: hsl(var(--secondary));
-    background-image: radial-gradient(hsl(var(--primary) / 0.2) 1px, transparent 1px);
-    background-size: 10px 10px;
+    background-image: radial-gradient(hsl(var(--primary) / 0.1) 1px, transparent 1px);
+    background-size: 8px 8px;
   }
   .bg-pattern-lines {
     background-color: hsl(var(--secondary));
     background-image: linear-gradient(45deg, hsl(var(--primary) / 0.1) 25%, transparent 25%, transparent 75%, hsl(var(--primary) / 0.1) 75%, hsl(var(--primary) / 0.1)),
                       linear-gradient(-45deg, hsl(var(--primary) / 0.1) 25%, transparent 25%, transparent 75%, hsl(var(--primary) / 0.1) 75%, hsl(var(--primary) / 0.1));
-    background-size: 20px 20px;
+    background-size: 16px 16px;
   }
   .bg-pattern-cross {
     background-color: hsl(var(--secondary));
     background-image: 
       linear-gradient(hsl(var(--primary) / 0.15) 1px, transparent 1px),
       linear-gradient(to right, hsl(var(--primary) / 0.15) 1px, transparent 1px);
-    background-size: 15px 15px;
+    background-size: 12px 12px;
   }
   .bg-pattern-circles {
     background-color: hsl(var(--secondary));
     background-image: radial-gradient(circle, hsl(var(--primary) / 0.1) 1px, transparent 1px);
-    background-size: 12px 12px;
+    background-size: 10px 10px;
   }
   .bg-pattern-zig-zag {
     background-color: hsl(var(--secondary));
     background-image:
-      linear-gradient(45deg, hsl(var(--accent) / 0.1) 4.55%, transparent 4.55%, transparent 50%, hsl(var(--accent) / 0.1) 50%, hsl(var(--accent) / 0.1) 54.55%, transparent 54.55%, transparent 100%),
-      linear-gradient(-45deg, hsl(var(--accent) / 0.1) 4.55%, transparent 4.55%, transparent 50%, hsl(var(--accent) / 0.1) 50%, hsl(var(--accent) / 0.1) 54.55%, transparent 54.55%, transparent 100%);
-    background-size: 16px 16px;
+      linear-gradient(45deg, hsla(var(--accent), 0.1) 4.55%, transparent 4.55%, transparent 50%, hsla(var(--accent), 0.1) 50%, hsla(var(--accent), 0.1) 54.55%, transparent 54.55%, transparent 100%),
+      linear-gradient(-45deg, hsla(var(--accent), 0.1) 4.55%, transparent 4.55%, transparent 50%, hsla(var(--accent), 0.1) 50%, hsla(var(--accent), 0.1) 54.55%, transparent 54.55%, transparent 100%);
+    background-size: 12px 12px;
   }
    .bg-pattern-triangles {
     background-color: hsl(var(--secondary));
     background-image:
-      linear-gradient(30deg, hsl(var(--accent) / 0.1) 12%, transparent 12.5%, transparent 87%, hsl(var(--accent) / 0.1) 87.5%, hsl(var(--accent) / 0.1)),
-      linear-gradient(150deg, hsl(var(--accent) / 0.1) 12%, transparent 12.5%, transparent 87%, hsl(var(--accent) / 0.1) 87.5%, hsl(var(--accent) / 0.1)),
-      linear-gradient(30deg, hsl(var(--accent) / 0.1) 12%, transparent 12.5%, transparent 87%, hsl(var(--accent) / 0.1) 87.5%, hsl(var(--accent) / 0.1)),
-      linear-gradient(150deg, hsl(var(--accent) / 0.1) 12%, transparent 12.5%, transparent 87%, hsl(var(--accent) / 0.1) 87.5%, hsl(var(--accent) / 0.1)),
-      linear-gradient(60deg, hsl(var(--accent) / 0.2) 25%, transparent 25.5%, transparent 75%, hsl(var(--accent) / 0.2) 75%, hsl(var(--accent) / 0.2)),
-      linear-gradient(60deg, hsl(var(--accent) / 0.2) 25%, transparent 25.5%, transparent 75%, hsl(var(--accent) / 0.2) 75%, hsl(var(--accent) / 0.2));
-    background-size: 20px 35px;
-    background-position: 0 0, 0 0, 10px 17.5px, 10px 17.5px, 0 0, 10px 17.5px;
+      linear-gradient(30deg, hsla(var(--accent), 0.1) 12%, transparent 12.5%, transparent 87%, hsla(var(--accent), 0.1) 87.5%, hsla(var(--accent), 0.1)),
+      linear-gradient(150deg, hsla(var(--accent), 0.1) 12%, transparent 12.5%, transparent 87%, hsla(var(--accent), 0.1) 87.5%, hsla(var(--accent), 0.1)),
+      linear-gradient(30deg, hsla(var(--accent), 0.1) 12%, transparent 12.5%, transparent 87%, hsla(var(--accent), 0.1) 87.5%, hsla(var(--accent), 0.1)),
+      linear-gradient(150deg, hsla(var(--accent), 0.1) 12%, transparent 12.5%, transparent 87%, hsla(var(--accent), 0.1) 87.5%, hsla(var(--accent), 0.1)),
+      linear-gradient(60deg, hsla(var(--accent), 0.2) 25%, transparent 25.5%, transparent 75%, hsla(var(--accent), 0.2) 75%, hsla(var(--accent), 0.2)),
+      linear-gradient(60deg, hsla(var(--accent), 0.2) 25%, transparent 25.5%, transparent 75%, hsla(var(--accent), 0.2) 75%, hsla(var(--accent), 0.2));
+    background-size: 15px 26px;
+    background-position: 0 0, 0 0, 7.5px 13px, 7.5px 13px, 0 0, 7.5px 13px;
   }
   .bg-pattern-designer {
     --s: 30px;
-    --c1: hsl(var(--background));
-    --c2: hsl(var(--primary));
+    --c1: hsl(var(--secondary));
+    --c2: hsl(var(--primary) / 0.1);
     --_g: radial-gradient(
       25% 25% at 25% 25%,
       var(--c1) 99%,
@@ -259,11 +259,10 @@
   }
 
   .bg-pattern-cubes {
-    --s: 100px;
+    --s: 50px;
     --c1: hsl(var(--secondary));
     --c2: hsl(var(--muted));
-    --c3: hsl(var(--accent) / 0.5);
-
+    --c3: hsl(var(--accent) / 0.1);
     background: repeating-conic-gradient(
           from 30deg,
           #0000 0 120deg,
@@ -284,62 +283,62 @@
       conic-gradient(
           from 0deg at 68.4% 85.35%,
           #fff0 0 60deg,
-          hsl(var(--primary)/0.8) 0 120deg,
-          hsl(var(--primary)) 0 202.5deg,
+          hsl(var(--primary)/0.1) 0 120deg,
+          hsl(var(--primary)/0.15) 0 202.5deg,
           #fff0 0 360deg
         )
         50%/10vmin 12.5vmin,
       conic-gradient(
           from 0deg at 31.6% 85.35%,
           #fff0 0 157.5deg,
-          hsl(var(--primary)) 0 240deg,
-          hsl(var(--primary)/0.8) 0 300deg,
+          hsl(var(--primary)/0.15) 0 240deg,
+          hsl(var(--primary)/0.1) 0 300deg,
           #fff0 0 360deg
         )
         50%/10vmin 12.5vmin,
       conic-gradient(
           from 0deg at 81.35% 35.5%,
           #fff0 0 22.75deg,
-          hsl(var(--primary)/0.6) 0 157.25deg,
+          hsl(var(--primary)/0.1) 0 157.25deg,
           #fff0 0 360deg
         )
         50%/10vmin 12.5vmin,
       conic-gradient(
           from 0deg at 18.65% 35.5%,
           #fff0 0 202.75deg,
-          hsl(var(--primary)/0.4) 0 337.25deg,
+          hsl(var(--primary)/0.15) 0 337.25deg,
           #fff0 0 360deg
         )
         50%/10vmin 12.5vmin,
       conic-gradient(
           from 0deg at 50% 50%,
           #fff0 0 60deg,
-          hsl(var(--primary)) 0 157.5deg,
-          hsl(var(--primary)/0.4) 0 180.1deg,
-          hsl(var(--primary)/0.6) 0 202.5deg,
-          hsl(var(--primary)) 0 300deg,
+          hsl(var(--primary)/0.15) 0 157.5deg,
+          hsl(var(--primary)/0.1) 0 180.1deg,
+          hsl(var(--primary)/0.15) 0 202.5deg,
+          hsl(var(--primary)/0.1) 0 300deg,
           #fff0 0 360deg
         )
         50%/10vmin 12.5vmin,
       conic-gradient(
           from 0deg at 50% 21.15%,
           #fff0 0 22.5deg,
-          hsl(var(--primary)) 0 120deg,
-          hsl(var(--primary)/0.8) 0 240deg,
-          hsl(var(--primary)) 0 337.5deg,
+          hsl(var(--primary)/0.1) 0 120deg,
+          hsl(var(--primary)/0.15) 0 240deg,
+          hsl(var(--primary)/0.1) 0 337.5deg,
           #fff0 0 360deg
         )
         50%/10vmin 12.5vmin,
-      linear-gradient(90deg, hsl(var(--primary)/0.6) 0 50%, hsl(var(--primary)/0.4) 0 100%) 50%/10vmin 12.5vmin;
+      linear-gradient(90deg, hsl(var(--primary)/0.15) 0 50%, hsl(var(--primary)/0.1) 0 100%) 50%/10vmin 12.5vmin;
   }
   
   .bg-pattern-blueprint {
     background:
-      linear-gradient(135deg, hsl(var(--accent)/0.8) 25%, transparent 25%) -50px 0,
-      linear-gradient(225deg, hsl(var(--accent)/0.8) 25%, transparent 25%) -50px 0,
-      linear-gradient(315deg, hsl(var(--accent)/0.8) 25%, transparent 25%),
-      linear-gradient(45deg,  hsl(var(--accent)/0.8) 25%, transparent 25%),
-      linear-gradient(to bottom, hsl(var(--primary)/0.8), hsl(var(--primary)/0.9));
+      linear-gradient(135deg, hsl(var(--accent)/0.1) 25%, transparent 25%) -25px 0,
+      linear-gradient(225deg, hsl(var(--accent)/0.1) 25%, transparent 25%) -25px 0,
+      linear-gradient(315deg, hsl(var(--accent)/0.1) 25%, transparent 25%),
+      linear-gradient(45deg,  hsl(var(--accent)/0.1) 25%, transparent 25%),
+      linear-gradient(to bottom, hsl(var(--primary)/0.1), hsl(var(--primary)/0.15));
     background-size:
       50px 50px,
       50px 50px,
@@ -351,8 +350,8 @@
   .bg-pattern-circuit {
     --s: 30px;
     --c1: hsl(var(--background));
-    --c2: hsl(var(--primary));
-    --c3: hsl(var(--accent));
+    --c2: hsl(var(--primary) / 0.1);
+    --c3: hsl(var(--accent) / 0.1);
     background: conic-gradient(at 50% 25%, #0000 75%, var(--c2) 0),
       conic-gradient(at 50% 25%, #0000 75%, var(--c2) 0) var(--s) var(--s),
       conic-gradient(at 50% 25%, #0000 75%, var(--c2) 0) calc(2 * var(--s))
@@ -367,8 +366,7 @@
     --s: 41px;
     --c1: hsl(var(--muted));
     --c2: hsl(var(--background));
-    --c3: hsl(var(--secondary));
-
+    --c3: hsl(var(--secondary) / 0.5);
     --_g: var(--c3) 0 120deg, #0000 0;
     background: conic-gradient(from -60deg at 50% calc(100% / 3), var(--_g)),
       conic-gradient(from 120deg at 50% calc(200% / 3), var(--_g)),
@@ -390,8 +388,8 @@
   }
 
   .bg-pattern-longbar {
-    background: linear-gradient(135deg, #0000 18.75%, hsl(var(--destructive)/0.8) 0 31.25%, #0000 0),
-      repeating-linear-gradient(45deg, hsl(var(--destructive)/0.8) -6.25% 6.25%, hsl(var(--destructive)) 0 18.75%);
+    background: linear-gradient(135deg, #0000 18.75%, hsl(var(--destructive)/0.1) 0 31.25%, #0000 0),
+      repeating-linear-gradient(45deg, hsl(var(--destructive)/0.1) -6.25% 6.25%, hsl(var(--destructive)/0.2) 0 18.75%);
     background-size: 32px 32px;
   }
   
@@ -429,13 +427,13 @@
   }
 
   .bg-pattern-space {
-    background: linear-gradient(135deg, hsl(var(--foreground)) 0%, hsl(var(--muted)) 100%);
+    background: linear-gradient(135deg, hsl(var(--foreground)/0.1) 0%, hsl(var(--muted)/0.1) 100%);
     position: relative;
     overflow: hidden;
     box-shadow:
-      50px 100px 1px rgba(255, 255, 255, 0.8),
-      150px 75px 2px rgba(255, 255, 255, 0.6),
-      250px 150px 1px rgba(255, 255, 255, 0.9);
+      50px 100px 1px hsla(var(--primary), 0.1),
+      150px 75px 2px hsla(var(--primary), 0.05),
+      250px 150px 1px hsla(var(--primary), 0.1);
   }
 }
 
