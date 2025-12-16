@@ -58,7 +58,6 @@ const SecurityPageSkeleton = () => (
     <div className="space-y-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="space-y-1">
-                <Skeleton className="h-8 w-64" />
                 <Skeleton className="h-5 w-96" />
             </div>
             <div className="flex items-center gap-2">
@@ -217,7 +216,6 @@ function SecurityAuditPageComponent() {
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="space-y-1">
-                    <h1 className="text-2xl font-semibold">Auditoría de Seguridad</h1>
                     <p className="text-muted-foreground">Analiza la actividad de seguridad de tu plataforma.</p>
                 </div>
                  <div className="flex items-center gap-2">
