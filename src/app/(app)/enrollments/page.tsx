@@ -1,3 +1,4 @@
+// src/app/(app)/enrollments/page.tsx
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
@@ -37,6 +38,7 @@ import Link from 'next/link';
 import { QuizAnalyticsView } from '@/components/analytics/quiz-analytics-view';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PDFDownloadLink } from '@react-pdf/renderer';
+import { MetricCard } from '@/components/analytics/metric-card';
 
 // Carga dinámica del componente PDF para evitar problemas de SSR
 const EnrollmentReportPDF = dynamic(() =>
@@ -89,18 +91,6 @@ interface CourseEnrollmentInfo extends AppCourse {
 const PAGE_SIZE = 10;
 
 // --- REUSABLE COMPONENTS ---
-
-const StatCard = ({ icon: Icon, title, value, unit = '' }: { icon: React.ElementType, title: string, value: number, unit?: string }) => (
-    <Card className="flex-1 bg-muted/30">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-            <Icon className="h-4 w-4 text-primary" />
-        </CardHeader>
-        <CardContent>
-            <div className="text-2xl font-bold">{value.toFixed(0)}{unit}</div>
-        </CardContent>
-    </Card>
-);
 
 const CourseSelector = ({ courses, onSelect, selectedCourseId, isLoading }: { courses: AppCourse[], onSelect: (id: string) => void, selectedCourseId: string, isLoading: boolean }) => {
     const [open, setOpen] = useState(false);
@@ -238,9 +228,9 @@ const EnrolledStudentList = ({ enrollments, onAction }: {
 const EnrollmentsSkeleton = () => (
     <div className="space-y-6">
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Skeleton className="h-24 rounded-lg" />
-            <Skeleton className="h-24 rounded-lg" />
-            <Skeleton className="h-24 rounded-lg" />
+            <Skeleton className="h-28 rounded-lg" />
+            <Skeleton className="h-28 rounded-lg" />
+            <Skeleton className="h-28 rounded-lg" />
         </div>
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <Skeleton className="xl:col-span-2 h-72 rounded-lg" />
@@ -318,17 +308,14 @@ function EnrollmentsPageComponent() {
         const response = await fetch(url, { cache: 'no-store' });
         if (!response.ok) throw new Error('No se pudieron cargar los cursos');
         const data = await response.json();
-        const coursesArray = data.courses || data;
-        setCourses(coursesArray);
-        if (!selectedCourseId && coursesArray.length > 0) {
-            router.replace(`${pathname}?${createQueryString({ courseId: coursesArray[0].id, page: 1, search: null })}`);
-        }
+        setCourses(data.courses || []);
     } catch (err) {
         toast({ title: "Error", description: err instanceof Error ? err.message : "No se pudieron cargar los cursos.", variant: "destructive" });
     } finally {
         setIsLoadingCourses(false);
     }
-  }, [currentUser, isAuthLoading, toast, router, pathname, createQueryString, selectedCourseId]);
+  }, [currentUser, isAuthLoading, toast]);
+
 
   const fetchCourseDetails = useCallback(async (courseId: string) => {
     if (!courseId) return;
@@ -356,10 +343,12 @@ function EnrollmentsPageComponent() {
   }, [fetchCourseList]);
   
   useEffect(() => {
-      if (selectedCourseId) {
-          fetchCourseDetails(selectedCourseId);
-      }
-  }, [selectedCourseId, fetchCourseDetails]);
+    if (!isLoadingCourses && courses.length > 0 && !selectedCourseId) {
+      router.replace(`${pathname}?${createQueryString({ courseId: courses[0].id, page: 1, search: null })}`);
+    } else if (selectedCourseId) {
+      fetchCourseDetails(selectedCourseId);
+    }
+  }, [selectedCourseId, isLoadingCourses, courses, fetchCourseDetails, router, pathname, createQueryString]);
 
   const handleCourseSelection = (courseId: string) => {
       router.push(`${pathname}?${createQueryString({ courseId, page: 1, search: null })}`);
@@ -467,9 +456,9 @@ function EnrollmentsPageComponent() {
             ) : selectedCourseInfo ? (
                 <div className="space-y-6">
                     <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4" id="enrollments-stats-cards">
-                       <StatCard icon={UsersRound} title="Total Inscritos" value={selectedCourseInfo._count.enrollments} />
-                       <StatCard icon={Percent} title="Finalización Promedio" value={selectedCourseInfo.avgProgress || 0} unit="%" />
-                       <StatCard icon={CheckCircle} title="Nota Quizzes Promedio" value={selectedCourseInfo.avgQuizScore || 0} unit="%" />
+                       <MetricCard title="Total Inscritos" value={selectedCourseInfo._count.enrollments} icon={UsersRound} index={0} />
+                       <MetricCard title="Finalización Promedio" value={selectedCourseInfo.avgProgress || 0} icon={Percent} suffix="%" index={1} />
+                       <MetricCard title="Nota Quizzes Promedio" value={selectedCourseInfo.avgQuizScore || 0} icon={CheckCircle} suffix="%" index={2} />
                     </div>
                     
                     <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
