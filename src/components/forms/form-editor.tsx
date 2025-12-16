@@ -421,7 +421,7 @@ export function FormEditor({ formId }: { formId: string }) {
                                                          onUpdate={handleFieldUpdate} 
                                                          onDelete={deleteField}
                                                          onOptionChange={handleOptionChange}
-                                                         onOptionAdd={addOption}
+                                                         onOptionAdd={handleOptionAdd}
                                                          onOptionDelete={handleOptionDelete}
                                                          onCorrectChange={handleCorrectChange}
                                                          isSaving={isSaving}
