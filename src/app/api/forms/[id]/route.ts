@@ -136,7 +136,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         for (const [index, fieldData] of (fields as FormField[]).entries()) {
           const isNew = fieldData.id.startsWith('new-');
           
-          const fieldPayload = {
+          const fieldPayloadForUpdate = {
             label: fieldData.label,
             type: fieldData.type as FormFieldType,
             options: (fieldData.options as unknown as FormFieldOption[]),
@@ -145,13 +145,19 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             order: index,
             imageUrl: (fieldData as any).imageUrl || null,
             template: (fieldData as any).template || null,
-            formId: formId,
+          };
+
+          const fieldPayloadForCreate = {
+            ...fieldPayloadForUpdate,
+            form: {
+              connect: { id: formId }
+            }
           };
           
           await tx.formField.upsert({
             where: { id: isNew ? `__NEVER_FIND__${fieldData.id}` : fieldData.id },
-            create: fieldPayload,
-            update: fieldPayload,
+            create: fieldPayloadForCreate,
+            update: fieldPayloadForUpdate,
           });
         }
       }
