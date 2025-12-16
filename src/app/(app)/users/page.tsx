@@ -224,8 +224,8 @@ function UsersPageComponent() {
                     pageUserIds.forEach(id => newSet.delete(id));
                 }
             } else {
-                if (isSelected) newSet.add(id);
-                else newSet.delete(id);
+                if (isSelected) newSet.add(userId);
+                else newSet.delete(userId);
             }
             return newSet;
         });
