@@ -38,6 +38,7 @@ import { cn } from '@/lib/utils';
 import { AtRiskUsersCard } from '@/components/security/at-risk-users-card';
 import { VisitorsByCountryCard } from '@/components/security/visitors-by-country-card';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
+import { DecorativeHeaderBackground } from '@/components/layout/decorative-header-background';
 
 
 const PAGE_SIZE = 10;

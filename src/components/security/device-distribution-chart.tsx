@@ -83,7 +83,7 @@ export const DeviceDistributionChart = ({ browserData, osData, isLoading }: { br
                     <>
                         <div className="flex-1 space-y-2"><Skeleton className="h-4 w-20 mb-2"/><Skeleton className="h-6"/><Skeleton className="h-6"/></div>
                         <Separator orientation="vertical" className="h-auto hidden sm:block"/>
-                        <Separator orientation="horizontal" className="w-full sm:hidden"/>
+                        <Separator orientation="horizontal" className="w-full my-4 sm:hidden"/>
                         <div className="flex-1 space-y-2"><Skeleton className="h-4 w-20 mb-2"/><Skeleton className="h-6"/><Skeleton className="h-6"/></div>
                     </>
                 ) : (

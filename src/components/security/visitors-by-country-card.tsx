@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/auth-context';
 import { Globe } from 'lucide-react';
+import { DecorativeHeaderBackground } from '../layout/decorative-header-background';
 
 interface VisitorsByCountryCardProps {
     isLoading: boolean;
@@ -15,34 +16,35 @@ export const VisitorsByCountryCard = ({ isLoading }: VisitorsByCountryCardProps)
     const { settings } = useAuth();
     
     return (
-        <Card>
-            <CardContent className="p-4 grid grid-cols-3 gap-4 items-center">
-                 <div className="col-span-1">
-                    <CardHeader className="p-0">
-                        <CardDescription className="text-xs mt-1">
-                            La información que encuentras en esta página es crucial para monitorear la seguridad y la integridad de la plataforma.
-                        </CardDescription>
-                    </CardHeader>
+        <Card className="relative overflow-hidden">
+             <div className="absolute inset-0">
+                <DecorativeHeaderBackground />
+             </div>
+             <div className="relative z-10 p-4 flex flex-col items-center justify-center text-center h-full">
+                <div className="w-40 h-40">
+                    {isLoading ? (
+                        <Skeleton className="w-full h-full" />
+                    ) : settings?.securityAuditImageUrl ? (
+                        <Image 
+                            src={settings.securityAuditImageUrl} 
+                            alt="Mascota de Seguridad" 
+                            fill 
+                            className="object-contain p-2"
+                            data-ai-hint="security audit illustration"
+                        />
+                    ) : (
+                        <div className="text-center text-muted-foreground p-2">
+                           <Globe className="mx-auto h-16 w-16"/>
+                        </div>
+                    )}
                 </div>
-                <div className="col-span-2 w-full aspect-video relative bg-muted/50 rounded-lg flex items-center justify-center">
-                {isLoading ? (
-                    <Skeleton className="w-full h-full" />
-                ) : settings?.securityAuditImageUrl ? (
-                    <Image 
-                        src={settings.securityAuditImageUrl} 
-                        alt="Imagen de Auditoría de Seguridad" 
-                        fill 
-                        className="object-contain p-2"
-                        data-ai-hint="security audit illustration"
-                    />
-                ) : (
-                    <div className="text-center text-muted-foreground p-2">
-                       <Globe className="mx-auto h-8 w-8"/>
-                       <p className="mt-1 text-xs">Sin imagen</p>
-                    </div>
-                )}
-                </div>
-            </CardContent>
+                <CardHeader className="p-0 pt-2">
+                    <CardTitle>Monitoreo Global</CardTitle>
+                    <CardDescription className="text-xs mt-1">
+                        La seguridad de nuestra plataforma es nuestra máxima prioridad.
+                    </CardDescription>
+                </CardHeader>
+            </div>
         </Card>
     );
 };
