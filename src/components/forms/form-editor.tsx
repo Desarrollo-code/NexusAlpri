@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { useTitle } from '@/contexts/title-context';
 import { useRouter } from 'next/navigation';
-import { Loader2, AlertTriangle, Save, PlusCircle, Trash2, GripVertical, Check, Eye, BarChart, Share2, FilePen, MoreVertical, Settings, Copy, Shield, X, CheckSquare, ChevronDown, Type, CaseUpper, MessageSquare, ListChecks, Info, Palette, Image as ImageIcon } from 'lucide-react';
+import { Loader2, AlertTriangle, Save, PlusCircle, Trash2, GripVertical, Check, Eye, BarChart, Share2, FilePen, MoreVertical, Settings, Copy, Shield, X, CheckSquare, ChevronDown, Type, CaseUpper, MessageSquare, ListChecks, Info, Palette, Image as ImageIcon, Replace, XCircle } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -37,6 +37,7 @@ import { UploadArea } from '../ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '../ui/progress';
 import Image from 'next/image';
+import { IconUploadCloud } from '../icons/icon-upload-cloud';
 
 const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
@@ -351,6 +352,7 @@ export function FormEditor({ formId }: { formId: string }) {
             toast({ title: 'Imagen Subida' });
         } catch (err) {
             toast({ title: 'Error de subida', description: (err as Error).message, variant: 'destructive' });
+            URL.revokeObjectURL(previewUrl);
             setLocalImagePreview(null);
         } finally {
             setIsUploading(false);
@@ -496,8 +498,8 @@ export function FormEditor({ formId }: { formId: string }) {
                                 <div className="space-y-2">
                                      <Label htmlFor="form-image-upload">Imagen de Encabezado</Label>
                                       {isUploading ? <div className="p-4 h-32 flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg"><Loader2 className="h-6 w-6 animate-spin"/><Progress value={uploadProgress} className="w-full h-1.5" /></div>
-                                      : finalImageUrl ? <div className="relative w-full aspect-video rounded-lg border overflow-hidden"><Image src={finalImageUrl} alt="Encabezado" fill className="object-cover" /><Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={handleRemoveImage}><X className="h-4 w-4"/></Button></div>
-                                      : <UploadArea onFileSelect={handleImageUpload} compact />
+                                      : finalImageUrl ? <div className="relative w-full aspect-video rounded-lg border overflow-hidden"><Image src={finalImageUrl} alt="Encabezado" fill className="object-cover" /><Button type="button" variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={handleRemoveImage}><X className="h-4 w-4"/></Button></div>
+                                      : <UploadArea onFileSelect={(files) => files && handleImageUpload(files[0])} compact />
                                       }
                                  </div>
                                  <div className="space-y-2">
