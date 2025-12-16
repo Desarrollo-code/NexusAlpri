@@ -278,10 +278,10 @@ function EnrollmentsPageComponent() {
   const currentPage = Number(searchParams.get('page')) || 1;
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>(() => ({
     from: subDays(new Date(), 29),
     to: new Date(),
-  });
+  }));
 
   useEffect(() => {
     setPageTitle('Inscripciones');
