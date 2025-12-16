@@ -298,7 +298,7 @@ function UsersPageComponent() {
       let flatList: FlatProcess[] = [];
       processList.forEach(p => {
           flatList.push({ id: p.id, name: p.name, level });
-          if ('children' in p && Array.isArray(p.children) && p.children.length > 0) {
+          if (p.children && Array.isArray(p.children) && p.children.length > 0) {
               flatList.push(...flattenProcesses(p.children, level + 1));
           }
       });
@@ -437,12 +437,10 @@ function UsersPageComponent() {
 
                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
                     <div className="lg:col-span-3" id="users-main-view">
-                         <div className="min-h-[400px]">
+                         <div className="mb-24 md:mb-4">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                                        {[...Array(PAGE_SIZE)].map((_,i) => <UserProfileCardSkeleton key={i} />)}
-                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">{[...Array(8)].map((_,i) => <UserProfileCardSkeleton key={i} />)}</div>
                                 ) : (
                                     <Card><CardContent className="p-4"><Skeleton className="h-96 w-full rounded-2xl"/></CardContent></Card>
                                 )
