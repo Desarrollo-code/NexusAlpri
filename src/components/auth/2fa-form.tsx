@@ -67,6 +67,8 @@ export default function TwoFactorAuthForm() {
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="flex flex-col items-center justify-center space-y-4">
                 <InputOTP
+                    id="two-factor-token"
+                    name="two-factor-token"
                     maxLength={6}
                     value={token}
                     onChange={setToken}

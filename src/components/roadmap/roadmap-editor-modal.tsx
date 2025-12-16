@@ -150,11 +150,11 @@ export function RoadmapEditorModal({ isOpen, onClose, item, onSave }: RoadmapEdi
                 <ScrollArea className="flex-1">
                     <form id="roadmap-form" onSubmit={handleSubmit} className="space-y-4 p-6">
                         <div className="space-y-1">
-                            <Label htmlFor="title">Título</Label>
-                            <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required/>
+                            <Label htmlFor="roadmap-title">Título</Label>
+                            <Input id="roadmap-title" name="roadmap-title" value={title} onChange={(e) => setTitle(e.target.value)} required/>
                         </div>
                         <div className="space-y-1">
-                            <Label htmlFor="description">Descripción</Label>
+                            <Label htmlFor="roadmap-description">Descripción</Label>
                             <RichTextEditor
                                 value={description}
                                 onChange={setDescription}
@@ -174,7 +174,7 @@ export function RoadmapEditorModal({ isOpen, onClose, item, onSave }: RoadmapEdi
                             </div>
                             <div className="space-y-1">
                                 <Label>Fase</Label>
-                                <Select value={phase} onValueChange={setPhase}>
+                                <Select name="roadmap-phase" value={phase} onValueChange={setPhase}>
                                     <SelectTrigger><SelectValue/></SelectTrigger>
                                     <SelectContent>
                                         {roadmapPhases.map(phaseName => (
@@ -194,7 +194,7 @@ export function RoadmapEditorModal({ isOpen, onClose, item, onSave }: RoadmapEdi
                          </div>
                         <div className="space-y-1">
                             <Label>Icono</Label>
-                            <Select value={icon} onValueChange={setIcon}>
+                            <Select name="roadmap-icon" value={icon} onValueChange={setIcon}>
                                 <SelectTrigger><div className="flex items-center gap-2">{(LucideIcons as any)[icon] && React.createElement((LucideIcons as any)[icon], {className: "h-4 w-4"})}<span>{iconTranslations[icon] || icon}</span></div></SelectTrigger>
                                 <SelectContent>
                                     {ICONS.map(iconName => {

@@ -220,7 +220,7 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
                                     </Avatar>
                                      <Label htmlFor="avatar-upload" className="absolute -bottom-1 -right-1 bg-secondary text-secondary-foreground rounded-full p-1.5 cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors shadow-md">
                                         <Camera className="h-5 w-5" />
-                                        <input id="avatar-upload" type="file" className="hidden" onChange={handleAvatarChange} accept="image/*" disabled={isUploading}/>
+                                        <input id="avatar-upload" name="avatar-upload" type="file" className="hidden" onChange={handleAvatarChange} accept="image/*" disabled={isUploading}/>
                                     </Label>
                                 </div>
                                 {isUploading && (
@@ -232,16 +232,16 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
                             </div>
                              <div className="space-y-2">
                                 <Label htmlFor="name">Nombre Completo</Label>
-                                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required autoComplete="off" />
+                                <Input id="name" name="name" value={name} onChange={(e) => setName(e.target.value)} required autoComplete="off" />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="email">Correo Electrónico</Label>
-                                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="off" />
+                                <Input id="email" name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="off" />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="password">{user ? 'Nueva Contraseña (Opcional)' : 'Contraseña'}</Label>
                                 <div className="relative">
-                                    <Input id="password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} required={!user} autoComplete="new-password" />
+                                    <Input id="password" name="password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} required={!user} autoComplete="new-password" />
                                     <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground" onClick={() => setShowPassword(!showPassword)}>
                                         {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                     </Button>
@@ -251,14 +251,14 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
                             <div className="grid grid-cols-2 gap-4">
                               <div className="space-y-2">
                                   <Label htmlFor="role">Rol</Label>
-                                  <Select value={role} onValueChange={(value) => handleRoleChange(value as UserRole)}>
+                                  <Select name="role" value={role} onValueChange={(value) => handleRoleChange(value as UserRole)}>
                                       <SelectTrigger id="role"><SelectValue placeholder="Seleccionar rol" /></SelectTrigger>
                                       <SelectContent><SelectItem value="STUDENT">Estudiante</SelectItem><SelectItem value="INSTRUCTOR">Instructor</SelectItem><SelectItem value="ADMINISTRATOR">Administrador</SelectItem></SelectContent>
                                   </Select>
                               </div>
                                <div className="space-y-2">
                                     <Label htmlFor="process">Proceso Asignado</Label>
-                                     <Select value={processId || 'unassigned'} onValueChange={(value) => setProcessId(value === 'unassigned' ? null : value)}>
+                                     <Select name="process" value={processId || 'unassigned'} onValueChange={(value) => setProcessId(value === 'unassigned' ? null : value)}>
                                       <SelectTrigger id="process"><SelectValue placeholder="Sin asignar" /></SelectTrigger>
                                       <SelectContent><SelectItem value="unassigned">Sin Asignar</SelectItem>{flattenedProcesses.map(p => (<SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem` }}>{p.name}</SelectItem>))}</SelectContent>
                                   </Select>
@@ -277,7 +277,7 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
                                                     <p className="font-semibold text-sm pt-2">{item.label}</p>
                                                     {(item.children || [item]).filter(child => child.path).map(child => (
                                                          <div key={child.id} className="flex items-center space-x-3 ml-2">
-                                                             <Checkbox id={`perm-${child.id}`} checked={customPermissions.includes(child.path!)} onCheckedChange={checked => handlePermissionChange(child.path!, !!checked)}/>
+                                                             <Checkbox id={`perm-${child.id}`} name={`perm-${child.id}`} checked={customPermissions.includes(child.path!)} onCheckedChange={checked => handlePermissionChange(child.path!, !!checked)}/>
                                                              <Label htmlFor={`perm-${child.id}`} className="font-normal">{child.label}</Label>
                                                          </div>
                                                     ))}

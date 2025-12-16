@@ -421,7 +421,7 @@ export function FormEditor({ formId }: { formId: string }) {
                                                          onUpdate={handleFieldUpdate} 
                                                          onDelete={deleteField}
                                                          onOptionChange={handleOptionChange}
-                                                         onOptionAdd={handleOptionAdd}
+                                                         onOptionAdd={addOption}
                                                          onOptionDelete={handleOptionDelete}
                                                          onCorrectChange={handleCorrectChange}
                                                          isSaving={isSaving}
@@ -467,7 +467,7 @@ export function FormEditor({ formId }: { formId: string }) {
                                 <div className="space-y-3">
                                      <div className="flex items-center justify-between space-x-2 p-2.5 border rounded-lg">
                                          <Label htmlFor="quiz-mode" className="font-semibold">Modo Evaluación (Quiz)</Label>
-                                         <Switch id="quiz-mode" checked={!!form.isQuiz} onCheckedChange={(c) => handleFormUpdate({ isQuiz: c })}/>
+                                         <Switch id="quiz-mode" name="quiz-mode" checked={!!form.isQuiz} onCheckedChange={(c) => handleFormUpdate({ isQuiz: c })}/>
                                      </div>
                                      {form.isQuiz && (
                                          <Alert variant="default" className="text-xs">
@@ -480,8 +480,8 @@ export function FormEditor({ formId }: { formId: string }) {
                                  </div>
                                  <div className="space-y-2">
                                       <Label htmlFor="form-status">Estado del Formulario</Label>
-                                      <Select value={form.status} onValueChange={v => handleFormUpdate({ status: v as FormStatus })}>
-                                          <SelectTrigger><SelectValue/></SelectTrigger>
+                                      <Select name="form-status" value={form.status} onValueChange={v => handleFormUpdate({ status: v as FormStatus })}>
+                                          <SelectTrigger id="form-status"><SelectValue/></SelectTrigger>
                                           <SelectContent>
                                               <SelectItem value="DRAFT">Borrador</SelectItem>
                                               <SelectItem value="PUBLISHED">Publicado</SelectItem>
@@ -492,24 +492,24 @@ export function FormEditor({ formId }: { formId: string }) {
                              </TabsContent>
                              <TabsContent value="design" className="pt-4 space-y-4">
                                 <div className="space-y-2">
-                                     <Label>Imagen de Encabezado</Label>
+                                     <Label htmlFor="form-image-upload">Imagen de Encabezado</Label>
                                       {isUploading ? <div className="p-4 h-32 flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg"><Loader2 className="h-6 w-6 animate-spin"/><Progress value={uploadProgress} className="w-full h-1.5" /></div>
                                       : finalImageUrl ? <div className="relative w-full aspect-video rounded-lg border overflow-hidden p-1 bg-muted/50"><Image src={finalImageUrl} alt="Encabezado" fill className="object-cover" /><Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={handleRemoveImage}><X className="h-4 w-4"/></Button></div>
                                       : <UploadArea onFileSelect={handleImageUpload} compact />
                                       }
                                  </div>
                                  <div className="space-y-2">
-                                     <Label>Color del Tema</Label>
-                                     <Input type="color" value={form.themeColor || '#6366f1'} onChange={e => handleFormUpdate({ themeColor: e.target.value })} className="w-full p-1 h-10"/>
+                                     <Label htmlFor="form-theme-color">Color del Tema</Label>
+                                     <Input id="form-theme-color" name="form-theme-color" type="color" value={form.themeColor || '#6366f1'} onChange={e => handleFormUpdate({ themeColor: e.target.value })} className="w-full p-1 h-10"/>
                                  </div>
                                  <div className="space-y-2">
-                                     <Label>Color de Fondo</Label>
-                                     <Input type="color" value={form.backgroundColor || '#f8fafc'} onChange={e => handleFormUpdate({ backgroundColor: e.target.value })} className="w-full p-1 h-10"/>
+                                     <Label htmlFor="form-bg-color">Color de Fondo</Label>
+                                     <Input id="form-bg-color" name="form-bg-color" type="color" value={form.backgroundColor || '#f8fafc'} onChange={e => handleFormUpdate({ backgroundColor: e.target.value })} className="w-full p-1 h-10"/>
                                  </div>
                                  <div className="space-y-2">
-                                     <Label>Estilo de Fuente</Label>
-                                     <Select value={form.fontStyle || 'default'} onValueChange={v => handleFormUpdate({ fontStyle: v })}>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                     <Label htmlFor="form-font-style">Estilo de Fuente</Label>
+                                     <Select name="form-font-style" value={form.fontStyle || 'default'} onValueChange={v => handleFormUpdate({ fontStyle: v })}>
+                                        <SelectTrigger id="form-font-style"><SelectValue /></SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="default">Por Defecto</SelectItem>
                                             <SelectItem value="serif">Serif</SelectItem>
@@ -523,7 +523,7 @@ export function FormEditor({ formId }: { formId: string }) {
                                  <div className="space-y-2">
                                       <Label htmlFor="share-link">Enlace para Compartir</Label>
                                       <div className="flex items-center gap-2">
-                                        <Input id="share-link" readOnly value={`${window.location.origin}/forms/${formId}/view`} />
+                                        <Input id="share-link" name="share-link" readOnly value={`${window.location.origin}/forms/${formId}/view`} />
                                         <Button size="icon" variant="outline" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/forms/${formId}/view`); toast({description: 'Enlace copiado al portapapeles.'})}}><Copy className="h-4 w-4"/></Button>
                                       </div>
                                  </div>

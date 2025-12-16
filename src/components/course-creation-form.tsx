@@ -1,4 +1,4 @@
-
+// src/components/course-creation-form.tsx
 'use client';
 
 import React, { useState } from 'react';
@@ -66,9 +66,10 @@ export function CourseCreationForm({ onSuccess }: CourseCreationFormProps) {
   return (
     <form onSubmit={handleSubmit} className="grid gap-4">
         <div className="space-y-1.5">
-            <Label htmlFor="title">Título del Curso</Label>
+            <Label htmlFor="course-title">Título del Curso</Label>
             <Input 
-                id="title" 
+                id="course-title"
+                name="course-title" 
                 value={title} 
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Ej: Fundamentos de Marketing Digital"
@@ -77,9 +78,10 @@ export function CourseCreationForm({ onSuccess }: CourseCreationFormProps) {
             />
         </div>
         <div className="space-y-1.5">
-            <Label htmlFor="description">Descripción Breve</Label>
+            <Label htmlFor="course-description">Descripción Breve</Label>
             <Textarea 
-                id="description" 
+                id="course-description"
+                name="course-description" 
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Una descripción corta que enganche a los estudiantes."
@@ -88,9 +90,9 @@ export function CourseCreationForm({ onSuccess }: CourseCreationFormProps) {
             />
         </div>
         <div className="space-y-1.5">
-            <Label htmlFor="category">Categoría</Label>
-            <Select name="category" required value={category} onValueChange={setCategory} disabled={isSubmitting}>
-              <SelectTrigger id="category">
+            <Label htmlFor="course-category">Categoría</Label>
+            <Select name="course-category" required value={category} onValueChange={setCategory} disabled={isSubmitting}>
+              <SelectTrigger id="course-category">
                 <SelectValue placeholder="Selecciona una categoría..." />
               </SelectTrigger>
               <SelectContent>

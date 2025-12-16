@@ -298,7 +298,7 @@ function UsersPageComponent() {
       let flatList: FlatProcess[] = [];
       processList.forEach(p => {
           flatList.push({ id: p.id, name: p.name, level });
-          if (p.children && Array.isArray(p.children) && p.children.length > 0) {
+          if ('children' in p && Array.isArray(p.children) && p.children.length > 0) {
               flatList.push(...flattenProcesses(p.children, level + 1));
           }
       });
@@ -415,7 +415,7 @@ function UsersPageComponent() {
     }
 
     const GridView = () => (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {usersList.map(u => (
                 <DraggableUserCard 
                     key={u.id} 
@@ -440,7 +440,7 @@ function UsersPageComponent() {
                          <div className="mb-24 md:mb-4">
                             {isLoading ? (
                                 viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">{[...Array(8)].map((_,i) => <UserProfileCardSkeleton key={i} />)}</div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">{[...Array(8)].map((_,i) => <UserProfileCardSkeleton key={i} />)}</div>
                                 ) : (
                                     <Card><CardContent className="p-4"><Skeleton className="h-96 w-full rounded-2xl"/></CardContent></Card>
                                 )

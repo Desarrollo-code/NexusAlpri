@@ -311,17 +311,17 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                             <Card>
                                 <CardHeader><CardTitle className="text-base">Detalles del Quiz</CardTitle></CardHeader>
                                 <CardContent className="space-y-4">
-                                     <div className="space-y-1"><Label>Título del Quiz</Label><Input value={localQuiz.title} onChange={e => setLocalQuiz(p => ({...p, title: e.target.value}))}/></div>
-                                     <div className="space-y-1"><Label>Descripción</Label><Textarea value={localQuiz.description || ''} onChange={e => setLocalQuiz(p => ({...p, description: e.target.value}))} rows={3}/></div>
+                                     <div className="space-y-1"><Label htmlFor="quiz-title">Título del Quiz</Label><Input id="quiz-title" name="quiz-title" value={localQuiz.title} onChange={e => setLocalQuiz(p => ({...p, title: e.target.value}))}/></div>
+                                     <div className="space-y-1"><Label htmlFor="quiz-description">Descripción</Label><Textarea id="quiz-description" name="quiz-description" value={localQuiz.description || ''} onChange={e => setLocalQuiz(p => ({...p, description: e.target.value}))} rows={3}/></div>
                                 </CardContent>
                             </Card>
                              <Card>
                                 <CardHeader><CardTitle className="text-base">Configuración de Jugabilidad</CardTitle></CardHeader>
                                  <CardContent className="space-y-4">
-                                    <div className="space-y-1"><Label>Límite de Intentos</Label><Input type="number" value={localQuiz.maxAttempts || ''} onChange={e => setLocalQuiz(p => ({...p, maxAttempts: e.target.value ? parseInt(e.target.value) : null}))} placeholder="Ilimitados" /></div>
-                                    <div className="space-y-1"><Label>Estilo del Temporizador</Label>
-                                      <Select value={localQuiz.timerStyle || 'circular'} onValueChange={(v) => setLocalQuiz(p => ({...p, timerStyle: v}))}>
-                                         <SelectTrigger><SelectValue/></SelectTrigger>
+                                    <div className="space-y-1"><Label htmlFor="quiz-max-attempts">Límite de Intentos</Label><Input id="quiz-max-attempts" name="quiz-max-attempts" type="number" value={localQuiz.maxAttempts || ''} onChange={e => setLocalQuiz(p => ({...p, maxAttempts: e.target.value ? parseInt(e.target.value) : null}))} placeholder="Ilimitados" /></div>
+                                    <div className="space-y-1"><Label htmlFor="quiz-timer-style">Estilo del Temporizador</Label>
+                                      <Select name="quiz-timer-style" value={localQuiz.timerStyle || 'circular'} onValueChange={(v) => setLocalQuiz(p => ({...p, timerStyle: v}))}>
+                                         <SelectTrigger id="quiz-timer-style"><SelectValue/></SelectTrigger>
                                          <SelectContent><SelectItem value="circular">Circular</SelectItem><SelectItem value="bar">Barra</SelectItem><SelectItem value="pill">Píldora</SelectItem></SelectContent>
                                       </Select>
                                     </div>
