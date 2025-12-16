@@ -56,15 +56,26 @@ const DESKTOP_PAGE_SIZE = 15;
 const MOBILE_PAGE_SIZE = 14;
 
 
-const DraggableUserPreview = ({ user }: { user: UserWithProcess }) => (
-    <Card className="flex items-center gap-2 p-2 shadow-lg w-48">
-        <Avatar className="h-8 w-8">
-            <AvatarImage src={user.avatar || undefined} />
-            <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
-        </Avatar>
-        <span className="font-semibold text-sm truncate">{user.name}</span>
-    </Card>
-);
+const DraggableUserPreview = ({ user }: { user: UserWithProcess }) => {
+    const processColors = user.process ? getProcessColors(user.process.id) : null;
+    return (
+        <Card className="flex items-center gap-2 p-2 shadow-lg w-48">
+            <Avatar className="h-8 w-8">
+                <AvatarImage src={user.avatar || undefined} />
+                <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
+            </Avatar>
+            <div className="flex-grow min-w-0">
+                <span className="font-semibold text-sm truncate">{user.name}</span>
+                {user.process && (
+                    <div className="text-xs text-muted-foreground flex items-center gap-1">
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: processColors?.raw.medium }}/>
+                        <span className="truncate">{user.process.name}</span>
+                    </div>
+                )}
+            </div>
+        </Card>
+    );
+};
 
 const DraggableUserCard = ({ user, isSelected, onSelectionChange, onEdit, onRoleChange, onStatusChange }: { 
     user: UserWithProcess, 
@@ -213,7 +224,7 @@ function UsersPageComponent() {
                     pageUserIds.forEach(id => newSet.delete(id));
                 }
             } else {
-                if (isSelected) newSet.add(id);
+                if (isSelected) newSet.add(userId);
                 else newSet.delete(id);
             }
             return newSet;
