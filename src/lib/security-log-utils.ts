@@ -37,13 +37,13 @@ interface EventDetails {
 export const getEventDetails = (event: SecurityLogEvent, details?: string | null): EventDetails => {
     switch (event) {
         case 'SUCCESSFUL_LOGIN':
-             return { label: 'Inicio Exitoso', iconName: 'ShieldCheck', variant: 'secondary', details: 'Acceso concedido a la cuenta.' };
+             return { label: 'Inicio Exitoso', iconName: 'ShieldCheck', variant: 'success', details: 'Acceso concedido a la cuenta.' };
         case 'FAILED_LOGIN_ATTEMPT':
             return { label: 'Intento Fallido', iconName: 'ShieldX', variant: 'destructive', details: 'Credenciales incorrectas o usuario no encontrado.' };
         case 'PASSWORD_CHANGE_SUCCESS':
              return { label: 'Cambio Contraseña', iconName: 'KeyRound', variant: 'default', details: 'La contraseña del usuario fue actualizada.' };
         case 'TWO_FACTOR_ENABLED':
-            return { label: '2FA Activado', iconName: 'ShieldCheck', variant: 'default', details: 'El usuario activó la autenticación de dos factores.' };
+            return { label: '2FA Activado', iconName: 'ShieldCheck', variant: 'success', details: 'El usuario activó la autenticación de dos factores.' };
         case 'TWO_FACTOR_DISABLED':
             return { label: '2FA Desactivado', iconName: 'ShieldAlert', variant: 'destructive', details: 'El usuario desactivó la autenticación de dos factores.' };
          case 'USER_ROLE_CHANGED':
@@ -157,4 +157,3 @@ export const getUserNavItems = (user: User): NavItem[] => {
 
     return Array.from(finalItemsMap.values());
 };
-
