@@ -227,8 +227,8 @@ export function FormEditor({ formId }: { formId: string }) {
             placeholder: '',
             order: form ? form.fields.length : 0,
             formId: formId,
-            imageUrl: null, // Initializing new fields
-            template: null,  // Initializing new fields
+            imageUrl: null,
+            template: null,
         };
         handleFormUpdate({ fields: [...(form?.fields || []), newField] });
     };
