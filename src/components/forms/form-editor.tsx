@@ -227,6 +227,8 @@ export function FormEditor({ formId }: { formId: string }) {
             placeholder: '',
             order: form ? form.fields.length : 0,
             formId: formId,
+            imageUrl: null, // Initializing new fields
+            template: null,  // Initializing new fields
         };
         handleFormUpdate({ fields: [...(form?.fields || []), newField] });
     };
@@ -494,7 +496,7 @@ export function FormEditor({ formId }: { formId: string }) {
                                 <div className="space-y-2">
                                      <Label htmlFor="form-image-upload">Imagen de Encabezado</Label>
                                       {isUploading ? <div className="p-4 h-32 flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg"><Loader2 className="h-6 w-6 animate-spin"/><Progress value={uploadProgress} className="w-full h-1.5" /></div>
-                                      : finalImageUrl ? <div className="relative w-full aspect-video rounded-lg border overflow-hidden p-1 bg-muted/50"><Image src={finalImageUrl} alt="Encabezado" fill className="object-cover" /><Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={handleRemoveImage}><X className="h-4 w-4"/></Button></div>
+                                      : finalImageUrl ? <div className="relative w-full aspect-video rounded-lg border overflow-hidden"><Image src={finalImageUrl} alt="Encabezado" fill className="object-cover" /><Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={handleRemoveImage}><X className="h-4 w-4"/></Button></div>
                                       : <UploadArea onFileSelect={handleImageUpload} compact />
                                       }
                                  </div>
