@@ -288,7 +288,7 @@ function SecurityAuditPageComponent() {
                 <div className="lg:col-span-1 space-y-8">
                     <DeviceDistributionChart browserData={stats?.browsers} osData={stats?.os} isLoading={isLoading}/>
                     <TopIpsCard topIps={stats?.topIps || []} isLoading={isLoading}/>
-                    <VisitorsByCountryCard topCountries={stats?.topCountries || []} isLoading={isLoading} />
+                    <VisitorsByCountryCard isLoading={isLoading} />
                 </div>
             </div>
             
