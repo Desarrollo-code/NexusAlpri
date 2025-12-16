@@ -224,7 +224,7 @@ function UsersPageComponent() {
                     pageUserIds.forEach(id => newSet.delete(id));
                 }
             } else {
-                if (isSelected) newSet.add(userId);
+                if (isSelected) newSet.add(id);
                 else newSet.delete(id);
             }
             return newSet;
@@ -515,7 +515,7 @@ function UsersPageComponent() {
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isDeactivating}>Cancelar</AlertDialogCancel>
                         <AlertDialogAction onClick={confirmStatusChange} disabled={isDeactivating} className={cn(!userToDeactivate?.isActive && 'bg-green-600 hover:bg-green-700', userToDeactivate?.isActive && 'bg-destructive hover:bg-destructive/90')}>
-                            {isDeactivating && <div className="w-4 h-4 mr-2"><ColorfulLoader /></div>}
+                            {isDeactivating ? <div className="w-4 h-4 mr-2"><ColorfulLoader /></div> : null}
                             Sí, {userToDeactivate?.isActive ? 'Inactivar' : 'Activar'}
                         </AlertDialogAction>
                     </AlertDialogFooter>
