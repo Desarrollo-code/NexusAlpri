@@ -432,19 +432,7 @@ function EnrollmentsPageComponent() {
                      <CardTitle className="text-2xl font-headline flex items-center gap-2"><UsersRound /> Seguimiento de Estudiantes</CardTitle>
                 </div>
                 <div className="w-full sm:w-auto flex items-center gap-2">
-                    <CourseSelector courses={courses} onSelect={handleCourseSelection} selectedCourseId={selectedCourseId} isLoading={isLoadingCourses} />
-                     {selectedCourseInfo && (
-                        <PDFDownloadLink
-                            document={<EnrollmentReportPDF course={selectedCourseInfo} platformLogo={settings?.logoUrl} />}
-                            fileName={`reporte_${selectedCourseInfo.title.replace(/\s+/g, '_')}.pdf`}
-                            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), !selectedCourseInfo || selectedCourseInfo.enrollments.length === 0 ? 'pointer-events-none opacity-50' : '')}
-                        >
-                            {({ blob, url, loading, error }) => (
-                                loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <FileText className="mr-2 h-4 w-4" />
-                            )}
-                            Reporte PDF
-                        </PDFDownloadLink>
-                    )}
+                     
                 </div>
             </div>
         </CardHeader>

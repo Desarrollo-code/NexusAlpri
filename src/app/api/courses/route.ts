@@ -181,7 +181,7 @@ export async function POST(req: NextRequest) {
         category: category || 'General',
         status: 'DRAFT',
         instructor: { connect: { id: session.id } },
-        prerequisiteId: prerequisiteId || null,
+        prerequisite: prerequisiteId ? { connect: { id: prerequisiteId } } : undefined,
         isMandatory: isMandatory || false,
       },
       include: { instructor: true },
