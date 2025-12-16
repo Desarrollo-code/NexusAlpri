@@ -13,6 +13,7 @@ export const MetricCard = ({
     suffix = '', 
     index = 0, 
     onClick,
+    gradient
 }: { 
     title: string; 
     value: number; 
@@ -21,10 +22,11 @@ export const MetricCard = ({
     suffix?: string; 
     index?: number;
     onClick?: () => void;
+    gradient?: string;
 }) => {
     const animatedValue = useAnimatedCounter(value, 0, 1000);
     
-    // Asigna un color de la paleta de gráficos de forma rotativa
+    // Asigna un color de la paleta de gráficos de forma rotativa si no se proporciona gradiente
     const colorVar = `--chart-${(index % 5) + 1}`;
     
     return (
@@ -32,9 +34,10 @@ export const MetricCard = ({
             onClick={onClick} 
             className={cn(
                 "relative text-primary-foreground p-4 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] hover:shadow-xl rounded-2xl overflow-hidden h-full",
-                onClick && "cursor-pointer"
+                onClick && "cursor-pointer",
+                gradient ? gradient : 'bg-primary'
             )}
-            style={{ backgroundColor: `hsl(var(${colorVar}))` }}
+            style={!gradient ? { backgroundColor: `hsl(var(${colorVar}))` } : {}}
         >
              <div className="flex justify-between items-start text-primary-foreground/80">
                 <p className="text-sm font-semibold">{title}</p>
@@ -50,5 +53,3 @@ export const MetricCard = ({
         </Card>
     );
 };
-
-    

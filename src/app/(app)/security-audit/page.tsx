@@ -134,6 +134,7 @@ function SecurityAuditPageComponent() {
             if (dateRange?.to) params.set('endDate', dateRange.to.toISOString());
             if (activeFilter && activeFilter !== 'ALL') params.set('event', activeFilter);
             params.set('page', String(currentPage));
+            params.set('pageSize', String(PAGE_SIZE));
             
             const response = await fetch(`/api/security/logs?${params.toString()}`);
             
