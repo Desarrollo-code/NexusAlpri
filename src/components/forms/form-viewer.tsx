@@ -154,7 +154,7 @@ export function FormViewer({ formId }: { formId: string }) {
     }
     
     return (
-        <div style={{ backgroundColor: form.backgroundColor || undefined, fontFamily: form.fontStyle ? (fontMap[form.fontStyle as keyof typeof fontMap] as any)?.style.fontFamily : undefined }}>
+        <div className="min-h-screen w-full" style={{ backgroundColor: form.backgroundColor || undefined, fontFamily: form.fontStyle ? (fontMap[form.fontStyle as keyof typeof fontMap] as any)?.style.fontFamily : undefined }}>
             <div className="max-w-3xl mx-auto my-8 p-4">
                 <Card className="shadow-2xl overflow-hidden" style={{'--form-theme-color': form.themeColor || 'hsl(var(--primary))'} as React.CSSProperties}>
                     <div className="w-full h-4" style={{ backgroundColor: 'var(--form-theme-color)' }}/>
