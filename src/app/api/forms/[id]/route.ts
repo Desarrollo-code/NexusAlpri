@@ -146,12 +146,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             imageUrl: (fieldData as any).imageUrl || null,
             template: (fieldData as any).template || null,
           };
-
+          
           const createPayload = {
-              ...fieldPayload,
-              form: {
-                  connect: { id: formId }
-              }
+            ...fieldPayload,
+            form: {
+              connect: { id: formId },
+            },
           };
           
           await tx.formField.upsert({
