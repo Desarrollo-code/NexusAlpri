@@ -1,4 +1,3 @@
-// src/components/analytics/donut-chart.tsx
 'use client';
 import React, { useMemo, useState, useCallback } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -72,8 +71,8 @@ export function DonutChart({ title, data, config, id }: { title: string, data: a
                 data={data} 
                 dataKey="count" 
                 nameKey="label" 
-                innerRadius={60} 
-                outerRadius={80}
+                innerRadius={70} 
+                outerRadius={90}
                 strokeWidth={2}
                 activeIndex={activeIndex}
                 activeShape={renderActiveShape}
