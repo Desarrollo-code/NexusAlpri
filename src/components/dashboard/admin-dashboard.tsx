@@ -20,6 +20,8 @@ import { ComposedChart, Legend, Line, ResponsiveContainer, XAxis, YAxis, Cartesi
 import { DonutChart } from "../analytics/donut-chart";
 import { HealthStatusWidget } from "./health-status-widget";
 import { NotificationsWidget } from "./notifications-widget";
+import { MetricCard } from "../analytics/metric-card";
+
 
 const userRolesChartConfig = {
   count: { label: "Usuarios" },
@@ -43,39 +45,6 @@ const formatDateTooltip = (dateString: string) => {
         return dateString;
     }
 };
-
-const MetricCard = ({ title, value, icon: Icon, description, suffix = '', index = 0, onClick }: { 
-    title: string; 
-    value: number; 
-    icon: React.ElementType; 
-    description?: string; 
-    suffix?: string; 
-    index?: number;
-    onClick?: () => void;
-}) => {
-    return (
-        <Card 
-            onClick={onClick} 
-            className={cn("p-4 transition-all duration-300 hover:shadow-lg hover:border-primary/50 text-foreground flex flex-col justify-between h-full", onClick && "cursor-pointer")}
-        >
-            <CardHeader className="flex-row items-start justify-between p-0">
-                <div className="flex flex-col">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-                    {description && <CardDescription className="text-xs">{description}</CardDescription>}
-                </div>
-                <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                    <Icon className="h-4 w-4" />
-                </div>
-            </CardHeader>
-            <CardContent className="p-0">
-                 <p className="text-3xl font-bold tracking-tighter">
-                    {value.toLocaleString()}{suffix}
-                </p>
-            </CardContent>
-        </Card>
-    );
-};
-
 
 export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendingCourses, notifications }: {
   adminStats: AdminDashboardStats;
@@ -118,10 +87,10 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
             </Card>
         </div>
         <div className="lg:col-span-4 grid grid-cols-2 gap-4">
-           <MetricCard title="Usuarios Totales" value={adminStats?.totalUsers || 0} icon={UsersRound} index={0} onClick={() => router.push('/users')} />
-           <MetricCard title="Cursos Publicados" value={adminStats?.totalPublishedCourses || 0} icon={BookOpenCheck} index={1} onClick={() => router.push('/manage-courses?tab=PUBLISHED')} />
-           <MetricCard title="Inscripciones" value={adminStats?.totalEnrollments || 0} icon={GraduationCap} index={2} onClick={() => router.push('/enrollments')} />
-           <MetricCard title="Finalización" value={adminStats?.averageCompletionRate || 0} icon={Percent} index={3} suffix="%" onClick={() => router.push('/analytics')} />
+           <MetricCard title="Usuarios Totales" value={adminStats?.totalUsers || 0} icon={UsersRound} index={0} onClick={() => router.push('/users')} gradient="bg-gradient-blue" />
+           <MetricCard title="Cursos Publicados" value={adminStats?.totalPublishedCourses || 0} icon={BookOpenCheck} index={1} onClick={() => router.push('/manage-courses?tab=PUBLISHED')} gradient="bg-gradient-green" />
+           <MetricCard title="Inscripciones" value={adminStats?.totalEnrollments || 0} icon={GraduationCap} index={2} onClick={() => router.push('/enrollments')} gradient="bg-gradient-purple" />
+           <MetricCard title="Finalización" value={adminStats?.averageCompletionRate || 0} icon={Percent} index={3} suffix="%" onClick={() => router.push('/analytics')} gradient="bg-gradient-pink" />
         </div>
       </div>
       

@@ -27,12 +27,12 @@ export function InstructorDashboard({ instructorStats, recentAnnouncements, taug
   const { user, settings } = useAuth();
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
          <div className="lg:col-span-2">
-            <Card id="instructor-welcome-card" className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg">
+            <Card id="instructor-welcome-card" className="relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg h-full">
                 <div className="absolute inset-0 z-0 opacity-20" style={{ backgroundImage: `url(${settings?.publicPagesBgUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
                 <div className="absolute inset-0 bg-black/10"></div>
-                <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 h-full">
                    <div className="space-y-1">
                       <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Estudio del Creador <span className="text-2xl">🎨</span></h1>
                       <p className="text-primary-foreground/80">Tu espacio para crear, gestionar y ver el impacto de tu contenido.</p>
@@ -46,8 +46,8 @@ export function InstructorDashboard({ instructorStats, recentAnnouncements, taug
             </Card>
          </div>
          <div className="lg:col-span-1 grid grid-cols-2 gap-4">
-           <MetricCard title="Cursos Creados" value={instructorStats?.taught || 0} icon={GraduationCap} index={0} />
-           <MetricCard title="Estudiantes Totales" value={instructorStats?.students || 0} icon={Users} index={1} />
+           <MetricCard title="Cursos Creados" value={instructorStats?.taught || 0} icon={GraduationCap} index={0} gradient="bg-gradient-blue" />
+           <MetricCard title="Estudiantes Totales" value={instructorStats?.students || 0} icon={Users} index={1} gradient="bg-gradient-green" />
          </div>
       </div>
 
@@ -56,7 +56,7 @@ export function InstructorDashboard({ instructorStats, recentAnnouncements, taug
             <Card>
                 <CardHeader>
                   <CardTitle>Rendimiento de Cursos</CardTitle>
-                  <CardDescription>Un vistazo rápido al progreso promedio de tus cursos.</CardDescription>
+                  <CardDescription>Un vistazo rápido al progreso promedio de tus cursos más recientes.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {taughtCourses && taughtCourses.length > 0 ? (
