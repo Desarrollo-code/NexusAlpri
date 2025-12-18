@@ -8,6 +8,8 @@ import { parseUserAgent } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
+const PAGE_SIZE = 10;
+
 const aggregateByUserAgent = (logs: { userAgent: string | null }[]) => {
     const browserCounts: Record<string, number> = {};
     const osCounts: Record<string, number> = {};
@@ -40,7 +42,7 @@ export async function GET(req: NextRequest) {
     const startDateParam = searchParams.get('startDate');
     const endDateParam = searchParams.get('endDate');
     const page = parseInt(searchParams.get('page') || '1', 10);
-    const pageSize = 10;
+    const pageSize = parseInt(searchParams.get('pageSize') || String(PAGE_SIZE), 10);
 
     const skip = (page - 1) * pageSize;
 
