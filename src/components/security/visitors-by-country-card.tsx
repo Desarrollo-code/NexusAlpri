@@ -40,9 +40,6 @@ export const VisitorsByCountryCard = ({ isLoading }: VisitorsByCountryCardProps)
                 </div>
                 <CardHeader className="p-0 pt-2">
                     <CardTitle>Monitoreo Global</CardTitle>
-                    <CardDescription className="text-xs mt-1">
-                        La seguridad de nuestra plataforma es nuestra máxima prioridad.
-                    </CardDescription>
                 </CardHeader>
             </div>
         </Card>
