@@ -34,7 +34,7 @@ export function InstructorDashboard({ instructorStats, recentAnnouncements, taug
                 <div className="absolute inset-0 bg-black/10"></div>
                 <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 h-full">
                    <div className="space-y-1">
-                      <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Estudio del Creador <span className="text-2xl">🎨</span></h1>
+                      <h1 className="text-3xl font-bold font-headline flex items-center gap-2">Estudio del Creador <span className="text-2xl animate-wave">🎨</span></h1>
                       <p className="text-primary-foreground/80">Tu espacio para crear, gestionar y ver el impacto de tu contenido.</p>
                    </div>
                    {settings?.dashboardImageUrlInstructor && (
