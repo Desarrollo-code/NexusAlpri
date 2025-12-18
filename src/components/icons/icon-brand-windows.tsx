@@ -3,22 +3,7 @@ import * as React from 'react';
 import { SVGProps } from 'react';
 
 export const IconBrandWindows = (props: SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="icon icon-tabler icon-tabler-brand-windows"
-    width="1em"
-    height="1em"
-    viewBox="0 0 24 24"
-    strokeWidth="2"
-    stroke="currentColor"
-    fill="none"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-    <path d="M17.8 20l-12 -1.5c-1 -.1 -1.8 -1.3 -1.8 -2.5v-10c0 -1.2 .8 -2.4 1.8 -2.5l12 -1.5c1.2 -.1 2.2 .8 2.2 2v13c0 1.2 -1.2 2.3 -2.2 2.2z" />
-    <path d="M4 12h16" />
-    <path d="M12 4v16" />
+  <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="1em" height="1em" viewBox="0 0 48 48" {...props}>
+    <path fill="#00b0ff" d="M20 25.026L5.011 25 5.012 37.744 20 39.818zM22 25.03L22 40.095 42.995 43 43 25.066zM20 8.256L5 10.38 5.014 23 20 23zM22 7.973L22 23 42.995 23 42.995 5z"></path>
   </svg>
 );
