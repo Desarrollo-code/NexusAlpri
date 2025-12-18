@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
     const startDateParam = searchParams.get('startDate');
     const endDateParam = searchParams.get('endDate');
     const page = parseInt(searchParams.get('page') || '1', 10);
-    const pageSize = 8; // Forzado a 8
+    const pageSize = 10;
 
     const skip = (page - 1) * pageSize;
 
