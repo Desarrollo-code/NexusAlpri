@@ -11,9 +11,6 @@ export * from './icon-calendar-days';
 export * from './icon-file-text';
 export * from './icon-shield';
 export * from './icon-book-marked';
-export * from './icon-trending-up';
-export * from './icon-sparkles';
-export * from './icon-award';
 export * from './icon-bar-chart-3';
 export * from './icon-users-round';
 export * from './icon-server';
@@ -27,5 +24,5 @@ export * from './icon-brand-chrome';
 export * from './icon-upload-cloud';
 export * from './icon-health';
 export { Trash2 } from 'lucide-react';
-
+export * from './icon-user-risk';
     

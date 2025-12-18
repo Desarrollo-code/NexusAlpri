@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
 import { Skeleton } from '@/components/ui/skeleton';
-import { UserX, ShieldAlert } from 'lucide-react';
+import { UserX } from 'lucide-react';
 import type { SecurityStats } from '@/types';
+import { IconUserRisk } from '../icons/icon-user-risk';
 
 type AtRiskUser = SecurityStats['atRiskUsers'][0];
 
@@ -23,7 +24,7 @@ export const AtRiskUsersCard = ({ users, onSuspend, isLoading }: AtRiskUsersCard
         <Card>
             <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
-                    <ShieldAlert className="h-4 w-4 text-destructive" />
+                    <IconUserRisk className="h-4 w-4 text-destructive" />
                     Usuarios en Riesgo
                 </CardTitle>
                  <CardDescription className="text-xs">
