@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Loader2, AlertTriangle, UserCog, HelpCircle, Filter, CheckCircle, Shield, BookMarked, Percent, Users, UserX } from 'lucide-react';
+import { Loader2, AlertTriangle, UserCog, HelpCircle, Filter, BookMarked, Users, UserX } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, SecurityStats, User, SecurityLogEvent } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -40,6 +40,10 @@ import { VisitorsByCountryCard } from '@/components/security/visitors-by-country
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
 import { DecorativeHeaderBackground } from '@/components/layout/decorative-header-background';
 import { IconHealth } from '@/components/icons/icon-health';
+import { IconCheckCheck } from '@/components/icons/icon-check-check';
+import { IconMailWarning } from '@/components/icons/icon-mail-warning';
+import { IconBookMarked } from '@/components/icons/icon-book-marked';
+import { IconShieldCheck } from '@/components/icons/icon-shield-check';
 
 
 const PAGE_SIZE = 10;
@@ -275,10 +279,10 @@ function SecurityAuditPageComponent() {
                         <CardContent className="flex flex-col items-center justify-center">
                             {isLoading ? <Skeleton className="h-48 w-full"/> : <GaugeChart value={stats.securityScore || 0}/>}
                              <div className="mt-4 grid grid-cols-2 gap-2 w-full">
-                                <MetricCard title="Exitosos" value={stats.successfulLogins || 0} icon={CheckCircle} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')} gradient="bg-gradient-green" />
-                                <MetricCard title="Fallidos" value={stats.failedLogins || 0} icon={AlertTriangle} onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')} gradient="bg-gradient-orange" />
-                                <MetricCard title="Modif. Contenido" value={stats.courseModifications || 0} icon={BookMarked} onClick={() => handleFilterChange('event', 'COURSE_MODIFICATIONS')} gradient="bg-gradient-blue" />
-                                <MetricCard title="Adopción 2FA" value={stats.twoFactorAdoptionRate || 0} icon={Percent} suffix="%" gradient="bg-gradient-purple" />
+                                <MetricCard title="Exitosos" value={stats.successfulLogins || 0} icon={IconCheckCheck} onClick={() => handleFilterChange('event', 'SUCCESSFUL_LOGIN')} gradient="bg-gradient-green" />
+                                <MetricCard title="Fallidos" value={stats.failedLogins || 0} icon={IconMailWarning} onClick={() => handleFilterChange('event', 'FAILED_LOGIN_ATTEMPT')} gradient="bg-gradient-orange" />
+                                <MetricCard title="Modif. Contenido" value={stats.courseModifications || 0} icon={IconBookMarked} onClick={() => handleFilterChange('event', 'COURSE_MODIFICATIONS')} gradient="bg-gradient-blue" />
+                                <MetricCard title="Adopción 2FA" value={stats.twoFactorAdoptionRate || 0} icon={IconShieldCheck} suffix="%" gradient="bg-gradient-purple" />
                             </div>
                         </CardContent>
                     </Card>
