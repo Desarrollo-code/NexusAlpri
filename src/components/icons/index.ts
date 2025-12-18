@@ -25,4 +25,9 @@ export * from './icon-upload-cloud';
 export * from './icon-health';
 export { Trash2 } from 'lucide-react';
 export * from './icon-user-risk';
+export * from './icon-globe-detailed';
+export * from './icon-check-circle';
+export * from './icon-alert-triangle';
+export * from './icon-book-check';
+export * from './icon-percent';
     

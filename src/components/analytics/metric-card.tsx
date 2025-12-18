@@ -26,7 +26,6 @@ export const MetricCard = ({
 }) => {
     const animatedValue = useAnimatedCounter(value, 0, 1000);
     
-    // Asigna un color de la paleta de gráficos de forma rotativa si no se proporciona gradiente
     const colorVar = `--chart-${(index % 5) + 1}`;
     
     return (
@@ -41,7 +40,7 @@ export const MetricCard = ({
         >
              <div className="flex justify-between items-start text-primary-foreground/80">
                 <p className="text-sm font-semibold">{title}</p>
-                <Icon className="h-5 w-5" />
+                {Icon && <Icon className="h-5 w-5" />}
             </div>
             
             <div className="text-left">
