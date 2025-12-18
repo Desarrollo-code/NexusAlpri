@@ -3,14 +3,15 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Monitor, Chrome, Apple, HelpCircle, Smartphone } from 'lucide-react';
+import { Monitor, Apple, HelpCircle, Smartphone } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { IconBrandWindows } from '@/components/icons/icon-brand-windows';
 import { IconBrandLinux } from '@/components/icons/icon-brand-linux';
 import { Skeleton } from '../ui/skeleton';
+import { IconBrandChrome } from '../icons/icon-brand-chrome';
 
 const iconMap: Record<string, React.ElementType> = {
-    'Chrome': Chrome,
+    'Chrome': IconBrandChrome,
     'Firefox': Monitor, 
     'Safari': Apple,
     'Edge': Monitor,
