@@ -63,7 +63,7 @@ const TimelineItem = ({ log, onLogClick, isLast }: { log: SecurityLog, onLogClic
 
 export const SecurityLogTimeline = ({ logs, onLogClick }: { logs: SecurityLog[], onLogClick: (log: SecurityLog) => void }) => {
     return (
-        <ScrollArea className="max-h-[500px] min-h-[400px] pr-4">
+        <ScrollArea className="h-[600px] pr-4">
             <div className="relative">
                 <AnimatePresence>
                     {logs.map((log, index) => (

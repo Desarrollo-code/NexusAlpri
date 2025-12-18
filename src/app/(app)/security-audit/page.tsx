@@ -39,6 +39,7 @@ import { AtRiskUsersCard } from '@/components/security/at-risk-users-card';
 import { VisitorsByCountryCard } from '@/components/security/visitors-by-country-card';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
 import { DecorativeHeaderBackground } from '@/components/layout/decorative-header-background';
+import { IconHealth } from '@/components/icons/icon-health';
 
 
 const PAGE_SIZE = 10;
@@ -268,7 +269,7 @@ function SecurityAuditPageComponent() {
                 <div className="lg:col-span-1 space-y-8">
                     <Card id="security-stats-cards">
                         <CardHeader>
-                            <CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-primary"/> Salud de Seguridad</CardTitle>
+                            <CardTitle className="text-base flex items-center gap-2"><IconHealth className="h-4 w-4 text-primary"/> Salud de Seguridad</CardTitle>
                              <CardDescription className="text-xs">Un "termómetro" que mide qué tan seguros son los inicios de sesión. Un puntaje alto es bueno.</CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-col items-center justify-center">
