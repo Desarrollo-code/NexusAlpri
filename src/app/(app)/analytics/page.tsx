@@ -40,7 +40,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { MetricCard } from '@/components/analytics/metric-card';
 import { DonutChart } from '@/components/analytics/donut-chart';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
-import { IconBookMarked, IconFileText, IconFolderDynamic, IconGraduationCap, IconUsersRound, IconPercent } from '@/components/icons';
+import { IconBookMarked, IconFileText, IconFolderDynamic, IconGraduationCap, IconUsersRound, IconPercent, IconMegaphone, IconLibrary } from '@/components/icons';
 
 
 const formatDateTick = (tick: string): string => {
@@ -227,7 +227,7 @@ function AdminAnalyticsPage() {
             <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={IconGraduationCap} index={2} />
             <MetricCard title="Modif. Contenido" value={stats?.courseModifications || 0} icon={IconBookMarked} index={3} />
             <MetricCard title="Recursos" value={stats?.totalResources || 0} icon={IconFolderDynamic} index={4}/>
-            <MetricCard title="Anuncios" value={stats?.totalAnnouncements || 0} icon={Megaphone} index={5}/>
+            <MetricCard title="Anuncios" value={stats?.totalAnnouncements || 0} icon={IconMegaphone} index={5}/>
             <MetricCard title="Formularios" value={stats?.totalForms || 0} icon={IconFileText} index={6}/>
             <MetricCard title="Finalización" value={stats?.averageCompletionRate || 0} icon={IconPercent} suffix="%" description="Promedio" index={7}/>
         </div>
