@@ -53,23 +53,26 @@ export const IconFolderDynamic = (props: SVGProps<SVGSVGElement>) => (
         fill="#2fb1ea"
         d="M203.93,231.91H52.07a10,10,0,0,1-10-10V104.41a10,10,0,0,1,10-10H88.23a9.94,9.94,0,0,1,7.89,3.85L110,116.1a6,6,0,0,0,4.73,2.31h89.17a10,10,0,0,1,10,10v93.5A10,10,0,0,1,203.93,231.91ZM52.07,98.41a6,6,0,0,0-6,6v117.5a6,6,0,0,0,6,6H203.93a6,6,0,0,0,6-6v-93.5a6,6,0,0,0-6-6H114.76a9.94,9.94,0,0,1-7.89-3.85L93,100.72a6,6,0,0,0-4.73-2.31Z"
       />
-      <circle fill="#d4ffd4" cx="19" cy="171" r="5" />
-      <circle fill="#d4ffd4" cx="128" cy="8" r="4" />
-      <circle fill="#d4ffd4" cx="248" cy="115" r="3" />
-      <circle fill="#d4ffd4" cx="189" cy="250" r="2" />
-      <circle fill="#d4ffd4" cx="218" cy="199" r="1" />
-      <circle fill="#ffbdbd" cx="249" cy="177" r="5" />
-      <circle fill="#ffbdbd" cx="62" cy="241" r="4" />
-      <circle fill="#ffbdbd" cx="19" cy="115" r="3" />
-      <circle fill="#ffbdbd" cx="24" cy="197" r="2" />
-      <circle fill="#ffbdbd" cx="85" cy="240" r="1" />
-      <circle fill="#bbf1ff" cx="62" cy="44" r="5" />
-      <circle fill="#bbf1ff" cx="234" cy="92" r="4" />
-      <circle fill="#bbf1ff" cx="131" cy="244" r="3" />
-      <circle fill="#bbf1ff" cx="230" cy="28" r="2" />
-      <circle fill="#bbf1ff" cx="214" cy="47" r="1" />
-      <circle fill="#fff4c5" cx="7" cy="57" r="5" />
-      <circle fill="#fff4c5" cx="234" cy="140" r="4" />
-      <circle fill="#fff4c5" cx="178" cy="35" r="3" />
-      <circle fill="#fff4c5" cx="42" cy="49" r="2" />
-      <circle fill
+      <circle fill="#d4ffd4" cx={19} cy={171} r={5} />
+      <circle fill="#d4ffd4" cx={128} cy={8} r={4} />
+      <circle fill="#d4ffd4" cx={248} cy={115} r={3} />
+      <circle fill="#d4ffd4" cx={189} cy={250} r={2} />
+      <circle fill="#d4ffd4" cx={218} cy={199} r={1} />
+      <circle fill="#ffbdbd" cx={249} cy={177} r={5} />
+      <circle fill="#ffbdbd" cx={62} cy={241} r={4} />
+      <circle fill="#ffbdbd" cx={19} cy={115} r={3} />
+      <circle fill="#ffbdbd" cx={24} cy={197} r={2} />
+      <circle fill="#ffbdbd" cx={85} cy={240} r={1} />
+      <circle fill="#bbf1ff" cx={62} cy={44} r={5} />
+      <circle fill="#bbf1ff" cx={234} cy={92} r={4} />
+      <circle fill="#bbf1ff" cx={131} cy={244} r={3} />
+      <circle fill="#bbf1ff" cx={230} cy={28} r={2} />
+      <circle fill="#bbf1ff" cx={214} cy={47} r={1} />
+      <circle fill="#fff4c5" cx={7} cy={57} r={5} />
+      <circle fill="#fff4c5" cx={234} cy={140} r={4} />
+      <circle fill="#fff4c5" cx={178} cy={35} r={3} />
+      <circle fill="#fff4c5" cx={42} cy={49} r={2} />
+      <circle fill="#fff4c5" cx={157} cy={241} r={1} />
+    </g>
+  </svg>
+);

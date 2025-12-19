@@ -144,4 +144,3 @@ export const IconFileText = (props: SVGProps<SVGSVGElement>) => (
     />
   </svg>
 );
-export default IconFileText;

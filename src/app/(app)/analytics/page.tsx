@@ -40,7 +40,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { MetricCard } from '@/components/analytics/metric-card';
 import { DonutChart } from '@/components/analytics/donut-chart';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
-import { IconBookMarked, IconFileText, IconFolderDynamic, IconGraduationCap, IconUsersRound, IconPercent } from '../icons';
+import { IconBookMarked, IconFileText, IconFolderDynamic, IconGraduationCap, IconUsersRound, IconPercent } from '@/components/icons';
 
 
 const formatDateTick = (tick: string): string => {
@@ -329,11 +329,4 @@ export default function AnalyticsPageWrapper() {
         </CardHeader>
         <CardContent>
           <Button asChild>
-            <Link href="/dashboard">Volver al Panel Principal</Link>
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
-  );
-  
-}
+            <Link href="/
