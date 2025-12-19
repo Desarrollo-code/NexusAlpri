@@ -31,3 +31,4 @@ export * from './icon-shield-check';
 export * from './icon-percent';
 export * from './icon-library';
 export * from './icon-folder-dynamic';
+export * from './icon-lightbulb';
