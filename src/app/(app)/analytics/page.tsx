@@ -329,4 +329,10 @@ export default function AnalyticsPageWrapper() {
         </CardHeader>
         <CardContent>
           <Button asChild>
-            <Link href="/
+            <Link href="/dashboard">Volver al Panel Principal</Link>
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
