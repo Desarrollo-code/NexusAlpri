@@ -30,6 +30,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '../ui/carousel';
 import { IconLightbulb } from '../icons/icon-lightbulb';
 import { IconCode } from '../icons/icon-code';
+import { IconDatabase } from '../icons/icon-database';
 
 const getPhaseColor = (phase: string) => {
     const hash = phase.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -47,6 +48,7 @@ const iconMap = {
     ...LucideIcons,
     Lightbulb: IconLightbulb,
     Code: IconCode,
+    Database: IconDatabase,
 };
 
 const RoadmapGridCard = ({ item, onSelect }: { item: RoadmapItem, onSelect: () => void }) => {

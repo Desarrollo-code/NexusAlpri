@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { Calendar as CalendarIcon, Loader2, Save, Trash2 } from 'lucide-react';
+import { Calendar as CalendarIcon, Loader2, Save, Trash2, Image as ImageIcon, Type, User, UploadCloud, XCircle, Replace, HelpCircle, ImagePlay, Building, FolderOpen, MousePointer, Rocket, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
@@ -29,8 +29,18 @@ import Image from 'next/image';
 import { RichTextEditor } from '../ui/rich-text-editor';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { IconLightbulb } from '../icons/icon-lightbulb';
+import { IconCode } from '../icons/icon-code';
+import { IconDatabase } from '../icons/icon-database';
 
 const ICONS = ['Lightbulb', 'Code', 'Database', 'Paintbrush', 'Rocket', 'CheckCircle', 'Award', 'Sparkles', 'UsersRound', 'FileText', 'Shield', 'MessageSquare', 'ScreenShare', 'Network', 'ListChecks', 'Megaphone', 'Folder', 'Users', 'TestTube2'];
+
+const iconMap = {
+    ...LucideIcons,
+    Lightbulb: IconLightbulb,
+    Code: IconCode,
+    Database: IconDatabase,
+};
 
 const iconTranslations: { [key: string]: string } = {
   Lightbulb: 'Idea',
@@ -142,7 +152,7 @@ export function RoadmapEditorModal({ isOpen, onClose, item, onSave }: RoadmapEdi
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-2xl flex flex-col h-[90vh] p-0 gap-0">
+            <DialogContent className="sm:max-w-2xl flex flex-col h-[90vh] p-0 gap-0 rounded-2xl">
                 <DialogHeader className="p-6 pb-4 border-b">
                     <DialogTitle>{item ? 'Editar Hito' : 'Nuevo Hito en la Hoja de Ruta'}</DialogTitle>
                     <DialogDescription>Añade o modifica un evento importante en la evolución del proyecto.</DialogDescription>
@@ -195,10 +205,10 @@ export function RoadmapEditorModal({ isOpen, onClose, item, onSave }: RoadmapEdi
                         <div className="space-y-1">
                             <Label>Icono</Label>
                             <Select name="roadmap-icon" value={icon} onValueChange={setIcon}>
-                                <SelectTrigger><div className="flex items-center gap-2">{(LucideIcons as any)[icon] && React.createElement((LucideIcons as any)[icon], {className: "h-4 w-4"})}<span>{iconTranslations[icon] || icon}</span></div></SelectTrigger>
+                                <SelectTrigger><div className="flex items-center gap-2">{(iconMap as any)[icon] && React.createElement((iconMap as any)[icon], {className: "h-4 w-4"})}<span>{iconTranslations[icon] || icon}</span></div></SelectTrigger>
                                 <SelectContent>
                                     {ICONS.map(iconName => {
-                                        const IconComponent = (LucideIcons as any)[iconName];
+                                        const IconComponent = (iconMap as any)[iconName];
                                         return <SelectItem key={iconName} value={iconName}><div className="flex items-center gap-2"><IconComponent className="h-4 w-4"/><span>{iconTranslations[iconName] || iconName}</span></div></SelectItem>
                                     })}
                                 </SelectContent>
