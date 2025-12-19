@@ -12,20 +12,13 @@ import {
   BookOpenCheck, 
   UserPlus,
   AlertTriangle,
-  GraduationCap,
   Library,
   TrendingUp,
   TrendingDown,
   Award,
-  BadgePercent,
-  UserCheck,
-  UserRound,
-  FilePlus2 as CourseIcon,
   HelpCircle,
   Calendar as CalendarIcon,
-  Folder,
   Megaphone,
-  FileText
 } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -47,6 +40,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { MetricCard } from '@/components/analytics/metric-card';
 import { DonutChart } from '@/components/analytics/donut-chart';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
+import { IconBookMarked, IconFileText, IconFolderDynamic, IconGraduationCap, IconUsersRound, IconPercent } from '../icons';
 
 
 const formatDateTick = (tick: string): string => {
@@ -228,14 +222,14 @@ function AdminAnalyticsPage() {
              </div>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-8 gap-4 mt-4" id="analytics-metric-cards">
-            <MetricCard title="Total Usuarios" value={stats?.totalUsers || 0} icon={UsersRound} index={0}/>
+            <MetricCard title="Total Usuarios" value={stats?.totalUsers || 0} icon={IconUsersRound} index={0}/>
             <MetricCard title="Total Cursos" value={stats?.totalCourses || 0} icon={Library} index={1}/>
-            <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={GraduationCap} index={2} />
-            <MetricCard title="Cursos Publicados" value={stats?.totalPublishedCourses || 0} icon={BookOpenCheck} index={3} />
-            <MetricCard title="Recursos" value={stats?.totalResources || 0} icon={Folder} index={4}/>
+            <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={IconGraduationCap} index={2} />
+            <MetricCard title="Cursos Publicados" value={stats?.totalPublishedCourses || 0} icon={IconBookMarked} index={3} />
+            <MetricCard title="Recursos" value={stats?.totalResources || 0} icon={IconFolderDynamic} index={4}/>
             <MetricCard title="Anuncios" value={stats?.totalAnnouncements || 0} icon={Megaphone} index={5}/>
-            <MetricCard title="Formularios" value={stats?.totalForms || 0} icon={FileText} index={6}/>
-            <MetricCard title="Finalización" value={stats?.averageCompletionRate || 0} icon={BadgePercent} suffix="%" description="Promedio" index={7}/>
+            <MetricCard title="Formularios" value={stats?.totalForms || 0} icon={IconFileText} index={6}/>
+            <MetricCard title="Finalización" value={stats?.averageCompletionRate || 0} icon={IconPercent} suffix="%" description="Promedio" index={7}/>
         </div>
         
         <Separator />
@@ -276,17 +270,17 @@ function AdminAnalyticsPage() {
          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="analytics-course-rankings">
             <Card>
                 <CardContent className="pt-6">
-                    <RankingList title="Cursos Más Populares" items={stats?.topCoursesByEnrollment || []} metric="Inscritos" icon={TrendingUp} />
+                    <RankingList title="Cursos Más Populares" items={stats?.topCoursesByEnrollment || []} icon={TrendingUp} unit=" insc." />
                 </CardContent>
             </Card>
              <Card>
                 <CardContent className="pt-6">
-                     <RankingList title="Cursos con Mejor Finalización" items={stats?.topCoursesByCompletion || []} metric="Completado" icon={Award} unit="%"/>
+                     <RankingList title="Cursos con Mejor Finalización" items={stats?.topCoursesByCompletion || []} icon={Award} unit="%"/>
                 </CardContent>
             </Card>
              <Card>
                 <CardContent className="pt-6">
-                     <RankingList title="Cursos de Oportunidad" items={stats?.lowestCoursesByCompletion || []} metric="Completado" icon={TrendingDown} unit="%"/>
+                     <RankingList title="Cursos de Oportunidad" items={stats?.lowestCoursesByCompletion || []} icon={TrendingDown} unit="%"/>
                 </CardContent>
             </Card>
         </div>
@@ -294,17 +288,17 @@ function AdminAnalyticsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="analytics-user-rankings">
              <Card>
                 <CardContent className="pt-6">
-                     <RankingList title="Estudiantes Más Activos" items={stats?.topStudentsByEnrollment || []} metric="Inscripciones" icon={UserRound} />
+                     <RankingList title="Estudiantes Más Activos" items={stats?.topStudentsByEnrollment || []} icon={UsersRound} unit=" insc." />
                 </CardContent>
             </Card>
              <Card>
                 <CardContent className="pt-6">
-                    <RankingList title="Mejores Estudiantes" items={stats?.topStudentsByCompletion || []} metric="Completados" icon={UserCheck} />
+                    <RankingList title="Mejores Estudiantes" items={stats?.topStudentsByCompletion || []} icon={BookOpenCheck} unit=" compl." />
                 </CardContent>
             </Card>
              <Card>
                 <CardContent className="pt-6">
-                    <RankingList title="Instructores Destacados" items={stats?.topInstructorsByCourses || []} metric="Cursos Creados" icon={CourseIcon} />
+                    <RankingList title="Instructores Destacados" items={stats?.topInstructorsByCourses || []} icon={UserPlus} unit=" cursos" />
                 </CardContent>
             </Card>
         </div>

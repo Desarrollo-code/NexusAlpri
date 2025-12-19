@@ -35,4 +35,3 @@ export const IconBookMarked = (props: SVGProps<SVGSVGElement>) => (
     />
   </svg>
 );
-export default IconBookMarked;
