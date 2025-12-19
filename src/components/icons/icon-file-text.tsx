@@ -142,5 +142,3 @@ export const IconFileText = (props: SVGProps<SVGSVGElement>) => (
       x={412.6}
       y={1311.5}
     />
-  </svg>
-);

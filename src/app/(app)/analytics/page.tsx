@@ -225,7 +225,7 @@ function AdminAnalyticsPage() {
             <MetricCard title="Total Usuarios" value={stats?.totalUsers || 0} icon={IconUsersRound} index={0}/>
             <MetricCard title="Total Cursos" value={stats?.totalCourses || 0} icon={IconLibrary} index={1}/>
             <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={IconGraduationCap} index={2} />
-            <MetricCard title="Cursos Publicados" value={stats?.totalPublishedCourses || 0} icon={IconBookMarked} index={3} />
+            <MetricCard title="Modif. Contenido" value={stats?.courseModifications || 0} icon={IconBookMarked} index={3} />
             <MetricCard title="Recursos" value={stats?.totalResources || 0} icon={IconFolderDynamic} index={4}/>
             <MetricCard title="Anuncios" value={stats?.totalAnnouncements || 0} icon={Megaphone} index={5}/>
             <MetricCard title="Formularios" value={stats?.totalForms || 0} icon={IconFileText} index={6}/>
@@ -329,4 +329,10 @@ export default function AnalyticsPageWrapper() {
         </CardHeader>
         <CardContent>
           <Button asChild>
-            <Link href="/dashboard">Volver al Panel Principal</
+            <Link href="/dashboard">Volver al Panel Principal</Link>
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
