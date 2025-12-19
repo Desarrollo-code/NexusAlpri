@@ -1,6 +1,6 @@
 // src/components/icons/icon-mail-warning.tsx
 import * as React from 'react';
-import { SVGProps } from 'react';
+import { SVGProps } from "react";
 
 export const IconMailWarning = (props: SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 36 36" {...props}>
