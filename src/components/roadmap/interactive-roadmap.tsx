@@ -31,6 +31,8 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { IconLightbulb } from '../icons/icon-lightbulb';
 import { IconCode } from '../icons/icon-code';
 import { IconDatabase } from '../icons/icon-database';
+import { IconPaintbrush } from '../icons/icon-paintbrush';
+import { IconRocket } from '../icons/icon-rocket';
 
 const getPhaseColor = (phase: string) => {
     const hash = phase.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -49,6 +51,8 @@ const iconMap = {
     Lightbulb: IconLightbulb,
     Code: IconCode,
     Database: IconDatabase,
+    Paintbrush: IconPaintbrush,
+    Rocket: IconRocket,
 };
 
 const RoadmapGridCard = ({ item, onSelect }: { item: RoadmapItem, onSelect: () => void }) => {
