@@ -28,6 +28,8 @@ import Image from 'next/image';
 import { ScrollArea } from '../ui/scroll-area';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '../ui/carousel';
+import { IconLightbulb } from '../icons/icon-lightbulb';
+import { IconCode } from '../icons/icon-code';
 
 const getPhaseColor = (phase: string) => {
     const hash = phase.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -41,8 +43,14 @@ const getPhaseColor = (phase: string) => {
     return colors[hash % colors.length];
 };
 
+const iconMap = {
+    ...LucideIcons,
+    Lightbulb: IconLightbulb,
+    Code: IconCode,
+};
+
 const RoadmapGridCard = ({ item, onSelect }: { item: RoadmapItem, onSelect: () => void }) => {
-    const Icon = (LucideIcons as any)[item.icon] || LucideIcons.Lightbulb;
+    const Icon = (iconMap as any)[item.icon] || LucideIcons.Lightbulb;
     const phaseColor = getPhaseColor(item.phase);
 
     return (
@@ -137,7 +145,7 @@ export const InteractiveRoadmap = ({ items, onEdit, onDelete }: { items: Roadmap
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black z-40"
+                            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40"
                             onClick={() => setSelectedId(null)}
                         />
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
