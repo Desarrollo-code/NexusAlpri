@@ -2,7 +2,7 @@
 'use client';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, BookOpenCheck, Percent, PlusCircle, BarChart3, Settings, ShieldAlert, Monitor, Database, ArrowRight, LineChart, BookOpen, Clock, AlertTriangle } from "lucide-react";
+import { Users, BookOpenCheck, Percent, PlusCircle, BarChart3, Settings, ShieldAlert, Monitor, Database, ArrowRight, LineChart, BookOpen, Clock, AlertTriangle, Megaphone } from "lucide-react";
 import type { AdminDashboardStats, SecurityLog as AppSecurityLog, Announcement as AnnouncementType, CalendarEvent, Course, Notification as AppNotification } from '@/types';
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
@@ -89,7 +89,7 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
         </div>
         <div className="lg:col-span-4 grid grid-cols-2 gap-4">
            <MetricCard title="Usuarios Totales" value={adminStats?.totalUsers || 0} icon={IconUsersRound} index={0} onClick={() => router.push('/users')} gradient="bg-gradient-blue" />
-           <MetricCard title="Cursos Publicados" value={adminStats?.totalPublishedCourses || 0} icon={IconBookMarked} index={1} onClick={() => router.push('/manage-courses?tab=PUBLISHED')} gradient="bg-gradient-green" />
+           <MetricCard title="Cursos Publicados" value={adminStats?.totalPublishedCourses || 0} icon={BookMarked} index={1} onClick={() => router.push('/manage-courses?tab=PUBLISHED')} gradient="bg-gradient-green" />
            <MetricCard title="Inscripciones" value={adminStats?.totalEnrollments || 0} icon={IconGraduationCap} index={2} onClick={() => router.push('/enrollments')} gradient="bg-gradient-purple" />
            <MetricCard title="Recursos" value={adminStats?.totalResources || 0} icon={IconFolderDynamic} index={4} onClick={() => router.push('/resources')} gradient="bg-gradient-pink" />
         </div>
@@ -172,7 +172,4 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
         </div>
       </div>
       
-      {selectedLog && <SecurityLogDetailSheet log={selectedLog} isOpen={!!selectedLog} onClose={() => setSelectedLog(null)} />}
-    </div>
-  );
-}
+      {selectedLog && <SecurityLogDetailSheet log={selectedLog} isOpen={!

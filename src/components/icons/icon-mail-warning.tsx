@@ -8,9 +8,6 @@ export const IconMailWarning = (props: SVGProps<SVGSVGElement>) => (
     height="1em"
     viewBox="0 0 36 36"
     xmlns="http://www.w3.org/2000/svg"
-    aria-hidden="true"
-    role="img"
-    preserveAspectRatio="xMidYMid meet"
     {...props}
   >
     <path
@@ -21,5 +18,4 @@ export const IconMailWarning = (props: SVGProps<SVGSVGElement>) => (
       fill="#231F20"
       d="M15.583 28.953a2.421 2.421 0 0 1 2.419-2.418a2.421 2.421 0 0 1 2.418 2.418a2.422 2.422 0 0 1-2.418 2.419a2.422 2.422 0 0 1-2.419-2.419zm.186-18.293c0-1.302.961-2.108 2.232-2.108c1.241 0 2.233.837 2.233 2.108v11.938c0 1.271-.992 2.108-2.233 2.108c-1.271 0-2.232-.807-2.232-2.108V10.66z"
     />
-  </svg>
-);
+  </

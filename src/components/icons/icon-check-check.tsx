@@ -7,7 +7,7 @@ export const IconCheckCheck = (props: SVGProps<SVGSVGElement>) => {
   const gradientId = `gradient_${uniqueId.replace(/:/g, '')}`;
 
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="1em" height="1em" viewBox="0 0 48 48" {...props}>
+    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 48 48" {...props}>
       <defs>
         <linearGradient
           id={gradientId}
@@ -35,8 +35,4 @@ export const IconCheckCheck = (props: SVGProps<SVGSVGElement>) => {
       />
       <path
         fill="#fff"
-        d="M21.293,32.707l-8-8c-0.391-0.391-0.391-1.024,0-1.414l1.414-1.414c0.391-0.391,1.024-0.391,1.414,0 L22,27.758l10.879-10.879c0.391-0.391,1.024-0.391,1.414,0l1.414,1.414c0.391,0.391,0.391,1.024,0,1.414l-13,13 C22.317,33.098,21.683,33.098,21.293,32.707z"
-      />
-    </svg>
-  );
-};
+        d="M21.293,32.707l-8-8c-0.391-0.391-0.391-1.024,0-1.414l1.414-1.414c0.391-0.391,1.024-0.391,1.414,0 L22,27.758l10.879-10.879c0.391-0.391,1.024-0.391,1.414,0l1.414,1.414c0.391,0.391,0.391,1.024,0,1.414l-13,13 C22.317,33.098,21.683,33.098,21.293,3
