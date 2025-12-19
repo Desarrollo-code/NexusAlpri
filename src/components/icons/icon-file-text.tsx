@@ -121,6 +121,8 @@ export const IconFileText = (props: SVGProps<SVGSVGElement>) => {
         ry={21.9}
         transform="translate(1223.7 -491.5) rotate(45)"
         width={43.8}
+
+        
         x={1183.2}
         y={1129.8}
       />

@@ -33,6 +33,7 @@ import { IconCode } from '../icons/icon-code';
 import { IconDatabase } from '../icons/icon-database';
 import { IconPaintbrush } from '../icons/icon-paintbrush';
 import { IconRocket } from '../icons/icon-rocket';
+import { IconCheckCheck } from '../icons/icon-check-check';
 
 const getPhaseColor = (phase: string) => {
     const hash = phase.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -53,6 +54,7 @@ const iconMap = {
     Database: IconDatabase,
     Paintbrush: IconPaintbrush,
     Rocket: IconRocket,
+    CheckCircle: IconCheckCheck,
 };
 
 const RoadmapGridCard = ({ item, onSelect }: { item: RoadmapItem, onSelect: () => void }) => {

@@ -32,6 +32,9 @@ import { cn } from '@/lib/utils';
 import { IconLightbulb } from '../icons/icon-lightbulb';
 import { IconCode } from '../icons/icon-code';
 import { IconDatabase } from '../icons/icon-database';
+import { IconPaintbrush } from '../icons/icon-paintbrush';
+import { IconRocket } from '../icons/icon-rocket';
+import { IconCheckCheck } from '../icons/icon-check-check';
 
 const ICONS = ['Lightbulb', 'Code', 'Database', 'Paintbrush', 'Rocket', 'CheckCircle', 'Award', 'Sparkles', 'UsersRound', 'FileText', 'Shield', 'MessageSquare', 'ScreenShare', 'Network', 'ListChecks', 'Megaphone', 'Folder', 'Users', 'TestTube2'];
 
@@ -40,6 +43,9 @@ const iconMap = {
     Lightbulb: IconLightbulb,
     Code: IconCode,
     Database: IconDatabase,
+    Paintbrush: IconPaintbrush,
+    Rocket: IconRocket,
+    CheckCircle: IconCheckCheck,
 };
 
 const iconTranslations: { [key: string]: string } = {
