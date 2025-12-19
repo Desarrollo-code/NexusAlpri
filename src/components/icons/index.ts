@@ -23,7 +23,6 @@ export * from './icon-brand-linux';
 export * from './icon-brand-chrome';
 export * from './icon-upload-cloud';
 export * from './icon-health';
-export { Trash2 } from 'lucide-react';
 export * from './icon-user-risk';
 export * from './icon-globe-detailed';
 export * from './icon-check-check';
@@ -31,4 +30,5 @@ export * from './icon-mail-warning';
 export * from './icon-shield-check';
 export * from './icon-percent';
 export * from './icon-library';
+export * from './icon-folder-dynamic';
     

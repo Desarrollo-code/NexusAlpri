@@ -1,63 +1,86 @@
 // src/components/icons/icon-folder-dynamic.tsx
 import * as React from 'react';
 import { SVGProps } from 'react';
-import { colord } from 'colord';
 
-interface IconFolderDynamicProps extends SVGProps<SVGSVGElement> {
-  color?: string;
-}
-
-export const IconFolderDynamic = ({ color = '#fac017', ...props }: IconFolderDynamicProps) => {
-  // Generar una paleta de colores a partir del color base
-  const base = colord(color);
-  const dark1 = base.darken(0.1).toHex();
-  const dark2 = base.darken(0.05).toHex();
-  const light1 = base.lighten(0.1).toHex();
-  const light2 = base.lighten(0.2).toHex();
-
-  // IDs únicos para los gradientes para evitar conflictos si hay múltiples SVGs en la página
-  const uniqueId = React.useId();
-
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 48 48" {...props}>
-      <defs>
-        <linearGradient id={`grad1_${uniqueId}`} x1="-7.018" x2="39.387" y1="9.308" y2="33.533" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor={base.toHex()} />
-          <stop offset=".909" stopColor={dark2} />
-        </linearGradient>
-        <linearGradient id={`grad2_${uniqueId}`} x1="5.851" x2="18.601" y1="9.254" y2="27.39" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#fbfef3" />
-          <stop offset=".909" stopColor="#e2e4e3" />
-        </linearGradient>
-        <linearGradient id={`grad3_${uniqueId}`} x1="2" x2="22" y1="19" y2="19" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#fbfef3" />
-          <stop offset=".909" stopColor="#e2e4e3" />
-        </linearGradient>
-        <linearGradient id={`grad4_${uniqueId}`} x1="16.865" x2="44.965" y1="39.287" y2="39.792" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor={dark1} />
-          <stop offset=".464" stopColor={dark2} />
-        </linearGradient>
-        <linearGradient id={`grad5_${uniqueId}`} x1="-4.879" x2="35.968" y1="12.764" y2="30.778" gradientUnits="userSpaceOnUse">
-          <stop offset=".34" stopColor={light2} />
-          <stop offset=".485" stopColor={light1} />
-          <stop offset=".652" stopColor={light2} />
-          <stop offset=".828" stopColor={light1} />
-          <stop offset="1" stopColor={base.toHex()} />
-        </linearGradient>
-        <radialGradient id={`grad6_${uniqueId}`} cx="37.836" cy="49.317" r="53.875" gradientUnits="userSpaceOnUse">
-          <stop offset=".199" stopColor={light1} />
-          <stop offset=".601" stopColor={light2} />
-          <stop offset=".68" stopColor={base.toHex()} />
-          <stop offset=".886" stopColor={light1} />
-          <stop offset="1" stopColor={light2} />
-        </radialGradient>
-      </defs>
-      <path fill={`url(#grad1_${uniqueId})`} d="M44.5,41h-41C2.119,41,1,39.881,1,38.5v-31C1,6.119,2.119,5,3.5,5h11.597	c1.519,0,2.955,0.69,3.904,1.877L21.5,10h23c1.381,0,2.5,1.119,2.5,2.5v26C47,39.881,45.881,41,44.5,41z" />
-      <path fill={`url(#grad2_${uniqueId})`} d="M2,25h20V11H4c-1.105,0-2,0.895-2,2V25z" />
-      <path fill={`url(#grad3_${uniqueId})`} d="M2,26h20V12H4c-1.105,0-2,0.895-2,2V26z" />
-      <path fill={`url(#grad4_${uniqueId})`} d="M1,37.875V38.5C1,39.881,2.119,41,3.5,41h41c1.381,0,2.5-1.119,2.5-2.5v-0.625H1z" />
-      <path fill={`url(#grad5_${uniqueId})`} d="M44.5,11h-23l-1.237,0.824C19.114,12.591,17.763,13,16.381,13H3.5C2.119,13,1,14.119,1,15.5	v22C1,38.881,2.119,40,3.5,40h41c1.381,0,2.5-1.119,2.5-2.5v-24C47,12.119,45.881,11,44.5,11z" />
-      <path fill={`url(#grad6_${uniqueId})`} d="M44.5,40h-41C2.119,40,1,38.881,1,37.5v-21C1,15.119,2.119,14,3.5,14h13.256	c1.382,0,2.733-0.409,3.883-1.176L21.875,12H44.5c1.381,0,2.5,1.119,2.5,2.5v23C47,38.881,45.881,40,44.5,40z" />
-    </svg>
-  );
-};
+export const IconFolderDynamic = (props: SVGProps<SVGSVGElement>) => (
+  <svg
+    width="1em"
+    height="1em"
+    viewBox="0 0 256 256"
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    <defs>
+      <style>
+        {
+          ".cls-1{fill:#ffffff;}.cls-2{fill:#cbecf9;}.cls-3{fill:#2fb1ea;}.cls-4{fill:#6dd0fc;}.cls-5{fill:#a4ecff;}.cls-6{fill:#ffc444;}.cls-7{fill:#ffe76e;}.cls-8{fill:#d4ffd4;}.cls-9{fill:#ffbdbd;}.cls-10{fill:#bbf1ff;}.cls-11{fill:#fff4c5;}"
+        }
+      </style>
+    </defs>
+    <title>{"business economic finance interprise company folder"}</title>
+    <g id="Layer_2" data-name="Layer 2">
+      <path
+        className="cls-1"
+        d="M81,43.68h98.08a12,12,0,0,1,12,12V156.2a0,0,0,0,1,0,0H69a0,0,0,0,1,0,0V55.68A12,12,0,0,1,81,43.68Z"
+        transform="translate(60.46 -48.57) rotate(27.36)"
+      />
+      <path
+        className="cls-2"
+        d="M182.14,66.41H78.64L53.72,114.57v9.24l100.13,51.8h5.74l42.55-82.24v-7A20,20,0,0,0,182.14,66.41Z"
+      />
+      <path
+        className="cls-3"
+        d="M158.38,180a2,2,0,0,1-.92-.22L49,123.63a2,2,0,0,1-.86-2.7L94.36,31.66a14,14,0,0,1,18.87-6l87.11,45.07a14,14,0,0,1,6,18.87l-46.19,89.27A2,2,0,0,1,158.38,180ZM52.65,121l104.87,54.26,45.27-87.5a10,10,0,0,0-4.29-13.48L111.39,29.21A10,10,0,0,0,97.92,33.5Z"
+      />
+      <path
+        className="cls-4"
+        d="M73.72,74.41H182.14a12,12,0,0,1,12,12v81.2a0,0,0,0,1,0,0H61.72a0,0,0,0,1,0,0V86.41A12,12,0,0,1,73.72,74.41Z"
+      />
+      <path
+        className="cls-5"
+        d="M73.72,74.41h99.21a12,12,0,0,1,12,12v81.2a0,0,0,0,1,0,0H61.72a0,0,0,0,1,0,0V86.41A12,12,0,0,1,73.72,74.41Z"
+      />
+      <path
+        className="cls-4"
+        d="M194.14,167.61v-57.2h-78.4L102.43,93.34a17.89,17.89,0,0,0-14.19-6.93H61.72v81.2Z"
+      />
+      <path
+        className="cls-3"
+        d="M194.14,169.61H61.72a2,2,0,0,1-2-2V86.41a14,14,0,0,1,14-14H182.14a14,14,0,0,1,14,14v81.2A2,2,0,0,1,194.14,169.61Zm-130.42-4H192.14V86.41a10,10,0,0,0-10-10H73.72a10,10,0,0,0-10,10Z"
+      />
+      <path
+        className="cls-6"
+        d="M203.93,229.91H52.07a8,8,0,0,1-8-8V104.41a8,8,0,0,1,8-8H88.23a8,8,0,0,1,6.31,3.08l13.91,17.84a8,8,0,0,0,6.31,3.08h89.17a8,8,0,0,1,8,8v93.5A8,8,0,0,1,203.93,229.91Z"
+      />
+      <path
+        className="cls-7"
+        d="M193.93,219.91H52.07a8,8,0,0,1-8-8V104.41a8,8,0,0,1,8-8H88.23a8,8,0,0,1,6.31,3.08l13.91,17.84a8,8,0,0,0,6.31,3.08h79.17a8,8,0,0,1,8,8v83.5A8,8,0,0,1,193.93,219.91Z"
+      />
+      <path
+        className="cls-3"
+        d="M203.93,231.91H52.07a10,10,0,0,1-10-10V104.41a10,10,0,0,1,10-10H88.23a9.94,9.94,0,0,1,7.89,3.85L110,116.1a6,6,0,0,0,4.73,2.31h89.17a10,10,0,0,1,10,10v93.5A10,10,0,0,1,203.93,231.91ZM52.07,98.41a6,6,0,0,0-6,6v117.5a6,6,0,0,0,6,6H203.93a6,6,0,0,0,6-6v-93.5a6,6,0,0,0-6-6H114.76a9.94,9.94,0,0,1-7.89-3.85L93,100.72a6,6,0,0,0-4.73-2.31Z"
+      />
+      <circle className="cls-8" cx={19} cy={171} r={5} />
+      <circle className="cls-8" cx={128} cy={8} r={4} />
+      <circle className="cls-8" cx={248} cy={115} r={3} />
+      <circle className="cls-8" cx={189} cy={250} r={2} />
+      <circle className="cls-8" cx={218} cy={199} r={1} />
+      <circle className="cls-9" cx={249} cy={177} r={5} />
+      <circle className="cls-9" cx={62} cy={241} r={4} />
+      <circle className="cls-9" cx={19} cy={115} r={3} />
+      <circle className="cls-9" cx={24} cy={197} r={2} />
+      <circle className="cls-9" cx={85} cy={240} r={1} />
+      <circle className="cls-10" cx={62} cy={44} r={5} />
+      <circle className="cls-10" cx={234} cy={92} r={4} />
+      <circle className="cls-10" cx={131} cy={244} r={3} />
+      <circle className="cls-10" cx={230} cy={28} r={2} />
+      <circle className="cls-10" cx={214} cy={47} r={1} />
+      <circle className="cls-11" cx={7} cy={57} r={5} />
+      <circle className="cls-11" cx={234} cy={140} r={4} />
+      <circle className="cls-11" cx={178} cy={35} r={3} />
+      <circle className="cls-11" cx={42} cy={49} r={2} />
+      <circle className="cls-11" cx={157} cy={241} r={1} />
+    </g>
+  </svg>
+);
+export default SVGComponent;

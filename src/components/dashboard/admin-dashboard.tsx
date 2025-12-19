@@ -21,7 +21,7 @@ import { DonutChart } from "../analytics/donut-chart";
 import { HealthStatusWidget } from "./health-status-widget";
 import { NotificationsWidget } from "./notifications-widget";
 import { MetricCard } from "../analytics/metric-card";
-import { IconUsersRound, IconLibrary, IconCheckCheck, IconMailWarning, IconBookMarked, IconShieldCheck, IconGraduationCap } from '@/components/icons';
+import { IconUsersRound, IconLibrary, IconCheckCheck, IconMailWarning, IconBookMarked, IconShieldCheck, IconGraduationCap, IconFolderDynamic } from '@/components/icons';
 
 
 const userRolesChartConfig = {
@@ -89,7 +89,7 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
         </div>
         <div className="lg:col-span-4 grid grid-cols-2 gap-4">
            <MetricCard title="Usuarios Totales" value={adminStats?.totalUsers || 0} icon={IconUsersRound} index={0} onClick={() => router.push('/users')} gradient="bg-gradient-blue" />
-           <MetricCard title="Cursos Publicados" value={adminStats?.totalPublishedCourses || 0} icon={IconLibrary} index={1} onClick={() => router.push('/manage-courses?tab=PUBLISHED')} gradient="bg-gradient-green" />
+           <MetricCard title="Cursos Publicados" value={adminStats?.totalPublishedCourses || 0} icon={IconBookMarked} index={1} onClick={() => router.push('/manage-courses?tab=PUBLISHED')} gradient="bg-gradient-green" />
            <MetricCard title="Inscripciones" value={adminStats?.totalEnrollments || 0} icon={IconGraduationCap} index={2} onClick={() => router.push('/enrollments')} gradient="bg-gradient-purple" />
            <MetricCard title="Finalización" value={adminStats?.averageCompletionRate || 0} icon={Percent} index={3} suffix="%" onClick={() => router.push('/analytics')} gradient="bg-gradient-pink" />
         </div>
