@@ -40,7 +40,7 @@ export const MetricCard = ({
         >
              <div className="flex justify-between items-start text-primary-foreground/80">
                 <p className="text-sm font-semibold">{title}</p>
-                {Icon && <Icon className="h-6 w-6 md:h-10 md:w-10" />}
+                {Icon && <Icon className="h-8 w-8 md:h-10 md:w-10" />}
             </div>
             
             <div className="text-left">
