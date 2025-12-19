@@ -30,4 +30,5 @@ export * from './icon-check-check';
 export * from './icon-mail-warning';
 export * from './icon-shield-check';
 export * from './icon-percent';
+export * from './icon-library';
     
