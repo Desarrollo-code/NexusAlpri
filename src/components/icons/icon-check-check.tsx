@@ -3,7 +3,7 @@ import * as React from 'react';
 import { SVGProps } from 'react';
 
 export const IconCheckCheck = (props: SVGProps<SVGSVGElement>) => {
-  const uniqueId = React.useId();
+  const uniqueId = React.useId ? React.useId() : '';
   const gradientId = `gradient_${uniqueId.replace(/:/g, '')}`;
 
   return (
