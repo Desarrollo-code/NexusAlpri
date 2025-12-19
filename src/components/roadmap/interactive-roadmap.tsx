@@ -35,6 +35,7 @@ import { IconPaintbrush } from '../icons/icon-paintbrush';
 import { IconRocket } from '../icons/icon-rocket';
 import { IconCheckCheck } from '../icons/icon-check-check';
 import { IconSparkles } from '../icons/icon-sparkles';
+import { IconAward } from '../icons/icon-award';
 
 const getPhaseColor = (phase: string) => {
     const hash = phase.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -57,6 +58,7 @@ const iconMap = {
     Rocket: IconRocket,
     CheckCircle: IconCheckCheck,
     Sparkles: IconSparkles,
+    Award: IconAward,
 };
 
 const RoadmapGridCard = ({ item, onSelect }: { item: RoadmapItem, onSelect: () => void }) => {

@@ -36,3 +36,5 @@ export * from './icon-code';
 export * from './icon-database';
 export * from './icon-paintbrush';
 export * from './icon-rocket';
+export * from './icon-award';
+export * from './icon-sparkles';
