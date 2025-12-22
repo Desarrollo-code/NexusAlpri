@@ -43,3 +43,4 @@ export * from './icon-test-tube-2';
 export * from './icon-network';
 export * from './icon-megaphone';
 export * from './icon-calendar-filter';
+export * from './icon-users-total';
