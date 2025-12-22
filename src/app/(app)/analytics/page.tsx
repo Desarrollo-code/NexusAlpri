@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, AreaChart, Pie, PieChart, ResponsiveContainer, Cell, Label, Sector, CartesianGrid, BarChart, Bar, Legend, ComposedChart, Line } from "recharts";
+import { Area, AreaChart, Pie, PieChart, ResponsiveContainer, Cell, Label, Sector, CartesianGrid, BarChart, Bar, Legend, ComposedChart, Line, XAxis, YAxis } from "recharts";
 import type { AdminDashboardStats } from '@/types';
 import { Separator } from '@/components/ui/separator';
 import { format, parseISO, startOfDay, subDays, isValid } from 'date-fns';
