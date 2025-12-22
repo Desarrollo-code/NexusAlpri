@@ -44,6 +44,7 @@ import { IconScreenShare } from '../icons/icon-screen-share';
 import { IconListChecks } from '../icons/icon-list-checks';
 import { IconTestTube2 } from '../icons/icon-test-tube-2';
 import { IconNetwork } from '../icons/icon-network';
+import { IconMegaphone } from '../icons/icon-megaphone';
 
 const getPhaseColor = (phase: string) => {
     const hash = phase.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -75,8 +76,8 @@ const iconMap = {
     Network: IconNetwork,
     ListChecks: IconListChecks,
     Megaphone: IconMegaphone,
-    Folder: IconFolder,
-    Users: IconUsers,
+    Folder: LucideIcons.Folder,
+    Users: LucideIcons.Users,
     TestTube2: IconTestTube2,
 };
 
