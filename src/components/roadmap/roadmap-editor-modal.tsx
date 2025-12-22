@@ -37,6 +37,14 @@ import { IconRocket } from '../icons/icon-rocket';
 import { IconCheckCheck } from '../icons/icon-check-check';
 import { IconSparkles } from '../icons/icon-sparkles';
 import { IconAward } from '../icons/icon-award';
+import { IconUsersRound } from '../icons/icon-users-round';
+import { IconFileText } from '../icons/icon-file-text';
+import { IconShield } from '../icons/icon-shield';
+import { IconMessageSquare } from '../icons/icon-message-square';
+import { IconScreenShare } from '../icons/icon-screen-share';
+import { IconListChecks } from '../icons/icon-list-checks';
+import { IconTestTube2 } from '../icons/icon-test-tube-2';
+import { IconNetwork } from '../icons/icon-network';
 
 const ICONS = ['Lightbulb', 'Code', 'Database', 'Paintbrush', 'Rocket', 'CheckCircle', 'Award', 'Sparkles', 'UsersRound', 'FileText', 'Shield', 'MessageSquare', 'ScreenShare', 'Network', 'ListChecks', 'Megaphone', 'Folder', 'Users', 'TestTube2'];
 
@@ -50,6 +58,14 @@ const iconMap = {
     CheckCircle: IconCheckCheck,
     Sparkles: IconSparkles,
     Award: IconAward,
+    UsersRound: IconUsersRound,
+    FileText: IconFileText,
+    Shield: IconShield,
+    MessageSquare: IconMessageSquare,
+    ScreenShare: IconScreenShare,
+    ListChecks: IconListChecks,
+    TestTube2: IconTestTube2,
+    Network: IconNetwork,
 };
 
 const iconTranslations: { [key: string]: string } = {
@@ -61,7 +77,7 @@ const iconTranslations: { [key: string]: string } = {
   CheckCircle: 'Completado',
   Award: 'Reconocimiento',
   Sparkles: 'Mejora',
-  UsersRound: 'Comunidad',
+  UsersRound: 'Colaboradores',
   FileText: 'Documentación',
   Shield: 'Seguridad',
   MessageSquare: 'Comunicación',
