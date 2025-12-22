@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, AreaChart, Pie, PieChart, ResponsiveContainer, Cell, Label, Sector, CartesianGrid, BarChart, Bar, Legend, ComposedChart, Line, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, Pie, PieChart, ResponsiveContainer, Cell, Label, Sector, CartesianGrid, BarChart, Bar, Legend, ComposedChart, Line, XAxis, YAxis, Tooltip } from "recharts";
 import type { AdminDashboardStats } from '@/types';
 import { Separator } from '@/components/ui/separator';
 import { format, parseISO, startOfDay, subDays, isValid } from 'date-fns';
@@ -37,7 +37,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { MetricCard } from '@/components/analytics/metric-card';
 import { DonutChart } from '@/components/analytics/donut-chart';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
-import { IconBookMarked, IconFileText, IconFolderDynamic, IconGraduationCap, IconUsersTotal, IconPercent, IconMegaphone, IconLibrary } from '@/components/icons';
+import { IconBookMarked, IconFileText, IconFolderDynamic, IconGraduationCap, IconUsersTotal, IconPercent, IconMegaphone, IconLibrary, IconFolderYellow } from '@/components/icons';
 
 
 const formatDateTick = (tick: string): string => {
@@ -205,7 +205,7 @@ function AdminAnalyticsPage() {
                  <Popover>
                     <PopoverTrigger asChild>
                       <Button id="date" variant="outline" className={cn("w-full justify-start text-left font-normal md:w-[300px]", !date && "text-muted-foreground")}>
-                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        <IconCalendarFilter className="mr-2 h-4 w-4" />
                         {date?.from ? (date.to ? (<>{format(date.from, "LLL dd, y", { locale: es })} - {format(date.to, "LLL dd, y", { locale: es })}</>) : (format(date.from, "LLL dd, y", { locale: es }))) : (<span>Elige una fecha</span>)}
                       </Button>
                     </PopoverTrigger>
@@ -223,7 +223,7 @@ function AdminAnalyticsPage() {
             <MetricCard title="Total Cursos" value={stats?.totalCourses || 0} icon={IconLibrary} index={1}/>
             <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={IconGraduationCap} index={2} />
             <MetricCard title="Modif. Contenido" value={stats?.courseModifications || 0} icon={IconBookMarked} index={3} />
-            <MetricCard title="Recursos" value={stats?.totalResources || 0} icon={IconFolderDynamic} index={4}/>
+            <MetricCard title="Recursos" value={stats?.totalResources || 0} icon={IconFolderYellow} index={4}/>
             <MetricCard title="Anuncios" value={stats?.totalAnnouncements || 0} icon={IconMegaphone} index={5}/>
             <MetricCard title="Formularios" value={stats?.totalForms || 0} icon={IconFileText} index={6}/>
             <MetricCard title="Finalización" value={stats?.averageCompletionRate || 0} icon={IconPercent} suffix="%" description="Promedio" index={7}/>
@@ -244,7 +244,7 @@ function AdminAnalyticsPage() {
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                 <XAxis dataKey="date" tickLine={false} axisLine={true} tickMargin={10} tickFormatter={formatDateTick} interval="preserveStartEnd" />
                                 <YAxis allowDecimals={false} tickLine={false} axisLine={true} tickMargin={10} width={30}/>
-                                <ChartTooltip cursor={{ fill: 'hsl(var(--muted))', radius: 4 }} content={<ChartTooltipContent indicator="dot" labelFormatter={formatDateTooltip} />} />
+                                <Tooltip cursor={{ fill: 'hsl(var(--muted))', radius: 4 }} content={<ChartTooltipContent indicator="dot" labelFormatter={formatDateTooltip} />} />
                                 <Legend />
                                 <Bar dataKey="count" name="Usuarios" fill="var(--color-newUsers)" radius={4} data={stats?.userRegistrationTrend || []} />
                                 <Line type="monotone" dataKey="newCourses" name="Cursos" stroke="var(--color-newCourses)" strokeWidth={2} dot={false} data={stats?.contentActivityTrend || []}/>
