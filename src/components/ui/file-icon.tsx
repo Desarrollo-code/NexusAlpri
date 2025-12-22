@@ -8,6 +8,7 @@ import { PlayCircle, FileText, BarChart3, Music, Image as ImageIcon, Video as Vi
 import { IconFolderDynamic } from '../icons/icon-folder-dynamic';
 import { IconVideoPlaylist } from '../icons/icon-video-playlist';
 import { getProcessColors } from '@/lib/utils';
+import { IconFolderYellow } from '../icons/icon-folder-yellow';
 
 interface FileIconProps {
   type: string;
@@ -131,7 +132,7 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
     return (
         <div className={cn("flex h-full w-full items-center justify-center p-4 relative overflow-hidden", patternClass)}>
              <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent" />
-             <IconFolderDynamic className="w-20 h-20 text-foreground/80 drop-shadow-lg relative z-10" />
+             <IconFolderYellow className="w-24 h-24 text-foreground/80 drop-shadow-lg relative z-10" />
         </div>
       );
   }
