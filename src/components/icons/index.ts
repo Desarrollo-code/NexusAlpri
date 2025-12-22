@@ -40,3 +40,5 @@ export * from './icon-award';
 export * from './icon-sparkles';
 export * from './icon-screen-share';
 export * from './icon-list-checks';
+export * from './icon-test-tube-2';
+export * from './icon-network';
