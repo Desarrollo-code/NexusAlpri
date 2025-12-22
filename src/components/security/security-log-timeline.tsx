@@ -28,7 +28,7 @@ const TimelineItem = ({ log, onLogClick, isLast }: { log: SecurityLog, onLogClic
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="flex items-start gap-3 pb-3"
+            className="flex items-start gap-3 pb-2"
         >
             {/* Time and Line */}
             <div className="flex flex-col items-center pt-1">
@@ -39,22 +39,22 @@ const TimelineItem = ({ log, onLogClick, isLast }: { log: SecurityLog, onLogClic
 
             {/* Card Content */}
             <div className="relative w-full">
-                 <div className={cn("absolute left-0 top-3 h-full w-0.5", !isLast && "bg-border")} />
-                 <div className="absolute left-[-5.5px] top-3 h-3 w-3 rounded-full bg-background border-2" style={{ borderColor: eventUI.variant === 'destructive' ? 'hsl(var(--destructive))' : 'hsl(var(--primary))' }}/>
+                 <div className={cn("absolute left-0 top-2.5 h-full w-0.5", !isLast && "bg-border")} />
+                 <div className="absolute left-[-5.5px] top-2.5 h-3 w-3 rounded-full bg-background border-2" style={{ borderColor: eventUI.variant === 'destructive' ? 'hsl(var(--destructive))' : 'hsl(var(--primary))' }}/>
                  <div 
                     onClick={() => onLogClick(log)} 
-                    className="p-2.5 ml-4 rounded-lg border bg-card hover:bg-muted/50 cursor-pointer shadow-sm hover:shadow-md transition-all"
+                    className="p-2 ml-4 rounded-lg border bg-card hover:bg-muted/50 cursor-pointer shadow-sm hover:shadow-md transition-all flex items-center justify-between gap-2"
                 >
-                    <div className="flex items-center justify-between flex-wrap gap-x-4 gap-y-1">
-                         <div className="flex items-center gap-2">
-                             <Avatar className="h-7 w-7">
-                                 <AvatarImage src={log.user?.avatar || undefined} />
-                                 <AvatarFallback><Identicon userId={log.user?.id || log.emailAttempt || ''} /></AvatarFallback>
-                             </Avatar>
-                             <p className="font-semibold text-sm truncate">{log.user?.name || log.emailAttempt}</p>
-                         </div>
-                         <Badge variant={eventUI.variant} className="whitespace-nowrap text-xs">{eventUI.label}</Badge>
+                    <div className="flex items-center gap-2 min-w-0">
+                         <Avatar className="h-7 w-7">
+                             <AvatarImage src={log.user?.avatar || undefined} />
+                             <AvatarFallback><Identicon userId={log.user?.id || log.emailAttempt || ''} /></AvatarFallback>
+                         </Avatar>
+                         <p className="font-semibold text-sm truncate">{log.user?.name || log.emailAttempt}</p>
                     </div>
+                    <Badge variant={eventUI.variant} className="whitespace-nowrap text-xs py-0.5 px-2">
+                        {eventUI.label}
+                    </Badge>
                 </div>
             </div>
         </motion.div>
@@ -63,7 +63,7 @@ const TimelineItem = ({ log, onLogClick, isLast }: { log: SecurityLog, onLogClic
 
 export const SecurityLogTimeline = ({ logs, onLogClick }: { logs: SecurityLog[], onLogClick: (log: SecurityLog) => void }) => {
     return (
-        <ScrollArea className="h-[600px] pr-4">
+        <ScrollArea className="h-80 pr-4">
             <div className="relative">
                 <AnimatePresence>
                     {logs.map((log, index) => (
