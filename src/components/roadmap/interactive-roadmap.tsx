@@ -71,6 +71,28 @@ const iconMap = {
     ScreenShare: IconScreenShare,
 };
 
+const iconTranslations: { [key: string]: string } = {
+  Lightbulb: 'Idea',
+  Code: 'Código',
+  Database: 'Base de Datos',
+  Paintbrush: 'Diseño',
+  Rocket: 'Lanzamiento',
+  CheckCircle: 'Completado',
+  Award: 'Reconocimiento',
+  Sparkles: 'Mejora',
+  UsersRound: 'Comunidad',
+  FileText: 'Documentación',
+  Shield: 'Seguridad',
+  MessageSquare: 'Comunicación',
+  ScreenShare: 'Demostración',
+  Network: 'Infraestructura',
+  ListChecks: 'Tareas',
+  Megaphone: 'Anuncios',
+  Folder: 'Organización',
+  Users: 'Colaboradores',
+  TestTube2: 'Pruebas',
+};
+
 const RoadmapGridCard = ({ item, onSelect }: { item: RoadmapItem, onSelect: () => void }) => {
     const Icon = (iconMap as any)[item.icon] || LucideIcons.Lightbulb;
     const phaseColor = getPhaseColor(item.phase);

@@ -1,6 +1,6 @@
 // src/components/icons/icon-screen-share.tsx
-import * as React from "react";
-import { SVGProps } from "react";
+import * as React from 'react';
+import { SVGProps } from 'react';
 
 export const IconScreenShare = (props: SVGProps<SVGSVGElement>) => (
   <svg
