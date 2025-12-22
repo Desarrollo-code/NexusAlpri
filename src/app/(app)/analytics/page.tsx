@@ -37,7 +37,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { MetricCard } from '@/components/analytics/metric-card';
 import { DonutChart } from '@/components/analytics/donut-chart';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
-import { IconBookMarked, IconFileText, IconFolderDynamic, IconGraduationCap, IconUsersRound, IconPercent, IconMegaphone, IconLibrary } from '@/components/icons';
+import { IconBookMarked, IconFileText, IconFolderDynamic, IconGraduationCap, IconUsersTotal, IconPercent, IconMegaphone, IconLibrary } from '@/components/icons';
 
 
 const formatDateTick = (tick: string): string => {
@@ -219,7 +219,7 @@ function AdminAnalyticsPage() {
              </div>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-8 gap-4 mt-4" id="analytics-metric-cards">
-            <MetricCard title="Total Usuarios" value={stats?.totalUsers || 0} icon={IconUsersRound} index={0}/>
+            <MetricCard title="Total Usuarios" value={stats?.totalUsers || 0} icon={IconUsersTotal} index={0}/>
             <MetricCard title="Total Cursos" value={stats?.totalCourses || 0} icon={IconLibrary} index={1}/>
             <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={IconGraduationCap} index={2} />
             <MetricCard title="Modif. Contenido" value={stats?.courseModifications || 0} icon={IconBookMarked} index={3} />
@@ -285,7 +285,7 @@ function AdminAnalyticsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="analytics-user-rankings">
              <Card>
                 <CardContent className="pt-6">
-                     <RankingList title="Estudiantes Más Activos" items={stats?.topStudentsByEnrollment || []} icon={IconUsersRound} unit=" insc." />
+                     <RankingList title="Estudiantes Más Activos" items={stats?.topStudentsByEnrollment || []} icon={IconUsersTotal} unit=" insc." />
                 </CardContent>
             </Card>
              <Card>
