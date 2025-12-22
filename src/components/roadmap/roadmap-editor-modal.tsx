@@ -67,8 +67,6 @@ const iconMap = {
     Network: IconNetwork,
     ListChecks: IconListChecks,
     Megaphone: IconMegaphone,
-    Folder: LucideIcons.Folder,
-    Users: LucideIcons.Users,
     TestTube2: IconTestTube2,
 };
 
@@ -89,7 +87,6 @@ const iconTranslations: { [key: string]: string } = {
   Network: 'Organización',
   ListChecks: 'Tareas',
   Megaphone: 'Anuncios',
-  Folder: 'Organización',
   TestTube2: 'Pruebas',
 };
 
