@@ -46,8 +46,11 @@ import { IconListChecks } from '../icons/icon-list-checks';
 import { IconTestTube2 } from '../icons/icon-test-tube-2';
 import { IconNetwork } from '../icons/icon-network';
 import { IconMegaphone } from '../icons/icon-megaphone';
+import { Checkbox } from './ui/checkbox';
+import { getRoleInSpanish } from '@/lib/security-log-utils';
+import type { UserRole } from '@/types';
 
-const ICONS = ['Lightbulb', 'Code', 'Database', 'Paintbrush', 'Rocket', 'CheckCircle', 'Award', 'Sparkles', 'UsersRound', 'FileText', 'Shield', 'MessageSquare', 'ScreenShare', 'Network', 'ListChecks', 'Megaphone', 'Folder', 'Users', 'TestTube2'];
+const ICONS = ['Lightbulb', 'Code', 'Database', 'Paintbrush', 'Rocket', 'CheckCircle', 'Award', 'Sparkles', 'UsersRound', 'FileText', 'Shield', 'MessageSquare', 'ScreenShare', 'Network', 'ListChecks', 'Megaphone', 'TestTube2'];
 
 const iconMap = {
     ...LucideIcons,
