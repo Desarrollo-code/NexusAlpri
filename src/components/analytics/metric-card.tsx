@@ -32,19 +32,19 @@ export const MetricCard = ({
         <Card 
             onClick={onClick} 
             className={cn(
-                "relative text-primary-foreground p-4 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] hover:shadow-xl rounded-2xl overflow-hidden h-full",
+                "relative text-primary-foreground p-3 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] hover:shadow-xl rounded-xl overflow-hidden h-full",
                 onClick && "cursor-pointer",
                 gradient ? gradient : 'bg-primary'
             )}
             style={!gradient ? { backgroundColor: `hsl(var(${colorVar}))` } : {}}
         >
              <div className="flex justify-between items-start text-primary-foreground/80">
-                <p className="text-sm font-semibold">{title}</p>
-                {Icon && <Icon className="h-8 w-8 md:h-10 md:w-10" />}
+                <p className="text-xs font-semibold">{title}</p>
+                {Icon && <Icon className="h-6 w-6 md:h-7 md:w-7" />}
             </div>
             
-            <div className="text-left">
-                <p className="text-3xl font-bold tracking-tighter text-primary-foreground">
+            <div className="text-left mt-2">
+                <p className="text-2xl font-bold tracking-tighter text-primary-foreground">
                     {animatedValue}{suffix}
                 </p>
                 {description && <p className="text-xs text-primary-foreground/70">{description}</p>}
