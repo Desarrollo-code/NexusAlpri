@@ -1,6 +1,6 @@
 // src/components/roadmap/roadmap-editor-modal.tsx
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -35,6 +35,8 @@ import { IconDatabase } from '../icons/icon-database';
 import { IconPaintbrush } from '../icons/icon-paintbrush';
 import { IconRocket } from '../icons/icon-rocket';
 import { IconCheckCheck } from '../icons/icon-check-check';
+import { IconSparkles } from '../icons/icon-sparkles';
+import { IconAward } from '../icons/icon-award';
 
 const ICONS = ['Lightbulb', 'Code', 'Database', 'Paintbrush', 'Rocket', 'CheckCircle', 'Award', 'Sparkles', 'UsersRound', 'FileText', 'Shield', 'MessageSquare', 'ScreenShare', 'Network', 'ListChecks', 'Megaphone', 'Folder', 'Users', 'TestTube2'];
 
@@ -46,6 +48,8 @@ const iconMap = {
     Paintbrush: IconPaintbrush,
     Rocket: IconRocket,
     CheckCircle: IconCheckCheck,
+    Sparkles: IconSparkles,
+    Award: IconAward,
 };
 
 const iconTranslations: { [key: string]: string } = {
@@ -159,7 +163,7 @@ export function RoadmapEditorModal({ isOpen, onClose, item, onSave }: RoadmapEdi
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-2xl flex flex-col h-[90vh] p-0 gap-0 rounded-2xl">
-                <DialogHeader className="p-6 pb-4 border-b">
+                <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
                     <DialogTitle>{item ? 'Editar Hito' : 'Nuevo Hito en la Hoja de Ruta'}</DialogTitle>
                     <DialogDescription>Añade o modifica un evento importante en la evolución del proyecto.</DialogDescription>
                 </DialogHeader>
