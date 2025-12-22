@@ -28,7 +28,7 @@ const TimelineItem = ({ log, onLogClick, isLast, compact }: { log: SecurityLog, 
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="flex items-start gap-3 pb-0"
+            className="flex items-start gap-3 pb-6"
         >
             {/* Time and Line */}
             <div className="flex flex-col items-center pt-1">
