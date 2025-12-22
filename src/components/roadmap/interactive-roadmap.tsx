@@ -41,6 +41,7 @@ import { IconFileText } from '../icons/icon-file-text';
 import { IconShield } from '../icons/icon-shield';
 import { IconMessageSquare } from '../icons/icon-message-square';
 import { IconScreenShare } from '../icons/icon-screen-share';
+import { IconListChecks } from '../icons/icon-list-checks';
 
 const getPhaseColor = (phase: string) => {
     const hash = phase.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -69,6 +70,7 @@ const iconMap = {
     Shield: IconShield,
     MessageSquare: IconMessageSquare,
     ScreenShare: IconScreenShare,
+    ListChecks: IconListChecks,
 };
 
 const iconTranslations: { [key: string]: string } = {

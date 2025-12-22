@@ -39,3 +39,4 @@ export * from './icon-rocket';
 export * from './icon-award';
 export * from './icon-sparkles';
 export * from './icon-screen-share';
+export * from './icon-list-checks';
