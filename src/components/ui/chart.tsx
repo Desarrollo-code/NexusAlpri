@@ -179,7 +179,7 @@ const ChartTooltipContent = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "grid min-w-[8rem] items-start gap-1.5 rounded-lg border bg-popover px-2.5 py-1.5 text-xs shadow-xl backdrop-blur-lg",
+          "grid min-w-[8rem] items-start gap-1.5 rounded-lg border bg-background/95 px-2.5 py-1.5 text-xs shadow-xl backdrop-blur-sm",
           className
         )}
       >
@@ -399,4 +399,5 @@ export const XAxis = RechartsPrimitive.XAxis
 export const YAxis = RechartsPrimitive.YAxis
 export const Legend = RechartsPrimitive.Legend
 export const ResponsiveContainer = RechartsPrimitive.ResponsiveContainer
+
 
