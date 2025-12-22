@@ -90,7 +90,6 @@ const iconTranslations: { [key: string]: string } = {
   ListChecks: 'Tareas',
   Megaphone: 'Anuncios',
   Folder: 'Organización',
-  Users: 'Colaboradores',
   TestTube2: 'Pruebas',
 };
 
