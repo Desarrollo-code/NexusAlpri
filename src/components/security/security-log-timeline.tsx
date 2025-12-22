@@ -17,7 +17,7 @@ const iconMap: Record<string, React.ElementType> = {
   ShieldCheck, ShieldX, KeyRound, UserCog, ShieldAlert, BookMarked
 };
 
-const TimelineItem = ({ log, onLogClick, isLast }: { log: SecurityLog, onLogClick: (log: SecurityLog) => void, isLast: boolean }) => {
+const TimelineItem = ({ log, onLogClick, isLast, compact }: { log: SecurityLog, onLogClick: (log: SecurityLog) => void, isLast: boolean, compact: boolean }) => {
     const eventUI = getEventDetails(log.event, log.details);
     const IconComponent = iconMap[eventUI.iconName] || ShieldAlert;
 
@@ -28,11 +28,11 @@ const TimelineItem = ({ log, onLogClick, isLast }: { log: SecurityLog, onLogClic
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="flex items-start gap-3 pb-2"
+            className="flex items-start gap-3 pb-0"
         >
             {/* Time and Line */}
             <div className="flex flex-col items-center pt-1">
-                <p className="text-xs font-semibold text-muted-foreground whitespace-nowrap">
+                <p className="text-[10px] font-semibold text-muted-foreground whitespace-nowrap">
                     {format(new Date(log.createdAt), 'HH:mm:ss')}
                 </p>
             </div>
@@ -46,13 +46,13 @@ const TimelineItem = ({ log, onLogClick, isLast }: { log: SecurityLog, onLogClic
                     className="p-2 ml-4 rounded-lg border bg-card hover:bg-muted/50 cursor-pointer shadow-sm hover:shadow-md transition-all flex items-center justify-between gap-2"
                 >
                     <div className="flex items-center gap-2 min-w-0">
-                         <Avatar className="h-7 w-7">
+                         <Avatar className="h-6 w-6">
                              <AvatarImage src={log.user?.avatar || undefined} />
-                             <AvatarFallback><Identicon userId={log.user?.id || log.emailAttempt || ''} /></AvatarFallback>
+                             <AvatarFallback className="text-xs"><Identicon userId={log.user?.id || log.emailAttempt || ''} /></AvatarFallback>
                          </Avatar>
-                         <p className="font-semibold text-sm truncate">{log.user?.name || log.emailAttempt}</p>
+                         <p className="font-semibold text-xs truncate">{log.user?.name || log.emailAttempt}</p>
                     </div>
-                    <Badge variant={eventUI.variant} className="whitespace-nowrap text-xs py-0.5 px-2">
+                    <Badge variant={eventUI.variant} className="whitespace-nowrap text-[10px] py-0.5 px-1.5 h-5">
                         {eventUI.label}
                     </Badge>
                 </div>
@@ -61,9 +61,10 @@ const TimelineItem = ({ log, onLogClick, isLast }: { log: SecurityLog, onLogClic
     );
 };
 
-export const SecurityLogTimeline = ({ logs, onLogClick }: { logs: SecurityLog[], onLogClick: (log: SecurityLog) => void }) => {
+export const SecurityLogTimeline = ({ logs, onLogClick, compact = false }: { logs: SecurityLog[], onLogClick: (log: SecurityLog) => void, compact?: boolean }) => {
+    const containerClasses = compact ? "h-64 pr-2" : "h-[70vh] pr-4";
     return (
-        <ScrollArea className="h-[70vh] pr-4">
+        <ScrollArea className={containerClasses}>
             <div className="relative">
                 <AnimatePresence>
                     {logs.map((log, index) => (
@@ -72,6 +73,7 @@ export const SecurityLogTimeline = ({ logs, onLogClick }: { logs: SecurityLog[],
                             log={log} 
                             onLogClick={onLogClick} 
                             isLast={index === logs.length - 1} 
+                            compact={compact}
                         />
                     ))}
                 </AnimatePresence>

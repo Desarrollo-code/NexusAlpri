@@ -142,16 +142,14 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
                  )}
               </CardContent>
            </Card>
-           <Card>
-              <CardHeader>
+           <Card className="bg-card/50">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-base flex items-center gap-2"><ShieldAlert className="h-4 w-4 text-primary"/>Auditoría de Seguridad</CardTitle>
+                  <Button variant="outline" size="sm" asChild className="h-8"><Link href="/security-audit">Ver todo</Link></Button>
               </CardHeader>
-              <CardContent>
-                  <SecurityLogTimeline logs={securityLogs} onLogClick={setSelectedLog}/>
+              <CardContent className="pt-2">
+                  <SecurityLogTimeline logs={securityLogs} onLogClick={setSelectedLog} compact/>
               </CardContent>
-              <CardFooter>
-                 <Button variant="outline" size="sm" className="w-full" asChild><Link href="/security-audit">Ver auditoría completa <ArrowRight className="ml-2 h-4 w-4"/></Link></Button>
-              </CardFooter>
            </Card>
         </div>
         
