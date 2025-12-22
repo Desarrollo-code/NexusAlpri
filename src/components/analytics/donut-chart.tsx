@@ -1,3 +1,4 @@
+// src/components/analytics/donut-chart.tsx
 'use client';
 import React, { useMemo, useState, useCallback } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -66,7 +67,7 @@ export function DonutChart({ title, data, config, id }: { title: string, data: a
         <ChartContainer config={config} className="w-full h-full">
           <ResponsiveContainer>
             <PieChart>
-              <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
+              <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} content={<ChartTooltipContent hideIndicator />} />
               <Pie 
                 data={data} 
                 dataKey="count" 
