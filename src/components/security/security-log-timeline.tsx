@@ -28,11 +28,11 @@ const TimelineItem = ({ log, onLogClick, isLast, compact }: { log: SecurityLog, 
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="flex items-start gap-4 pb-8"
+            className="flex items-start gap-4 pb-4"
         >
             {/* Time and Line */}
             <div className="flex flex-col items-center pt-1">
-                <p className="text-xs font-semibold text-muted-foreground whitespace-nowrap">
+                <p className="text-sm font-semibold text-muted-foreground whitespace-nowrap">
                     {format(new Date(log.createdAt), 'HH:mm:ss')}
                 </p>
             </div>
