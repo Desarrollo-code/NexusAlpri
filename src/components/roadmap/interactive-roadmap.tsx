@@ -45,6 +45,8 @@ import { IconListChecks } from '../icons/icon-list-checks';
 import { IconTestTube2 } from '../icons/icon-test-tube-2';
 import { IconNetwork } from '../icons/icon-network';
 import { IconMegaphone } from '../icons/icon-megaphone';
+import { IconFolder } from '../icons/icon-folder';
+import { IconUsers } from 'lucide-react';
 
 const getPhaseColor = (phase: string) => {
     const hash = phase.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -76,8 +78,8 @@ const iconMap = {
     Network: IconNetwork,
     ListChecks: IconListChecks,
     Megaphone: IconMegaphone,
-    Folder: LucideIcons.Folder,
-    Users: LucideIcons.Users,
+    Folder: IconFolder,
+    Users: IconUsers,
     TestTube2: IconTestTube2,
 };
 
@@ -95,7 +97,7 @@ const iconTranslations: { [key: string]: string } = {
   Shield: 'Seguridad',
   MessageSquare: 'Comunicación',
   ScreenShare: 'Demostración',
-  Network: 'Infraestructura',
+  Network: 'Organización',
   ListChecks: 'Tareas',
   Megaphone: 'Anuncios',
   Folder: 'Organización',
@@ -199,7 +201,7 @@ export const InteractiveRoadmap = ({ items, onEdit, onDelete }: { items: Roadmap
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/80 z-40"
+                            className="fixed inset-0 bg-black z-40"
                             onClick={() => setSelectedId(null)}
                         />
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
