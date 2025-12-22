@@ -124,15 +124,25 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
   }
 
   // --- GRID VIEW ---
-  if ((type === 'FOLDER' || type === 'VIDEO_PLAYLIST') && resourceId) {
+  if (type === 'FOLDER' && resourceId) {
     const hash = stringToHash(resourceId);
     const patternClass = backgroundPatterns[hash % backgroundPatterns.length];
-    const IconComponent = type === 'FOLDER' ? IconFolderDynamic : IconVideoPlaylist;
-
+    
     return (
         <div className={cn("flex h-full w-full items-center justify-center p-4 relative overflow-hidden", patternClass)}>
              <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent" />
-             <IconComponent className="w-20 h-20 text-foreground/80 drop-shadow-lg relative z-10" />
+             <IconFolderDynamic className="w-20 h-20 text-foreground/80 drop-shadow-lg relative z-10" />
+        </div>
+      );
+  }
+
+  if (type === 'VIDEO_PLAYLIST' && resourceId) {
+    const hash = stringToHash(resourceId);
+    const patternClass = backgroundPatterns[hash % backgroundPatterns.length];
+    return (
+        <div className={cn("flex h-full w-full items-center justify-center p-4 relative overflow-hidden", patternClass)}>
+             <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent" />
+             <IconVideoPlaylist className="w-20 h-20 text-foreground/80 drop-shadow-lg relative z-10" />
         </div>
       );
   }
