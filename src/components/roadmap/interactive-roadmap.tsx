@@ -39,6 +39,8 @@ import { IconAward } from '../icons/icon-award';
 import { IconUsersRound } from '../icons/icon-users-round';
 import { IconFileText } from '../icons/icon-file-text';
 import { IconShield } from '../icons/icon-shield';
+import { IconMessageSquare } from '../icons/icon-message-square';
+import { IconScreenShare } from '../icons/icon-screen-share';
 
 const getPhaseColor = (phase: string) => {
     const hash = phase.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -65,6 +67,8 @@ const iconMap = {
     UsersRound: IconUsersRound,
     FileText: IconFileText,
     Shield: IconShield,
+    MessageSquare: IconMessageSquare,
+    ScreenShare: IconScreenShare,
 };
 
 const RoadmapGridCard = ({ item, onSelect }: { item: RoadmapItem, onSelect: () => void }) => {

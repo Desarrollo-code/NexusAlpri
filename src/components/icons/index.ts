@@ -38,3 +38,4 @@ export * from './icon-paintbrush';
 export * from './icon-rocket';
 export * from './icon-award';
 export * from './icon-sparkles';
+export * from './icon-screen-share';
