@@ -28,31 +28,31 @@ const TimelineItem = ({ log, onLogClick, isLast, compact }: { log: SecurityLog, 
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="flex items-start gap-3 pb-6"
+            className="flex items-start gap-4 pb-8"
         >
             {/* Time and Line */}
             <div className="flex flex-col items-center pt-1">
-                <p className="text-[10px] font-semibold text-muted-foreground whitespace-nowrap">
+                <p className="text-xs font-semibold text-muted-foreground whitespace-nowrap">
                     {format(new Date(log.createdAt), 'HH:mm:ss')}
                 </p>
             </div>
 
             {/* Card Content */}
             <div className="relative w-full">
-                 <div className={cn("absolute left-0 top-2.5 h-full w-0.5", !isLast && "bg-border")} />
+                 <div className={cn("absolute left-0 top-3 h-full w-0.5", !isLast && "bg-border")} />
                  <div className="absolute left-[-5.5px] top-2.5 h-3 w-3 rounded-full bg-background border-2" style={{ borderColor: eventUI.variant === 'destructive' ? 'hsl(var(--destructive))' : 'hsl(var(--primary))' }}/>
                  <div 
                     onClick={() => onLogClick(log)} 
-                    className="p-2 ml-4 rounded-lg border bg-card hover:bg-muted/50 cursor-pointer shadow-sm hover:shadow-md transition-all flex items-center justify-between gap-2"
+                    className="p-2.5 ml-4 rounded-lg border bg-card hover:bg-muted/50 cursor-pointer shadow-sm hover:shadow-md transition-all flex items-center justify-between gap-2"
                 >
-                    <div className="flex items-center gap-2 min-w-0">
-                         <Avatar className="h-6 w-6">
+                    <div className="flex items-center gap-3 min-w-0">
+                         <Avatar className="h-7 w-7">
                              <AvatarImage src={log.user?.avatar || undefined} />
                              <AvatarFallback className="text-xs"><Identicon userId={log.user?.id || log.emailAttempt || ''} /></AvatarFallback>
                          </Avatar>
-                         <p className="font-semibold text-xs truncate">{log.user?.name || log.emailAttempt}</p>
+                         <p className="font-semibold text-sm truncate">{log.user?.name || log.emailAttempt}</p>
                     </div>
-                    <Badge variant={eventUI.variant} className="whitespace-nowrap text-[10px] py-0.5 px-1.5 h-5">
+                    <Badge variant={eventUI.variant} className="whitespace-nowrap text-xs py-1 px-2 h-6">
                         {eventUI.label}
                     </Badge>
                 </div>
