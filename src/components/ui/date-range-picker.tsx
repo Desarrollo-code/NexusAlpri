@@ -15,6 +15,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { IconCalendarFilter } from "../icons/icon-calendar-filter"
 
 interface DateRangePickerProps extends React.HTMLAttributes<HTMLDivElement> {
     date: DateRange | undefined;
@@ -40,7 +41,7 @@ export function DateRangePicker({
               !date && "text-muted-foreground"
             )}
           >
-            <CalendarIcon className="mr-2 h-4 w-4" />
+            <IconCalendarFilter className="mr-2 h-4 w-4" />
             {date?.from ? (
               date.to ? (
                 <>
