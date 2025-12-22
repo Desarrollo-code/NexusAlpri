@@ -72,9 +72,12 @@ const iconMap = {
     Shield: IconShield,
     MessageSquare: IconMessageSquare,
     ScreenShare: IconScreenShare,
-    ListChecks: IconListChecks,
-    TestTube2: IconTestTube2,
     Network: IconNetwork,
+    ListChecks: IconListChecks,
+    Megaphone: IconMegaphone,
+    Folder: IconFolder,
+    Users: IconUsers,
+    TestTube2: IconTestTube2,
 };
 
 const iconTranslations: { [key: string]: string } = {
@@ -86,7 +89,7 @@ const iconTranslations: { [key: string]: string } = {
   CheckCircle: 'Completado',
   Award: 'Reconocimiento',
   Sparkles: 'Mejora',
-  UsersRound: 'Comunidad',
+  UsersRound: 'Colaboradores',
   FileText: 'Documentación',
   Shield: 'Seguridad',
   MessageSquare: 'Comunicación',
@@ -195,7 +198,7 @@ export const InteractiveRoadmap = ({ items, onEdit, onDelete }: { items: Roadmap
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40"
+                            className="fixed inset-0 bg-black/80 z-40"
                             onClick={() => setSelectedId(null)}
                         />
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
