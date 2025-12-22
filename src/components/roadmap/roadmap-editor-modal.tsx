@@ -45,6 +45,7 @@ import { IconScreenShare } from '../icons/icon-screen-share';
 import { IconListChecks } from '../icons/icon-list-checks';
 import { IconTestTube2 } from '../icons/icon-test-tube-2';
 import { IconNetwork } from '../icons/icon-network';
+import { IconMegaphone } from '../icons/icon-megaphone';
 
 const ICONS = ['Lightbulb', 'Code', 'Database', 'Paintbrush', 'Rocket', 'CheckCircle', 'Award', 'Sparkles', 'UsersRound', 'FileText', 'Shield', 'MessageSquare', 'ScreenShare', 'Network', 'ListChecks', 'Megaphone', 'Folder', 'Users', 'TestTube2'];
 
@@ -56,16 +57,19 @@ const iconMap = {
     Paintbrush: IconPaintbrush,
     Rocket: IconRocket,
     CheckCircle: IconCheckCheck,
-    Sparkles: IconSparkles,
     Award: IconAward,
+    Sparkles: IconSparkles,
     UsersRound: IconUsersRound,
     FileText: IconFileText,
     Shield: IconShield,
     MessageSquare: IconMessageSquare,
     ScreenShare: IconScreenShare,
-    ListChecks: IconListChecks,
-    TestTube2: IconTestTube2,
     Network: IconNetwork,
+    ListChecks: IconListChecks,
+    Megaphone: IconMegaphone,
+    Folder: LucideIcons.Folder,
+    Users: LucideIcons.Users,
+    TestTube2: IconTestTube2,
 };
 
 const iconTranslations: { [key: string]: string } = {
@@ -82,7 +86,7 @@ const iconTranslations: { [key: string]: string } = {
   Shield: 'Seguridad',
   MessageSquare: 'Comunicación',
   ScreenShare: 'Demostración',
-  Network: 'Infraestructura',
+  Network: 'Organización',
   ListChecks: 'Tareas',
   Megaphone: 'Anuncios',
   Folder: 'Organización',
