@@ -114,8 +114,14 @@ const RoadmapGridCard = ({ item, onSelect }: { item: RoadmapItem, onSelect: () =
             <Card className="h-full flex flex-col group overflow-hidden transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1.5 border-2 border-transparent hover:border-primary/50">
                  <CardHeader className="p-4 border-b">
                     <div className="flex items-center gap-3">
-                         <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: phaseColor }}>
-                            <Icon className="w-6 h-6 text-primary-foreground"/>
+                         <div
+                           className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-muted border-2 border-transparent transition-all"
+                           style={{
+                             borderColor: phaseColor,
+                             boxShadow: `0 0 15px -2px ${phaseColor}30`,
+                           } as React.CSSProperties}
+                         >
+                            <Icon className="w-6 h-6 text-foreground/80" style={{ color: phaseColor }}/>
                          </div>
                         <div>
                             <CardTitle className="text-base font-bold text-foreground leading-tight line-clamp-2 group-hover:text-primary transition-colors">{item.title}</CardTitle>
