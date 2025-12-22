@@ -38,6 +38,7 @@ import { IconSparkles } from '../icons/icon-sparkles';
 import { IconAward } from '../icons/icon-award';
 import { IconUsersRound } from '../icons/icon-users-round';
 import { IconFileText } from '../icons/icon-file-text';
+import { IconShield } from '../icons/icon-shield';
 
 const getPhaseColor = (phase: string) => {
     const hash = phase.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -59,10 +60,11 @@ const iconMap = {
     Paintbrush: IconPaintbrush,
     Rocket: IconRocket,
     CheckCircle: IconCheckCheck,
-    Sparkles: IconSparkles,
     Award: IconAward,
-    Users: IconUsersRound,
+    Sparkles: IconSparkles,
+    UsersRound: IconUsersRound,
     FileText: IconFileText,
+    Shield: IconShield,
 };
 
 const RoadmapGridCard = ({ item, onSelect }: { item: RoadmapItem, onSelect: () => void }) => {
