@@ -140,7 +140,7 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
         >
              <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent" />
              {type === 'FOLDER' ? (
-                <IconFolderDynamic className="w-24 h-24 text-foreground/80 drop-shadow-lg relative z-10" style={{ color: raw.dark }} />
+                <IconFolderYellow className="w-24 h-24 text-foreground/80 drop-shadow-lg relative z-10" style={{ color: raw.dark }} />
              ) : (
                 <IconVideoPlaylist className="w-20 h-20 text-foreground/80 drop-shadow-lg relative z-10" style={{ color: raw.dark }} />
              )}
