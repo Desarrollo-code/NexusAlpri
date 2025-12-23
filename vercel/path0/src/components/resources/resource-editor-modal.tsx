@@ -149,6 +149,19 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         setQuiz(null);
     }, [settings?.resourceCategories]);
     
+    const flattenProcesses = useCallback((processList: Process[], level = 0): FlatProcess[] => {
+      let list: FlatProcess[] = [];
+      processList.forEach(p => {
+        list.push({ id: p.id, name: p.name, level });
+        if ('children' in p && Array.isArray(p.children) && p.children.length > 0) {
+          list.push(...flattenProcesses(p.children, level + 1));
+        }
+      });
+      return list;
+    }, []);
+
+    const flattenedProcesses = useMemo(() => flattenProcesses(allProcesses), [allProcesses, flattenProcesses]);
+
     useEffect(() => {
         if (isOpen) {
             if (isEditing && resource) {
@@ -189,7 +202,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             if (user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') {
                 Promise.all([
                   fetch('/api/users/list').then(res => res.json()),
-                  fetch('/api/processes?format=flat').then(res => res.json())
+                  fetch('/api/processes').then(res => res.json())
                 ]).then(([usersData, processesData]) => {
                     setAllUsers(usersData.users || []);
                     setAllProcesses(processesData || []);
@@ -322,27 +335,22 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
 
     const renderFolderEdit = () => (
       <form id="resource-form" onSubmit={handleSave} className="flex-1 min-h-0 flex flex-col">
-        <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 gap-x-6 overflow-hidden">
-            <div className="md:col-span-1 h-full flex flex-col">
-                <ScrollArea className="h-full">
-                    <div className="px-6 py-4">
-                        <ConfigStep />
-                    </div>
-                </ScrollArea>
-            </div>
-             <div className="md:col-span-1 h-full flex flex-col bg-muted/50 border-l">
-                <div className="p-4 border-b flex-shrink-0 flex items-center justify-between">
-                    <h3 className="font-semibold">Contenido de la Carpeta</h3>
-                    <Button type="button" size="sm"><UploadCloud className="mr-2 h-4 w-4"/>Subir Archivos</Button>
-                </div>
-                <ScrollArea className="flex-1 min-h-0">
-                    <div className="p-4">
-                        {isLoadingFolderContent ? <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin"/></div> 
-                        : <FolderContentView items={folderContent} onEdit={() => {}} onDelete={() => {}} />}
-                    </div>
-                </ScrollArea>
-            </div>
-        </div>
+        <ScrollArea className="flex-1 min-h-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 px-6 py-4">
+              <div className="md:col-span-1 h-full flex flex-col">
+                  <ConfigStep />
+              </div>
+               <div className="md:col-span-1 h-full flex flex-col bg-muted/50 border-l p-4">
+                  <div className="border-b flex-shrink-0 flex items-center justify-between pb-4">
+                      <h3 className="font-semibold">Contenido de la Carpeta</h3>
+                  </div>
+                  <div className="flex-1 min-h-0 mt-4">
+                    {isLoadingFolderContent ? <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin"/></div> 
+                    : <FolderContentView items={folderContent} onEdit={() => {}} onDelete={() => {}} />}
+                  </div>
+              </div>
+          </div>
+        </ScrollArea>
         <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
             <Button type="submit" disabled={isSaving || !title.trim()}>
