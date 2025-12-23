@@ -10,22 +10,22 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   try {
     const session = await getCurrentUser();
-    
+
     // Si no hay sesión, no se puede continuar con la lógica que depende del usuario.
     const { searchParams } = new URL(req.url);
     const simpleView = searchParams.get('simple') === 'true';
     if (!session && !simpleView) {
       return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
-    
+
     const manageView = searchParams.get('manageView') === 'true';
     const userId = session?.id;
     const userRole = session?.role;
-    
+
     const pageParam = searchParams.get('page');
     const pageSizeParam = searchParams.get('pageSize');
     const isPaginated = pageParam && pageSizeParam;
-    
+
     const page = parseInt(pageParam || '1', 10);
     const pageSize = parseInt(pageSizeParam || '100', 10);
     const tab = searchParams.get('tab');
@@ -33,20 +33,20 @@ export async function GET(req: NextRequest) {
 
     // --- Vista Simplificada para Selectores ---
     if (simpleView) {
-        if (!session) { // La vista simple también debe estar protegida.
-             return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
-        }
-        const courses = await prisma.course.findMany({
-            where: { status: 'PUBLISHED' },
-            select: { id: true, title: true },
-            orderBy: { title: 'asc' },
-        });
-        return NextResponse.json({ courses });
+      if (!session) { // La vista simple también debe estar protegida.
+        return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
+      }
+      const courses = await prisma.course.findMany({
+        where: { status: 'PUBLISHED' },
+        select: { id: true, title: true },
+        orderBy: { title: 'asc' },
+      });
+      return NextResponse.json({ courses });
     }
 
     // --- Vistas de Gestión y Catálogo (requieren sesión) ---
     let whereClause: any = {};
-    
+
     if (manageView) {
       if (userRole === 'INSTRUCTOR' && userId) {
         whereClause.instructorId = userId;
@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
     } else {
       whereClause.status = 'PUBLISHED';
       if (userId) {
-          whereClause.instructorId = { not: userId };
+        whereClause.instructorId = { not: userId };
       }
     }
 
@@ -70,22 +70,35 @@ export async function GET(req: NextRequest) {
           enrollments: true,
         },
       },
-      // THIS IS THE KEY: Include nested lesson count
       modules: {
         select: {
+          id: true,
           lessons: {
             select: {
               id: true
             }
           }
+        },
+        orderBy: {
+          order: 'asc' as const
         }
       },
       ...(manageView && {
         enrollments: {
           select: {
+            id: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true
+              }
+            },
             progress: {
               select: {
                 progressPercentage: true,
+                completedLessons: true
               },
             },
           },
@@ -94,10 +107,10 @@ export async function GET(req: NextRequest) {
     };
 
     const coursesFromDb = await prisma.course.findMany({
-        where: whereClause,
-        include: courseInclude,
-        orderBy: { createdAt: 'desc' },
-        ...(isPaginated && { skip, take: pageSize }),
+      where: whereClause,
+      include: courseInclude,
+      orderBy: { createdAt: 'desc' },
+      ...(isPaginated && { skip, take: pageSize }),
     });
 
     let coursesWithPrereqCompletion;
@@ -127,23 +140,23 @@ export async function GET(req: NextRequest) {
       }));
 
     } else {
-        coursesWithPrereqCompletion = coursesFromDb.map(c => ({...c, prerequisiteCompleted: true}));
+      coursesWithPrereqCompletion = coursesFromDb.map(c => ({ ...c, prerequisiteCompleted: true }));
     }
 
     const totalCourses = await prisma.course.count({ where: whereClause });
-    
+
     const enrichedCourses = coursesWithPrereqCompletion.map((course: any) => {
       let averageCompletion = 0;
       if (manageView && course.enrollments && course.enrollments.length > 0) {
         const validProgress = course.enrollments
           .map((e: any) => e.progress?.progressPercentage)
           .filter((p: any) => p !== null && p !== undefined);
-        
+
         if (validProgress.length > 0) {
-            averageCompletion = validProgress.reduce((acc: number, curr: number) => acc + curr, 0) / validProgress.length;
+          averageCompletion = validProgress.reduce((acc: number, curr: number) => acc + curr, 0) / validProgress.length;
         }
       }
-      
+
       const { enrollments, ...restOfCourse } = course;
 
       return {
@@ -153,7 +166,7 @@ export async function GET(req: NextRequest) {
     }).map(c => mapApiCourseToAppCourse(c));
 
     return NextResponse.json({ courses: enrichedCourses, totalCourses });
-    
+
   } catch (error) {
     console.error('[COURSES_GET_ERROR]', error);
     return NextResponse.json({ message: 'Error al obtener los cursos' }, { status: 500 });
@@ -169,7 +182,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { title, description, category, prerequisiteId, isMandatory } = body;
-    
+
     if (!title || !description) {
       return NextResponse.json({ message: 'Título y descripción son requeridos' }, { status: 400 });
     }
@@ -189,26 +202,26 @@ export async function POST(req: NextRequest) {
 
     // --- SECURITY LOG (NON-BLOCKING) ---
     Promise.resolve().then(async () => {
-        try {
-            const ip = req.ip ?? req.headers.get('x-forwarded-for') ?? null;
-            const geo = req.geo;
-            const country = geo?.country ?? null;
-            const city = geo?.city ?? null;
+      try {
+        const ip = req.ip ?? req.headers.get('x-forwarded-for') ?? null;
+        const geo = req.geo;
+        const country = geo?.country ?? null;
+        const city = geo?.city ?? null;
 
-            await prisma.securityLog.create({
-              data: {
-                event: 'COURSE_CREATED',
-                ipAddress: ip,
-                userId: session.id,
-                details: `Curso creado: "${newCourse.title}" (ID: ${newCourse.id}).`,
-                userAgent: req.headers.get('user-agent'),
-                country,
-                city,
-              }
-            });
-        } catch (logError) {
-            console.error("Fallo al escribir el log de seguridad, pero el curso fue creado:", logError);
-        }
+        await prisma.securityLog.create({
+          data: {
+            event: 'COURSE_CREATED',
+            ipAddress: ip,
+            userId: session.id,
+            details: `Curso creado: "${newCourse.title}" (ID: ${newCourse.id}).`,
+            userAgent: req.headers.get('user-agent'),
+            country,
+            city,
+          }
+        });
+      } catch (logError) {
+        console.error("Fallo al escribir el log de seguridad, pero el curso fue creado:", logError);
+      }
     });
 
     return NextResponse.json(newCourse, { status: 201 });

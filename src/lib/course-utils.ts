@@ -9,12 +9,16 @@ interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | 'status' 
   _count?: {
     modules?: number;
     enrollments?: number;
-    lessons?: number; // Add lessons count here
   };
-  modules?: { lessons: { id: string }[] }[]; // Ensure this structure is available
+  modules?: { id: string; lessons: { id: string }[] }[];
   status: CourseStatus;
   averageCompletion?: number;
   isMandatory: boolean;
+  enrollments?: {
+    id: string;
+    user: { id: string; name: string | null; email: string; avatar: string | null };
+    progress: { progressPercentage: number; completedLessons: any[] } | null;
+  }[];
 }
 
 
@@ -22,29 +26,44 @@ export function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCours
   // CORRECTED: Calculate total lessons by summing up the counts from each module.
   const totalLessons = Array.isArray(apiCourse.modules)
     ? apiCourse.modules.reduce((acc, mod) => acc + (mod?.lessons?.length || 0), 0)
-    : (apiCourse._count?.lessons || 0);
-  
+    : 0;
+
+  let computedAverageCompletion = apiCourse.averageCompletion;
+
+  // If average completion is not provided by the API (e.g. standard view), we might calculate it if enrollments are present
+  if (computedAverageCompletion === undefined && apiCourse.enrollments && apiCourse.enrollments.length > 0) {
+    const validProgress = apiCourse.enrollments
+      .map((e) => e.progress?.progressPercentage)
+      .filter((p): p is number => p !== null && p !== undefined);
+
+    if (validProgress.length > 0) {
+      computedAverageCompletion = validProgress.reduce((acc, curr) => acc + curr, 0) / validProgress.length;
+    } else {
+      computedAverageCompletion = 0;
+    }
+  }
+
   return {
     id: apiCourse.id,
     title: apiCourse.title,
     description: apiCourse.description || '',
-    category: apiCourse.category || undefined,
+    category: apiCourse.category ?? null,
     // Ensure a fallback for the instructor object
     instructor: apiCourse.instructor ? {
-        id: apiCourse.instructor.id,
-        name: apiCourse.instructor.name || 'N/A',
-        avatar: apiCourse.instructor.avatar || null,
+      id: apiCourse.instructor.id,
+      name: apiCourse.instructor.name || 'N/A',
+      avatar: apiCourse.instructor.avatar ?? null,
     } : {
-        id: 'unknown',
-        name: 'N/A',
-        avatar: null,
+      id: 'unknown',
+      name: 'N/A',
+      avatar: null,
     },
     instructorId: apiCourse.instructorId || undefined,
-    imageUrl: apiCourse.imageUrl || undefined,
-    modulesCount: apiCourse._count?.modules ?? 0,
+    imageUrl: apiCourse.imageUrl ?? null,
+    modulesCount: apiCourse._count?.modules ?? (apiCourse.modules?.length ?? 0),
     lessonsCount: totalLessons,
-    enrollmentsCount: apiCourse._count?.enrollments ?? 0,
-    averageCompletion: apiCourse.averageCompletion,
+    enrollmentsCount: apiCourse._count?.enrollments ?? (apiCourse.enrollments?.length ?? 0),
+    averageCompletion: computedAverageCompletion,
     status: apiCourse.status,
     modules: [], // Full module data is not needed for card views.
     isEnrolled: undefined, // Determined client-side based on context.
