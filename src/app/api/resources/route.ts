@@ -31,9 +31,9 @@ const getFileTypeFilter = (fileType: string): Prisma.EnterpriseResourceWhereInpu
 // GET resources
 export async function GET(req: NextRequest) {
     const session = await getCurrentUser();
-    
+
     if (!session || !session.id || !session.role) {
-      return NextResponse.json({ message: 'No autorizado o sesión inválida.' }, { status: 401 });
+        return NextResponse.json({ message: 'No autorizado o sesión inválida.' }, { status: 401 });
     }
 
     try {
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
         let parentId = searchParams.get('parentId');
         const status = (searchParams.get('status') as ResourceStatus) || 'ACTIVE';
         const searchTerm = searchParams.get('search');
-        
+
         // Advanced filters
         const startDate = searchParams.get('startDate');
         const endDate = searchParams.get('endDate');
@@ -50,15 +50,15 @@ export async function GET(req: NextRequest) {
         const hasExpiry = searchParams.get('hasExpiry') === 'true';
 
         if (parentId === '') parentId = null;
-        
+
         const baseWhere: Prisma.EnterpriseResourceWhereInput = { parentId, status };
         if (status === 'ACTIVE') {
-            baseWhere.OR = [ { expiresAt: null }, { expiresAt: { gte: new Date() } } ];
+            baseWhere.OR = [{ expiresAt: null }, { expiresAt: { gte: new Date() } }];
         }
         if (searchTerm) {
             baseWhere.title = { contains: searchTerm, mode: 'insensitive' };
         }
-        
+
         if (startDate) baseWhere.uploadDate = { ...baseWhere.uploadDate, gte: new Date(startDate) };
         if (endDate) baseWhere.uploadDate = { ...baseWhere.uploadDate, lte: new Date(endDate) };
         if (fileType && fileType !== 'all') {
@@ -100,12 +100,12 @@ export async function GET(req: NextRequest) {
                 uploader: { select: { id: true, name: true, avatar: true } },
                 sharedWith: { select: { id: true, name: true, avatar: true } }
             },
-            orderBy: [ { isPinned: 'desc' }, { type: 'asc' }, { uploadDate: 'desc' } ],
+            orderBy: [{ isPinned: 'desc' }, { type: 'asc' }, { uploadDate: 'desc' }],
         });
-        
+
         const safeResources = resources.map(({ pin, tags, uploader, ...resource }) => ({
-            ...resource, uploader, tags: tags ? tags.split(',').filter(Boolean) : [], 
-            hasPin: !!pin, uploaderName: uploader ? uploader.name || 'Sistema' : 'Sistema', 
+            ...resource, uploader, tags: tags ? tags.split(',').filter(Boolean) : [],
+            hasPin: !!pin, uploaderName: uploader ? uploader.name || 'Sistema' : 'Sistema',
         }));
 
         return NextResponse.json({ resources: safeResources });
@@ -123,21 +123,55 @@ export async function POST(req: NextRequest) {
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
-    
+
     try {
         const body = await req.json();
-        const { title, type, url, category, tags, parentId, description, sharingMode, sharedWithUserIds, sharedWithProcessIds, expiresAt, status, size, fileType, filename, videos, collaboratorIds } = body;
+        const { title, type, url, category, tags, parentId, description, sharingMode, sharedWithUserIds, sharedWithProcessIds, expiresAt, status, size, fileType, filename, videos, collaboratorIds, quiz } = body;
 
         const finalTitle = title || filename;
 
         if (!finalTitle || !type) {
             return NextResponse.json({ message: 'Título y tipo son requeridos' }, { status: 400 });
         }
-        
+
         if (type !== 'FOLDER' && type !== 'VIDEO_PLAYLIST' && type !== 'EXTERNAL_LINK' && type !== 'DOCUMENTO_EDITABLE' && !url && (!videos || videos.length === 0)) {
             return NextResponse.json({ message: 'URL o videos son requeridos para este tipo de recurso' }, { status: 400 });
         }
-        
+
+        // Helper to construct quiz creation data if quiz exists
+        const getQuizCreateData = () => {
+            if (!quiz) return undefined;
+
+            const questionsCreateData = (quiz.questions || []).map((q: any, qIndex: number) => ({
+                text: q.text,
+                order: qIndex,
+                type: q.type,
+                template: q.template,
+                imageUrl: q.imageUrl,
+                options: {
+                    create: (q.options || []).map((opt: any) => ({
+                        text: opt.text,
+                        isCorrect: opt.isCorrect,
+                        points: opt.points || 0,
+                        imageUrl: opt.imageUrl
+                    }))
+                }
+            }));
+
+            return {
+                create: {
+                    title: quiz.title || 'Evaluación del Recurso',
+                    description: quiz.description,
+                    maxAttempts: quiz.maxAttempts,
+                    questions: {
+                        create: questionsCreateData
+                    }
+                }
+            };
+        };
+
+        const quizData = getQuizCreateData();
+
         if (type === 'VIDEO_PLAYLIST') {
             const playlist = await prisma.enterpriseResource.create({
                 data: {
@@ -149,12 +183,13 @@ export async function POST(req: NextRequest) {
                     collaborators: collaboratorIds && collaboratorIds.length > 0 ? {
                         connect: collaboratorIds.map((id: string) => ({ id }))
                     } : undefined,
-                    status: 'ACTIVE'
+                    status: 'ACTIVE',
+                    quiz: quizData // Add quiz to playlist
                 }
             });
 
             if (videos && videos.length > 0) {
-                 for (const [index, video] of videos.entries()) {
+                for (const [index, video] of videos.entries()) {
                     await prisma.enterpriseResource.create({
                         data: {
                             title: video.title,
@@ -167,7 +202,7 @@ export async function POST(req: NextRequest) {
                             status: 'ACTIVE',
                         }
                     })
-                 }
+                }
             }
             return NextResponse.json(playlist, { status: 201 });
         }
@@ -183,26 +218,27 @@ export async function POST(req: NextRequest) {
             size, filetype: fileType,
             uploader: { connect: { id: session.id } },
             parent: parentId ? { connect: { id: parentId } } : undefined,
+            quiz: quizData, // Add quiz to generic resource
         };
-        
+
         if (sharingMode === 'PRIVATE' && sharedWithUserIds && Array.isArray(sharedWithUserIds)) {
-            data.sharedWith = { connect: sharedWithUserIds.map((id:string) => ({ id })) };
+            data.sharedWith = { connect: sharedWithUserIds.map((id: string) => ({ id })) };
         }
         if (sharingMode === 'PROCESS' && sharedWithProcessIds && Array.isArray(sharedWithProcessIds)) {
-            data.sharedWithProcesses = { connect: sharedWithProcessIds.map((id:string) => ({ id })) };
+            data.sharedWithProcesses = { connect: sharedWithProcessIds.map((id: string) => ({ id })) };
         }
 
         const newResource = await prisma.enterpriseResource.create({
             data,
-             include: {
+            include: {
                 uploader: { select: { id: true, name: true, avatar: true } },
                 sharedWith: { select: { id: true, name: true, avatar: true } },
             }
         });
-        
+
         const { pin, tags: tagsString, ...safeResource } = newResource;
 
-        return NextResponse.json({ 
+        return NextResponse.json({
             ...safeResource,
             tags: tagsString ? tagsString.split(',').filter(Boolean) : [],
             hasPin: !!pin,
@@ -215,4 +251,3 @@ export async function POST(req: NextRequest) {
     }
 }
 
-    
