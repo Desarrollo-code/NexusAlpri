@@ -127,14 +127,16 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
   // --- GRID VIEW ---
   if ((type === 'FOLDER' || type === 'VIDEO_PLAYLIST') && resourceId) {
     const { raw } = getProcessColors(resourceId);
+    const hash = stringToHash(resourceId);
+    const patternClass = backgroundPatterns[hash % backgroundPatterns.length];
+    
     return (
         <div 
-            className="flex h-full w-full items-center justify-center p-4 relative overflow-hidden" 
+            className={cn("flex h-full w-full items-center justify-center p-4 relative overflow-hidden", patternClass)} 
             style={{ 
-                backgroundColor: raw.light,
-                backgroundImage: `radial-gradient(${raw.medium} 1px, transparent 1px)`,
-                backgroundSize: '8px 8px'
-            }}
+                '--c1': raw.light,
+                '--c2': raw.medium,
+            } as React.CSSProperties}
         >
              <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent" />
              {type === 'FOLDER' ? (
