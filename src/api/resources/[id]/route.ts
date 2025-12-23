@@ -48,18 +48,18 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     if (!hasPermission) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
-    
+
     try {
         const resourceToUpdate = await prisma.enterpriseResource.findUnique({ where: { id } });
         if (!resourceToUpdate) {
             return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });
         }
-        
+
         const body = await req.json();
         const { title, category, description, sharingMode, sharedWithUserIds, sharedWithProcessIds, expiresAt, status, content, observations, quiz, collaboratorIds, videos } = body;
 
         const createVersion = resourceToUpdate.type === 'DOCUMENTO_EDITABLE' && resourceToUpdate.content !== content;
-        
+
         await prisma.$transaction(async (tx) => {
             const updateData: any = {
                 title, category, content, observations, description, status, sharingMode,
@@ -97,7 +97,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                     });
                 }
             }
-            
+
             // Lógica del Quiz movida aquí para aplicar a todos los tipos de recursos
             if (quiz) {
                 const upsertedQuiz = await tx.quiz.upsert({
@@ -120,7 +120,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
                 if (quiz.questions && quiz.questions.length > 0) {
                     for (const [qIndex, q] of (quiz.questions as AppQuestion[]).entries()) {
-                         const newQuestion = await tx.question.create({
+                        const newQuestion = await tx.question.create({
                             data: {
                                 text: q.text,
                                 order: qIndex,
@@ -152,16 +152,16 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                     await tx.quiz.delete({ where: { id: existingQuiz.id } });
                 }
             }
-            
+
             await tx.enterpriseResource.update({
                 where: { id },
                 data: updateData,
             });
         });
-        
-        const updatedResource = await prisma.enterpriseResource.findUnique({ 
+
+        const updatedResource = await prisma.enterpriseResource.findUnique({
             where: { id },
-            include: { quiz: { include: { questions: { include: { options: true }}}}} 
+            include: { quiz: { include: { questions: { include: { options: true } } } } }
         });
 
         return NextResponse.json(updatedResource);
@@ -186,7 +186,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
         if (!resourceToDelete) {
             return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });
         }
-        
+
         // Si es una carpeta, eliminamos su contenido recursivamente
         if (resourceToDelete.type === 'FOLDER' || resourceToDelete.type === 'VIDEO_PLAYLIST') {
             const childrenIds = await prisma.enterpriseResource.findMany({
@@ -197,17 +197,19 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
             // Podríamos hacer esto recursivo para sub-carpetas, pero por ahora eliminamos un nivel.
             await prisma.enterpriseResource.deleteMany({ where: { id: { in: idsToDelete } } });
         }
-        
+
         await prisma.$transaction([
             prisma.notification.deleteMany({
                 where: {
-                    link: `/resources?id=${id}` 
+                    link: `/resources?id=${id}`
                 }
             }),
             prisma.enterpriseResource.delete({ where: { id } })
         ]);
-        
+
         return new NextResponse(null, { status: 204 });
     } catch (error) {
         console.error('[RESOURCE_DELETE_ERROR]', error);
-        return NextResponse.json({ message: 'Error al eliminar el recurso' }, { status
+        return NextResponse.json({ message: 'Error al eliminar el recurso' }, { status: 500 });
+    }
+}
