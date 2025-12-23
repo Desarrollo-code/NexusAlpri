@@ -28,7 +28,7 @@ import { cn } from '@/lib/utils';
 import { useTour } from '@/contexts/tour-context';
 import { enrollmentsTour } from '@/lib/tour-steps';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Bar, TooltipProps, ComposedChart } from 'recharts';
+import { ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, TooltipProps, AreaChart, Area } from 'recharts';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
@@ -512,19 +512,41 @@ function EnrollmentsPageComponent() {
                                                 </CardHeader>
                                                 <CardContent className="h-[300px] pr-4">
                                                     <ResponsiveContainer width="100%" height="100%">
-                                                        <ComposedChart data={selectedCourseInfo.completionTrend}>
+                                                        <AreaChart data={selectedCourseInfo.completionTrend}>
                                                             <defs>
                                                                 <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
                                                                     <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8} />
                                                                     <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                                                                 </linearGradient>
                                                             </defs>
-                                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
-                                                            <XAxis dataKey="date" tickFormatter={(str) => format(new Date(str), 'd MMM', { locale: es })} fontSize={12} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-                                                            <YAxis allowDecimals={false} width={30} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-                                                            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted)/0.2)' }} />
-                                                            <Bar dataKey="count" fill="url(#colorCount)" barSize={30} radius={[4, 4, 0, 0]} name="Finalizados" />
-                                                        </ComposedChart>
+                                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted)/0.5)" />
+                                                            <XAxis
+                                                                dataKey="date"
+                                                                tickFormatter={(str) => format(new Date(str), 'd MMM', { locale: es })}
+                                                                fontSize={12}
+                                                                stroke="hsl(var(--muted-foreground))"
+                                                                tickLine={false}
+                                                                axisLine={false}
+                                                                minTickGap={30}
+                                                            />
+                                                            <YAxis
+                                                                allowDecimals={false}
+                                                                width={30}
+                                                                stroke="hsl(var(--muted-foreground))"
+                                                                tickLine={false}
+                                                                axisLine={false}
+                                                            />
+                                                            <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1, strokeDasharray: '3 3' }} />
+                                                            <Area
+                                                                type="monotone"
+                                                                dataKey="count"
+                                                                stroke="hsl(var(--primary))"
+                                                                strokeWidth={3}
+                                                                fillOpacity={1}
+                                                                fill="url(#colorCount)"
+                                                                name="Finalizados"
+                                                            />
+                                                        </AreaChart>
                                                     </ResponsiveContainer>
                                                 </CardContent>
                                             </Card>
