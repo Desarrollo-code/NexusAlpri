@@ -60,9 +60,9 @@ export function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCours
     },
     instructorId: apiCourse.instructorId || undefined,
     imageUrl: apiCourse.imageUrl ?? null,
-    modulesCount: apiCourse._count?.modules ?? (apiCourse.modules?.length ?? 0),
+    modulesCount: (Array.isArray(apiCourse.modules) ? apiCourse.modules.length : apiCourse._count?.modules) ?? 0,
     lessonsCount: totalLessons,
-    enrollmentsCount: apiCourse._count?.enrollments ?? (apiCourse.enrollments?.length ?? 0),
+    enrollmentsCount: (Array.isArray(apiCourse.enrollments) ? apiCourse.enrollments.length : apiCourse._count?.enrollments) ?? 0,
     averageCompletion: computedAverageCompletion,
     status: apiCourse.status,
     modules: [], // Full module data is not needed for card views.
