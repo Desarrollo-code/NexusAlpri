@@ -4,12 +4,12 @@
 import React, { useState, useEffect } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,14 +18,14 @@ import { useToast } from '@/hooks/use-toast';
 import { Camera, Save, Eye, EyeOff, Loader2, ListTree, UserCheck } from 'lucide-react';
 import { PasswordStrengthIndicator } from '@/components/password-strength-indicator';
 import type { User, UserRole, Process, NavItem } from '@/types';
-import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
-import { Identicon } from '../ui/identicon';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Identicon } from '@/components/ui/identicon';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
-import { Progress } from '../ui/progress';
-import { ScrollArea } from '../ui/scroll-area';
+import { Progress } from '@/components/ui/progress';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { getNavItemsForRole } from '@/lib/nav-items';
-import { Checkbox } from '../ui/checkbox';
-import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '../ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '../ui/separator';
 
 interface UserFormModalProps {
@@ -52,7 +52,7 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
     const [processId, setProcessId] = useState<string | null>(null);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
-    
+
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [localAvatarPreview, setLocalAvatarPreview] = useState<string | null>(null);
@@ -67,8 +67,8 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
         const paths = new Set<string>();
         const extractPaths = (navItems: NavItem[]) => {
             navItems.forEach(item => {
-                if(item.path) paths.add(item.path);
-                if(item.children) extractPaths(item.children);
+                if (item.path) paths.add(item.path);
+                if (item.children) extractPaths(item.children);
             })
         }
         extractPaths(items);
@@ -99,25 +99,25 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
             setAvatarUrl(null);
             setCustomPermissions(defaultStudentPermissions);
         }
-         setLocalAvatarPreview(null);
+        setLocalAvatarPreview(null);
     }, [user, isOpen]);
 
     const flattenProcesses = (processList: Process[], level = 0): FlatProcess[] => {
-      let list: FlatProcess[] = [];
-      processList.forEach(p => {
-        list.push({ id: p.id, name: p.name, level });
-        if ('children' in p && Array.isArray(p.children) && p.children.length > 0) {
-          list.push(...flattenProcesses(p.children, level + 1));
-        }
-      });
-      return list;
+        let list: FlatProcess[] = [];
+        processList.forEach(p => {
+            list.push({ id: p.id, name: p.name, level });
+            if ('children' in p && Array.isArray(p.children) && p.children.length > 0) {
+                list.push(...flattenProcesses(p.children, level + 1));
+            }
+        });
+        return list;
     };
     const flattenedProcesses = flattenProcesses(processes);
 
     const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            
+
             if (localAvatarPreview) {
                 URL.revokeObjectURL(localAvatarPreview);
             }
@@ -127,9 +127,9 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
             setIsUploading(true);
             setUploadProgress(0);
             try {
-                 const result = await uploadWithProgress('/api/upload/avatar', file, setUploadProgress);
-                 setAvatarUrl(result.url);
-                 toast({ title: "Avatar subido", description: "La imagen se ha subido. Guarda los cambios para aplicarla." });
+                const result = await uploadWithProgress('/api/upload/avatar', file, setUploadProgress);
+                setAvatarUrl(result.url);
+                toast({ title: "Avatar subido", description: "La imagen se ha subido. Guarda los cambios para aplicarla." });
             } catch (err) {
                 toast({ title: 'Error de subida', description: (err as Error).message, variant: 'destructive' });
                 URL.revokeObjectURL(previewUrl);
@@ -139,9 +139,9 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
             }
         }
     };
-    
+
     const handlePermissionChange = (path: string, checked: boolean) => {
-        setCustomPermissions(prev => 
+        setCustomPermissions(prev =>
             checked ? [...prev, path] : prev.filter(p => p !== path)
         );
     };
@@ -164,7 +164,7 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
             const body: any = {
                 name, email, role, processId, avatar: avatarUrl, customPermissions: permissionsToSave
             };
-            
+
             if (password.trim() !== '') {
                 body.password = password;
             }
@@ -204,97 +204,97 @@ export function UserFormModal({ isOpen, onClose, onSave, user, processes }: User
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="w-[95vw] sm:max-w-3xl p-0 gap-0 rounded-2xl h-[90vh] flex flex-col">
-                 <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
+                <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
                     <DialogTitle>{user ? 'Editar Colaborador' : 'Añadir Nuevo Colaborador'}</DialogTitle>
                 </DialogHeader>
                 <div className="flex-1 min-h-0">
-                  <ScrollArea className="h-full">
-                      <form id="user-form" onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 px-6 py-4">
-                          {/* Columna Izquierda */}
-                          <div className="space-y-4">
-                               <div className="flex flex-col items-center gap-4">
-                                <div className="relative">
-                                     <Avatar className="h-24 w-24">
-                                        <AvatarImage src={localAvatarPreview || avatarUrl || undefined}/>
-                                        <AvatarFallback className="text-3xl"><Identicon userId={user?.id || name}/></AvatarFallback>
-                                    </Avatar>
-                                     <Label htmlFor="avatar-upload" className="absolute -bottom-1 -right-1 bg-secondary text-secondary-foreground rounded-full p-1.5 cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors shadow-md">
-                                        <Camera className="h-5 w-5" />
-                                        <input id="avatar-upload" name="avatar-upload" type="file" className="hidden" onChange={handleAvatarChange} accept="image/*" disabled={isUploading}/>
-                                    </Label>
-                                </div>
-                                {isUploading && (
-                                    <div className="w-full max-w-xs space-y-1">
-                                       <Progress value={uploadProgress} />
-                                       <p className="text-xs text-center text-muted-foreground">Subiendo...</p>
+                    <ScrollArea className="h-full">
+                        <form id="user-form" onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 px-6 py-4">
+                            {/* Columna Izquierda */}
+                            <div className="space-y-4">
+                                <div className="flex flex-col items-center gap-4">
+                                    <div className="relative">
+                                        <Avatar className="h-24 w-24">
+                                            <AvatarImage src={localAvatarPreview || avatarUrl || undefined} />
+                                            <AvatarFallback className="text-3xl"><Identicon userId={user?.id || name} /></AvatarFallback>
+                                        </Avatar>
+                                        <Label htmlFor="avatar-upload" className="absolute -bottom-1 -right-1 bg-secondary text-secondary-foreground rounded-full p-1.5 cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors shadow-md">
+                                            <Camera className="h-5 w-5" />
+                                            <input id="avatar-upload" name="avatar-upload" type="file" className="hidden" onChange={handleAvatarChange} accept="image/*" disabled={isUploading} />
+                                        </Label>
                                     </div>
-                                )}
-                            </div>
-                             <div className="space-y-2">
-                                <Label htmlFor="name">Nombre Completo</Label>
-                                <Input id="name" name="name" value={name} onChange={(e) => setName(e.target.value)} required autoComplete="off" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="email">Correo Electrónico</Label>
-                                <Input id="email" name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="off" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="password">{user ? 'Nueva Contraseña (Opcional)' : 'Contraseña'}</Label>
-                                <div className="relative">
-                                    <Input id="password" name="password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} required={!user} autoComplete="new-password" />
-                                    <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground" onClick={() => setShowPassword(!showPassword)}>
-                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                    </Button>
+                                    {isUploading && (
+                                        <div className="w-full max-w-xs space-y-1">
+                                            <Progress value={uploadProgress} />
+                                            <p className="text-xs text-center text-muted-foreground">Subiendo...</p>
+                                        </div>
+                                    )}
                                 </div>
-                                {password && <PasswordStrengthIndicator password={password} isVisible={true} />}
+                                <div className="space-y-2">
+                                    <Label htmlFor="name">Nombre Completo</Label>
+                                    <Input id="name" name="name" value={name} onChange={(e) => setName(e.target.value)} required autoComplete="off" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="email">Correo Electrónico</Label>
+                                    <Input id="email" name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="off" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="password">{user ? 'Nueva Contraseña (Opcional)' : 'Contraseña'}</Label>
+                                    <div className="relative">
+                                        <Input id="password" name="password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} required={!user} autoComplete="new-password" />
+                                        <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground" onClick={() => setShowPassword(!showPassword)}>
+                                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                        </Button>
+                                    </div>
+                                    {password && <PasswordStrengthIndicator password={password} isVisible={true} />}
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="role">Rol</Label>
+                                        <Select name="role" value={role} onValueChange={(value) => handleRoleChange(value as UserRole)}>
+                                            <SelectTrigger id="role"><SelectValue placeholder="Seleccionar rol" /></SelectTrigger>
+                                            <SelectContent><SelectItem value="STUDENT">Estudiante</SelectItem><SelectItem value="INSTRUCTOR">Instructor</SelectItem><SelectItem value="ADMINISTRATOR">Administrador</SelectItem></SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="process">Proceso Asignado</Label>
+                                        <Select name="process" value={processId || 'unassigned'} onValueChange={(value) => setProcessId(value === 'unassigned' ? null : value)}>
+                                            <SelectTrigger id="process"><SelectValue placeholder="Sin asignar" /></SelectTrigger>
+                                            <SelectContent><SelectItem value="unassigned">Sin Asignar</SelectItem>{flattenedProcesses.map(p => (<SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem` }}>{p.name}</SelectItem>))}</SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-2">
-                                  <Label htmlFor="role">Rol</Label>
-                                  <Select name="role" value={role} onValueChange={(value) => handleRoleChange(value as UserRole)}>
-                                      <SelectTrigger id="role"><SelectValue placeholder="Seleccionar rol" /></SelectTrigger>
-                                      <SelectContent><SelectItem value="STUDENT">Estudiante</SelectItem><SelectItem value="INSTRUCTOR">Instructor</SelectItem><SelectItem value="ADMINISTRATOR">Administrador</SelectItem></SelectContent>
-                                  </Select>
-                              </div>
-                               <div className="space-y-2">
-                                    <Label htmlFor="process">Proceso Asignado</Label>
-                                     <Select name="process" value={processId || 'unassigned'} onValueChange={(value) => setProcessId(value === 'unassigned' ? null : value)}>
-                                      <SelectTrigger id="process"><SelectValue placeholder="Sin asignar" /></SelectTrigger>
-                                      <SelectContent><SelectItem value="unassigned">Sin Asignar</SelectItem>{flattenedProcesses.map(p => (<SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem` }}>{p.name}</SelectItem>))}</SelectContent>
-                                  </Select>
-                              </div>
-                            </div>
-                          </div>
-                          {/* Columna Derecha */}
-                           <div className="space-y-4">
+                            {/* Columna Derecha */}
+                            <div className="space-y-4">
                                 <Card>
-                                    <CardHeader><CardTitle className="text-base flex items-center gap-2"><UserCheck className="h-4 w-4"/>Permisos Granulares</CardTitle><CardDescription className="text-xs">Sobreescribe los permisos del rol y concede acceso a páginas específicas.</CardDescription></CardHeader>
+                                    <CardHeader><CardTitle className="text-base flex items-center gap-2"><UserCheck className="h-4 w-4" />Permisos Granulares</CardTitle><CardDescription className="text-xs">Sobreescribe los permisos del rol y concede acceso a páginas específicas.</CardDescription></CardHeader>
                                     <CardContent>
                                         <ScrollArea className="h-72 border rounded-md">
                                             <div className="p-4 space-y-2">
-                                            {allNavItems.map(item => (
-                                                <React.Fragment key={item.id}>
-                                                    <p className="font-semibold text-sm pt-2">{item.label}</p>
-                                                    {(item.children || [item]).filter(child => child.path).map(child => (
-                                                         <div key={child.id} className="flex items-center space-x-3 ml-2">
-                                                             <Checkbox id={`perm-${child.id}`} name={`perm-${child.id}`} checked={customPermissions.includes(child.path!)} onCheckedChange={checked => handlePermissionChange(child.path!, !!checked)}/>
-                                                             <Label htmlFor={`perm-${child.id}`} className="font-normal">{child.label}</Label>
-                                                         </div>
-                                                    ))}
-                                                </React.Fragment>
-                                            ))}
+                                                {allNavItems.map(item => (
+                                                    <React.Fragment key={item.id}>
+                                                        <p className="font-semibold text-sm pt-2">{item.label}</p>
+                                                        {(item.children || [item]).filter(child => child.path).map(child => (
+                                                            <div key={child.id} className="flex items-center space-x-3 ml-2">
+                                                                <Checkbox id={`perm-${child.id}`} name={`perm-${child.id}`} checked={customPermissions.includes(child.path!)} onCheckedChange={checked => handlePermissionChange(child.path!, !!checked)} />
+                                                                <Label htmlFor={`perm-${child.id}`} className="font-normal">{child.label}</Label>
+                                                            </div>
+                                                        ))}
+                                                    </React.Fragment>
+                                                ))}
                                             </div>
                                         </ScrollArea>
                                     </CardContent>
                                 </Card>
-                           </div>
-                      </form>
+                            </div>
+                        </form>
                     </ScrollArea>
                 </div>
                 <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2">
                     <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
                     <Button type="submit" form="user-form" disabled={isSaving || !name.trim() || !email.trim() || (!user && !password)}>
-                        {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                        {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         <Save className="mr-2 h-4 w-4" />
                         {user ? 'Guardar Cambios' : 'Crear Colaborador'}
                     </Button>
