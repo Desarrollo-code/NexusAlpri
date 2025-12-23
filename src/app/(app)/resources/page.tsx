@@ -33,6 +33,7 @@ import { startOfDay, subDays } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 import { useDroppable } from '@dnd-kit/core';
 import { Separator } from '@/components/ui/separator';
+import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
 
 
 // --- MAIN PAGE COMPONENT ---
@@ -71,6 +72,8 @@ export default function ResourcesPage() {
   const [hasExpiry, setHasExpiry] = useState(false);
   const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
+  const [previewingResource, setPreviewingResource] = useState<AppResourceType | null>(null);
 
   const { setNodeRef: setRootDroppableRef, isOver: isOverRoot } = useDroppable({ id: 'root' });
 
@@ -189,6 +192,25 @@ export default function ResourcesPage() {
        toast({ title: "Error", description: (err as Error).message, variant: "destructive"});
     }
   };
+
+  const handlePreviewResource = (resource: AppResourceType) => {
+    setPreviewingResource(resource);
+  };
+  
+  const handleNavigatePreview = (direction: 'next' | 'prev') => {
+      const fileResources = allApiResources.filter(r => r.type !== 'FOLDER' && r.type !== 'VIDEO_PLAYLIST');
+      if (fileResources.length <= 1) return;
+      const currentIndex = fileResources.findIndex(r => r.id === previewingResource?.id);
+      if (currentIndex === -1) return;
+      
+      let nextIndex;
+      if (direction === 'next') {
+          nextIndex = (currentIndex + 1) % fileResources.length;
+      } else {
+          nextIndex = (currentIndex - 1 + fileResources.length) % fileResources.length;
+      }
+      setPreviewingResource(fileResources[nextIndex]);
+  }
 
 
   const handleSaveSuccess = () => {
@@ -385,7 +407,7 @@ export default function ResourcesPage() {
                                 <h3 className="text-xl font-semibold mb-4 border-b pb-2">{category}</h3>
                                 {folders.length > 0 && (
                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 mb-6">
-                                        {folders.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={true} onSelect={() => {}} onEdit={() => res.type === 'VIDEO_PLAYLIST' ? handleOpenPlaylistEditor(res) : setResourceToEdit(res)} onDelete={setResourceToDelete} onNavigate={handleNavigateFolder} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
+                                        {folders.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={true} onSelect={() => handlePreviewResource(res)} onEdit={() => res.type === 'VIDEO_PLAYLIST' ? handleOpenPlaylistEditor(res) : setResourceToEdit(res)} onDelete={setResourceToDelete} onNavigate={handleNavigateFolder} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
                                     </div>
                                 )}
                                 {files.length > 0 && (
@@ -398,10 +420,10 @@ export default function ResourcesPage() {
                                         </div>
                                         {viewMode === 'grid' ? (
                                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-                                                {files.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={false} onSelect={() => {}} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
+                                                {files.map(res => <ResourceGridItem key={res.id} resource={res} isFolder={false} onSelect={() => handlePreviewResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
                                             </div>
                                         ) : (
-                                            <ResourceListItem resources={files} onSelect={()=>{}} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onTogglePin={handleTogglePin} selectedIds={selectedIds} onSelectionChange={handleSelectionChange} />
+                                            <ResourceListItem resources={files} onSelect={handlePreviewResource} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onTogglePin={handleTogglePin} selectedIds={selectedIds} onSelectionChange={handleSelectionChange} />
                                         )}
                                     </>
                                 )}
@@ -431,6 +453,12 @@ export default function ResourcesPage() {
                 </motion.div>
             )}
         </AnimatePresence>
+
+        <ResourcePreviewModal
+            resource={previewingResource}
+            onClose={() => setPreviewingResource(null)}
+            onNavigate={handleNavigatePreview}
+        />
         
         <ResourceEditorModal
             isOpen={isUploaderOpen || !!resourceToEdit}
@@ -480,7 +508,3 @@ export default function ResourcesPage() {
   );
 }
     
-
-    
-
-

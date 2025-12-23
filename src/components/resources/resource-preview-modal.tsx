@@ -11,13 +11,13 @@ import { useToast } from '@/hooks/use-toast';
 import { Input } from '../ui/input';
 import { DownloadButton } from '../ui/download-button';
 import { cn } from '@/lib/utils';
-import { Separator } from '../ui/separator';
-import { Badge } from '../ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { ScrollArea } from '../ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import JSZip from 'jszip';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '../ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { getInitials } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
 import { addXp, XP_CONFIG, checkFirstDownload } from '@/lib/gamification';
@@ -254,7 +254,7 @@ const ContentPreview = ({ resource, onPinVerified }: {
 
             if (isPdf) return <PdfViewer url={displayUrl} />;
             if (youtubeId) return <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${youtubeId}`} title={`YouTube video: ${resource.title}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>;
-            if (isVideoFile) return <video src={displayUrl} controls className="w-full h-full object-contain bg-black" />;
+            if (isVideoFile) return <video src={displayUrl} controls autoPlay className="w-full h-full object-contain bg-black" />;
             if (isImage) return <div className="relative w-full h-full p-2"><Image src={displayUrl} alt={resource.title} fill className="object-contain" data-ai-hint="document image" /></div>;
             if (isOfficeDoc) return <DocxPreviewer url={displayUrl} />;
             if (isZipFile) return <ZipPreviewer url={displayUrl} />;
