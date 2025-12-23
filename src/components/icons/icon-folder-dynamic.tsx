@@ -17,27 +17,28 @@ export const IconFolderDynamic = (props: SVGProps<SVGSVGElement>) => (
         transform="translate(60.46 -48.57) rotate(27.36)"
       />
       <path
-        fill="#cbecf9"
+        fill="currentColor"
+        opacity="0.5"
         d="M182.14,66.41H78.64L53.72,114.57v9.24l100.13,51.8h5.74l42.55-82.24v-7A20,20,0,0,0,182.14,66.41Z"
       />
       <path
-        fill="#2fb1ea"
+        fill="currentColor"
         d="M158.38,180a2,2,0,0,1-.92-.22L49,123.63a2,2,0,0,1-.86-2.7L94.36,31.66a14,14,0,0,1,18.87-6l87.11,45.07a14,14,0,0,1,6,18.87l-46.19,89.27A2,2,0,0,1,158.38,180ZM52.65,121l104.87,54.26,45.27-87.5a10,10,0,0,0-4.29-13.48L111.39,29.21A10,10,0,0,0,97.92,33.5Z"
       />
       <path
-        fill="#6dd0fc"
+        fill="hsl(var(--secondary))"
         d="M73.72,74.41H182.14a12,12,0,0,1,12,12v81.2a0,0,0,0,1,0,0H61.72a0,0,0,0,1,0,0V86.41A12,12,0,0,1,73.72,74.41Z"
       />
       <path
-        fill="#a4ecff"
+        fill="hsl(var(--card))"
         d="M73.72,74.41h99.21a12,12,0,0,1,12,12v81.2a0,0,0,0,1,0,0H61.72a0,0,0,0,1,0,0V86.41A12,12,0,0,1,73.72,74.41Z"
       />
       <path
-        fill="#6dd0fc"
+        fill="hsl(var(--secondary))"
         d="M194.14,167.61v-57.2h-78.4L102.43,93.34a17.89,17.89,0,0,0-14.19-6.93H61.72v81.2Z"
       />
       <path
-        fill="#2fb1ea"
+        fill="currentColor"
         d="M194.14,169.61H61.72a2,2,0,0,1-2-2V86.41a14,14,0,0,1,14-14H182.14a14,14,0,0,1,14,14v81.2A2,2,0,0,1,194.14,169.61Zm-130.42-4H192.14V86.41a10,10,0,0,0-10-10H73.72a10,10,0,0,0-10,10Z"
       />
       <path
@@ -49,29 +50,9 @@ export const IconFolderDynamic = (props: SVGProps<SVGSVGElement>) => (
         d="M193.93,219.91H52.07a8,8,0,0,1-8-8V104.41a8,8,0,0,1,8-8H88.23a8,8,0,0,1,6.31,3.08l13.91,17.84a8,8,0,0,0,6.31,3.08h79.17a8,8,0,0,1,8,8v83.5A8,8,0,0,1,193.93,219.91Z"
       />
       <path
-        fill="#2fb1ea"
+        fill="currentColor"
         d="M203.93,231.91H52.07a10,10,0,0,1-10-10V104.41a10,10,0,0,1,10-10H88.23a9.94,9.94,0,0,1,7.89,3.85L110,116.1a6,6,0,0,0,4.73,2.31h89.17a10,10,0,0,1,10,10v93.5A10,10,0,0,1,203.93,231.91ZM52.07,98.41a6,6,0,0,0-6,6v117.5a6,6,0,0,0,6,6H203.93a6,6,0,0,0,6-6v-93.5a6,6,0,0,0-6-6H114.76a9.94,9.94,0,0,1-7.89-3.85L93,100.72a6,6,0,0,0-4.73-2.31Z"
       />
-      <circle fill="#d4ffd4" cx={19} cy={171} r={5} />
-      <circle fill="#d4ffd4" cx={128} cy={8} r={4} />
-      <circle fill="#d4ffd4" cx={248} cy={115} r={3} />
-      <circle fill="#d4ffd4" cx={189} cy={250} r={2} />
-      <circle fill="#d4ffd4" cx={218} cy={199} r={1} />
-      <circle fill="#ffbdbd" cx={249} cy={177} r={5} />
-      <circle fill="#ffbdbd" cx={62} cy={241} r={4} />
-      <circle fill="#ffbdbd" cx={19} cy={115} r={3} />
-      <circle fill="#ffbdbd" cx={24} cy={197} r={2} />
-      <circle fill="#ffbdbd" cx={85} cy={240} r={1} />
-      <circle fill="#bbf1ff" cx={62} cy={44} r={5} />
-      <circle fill="#bbf1ff" cx={234} cy={92} r={4} />
-      <circle fill="#bbf1ff" cx={131} cy={244} r={3} />
-      <circle fill="#bbf1ff" cx={230} cy={28} r={2} />
-      <circle fill="#bbf1ff" cx={214} cy={47} r={1} />
-      <circle fill="#fff4c5" cx={7} cy={57} r={5} />
-      <circle fill="#fff4c5" cx={234} cy={140} r={4} />
-      <circle fill="#fff4c5" cx={178} cy={35} r={3} />
-      <circle fill="#fff4c5" cx={42} cy={49} r={2} />
-      <circle fill="#fff4c5" cx={157} cy={241} r={1} />
     </g>
   </svg>
 );

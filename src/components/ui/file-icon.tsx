@@ -125,28 +125,27 @@ export const FileIcon: React.FC<FileIconProps> = ({ type, className, thumbnailUr
   }
 
   // --- GRID VIEW ---
-  if (type === 'FOLDER' && resourceId) {
-    const hash = stringToHash(resourceId);
-    const patternClass = backgroundPatterns[hash % backgroundPatterns.length];
-    
+  if ((type === 'FOLDER' || type === 'VIDEO_PLAYLIST') && resourceId) {
+    const { raw } = getProcessColors(resourceId);
     return (
-        <div className={cn("flex h-full w-full items-center justify-center p-4 relative overflow-hidden", patternClass)}>
+        <div 
+            className="flex h-full w-full items-center justify-center p-4 relative overflow-hidden" 
+            style={{ 
+                backgroundColor: raw.light,
+                backgroundImage: `radial-gradient(${raw.medium} 1px, transparent 1px)`,
+                backgroundSize: '8px 8px'
+            }}
+        >
              <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent" />
-             <IconFolderYellow className="w-24 h-24 text-foreground/80 drop-shadow-lg relative z-10" />
+             {type === 'FOLDER' ? (
+                <IconFolderDynamic className="w-24 h-24 text-foreground/80 drop-shadow-lg relative z-10" style={{ color: raw.dark }} />
+             ) : (
+                <IconVideoPlaylist className="w-20 h-20 text-foreground/80 drop-shadow-lg relative z-10" style={{ color: raw.dark }} />
+             )}
         </div>
       );
   }
 
-  if (type === 'VIDEO_PLAYLIST' && resourceId) {
-    const hash = stringToHash(resourceId);
-    const patternClass = backgroundPatterns[hash % backgroundPatterns.length];
-    return (
-        <div className={cn("flex h-full w-full items-center justify-center p-4 relative overflow-hidden", patternClass)}>
-             <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent" />
-             <IconVideoPlaylist className="w-20 h-20 text-foreground/80 drop-shadow-lg relative z-10" />
-        </div>
-      );
-  }
 
   const isActuallyImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(finalThumbnailUrl || '');
   
