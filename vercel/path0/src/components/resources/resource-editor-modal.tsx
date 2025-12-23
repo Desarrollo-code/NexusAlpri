@@ -397,7 +397,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
 
     const renderEditTabs = () => (
       <form id="resource-form" onSubmit={handleSave} className="flex-1 min-h-0 flex flex-col">
-        <Tabs value={activeEditTab} onValueChange={setActiveEditTab} className="flex-1 min-h-0 flex flex-col">
+        <Tabs defaultValue={activeEditTab} onValueChange={setActiveEditTab} className="flex-1 min-h-0 flex flex-col">
             <div className="px-6 pt-2 flex-shrink-0">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="content">Contenido</TabsTrigger>
