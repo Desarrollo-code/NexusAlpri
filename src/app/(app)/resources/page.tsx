@@ -8,10 +8,11 @@ import { cn } from '@/lib/utils';
 import { useTitle } from '@/contexts/title-context';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Move, Trash2, FolderOpen, Filter, ChevronRight, Pin, ListVideo, FileText, Image as ImageIcon, Video as VideoIcon, FileQuestion, Archive as ZipIcon, PlusCircle, Edit } from 'lucide-react';
+import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Move, Trash2, FolderOpen, Filter, ChevronRight, Pin, ListVideo, FileText, Image as ImageIcon, Video as VideoIcon, FileQuestion, Archive as ZipIcon, PlusCircle, Edit, ArrowUpDown, FolderInput, Clock } from 'lucide-react';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { ResourceListItem } from '@/components/resources/resource-list-item';
 import { DndContext, type DragEndEvent, MouseSensor, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -19,6 +20,7 @@ import { EmptyState } from '@/components/empty-state';
 import { ResourceEditorModal } from '@/components/resources/resource-editor-modal';
 import { FolderEditorModal } from '@/components/resources/folder-editor-modal';
 import { PlaylistCreatorModal } from '@/components/resources/playlist-creator-modal';
+import { FolderTree } from '@/components/resources/folder-tree';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { getYoutubeVideoId } from '@/lib/resource-utils';
@@ -34,6 +36,8 @@ import type { DateRange } from 'react-day-picker';
 import { useDroppable } from '@dnd-kit/core';
 import { Separator } from '@/components/ui/separator';
 import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
+import { MoveResourceModal } from '@/components/resources/move-resource-modal';
+import { useRecentResources } from '@/hooks/use-recent-resources';
 
 
 // --- MAIN PAGE COMPONENT ---
@@ -41,6 +45,7 @@ export default function ResourcesPage() {
     const { user, settings } = useAuth();
     const { setPageTitle } = useTitle();
     const { toast } = useToast();
+    const { recentIds, addRecentResource } = useRecentResources();
 
     const [allApiResources, setAllApiResources] = useState<AppResourceType[]>([]);
     const [isLoadingData, setIsLoadingData] = useState(true);
@@ -48,6 +53,7 @@ export default function ResourcesPage() {
 
     const [searchTerm, setSearchTerm] = useState('');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const [resourceView, setResourceView] = useState<'all' | 'favorites' | 'recent'>('all');
 
     const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
     const [currentFolder, setCurrentFolder] = useState<AppResourceType | null>(null);
@@ -68,12 +74,17 @@ export default function ResourcesPage() {
     const [isUploaderOpen, setIsUploaderOpen] = useState(false);
 
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
 
     const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
     const [fileType, setFileType] = useState('all');
     const [hasPin, setHasPin] = useState(false);
     const [hasExpiry, setHasExpiry] = useState(false);
     const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
+
+    const [sortBy, setSortBy] = useState<'date' | 'name' | 'size'>('date');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
     const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
     const [previewingResource, setPreviewingResource] = useState<AppResourceType | null>(null);
@@ -85,7 +96,8 @@ export default function ResourcesPage() {
     }, [setPageTitle]);
 
     const canManage = useMemo(() => user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR', [user]);
-    const activeFilterCount = [dateRange, fileType !== 'all', hasPin, hasExpiry].filter(Boolean).length;
+    const [tagsFilter, setTagsFilter] = useState('');
+    const activeFilterCount = [dateRange, fileType !== 'all', hasPin, hasExpiry, tagsFilter].filter(Boolean).length;
 
     const fetchResources = useCallback(async () => {
         if (!user) return;
@@ -101,6 +113,8 @@ export default function ResourcesPage() {
         if (fileType !== 'all') params.append('fileType', fileType);
         if (hasPin) params.append('hasPin', 'true');
         if (hasExpiry) params.append('hasExpiry', 'true');
+        params.append('sortBy', sortBy);
+        params.append('sortOrder', sortOrder);
 
         try {
             const response = await fetch(`/api/resources?${params.toString()}`, { cache: 'no-store' });
@@ -128,15 +142,29 @@ export default function ResourcesPage() {
         } finally {
             setIsLoadingData(false);
         }
-    }, [user, currentFolderId, debouncedSearchTerm, dateRange, fileType, hasPin, hasExpiry]);
+    }, [user, currentFolderId, debouncedSearchTerm, dateRange, fileType, hasPin, hasExpiry, sortBy, sortOrder]);
 
     useEffect(() => {
         fetchResources();
         setSelectedIds(new Set());
     }, [fetchResources]);
 
+    // Filter resources based on active view
+    const filteredResources = useMemo(() => {
+        if (resourceView === 'favorites') {
+            return allApiResources.filter(r => r.isPinned);
+        } else if (resourceView === 'recent') {
+            // Filter to only show resources in recentIds, maintaining order
+            const recentSet = new Set(recentIds);
+            return allApiResources
+                .filter(r => recentSet.has(r.id))
+                .sort((a, b) => recentIds.indexOf(a.id) - recentIds.indexOf(b.id));
+        }
+        return allApiResources;
+    }, [allApiResources, resourceView, recentIds]);
+
     const groupedResources = useMemo(() => {
-        return allApiResources.reduce((acc, resource) => {
+        return filteredResources.reduce((acc, resource) => {
             const category = resource.category || 'General';
             if (!acc[category]) {
                 acc[category] = { folders: [], files: [] };
@@ -148,7 +176,7 @@ export default function ResourcesPage() {
             }
             return acc;
         }, {} as Record<string, { folders: AppResourceType[], files: AppResourceType[] }>);
-    }, [allApiResources]);
+    }, [filteredResources]);
 
     const handleNavigateFolder = (resource: AppResourceType) => {
         setCurrentFolderId(resource.id);
@@ -213,6 +241,7 @@ export default function ResourcesPage() {
             nextIndex = (currentIndex - 1 + fileResources.length) % fileResources.length;
         }
         setPreviewingResource(fileResources[nextIndex]);
+        addRecentResource(fileResources[nextIndex].id);
     }
 
 
@@ -316,130 +345,200 @@ export default function ResourcesPage() {
 
     return (
         <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
-            <div className="space-y-6">
-                <p className="text-muted-foreground">Gestiona y comparte documentos importantes, guías y materiales de formación para toda la organización.</p>
+            <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-8 items-start">
+                {/* Sidebar Navigation */}
+                <div className="hidden md:block sticky top-6">
+                    <div className="pb-4 mb-4 border-b">
+                        <h2 className="font-semibold text-lg px-2">Carpetas</h2>
+                        <p className="text-sm text-muted-foreground px-2">Navega por tu biblioteca</p>
+                    </div>
+                    <FolderTree
+                        currentFolderId={currentFolderId}
+                        onNavigate={(folder) => handleNavigateFolder(folder)}
+                    />
+                </div>
 
-                {!isPlaylistView && (
-                    <Card className="p-4 bg-card shadow-sm">
-                        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                            <div className="relative w-full flex-grow">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                <Input placeholder="Buscar en la carpeta actual..." className="pl-10 h-10 text-base rounded-md" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-                            </div>
-                            <div className="flex items-center gap-2 w-full md:w-auto">
-                                <Popover open={isFilterPopoverOpen} onOpenChange={setIsFilterPopoverOpen}>
-                                    <PopoverTrigger asChild>
-                                        <Button variant="outline" className="h-10 flex-grow md:flex-none">
-                                            <Filter className="mr-2 h-4 w-4" /> Filtros {activeFilterCount > 0 && `(${activeFilterCount})`}
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-80" align="end">
-                                        <div className="grid gap-4">
-                                            <div className="space-y-2"><h4 className="font-medium leading-none">Filtros Avanzados</h4><p className="text-sm text-muted-foreground">Refina tu búsqueda de recursos.</p></div>
-                                            <div className="space-y-2"><Label>Fecha de subida</Label><DateRangePicker date={dateRange} onDateChange={setDateRange} /></div>
-                                            <div className="space-y-2"><Label>Tipo de Archivo</Label>
-                                                <Select value={fileType} onValueChange={setFileType}>
-                                                    <SelectTrigger><SelectValue /></SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="all">Todos</SelectItem><SelectItem value="image">Imagen</SelectItem><SelectItem value="video">Video</SelectItem><SelectItem value="pdf">PDF</SelectItem><SelectItem value="doc">Documento</SelectItem><SelectItem value="xls">Hoja de cálculo</SelectItem><SelectItem value="ppt">Presentación</SelectItem><SelectItem value="zip">ZIP</SelectItem><SelectItem value="other">Otro</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                            <div className="flex items-center space-x-2"><Checkbox id="hasPin" checked={hasPin} onCheckedChange={(c) => setHasPin(!!c)} /><Label htmlFor="hasPin">Con PIN</Label></div>
-                                            <div className="flex items-center space-x-2"><Checkbox id="hasExpiry" checked={hasExpiry} onCheckedChange={(c) => setHasExpiry(!!c)} /><Label htmlFor="hasExpiry">Con Vencimiento</Label></div>
-                                            <Button onClick={() => setIsFilterPopoverOpen(false)}>Aplicar Filtros</Button>
-                                        </div>
-                                    </PopoverContent>
-                                </Popover>
-                                {canManage && (
+                {/* Main Content Area */}
+                <div className="space-y-6 min-w-0">
+                    <p className="text-muted-foreground">Gestiona y comparte documentos importantes, guías y materiales de formación para toda la organización.</p>
+
+                    {/* View Selector */}
+                    {!isPlaylistView && (
+                        <div className="flex items-center gap-2 border-b">
+                            <Button
+                                variant={resourceView === 'all' ? 'default' : 'ghost'}
+                                size="sm"
+                                onClick={() => setResourceView('all')}
+                                className="rounded-b-none"
+                            >
+                                Todos
+                            </Button>
+                            <Button
+                                variant={resourceView === 'favorites' ? 'default' : 'ghost'}
+                                size="sm"
+                                onClick={() => setResourceView('favorites')}
+                                className="rounded-b-none"
+                            >
+                                <Pin className="mr-2 h-4 w-4" />
+                                Favoritos
+                            </Button>
+                            <Button
+                                variant={resourceView === 'recent' ? 'default' : 'ghost'}
+                                size="sm"
+                                onClick={() => setResourceView('recent')}
+                                className="rounded-b-none"
+                            >
+                                <Clock className="mr-2 h-4 w-4" />
+                                Recientes
+                            </Button>
+                        </div>
+                    )}
+
+                    {!isPlaylistView && (
+                        <Card className="p-4 bg-card shadow-sm">
+                            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                                <div className="relative w-full flex-grow">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                    <Input placeholder="Buscar en la carpeta actual..." className="pl-10 h-10 text-base rounded-md" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                                </div>
+                                <div className="flex items-center gap-2 w-full md:w-auto">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button className="h-10 flex-grow md:flex-none">
-                                                <PlusCircle className="mr-2 h-4 w-4" /> Nuevo
+                                            <Button variant="outline" className="h-10 flex-grow md:flex-none">
+                                                <ArrowUpDown className="mr-2 h-4 w-4" />
+                                                {sortBy === 'name' ? 'Nombre' : sortBy === 'size' ? 'Tamaño' : 'Fecha'}
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onSelect={() => { setFolderToEdit(null); setIsFolderEditorOpen(true); }}><FolderIcon className="mr-2 h-4 w-4" />Nueva Carpeta</DropdownMenuItem>
-                                            <DropdownMenuItem onSelect={() => { setPlaylistToEdit(null); setIsPlaylistCreatorOpen(true); }}><ListVideo className="mr-2 h-4 w-4" />Nueva Lista de Videos</DropdownMenuItem>
-                                            <DropdownMenuItem onSelect={() => setIsUploaderOpen(true)}><UploadCloud className="mr-2 h-4 w-4" />Subir Archivo/Enlace</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => { setSortBy('name'); setSortOrder('asc'); }}>Nombre (A-Z)</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => { setSortBy('name'); setSortOrder('desc'); }}>Nombre (Z-A)</DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem onSelect={() => { setSortBy('date'); setSortOrder('desc'); }}>Más recientes</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => { setSortBy('date'); setSortOrder('asc'); }}>Más antiguos</DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem onSelect={() => { setSortBy('size'); setSortOrder('desc'); }}>Tamaño (Mayor-Menor)</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => { setSortBy('size'); setSortOrder('asc'); }}>Tamaño (Menor-Mayor)</DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
+
+                                    <Popover open={isFilterPopoverOpen} onOpenChange={setIsFilterPopoverOpen}>
+                                        <PopoverTrigger asChild>
+                                            <Button variant="outline" className="h-10 flex-grow md:flex-none">
+                                                <Filter className="mr-2 h-4 w-4" /> Filtros {activeFilterCount > 0 && `(${activeFilterCount})`}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-80" align="end">
+                                            <div className="grid gap-4">
+                                                <div className="space-y-2"><h4 className="font-medium leading-none">Filtros Avanzados</h4><p className="text-sm text-muted-foreground">Refina tu búsqueda de recursos.</p></div>
+                                                <div className="space-y-2"><Label>Fecha de subida</Label><DateRangePicker date={dateRange} onDateChange={setDateRange} /></div>
+                                                <div className="space-y-2"><Label>Tipo de Archivo</Label>
+                                                    <Select value={fileType} onValueChange={setFileType}>
+                                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="all">Todos</SelectItem><SelectItem value="image">Imagen</SelectItem><SelectItem value="video">Video</SelectItem><SelectItem value="pdf">PDF</SelectItem><SelectItem value="doc">Documento</SelectItem><SelectItem value="xls">Hoja de cálculo</SelectItem><SelectItem value="ppt">Presentación</SelectItem><SelectItem value="zip">ZIP</SelectItem><SelectItem value="other">Otro</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div className="flex items-center space-x-2"><Checkbox id="hasPin" checked={hasPin} onCheckedChange={(c) => setHasPin(!!c)} /><Label htmlFor="hasPin">Con PIN</Label></div>
+                                                <div className="flex items-center space-x-2"><Checkbox id="hasExpiry" checked={hasExpiry} onCheckedChange={(c) => setHasExpiry(!!c)} /><Label htmlFor="hasExpiry">Con Vencimiento</Label></div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="tags-filter">Etiquetas (separadas por coma)</Label>
+                                                    <Input id="tags-filter" placeholder="ej. urgente, revisión" value={tagsFilter} onChange={e => setTagsFilter(e.target.value)} />
+                                                </div>
+                                                <Button onClick={() => setIsFilterPopoverOpen(false)}>Aplicar Filtros</Button>
+                                            </div>
+                                        </PopoverContent>
+                                    </Popover>
+                                    {canManage && (
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button className="h-10 flex-grow md:flex-none">
+                                                    <PlusCircle className="mr-2 h-4 w-4" /> Nuevo
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem onSelect={() => { setFolderToEdit(null); setIsFolderEditorOpen(true); }}><FolderIcon className="mr-2 h-4 w-4" />Nueva Carpeta</DropdownMenuItem>
+                                                <DropdownMenuItem onSelect={() => { setPlaylistToEdit(null); setIsPlaylistCreatorOpen(true); }}><ListVideo className="mr-2 h-4 w-4" />Nueva Lista de Videos</DropdownMenuItem>
+                                                <DropdownMenuItem onSelect={() => setIsUploaderOpen(true)}><UploadCloud className="mr-2 h-4 w-4" />Subir Archivo/Enlace</DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    )}
+                                </div>
+                            </div>
+                        </Card>
+                    )}
+
+                    <nav aria-label="Breadcrumb">
+                        <ol ref={setRootDroppableRef} className={cn("flex items-center gap-1.5 text-sm font-medium text-muted-foreground p-2 rounded-lg", isOverRoot && "bg-primary/20")}>
+                            {breadcrumbs.map((crumb, index) => (
+                                <li key={crumb.id || 'root'} className="flex items-center gap-1.5">
+                                    <button onClick={() => handleBreadcrumbClick(crumb.id, index)} disabled={index === breadcrumbs.length - 1} className={cn("hover:text-primary disabled:hover:text-muted-foreground disabled:cursor-default", index === breadcrumbs.length - 1 && "text-foreground font-semibold")}>{crumb.title}</button>
+                                    {index < breadcrumbs.length - 1 && <ChevronRight className="h-4 w-4" />}
+                                </li>
+                            ))}
+                        </ol>
+                    </nav>
+
+                    <div>
+                        {isLoadingData ? (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                                {[...Array(12)].map((_, i) => (
+                                    <div key={i} className="space-y-2">
+                                        <Skeleton className="aspect-[3/2] w-full" />
+                                        <Skeleton className="h-4 w-3/4" />
+                                        <Skeleton className="h-3 w-1/2" />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : error ? (
+                            <div className="text-center py-10"><AlertTriangle className="mx-auto h-8 w-8 text-destructive" /><p className="mt-2 font-semibold text-destructive">{error}</p></div>
+                        ) : isPlaylistView && currentFolder ? (
+                            <VideoPlaylistView resources={allApiResources} folder={currentFolder} />
+                        ) : (
+                            <div className="space-y-8">
+                                {Object.keys(groupedResources).length === 0 ? (
+                                    <EmptyState
+                                        icon={FolderOpen}
+                                        title={debouncedSearchTerm ? "No se encontraron resultados" : "Esta carpeta está vacía"}
+                                        description={debouncedSearchTerm ? "Intenta con otros filtros de búsqueda." : "Sube un archivo o crea una nueva carpeta para empezar."}
+                                        imageUrl={settings?.emptyStateResourcesUrl}
+                                    />
+                                ) : (
+                                    Object.entries(groupedResources).map(([category, { folders, files }]) => (
+                                        <section key={category}>
+                                            <h3 className="text-xl font-semibold mb-4 border-b pb-2">{category}</h3>
+                                            {folders.length > 0 && (
+                                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 mb-6">
+                                                    {folders.map(res => <ResourceGridItem key={res.id} resource={res} onSelect={() => handlePreviewResource(res)} onEdit={() => {
+                                                        if (res.type === 'VIDEO_PLAYLIST') handleOpenPlaylistEditor(res);
+                                                        else if (res.type === 'FOLDER') { setFolderToEdit(res); setIsFolderEditorOpen(true); }
+                                                        else setResourceToEdit(res);
+                                                    }} onDelete={setResourceToDelete} onNavigate={handleNavigateFolder} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
+                                                </div>
+                                            )}
+                                            {files.length > 0 && (
+                                                <>
+                                                    <div className="flex items-center justify-end mb-3">
+                                                        <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
+                                                            <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')}><List className="h-4 w-4" /></Button>
+                                                            <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')}><Grid className="h-4 w-4" /></Button>
+                                                        </div>
+                                                    </div>
+                                                    {viewMode === 'grid' ? (
+                                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                                                            {files.map(res => <ResourceGridItem key={res.id} resource={res} onSelect={() => handlePreviewResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onNavigate={handleNavigateFolder} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
+                                                        </div>
+                                                    ) : (
+                                                        <ResourceListItem resources={files} onSelect={handlePreviewResource} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onTogglePin={handleTogglePin} selectedIds={selectedIds} onSelectionChange={handleSelectionChange} />
+                                                    )}
+                                                </>
+                                            )}
+                                        </section>
+                                    ))
                                 )}
                             </div>
-                        </div>
-                    </Card>
-                )}
-
-                <nav aria-label="Breadcrumb">
-                    <ol ref={setRootDroppableRef} className={cn("flex items-center gap-1.5 text-sm font-medium text-muted-foreground p-2 rounded-lg", isOverRoot && "bg-primary/20")}>
-                        {breadcrumbs.map((crumb, index) => (
-                            <li key={crumb.id || 'root'} className="flex items-center gap-1.5">
-                                <button onClick={() => handleBreadcrumbClick(crumb.id, index)} disabled={index === breadcrumbs.length - 1} className={cn("hover:text-primary disabled:hover:text-muted-foreground disabled:cursor-default", index === breadcrumbs.length - 1 && "text-foreground font-semibold")}>{crumb.title}</button>
-                                {index < breadcrumbs.length - 1 && <ChevronRight className="h-4 w-4" />}
-                            </li>
-                        ))}
-                    </ol>
-                </nav>
-
-                <div>
-                    {isLoadingData ? (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-                            {[...Array(12)].map((_, i) => (
-                                <div key={i} className="space-y-2">
-                                    <Skeleton className="aspect-[3/2] w-full" />
-                                    <Skeleton className="h-4 w-3/4" />
-                                    <Skeleton className="h-3 w-1/2" />
-                                </div>
-                            ))}
-                        </div>
-                    ) : error ? (
-                        <div className="text-center py-10"><AlertTriangle className="mx-auto h-8 w-8 text-destructive" /><p className="mt-2 font-semibold text-destructive">{error}</p></div>
-                    ) : isPlaylistView && currentFolder ? (
-                        <VideoPlaylistView resources={allApiResources} folder={currentFolder} />
-                    ) : (
-                        <div className="space-y-8">
-                            {Object.keys(groupedResources).length === 0 ? (
-                                <EmptyState
-                                    icon={FolderOpen}
-                                    title={debouncedSearchTerm ? "No se encontraron resultados" : "Esta carpeta está vacía"}
-                                    description={debouncedSearchTerm ? "Intenta con otros filtros de búsqueda." : "Sube un archivo o crea una nueva carpeta para empezar."}
-                                    imageUrl={settings?.emptyStateResourcesUrl}
-                                />
-                            ) : (
-                                Object.entries(groupedResources).map(([category, { folders, files }]) => (
-                                    <section key={category}>
-                                        <h3 className="text-xl font-semibold mb-4 border-b pb-2">{category}</h3>
-                                        {folders.length > 0 && (
-                                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 mb-6">
-                                                {folders.map(res => <ResourceGridItem key={res.id} resource={res} onSelect={() => handlePreviewResource(res)} onEdit={() => {
-                                                    if (res.type === 'VIDEO_PLAYLIST') handleOpenPlaylistEditor(res);
-                                                    else if (res.type === 'FOLDER') { setFolderToEdit(res); setIsFolderEditorOpen(true); }
-                                                    else setResourceToEdit(res);
-                                                }} onDelete={setResourceToDelete} onNavigate={handleNavigateFolder} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
-                                            </div>
-                                        )}
-                                        {files.length > 0 && (
-                                            <>
-                                                <div className="flex items-center justify-end mb-3">
-                                                    <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
-                                                        <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')}><List className="h-4 w-4" /></Button>
-                                                        <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')}><Grid className="h-4 w-4" /></Button>
-                                                    </div>
-                                                </div>
-                                                {viewMode === 'grid' ? (
-                                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-                                                        {files.map(res => <ResourceGridItem key={res.id} resource={res} onSelect={() => handlePreviewResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onNavigate={handleNavigateFolder} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
-                                                    </div>
-                                                ) : (
-                                                    <ResourceListItem resources={files} onSelect={handlePreviewResource} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onTogglePin={handleTogglePin} selectedIds={selectedIds} onSelectionChange={handleSelectionChange} />
-                                                )}
-                                            </>
-                                        )}
-                                    </section>
-                                ))
-                            )}
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
 
                 <AnimatePresence>
@@ -453,14 +552,21 @@ export default function ResourcesPage() {
                         >
                             <div className="flex items-center justify-between gap-4 p-2 bg-card border rounded-lg shadow-lg">
                                 <p className="px-2 text-sm font-semibold">{selectedIds.size} seleccionado(s)</p>
-                                <div className="flex items-center gap-2">
-                                    <Button variant="destructive" size="sm" onClick={() => setResourceToDelete({ id: 'bulk' } as any)}><Trash2 className="mr-2 h-4 w-4" />Eliminar</Button>
-                                    <Button variant="ghost" size="sm" onClick={() => setSelectedIds(new Set())}>Limpiar</Button>
-                                </div>
+                                <Button variant="outline" size="sm" onClick={() => setIsMoveModalOpen(true)}><FolderInput className="mr-2 h-4 w-4" />Mover</Button>
+                                <Button variant="destructive" size="sm" onClick={() => setResourceToDelete({ id: 'bulk' } as any)}><Trash2 className="mr-2 h-4 w-4" />Eliminar</Button>
+                                <Button variant="ghost" size="sm" onClick={() => setSelectedIds(new Set())}>Limpiar</Button>
                             </div>
                         </motion.div>
+
                     )}
                 </AnimatePresence>
+
+                <MoveResourceModal
+                    isOpen={isMoveModalOpen}
+                    onClose={() => setIsMoveModalOpen(false)}
+                    resourceIds={Array.from(selectedIds)}
+                    onMoveSuccess={() => { setSelectedIds(new Set()); fetchResources(); }}
+                />
 
                 <ResourcePreviewModal
                     resource={previewingResource}
@@ -513,7 +619,7 @@ export default function ResourcesPage() {
                     </AlertDialogContent>
                 </AlertDialog>
             </div>
-        </DndContext>
+        </DndContext >
     );
 }
 

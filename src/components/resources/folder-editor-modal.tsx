@@ -50,6 +50,8 @@ export function FolderEditorModal({ isOpen, onClose, parentId, onSave, folderToE
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [category, setCategory] = useState('');
+    const [tags, setTags] = useState<string[]>([]);
+    const [tagInput, setTagInput] = useState('');
 
     // Permissions state
     const [sharingMode, setSharingMode] = useState<ResourceSharingMode>('PUBLIC');
@@ -84,6 +86,7 @@ export function FolderEditorModal({ isOpen, onClose, parentId, onSave, folderToE
                 setTitle(folderToEdit.title);
                 setDescription(folderToEdit.description || '');
                 setCategory(folderToEdit.category || settings?.resourceCategories[0] || 'General');
+                setTags(folderToEdit.tags || []);
 
                 setSharingMode(folderToEdit.sharingMode);
                 setSharedWithUserIds(folderToEdit.sharedWith?.map(u => u.id) || []);
@@ -102,6 +105,7 @@ export function FolderEditorModal({ isOpen, onClose, parentId, onSave, folderToE
                 setTitle('');
                 setDescription('');
                 setCategory(settings?.resourceCategories[0] || 'General');
+                setTags([]);
                 setSharingMode('PUBLIC');
                 setSharedWithUserIds([]);
                 setSharedWithProcessIds([]);
@@ -132,6 +136,7 @@ export function FolderEditorModal({ isOpen, onClose, parentId, onSave, folderToE
             const payload = {
                 title, description, category, parentId,
                 type: 'FOLDER',
+                tags: tags.join(','),
                 sharingMode, sharedWithUserIds, sharedWithProcessIds, collaboratorIds
             };
 
@@ -181,6 +186,25 @@ export function FolderEditorModal({ isOpen, onClose, parentId, onSave, folderToE
                                                 <div className="space-y-1"><Label htmlFor="title">Nombre de la Carpeta</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
                                                 <div className="space-y-1"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} /></div>
                                                 <div className="space-y-1"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory} required><SelectTrigger><SelectValue placeholder="Selecciona..." /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
+                                                <div className="space-y-2">
+                                                    <Label>Etiquetas</Label>
+                                                    <div className="flex gap-2 mb-2 flex-wrap">
+                                                        {tags.map(tag => (
+                                                            <span key={tag} className="bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-xs flex items-center gap-1">
+                                                                {tag} <button type="button" onClick={() => setTags(tags.filter(t => t !== tag))} className="hover:text-destructive">×</button>
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        <Input
+                                                            placeholder="Añadir etiqueta..."
+                                                            value={tagInput}
+                                                            onChange={e => setTagInput(e.target.value)}
+                                                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (tagInput.trim() && !tags.includes(tagInput.trim())) { setTags([...tags, tagInput.trim()]); setTagInput(''); } } }}
+                                                        />
+                                                        <Button type="button" variant="secondary" onClick={() => { if (tagInput.trim() && !tags.includes(tagInput.trim())) { setTags([...tags, tagInput.trim()]); setTagInput(''); } }} size="sm">Añadir</Button>
+                                                    </div>
+                                                </div>
                                             </CardContent>
                                         </Card>
                                     </TabsContent>

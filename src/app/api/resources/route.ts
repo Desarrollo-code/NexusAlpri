@@ -49,6 +49,9 @@ export async function GET(req: NextRequest) {
         const hasPin = searchParams.get('hasPin') === 'true';
         const hasExpiry = searchParams.get('hasExpiry') === 'true';
 
+        const sortBy = searchParams.get('sortBy') || 'date';
+        const sortOrder = (searchParams.get('sortOrder') as 'asc' | 'desc') || 'desc';
+
         if (parentId === '') parentId = null;
 
         const baseWhere: Prisma.EnterpriseResourceWhereInput = { parentId, status };
@@ -57,6 +60,21 @@ export async function GET(req: NextRequest) {
         }
         if (searchTerm) {
             baseWhere.title = { contains: searchTerm, mode: 'insensitive' };
+        }
+
+        const tagsParam = searchParams.get('tags');
+        if (tagsParam) {
+            const tagsToFilter = tagsParam.split(',').filter(Boolean);
+            if (tagsToFilter.length > 0) {
+                // Filter resources that contain ALL specified tags
+                // Since tags are stored as a string, we use AND with contains for each tag
+                baseWhere.AND = (baseWhere.AND as any[]) || [];
+                tagsToFilter.forEach(tag => {
+                    (baseWhere.AND as any[]).push({
+                        tags: { contains: tag }
+                    });
+                });
+            }
         }
 
         if (startDate) baseWhere.uploadDate = { ...baseWhere.uploadDate, gte: new Date(startDate) };
@@ -94,13 +112,38 @@ export async function GET(req: NextRequest) {
             ];
         }
 
+        // Sorting Logic
+        const orderBy: Prisma.EnterpriseResourceOrderByWithRelationInput[] = [];
+
+        // Pinned always first by default
+        orderBy.push({ isPinned: 'desc' });
+
+        // Folders always before files if sorting by name or date, OR if no specific sort 
+        if (sortBy === 'name' || sortBy === 'date') {
+            orderBy.push({ type: 'asc' }); // FOLDER comes before VIDEO/DOCUMENT usually alphabetically? Actually no.
+            // We want folders first. 'FOLDER' vs 'DOCUMENT'. D < F. 
+            // Let's rely on specific logic if needed, but typically users want folders first.
+            // A simple way is to use a specific convention or rely on client grouping.
+            // Current usage groups by category then separates folders/files.
+            // The API just sends a list. Let's stick to requested sort.
+        }
+
+        if (sortBy === 'name') {
+            orderBy.push({ title: sortOrder });
+        } else if (sortBy === 'size') {
+            orderBy.push({ size: sortOrder });
+        } else {
+            // Default 'date'
+            orderBy.push({ uploadDate: sortOrder });
+        }
+
         const resources = await prisma.enterpriseResource.findMany({
             where: whereClause,
             include: {
                 uploader: { select: { id: true, name: true, avatar: true } },
                 sharedWith: { select: { id: true, name: true, avatar: true } }
             },
-            orderBy: [{ isPinned: 'desc' }, { type: 'asc' }, { uploadDate: 'desc' }],
+            orderBy,
         });
 
         const safeResources = resources.map(({ pin, tags, uploader, ...resource }) => ({

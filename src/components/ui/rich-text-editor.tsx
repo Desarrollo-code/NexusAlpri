@@ -21,7 +21,9 @@ const ReactQuill = dynamic(
 );
 
 interface RichTextEditorProps extends ReactQuillProps {
-    variant?: 'default' | 'mini';
+  variant?: 'default' | 'mini';
+  value?: string;
+  onChange?: (value: string) => void;
 }
 
 // Configuración de las barras de herramientas
@@ -43,7 +45,7 @@ const miniToolbar = [
 const formats = [
   'header',
   'bold', 'italic', 'underline', 'strike',
-  'list', 
+  'list',
   'blockquote', 'code-block',
   'link',
 ];
