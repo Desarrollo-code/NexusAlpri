@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Save, FileUp, Link as LinkIcon, FilePenLine, ArrowLeft, ArrowRight, UploadCloud, Info, Globe, Users, Briefcase, FileText as FileGenericIcon, Edit, BrainCircuit, PlusCircle } from 'lucide-react';
+import { Loader2, Save, FileUp, Link as LinkIcon, FilePenLine, ArrowLeft, ArrowRight, UploadCloud, Info, Globe, Users, Briefcase, FileText as FileGenericIcon, Edit, BrainCircuit, PlusCircle, Trash2 } from 'lucide-react';
 import type { AppResourceType, User as AppUser, Process, ResourceSharingMode, Quiz as AppQuiz } from '@/types';
 import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
@@ -58,8 +58,9 @@ interface FlatProcess {
 }
 
 const STEPS = [
+    { id: 'info', name: 'Información' },
     { id: 'content', name: 'Contenido' },
-    { id: 'config', name: 'Configuración' },
+    { id: 'config', name: 'Acceso' },
 ];
 
 const ProgressBar = ({ currentStep }: { currentStep: number }) => {
@@ -156,7 +157,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
     const isEditingFolder = isEditing && resource?.type === 'FOLDER';
 
     // Tab management for EDITING
-    const [activeEditTab, setActiveEditTab] = useState('content');
+    const [activeEditTab, setActiveEditTab] = useState('info');
 
 
     const resetForm = useCallback(() => {
@@ -207,7 +208,7 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                 } else {
                     setUpload(null);
                 }
-                setActiveEditTab(isEditingFolder ? 'config' : 'content');
+                setActiveEditTab(isEditingFolder ? 'config' : 'info');
 
                 if (isEditingFolder) {
                     setIsLoadingFolderContent(true);
@@ -315,27 +316,15 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         }
     };
 
-    const isStep1Valid = !!title && (
+    const isStep1Valid = !!title.trim();
+    const isStep2Valid = isStep1Valid && (
         (resourceType === 'DOCUMENT' && upload?.status === 'completed') ||
         (resourceType === 'EXTERNAL_LINK' && externalLink) ||
         (resourceType === 'DOCUMENTO_EDITABLE' && editableContent) ||
         (isEditingFolder)
     );
 
-    const ContentStep = () => (
-        <div className="space-y-4">
-            <div className="space-y-2"><Label htmlFor="title">Título del Recurso</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
-            <div className="space-y-2"><Label>Tipo de Recurso</Label><RadioGroup value={resourceType} onValueChange={(v) => setResourceType(v as any)} className="grid grid-cols-1 md:grid-cols-3 gap-3"><div className="flex-1"><RadioGroupItem value="DOCUMENT" id="type-doc" className="sr-only" /><Label htmlFor="type-doc" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${resourceType === 'DOCUMENT' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><FileUp className={`mb-2 h-6 w-6 ${resourceType === 'DOCUMENT' ? 'text-primary' : 'text-muted-foreground'}`} /><span className="font-semibold text-sm">Archivo</span></Label></div><div className="flex-1"><RadioGroupItem value="EXTERNAL_LINK" id="type-link" className="sr-only" /><Label htmlFor="type-link" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${resourceType === 'EXTERNAL_LINK' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><LinkIcon className={`mb-2 h-6 w-6 ${resourceType === 'EXTERNAL_LINK' ? 'text-primary' : 'text-muted-foreground'}`} /><span className="font-semibold text-sm">Enlace Web</span></Label></div><div className="flex-1"><RadioGroupItem value="DOCUMENTO_EDITABLE" id="type-editable" className="sr-only" /><Label htmlFor="type-editable" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${resourceType === 'DOCUMENTO_EDITABLE' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><FilePenLine className={`mb-2 h-6 w-6 ${resourceType === 'DOCUMENTO_EDITABLE' ? 'text-primary' : 'text-muted-foreground'}`} /><span className="font-semibold text-sm">Documento</span></Label></div></RadioGroup></div>
-            <div className="space-y-2">
-                <Label>Contenido</Label>
-                {resourceType === 'DOCUMENT' && (upload ? (<div className="p-2 border rounded-md bg-muted/50 relative"><div className="flex items-center gap-2"><FileGenericIcon className="h-5 w-5 text-primary shrink-0" /><div className="min-w-0"><p className="text-sm font-medium truncate">{upload.file.name}</p><p className="text-xs text-muted-foreground">{formatFileSize(upload.file.size)}</p></div></div>{upload.status === 'uploading' && <Progress value={upload.progress} className="h-1 mt-1" />}{upload.status === 'error' && <p className="text-xs text-destructive mt-1">{upload.error}</p>}</div>) : (<UploadArea onFileSelect={(files) => files && handleFileSelect(files[0])} disabled={isUploading} />))}
-                {resourceType === 'EXTERNAL_LINK' && <Input type="url" value={externalLink} onChange={e => setExternalLink(e.target.value)} placeholder="https://ejemplo.com" />}
-                {resourceType === 'DOCUMENTO_EDITABLE' && <RichTextEditor value={editableContent} onChange={setEditableContent} className="min-h-[200px]" />}
-            </div>
-        </div>
-    );
-
-    const ConfigStep = () => {
+    const InfoStep = () => {
         const [tagInput, setTagInput] = useState('');
 
         const handleAddTag = () => {
@@ -346,58 +335,226 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         };
 
         return (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                <div className="space-y-6">
-                    <Card>
-                        <CardHeader><CardTitle className="text-base">Detalles Adicionales</CardTitle></CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} /></div>
-                            <div className="space-y-2"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory}><SelectTrigger id="category"><SelectValue placeholder="Seleccionar..." /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select></div>
-                            <div className="space-y-2">
-                                <Label>Etiquetas</Label>
-                                <div className="flex gap-2 mb-2 flex-wrap">
-                                    {tags.map(tag => (
-                                        <span key={tag} className="bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-xs flex items-center gap-1">
-                                            {tag} <button type="button" onClick={() => setTags(tags.filter(t => t !== tag))} className="hover:text-destructive">×</button>
-                                        </span>
-                                    ))}
-                                </div>
-                                <div className="flex gap-2">
-                                    <Input
-                                        placeholder="Añadir etiqueta..."
-                                        value={tagInput}
-                                        onChange={e => setTagInput(e.target.value)}
-                                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddTag(); } }}
-                                    />
-                                    <Button type="button" variant="secondary" onClick={handleAddTag} size="sm">Añadir</Button>
-                                </div>
-                            </div>
-                            <div className="space-y-2"><Label>Fecha de Expiración (Opcional)</Label><Popover><PopoverTrigger asChild><Button variant="outline" className="w-full justify-start font-normal">{expiresAt ? format(expiresAt, "PPP", { locale: es }) : <span>Nunca</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={expiresAt} onSelect={setExpiresAt} initialFocus locale={es} /></PopoverContent></Popover></div>
-                            <div className="space-y-2"><Label htmlFor="observations">Observaciones (Privado)</Label><Textarea id="observations" value={observations} onChange={(e) => setObservations(e.target.value)} rows={2} /></div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base">Evaluación (Opcional)</CardTitle>
-                            <CardDescription className="text-xs">Añade un quiz para validar el conocimiento del recurso.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <Button className="w-full" variant="outline" type="button" onClick={() => setIsQuizEditorOpen(true)}>
-                                {quiz ? <Edit className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />}
-                                {quiz ? 'Editar Quiz' : 'Añadir Quiz'}
-                            </Button>
-                        </CardContent>
-                    </Card>
-                </div>
-                <div className="space-y-6">
-                    <Card><CardHeader><CardTitle className="text-base">Visibilidad</CardTitle></CardHeader><CardContent><RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-1 md:grid-cols-3 gap-3"><div className="flex-1"><RadioGroupItem value="PUBLIC" id="share-public" className="sr-only" /><Label htmlFor="share-public" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PUBLIC' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Globe className={`mb-2 h-6 w-6 ${sharingMode === 'PUBLIC' ? 'text-primary' : 'text-muted-foreground'}`} />Público</Label></div><div className="flex-1"><RadioGroupItem value="PROCESS" id="share-process" className="sr-only" /><Label htmlFor="share-process" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PROCESS' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Briefcase className={`mb-2 h-6 w-6 ${sharingMode === 'PROCESS' ? 'text-primary' : 'text-muted-foreground'}`} />Por Proceso</Label></div><div className="flex-1"><RadioGroupItem value="PRIVATE" id="share-private" className="sr-only" /><Label htmlFor="share-private" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer ${sharingMode === 'PRIVATE' ? 'border-primary ring-2 ring-primary/50' : 'border-muted hover:border-primary/50'}`}><Users className={`mb-2 h-6 w-6 ${sharingMode === 'PRIVATE' ? 'text-primary' : 'text-muted-foreground'}`} />Privado</Label></div></RadioGroup>
-                        {sharingMode === 'PROCESS' && (<UserOrProcessList type="process" items={flattenedProcesses} selectedIds={sharedWithProcessIds} onSelectionChange={setSharedWithProcessIds} />)}
-                        {sharingMode === 'PRIVATE' && (<UserOrProcessList type="user" items={allUsers} selectedIds={sharedWithUserIds} onSelectionChange={setSharedWithUserIds} />)}
-                    </CardContent></Card>
-                    <Card><CardHeader><CardTitle className="text-base flex items-center gap-2"><Edit className="h-4 w-4 text-primary" />Colaboradores</CardTitle><CardDescription className="text-xs">Permite a otros instructores o administradores editar este recurso.</CardDescription></CardHeader><CardContent><UserOrProcessList type="user" items={allUsers.filter(u => u.role !== 'STUDENT')} selectedIds={collaboratorIds} onSelectionChange={setCollaboratorIds} /></CardContent></Card>
-                </div>
-            </div>
+            <div className="space-y-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base">Datos Básicos</CardTitle>
+                        <CardDescription>Establece el nombre y una breve explicación del recurso.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="title">Título del Recurso</Label>
+                            <Input
+                                id="title"
+                                value={title}
+                                onChange={(e) => {
+                                    setTitle(e.target.value);
+                                    if (titleError) setTitleError(null);
+                                }}
+                                className={titleError ? "border-destructive" : ""}
+                                required
+                            />
+                            {titleError && <p className="text-xs text-destructive">{titleError}</p>}
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="description">Descripción</Label>
+                            <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="¿De qué trata este recurso?" />
+                        </div>
+                    </CardContent>
+                </Card>
 
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base text-primary flex items-center gap-2">Organización</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="category">Categoría</Label>
+                            <Select value={category} onValueChange={setCategory}>
+                                <SelectTrigger id="category"><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
+                                <SelectContent>{(settings?.resourceCategories || []).map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Etiquetas</Label>
+                            <div className="flex gap-2 mb-2 flex-wrap">
+                                {tags.map(tag => (
+                                    <span key={tag} className="bg-primary/10 text-primary px-2 py-1 rounded-md text-xs flex items-center gap-1 font-medium ring-1 ring-primary/20">
+                                        {tag} <button type="button" onClick={() => setTags(tags.filter(t => t !== tag))} className="hover:text-destructive ml-1">×</button>
+                                    </span>
+                                ))}
+                            </div>
+                            <div className="flex gap-2">
+                                <Input
+                                    placeholder="Añadir etiqueta..."
+                                    value={tagInput}
+                                    onChange={e => setTagInput(e.target.value)}
+                                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddTag(); } }}
+                                />
+                                <Button type="button" variant="secondary" onClick={handleAddTag} size="sm">Añadir</Button>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    };
+
+    const ContentStep = () => (
+        <div className="space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base">Tipo de Contenido</CardTitle>
+                    <CardDescription>Selecciona cómo se visualizará o entregará este recurso.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <RadioGroup value={resourceType} onValueChange={(v) => setResourceType(v as any)} className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div className="flex-1">
+                            <RadioGroupItem value="DOCUMENT" id="type-doc" className="sr-only" />
+                            <Label htmlFor="type-doc" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition-all ${resourceType === 'DOCUMENT' ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-muted hover:border-primary/50'}`}>
+                                <FileUp className={`mb-2 h-6 w-6 ${resourceType === 'DOCUMENT' ? 'text-primary' : 'text-muted-foreground'}`} />
+                                <span className="font-semibold text-sm">Archivo</span>
+                            </Label>
+                        </div>
+                        <div className="flex-1">
+                            <RadioGroupItem value="EXTERNAL_LINK" id="type-link" className="sr-only" />
+                            <Label htmlFor="type-link" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition-all ${resourceType === 'EXTERNAL_LINK' ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-muted hover:border-primary/50'}`}>
+                                <LinkIcon className={`mb-2 h-6 w-6 ${resourceType === 'EXTERNAL_LINK' ? 'text-primary' : 'text-muted-foreground'}`} />
+                                <span className="font-semibold text-sm">Enlace Web</span>
+                            </Label>
+                        </div>
+                        <div className="flex-1">
+                            <RadioGroupItem value="DOCUMENTO_EDITABLE" id="type-editable" className="sr-only" />
+                            <Label htmlFor="type-editable" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition-all ${resourceType === 'DOCUMENTO_EDITABLE' ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-muted hover:border-primary/50'}`}>
+                                <FilePenLine className={`mb-2 h-6 w-6 ${resourceType === 'DOCUMENTO_EDITABLE' ? 'text-primary' : 'text-muted-foreground'}`} />
+                                <span className="font-semibold text-sm">Documento</span>
+                            </Label>
+                        </div>
+                    </RadioGroup>
+
+                    <div className="mt-4 pt-4 border-t">
+                        <Label className="mb-2 block">Material del Recurso</Label>
+                        {resourceType === 'DOCUMENT' && (
+                            upload ? (
+                                <div className="p-3 border rounded-xl bg-muted/30 relative overflow-hidden">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-primary/10 rounded-lg">
+                                            <FileGenericIcon className="h-5 w-5 text-primary shrink-0" />
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-sm font-medium truncate">{upload.file.name}</p>
+                                            <p className="text-xs text-muted-foreground">{formatFileSize(upload.file.size)}</p>
+                                        </div>
+                                        {upload.status === 'completed' && <Button variant="ghost" size="icon" onClick={() => setUpload(null)}><Trash2 className="h-4 w-4 text-destructive" /></Button>}
+                                    </div>
+                                    {upload.status === 'uploading' && <Progress value={upload.progress} className="h-1.5 mt-2" />}
+                                    {upload.status === 'error' && <p className="text-xs text-destructive mt-1 font-medium">{upload.error}</p>}
+                                </div>
+                            ) : (
+                                <UploadArea onFileSelect={(files) => files && handleFileSelect(files[0])} disabled={isUploading} />
+                            )
+                        )}
+                        {resourceType === 'EXTERNAL_LINK' && <Input type="url" value={externalLink} onChange={e => setExternalLink(e.target.value)} placeholder="https://ejemplo.com/recurso" className="h-12" />}
+                        {resourceType === 'DOCUMENTO_EDITABLE' && <RichTextEditor value={editableContent} onChange={setEditableContent} className="min-h-[250px]" />}
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card className="overflow-hidden border-primary/20 bg-primary/5">
+                <CardHeader className="pb-3 text-center">
+                    <CardTitle className="text-base flex items-center justify-center gap-2">
+                        <BrainCircuit className="h-5 w-5 text-primary" /> Evaluación del Conocimiento
+                    </CardTitle>
+                    <CardDescription className="text-xs">Valida que el contenido ha sido comprendido mediante un examen rápido.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button className="w-full bg-background hover:bg-muted border-primary/30 text-foreground" variant="outline" type="button" onClick={() => setIsQuizEditorOpen(true)}>
+                        {quiz ? <Edit className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />}
+                        {quiz ? 'Modificar Quiz Existente' : 'Añadir Quiz de Evaluación'}
+                    </Button>
+                </CardContent>
+            </Card>
+        </div>
+    );
+
+    const AccessStep = () => {
+        return (
+            <div className="space-y-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base">Visibilidad y Audiencia</CardTitle>
+                        <CardDescription>Controla quién puede visualizar este recurso en la biblioteca.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div className="flex-1">
+                                <RadioGroupItem value="PUBLIC" id="share-public" className="sr-only" />
+                                <Label htmlFor="share-public" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition-all ${sharingMode === 'PUBLIC' ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-muted hover:border-primary/50'}`}>
+                                    <Globe className={`mb-2 h-6 w-6 ${sharingMode === 'PUBLIC' ? 'text-primary' : 'text-muted-foreground'}`} />
+                                    <span className="text-sm font-medium">Público</span>
+                                </Label>
+                            </div>
+                            <div className="flex-1">
+                                <RadioGroupItem value="PROCESS" id="share-process" className="sr-only" />
+                                <Label htmlFor="share-process" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition-all ${sharingMode === 'PROCESS' ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-muted hover:border-primary/50'}`}>
+                                    <Briefcase className={`mb-2 h-6 w-6 ${sharingMode === 'PROCESS' ? 'text-primary' : 'text-muted-foreground'}`} />
+                                    <span className="text-sm font-medium">Por Proceso</span>
+                                </Label>
+                            </div>
+                            <div className="flex-1">
+                                <RadioGroupItem value="PRIVATE" id="share-private" className="sr-only" />
+                                <Label htmlFor="share-private" className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition-all ${sharingMode === 'PRIVATE' ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-muted hover:border-primary/50'}`}>
+                                    <Users className={`mb-2 h-6 w-6 ${sharingMode === 'PRIVATE' ? 'text-primary' : 'text-muted-foreground'}`} />
+                                    <span className="text-sm font-medium">Privado</span>
+                                </Label>
+                            </div>
+                        </RadioGroup>
+                        <AnimatePresence mode="wait">
+                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
+                                {sharingMode === 'PROCESS' && (<UserOrProcessList type="process" items={flattenedProcesses} selectedIds={sharedWithProcessIds} onSelectionChange={setSharedWithProcessIds} />)}
+                                {sharingMode === 'PRIVATE' && (<UserOrProcessList type="user" items={allUsers} selectedIds={sharedWithUserIds} onSelectionChange={setSharedWithUserIds} />)}
+                            </motion.div>
+                        </AnimatePresence>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base flex items-center gap-2"><Edit className="h-4 w-4 text-primary" /> Colaboración Editorial</CardTitle>
+                        <CardDescription className="text-xs">Permite a otros instructores o administradores editar y gestionar este recurso.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <UserOrProcessList type="user" items={allUsers.filter(u => u.role !== 'STUDENT')} selectedIds={collaboratorIds} onSelectionChange={setCollaboratorIds} />
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base">Ciclo de Vida y Notas</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Vencimiento del Recurso (Opcional)</Label>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button variant="outline" className="w-full justify-start font-normal h-11">
+                                        <CalendarIcon className="mr-2 h-4 w-4 opacity-70" />
+                                        {expiresAt ? format(expiresAt, "PPP", { locale: es }) : <span className="text-muted-foreground">Disponible indefinidamente (Nunca expira)</span>}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                    <Calendar mode="single" selected={expiresAt} onSelect={setExpiresAt} initialFocus locale={es} />
+                                    {expiresAt && <div className="p-2 border-t text-center"><Button variant="ghost" size="sm" onClick={() => setExpiresAt(undefined)} className="h-8 text-xs text-destructive">Limpiar fecha</Button></div>}
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="observations">Observaciones Administrativas (Privado)</Label>
+                            <Textarea id="observations" value={observations} onChange={(e) => setObservations(e.target.value)} rows={3} placeholder="Notas visibles solo para administradores y colaboradores." />
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
         );
     };
 
@@ -406,20 +563,23 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
             <ScrollArea className="flex-1 min-h-0">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 px-6 py-4">
                     <div className="md:col-span-1 h-full flex flex-col">
-                        <ConfigStep />
-                    </div>
-                    <div className="md:col-span-1 h-full flex flex-col bg-muted/50 border-l p-4">
-                        <div className="border-b flex-shrink-0 flex items-center justify-between pb-4">
-                            <h3 className="font-semibold">Contenido de la Carpeta</h3>
+                        <InfoStep />
+                        <div className="mt-6">
+                            <AccessStep />
                         </div>
-                        <div className="flex-1 min-h-0 mt-4">
+                    </div>
+                    <div className="md:col-span-1 h-full flex flex-col bg-muted/50 border-l p-4 rounded-xl">
+                        <div className="border-b flex-shrink-0 flex items-center justify-between pb-4">
+                            <h3 className="font-semibold flex items-center gap-2"><PlusCircle className="h-4 w-4 text-primary" /> Contenido de la Carpeta</h3>
+                        </div>
+                        <div className="flex-1 min-h-0 mt-4 overflow-y-auto">
                             {isLoadingFolderContent ? <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin" /></div>
                                 : <FolderContentView items={folderContent} onEdit={() => { }} onDelete={() => { }} />}
                         </div>
                     </div>
                 </div>
             </ScrollArea>
-            <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2">
+            <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2 bg-background">
                 <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
                 <Button type="submit" disabled={isSaving || !title.trim()}>
                     {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -442,8 +602,9 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                         transition={{ duration: 0.3, ease: 'easeInOut' }}
                         className="px-6 py-4"
                     >
-                        {creationStep === 1 && <ContentStep />}
-                        {creationStep === 2 && <ConfigStep />}
+                        {creationStep === 1 && <InfoStep />}
+                        {creationStep === 2 && <ContentStep />}
+                        {creationStep === 3 && <AccessStep />}
                     </motion.div>
                 </AnimatePresence>
             </ScrollArea>
@@ -452,9 +613,9 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                     {creationStep > 1 && <ArrowLeft className="mr-2 h-4 w-4" />} {creationStep === 1 ? 'Cancelar' : 'Anterior'}
                 </Button>
                 {creationStep < STEPS.length ? (
-                    <Button type="button" onClick={() => setCreationStep(p => p + 1)} disabled={!isStep1Valid}>Siguiente <ArrowRight className="ml-2 h-4 w-4" /></Button>
+                    <Button type="button" onClick={() => setCreationStep(p => p + 1)} disabled={(creationStep === 1 && !isStep1Valid) || (creationStep === 2 && !isStep2Valid)}>Siguiente <ArrowRight className="ml-2 h-4 w-4" /></Button>
                 ) : (
-                    <Button type="submit" disabled={isSaving || !isStep1Valid}>
+                    <Button type="submit" disabled={isSaving || !isStep2Valid}>
                         {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                         Crear Recurso
                     </Button>
@@ -467,20 +628,22 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         <form id="resource-form" onSubmit={handleSave} className="flex-1 min-h-0 flex flex-col">
             <Tabs defaultValue={activeEditTab} onValueChange={setActiveEditTab} className="flex-1 min-h-0 flex flex-col">
                 <div className="px-6 pt-2 flex-shrink-0">
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="content">Contenido</TabsTrigger>
-                        <TabsTrigger value="config">Configuración</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="info">Información</TabsTrigger>
+                        <TabsTrigger value="content">Recurso / Quiz</TabsTrigger>
+                        <TabsTrigger value="config">Acceso</TabsTrigger>
                     </TabsList>
                 </div>
                 <ScrollArea className="flex-1 min-h-[300px] overflow-y-auto">
                     <div className="px-6 py-4">
+                        <TabsContent value="info" className="mt-0 focus-visible:outline-none"><InfoStep /></TabsContent>
                         <TabsContent value="content" className="mt-0 focus-visible:outline-none"><ContentStep /></TabsContent>
-                        <TabsContent value="config" className="mt-0 focus-visible:outline-none"><ConfigStep /></TabsContent>
+                        <TabsContent value="config" className="mt-0 focus-visible:outline-none"><AccessStep /></TabsContent>
                     </div>
                 </ScrollArea>
                 <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2 bg-background">
                     <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
-                    <Button type="submit" disabled={isSaving || !isStep1Valid}>
+                    <Button type="submit" disabled={isSaving || !isStep2Valid}>
                         {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         <Save className="mr-2 h-4 w-4" />Guardar Cambios
                     </Button>
