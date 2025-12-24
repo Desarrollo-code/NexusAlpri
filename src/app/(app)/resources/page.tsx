@@ -169,15 +169,17 @@ export default function ResourcesPage() {
         return filteredResources.reduce((acc, resource) => {
             const category = resource.category || 'General';
             if (!acc[category]) {
-                acc[category] = { folders: [], files: [] };
+                acc[category] = { folders: [], playlists: [], files: [] };
             }
-            if (resource.type === 'FOLDER' || resource.type === 'VIDEO_PLAYLIST') {
+            if (resource.type === 'FOLDER') {
                 acc[category].folders.push(resource);
+            } else if (resource.type === 'VIDEO_PLAYLIST') {
+                acc[category].playlists.push(resource);
             } else {
                 acc[category].files.push(resource);
             }
             return acc;
-        }, {} as Record<string, { folders: AppResourceType[], files: AppResourceType[] }>);
+        }, {} as Record<string, { folders: AppResourceType[], playlists: AppResourceType[], files: AppResourceType[] }>);
     }, [filteredResources]);
 
     const handleNavigateFolder = (resource: AppResourceType) => {
@@ -470,12 +472,36 @@ export default function ResourcesPage() {
                         </Card>
                     )}
 
-                    <nav aria-label="Breadcrumb">
-                        <ol ref={setRootDroppableRef} className={cn("flex items-center gap-1.5 text-sm font-medium text-muted-foreground p-2 rounded-lg", isOverRoot && "bg-primary/20")}>
+                    <nav aria-label="Breadcrumb" className="mb-4">
+                        <ol ref={setRootDroppableRef} className={cn("flex items-center gap-2 text-sm p-3 rounded-lg transition-colors", isOverRoot && "bg-primary/10 ring-2 ring-primary/30")}>
                             {breadcrumbs.map((crumb, index) => (
-                                <li key={crumb.id || 'root'} className="flex items-center gap-1.5">
-                                    <button onClick={() => handleBreadcrumbClick(crumb.id, index)} disabled={index === breadcrumbs.length - 1} className={cn("hover:text-primary disabled:hover:text-muted-foreground disabled:cursor-default", index === breadcrumbs.length - 1 && "text-foreground font-semibold")}>{crumb.title}</button>
-                                    {index < breadcrumbs.length - 1 && <ChevronRight className="h-4 w-4" />}
+                                <li key={crumb.id || 'root'} className="flex items-center gap-2">
+                                    {/* Icon */}
+                                    {index === 0 ? (
+                                        <FolderOpen className="h-4 w-4 text-primary" />
+                                    ) : (
+                                        <FolderIcon className="h-4 w-4 text-muted-foreground" />
+                                    )}
+
+                                    {/* Crumb Button */}
+                                    <button
+                                        onClick={() => handleBreadcrumbClick(crumb.id, index)}
+                                        disabled={index === breadcrumbs.length - 1}
+                                        className={cn(
+                                            "hover:text-primary hover:underline transition-colors font-medium",
+                                            "disabled:hover:no-underline disabled:cursor-default",
+                                            index === breadcrumbs.length - 1
+                                                ? "text-foreground font-semibold"
+                                                : "text-muted-foreground"
+                                        )}
+                                    >
+                                        {crumb.title}
+                                    </button>
+
+                                    {/* Separator */}
+                                    {index < breadcrumbs.length - 1 && (
+                                        <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
+                                    )}
                                 </li>
                             ))}
                         </ol>
@@ -506,21 +532,48 @@ export default function ResourcesPage() {
                                         onUploadFile={() => setIsUploaderOpen(true)}
                                     />
                                 ) : (
-                                    Object.entries(groupedResources).map(([category, { folders, files }]) => (
+                                    Object.entries(groupedResources).map(([category, { folders, playlists, files }]) => (
                                         <section key={category}>
                                             <h3 className="text-xl font-semibold mb-4 border-b pb-2">{category}</h3>
+
+                                            {/* Folders Section */}
                                             {folders.length > 0 && (
-                                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 mb-6">
-                                                    {folders.map(res => <ResourceGridItem key={res.id} resource={res} onSelect={() => handlePreviewResource(res)} onEdit={() => {
-                                                        if (res.type === 'VIDEO_PLAYLIST') handleOpenPlaylistEditor(res);
-                                                        else if (res.type === 'FOLDER') { setFolderToEdit(res); setIsFolderEditorOpen(true); }
-                                                        else setResourceToEdit(res);
-                                                    }} onDelete={setResourceToDelete} onNavigate={handleNavigateFolder} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
+                                                <div className="mb-8">
+                                                    <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
+                                                        <FolderIcon className="h-4 w-4" />
+                                                        Carpetas ({folders.length})
+                                                    </h4>
+                                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                                                        {folders.map(res => <ResourceGridItem key={res.id} resource={res} onSelect={() => handlePreviewResource(res)} onEdit={() => {
+                                                            setFolderToEdit(res); setIsFolderEditorOpen(true);
+                                                        }} onDelete={setResourceToDelete} onNavigate={handleNavigateFolder} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
+                                                    </div>
                                                 </div>
                                             )}
+
+                                            {/* Playlists Section */}
+                                            {playlists.length > 0 && (
+                                                <div className="mb-8">
+                                                    <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
+                                                        <ListVideo className="h-4 w-4" />
+                                                        Listas de Reproducción ({playlists.length})
+                                                    </h4>
+                                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                                                        {playlists.map(res => <ResourceGridItem key={res.id} resource={res} onSelect={() => handlePreviewResource(res)} onEdit={() => {
+                                                            handleOpenPlaylistEditor(res);
+                                                        }} onDelete={setResourceToDelete} onNavigate={handleNavigateFolder} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Files Section */}
                                             {files.length > 0 && (
                                                 <>
-                                                    <div className="flex items-center justify-end mb-3">
+                                                    <div className="flex items-center justify-between mb-3">
+                                                        <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+                                                            <FileText className="h-4 w-4" />
+                                                            Recursos ({files.length})
+                                                        </h4>
                                                         <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
                                                             <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')}><List className="h-4 w-4" /></Button>
                                                             <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')}><Grid className="h-4 w-4" /></Button>

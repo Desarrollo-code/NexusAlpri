@@ -16,6 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
+import { cn } from '@/lib/utils';
 import { Loader2, FolderPlus, Save, Globe, Users, Briefcase, PlusCircle, Edit } from 'lucide-react';
 import type { AppResourceType, User as AppUser, Process, ResourceSharingMode } from '@/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -217,7 +218,26 @@ export function FolderEditorModal({ isOpen, onClose, parentId, onSave, folderToE
                                                 <CardTitle className="text-base">Información General</CardTitle>
                                             </CardHeader>
                                             <CardContent className="space-y-4">
-                                                <div className="space-y-1"><Label htmlFor="title">Nombre de la Carpeta</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="title">Nombre de la Carpeta</Label>
+                                                    <Input
+                                                        id="title"
+                                                        value={title}
+                                                        onChange={(e) => {
+                                                            setTitle(e.target.value);
+                                                            if (titleError) setTitleError(null);
+                                                        }}
+                                                        className={cn(titleError && "border-destructive focus-visible:ring-destructive")}
+                                                        placeholder="Ej: Documentación de Producto"
+                                                        required
+                                                    />
+                                                    {titleError && (
+                                                        <p className="text-sm text-destructive">{titleError}</p>
+                                                    )}
+                                                    {!titleError && (
+                                                        <p className="text-xs text-muted-foreground">Usa un nombre descriptivo y claro</p>
+                                                    )}
+                                                </div>
                                                 <div className="space-y-1"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} /></div>
                                                 <div className="space-y-1"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory} required><SelectTrigger><SelectValue placeholder="Selecciona..." /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
                                                 <div className="space-y-2">
