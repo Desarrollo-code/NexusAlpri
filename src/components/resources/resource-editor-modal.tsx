@@ -472,10 +472,10 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                         <TabsTrigger value="config">Configuración</TabsTrigger>
                     </TabsList>
                 </div>
-                <ScrollArea className="flex-1 min-h-0">
+                <ScrollArea className="flex-1 min-h-[300px] overflow-y-auto">
                     <div className="px-6 py-4">
-                        <TabsContent value="content" className="mt-0"><ContentStep /></TabsContent>
-                        <TabsContent value="config" className="mt-0"><ConfigStep /></TabsContent>
+                        <TabsContent value="content" className="mt-0 focus-visible:outline-none"><ContentStep /></TabsContent>
+                        <TabsContent value="config" className="mt-0 focus-visible:outline-none"><ConfigStep /></TabsContent>
                     </div>
                 </ScrollArea>
                 <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2 bg-background">
@@ -531,8 +531,8 @@ const UserOrProcessList = ({ type, items, selectedIds, onSelectionChange }: { ty
         <Card className="mt-4">
             <CardContent className="p-4 space-y-3">
                 <Input placeholder={`Buscar ${type === 'user' ? 'usuario' : 'proceso'}...`} value={search} onChange={e => setSearch(e.target.value)} />
-                <ScrollArea className="h-40">
-                    <div className="space-y-1 pr-3">
+                <ScrollArea className="h-60 overflow-y-auto">
+                    <div className="space-y-1 pr-4">
                         {filteredItems.map(item => (
                             <div key={item.id} className="flex items-center space-x-3 p-1.5 rounded-md hover:bg-muted">
                                 <Checkbox id={`${type}-${item.id}`} checked={selectedIds.includes(item.id)} onCheckedChange={(c) => handleSelection(item.id, !!c)} />
