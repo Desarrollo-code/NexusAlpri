@@ -345,7 +345,19 @@ export default function ResourcesPage() {
         return <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>
     }
 
-    const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8,
+            },
+        }),
+        useSensor(TouchSensor, {
+            activationConstraint: {
+                delay: 250,
+                tolerance: 5,
+            },
+        })
+    );
 
     return (
         <DndContext onDragEnd={handleDragEnd} sensors={sensors}>

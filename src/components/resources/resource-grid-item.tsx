@@ -139,6 +139,7 @@ export const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDele
                                 checked={isSelected}
                                 onCheckedChange={(checked) => onSelectionChange(resource.id, !!checked)}
                                 onClick={e => e.stopPropagation()}
+                                onPointerDown={e => e.stopPropagation()}
                                 className="bg-background/80 backdrop-blur-sm border-2"
                             />
                         </div>
@@ -154,6 +155,7 @@ export const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDele
                                         variant="secondary"
                                         className="h-8 w-8 bg-background/90 backdrop-blur-sm hover:bg-background shadow-md"
                                         onClick={(e) => { e.stopPropagation(); onTogglePin(resource); }}
+                                        onPointerDown={e => e.stopPropagation()}
                                         title={resource.isPinned ? 'Desfijar' : 'Fijar'}
                                     >
                                         <Pin className={cn("h-4 w-4", resource.isPinned && "fill-current text-primary")} />
@@ -163,6 +165,7 @@ export const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDele
                                         variant="secondary"
                                         className="h-8 w-8 bg-background/90 backdrop-blur-sm hover:bg-background shadow-md"
                                         onClick={(e) => { e.stopPropagation(); onEdit(resource); }}
+                                        onPointerDown={e => e.stopPropagation()}
                                         title="Editar"
                                     >
                                         <Edit className="h-4 w-4" />
@@ -176,6 +179,7 @@ export const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDele
                                         variant="secondary"
                                         className="h-8 w-8 bg-background/90 backdrop-blur-sm hover:bg-background shadow-md"
                                         onClick={(e) => e.stopPropagation()}
+                                        onPointerDown={e => e.stopPropagation()}
                                     >
                                         <MoreVertical className="h-4 w-4" />
                                     </Button>
