@@ -165,7 +165,7 @@ export const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDele
                             <AvatarImage src={resource.uploader?.avatar || undefined} />
                             <AvatarFallback className="text-[10px]"><Identicon userId={resource.uploaderId || ''} /></AvatarFallback>
                         </Avatar>
-                        <span className="text-xs font-medium truncate text-foreground/80 flex-grow">{resource.uploaderName}</span>
+                        <span className="text-xs font-normal text-muted-foreground/70 truncate flex-grow">{resource.uploaderName}</span>
                     </div>
                     <div className="flex items-center justify-between w-full text-xs text-muted-foreground">
                         <span title={format(new Date(resource.uploadDate), "PPP", { locale: es })}>

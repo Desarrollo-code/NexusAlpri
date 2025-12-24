@@ -48,6 +48,7 @@ export function FolderEditorModal({ isOpen, onClose, parentId, onSave, folderToE
 
     // Form state
     const [title, setTitle] = useState('');
+    const [titleError, setTitleError] = useState<string | null>(null);
     const [description, setDescription] = useState('');
     const [category, setCategory] = useState('');
     const [tags, setTags] = useState<string[]>([]);
@@ -125,8 +126,41 @@ export function FolderEditorModal({ isOpen, onClose, parentId, onSave, folderToE
         }
     }, [folderToEdit, isOpen, isEditing, user, settings]);
 
+    // Title validation function
+    const validateTitle = (value: string): string | null => {
+        const trimmed = value.trim();
+
+        if (!trimmed) {
+            return "El título no puede estar vacío";
+        }
+
+        if (trimmed.length < 2) {
+            return "El título debe tener al menos 2 caracteres";
+        }
+
+        // Check if only special characters
+        if (!/[a-zA-Z0-9]/.test(trimmed)) {
+            return "El título debe contener al menos una letra o número";
+        }
+
+        return null; // Valid
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validate title
+        const error = validateTitle(title);
+        if (error) {
+            setTitleError(error);
+            toast({
+                title: 'Validación fallida',
+                description: error,
+                variant: 'destructive'
+            });
+            return;
+        }
+
         setIsSaving(true);
 
         try {
