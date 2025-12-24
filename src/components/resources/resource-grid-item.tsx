@@ -145,26 +145,30 @@ export const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDele
                     )}
 
                     {/* Action Buttons - Top Right */}
-                    {canModify && resource.status === 'ACTIVE' && (
+                    {canModify && (
                         <div className="absolute top-2 right-2 z-10 flex gap-1.5">
-                            <Button
-                                size="icon"
-                                variant="secondary"
-                                className="h-8 w-8 bg-background/90 backdrop-blur-sm hover:bg-background shadow-md"
-                                onClick={(e) => { e.stopPropagation(); onTogglePin(resource); }}
-                                title={resource.isPinned ? 'Desfijar' : 'Fijar'}
-                            >
-                                <Pin className={cn("h-4 w-4", resource.isPinned && "fill-current text-primary")} />
-                            </Button>
-                            <Button
-                                size="icon"
-                                variant="secondary"
-                                className="h-8 w-8 bg-background/90 backdrop-blur-sm hover:bg-background shadow-md"
-                                onClick={(e) => { e.stopPropagation(); onEdit(resource); }}
-                                title="Editar"
-                            >
-                                <Edit className="h-4 w-4" />
-                            </Button>
+                            {resource.status === 'ACTIVE' && (
+                                <>
+                                    <Button
+                                        size="icon"
+                                        variant="secondary"
+                                        className="h-8 w-8 bg-background/90 backdrop-blur-sm hover:bg-background shadow-md"
+                                        onClick={(e) => { e.stopPropagation(); onTogglePin(resource); }}
+                                        title={resource.isPinned ? 'Desfijar' : 'Fijar'}
+                                    >
+                                        <Pin className={cn("h-4 w-4", resource.isPinned && "fill-current text-primary")} />
+                                    </Button>
+                                    <Button
+                                        size="icon"
+                                        variant="secondary"
+                                        className="h-8 w-8 bg-background/90 backdrop-blur-sm hover:bg-background shadow-md"
+                                        onClick={(e) => { e.stopPropagation(); onEdit(resource); }}
+                                        title="Editar"
+                                    >
+                                        <Edit className="h-4 w-4" />
+                                    </Button>
+                                </>
+                            )}
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button
@@ -218,41 +222,38 @@ export const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDele
                 </div>
 
                 {/* Content Section */}
-                <div className="flex flex-col flex-grow p-3 gap-2">
+                <div className="flex flex-col flex-grow p-4 gap-3">
                     {/* Title */}
-                    <h4 className="text-base font-bold leading-tight line-clamp-2 min-h-[2.5rem] text-foreground">
+                    <h4 className="text-lg font-bold leading-tight line-clamp-2 text-foreground">
                         {resource.title}
                     </h4>
 
                     {/* Badges */}
                     {badges.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-1.5">
                             {badges.map((badge, idx) => (
-                                <Badge key={idx} variant="secondary" className={cn("text-[10px] px-1.5 py-0 h-5", badge.color)}>
-                                    <badge.icon className="h-2.5 w-2.5 mr-0.5" />
+                                <Badge key={idx} variant="secondary" className={cn("text-[11px] px-2 py-0 h-5.5", badge.color)}>
+                                    <badge.icon className="h-3 w-3 mr-1" />
                                     {badge.label}
                                 </Badge>
                             ))}
                         </div>
                     )}
 
-                    {/* Spacer */}
-                    <div className="flex-grow" />
-
                     {/* Footer Metadata */}
-                    <div className="flex flex-col gap-1.5 pt-2 border-t border-border/30">
-                        <div className="flex items-center gap-1.5">
-                            <Avatar className="h-4 w-4">
-                                <AvatarImage src={resource.uploader?.avatar || undefined} />
-                                <AvatarFallback className="text-[8px]">
-                                    <Identicon userId={resource.uploaderId || ''} />
+                    <div className="flex flex-col gap-2 mt-auto pt-3 border-t border-border/30">
+                        <div className="flex items-center gap-2.5">
+                            <Avatar className="h-8 w-8 border border-border/50">
+                                <AvatarImage src={resource.uploader?.avatar || undefined} alt={resource.uploaderName} />
+                                <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">
+                                    {resource.uploaderName?.substring(0, 2).toUpperCase() || '??'}
                                 </AvatarFallback>
                             </Avatar>
-                            <span className="text-[11px] font-medium text-muted-foreground truncate">
+                            <span className="text-sm font-semibold text-foreground/90 truncate">
                                 {resource.uploaderName}
                             </span>
                         </div>
-                        <div className="flex items-center justify-between text-[11px]">
+                        <div className="flex items-center justify-between text-sm">
                             <TooltipProvider>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
