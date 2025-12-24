@@ -19,7 +19,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
-import { FileIcon } from '@/components/resources/file-icon';
+import { FileIcon } from '@/components/ui/file-icon';
 import { formatDistanceToNow, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
@@ -63,8 +63,8 @@ export const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDele
     onSelectionChange: (id: string, checked: boolean) => void
 }) => {
     const { user } = useAuth();
-    const canManage = user?.role === 'ADMIN' || user?.role === 'MANAGER';
-    const canModify = canManage || resource.uploaderId === user?.id;
+    const canManage = user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR';
+    const canModify = canManage && (user?.role === 'ADMINISTRATOR' || resource.uploaderId === user?.id);
 
     const isFolder = resource.type === 'FOLDER';
     const isPlaylist = resource.type === 'VIDEO_PLAYLIST';
