@@ -38,6 +38,8 @@ import { Separator } from '@/components/ui/separator';
 import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
 import { MoveResourceModal } from '@/components/resources/move-resource-modal';
 import { useRecentResources } from '@/hooks/use-recent-resources';
+import { ResourceEmptyState } from '@/components/resources/resource-empty-state';
+import { QuickActionsFAB } from '@/components/resources/quick-actions-fab';
 
 
 // --- MAIN PAGE COMPONENT ---
@@ -497,11 +499,11 @@ export default function ResourcesPage() {
                         ) : (
                             <div className="space-y-8">
                                 {Object.keys(groupedResources).length === 0 ? (
-                                    <EmptyState
-                                        icon={FolderOpen}
-                                        title={debouncedSearchTerm ? "No se encontraron resultados" : "Esta carpeta está vacía"}
-                                        description={debouncedSearchTerm ? "Intenta con otros filtros de búsqueda." : "Sube un archivo o crea una nueva carpeta para empezar."}
-                                        imageUrl={settings?.emptyStateResourcesUrl}
+                                    <ResourceEmptyState
+                                        view={resourceView}
+                                        canManage={canManage}
+                                        onCreateFolder={() => setIsFolderEditorOpen(true)}
+                                        onUploadFile={() => setIsUploaderOpen(true)}
                                     />
                                 ) : (
                                     Object.entries(groupedResources).map(([category, { folders, files }]) => (
@@ -618,6 +620,14 @@ export default function ResourcesPage() {
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
+
+                {/* Quick Actions FAB */}
+                <QuickActionsFAB
+                    canManage={canManage}
+                    onCreateFolder={() => setIsFolderEditorOpen(true)}
+                    onUploadFile={() => setIsUploaderOpen(true)}
+                    onCreatePlaylist={() => setIsPlaylistCreatorOpen(true)}
+                />
             </div>
         </DndContext >
     );
