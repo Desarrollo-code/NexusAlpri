@@ -1,0 +1,22 @@
+# Dependencias (lo más pesado)
+node_modules/
+.next/
+.cache/
+
+# Base de datos y Prisma (si no necesitas ayuda con el esquema ahora)
+prisma/
+supabase/
+
+# Archivos de build y logs
+dist/
+build/
+*.log
+tsc_output.txt
+
+# Multimedia pesada
+public/
+
+# Git y configuración de entorno
+.git/
+.env
+.env.example
