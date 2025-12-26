@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { useTitle } from '@/contexts/title-context';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Move, Trash2, FolderOpen, Filter, ChevronRight, Pin, ListVideo, FileText, Image as ImageIcon, Video as VideoIcon, FileQuestion, Archive as ZipIcon, PlusCircle, Edit, ArrowUpDown, FolderInput, Clock } from 'lucide-react';
+import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Move, Trash2, FolderOpen, Filter, ChevronRight, Pin, ListVideo, FileText, Image as ImageIcon, Video as VideoIcon, FileQuestion, Archive as ZipIcon, PlusCircle, Edit, ArrowUpDown, FolderInput, Clock, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { ResourceListItem } from '@/components/resources/resource-list-item';
 import { DndContext, type DragEndEvent, MouseSensor, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
@@ -90,6 +90,7 @@ export default function ResourcesPage() {
     const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
     const [previewingResource, setPreviewingResource] = useState<AppResourceType | null>(null);
+    const [isSidebarVisible, setIsSidebarVisible] = useState(true);
 
     const { setNodeRef: setRootDroppableRef, isOver: isOverRoot } = useDroppable({ id: 'root' });
 
@@ -361,21 +362,61 @@ export default function ResourcesPage() {
 
     return (
         <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
-            <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-8 items-start">
+            <div className={cn(
+                "grid transition-all duration-300 items-start",
+                isSidebarVisible ? "grid-cols-1 md:grid-cols-[240px_1fr] gap-8" : "grid-cols-1 gap-0"
+            )}>
                 {/* Sidebar Navigation */}
-                <div className="hidden md:block sticky top-6">
-                    <div className="pb-4 mb-4 border-b">
-                        <h2 className="font-semibold text-lg px-2">Carpetas</h2>
-                        <p className="text-sm text-muted-foreground px-2">Navega por tu biblioteca</p>
-                    </div>
-                    <FolderTree
-                        currentFolderId={currentFolderId}
-                        onNavigate={(folder) => handleNavigateFolder(folder)}
-                    />
-                </div>
+                <AnimatePresence mode="wait">
+                    {isSidebarVisible ? (
+                        <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            transition={{ duration: 0.2 }}
+                            className="hidden md:block sticky top-6 overflow-hidden"
+                        >
+                            <div className="pb-4 mb-4 border-b flex items-center justify-between gap-2">
+                                <div className="min-w-0">
+                                    <h2 className="font-semibold text-lg px-2 truncate">Carpetas</h2>
+                                    <p className="text-sm text-muted-foreground px-2 truncate">Navega por tu biblioteca</p>
+                                </div>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setIsSidebarVisible(false)}
+                                    className="h-8 w-8 shrink-0 hover:bg-muted"
+                                    title="Contraer panel lateral"
+                                >
+                                    <PanelLeftClose className="h-4 w-4 text-muted-foreground" />
+                                </Button>
+                            </div>
+                            <FolderTree
+                                currentFolderId={currentFolderId}
+                                onNavigate={(folder) => handleNavigateFolder(folder)}
+                            />
+                        </motion.div>
+                    ) : (
+                        <div className="hidden md:block sticky top-6 w-0">
+                            {/* Visual marker or empty space for transition */}
+                        </div>
+                    )}
+                </AnimatePresence>
 
-                {/* Main Content Area */}
-                <div className="space-y-6 min-w-0">
+                <div className="space-y-6 min-w-0 relative">
+                    {!isSidebarVisible && (
+                        <div className="hidden md:block absolute -left-6 top-0 h-full w-4 z-20 group/sidebar-trigger">
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => setIsSidebarVisible(true)}
+                                className="absolute left-0 top-0 h-8 w-8 rounded-full shadow-md bg-background border-primary/20 hover:bg-primary/5 hover:scale-110 transition-transform"
+                                title="Expandir panel lateral"
+                            >
+                                <PanelLeftOpen className="h-4 w-4 text-primary" />
+                            </Button>
+                        </div>
+                    )}
                     <p className="text-muted-foreground">Gestiona y comparte documentos importantes, guías y materiales de formación para toda la organización.</p>
 
                     {/* View Selector */}

@@ -74,9 +74,10 @@ export function DonutChart({ title, data, config, id }: { title: string, data: a
       transition={{ duration: 0.5 }}
       className="h-full"
     >
-      <Card className="h-full bg-white/40 dark:bg-black/40 backdrop-blur-xl border-white/20 dark:border-white/10 overflow-hidden group hover:shadow-2xl transition-all duration-300" id={id}>
+      <Card className="h-full bg-white/60 dark:bg-black/60 backdrop-blur-xl border-primary/20 hover:border-primary/40 transition-all duration-300 overflow-hidden group hover:shadow-2xl" id={id}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-semibold flex items-center gap-2 group-hover:text-primary transition-colors">
+          <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary" />
             {title}
           </CardTitle>
         </CardHeader>
