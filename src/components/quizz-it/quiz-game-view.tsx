@@ -8,6 +8,8 @@ import { ResultScreenTemplate } from './templates/result-screen-template';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import { FlipCardTemplate } from './templates/flip-card-template';
+import { MatchingTemplate } from './templates/matching-template';
+import { FillBlanksTemplate } from './templates/fill-blanks-template';
 
 interface QuizGameViewProps {
   form: AppForm;
@@ -26,26 +28,26 @@ export function QuizGameView({ form, isEditorPreview = false, activeQuestionInde
   const currentQuestionIndex = controlledIndex ?? internalQuestionIndex;
 
   const questions: AppQuestion[] = (form.fields || []).filter(f => f.type === 'SINGLE_CHOICE' || f.type === 'MULTIPLE_CHOICE').map(f => ({
-      ...f,
-      text: f.label,
+    ...f,
+    text: f.label,
   })) as AppQuestion[];
 
   const currentQuestion = questions[currentQuestionIndex];
 
   const handleAnswerSubmit = useCallback((isCorrect: boolean, answerData: any) => {
     if (isEditorPreview) {
-         setTimeout(() => {
-            if (controlledIndex === undefined) { // Solo auto-avanza si no es controlado externamente
-              if (currentQuestionIndex < questions.length - 1) {
-                setInternalQuestionIndex(prev => prev + 1);
-              } else {
-                setGameState('finished');
-              }
-            }
-         }, 2000);
-         return;
+      setTimeout(() => {
+        if (controlledIndex === undefined) { // Solo auto-avanza si no es controlado externamente
+          if (currentQuestionIndex < questions.length - 1) {
+            setInternalQuestionIndex(prev => prev + 1);
+          } else {
+            setGameState('finished');
+          }
+        }
+      }, 2000);
+      return;
     }
-    
+
     if (isCorrect) {
       setScore(prev => prev + 1);
     }
@@ -59,50 +61,54 @@ export function QuizGameView({ form, isEditorPreview = false, activeQuestionInde
       }
     }, 2000);
   }, [currentQuestionIndex, questions.length, currentQuestion?.id, isEditorPreview, controlledIndex]);
-  
+
   const handleTimeUp = useCallback(() => {
     handleAnswerSubmit(false, { answer: null, timedOut: true });
     if (!isEditorPreview) {
-       toast({ title: "¡Tiempo!", description: "Se acabó el tiempo para esta pregunta.", variant: "destructive" });
+      toast({ title: "¡Tiempo!", description: "Se acabó el tiempo para esta pregunta.", variant: "destructive" });
     }
   }, [handleAnswerSubmit, toast, isEditorPreview]);
 
 
   const renderQuestionTemplate = () => {
     if (!currentQuestion) return <div className="text-center">Fin del Quiz</div>;
-    
+
     switch (currentQuestion.template) {
-        case 'flip_card':
-            return <FlipCardTemplate question={currentQuestion} onAnswer={handleAnswerSubmit}/>;
-        case 'image':
-        case 'true_false':
-        case 'image_options':
-        case 'default':
-        default:
-             return (
-                <MultipleChoiceTemplate
-                  key={currentQuestion.id}
-                  question={currentQuestion}
-                  onSubmit={handleAnswerSubmit}
-                  onTimeUp={handleTimeUp}
-                  questionNumber={currentQuestionIndex + 1}
-                  totalQuestions={questions.length}
-                  template={currentQuestion.template}
-                  timerStyle={form.timerStyle}
-                />
-            );
+      case 'flip_card':
+        return <FlipCardTemplate question={currentQuestion} onAnswer={handleAnswerSubmit} />;
+      case 'matching':
+        return <MatchingTemplate question={currentQuestion} onAnswer={handleAnswerSubmit} />;
+      case 'fill_blanks':
+        return <FillBlanksTemplate question={currentQuestion} onAnswer={handleAnswerSubmit} />;
+      case 'image':
+      case 'true_false':
+      case 'image_options':
+      case 'default':
+      default:
+        return (
+          <MultipleChoiceTemplate
+            key={currentQuestion.id}
+            question={currentQuestion}
+            onSubmit={handleAnswerSubmit}
+            onTimeUp={handleTimeUp}
+            questionNumber={currentQuestionIndex + 1}
+            totalQuestions={questions.length}
+            template={currentQuestion.template}
+            timerStyle={form.timerStyle}
+          />
+        );
     }
   };
-  
+
   const handleRestart = () => {
     setGameState('playing');
     setInternalQuestionIndex(0);
     setScore(0);
     setAnswers([]);
   }
-  
-   if (isEditorPreview) {
-      return renderQuestionTemplate();
+
+  if (isEditorPreview) {
+    return renderQuestionTemplate();
   }
 
 
@@ -128,7 +134,7 @@ export function QuizGameView({ form, isEditorPreview = false, activeQuestionInde
             transition={{ duration: 0.7, ease: 'easeOut' }}
             className="w-full max-w-4xl"
           >
-             <ResultScreenTemplate
+            <ResultScreenTemplate
               score={score}
               totalQuestions={questions.length}
               formTitle={form.title}

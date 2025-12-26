@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, XCircle, Replace, Pencil, Eye, MoreVertical, Archive, Crop, Copy, FilePlus2, ChevronDown, BookOpenText, Video, FileText, Lightbulb, File as FileGenericIcon, BarChart3, Star, Layers3, SaveIcon, Sparkles, Award, Check, Calendar as CalendarIcon, Info, Users, BookOpen } from 'lucide-react';
+import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, XCircle, Replace, Pencil, Eye, MoreVertical, Archive, Crop, Copy, FilePlus2, ChevronDown, BookOpenText, Video, FileText, Lightbulb, File as FileGenericIcon, BarChart3, Star, Layers3, SaveIcon, Sparkles, Award, Check, Calendar as CalendarIcon, Info, Users, BookOpen, Settings2, Layout, Sliders, Globe } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
@@ -52,10 +52,13 @@ import { CourseAssignmentModal } from '@/components/course-assignment-modal';
 import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
 import type { DateRange } from 'react-day-picker';
 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { motion, AnimatePresence } from 'framer-motion';
+
 // === TIPOS E INTERFACES ===
 interface ApiTemplate extends LessonTemplate {
-  templateBlocks: TemplateBlock[];
-  creator: { name: string | null } | null;
+    templateBlocks: TemplateBlock[];
+    creator: { name: string | null } | null;
 }
 
 interface LocalInstructor {
@@ -73,66 +76,97 @@ const generateUniqueId = (prefix: string): string => {
 };
 
 
-const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdate: (field: keyof AppModule, value: any) => void; onAddLesson: (type: 'blank' | 'template') => void; onLessonUpdate: (lessonIndex: number, field: keyof AppLesson, value: any) => void; onLessonDelete: (lessonIndex: number) => void; onSaveLessonAsTemplate: (lessonIndex: number) => void; onAddBlock: (lessonIndex: number, type: LessonType) => void; onBlockUpdate: (lessonIndex: number, blockIndex: number, field: string, value: any) => void; onBlockDelete: (lessonIndex: number, blockIndex: number) => void; onEditQuiz: (quiz: AppQuiz) => void; isSaving: boolean; onDelete: () => void; moduleIndex: number, provided: DraggableProvided }>(
+const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdate: (field: keyof AppModule, value: any) => void; onAddLesson: (type: 'blank' | 'template') => void; onLessonUpdate: (lessonIndex: number, field: keyof AppLesson, value: any) => void; onLessonDelete: (lessonIndex: number) => void; onSaveLessonAsTemplate: (lessonIndex: number) => void; onAddBlock: (lessonIndex: number, type: LessonType) => void; onBlockUpdate: (lessonIndex: number, blockIndex: number, field: string, value: any) => void; onBlockDelete: (lessonIndex: number, blockIndex: number) => void; onEditQuiz: (quiz: AppQuiz) => void; isSaving: boolean; onDelete: () => void; moduleIndex: number, provided: any }>(
     ({ module, moduleIndex, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onSaveLessonAsTemplate, onAddBlock, onBlockUpdate, onBlockDelete, onEditQuiz, isSaving, onDelete, provided }, ref) => {
         return (
-            <div ref={ref} {...provided.draggableProps}>
-                <Accordion type="single" collapsible className="w-full bg-muted/30 rounded-lg border" defaultValue={`item-${module.id}`}>
+            <motion.div
+                ref={ref}
+                {...provided.draggableProps}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: moduleIndex * 0.05 }}
+            >
+                <Accordion type="single" collapsible className="w-full bg-card/30 backdrop-blur-md rounded-2xl border border-primary/10 shadow-sm overflow-hidden" defaultValue={`item-${module.id}`}>
                     <AccordionItem value={`item-${module.id}`} className="border-0">
-                         <div className="flex items-center px-4 py-2" {...provided.dragHandleProps}>
-                             <AccordionTrigger className="flex-grow hover:no-underline p-0">
-                                <div className="flex items-center gap-2 w-full">
-                                    <GripVertical className="h-5 w-5 text-muted-foreground" />
-                                    <Input value={module.title} onChange={e => onUpdate('title', e.target.value)} className="text-base font-semibold" disabled={isSaving} />
+                        <div className="flex items-center px-4 py-3 bg-primary/5">
+                            <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing p-1 hover:bg-primary/10 rounded-lg transition-colors mr-2">
+                                <GripVertical className="h-5 w-5 text-muted-foreground" />
+                            </div>
+                            <AccordionTrigger className="flex-grow hover:no-underline p-0 flex items-center gap-3">
+                                <div className="bg-primary/10 p-2 rounded-xl">
+                                    <Layers3 className="h-4 w-4 text-primary" />
                                 </div>
+                                <Input
+                                    value={module.title}
+                                    onChange={e => onUpdate('title', e.target.value)}
+                                    className="text-lg font-bold bg-transparent border-0 focus-visible:ring-0 p-0 h-auto"
+                                    placeholder="Nombre del Módulo"
+                                    onClick={(e) => e.stopPropagation()}
+                                    disabled={isSaving}
+                                />
                             </AccordionTrigger>
-                             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive ml-2 shrink-0" onClick={(e) => { e.stopPropagation(); onDelete(); }} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
+                            <div className="flex items-center gap-1 ml-2">
+                                <Badge variant="secondary" className="bg-background/50 backdrop-blur-sm border-primary/10 text-[10px] hidden sm:flex">
+                                    {module.lessons.length} Lecciones
+                                </Badge>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10 rounded-full" onClick={(e) => { e.stopPropagation(); onDelete(); }} disabled={isSaving}>
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
-                        <AccordionContent className="p-4 pt-0 border-t">
+                        <AccordionContent className="p-4 pt-4 border-t border-primary/5">
                             <Droppable droppableId={module.id} type="LESSONS">
                                 {(provided) => (
-                                    <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
-                                        {module.lessons.map((lesson, lessonIndex) => (
-                                            <Draggable key={lesson.id} draggableId={lesson.id} index={lessonIndex}>
-                                                {(provided) => (
-                                                    <LessonItem
-                                                        lesson={lesson}
-                                                        onDelete={() => onLessonDelete(lessonIndex)}
-                                                        onUpdate={(field, value) => onLessonUpdate(lessonIndex, field, value)}
-                                                        onSaveAsTemplate={() => onSaveLessonAsTemplate(lessonIndex)}
-                                                        onAddBlock={(type) => onAddBlock(lessonIndex, type)}
-                                                        onBlockUpdate={(blockIndex, field, value) => onBlockUpdate(lessonIndex, blockIndex, field, value)}
-                                                        onBlockDelete={(blockIndex) => onBlockDelete(lessonIndex, blockIndex)}
-                                                        onEditQuiz={onEditQuiz}
-                                                        isSaving={isSaving}
-                                                        ref={provided.innerRef}
-                                                        {...provided.draggableProps}
-                                                        {...provided.dragHandleProps}
-                                                    />
-                                                )}
-                                            </Draggable>
-                                        ))}
+                                    <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
+                                        <AnimatePresence>
+                                            {module.lessons.map((lesson, lessonIndex) => (
+                                                <Draggable key={lesson.id} draggableId={lesson.id} index={lessonIndex}>
+                                                    {(provided) => (
+                                                        <LessonItem
+                                                            lesson={lesson}
+                                                            onDelete={() => onLessonDelete(lessonIndex)}
+                                                            onUpdate={(field, value) => onLessonUpdate(lessonIndex, field, value)}
+                                                            onSaveAsTemplate={() => onSaveLessonAsTemplate(lessonIndex)}
+                                                            onAddBlock={(type) => onAddBlock(lessonIndex, type)}
+                                                            onBlockUpdate={(blockIndex, field, value) => onBlockUpdate(lessonIndex, blockIndex, field, value)}
+                                                            onBlockDelete={(blockIndex) => onBlockDelete(lessonIndex, blockIndex)}
+                                                            onEditQuiz={onEditQuiz}
+                                                            isSaving={isSaving}
+                                                            ref={provided.innerRef}
+                                                            {...provided.draggableProps}
+                                                            {...provided.dragHandleProps}
+                                                        />
+                                                    )}
+                                                </Draggable>
+                                            ))}
+                                        </AnimatePresence>
                                         {provided.placeholder}
                                     </div>
                                 )}
                             </Droppable>
-                            <div className="mt-4 flex gap-2">
+                            <div className="mt-6 flex justify-center">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button size="sm" variant="secondary" disabled={isSaving}>
-                                            <PlusCircle className="mr-2 h-4 w-4" />Añadir Lección<ChevronDown className="ml-2 h-4 w-4"/>
+                                        <Button size="sm" variant="outline" disabled={isSaving} className="rounded-2xl border-dashed border-2 px-6 py-5 hover:border-primary hover:bg-primary/5 transition-all text-muted-foreground hover:text-primary font-bold">
+                                            <PlusCircle className="mr-2 h-5 w-5" /> Añadir Lección <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
                                         </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                        <DropdownMenuItem onSelect={() => onAddLesson('blank')}><FilePlus2 className="mr-2 h-4 w-4"/>Lección en Blanco</DropdownMenuItem>
-                                        <DropdownMenuItem onSelect={() => onAddLesson('template')}><Sparkles className="mr-2 h-4 w-4"/>Usar Plantilla</DropdownMenuItem>
+                                    <DropdownMenuContent className="rounded-xl border-primary/10 p-1">
+                                        <DropdownMenuItem onSelect={() => onAddLesson('blank')} className="rounded-lg gap-2">
+                                            <div className="p-1 bg-blue-500/10 rounded-md text-blue-500"><FilePlus2 className="h-4 w-4" /></div>
+                                            Lección en Blanco
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => onAddLesson('template')} className="rounded-lg gap-2">
+                                            <div className="p-1 bg-amber-500/10 rounded-md text-amber-500"><Sparkles className="h-4 w-4" /></div>
+                                            Usar de Plantilla
+                                        </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>
                         </AccordionContent>
                     </AccordionItem>
                 </Accordion>
-            </div>
+            </motion.div>
         )
     }
 );
@@ -142,48 +176,72 @@ ModuleItem.displayName = 'ModuleItem';
 const LessonItem = React.forwardRef<HTMLDivElement, { lesson: AppLesson; onUpdate: (field: keyof AppLesson, value: any) => void; onSaveAsTemplate: () => void; onAddBlock: (type: LessonType) => void; onBlockUpdate: (blockIndex: number, field: string, value: any) => void; onBlockDelete: (blockIndex: number) => void; onEditQuiz: (quiz: AppQuiz) => void; isSaving: boolean; onDelete: () => void; }>(
     ({ lesson, onUpdate, onSaveAsTemplate, onAddBlock, onBlockUpdate, onBlockDelete, onEditQuiz, isSaving, onDelete, ...rest }, ref) => {
         return (
-            <div ref={ref} {...rest} className="bg-card p-3 rounded-md border">
-                <div className="flex items-center gap-2 mb-3">
-                    <div className="p-1 cursor-grab touch-none"><GripVertical className="h-5 w-5 text-muted-foreground" /></div>
-                    <Input value={lesson.title} onChange={e => onUpdate('title', e.target.value)} placeholder="Título de la lección" disabled={isSaving} />
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                           <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4"/></Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                           <DropdownMenuItem onSelect={onSaveAsTemplate}><SaveIcon className="mr-2 h-4 w-4"/>Guardar como Plantilla</DropdownMenuItem>
-                           <DropdownMenuSeparator/>
-                           <DropdownMenuItem onSelect={onDelete} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4"/>Eliminar Lección</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+            <motion.div
+                ref={ref}
+                {...rest}
+                className="bg-background/40 backdrop-blur-sm p-4 rounded-xl border border-primary/10 shadow-sm transition-all hover:shadow-md group/lesson"
+                layout
+            >
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="p-1 cursor-grab active:cursor-grabbing touch-none hover:bg-muted rounded-lg transition-colors group-hover/lesson:text-primary">
+                        <GripVertical className="h-5 w-5 text-muted-foreground/50 transition-colors" />
+                    </div>
+                    <div className="bg-primary/5 p-1.5 rounded-lg">
+                        <BookOpenText className="h-4 w-4 text-primary" />
+                    </div>
+                    <Input
+                        value={lesson.title}
+                        onChange={e => onUpdate('title', e.target.value)}
+                        placeholder="Título de la lección"
+                        className="bg-transparent border-0 font-semibold focus-visible:ring-0 p-0 h-auto text-base"
+                        disabled={isSaving}
+                    />
+                    <div className="flex items-center gap-1 opacity-0 group-hover/lesson:opacity-100 transition-opacity">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 rounded-full"><MoreVertical className="h-4 w-4" /></Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="rounded-xl border-primary/10 p-1">
+                                <DropdownMenuItem onSelect={onSaveAsTemplate} className="rounded-lg gap-2">
+                                    <SaveIcon className="h-4 w-4 text-primary" /> Guardar como Plantilla
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator className="my-1 bg-primary/5" />
+                                <DropdownMenuItem onSelect={onDelete} className="text-destructive focus:bg-destructive/10 rounded-lg gap-2">
+                                    <Trash2 className="h-4 w-4" /> Eliminar Lección
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                 </div>
-                 <Droppable droppableId={lesson.id} type="BLOCKS">
+
+                <Droppable droppableId={lesson.id} type="BLOCKS">
                     {(provided) => (
-                        <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
+                        <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
                             {lesson.contentBlocks.map((block, blockIndex) => (
                                 <Draggable key={block.id} draggableId={block.id} index={blockIndex}>
-                                     {(provided) => (
+                                    {(provided) => (
                                         <ContentBlockItem
-                                            block={block} 
-                                            onUpdate={(field, value) => onBlockUpdate(blockIndex, field, value)} 
-                                            onDelete={() => onBlockDelete(blockIndex)} 
+                                            block={block}
+                                            onUpdate={(field, value) => onBlockUpdate(blockIndex, field, value)}
+                                            onDelete={() => onBlockDelete(blockIndex)}
                                             onEditQuiz={() => onEditQuiz(block.quiz!)}
                                             isSaving={isSaving}
                                             dragHandleProps={provided.dragHandleProps}
                                             ref={provided.innerRef}
                                             {...provided.draggableProps}
                                         />
-                                     )}
+                                    )}
                                 </Draggable>
                             ))}
                             {provided.placeholder}
                         </div>
                     )}
-                 </Droppable>
-                 <div className="mt-2 border-t pt-2">
-                     <BlockTypeSelector onSelect={onAddBlock} />
-                 </div>
-            </div>
+                </Droppable>
+
+                <div className="mt-4 pt-4 border-t border-primary/5">
+                    <BlockTypeSelector onSelect={onAddBlock} />
+                </div>
+            </motion.div>
         );
     }
 );
@@ -206,14 +264,14 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
             if (!file) return;
 
             if (file.type.startsWith('image/')) setLocalPreview(URL.createObjectURL(file));
-            
+
             setIsFileUploading(true);
             setFileUploadProgress(0);
-            
+
             try {
                 const result = await uploadWithProgress('/api/upload/lesson-file', file, setFileUploadProgress);
                 onUpdate('content', result.url);
-                toast({ title: 'Archivo Subido', description: `El archivo ${file.name} se ha subido correctamente.`});
+                toast({ title: 'Archivo Subido', description: `El archivo ${file.name} se ha subido correctamente.` });
             } catch (err) {
                 toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
                 if (localPreview) URL.revokeObjectURL(localPreview);
@@ -224,8 +282,13 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
         };
 
         const renderBlockContent = () => {
-            if (block.type === 'TEXT') return <RichTextEditor value={block.content || ''} onChange={value => onUpdate('content', value)} placeholder="Escribe aquí el contenido o pega un enlace externo..." disabled={isSaving} />;
-            if (block.type === 'VIDEO') return <Input value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="URL del video de YouTube" disabled={isSaving} />;
+            if (block.type === 'TEXT') return <RichTextEditor value={block.content || ''} onChange={value => onUpdate('content', value)} placeholder="Escribe aquí el contenido o pega un enlace externo..." className="rounded-xl overflow-hidden border-primary/5" disabled={isSaving} />;
+            if (block.type === 'VIDEO') return (
+                <div className="relative">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-primary opacity-50"><Video className="h-4 w-4" /></div>
+                    <Input value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="URL del video de YouTube" className="pl-10 h-10 rounded-xl bg-background/50 border-primary/10" disabled={isSaving} />
+                </div>
+            );
             if (block.type === 'FILE') {
                 const displayUrl = localPreview || block.content;
                 const isImage = displayUrl?.match(/\.(jpeg|jpg|gif|png|webp)$/) != null || localPreview?.startsWith('blob:');
@@ -233,28 +296,33 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
                 if (displayUrl && !isFileUploading) {
                     const fileName = block.content?.split('/').pop()?.split('-').slice(2).join('-') || 'Archivo';
                     return (
-                        <div className="flex items-center gap-2 p-2 rounded-md border bg-background min-w-0">
-                            {isImage ? (<div className="w-10 h-10 relative rounded flex-shrink-0"><Image src={displayUrl} alt="Preview" fill className="object-cover" /></div>) : (<FileGenericIcon className="h-5 w-5 text-primary shrink-0" />)}
-                            <span className="text-sm font-medium text-foreground truncate flex-grow min-w-0" title={fileName}>{fileName}</span>
-                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive rounded-full" onClick={() => { onUpdate('content', ''); setLocalPreview(null); }}><XCircle className="h-4 w-4"/></Button>
+                        <div className="flex items-center gap-3 p-3 rounded-xl border border-primary/10 bg-background/50 group/file">
+                            <div className="bg-primary/10 p-2 rounded-lg">
+                                {isImage ? (<div className="w-8 h-8 relative rounded overflow-hidden"><Image src={displayUrl} alt="Preview" fill className="object-cover" /></div>) : (<FileGenericIcon className="h-5 w-5 text-primary" />)}
+                            </div>
+                            <span className="text-sm font-semibold truncate flex-grow" title={fileName}>{fileName}</span>
+                            <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10 rounded-full" onClick={() => { onUpdate('content', ''); setLocalPreview(null); }}><XCircle className="h-4 w-4" /></Button>
                         </div>
                     );
                 }
                 return (
                     <div className="space-y-2">
-                        <UploadArea onFileSelect={handleFileSelect} disabled={isSaving || isFileUploading} />
-                        {isFileUploading && <div className="flex items-center gap-2 text-xs text-muted-foreground"><Progress value={fileUploadProgress} className="w-full h-1.5" /><span>{fileUploadProgress}%</span></div>}
+                        <UploadArea onFileSelect={handleFileSelect} disabled={isSaving || isFileUploading} className="rounded-xl py-8" />
+                        {isFileUploading && <div className="space-y-1.5 px-2"><div className="flex justify-between text-[10px] font-bold text-primary"><span>Subiendo...</span><span>{fileUploadProgress}%</span></div><Progress value={fileUploadProgress} className="h-1.5 rounded-full" /></div>}
                     </div>
                 );
             }
             if (block.type === 'QUIZ') return (
-                 <div className="flex flex-col gap-2 w-full">
-                    <Input value={block.quiz?.title || ''} onChange={e => onUpdate('quiz', { ...block.quiz, title: e.target.value })} placeholder="Título del Quiz" disabled={isSaving} />
-                     <div className="p-4 border rounded-lg bg-background">
-                         <QuizGameView form={{...block.quiz, fields: block.quiz.questions}} isEditorPreview={true} />
-                     </div>
-                     <Button type="button" variant="outline" size="sm" className="self-start" onClick={onEditQuiz}>
-                        <Pencil className="mr-2 h-4 w-4" /> Editar Preguntas
+                <div className="flex flex-col gap-3 w-full animate-in fade-in slide-in-from-bottom-2">
+                    <div className="relative">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-primary opacity-50"><Pencil className="h-4 w-4" /></div>
+                        <Input value={block.quiz?.title || ''} onChange={e => onUpdate('quiz', { ...block.quiz, title: e.target.value })} placeholder="Título del Quiz" className="pl-10 h-11 font-bold rounded-xl border-primary/20 bg-primary/5" disabled={isSaving} />
+                    </div>
+                    <div className="p-1 border border-primary/10 rounded-2xl bg-background/30 backdrop-blur-sm overflow-hidden shadow-inner">
+                        <QuizGameView form={{ ...block.quiz, fields: block.quiz.questions }} isEditorPreview={true} />
+                    </div>
+                    <Button type="button" variant="outline" size="sm" className="self-start rounded-full px-6 font-bold border-primary/20 hover:bg-primary/10 hover:text-primary transition-all shadow-sm" onClick={onEditQuiz}>
+                        <Pencil className="mr-2 h-4 w-4" /> Configurar Preguntas
                     </Button>
                 </div>
             );
@@ -262,13 +330,18 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
         };
 
         return (
-            <div ref={ref} {...rest} className="flex items-start gap-2 bg-muted/50 p-2 rounded">
-                <div {...dragHandleProps} className="p-1 cursor-grab touch-none mt-2">
-                    <GripVertical className="h-5 w-5 text-muted-foreground" />
+            <motion.div
+                ref={ref}
+                {...rest}
+                className="flex items-start gap-2 bg-primary/5 p-2 rounded-2xl group/block border border-transparent hover:border-primary/10 transition-all hover:bg-primary/10"
+                layout
+            >
+                <div {...dragHandleProps} className="p-1 cursor-grab active:cursor-grabbing touch-none mt-2 opacity-0 group-hover/block:opacity-100 transition-opacity">
+                    <GripVertical className="h-5 w-5 text-muted-foreground/50" />
                 </div>
-                <div className="flex-grow min-w-0">{renderBlockContent()}</div>
-                <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive shrink-0" onClick={onDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
-            </div>
+                <div className="flex-grow min-w-0 py-1">{renderBlockContent()}</div>
+                <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive opacity-0 group-hover/block:opacity-100 hover:bg-destructive/10 rounded-full transition-all mt-2" onClick={onDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
+            </motion.div>
         );
     }
 );
@@ -286,9 +359,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isDirty, setIsDirty] = useState(false);
-    
+
     const [itemToDeleteDetails, setItemToDeleteDetails] = useState<any>(null);
-    
+
     const [isUploadingImage, setIsUploadingImage] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [localCoverImagePreview, setLocalCoverImagePreview] = useState<string | null>(null);
@@ -299,9 +372,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const [activeModuleIndexForTemplate, setActiveModuleIndexForTemplate] = useState<number | null>(null);
 
     const [lessonToSaveAsTemplate, setLessonToSaveAsTemplate] = useState<AppLesson | null>(null);
-    
+
     const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
-    
+
     const [quizToEdit, setQuizToEdit] = useState<{ quiz: AppQuiz; onSave: (updatedQuiz: AppQuiz) => void } | null>(null);
 
 
@@ -344,13 +417,13 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                 const courseData: AppCourse = await response.json();
                 setCourse(courseData);
             } catch (err) {
-                 toast({ title: "Error", description: "No se pudo cargar el curso para editar.", variant: "destructive" });
-                 router.push('/manage-courses');
+                toast({ title: "Error", description: "No se pudo cargar el curso para editar.", variant: "destructive" });
+                router.push('/manage-courses');
             } finally {
-                 setIsLoading(false);
+                setIsLoading(false);
             }
         };
-        
+
         const fetchTemplates = async () => {
             try {
                 const res = await fetch('/api/templates');
@@ -376,11 +449,11 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             fetchAllCoursesForPrereq();
         }
     }, [courseId, user, router, toast, setPageTitle]);
-    
-     const handleSaveCourse = useCallback(async () => {
+
+    const handleSaveCourse = useCallback(async () => {
         if (!course) return;
         setIsSaving(true);
-        
+
         const payload = { ...course };
         (payload.modules || []).forEach((mod, mIdx) => {
             mod.order = mIdx;
@@ -391,7 +464,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                 });
             });
         });
-        
+
         try {
             const endpoint = courseId === 'new' ? '/api/courses' : `/api/courses/${courseId}`;
             const method = courseId === 'new' ? 'POST' : 'PUT';
@@ -404,16 +477,16 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             if (!response.ok) throw new Error((await response.json()).message || 'Error al guardar el curso.');
 
             const savedCourse = await response.json();
-            
+
             toast({ title: "Curso Guardado", description: "La información del curso se ha guardado correctamente." });
-            
-            setCourse(savedCourse); 
-            setIsDirty(false); 
-            
+
+            setCourse(savedCourse);
+            setIsDirty(false);
+
             if (courseId === 'new') {
                 router.replace(`/manage-courses/${savedCourse.id}/edit`, { scroll: false });
             }
-            
+
             return savedCourse;
 
         } catch (error: any) {
@@ -427,20 +500,20 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
     const handleMandatorySwitchChange = async (checked: boolean) => {
         if (!course) return;
-        
+
         updateCourseField('isMandatory', checked);
-        
+
         if (checked) {
             const savedCourse = await handleSaveCourse();
             if (savedCourse) {
-                 setTimeout(() => setIsAssignmentModalOpen(true), 100);
+                setTimeout(() => setIsAssignmentModalOpen(true), 100);
             }
         }
     };
-    
+
     useEffect(() => {
         const EditorActions = () => (
-             <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
                 <Button asChild variant="ghost" className="text-primary-foreground hover:bg-black/20" size="sm">
                     <Link href={`/courses/${courseId}`} target="_blank">
                         <Eye className="mr-2 h-4 w-4" /> Vista Previa
@@ -481,21 +554,21 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             return prev;
         });
     };
-    
+
     const updateModuleField = (moduleIndex: number, field: keyof AppModule, value: any) => {
         handleStateUpdate(prev => {
             prev.modules[moduleIndex][field] = value;
             return prev;
         });
     };
-    
+
     const updateLessonField = (moduleIndex: number, lessonIndex: number, field: keyof AppLesson, value: any) => {
         handleStateUpdate(prev => {
             prev.modules[moduleIndex].lessons[lessonIndex][field] = value;
             return prev;
         });
     };
-    
+
     const updateBlockField = (moduleIndex: number, lessonIndex: number, blockIndex: number, field: string, value: any) => {
         handleStateUpdate(prev => {
             prev.modules[moduleIndex].lessons[lessonIndex].contentBlocks[blockIndex][field] = value;
@@ -519,7 +592,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             });
             setQuizToEdit(null);
         };
-        
+
         setQuizToEdit({ quiz: quizToEdit, onSave: handleSave });
     };
 
@@ -536,7 +609,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             return prev;
         });
     };
-    
+
     const handleAddLessonAction = (moduleIndex: number, type: 'blank' | 'template') => {
         if (type === 'blank') {
             handleAddLesson(moduleIndex);
@@ -545,7 +618,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             setShowTemplateModal(true);
         }
     };
-    
+
     const handleAddLesson = useCallback((moduleIndex: number, template?: ApiTemplate) => {
         handleStateUpdate(prev => {
             let newBlocks: ContentBlock[] = [];
@@ -571,7 +644,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                 order: (prev.modules?.[moduleIndex]?.lessons || []).length,
                 contentBlocks: newBlocks,
             };
-            
+
             if (!prev.modules[moduleIndex].lessons) prev.modules[moduleIndex].lessons = [];
             prev.modules[moduleIndex].lessons.push(newLesson);
             return prev;
@@ -579,18 +652,18 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         setShowTemplateModal(false);
         setActiveModuleIndexForTemplate(null);
     }, [handleStateUpdate]);
-    
-     const handleAddBlock = useCallback((moduleIndex: number, lessonIndex: number, type: LessonType) => {
+
+    const handleAddBlock = useCallback((moduleIndex: number, lessonIndex: number, type: LessonType) => {
         handleStateUpdate(prev => {
             const newBlock: ContentBlock = {
                 id: generateUniqueId('block'),
                 type: type,
                 content: '',
                 order: prev.modules[moduleIndex].lessons[lessonIndex].contentBlocks.length,
-                quiz: type === 'QUIZ' ? { 
-                    id: generateUniqueId('quiz'), 
-                    title: 'Nuevo Quiz', 
-                    description: '', 
+                quiz: type === 'QUIZ' ? {
+                    id: generateUniqueId('quiz'),
+                    title: 'Nuevo Quiz',
+                    description: '',
                     questions: [],
                     maxAttempts: null,
                     remedialContent: null,
@@ -605,7 +678,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     }, [handleStateUpdate]);
 
     const handleRemoveModule = (moduleIndex: number) => {
-         setItemToDeleteDetails({
+        setItemToDeleteDetails({
             name: course?.modules?.[moduleIndex]?.title,
             onDelete: () => handleStateUpdate(prev => {
                 prev.modules.splice(moduleIndex, 1);
@@ -615,7 +688,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     };
 
     const handleRemoveLesson = (moduleIndex: number, lessonIndex: number) => {
-         setItemToDeleteDetails({
+        setItemToDeleteDetails({
             name: course?.modules?.[moduleIndex]?.lessons?.[lessonIndex]?.title,
             onDelete: () => {
                 handleStateUpdate(prev => {
@@ -625,7 +698,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             }
         })
     };
-    
+
     const handleRemoveBlock = (moduleIndex: number, lessonIndex: number, blockIndex: number) => {
         handleStateUpdate(prev => {
             prev.modules[moduleIndex].lessons[lessonIndex].contentBlocks.splice(blockIndex, 1);
@@ -642,19 +715,19 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                 const [reorderedItem] = prev.modules.splice(source.index, 1);
                 prev.modules.splice(destination.index, 0, reorderedItem);
             } else if (type === 'LESSONS') {
-                 const sourceModule = prev.modules.find(m => m.id === source.droppableId);
-                 const destModule = prev.modules.find(m => m.id === destination.droppableId);
-                 if (!sourceModule || !destModule) return prev;
+                const sourceModule = prev.modules.find(m => m.id === source.droppableId);
+                const destModule = prev.modules.find(m => m.id === destination.droppableId);
+                if (!sourceModule || !destModule) return prev;
 
-                 const [movedItem] = sourceModule.lessons.splice(source.index, 1);
-                 destModule.lessons.splice(destination.index, 0, movedItem);
+                const [movedItem] = sourceModule.lessons.splice(source.index, 1);
+                destModule.lessons.splice(destination.index, 0, movedItem);
             } else if (type === 'BLOCKS') {
-                 const sourceLesson = prev.modules.flatMap(m => m.lessons).find(l => l.id === source.droppableId);
-                 const destLesson = prev.modules.flatMap(m => m.lessons).find(l => l.id === destination.droppableId);
-                 if (!sourceLesson || !destLesson) return prev;
+                const sourceLesson = prev.modules.flatMap(m => m.lessons).find(l => l.id === source.droppableId);
+                const destLesson = prev.modules.flatMap(m => m.lessons).find(l => l.id === destination.droppableId);
+                if (!sourceLesson || !destLesson) return prev;
 
-                 const [movedItem] = sourceLesson.contentBlocks.splice(source.index, 1);
-                 destLesson.contentBlocks.splice(destination.index, 0, movedItem);
+                const [movedItem] = sourceLesson.contentBlocks.splice(source.index, 1);
+                destLesson.contentBlocks.splice(destination.index, 0, movedItem);
             }
             return prev;
         });
@@ -672,16 +745,16 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             try {
                 const result = await uploadWithProgress('/api/upload/course-image', file, setUploadProgress);
                 updateCourseField('imageUrl', result.url);
-                toast({ title: 'Imagen Subida', description: 'La imagen de portada se ha actualizado.'});
+                toast({ title: 'Imagen Subida', description: 'La imagen de portada se ha actualizado.' });
             } catch (err) {
-                 toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
-                 setLocalCoverImagePreview(null);
+                toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
+                setLocalCoverImagePreview(null);
             } finally {
                 setIsUploadingImage(false);
             }
         }
     };
-    
+
     useEffect(() => {
         return () => {
             if (localCoverImagePreview) {
@@ -689,7 +762,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             }
         };
     }, [localCoverImagePreview]);
-    
+
     const handleSaveTemplate = async (templateName: string, templateDescription: string) => {
         if (!lessonToSaveAsTemplate) return;
         try {
@@ -699,12 +772,12 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                 body: JSON.stringify({ name: templateName, description: templateDescription, lessonId: lessonToSaveAsTemplate.id })
             });
             if (!res.ok) throw new Error('No se pudo guardar la plantilla');
-            toast({ title: 'Plantilla Guardada', description: `La plantilla "${templateName}" se ha guardado correctamente.`});
+            toast({ title: 'Plantilla Guardada', description: `La plantilla "${templateName}" se ha guardado correctamente.` });
             const newTemplate = await res.json();
             setTemplates(prev => [...prev, newTemplate]);
             setLessonToSaveAsTemplate(null);
         } catch (err) {
-            toast({ title: "Error", description: (err as Error).message, variant: "destructive"});
+            toast({ title: "Error", description: (err as Error).message, variant: "destructive" });
         }
     };
 
@@ -718,108 +791,283 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     }
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-5 gap-6 items-start">
-            {/* Columna Izquierda */}
-            <div className="lg:col-span-1 xl:col-span-1 space-y-6 lg:sticky lg:top-24">
-                <Card>
-                    <CardHeader><CardTitle className="text-lg">Información Básica</CardTitle></CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-1.5"><Label htmlFor="title">Título del Curso</Label><Input id="title" value={course.title} onChange={e => updateCourseField('title', e.target.value)} placeholder="Título atractivo" disabled={isSaving} /></div>
-                        <div className="space-y-1.5"><Label htmlFor="description">Descripción <span className="text-muted-foreground">(Opcional)</span></Label><Textarea id="description" value={course.description} onChange={e => updateCourseField('description', e.target.value)} placeholder="Describe el contenido y objetivos." rows={4} disabled={isSaving} /></div>
-                        <div className="space-y-1.5"><Label htmlFor="category">Categoría</Label><Select value={course.category || ''} onValueChange={v => updateCourseField('category', v)} disabled={isSaving}><SelectTrigger id="category"><SelectValue placeholder="Selecciona" /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).sort().map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select></div>
-                    </CardContent>
-                </Card>
-                 <Card>
-                    <CardHeader><CardTitle className="text-lg">Imagen de Portada</CardTitle></CardHeader>
-                    <CardContent>
-                        <div className="w-full relative aspect-video rounded-md border bg-muted/20 flex items-center justify-center">
-                            {isUploadingImage && <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/80 z-20"><Loader2 className="h-8 w-8 animate-spin text-primary"/><Progress value={uploadProgress} className="w-3/4 h-2"/></div>}
-                            {(localCoverImagePreview || course.imageUrl) && !isUploadingImage ? (
-                                <>
-                                    <Image src={localCoverImagePreview || course.imageUrl!} alt="Imagen del Curso" fill className="object-cover p-1" />
-                                    <div className="absolute top-2 right-2 z-10 flex gap-1">
-                                        <Button type="button" variant="secondary" size="icon" className="h-8 w-8" onClick={() => document.getElementById('cover-image-upload')?.click()} disabled={isSaving || isUploadingImage}><Replace className="h-4 w-4"/></Button>
-                                        <Button type="button" variant="destructive" size="icon" className="h-8 w-8" onClick={() => { updateCourseField('imageUrl', null); setLocalCoverImagePreview(null); }} disabled={isSaving || isUploadingImage}><XCircle className="h-4 w-4"/></Button>
+        <div className="max-w-6xl mx-auto">
+            <Tabs defaultValue="general" className="w-full space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card/60 backdrop-blur-md p-2 rounded-2xl border border-primary/10 sticky top-24 z-30 shadow-lg">
+                    <TabsList className="bg-transparent border-0 gap-2 h-auto p-0 flex-wrap md:flex-nowrap">
+                        <TabsTrigger value="general" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-6 py-2.5 rounded-xl transition-all font-medium flex items-center gap-2">
+                            <Layout className="h-4 w-4" /> Información General
+                        </TabsTrigger>
+                        <TabsTrigger value="structure" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-6 py-2.5 rounded-xl transition-all font-medium flex items-center gap-2">
+                            <Layers3 className="h-4 w-4" /> Estructura
+                        </TabsTrigger>
+                        <TabsTrigger value="advanced" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-6 py-2.5 rounded-xl transition-all font-medium flex items-center gap-2">
+                            <Settings2 className="h-4 w-4" /> Avanzado
+                        </TabsTrigger>
+                    </TabsList>
+
+                    <div className="flex items-center gap-2 px-2">
+                        <Button asChild variant="ghost" className="hover:bg-primary/10 rounded-xl" size="sm">
+                            <Link href={`/courses/${courseId}`} target="_blank">
+                                <Eye className="mr-2 h-4 w-4" /> Vista Previa
+                            </Link>
+                        </Button>
+                        <Button onClick={handleSaveCourse} disabled={isSaving || !isDirty} size="sm" className="bg-primary hover:bg-primary/90 text-white rounded-xl shadow-md">
+                            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                            {isSaving ? 'Guardando...' : 'Guardar'}
+                        </Button>
+                    </div>
+                </div>
+
+                <AnimatePresence mode="wait">
+                    <TabsContent value="general" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+                        >
+                            <div className="lg:col-span-2 space-y-6">
+                                <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl overflow-hidden rounded-3xl">
+                                    <div className="h-2 bg-gradient-to-r from-primary/40 via-primary to-primary/40" />
+                                    <CardHeader className="pb-2">
+                                        <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                                            <Layout className="h-6 w-6 text-primary" /> Detalles Principales
+                                        </CardTitle>
+                                        <CardDescription>Información esencial que verán los estudiantes.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-6">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="title" className="text-sm font-semibold text-muted-foreground ml-1">Título del Curso</Label>
+                                            <Input id="title" value={course.title} onChange={e => updateCourseField('title', e.target.value)} placeholder="Ej: Master en React 2024" className="text-xl font-bold h-14 rounded-2xl border-primary/10 focus:ring-primary/20 bg-background/50" disabled={isSaving} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="description" className="text-sm font-semibold text-muted-foreground ml-1">Descripción Detallada</Label>
+                                            <div className="rounded-2xl border border-primary/10 overflow-hidden bg-background/50">
+                                                <RichTextEditor value={course.description || ''} onChange={v => updateCourseField('description', v)} placeholder="Describe qué aprenderán los estudiantes..." className="min-h-[200px]" />
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+
+                            <div className="space-y-6">
+                                <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-3xl overflow-hidden">
+                                    <CardHeader className="pb-2">
+                                        <CardTitle className="text-lg font-bold flex items-center gap-2">
+                                            <ImagePlus className="h-5 w-5 text-primary" /> Portada del Curso
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="w-full relative aspect-video rounded-2xl border-2 border-dashed border-primary/20 bg-muted/20 flex items-center justify-center overflow-hidden transition-all hover:bg-muted/30">
+                                            {isUploadingImage && <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/80 z-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /><Progress value={uploadProgress} className="w-3/4 h-2 rounded-full" /></div>}
+                                            {(localCoverImagePreview || course.imageUrl) && !isUploadingImage ? (
+                                                <div className="relative w-full h-full group">
+                                                    <Image src={localCoverImagePreview || course.imageUrl!} alt="Imagen del Curso" fill className="object-cover" />
+                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                        <Button type="button" variant="secondary" size="icon" className="h-10 w-10 rounded-full" onClick={() => document.getElementById('cover-image-upload')?.click()} disabled={isSaving || isUploadingImage} title="Cambiar imagen"><Replace className="h-5 w-5" /></Button>
+                                                        <Button type="button" variant="destructive" size="icon" className="h-10 w-10 rounded-full" onClick={() => { updateCourseField('imageUrl', null); setLocalCoverImagePreview(null); }} disabled={isSaving || isUploadingImage} title="Eliminar imagen"><XCircle className="h-5 w-5" /></Button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <UploadArea onFileSelect={(file) => { if (file) handleFileChange({ target: { files: [file] } } as any) }} inputId="cover-image-upload" disabled={isSaving || isUploadingImage} className="w-full h-full">
+                                                    <div className="text-center text-muted-foreground p-4">
+                                                        <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                                            <ImagePlus className="h-6 w-6 text-primary" />
+                                                        </div>
+                                                        <p className="text-sm font-bold">Subir Imagen</p>
+                                                        <p className="text-xs opacity-70">Recomendado: 1920x1080 (16:9)</p>
+                                                    </div>
+                                                </UploadArea>
+                                            )}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-3xl">
+                                    <CardHeader className="pb-2">
+                                        <CardTitle className="text-lg font-bold flex items-center gap-2">
+                                            <Sliders className="h-5 w-5 text-primary" /> Clasificación
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="category" className="text-sm font-semibold text-muted-foreground ml-1">Categoría</Label>
+                                            <Select value={course.category || ''} onValueChange={v => updateCourseField('category', v)} disabled={isSaving}>
+                                                <SelectTrigger id="category" className="h-12 rounded-xl border-primary/10 bg-background/50">
+                                                    <SelectValue placeholder="Selecciona..." />
+                                                </SelectTrigger>
+                                                <SelectContent className="rounded-xl border-primary/10">
+                                                    {(settings?.resourceCategories || []).sort().map(cat => (<SelectItem key={cat} value={cat} className="rounded-lg">{cat}</SelectItem>))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </motion.div>
+                    </TabsContent>
+
+                    <TabsContent value="structure" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.98 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.98 }}
+                            className="space-y-6"
+                        >
+                            <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-3xl overflow-hidden min-h-[500px]">
+                                <CardHeader className="border-b border-primary/5 bg-primary/5">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                                                <Layers3 className="h-6 w-6 text-primary" /> Estructura del Curso
+                                            </CardTitle>
+                                            <CardDescription>Organiza tus módulos y lecciones mediante arrastrar y soltar.</CardDescription>
+                                        </div>
+                                        <Button type="button" onClick={handleAddModule} disabled={isSaving} className="bg-primary hover:bg-primary/90 text-white rounded-2xl px-6 font-bold shadow-lg shadow-primary/20 transition-all hover:scale-105">
+                                            <PlusCircle className="mr-2 h-5 w-5" /> Añadir Módulo
+                                        </Button>
                                     </div>
-                                </>
-                            ) : (
-                                <UploadArea onFileSelect={(file) => { if(file) handleFileChange({ target: { files: [file] } } as any) }} inputId="cover-image-upload" disabled={isSaving || isUploadingImage}>
-                                    <div className="text-center text-muted-foreground"><ImagePlus className="mx-auto h-8 w-8 mb-2" /><p className="text-sm font-semibold">Subir imagen</p><p className="text-xs">Recomendado: 16:9</p></div>
-                                </UploadArea>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-            
-            {/* Columna Central */}
-            <div className="lg:col-span-2 xl:col-span-3 space-y-6">
-                <Card>
-                    <CardHeader><CardTitle className="text-lg">Contenido y Estructura</CardTitle></CardHeader>
-                    <CardContent className="space-y-4">
-                        <DragDropContext onDragEnd={onDragEnd}>
-                            <Droppable droppableId="course-modules" type="MODULES">
-                                {(provided) => (
-                                    <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
-                                        {course.modules.map((moduleItem, moduleIndex) => (
-                                            <Draggable key={moduleItem.id} draggableId={moduleItem.id} index={moduleIndex}>
-                                                {(provided) => (
-                                                    <ModuleItem
-                                                        module={moduleItem} moduleIndex={moduleIndex}
-                                                        onDelete={() => handleRemoveModule(moduleIndex)}
-                                                        onUpdate={(field, value) => updateModuleField(moduleIndex, field, value)}
-                                                        onAddLesson={(type) => handleAddLessonAction(moduleIndex, type)}
-                                                        onLessonUpdate={(lessonIndex, field, value) => updateLessonField(moduleIndex, lessonIndex, field, value)}
-                                                        onLessonDelete={(lessonIndex) => handleRemoveLesson(moduleIndex, lessonIndex)}
-                                                        onSaveLessonAsTemplate={(lessonIndex) => setLessonToSaveAsTemplate(course.modules[moduleIndex].lessons[lessonIndex])}
-                                                        onAddBlock={(lessonIndex, type) => handleAddBlock(moduleIndex, lessonIndex, type)}
-                                                        onBlockUpdate={(lessonIndex, blockIndex, field, value) => updateBlockField(moduleIndex, lessonIndex, blockIndex, field, value)}
-                                                        onBlockDelete={(lessonIndex, blockIndex) => handleRemoveBlock(moduleIndex, lessonIndex, blockIndex)}
-                                                        onEditQuiz={handleEditQuiz}
-                                                        isSaving={isSaving} provided={provided} ref={provided.innerRef}
-                                                    />
-                                                )}
-                                            </Draggable>
-                                        ))}
-                                        {provided.placeholder}
+                                </CardHeader>
+                                <CardContent className="p-6">
+                                    <DragDropContext onDragEnd={onDragEnd}>
+                                        <Droppable droppableId="course-modules" type="MODULES">
+                                            {(provided) => (
+                                                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-6">
+                                                    {course.modules.map((moduleItem, moduleIndex) => (
+                                                        <Draggable key={moduleItem.id} draggableId={moduleItem.id} index={moduleIndex}>
+                                                            {(provided) => (
+                                                                <ModuleItem
+                                                                    module={moduleItem} moduleIndex={moduleIndex}
+                                                                    onDelete={() => handleRemoveModule(moduleIndex)}
+                                                                    onUpdate={(field, value) => updateModuleField(moduleIndex, field, value)}
+                                                                    onAddLesson={(type) => handleAddLessonAction(moduleIndex, type)}
+                                                                    onLessonUpdate={(lessonIndex, field, value) => updateLessonField(moduleIndex, lessonIndex, field, value)}
+                                                                    onLessonDelete={(lessonIndex) => handleRemoveLesson(moduleIndex, lessonIndex)}
+                                                                    onSaveLessonAsTemplate={(lessonIndex) => setLessonToSaveAsTemplate(course.modules[moduleIndex].lessons[lessonIndex])}
+                                                                    onAddBlock={(lessonIndex, type) => handleAddBlock(moduleIndex, lessonIndex, type)}
+                                                                    onBlockUpdate={(lessonIndex, blockIndex, field, value) => updateBlockField(moduleIndex, lessonIndex, blockIndex, field, value)}
+                                                                    onBlockDelete={(lessonIndex, blockIndex) => handleRemoveBlock(moduleIndex, lessonIndex, blockIndex)}
+                                                                    onEditQuiz={handleEditQuiz}
+                                                                    isSaving={isSaving} provided={provided} ref={provided.innerRef}
+                                                                />
+                                                            )}
+                                                        </Draggable>
+                                                    ))}
+                                                    {provided.placeholder}
+                                                </div>
+                                            )}
+                                        </Droppable>
+                                    </DragDropContext>
+                                    {(course.modules || []).length === 0 && (
+                                        <div className="flex flex-col items-center justify-center py-20 text-center opacity-40">
+                                            <div className="bg-primary/10 p-6 rounded-full mb-4">
+                                                <Layers3 className="h-12 w-12 text-primary" />
+                                            </div>
+                                            <p className="text-xl font-bold">Tu curso está vacío</p>
+                                            <p className="max-w-xs text-sm">Empieza añadiendo tu primer módulo para organizar el aprendizaje.</p>
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    </TabsContent>
+
+                    <TabsContent value="advanced" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+                        <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                        >
+                            <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-3xl overflow-hidden">
+                                <CardHeader className="bg-primary/5">
+                                    <CardTitle className="text-xl font-bold flex items-center gap-2">
+                                        <Globe className="h-5 w-5 text-primary" /> Publicación y Acceso
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-6 space-y-6">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="status" className="font-semibold text-sm ml-1 text-muted-foreground">Estado del Curso</Label>
+                                        <Select value={course.status} onValueChange={v => updateCourseField('status', v as CourseStatus)} disabled={isSaving}>
+                                            <SelectTrigger id="status" className="h-12 rounded-xl border-primary/10 bg-background/50">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded-xl border-primary/10">
+                                                <SelectItem value="DRAFT" className="rounded-lg">Borrador (Solo tú)</SelectItem>
+                                                <SelectItem value="PUBLISHED" className="rounded-lg">Publicado (Visible)</SelectItem>
+                                                <SelectItem value="ARCHIVED" className="rounded-lg">Archivado (Oculto)</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </div>
-                                )}
-                            </Droppable>
-                        </DragDropContext>
-                        {(course.modules || []).length === 0 && <p className="text-center text-muted-foreground py-8">No hay módulos.</p>}
-                         <Button type="button" onClick={handleAddModule} disabled={isSaving} className="mt-4"><PlusCircle className="mr-2 h-4 w-4" /> Añadir Módulo</Button>
-                    </CardContent>
-                </Card>
-            </div>
-            
-            {/* Columna Derecha */}
-            <div className="lg:col-span-1 xl:col-span-1 space-y-6 lg:sticky lg:top-24">
-                <Card>
-                    <CardHeader><CardTitle className="text-lg">Configuración de Publicación</CardTitle></CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-1.5"><Label htmlFor="status">Estado</Label><Select value={course.status} onValueChange={v => updateCourseField('status', v as CourseStatus)} disabled={isSaving}><SelectTrigger id="status"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="DRAFT">Borrador</SelectItem><SelectItem value="PUBLISHED">Publicado</SelectItem><SelectItem value="ARCHIVED">Archivado</SelectItem></SelectContent></Select></div>
-                         <div className="space-y-1.5">
-                            <Label>Vigencia del Curso <span className="text-muted-foreground">(Opcional)</span></Label>
-                            <DateRangePicker
-                              date={{ from: course.startDate ? new Date(course.startDate) : undefined, to: course.endDate ? new Date(course.endDate) : undefined }}
-                              onDateChange={(range) => {
-                                  updateCourseField('startDate', range?.from?.toISOString());
-                                  updateCourseField('endDate', range?.to?.toISOString());
-                              }}
-                            />
-                        </div>
-                        <Separator/>
-                        <div className="space-y-1.5"><Label htmlFor="prerequisite">Prerrequisito <span className="text-muted-foreground">(Opcional)</span></Label><Select value={course.prerequisiteId || 'none'} onValueChange={v => updateCourseField('prerequisiteId', v === 'none' ? null : v)} disabled={isSaving}><SelectTrigger id="prerequisite"><SelectValue placeholder="Ninguno"/></SelectTrigger><SelectContent><SelectItem value="none">Ninguno</SelectItem><Separator/>{allCoursesForPrereq.map(c => (<SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>))}</SelectContent></Select></div>
-                        <div className="space-y-1.5"><Label htmlFor="certificateTemplate">Plantilla de Certificado <span className="text-muted-foreground">(Opcional)</span></Label><Select value={course.certificateTemplateId || 'none'} onValueChange={v => updateCourseField('certificateTemplateId', v === 'none' ? null : v)} disabled={isSaving}><SelectTrigger id="certificateTemplate"><SelectValue placeholder="Sin certificado"/></SelectTrigger><SelectContent><SelectItem value="none">Sin certificado</SelectItem><Separator/>{certificateTemplates.map(t => (<SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>))}</SelectContent></Select></div>
-                        <Separator/>
-                        <div className="flex items-center justify-between space-x-2 p-2.5 border rounded-lg">
-                           <Label htmlFor="isMandatory" className="flex flex-col space-y-1"><span>Curso Obligatorio</span><span className="font-normal leading-snug text-muted-foreground text-xs">Permite asignar este curso a usuarios.</span></Label>
-                           <Switch id="isMandatory" checked={course.isMandatory} onCheckedChange={handleMandatorySwitchChange} disabled={isSaving}/>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-            
+
+                                    <div className="space-y-4 pt-2">
+                                        <Label className="font-semibold text-sm ml-1 text-muted-foreground">Disponibilidad Temporal</Label>
+                                        <div className="p-1 rounded-xl border border-primary/5 bg-background/30">
+                                            <DateRangePicker
+                                                date={{ from: course.startDate ? new Date(course.startDate) : undefined, to: course.endDate ? new Date(course.endDate) : undefined }}
+                                                onDateChange={(range) => {
+                                                    updateCourseField('startDate', range?.from?.toISOString());
+                                                    updateCourseField('endDate', range?.to?.toISOString());
+                                                }}
+                                            />
+                                        </div>
+                                        <p className="text-[10px] text-muted-foreground pl-1">Deja vacío para acceso ilimitado.</p>
+                                    </div>
+
+                                    <div className="flex items-center justify-between gap-4 p-4 border border-primary/10 rounded-2xl bg-primary/5">
+                                        <div className="space-y-0.5">
+                                            <Label htmlFor="isMandatory" className="text-base font-bold">Curso Asignable</Label>
+                                            <p className="text-xs text-muted-foreground">Este curso se puede asignar de forma obligatoria.</p>
+                                        </div>
+                                        <Switch id="isMandatory" checked={course.isMandatory} onCheckedChange={handleMandatorySwitchChange} disabled={isSaving} className="data-[state=checked]:bg-primary" />
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-3xl overflow-hidden">
+                                <CardHeader className="bg-primary/5">
+                                    <CardTitle className="text-xl font-bold flex items-center gap-2">
+                                        <Award className="h-5 w-5 text-primary" /> Requisitos y Recompensas
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-6 space-y-6">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="prerequisite" className="font-semibold text-sm ml-1 text-muted-foreground">Curso Prerrequisito</Label>
+                                        <Select value={course.prerequisiteId || 'none'} onValueChange={v => updateCourseField('prerequisiteId', v === 'none' ? null : v)} disabled={isSaving}>
+                                            <SelectTrigger id="prerequisite" className="h-12 rounded-xl border-primary/10 bg-background/50">
+                                                <SelectValue placeholder="Ninguno" />
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded-xl border-primary/10 max-h-[300px]">
+                                                <SelectItem value="none" className="rounded-lg">Sin prerrequisito</SelectItem>
+                                                <DropdownMenuSeparator className="my-1 bg-primary/5" />
+                                                {allCoursesForPrereq.map(c => (<SelectItem key={c.id} value={c.id} className="rounded-lg">{c.title}</SelectItem>))}
+                                            </SelectContent>
+                                        </Select>
+                                        <p className="text-[10px] text-muted-foreground pl-1">El alumno debe finalizar el curso seleccionado antes de iniciar este.</p>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="certificateTemplate" className="font-semibold text-sm ml-1 text-muted-foreground">Plantilla de Certificado</Label>
+                                        <Select value={course.certificateTemplateId || 'none'} onValueChange={v => updateCourseField('certificateTemplateId', v === 'none' ? null : v)} disabled={isSaving}>
+                                            <SelectTrigger id="certificateTemplate" className="h-12 rounded-xl border-primary/10 bg-background/50">
+                                                <SelectValue placeholder="Sin certificado" />
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded-xl border-primary/10">
+                                                <SelectItem value="none" className="rounded-lg">No otorgar certificado</SelectItem>
+                                                <DropdownMenuSeparator className="my-1 bg-primary/5" />
+                                                {certificateTemplates.map(t => (<SelectItem key={t.id} value={t.id} className="rounded-lg">{t.name}</SelectItem>))}
+                                            </SelectContent>
+                                        </Select>
+                                        <p className="text-[10px] text-muted-foreground pl-1">Se generará automáticamente al completar el 100% del curso.</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    </TabsContent>
+                </AnimatePresence>
+            </Tabs>
+
             {/* Modales */}
             <AlertDialog open={!!itemToDeleteDetails} onOpenChange={(isOpen) => !isOpen && setItemToDeleteDetails(null)}>
                 <AlertDialogContent>
@@ -827,7 +1075,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                     <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => { itemToDeleteDetails.onDelete(); setItemToDeleteDetails(null) }} className={buttonVariants({ variant: "destructive" })}>Sí, eliminar</AlertDialogAction></AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-            <TemplateSelectorModal 
+            <TemplateSelectorModal
                 isOpen={showTemplateModal}
                 templates={templates}
                 onClose={() => { setShowTemplateModal(false); setActiveModuleIndexForTemplate(null); }}
@@ -837,14 +1085,14 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                     }
                 }}
             />
-             {lessonToSaveAsTemplate && (
-                <SaveTemplateModal 
+            {lessonToSaveAsTemplate && (
+                <SaveTemplateModal
                     isOpen={!!lessonToSaveAsTemplate}
                     onClose={() => setLessonToSaveAsTemplate(null)}
                     onSave={handleSaveTemplate}
                 />
             )}
-             {isAssignmentModalOpen && (
+            {isAssignmentModalOpen && (
                 <CourseAssignmentModal
                     isOpen={isAssignmentModalOpen}
                     onClose={() => setIsAssignmentModalOpen(false)}
@@ -853,9 +1101,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                 />
             )}
             {quizToEdit && (
-                <QuizEditorModal 
-                    isOpen={!!quizToEdit} 
-                    onClose={() => setQuizToEdit(null)} 
+                <QuizEditorModal
+                    isOpen={!!quizToEdit}
+                    onClose={() => setQuizToEdit(null)}
                     quiz={quizToEdit.quiz}
                     onSave={quizToEdit.onSave}
                 />
@@ -865,17 +1113,21 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 }
 
 const BlockTypeSelector = ({ onSelect }) => (
-    <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm"><PlusCircle className="mr-2 h-4 w-4"/>Añadir Contenido</Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-             <DropdownMenuItem onSelect={() => onSelect('TEXT')}><FileText className="mr-2 h-4 w-4"/>Texto/Enlace</DropdownMenuItem>
-             <DropdownMenuItem onSelect={() => onSelect('VIDEO')}><Video className="mr-2 h-4 w-4"/>Video (YouTube)</DropdownMenuItem>
-             <DropdownMenuItem onSelect={() => onSelect('FILE')}><FileGenericIcon className="mr-2 h-4 w-4"/>Archivo (PDF, Img)</DropdownMenuItem>
-             <DropdownMenuItem onSelect={() => onSelect('QUIZ')}><Pencil className="mr-2 h-4 w-4"/>Quiz Interactivo</DropdownMenuItem>
-        </DropdownMenuContent>
-    </DropdownMenu>
+    <div className="flex flex-wrap items-center gap-2">
+        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mr-2">Añadir Contenido:</span>
+        <Button variant="outline" size="sm" onClick={() => onSelect('TEXT')} className="rounded-full border-primary/20 hover:bg-blue-500/10 hover:text-blue-500 hover:border-blue-500/30 transition-all font-semibold gap-2">
+            <FileText className="h-3.5 w-3.5" /> Texto
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => onSelect('VIDEO')} className="rounded-full border-primary/20 hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/30 transition-all font-semibold gap-2">
+            <Video className="h-3.5 w-3.5" /> Video
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => onSelect('FILE')} className="rounded-full border-primary/20 hover:bg-amber-500/10 hover:text-amber-500 hover:border-amber-500/30 transition-all font-semibold gap-2">
+            <FileGenericIcon className="h-3.5 w-3.5" /> Archivo
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => onSelect('QUIZ')} className="rounded-full border-primary/20 hover:bg-purple-500/10 hover:text-purple-500 hover:border-purple-500/30 transition-all font-semibold gap-2">
+            <Pencil className="h-3.5 w-3.5" /> Quiz
+        </Button>
+    </div>
 );
 
 // Modal para seleccionar una plantilla
@@ -894,7 +1146,7 @@ const TemplateSelectorModal = ({ isOpen, onClose, templates, onSelect }) => {
                                 <p className="font-semibold">{template.name}</p>
                                 <p className="text-sm text-muted-foreground">{template.description}</p>
                                 <div className="text-xs text-muted-foreground mt-2 flex items-center gap-2">
-                                   {template.templateBlocks.map((b,i) => <Badge key={i} variant="secondary">{b.type}</Badge>)}
+                                    {template.templateBlocks.map((b, i) => <Badge key={i} variant="secondary">{b.type}</Badge>)}
                                 </div>
                             </button>
                         ))}
@@ -929,17 +1181,17 @@ const SaveTemplateModal = ({ isOpen, onClose, onSave }) => {
                     <div className="py-4 space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="template-name">Nombre de la Plantilla</Label>
-                            <Input id="template-name" value={name} onChange={e => setName(e.target.value)} required disabled={isSaving}/>
+                            <Input id="template-name" value={name} onChange={e => setName(e.target.value)} required disabled={isSaving} />
                         </div>
-                         <div className="space-y-2">
+                        <div className="space-y-2">
                             <Label htmlFor="template-description">Descripción</Label>
-                            <Textarea id="template-description" value={description} onChange={e => setDescription(e.target.value)} disabled={isSaving}/>
+                            <Textarea id="template-description" value={description} onChange={e => setDescription(e.target.value)} disabled={isSaving} />
                         </div>
                     </div>
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
                         <Button type="submit" disabled={isSaving || !name.trim()}>
-                            {isSaving ? <Loader2 className="animate-spin mr-2 h-4 w-4"/> : <SaveIcon className="mr-2 h-4 w-4"/>}
+                            {isSaving ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : <SaveIcon className="mr-2 h-4 w-4" />}
                             Guardar Plantilla
                         </Button>
                     </DialogFooter>

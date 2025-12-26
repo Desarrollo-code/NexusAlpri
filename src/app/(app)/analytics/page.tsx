@@ -7,15 +7,15 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { 
-  AlertTriangle,
-  HelpCircle,
-  Calendar as CalendarIcon,
-  TrendingUp,
-  Award,
-  TrendingDown,
-  BookOpenCheck,
-  UserPlus,
+import {
+    AlertTriangle,
+    HelpCircle,
+    Calendar as CalendarIcon,
+    TrendingUp,
+    Award,
+    TrendingDown,
+    BookOpenCheck,
+    UserPlus,
 } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -37,14 +37,14 @@ import { Calendar } from '@/components/ui/calendar';
 import { MetricCard } from '@/components/analytics/metric-card';
 import { DonutChart } from '@/components/analytics/donut-chart';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
-import { IconBookMarked, IconFileText, IconFolderDynamic, IconGraduationCap, IconUsersTotal, IconPercent, IconMegaphone, IconLibrary, IconFolderYellow } from '@/components/icons';
+import { IconBookMarked, IconFileText, IconFolderDynamic, IconGraduationCap, IconUsersTotal, IconPercent, IconMegaphone, IconLibrary, IconFolderYellow, IconCalendarFilter } from '@/components/icons';
 
 
 const formatDateTick = (tick: string): string => {
-  const date = parseISO(tick);
-  if (!isValid(date)) return tick;
-  // Muestra solo el número del día.
-  return format(date, "d", { locale: es });
+    const date = parseISO(tick);
+    if (!isValid(date)) return tick;
+    // Muestra solo el número del día.
+    return format(date, "d", { locale: es });
 };
 
 const formatDateTooltip = (dateString: string) => {
@@ -57,10 +57,10 @@ const formatDateTooltip = (dateString: string) => {
 };
 
 const userRolesChartConfig = {
-  count: { label: "Usuarios" },
-  STUDENT: { label: "Estudiantes", color: "hsl(var(--chart-1))" },
-  INSTRUCTOR: { label: "Instructores", color: "hsl(var(--chart-2))" },
-  ADMINISTRATOR: { label: "Administradores", color: "hsl(var(--chart-3))" },
+    count: { label: "Usuarios" },
+    STUDENT: { label: "Estudiantes", color: "hsl(var(--chart-1))" },
+    INSTRUCTOR: { label: "Instructores", color: "hsl(var(--chart-2))" },
+    ADMINISTRATOR: { label: "Administradores", color: "hsl(var(--chart-3))" },
 } satisfies ChartConfig;
 
 const courseStatusChartConfig = {
@@ -77,16 +77,16 @@ function RankingList({ title, items, icon: Icon, unit = '' }: { title: string, i
 
     return (
         <div className="space-y-3">
-            <h3 className="font-semibold text-foreground flex items-center gap-2"><Icon className="text-primary h-4 w-4"/>{title}</h3>
+            <h3 className="font-semibold text-foreground flex items-center gap-2"><Icon className="text-primary h-4 w-4" />{title}</h3>
             <div className="space-y-2">
                 {items.map(item => (
                     <div key={item.id} className="flex items-center gap-3 text-sm">
                         <Avatar className="h-8 w-8">
                             <AvatarImage src={item.imageUrl || item.avatar || undefined} />
-                            <AvatarFallback><Identicon userId={item.id}/></AvatarFallback>
+                            <AvatarFallback><Identicon userId={item.id} /></AvatarFallback>
                         </Avatar>
                         <div className="flex-grow min-w-0">
-                           <p className="truncate font-medium">{item.title || item.name}</p>
+                            <p className="truncate font-medium">{item.title || item.name}</p>
                         </div>
                         <div className="font-bold text-primary shrink-0">{item.value?.toLocaleString() ?? 0}{unit}</div>
                     </div>
@@ -107,7 +107,7 @@ function AdminAnalyticsPage() {
     const isMobile = useIsMobile();
     const { startTour, forceStartTour } = useTour();
 
-     const [date, setDate] = React.useState<DateRange | undefined>({
+    const [date, setDate] = React.useState<DateRange | undefined>({
         from: startOfDay(subDays(new Date(), 29)),
         to: startOfDay(new Date()),
     });
@@ -153,7 +153,7 @@ function AdminAnalyticsPage() {
             fill: `hsl(var(--chart-${(['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'].indexOf(role) + 1)}))`,
         })).filter(item => item.count > 0);
     }, [stats?.usersByRole]);
-    
+
     const courseStatusChartData = useMemo(() => {
         if (!stats?.coursesByStatus) return [];
         return ['DRAFT', 'PUBLISHED', 'ARCHIVED'].map(status => ({
@@ -167,7 +167,7 @@ function AdminAnalyticsPage() {
     if (isLoading) {
         return (
             <div className="space-y-8">
-                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-8 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-8 gap-4">
                     {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
                 </div>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -194,161 +194,161 @@ function AdminAnalyticsPage() {
         )
     }
 
-  return (
-    <div className="space-y-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="space-y-1">
-                <h2 className="text-2xl font-semibold">Resumen de la Plataforma</h2>
-                <p className="text-muted-foreground">Métricas clave sobre el rendimiento y uso de NexusAlpri.</p>
-            </div>
-             <div className="flex items-center gap-2">
-                 <Popover>
-                    <PopoverTrigger asChild>
-                      <Button id="date" variant="outline" className={cn("w-full justify-start text-left font-normal md:w-[300px]", !date && "text-muted-foreground")}>
-                        <IconCalendarFilter className="mr-2 h-4 w-4" />
-                        {date?.from ? (date.to ? (<>{format(date.from, "LLL dd, y", { locale: es })} - {format(date.to, "LLL dd, y", { locale: es })}</>) : (format(date.from, "LLL dd, y", { locale: es }))) : (<span>Elige una fecha</span>)}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="end">
-                      <Calendar initialFocus mode="range" defaultMonth={date?.from} selected={date} onSelect={setDate} numberOfMonths={2} locale={es}/>
-                    </PopoverContent>
-                  </Popover>
-                 <Button variant="outline" size="sm" onClick={() => forceStartTour('analytics', analyticsTour)}>
-                    <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
-                </Button>
-             </div>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-8 gap-4 mt-4" id="analytics-metric-cards">
-            <MetricCard title="Total Usuarios" value={stats?.totalUsers || 0} icon={IconUsersTotal} index={0}/>
-            <MetricCard title="Total Cursos" value={stats?.totalCourses || 0} icon={IconLibrary} index={1}/>
-            <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={IconGraduationCap} index={2} />
-            <MetricCard title="Modif. Contenido" value={stats?.courseModifications || 0} icon={IconBookMarked} index={3} />
-            <MetricCard title="Recursos" value={stats?.totalResources || 0} icon={IconFolderYellow} index={4}/>
-            <MetricCard title="Anuncios" value={stats?.totalAnnouncements || 0} icon={IconMegaphone} index={5}/>
-            <MetricCard title="Formularios" value={stats?.totalForms || 0} icon={IconFileText} index={6}/>
-            <MetricCard title="Finalización" value={stats?.averageCompletionRate || 0} icon={IconPercent} suffix="%" description="Promedio" index={7}/>
-        </div>
-        
-        <Separator />
-        
+    return (
         <div className="space-y-8">
-            <Card>
-                 <CardHeader>
-                    <CardTitle>Tendencia de Actividad</CardTitle>
-                     <CardDescription>Actividad en el rango de fechas seleccionado.</CardDescription>
-                </CardHeader>
-                <CardContent className="h-80 pr-4">
-                     <ChartContainer config={{ newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-2))" }, newUsers: { label: "Nuevos Usuarios", color: "hsl(var(--chart-1))" }, newEnrollments: { label: "Inscripciones", color: "hsl(var(--chart-3))" }}} className="w-full h-full">
-                        <ResponsiveContainer>
-                           <ComposedChart data={stats?.userRegistrationTrend || []} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                <XAxis dataKey="date" tickLine={false} axisLine={true} tickMargin={10} tickFormatter={formatDateTick} interval="preserveStartEnd" />
-                                <YAxis allowDecimals={false} tickLine={false} axisLine={true} tickMargin={10} width={30}/>
-                                <Tooltip cursor={{ fill: 'hsl(var(--muted))', radius: 4 }} content={<ChartTooltipContent indicator="dot" labelFormatter={formatDateTooltip} />} />
-                                <Legend />
-                                <Bar dataKey="count" name="Usuarios" fill="var(--color-newUsers)" radius={4} data={stats?.userRegistrationTrend || []} />
-                                <Line type="monotone" dataKey="newCourses" name="Cursos" stroke="var(--color-newCourses)" strokeWidth={2} dot={false} data={stats?.contentActivityTrend || []}/>
-                                <Area type="monotone" dataKey="newEnrollments" name="Inscripciones" fill="var(--color-newEnrollments)" stroke="var(--color-newEnrollments)" strokeWidth={2} fillOpacity={0.3} dot={false} data={stats?.contentActivityTrend || []}/>
-                           </ComposedChart>
-                        </ResponsiveContainer>
-                    </ChartContainer>
-                </CardContent>
-            </Card>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="space-y-1">
+                    <h2 className="text-2xl font-semibold">Resumen de la Plataforma</h2>
+                    <p className="text-muted-foreground">Métricas clave sobre el rendimiento y uso de NexusAlpri.</p>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button id="date" variant="outline" className={cn("w-full justify-start text-left font-normal md:w-[300px]", !date && "text-muted-foreground")}>
+                                <IconCalendarFilter className="mr-2 h-4 w-4" />
+                                {date?.from ? (date.to ? (<>{format(date.from, "LLL dd, y", { locale: es })} - {format(date.to, "LLL dd, y", { locale: es })}</>) : (format(date.from, "LLL dd, y", { locale: es }))) : (<span>Elige una fecha</span>)}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="end">
+                            <Calendar initialFocus mode="range" defaultMonth={date?.from} selected={date} onSelect={setDate} numberOfMonths={2} locale={es} />
+                        </PopoverContent>
+                    </Popover>
+                    <Button variant="outline" size="sm" onClick={() => forceStartTour('analytics', analyticsTour)}>
+                        <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+                    </Button>
+                </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-8 gap-4 mt-4" id="analytics-metric-cards">
+                <MetricCard title="Total Usuarios" value={stats?.totalUsers || 0} icon={IconUsersTotal} index={0} />
+                <MetricCard title="Total Cursos" value={stats?.totalCourses || 0} icon={IconLibrary} index={1} />
+                <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={IconGraduationCap} index={2} />
+                <MetricCard title="Modif. Contenido" value={stats?.courseModifications || 0} icon={IconBookMarked} index={3} />
+                <MetricCard title="Recursos" value={stats?.totalResources || 0} icon={IconFolderYellow} index={4} />
+                <MetricCard title="Anuncios" value={stats?.totalAnnouncements || 0} icon={IconMegaphone} index={5} />
+                <MetricCard title="Formularios" value={stats?.totalForms || 0} icon={IconFileText} index={6} />
+                <MetricCard title="Finalización" value={stats?.averageCompletionRate || 0} icon={IconPercent} suffix="%" description="Promedio" index={7} />
+            </div>
 
-             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8" id="analytics-distribution-charts">
-                 <DonutChart title="Distribución de Roles" data={userRolesChartData} config={userRolesChartConfig} />
-                 <DonutChart title="Distribución de Cursos" data={courseStatusChartData} config={courseStatusChartConfig} />
-             </div>
+            <Separator />
+
+            <div className="space-y-8">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Tendencia de Actividad</CardTitle>
+                        <CardDescription>Actividad en el rango de fechas seleccionado.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="h-80 pr-4">
+                        <ChartContainer config={{ newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-2))" }, newUsers: { label: "Nuevos Usuarios", color: "hsl(var(--chart-1))" }, newEnrollments: { label: "Inscripciones", color: "hsl(var(--chart-3))" } }} className="w-full h-full">
+                            <ResponsiveContainer>
+                                <ComposedChart data={stats?.userRegistrationTrend || []} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                    <XAxis dataKey="date" tickLine={false} axisLine={true} tickMargin={10} tickFormatter={formatDateTick} interval="preserveStartEnd" />
+                                    <YAxis allowDecimals={false} tickLine={false} axisLine={true} tickMargin={10} width={30} />
+                                    <Tooltip cursor={{ fill: 'hsl(var(--muted))', radius: 4 }} content={<ChartTooltipContent indicator="dot" labelFormatter={formatDateTooltip} />} />
+                                    <Legend />
+                                    <Bar dataKey="count" name="Usuarios" fill="var(--color-newUsers)" radius={4} data={stats?.userRegistrationTrend || []} />
+                                    <Line type="monotone" dataKey="newCourses" name="Cursos" stroke="var(--color-newCourses)" strokeWidth={2} dot={false} data={stats?.contentActivityTrend || []} />
+                                    <Area type="monotone" dataKey="newEnrollments" name="Inscripciones" fill="var(--color-newEnrollments)" stroke="var(--color-newEnrollments)" strokeWidth={2} fillOpacity={0.3} dot={false} data={stats?.contentActivityTrend || []} />
+                                </ComposedChart>
+                            </ResponsiveContainer>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8" id="analytics-distribution-charts">
+                    <DonutChart title="Distribución de Roles" data={userRolesChartData} config={userRolesChartConfig} />
+                    <DonutChart title="Distribución de Cursos" data={courseStatusChartData} config={courseStatusChartConfig} />
+                </div>
+            </div>
+
+            <Separator />
+            <h2 className="text-2xl font-semibold">Rankings de Rendimiento</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="analytics-course-rankings">
+                <Card>
+                    <CardContent className="pt-6">
+                        <RankingList title="Cursos Más Populares" items={stats?.topCoursesByEnrollment || []} icon={TrendingUp} unit=" insc." />
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-6">
+                        <RankingList title="Cursos con Mejor Finalización" items={stats?.topCoursesByCompletion || []} icon={Award} unit="%" />
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-6">
+                        <RankingList title="Cursos de Oportunidad" items={stats?.lowestCoursesByCompletion || []} icon={TrendingDown} unit="%" />
+                    </CardContent>
+                </Card>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="analytics-user-rankings">
+                <Card>
+                    <CardContent className="pt-6">
+                        <RankingList title="Estudiantes Más Activos" items={stats?.topStudentsByEnrollment || []} icon={IconUsersTotal} unit=" insc." />
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-6">
+                        <RankingList title="Mejores Estudiantes" items={stats?.topStudentsByCompletion || []} icon={BookOpenCheck} unit=" compl." />
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="pt-6">
+                        <RankingList title="Instructores Destacados" items={stats?.topInstructorsByCourses || []} icon={UserPlus} unit=" cursos" />
+                    </CardContent>
+                </Card>
+            </div>
         </div>
-
-        <Separator />
-        <h2 className="text-2xl font-semibold">Rankings de Rendimiento</h2>
-
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="analytics-course-rankings">
-            <Card>
-                <CardContent className="pt-6">
-                    <RankingList title="Cursos Más Populares" items={stats?.topCoursesByEnrollment || []} icon={TrendingUp} unit=" insc." />
-                </CardContent>
-            </Card>
-             <Card>
-                <CardContent className="pt-6">
-                     <RankingList title="Cursos con Mejor Finalización" items={stats?.topCoursesByCompletion || []} icon={Award} unit="%"/>
-                </CardContent>
-            </Card>
-             <Card>
-                <CardContent className="pt-6">
-                     <RankingList title="Cursos de Oportunidad" items={stats?.lowestCoursesByCompletion || []} icon={TrendingDown} unit="%"/>
-                </CardContent>
-            </Card>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="analytics-user-rankings">
-             <Card>
-                <CardContent className="pt-6">
-                     <RankingList title="Estudiantes Más Activos" items={stats?.topStudentsByEnrollment || []} icon={IconUsersTotal} unit=" insc." />
-                </CardContent>
-            </Card>
-             <Card>
-                <CardContent className="pt-6">
-                    <RankingList title="Mejores Estudiantes" items={stats?.topStudentsByCompletion || []} icon={BookOpenCheck} unit=" compl." />
-                </CardContent>
-            </Card>
-             <Card>
-                <CardContent className="pt-6">
-                    <RankingList title="Instructores Destacados" items={stats?.topInstructorsByCourses || []} icon={UserPlus} unit=" cursos" />
-                </CardContent>
-            </Card>
-        </div>
-    </div>
-  );
+    );
 }
 
 export default function AnalyticsPageWrapper() {
-  const { user, isLoading } = useAuth();
-  const { setPageTitle } = useTitle();
+    const { user, isLoading } = useAuth();
+    const { setPageTitle } = useTitle();
 
-  useEffect(() => {
-    setPageTitle('Analíticas');
-  }, [setPageTitle]);
-  
-  if (isLoading) {
-      return (
-         <div className="space-y-8">
-             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-8 gap-4">
-                {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
+    useEffect(() => {
+        setPageTitle('Analíticas');
+    }, [setPageTitle]);
+
+    if (isLoading) {
+        return (
+            <div className="space-y-8">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-8 gap-4">
+                    {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <Skeleton className="h-96 rounded-2xl" />
+                    <Skeleton className="h-96 rounded-2xl" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <Skeleton className="h-[450px] rounded-2xl" />
+                    <Skeleton className="h-[450px] rounded-2xl" />
+                    <Skeleton className="h-[450px] rounded-2xl" />
+                </div>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <Skeleton className="h-96 rounded-2xl" />
-                <Skeleton className="h-96 rounded-2xl" />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Skeleton className="h-[450px] rounded-2xl" />
-                <Skeleton className="h-[450px] rounded-2xl" />
-                <Skeleton className="h-[450px] rounded-2xl" />
-            </div>
+        );
+    }
+
+    if (user?.role === 'ADMINISTRATOR') {
+        return <AdminAnalyticsPage />;
+    }
+
+    return (
+        <div className="flex items-center justify-center h-full">
+            <Card className="w-full max-w-md text-center">
+                <CardHeader>
+                    <CardTitle>Acceso Denegado</CardTitle>
+                    <CardDescription>
+                        Esta página solo está disponible para administradores.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button asChild>
+                        <Link href="/dashboard">Volver al Panel Principal</Link>
+                    </Button>
+                </CardContent>
+            </Card>
         </div>
-      );
-  }
-
-  if (user?.role === 'ADMINISTRATOR') {
-    return <AdminAnalyticsPage />;
-  }
-
-  return (
-    <div className="flex items-center justify-center h-full">
-      <Card className="w-full max-w-md text-center">
-        <CardHeader>
-          <CardTitle>Acceso Denegado</CardTitle>
-          <CardDescription>
-            Esta página solo está disponible para administradores.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button asChild>
-            <Link href="/dashboard">Volver al Panel Principal</Link>
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
-  );
+    );
 }
