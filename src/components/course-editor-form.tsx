@@ -88,25 +88,25 @@ const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdat
             >
                 <Accordion type="single" collapsible className="w-full bg-card/30 backdrop-blur-md rounded-2xl border border-primary/10 shadow-sm overflow-hidden" defaultValue={`item-${module.id}`}>
                     <AccordionItem value={`item-${module.id}`} className="border-0">
-                        <div className="flex items-center px-4 py-3 bg-primary/5">
-                            <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing p-1 hover:bg-primary/10 rounded-lg transition-colors mr-2">
-                                <GripVertical className="h-5 w-5 text-muted-foreground" />
+                        <div className="flex items-center px-6 py-4 bg-primary/5">
+                            <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing p-1.5 hover:bg-primary/10 rounded-lg transition-colors mr-3">
+                                <GripVertical className="h-6 w-6 text-muted-foreground" />
                             </div>
-                            <AccordionTrigger className="flex-grow hover:no-underline p-0 flex items-center gap-3">
-                                <div className="bg-primary/10 p-2 rounded-xl">
-                                    <Layers3 className="h-4 w-4 text-primary" />
+                            <AccordionTrigger className="flex-grow hover:no-underline p-0 flex items-center gap-4">
+                                <div className="bg-primary/10 p-2.5 rounded-xl">
+                                    <Layers3 className="h-5 w-5 text-primary" />
                                 </div>
                                 <Input
                                     value={module.title}
                                     onChange={e => onUpdate('title', e.target.value)}
-                                    className="text-lg font-bold bg-transparent border-0 focus-visible:ring-0 p-0 h-auto"
+                                    className="text-xl font-black bg-transparent border-0 focus-visible:ring-0 p-0 h-auto"
                                     placeholder="Nombre del Módulo"
                                     onClick={(e) => e.stopPropagation()}
                                     disabled={isSaving}
                                 />
                             </AccordionTrigger>
-                            <div className="flex items-center gap-1 ml-2">
-                                <Badge variant="secondary" className="bg-background/50 backdrop-blur-sm border-primary/10 text-[10px] hidden sm:flex">
+                            <div className="flex items-center gap-2 ml-4">
+                                <Badge variant="secondary" className="bg-background/50 backdrop-blur-sm border-primary/10 text-xs px-3 py-1 font-bold hidden sm:flex">
                                     {module.lessons.length} Lecciones
                                 </Badge>
                                 <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10 rounded-full" onClick={(e) => { e.stopPropagation(); onDelete(); }} disabled={isSaving}>
@@ -147,8 +147,8 @@ const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdat
                             <div className="mt-6 flex justify-center">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button size="sm" variant="outline" disabled={isSaving} className="rounded-2xl border-dashed border-2 px-6 py-5 hover:border-primary hover:bg-primary/5 transition-all text-muted-foreground hover:text-primary font-bold">
-                                            <PlusCircle className="mr-2 h-5 w-5" /> Añadir Lección <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
+                                        <Button size="lg" variant="outline" disabled={isSaving} className="rounded-2xl border-dashed border-2 px-10 py-7 hover:border-primary hover:bg-primary/5 transition-all text-muted-foreground hover:text-primary font-black text-lg">
+                                            <PlusCircle className="mr-3 h-6 w-6" /> Añadir Lección <ChevronDown className="ml-3 h-5 w-5 opacity-50" />
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent className="rounded-xl border-primary/10 p-1">
@@ -182,18 +182,18 @@ const LessonItem = React.forwardRef<HTMLDivElement, { lesson: AppLesson; onUpdat
                 className="bg-background/40 backdrop-blur-sm p-4 rounded-xl border border-primary/10 shadow-sm transition-all hover:shadow-md group/lesson"
                 layout
             >
-                <div className="flex items-center gap-3 mb-4">
-                    <div className="p-1 cursor-grab active:cursor-grabbing touch-none hover:bg-muted rounded-lg transition-colors group-hover/lesson:text-primary">
-                        <GripVertical className="h-5 w-5 text-muted-foreground/50 transition-colors" />
+                <div className="flex items-center gap-4 mb-5">
+                    <div className="p-1.5 cursor-grab active:cursor-grabbing touch-none hover:bg-muted rounded-lg transition-colors group-hover/lesson:text-primary">
+                        <GripVertical className="h-6 w-6 text-muted-foreground/50 transition-colors" />
                     </div>
-                    <div className="bg-primary/5 p-1.5 rounded-lg">
-                        <BookOpenText className="h-4 w-4 text-primary" />
+                    <div className="bg-primary/5 p-2 rounded-lg">
+                        <BookOpenText className="h-5 w-5 text-primary" />
                     </div>
                     <Input
                         value={lesson.title}
                         onChange={e => onUpdate('title', e.target.value)}
                         placeholder="Título de la lección"
-                        className="bg-transparent border-0 font-semibold focus-visible:ring-0 p-0 h-auto text-base"
+                        className="bg-transparent border-0 font-bold focus-visible:ring-0 p-0 h-auto text-lg"
                         disabled={isSaving}
                     />
                     <div className="flex items-center gap-1 opacity-0 group-hover/lesson:opacity-100 transition-opacity">
@@ -512,23 +512,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     };
 
     useEffect(() => {
-        const EditorActions = () => (
-            <div className="flex items-center gap-2">
-                <Button asChild variant="ghost" className="text-primary-foreground hover:bg-black/20" size="sm">
-                    <Link href={`/courses/${courseId}`} target="_blank">
-                        <Eye className="mr-2 h-4 w-4" /> Vista Previa
-                    </Link>
-                </Button>
-                <Button onClick={handleSaveCourse} disabled={isSaving || !isDirty} size="sm" className="bg-white/90 text-primary hover:bg-white">
-                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                    {isSaving ? 'Guardando...' : 'Guardar'}
-                </Button>
-            </div>
-        );
-
         if (course) {
             setPageTitle(`Editando: ${course.title}`);
-            setHeaderActions(<EditorActions />);
             setShowBackButton(true);
         }
         return () => {
@@ -536,7 +521,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             setHeaderActions(null);
             setShowBackButton(false);
         }
-    }, [course, isSaving, isDirty, courseId, setPageTitle, setHeaderActions, setShowBackButton, handleSaveCourse]);
+    }, [course, setPageTitle, setHeaderActions, setShowBackButton]);
 
 
     const handleStateUpdate = useCallback((updater: (prev: AppCourse) => AppCourse) => {
@@ -791,341 +776,355 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     }
 
     return (
-        <div className="max-w-6xl mx-auto px-4 pb-20">
-            <Tabs defaultValue="general" className="w-full">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card/80 backdrop-blur-xl p-3 rounded-2xl border border-primary/10 sticky top-20 z-40 shadow-xl mb-8">
-                    <TabsList className="bg-transparent border-0 gap-1 h-auto p-0 flex-wrap md:flex-nowrap">
-                        <TabsTrigger value="general" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-5 py-2 rounded-xl transition-all font-semibold flex items-center gap-2 text-xs sm:text-sm">
-                            <Layout className="h-4 w-4" /> <span className="hidden sm:inline">Información General</span><span className="sm:hidden">General</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="structure" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-5 py-2 rounded-xl transition-all font-semibold flex items-center gap-2 text-xs sm:text-sm">
-                            <Layers3 className="h-4 w-4" /> <span className="hidden sm:inline">Estructura del Curso</span><span className="sm:hidden">Estructura</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="advanced" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-5 py-2 rounded-xl transition-all font-semibold flex items-center gap-2 text-xs sm:text-sm">
-                            <Settings2 className="h-4 w-4" /> <span className="hidden sm:inline">Avanzado</span><span className="sm:hidden">Avanzado</span>
-                        </TabsTrigger>
-                    </TabsList>
+        <div className="min-h-screen bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-primary/5 via-background to-background">
+            <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pb-32 pt-8">
+                <Tabs defaultValue="general" className="w-full">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card/70 backdrop-blur-2xl p-4 rounded-3xl border border-primary/10 sticky top-6 z-40 shadow-2xl shadow-primary/5 mb-12 transition-all">
+                        <TabsList className="bg-transparent border-0 gap-2 h-auto p-0 flex-wrap md:flex-nowrap">
+                            <TabsTrigger value="general" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20 px-6 py-3 rounded-2xl transition-all font-bold flex items-center gap-2 text-sm sm:text-base tracking-tight">
+                                <Layout className="h-5 w-5" /> <span className="hidden sm:inline">Información General</span><span className="sm:hidden">General</span>
+                            </TabsTrigger>
+                            <TabsTrigger value="structure" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20 px-6 py-3 rounded-2xl transition-all font-bold flex items-center gap-2 text-sm sm:text-base tracking-tight">
+                                <Layers3 className="h-5 w-5" /> <span className="hidden sm:inline">Estructura del Curso</span><span className="sm:hidden">Estructura</span>
+                            </TabsTrigger>
+                            <TabsTrigger value="advanced" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20 px-6 py-3 rounded-2xl transition-all font-bold flex items-center gap-2 text-sm sm:text-base tracking-tight">
+                                <Settings2 className="h-5 w-5" /> <span className="hidden sm:inline">Configuración Avanzada</span><span className="sm:hidden">Avanzado</span>
+                            </TabsTrigger>
+                        </TabsList>
 
-                    <div className="flex items-center gap-2 self-end md:self-center">
-                        <Button asChild variant="ghost" className="hover:bg-primary/10 rounded-xl hidden sm:flex" size="sm">
-                            <Link href={`/courses/${courseId}`} target="_blank">
-                                <Eye className="mr-2 h-4 w-4" /> Ver
-                            </Link>
-                        </Button>
-                        <Button onClick={handleSaveCourse} disabled={isSaving || !isDirty} size="sm" className="bg-primary hover:bg-primary/90 text-white rounded-xl shadow-lg px-6 font-bold">
-                            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                            {isSaving ? 'Guardando...' : 'Guardar'}
-                        </Button>
+                        <div className="flex items-center gap-3 self-end md:self-center">
+                            <Button asChild variant="ghost" className="hover:bg-primary/10 rounded-2xl hidden lg:flex font-bold" size="sm">
+                                <Link href={`/courses/${courseId}`} target="_blank">
+                                    <Eye className="mr-2 h-4 w-4" /> Vista Previa
+                                </Link>
+                            </Button>
+                            <Button onClick={handleSaveCourse} disabled={isSaving || !isDirty} size="sm" className="bg-primary hover:bg-primary/90 text-white rounded-2xl shadow-xl shadow-primary/20 px-8 py-6 font-black text-base transition-all hover:scale-105 active:scale-95">
+                                {isSaving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
+                                {isSaving ? 'Guardando...' : 'Guardar'}
+                            </Button>
+                        </div>
                     </div>
-                </div>
 
-                <AnimatePresence mode="wait">
-                    <TabsContent value="general" className="focus-visible:outline-none focus-visible:ring-0">
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            className="grid grid-cols-1 lg:grid-cols-3 gap-6"
-                        >
-                            <div className="lg:col-span-2 space-y-6">
-                                <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl overflow-hidden rounded-3xl">
-                                    <div className="h-2 bg-gradient-to-r from-primary/40 via-primary to-primary/40" />
-                                    <CardHeader className="pb-2">
-                                        <CardTitle className="text-2xl font-bold flex items-center gap-2">
-                                            <Layout className="h-6 w-6 text-primary" /> Detalles Principales
-                                        </CardTitle>
-                                        <CardDescription>Información esencial que verán los estudiantes.</CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="space-y-6">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="title" className="text-sm font-semibold text-muted-foreground ml-1">Título del Curso</Label>
-                                            <Input id="title" value={course.title} onChange={e => updateCourseField('title', e.target.value)} placeholder="Ej: Master en React 2024" className="text-xl font-bold h-14 rounded-2xl border-primary/10 focus:ring-primary/20 bg-background/50" disabled={isSaving} />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="description" className="text-sm font-semibold text-muted-foreground ml-1">Descripción Detallada</Label>
-                                            <div className="rounded-2xl border border-primary/10 overflow-hidden bg-background/50">
-                                                <RichTextEditor value={course.description || ''} onChange={v => updateCourseField('description', v)} placeholder="Describe qué aprenderán los estudiantes..." className="min-h-[200px]" />
+                    <AnimatePresence mode="wait">
+                        <TabsContent value="general" className="focus-visible:outline-none focus-visible:ring-0">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+                            >
+                                <div className="lg:col-span-2 space-y-6">
+                                    <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl overflow-hidden rounded-3xl">
+                                        <div className="h-2 bg-gradient-to-r from-primary/40 via-primary to-primary/40" />
+                                        <CardHeader className="pb-4">
+                                            <CardTitle className="text-3xl font-black flex items-center gap-3">
+                                                <Layout className="h-8 w-8 text-primary" /> Detalles Principales
+                                            </CardTitle>
+                                            <CardDescription className="text-base">Información esencial que verán los estudiantes.</CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="space-y-8">
+                                            <div className="space-y-3">
+                                                <Label htmlFor="title" className="text-[15px] font-bold text-muted-foreground/80 ml-1">Título del Curso</Label>
+                                                <Input id="title" value={course.title} onChange={e => updateCourseField('title', e.target.value)} placeholder="Ej: Master en React 2024" className="text-2xl font-black h-16 rounded-2xl border-primary/10 focus:ring-primary/20 bg-background/50 px-6" disabled={isSaving} />
                                             </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </div>
-
-                            <div className="space-y-6">
-                                <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-3xl overflow-hidden">
-                                    <CardHeader className="pb-2">
-                                        <CardTitle className="text-lg font-bold flex items-center gap-2">
-                                            <ImagePlus className="h-5 w-5 text-primary" /> Portada del Curso
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="w-full relative aspect-video rounded-2xl border-2 border-dashed border-primary/20 bg-muted/20 flex items-center justify-center overflow-hidden transition-all hover:bg-muted/30">
-                                            {isUploadingImage && <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/80 z-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /><Progress value={uploadProgress} className="w-3/4 h-2 rounded-full" /></div>}
-                                            {(localCoverImagePreview || course.imageUrl) && !isUploadingImage ? (
-                                                <div className="relative w-full h-full group">
-                                                    <Image src={localCoverImagePreview || course.imageUrl!} alt="Imagen del Curso" fill className="object-cover" />
-                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                                        <Button type="button" variant="secondary" size="icon" className="h-10 w-10 rounded-full" onClick={() => document.getElementById('cover-image-upload')?.click()} disabled={isSaving || isUploadingImage} title="Cambiar imagen"><Replace className="h-5 w-5" /></Button>
-                                                        <Button type="button" variant="destructive" size="icon" className="h-10 w-10 rounded-full" onClick={() => { updateCourseField('imageUrl', null); setLocalCoverImagePreview(null); }} disabled={isSaving || isUploadingImage} title="Eliminar imagen"><XCircle className="h-5 w-5" /></Button>
-                                                    </div>
+                                            <div className="space-y-3">
+                                                <Label htmlFor="description" className="text-[15px] font-bold text-muted-foreground/80 ml-1">Descripción Detallada</Label>
+                                                <div className="rounded-2xl border border-primary/10 overflow-hidden bg-background/50">
+                                                    <RichTextEditor value={course.description || ''} onChange={v => updateCourseField('description', v)} placeholder="Describe qué aprenderán los estudiantes..." className="min-h-[250px] text-lg" />
                                                 </div>
-                                            ) : (
-                                                <UploadArea onFileSelect={(file) => { if (file) handleFileChange({ target: { files: [file] } } as any) }} inputId="cover-image-upload" disabled={isSaving || isUploadingImage} className="w-full h-full">
-                                                    <div className="text-center text-muted-foreground p-4">
-                                                        <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                                                            <ImagePlus className="h-6 w-6 text-primary" />
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-3xl overflow-hidden">
+                                        <CardHeader className="pb-4">
+                                            <CardTitle className="text-xl font-black flex items-center gap-3">
+                                                <ImagePlus className="h-6 w-6 text-primary" /> Portada del Curso
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="w-full relative aspect-video rounded-2xl border-2 border-dashed border-primary/20 bg-muted/20 flex items-center justify-center overflow-hidden transition-all hover:bg-muted/30">
+                                                {isUploadingImage && <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/80 z-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /><Progress value={uploadProgress} className="w-3/4 h-2 rounded-full" /></div>}
+                                                {(localCoverImagePreview || course.imageUrl) && !isUploadingImage ? (
+                                                    <div className="relative w-full h-full group">
+                                                        <Image src={localCoverImagePreview || course.imageUrl!} alt="Imagen del Curso" fill className="object-cover" />
+                                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                            <Button type="button" variant="secondary" size="icon" className="h-10 w-10 rounded-full" onClick={() => document.getElementById('cover-image-upload')?.click()} disabled={isSaving || isUploadingImage} title="Cambiar imagen"><Replace className="h-5 w-5" /></Button>
+                                                            <Button type="button" variant="destructive" size="icon" className="h-10 w-10 rounded-full" onClick={() => { updateCourseField('imageUrl', null); setLocalCoverImagePreview(null); }} disabled={isSaving || isUploadingImage} title="Eliminar imagen"><XCircle className="h-5 w-5" /></Button>
                                                         </div>
-                                                        <p className="text-sm font-bold">Subir Imagen</p>
-                                                        <p className="text-xs opacity-70">Recomendado: 1920x1080 (16:9)</p>
                                                     </div>
-                                                </UploadArea>
-                                            )}
+                                                ) : (
+                                                    <UploadArea onFileSelect={(file) => { if (file) handleFileChange({ target: { files: [file] } } as any) }} inputId="cover-image-upload" disabled={isSaving || isUploadingImage} className="w-full h-full">
+                                                        <div className="text-center text-muted-foreground p-4">
+                                                            <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                                                <ImagePlus className="h-6 w-6 text-primary" />
+                                                            </div>
+                                                            <p className="text-sm font-bold">Subir Imagen</p>
+                                                            <p className="text-xs opacity-70">Recomendado: 1920x1080 (16:9)</p>
+                                                        </div>
+                                                    </UploadArea>
+                                                )}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-3xl">
+                                        <CardHeader className="pb-4">
+                                            <CardTitle className="text-xl font-black flex items-center gap-3">
+                                                <Sliders className="h-6 w-6 text-primary" /> Clasificación
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="space-y-6">
+                                            <div className="space-y-3">
+                                                <Label htmlFor="category" className="text-[15px] font-bold text-muted-foreground/80 ml-1">Categoría</Label>
+                                                <Select value={course.category || ''} onValueChange={v => updateCourseField('category', v)} disabled={isSaving}>
+                                                    <SelectTrigger id="category" className="h-14 rounded-xl border-primary/10 bg-background/50 text-base font-semibold px-4">
+                                                        <SelectValue placeholder="Selecciona..." />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="rounded-xl border-primary/10">
+                                                        {(settings?.resourceCategories || []).sort().map(cat => (<SelectItem key={cat} value={cat} className="rounded-lg">{cat}</SelectItem>))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                            </motion.div>
+                        </TabsContent>
+
+                        <TabsContent value="structure" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.98 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.98 }}
+                                className="space-y-6"
+                            >
+                                <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-3xl overflow-hidden min-h-[500px]">
+                                    <CardHeader className="border-b border-primary/5 bg-primary/5 pb-6 pt-8">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <CardTitle className="text-3xl font-black flex items-center gap-3">
+                                                    <Layers3 className="h-8 w-8 text-primary" /> Estructura del Curso
+                                                </CardTitle>
+                                                <CardDescription className="text-base">Organiza tus módulos y lecciones mediante arrastrar y soltar.</CardDescription>
+                                            </div>
+                                            <Button type="button" onClick={handleAddModule} disabled={isSaving} className="bg-primary hover:bg-primary/90 text-white rounded-2xl px-8 py-6 font-black text-base shadow-xl shadow-primary/20 transition-all hover:scale-105">
+                                                <PlusCircle className="mr-2 h-6 w-6" /> Añadir Módulo
+                                            </Button>
                                         </div>
+                                    </CardHeader>
+                                    <CardContent className="p-6">
+                                        <DragDropContext onDragEnd={onDragEnd}>
+                                            <Droppable droppableId="course-modules" type="MODULES">
+                                                {(provided) => (
+                                                    <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-6">
+                                                        {course.modules.map((moduleItem, moduleIndex) => (
+                                                            <Draggable key={moduleItem.id} draggableId={moduleItem.id} index={moduleIndex}>
+                                                                {(provided) => (
+                                                                    <ModuleItem
+                                                                        module={moduleItem} moduleIndex={moduleIndex}
+                                                                        onDelete={() => handleRemoveModule(moduleIndex)}
+                                                                        onUpdate={(field, value) => updateModuleField(moduleIndex, field, value)}
+                                                                        onAddLesson={(type) => handleAddLessonAction(moduleIndex, type)}
+                                                                        onLessonUpdate={(lessonIndex, field, value) => updateLessonField(moduleIndex, lessonIndex, field, value)}
+                                                                        onLessonDelete={(lessonIndex) => handleRemoveLesson(moduleIndex, lessonIndex)}
+                                                                        onSaveLessonAsTemplate={(lessonIndex) => setLessonToSaveAsTemplate(course.modules[moduleIndex].lessons[lessonIndex])}
+                                                                        onAddBlock={(lessonIndex, type) => handleAddBlock(moduleIndex, lessonIndex, type)}
+                                                                        onBlockUpdate={(lessonIndex, blockIndex, field, value) => updateBlockField(moduleIndex, lessonIndex, blockIndex, field, value)}
+                                                                        onBlockDelete={(lessonIndex, blockIndex) => handleRemoveBlock(moduleIndex, lessonIndex, blockIndex)}
+                                                                        onEditQuiz={handleEditQuiz}
+                                                                        isSaving={isSaving} provided={provided} ref={provided.innerRef}
+                                                                    />
+                                                                )}
+                                                            </Draggable>
+                                                        ))}
+                                                        {provided.placeholder}
+                                                    </div>
+                                                )}
+                                            </Droppable>
+                                        </DragDropContext>
+                                        {(course.modules || []).length === 0 && (
+                                            <div className="flex flex-col items-center justify-center py-20 text-center opacity-40">
+                                                <div className="bg-primary/10 p-6 rounded-full mb-4">
+                                                    <Layers3 className="h-12 w-12 text-primary" />
+                                                </div>
+                                                <p className="text-xl font-bold">Tu curso está vacío</p>
+                                                <p className="max-w-xs text-sm">Empieza añadiendo tu primer módulo para organizar el aprendizaje.</p>
+                                            </div>
+                                        )}
                                     </CardContent>
                                 </Card>
+                            </motion.div>
+                        </TabsContent>
 
-                                <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-3xl">
-                                    <CardHeader className="pb-2">
-                                        <CardTitle className="text-lg font-bold flex items-center gap-2">
-                                            <Sliders className="h-5 w-5 text-primary" /> Clasificación
+                        <TabsContent value="advanced" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+                            <motion.div
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                            >
+                                <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-3xl overflow-hidden">
+                                    <CardHeader className="bg-primary/5 pb-6 pt-8">
+                                        <CardTitle className="text-2xl font-black flex items-center gap-3">
+                                            <Globe className="h-6 w-6 text-primary" /> Publicación y Acceso
                                         </CardTitle>
                                     </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="category" className="text-sm font-semibold text-muted-foreground ml-1">Categoría</Label>
-                                            <Select value={course.category || ''} onValueChange={v => updateCourseField('category', v)} disabled={isSaving}>
-                                                <SelectTrigger id="category" className="h-12 rounded-xl border-primary/10 bg-background/50">
-                                                    <SelectValue placeholder="Selecciona..." />
+                                    <CardContent className="p-8 space-y-8">
+                                        <div className="space-y-3">
+                                            <Label htmlFor="status" className="font-bold text-[15px] ml-1 text-muted-foreground/80">Estado del Curso</Label>
+                                            <Select value={course.status} onValueChange={v => updateCourseField('status', v as CourseStatus)} disabled={isSaving}>
+                                                <SelectTrigger id="status" className="h-14 rounded-xl border-primary/10 bg-background/50 text-base font-semibold px-4">
+                                                    <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent className="rounded-xl border-primary/10">
-                                                    {(settings?.resourceCategories || []).sort().map(cat => (<SelectItem key={cat} value={cat} className="rounded-lg">{cat}</SelectItem>))}
+                                                    <SelectItem value="DRAFT" className="rounded-lg text-base">Borrador (Solo tú)</SelectItem>
+                                                    <SelectItem value="PUBLISHED" className="rounded-lg text-base">Publicado (Visible)</SelectItem>
+                                                    <SelectItem value="ARCHIVED" className="rounded-lg text-base">Archivado (Oculto)</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
+
+                                        <div className="space-y-4 pt-2">
+                                            <Label className="font-bold text-[15px] ml-1 text-muted-foreground/80">Disponibilidad Temporal</Label>
+                                            <div className="p-1 rounded-xl border border-primary/5 bg-background/30">
+                                                <DateRangePicker
+                                                    date={{ from: course.startDate ? new Date(course.startDate) : undefined, to: course.endDate ? new Date(course.endDate) : undefined }}
+                                                    onDateChange={(range) => {
+                                                        updateCourseField('startDate', range?.from?.toISOString());
+                                                        updateCourseField('endDate', range?.to?.toISOString());
+                                                    }}
+                                                />
+                                            </div>
+                                            <p className="text-[10px] text-muted-foreground pl-1">Deja vacío para acceso ilimitado.</p>
+                                        </div>
+
+                                        <div className="flex items-center justify-between gap-4 p-4 border border-primary/10 rounded-2xl bg-primary/5">
+                                            <div className="space-y-0.5">
+                                                <Label htmlFor="isMandatory" className="text-base font-bold">Curso Asignable</Label>
+                                                <p className="text-xs text-muted-foreground">Este curso se puede asignar de forma obligatoria.</p>
+                                            </div>
+                                            <Switch id="isMandatory" checked={course.isMandatory} onCheckedChange={handleMandatorySwitchChange} disabled={isSaving} className="data-[state=checked]:bg-primary" />
+                                        </div>
                                     </CardContent>
                                 </Card>
-                            </div>
-                        </motion.div>
-                    </TabsContent>
 
-                    <TabsContent value="structure" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.98 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.98 }}
-                            className="space-y-6"
-                        >
-                            <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-3xl overflow-hidden min-h-[500px]">
-                                <CardHeader className="border-b border-primary/5 bg-primary/5">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <CardTitle className="text-2xl font-bold flex items-center gap-2">
-                                                <Layers3 className="h-6 w-6 text-primary" /> Estructura del Curso
-                                            </CardTitle>
-                                            <CardDescription>Organiza tus módulos y lecciones mediante arrastrar y soltar.</CardDescription>
+                                <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-3xl overflow-hidden">
+                                    <CardHeader className="bg-primary/5">
+                                        <CardTitle className="text-xl font-bold flex items-center gap-2">
+                                            <Award className="h-5 w-5 text-primary" /> Requisitos y Recompensas
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="p-8 space-y-8">
+                                        <div className="space-y-3">
+                                            <Label htmlFor="prerequisite" className="font-bold text-[15px] ml-1 text-muted-foreground/80">Curso Prerrequisito</Label>
+                                            <Select value={course.prerequisiteId || 'none'} onValueChange={v => updateCourseField('prerequisiteId', v === 'none' ? null : v)} disabled={isSaving}>
+                                                <SelectTrigger id="prerequisite" className="h-14 rounded-xl border-primary/10 bg-background/50 text-base font-semibold px-4">
+                                                    <SelectValue placeholder="Ninguno" />
+                                                </SelectTrigger>
+                                                <SelectContent className="rounded-xl border-primary/10 max-h-[300px]">
+                                                    <SelectItem value="none" className="rounded-lg text-base">Sin prerrequisito</SelectItem>
+                                                    <DropdownMenuSeparator className="my-1 bg-primary/5" />
+                                                    {allCoursesForPrereq.map(c => (<SelectItem key={c.id} value={c.id} className="rounded-lg text-base">{c.title}</SelectItem>))}
+                                                </SelectContent>
+                                            </Select>
+                                            <p className="text-[11px] font-medium text-muted-foreground/70 pl-1">El alumno debe finalizar el curso seleccionado antes de iniciar este.</p>
                                         </div>
-                                        <Button type="button" onClick={handleAddModule} disabled={isSaving} className="bg-primary hover:bg-primary/90 text-white rounded-2xl px-6 font-bold shadow-lg shadow-primary/20 transition-all hover:scale-105">
-                                            <PlusCircle className="mr-2 h-5 w-5" /> Añadir Módulo
-                                        </Button>
-                                    </div>
-                                </CardHeader>
-                                <CardContent className="p-6">
-                                    <DragDropContext onDragEnd={onDragEnd}>
-                                        <Droppable droppableId="course-modules" type="MODULES">
-                                            {(provided) => (
-                                                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-6">
-                                                    {course.modules.map((moduleItem, moduleIndex) => (
-                                                        <Draggable key={moduleItem.id} draggableId={moduleItem.id} index={moduleIndex}>
-                                                            {(provided) => (
-                                                                <ModuleItem
-                                                                    module={moduleItem} moduleIndex={moduleIndex}
-                                                                    onDelete={() => handleRemoveModule(moduleIndex)}
-                                                                    onUpdate={(field, value) => updateModuleField(moduleIndex, field, value)}
-                                                                    onAddLesson={(type) => handleAddLessonAction(moduleIndex, type)}
-                                                                    onLessonUpdate={(lessonIndex, field, value) => updateLessonField(moduleIndex, lessonIndex, field, value)}
-                                                                    onLessonDelete={(lessonIndex) => handleRemoveLesson(moduleIndex, lessonIndex)}
-                                                                    onSaveLessonAsTemplate={(lessonIndex) => setLessonToSaveAsTemplate(course.modules[moduleIndex].lessons[lessonIndex])}
-                                                                    onAddBlock={(lessonIndex, type) => handleAddBlock(moduleIndex, lessonIndex, type)}
-                                                                    onBlockUpdate={(lessonIndex, blockIndex, field, value) => updateBlockField(moduleIndex, lessonIndex, blockIndex, field, value)}
-                                                                    onBlockDelete={(lessonIndex, blockIndex) => handleRemoveBlock(moduleIndex, lessonIndex, blockIndex)}
-                                                                    onEditQuiz={handleEditQuiz}
-                                                                    isSaving={isSaving} provided={provided} ref={provided.innerRef}
-                                                                />
-                                                            )}
-                                                        </Draggable>
-                                                    ))}
-                                                    {provided.placeholder}
-                                                </div>
-                                            )}
-                                        </Droppable>
-                                    </DragDropContext>
-                                    {(course.modules || []).length === 0 && (
-                                        <div className="flex flex-col items-center justify-center py-20 text-center opacity-40">
-                                            <div className="bg-primary/10 p-6 rounded-full mb-4">
-                                                <Layers3 className="h-12 w-12 text-primary" />
-                                            </div>
-                                            <p className="text-xl font-bold">Tu curso está vacío</p>
-                                            <p className="max-w-xs text-sm">Empieza añadiendo tu primer módulo para organizar el aprendizaje.</p>
+
+                                        <div className="space-y-3">
+                                            <Label htmlFor="certificateTemplate" className="font-bold text-[15px] ml-1 text-muted-foreground/80">Plantilla de Certificado</Label>
+                                            <Select value={course.certificateTemplateId || 'none'} onValueChange={v => updateCourseField('certificateTemplateId', v === 'none' ? null : v)} disabled={isSaving}>
+                                                <SelectTrigger id="certificateTemplate" className="h-14 rounded-xl border-primary/10 bg-background/50 text-base font-semibold px-4">
+                                                    <SelectValue placeholder="Sin certificado" />
+                                                </SelectTrigger>
+                                                <SelectContent className="rounded-xl border-primary/10">
+                                                    <SelectItem value="none" className="rounded-lg text-base">No otorgar certificado</SelectItem>
+                                                    <DropdownMenuSeparator className="my-1 bg-primary/5" />
+                                                    {certificateTemplates.map(t => (<SelectItem key={t.id} value={t.id} className="rounded-lg text-base">{t.name}</SelectItem>))}
+                                                </SelectContent>
+                                            </Select>
+                                            <p className="text-[11px] font-medium text-muted-foreground/70 pl-1">Se generará automáticamente al completar el 100% del curso.</p>
                                         </div>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        </motion.div>
-                    </TabsContent>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                        </TabsContent>
+                    </AnimatePresence>
+                </Tabs>
 
-                    <TabsContent value="advanced" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
-                        <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            className="grid grid-cols-1 md:grid-cols-2 gap-6"
-                        >
-                            <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-3xl overflow-hidden">
-                                <CardHeader className="bg-primary/5">
-                                    <CardTitle className="text-xl font-bold flex items-center gap-2">
-                                        <Globe className="h-5 w-5 text-primary" /> Publicación y Acceso
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="p-6 space-y-6">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="status" className="font-semibold text-sm ml-1 text-muted-foreground">Estado del Curso</Label>
-                                        <Select value={course.status} onValueChange={v => updateCourseField('status', v as CourseStatus)} disabled={isSaving}>
-                                            <SelectTrigger id="status" className="h-12 rounded-xl border-primary/10 bg-background/50">
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent className="rounded-xl border-primary/10">
-                                                <SelectItem value="DRAFT" className="rounded-lg">Borrador (Solo tú)</SelectItem>
-                                                <SelectItem value="PUBLISHED" className="rounded-lg">Publicado (Visible)</SelectItem>
-                                                <SelectItem value="ARCHIVED" className="rounded-lg">Archivado (Oculto)</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
+                {/* Modales */}
+                <AlertDialog open={!!itemToDeleteDetails} onOpenChange={(isOpen) => !isOpen && setItemToDeleteDetails(null)}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Confirmar eliminación</AlertDialogTitle>
+                            <AlertDialogDescription>¿Estás seguro? Esta acción eliminará "{itemToDeleteDetails?.name}" y su contenido.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => { itemToDeleteDetails.onDelete(); setItemToDeleteDetails(null) }} className={buttonVariants({ variant: "destructive" })}>Sí, eliminar</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
 
-                                    <div className="space-y-4 pt-2">
-                                        <Label className="font-semibold text-sm ml-1 text-muted-foreground">Disponibilidad Temporal</Label>
-                                        <div className="p-1 rounded-xl border border-primary/5 bg-background/30">
-                                            <DateRangePicker
-                                                date={{ from: course.startDate ? new Date(course.startDate) : undefined, to: course.endDate ? new Date(course.endDate) : undefined }}
-                                                onDateChange={(range) => {
-                                                    updateCourseField('startDate', range?.from?.toISOString());
-                                                    updateCourseField('endDate', range?.to?.toISOString());
-                                                }}
-                                            />
-                                        </div>
-                                        <p className="text-[10px] text-muted-foreground pl-1">Deja vacío para acceso ilimitado.</p>
-                                    </div>
-
-                                    <div className="flex items-center justify-between gap-4 p-4 border border-primary/10 rounded-2xl bg-primary/5">
-                                        <div className="space-y-0.5">
-                                            <Label htmlFor="isMandatory" className="text-base font-bold">Curso Asignable</Label>
-                                            <p className="text-xs text-muted-foreground">Este curso se puede asignar de forma obligatoria.</p>
-                                        </div>
-                                        <Switch id="isMandatory" checked={course.isMandatory} onCheckedChange={handleMandatorySwitchChange} disabled={isSaving} className="data-[state=checked]:bg-primary" />
-                                    </div>
-                                </CardContent>
-                            </Card>
-
-                            <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-3xl overflow-hidden">
-                                <CardHeader className="bg-primary/5">
-                                    <CardTitle className="text-xl font-bold flex items-center gap-2">
-                                        <Award className="h-5 w-5 text-primary" /> Requisitos y Recompensas
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="p-6 space-y-6">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="prerequisite" className="font-semibold text-sm ml-1 text-muted-foreground">Curso Prerrequisito</Label>
-                                        <Select value={course.prerequisiteId || 'none'} onValueChange={v => updateCourseField('prerequisiteId', v === 'none' ? null : v)} disabled={isSaving}>
-                                            <SelectTrigger id="prerequisite" className="h-12 rounded-xl border-primary/10 bg-background/50">
-                                                <SelectValue placeholder="Ninguno" />
-                                            </SelectTrigger>
-                                            <SelectContent className="rounded-xl border-primary/10 max-h-[300px]">
-                                                <SelectItem value="none" className="rounded-lg">Sin prerrequisito</SelectItem>
-                                                <DropdownMenuSeparator className="my-1 bg-primary/5" />
-                                                {allCoursesForPrereq.map(c => (<SelectItem key={c.id} value={c.id} className="rounded-lg">{c.title}</SelectItem>))}
-                                            </SelectContent>
-                                        </Select>
-                                        <p className="text-[10px] text-muted-foreground pl-1">El alumno debe finalizar el curso seleccionado antes de iniciar este.</p>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="certificateTemplate" className="font-semibold text-sm ml-1 text-muted-foreground">Plantilla de Certificado</Label>
-                                        <Select value={course.certificateTemplateId || 'none'} onValueChange={v => updateCourseField('certificateTemplateId', v === 'none' ? null : v)} disabled={isSaving}>
-                                            <SelectTrigger id="certificateTemplate" className="h-12 rounded-xl border-primary/10 bg-background/50">
-                                                <SelectValue placeholder="Sin certificado" />
-                                            </SelectTrigger>
-                                            <SelectContent className="rounded-xl border-primary/10">
-                                                <SelectItem value="none" className="rounded-lg">No otorgar certificado</SelectItem>
-                                                <DropdownMenuSeparator className="my-1 bg-primary/5" />
-                                                {certificateTemplates.map(t => (<SelectItem key={t.id} value={t.id} className="rounded-lg">{t.name}</SelectItem>))}
-                                            </SelectContent>
-                                        </Select>
-                                        <p className="text-[10px] text-muted-foreground pl-1">Se generará automáticamente al completar el 100% del curso.</p>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </motion.div>
-                    </TabsContent>
-                </AnimatePresence>
-            </Tabs>
-
-            {/* Modales */}
-            <AlertDialog open={!!itemToDeleteDetails} onOpenChange={(isOpen) => !isOpen && setItemToDeleteDetails(null)}>
-                <AlertDialogContent>
-                    <AlertDialogHeader><AlertDialogTitle>Confirmar eliminación</AlertDialogTitle><AlertDialogDescription>¿Estás seguro? Esta acción eliminará "{itemToDeleteDetails?.name}" y su contenido.</AlertDialogDescription></AlertDialogHeader>
-                    <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => { itemToDeleteDetails.onDelete(); setItemToDeleteDetails(null) }} className={buttonVariants({ variant: "destructive" })}>Sí, eliminar</AlertDialogAction></AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-            <TemplateSelectorModal
-                isOpen={showTemplateModal}
-                templates={templates}
-                onClose={() => { setShowTemplateModal(false); setActiveModuleIndexForTemplate(null); }}
-                onSelect={(template) => {
-                    if (activeModuleIndexForTemplate !== null) {
-                        handleAddLesson(activeModuleIndexForTemplate, template);
-                    }
-                }}
-            />
-            {lessonToSaveAsTemplate && (
-                <SaveTemplateModal
-                    isOpen={!!lessonToSaveAsTemplate}
-                    onClose={() => setLessonToSaveAsTemplate(null)}
-                    onSave={handleSaveTemplate}
+                <TemplateSelectorModal
+                    isOpen={showTemplateModal}
+                    templates={templates}
+                    onClose={() => { setShowTemplateModal(false); setActiveModuleIndexForTemplate(null); }}
+                    onSelect={(template) => {
+                        if (activeModuleIndexForTemplate !== null) {
+                            handleAddLesson(activeModuleIndexForTemplate, template);
+                            setShowTemplateModal(false);
+                            setActiveModuleIndexForTemplate(null);
+                        }
+                    }}
                 />
-            )}
-            {isAssignmentModalOpen && (
-                <CourseAssignmentModal
-                    isOpen={isAssignmentModalOpen}
-                    onClose={() => setIsAssignmentModalOpen(false)}
-                    courseId={course.id}
-                    courseTitle={course.title}
-                />
-            )}
-            {quizToEdit && (
-                <QuizEditorModal
-                    isOpen={!!quizToEdit}
-                    onClose={() => setQuizToEdit(null)}
-                    quiz={quizToEdit.quiz}
-                    onSave={quizToEdit.onSave}
-                />
-            )}
+
+                {lessonToSaveAsTemplate && (
+                    <SaveTemplateModal
+                        isOpen={!!lessonToSaveAsTemplate}
+                        onClose={() => setLessonToSaveAsTemplate(null)}
+                        onSave={handleSaveTemplate}
+                    />
+                )}
+
+                {isAssignmentModalOpen && (
+                    <CourseAssignmentModal
+                        isOpen={isAssignmentModalOpen}
+                        onClose={() => setIsAssignmentModalOpen(false)}
+                        courseId={course.id}
+                        courseTitle={course.title}
+                    />
+                )}
+
+                {quizToEdit && (
+                    <QuizEditorModal
+                        isOpen={!!quizToEdit}
+                        onClose={() => setQuizToEdit(null)}
+                        quiz={quizToEdit.quiz}
+                        onSave={quizToEdit.onSave}
+                    />
+                )}
+            </div>
         </div>
     );
 }
 
 const BlockTypeSelector = ({ onSelect }) => (
-    <div className="flex flex-wrap items-center gap-2">
-        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mr-2">Añadir Contenido:</span>
-        <Button variant="outline" size="sm" onClick={() => onSelect('TEXT')} className="rounded-full border-primary/20 hover:bg-blue-500/10 hover:text-blue-500 hover:border-blue-500/30 transition-all font-semibold gap-2">
-            <FileText className="h-3.5 w-3.5" /> Texto
+    <div className="flex flex-wrap items-center gap-3">
+        <span className="text-[11px] font-black text-muted-foreground/60 uppercase tracking-widest mr-2">Añadir Contenido:</span>
+        <Button variant="outline" size="sm" onClick={() => onSelect('TEXT')} className="rounded-full border-primary/20 hover:bg-blue-500/10 hover:text-blue-500 hover:border-blue-500/30 transition-all font-bold gap-2 px-4 h-9">
+            <FileText className="h-4 w-4" /> Texto
         </Button>
-        <Button variant="outline" size="sm" onClick={() => onSelect('VIDEO')} className="rounded-full border-primary/20 hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/30 transition-all font-semibold gap-2">
-            <Video className="h-3.5 w-3.5" /> Video
+        <Button variant="outline" size="sm" onClick={() => onSelect('VIDEO')} className="rounded-full border-primary/20 hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/30 transition-all font-bold gap-2 px-4 h-9">
+            <Video className="h-4 w-4" /> Video
         </Button>
-        <Button variant="outline" size="sm" onClick={() => onSelect('FILE')} className="rounded-full border-primary/20 hover:bg-amber-500/10 hover:text-amber-500 hover:border-amber-500/30 transition-all font-semibold gap-2">
-            <FileGenericIcon className="h-3.5 w-3.5" /> Archivo
+        <Button variant="outline" size="sm" onClick={() => onSelect('FILE')} className="rounded-full border-primary/20 hover:bg-amber-500/10 hover:text-amber-500 hover:border-amber-500/30 transition-all font-bold gap-2 px-4 h-9">
+            <FileGenericIcon className="h-4 w-4" /> Archivo
         </Button>
-        <Button variant="outline" size="sm" onClick={() => onSelect('QUIZ')} className="rounded-full border-primary/20 hover:bg-purple-500/10 hover:text-purple-500 hover:border-purple-500/30 transition-all font-semibold gap-2">
-            <Pencil className="h-3.5 w-3.5" /> Quiz
+        <Button variant="outline" size="sm" onClick={() => onSelect('QUIZ')} className="rounded-full border-primary/20 hover:bg-purple-500/10 hover:text-purple-500 hover:border-purple-500/30 transition-all font-bold gap-2 px-4 h-9">
+            <Pencil className="h-4 w-4" /> Quiz
         </Button>
     </div>
 );
