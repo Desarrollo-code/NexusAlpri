@@ -27,106 +27,73 @@ export const MetricCard = ({
 }) => {
     const animatedValue = useAnimatedCounter(value, 0, 1000);
 
-    // Modern predefined gradients if none is provided
-    const gradients = [
-        "from-blue-600/20 to-indigo-600/20 shadow-blue-500/10",
-        "from-emerald-600/20 to-teal-600/20 shadow-emerald-500/10",
-        "from-violet-600/20 to-purple-600/20 shadow-violet-500/10",
-        "from-amber-600/20 to-orange-600/20 shadow-amber-500/10",
-        "from-rose-600/20 to-pink-600/20 shadow-rose-500/10",
-        "from-cyan-600/20 to-sky-600/20 shadow-cyan-500/10",
-        "from-fuchsia-600/20 to-purple-600/20 shadow-fuchsia-500/10",
-        "from-slate-600/20 to-slate-800/20 shadow-slate-500/10"
-    ];
-
-    const borderColors = [
-        "border-blue-500/30",
-        "border-emerald-500/30",
-        "border-violet-500/30",
-        "border-amber-500/30",
-        "border-rose-500/30",
-        "border-cyan-500/30",
-        "border-fuchsia-500/30",
-        "border-slate-500/30"
-    ];
-
-    const iconColors = [
-        "text-blue-500",
-        "text-emerald-500",
-        "text-violet-500",
-        "text-amber-500",
-        "text-rose-500",
-        "text-cyan-500",
-        "text-fuchsia-500",
-        "text-slate-500"
-    ];
-
-    const selectedGradient = gradients[index % gradients.length];
-    const selectedBorder = borderColors[index % borderColors.length];
-    const selectedIconColor = iconColors[index % iconColors.length];
+    // Map index to chart variables (1-5)
+    const chartIndex = (index % 5) + 1;
+    const chartVar = `hsl(var(--chart-${chartIndex}))`;
+    const chartVarMuted = `hsl(var(--chart-${chartIndex}) / 0.2)`;
+    const chartVarBorder = `hsl(var(--chart-${chartIndex}) / 0.4)`;
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: index * 0.05 }}
-            whileHover={{ y: -5, transition: { duration: 0.2 } }}
+            transition={{ duration: 0.3, delay: index * 0.04 }}
+            whileHover={{ y: -3, transition: { duration: 0.2 } }}
             className="h-full"
         >
             <Card
                 onClick={onClick}
                 className={cn(
-                    "relative overflow-hidden h-full flex flex-col justify-between p-5 transition-all duration-300",
-                    "bg-white/40 dark:bg-black/40 backdrop-blur-xl",
-                    "border border-white/20 dark:border-white/10",
-                    "hover:shadow-2xl hover:bg-white/60 dark:hover:bg-black/60",
-                    "group cursor-default",
-                    onClick && "cursor-pointer",
-                    selectedBorder
+                    "relative overflow-hidden h-full flex flex-col justify-between p-3.5 transition-all duration-300",
+                    "bg-white/60 dark:bg-black/60 backdrop-blur-md",
+                    "border transition-colors duration-500",
+                    "hover:shadow-lg hover:bg-white/80 dark:hover:bg-black/80",
+                    "group cursor-default rounded-xl hover:shadow-[var(--hover-shadow)]",
+                    onClick && "cursor-pointer"
                 )}
+                style={{ borderColor: chartVarBorder } as React.CSSProperties}
             >
-                {/* Background Glow */}
-                <div className={cn(
-                    "absolute -right-10 -top-10 w-32 h-32 blur-3xl opacity-20 rounded-full bg-gradient-to-br",
-                    selectedGradient
-                )} />
+                {/* Background Glow - Theme Aware */}
+                <div
+                    className="absolute -right-6 -top-6 w-24 h-24 blur-2xl opacity-20 rounded-full transition-opacity group-hover:opacity-40"
+                    style={{ background: chartVar } as React.CSSProperties}
+                />
 
-                <div className="flex justify-between items-start z-10">
-                    <div className="space-y-1">
-                        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors">
-                            {title}
-                        </p>
-                    </div>
+                <div className="flex justify-between items-center z-10">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors truncate pr-2">
+                        {title}
+                    </p>
                     {Icon && (
-                        <div className={cn(
-                            "p-2 rounded-lg bg-white/50 dark:bg-black/30 backdrop-blur-sm border border-white/20 dark:border-white/5 shadow-sm transition-transform group-hover:scale-110",
-                            selectedIconColor
-                        )}>
-                            <Icon className="h-5 w-5" />
+                        <div
+                            className="p-1.5 rounded-lg bg-white/40 dark:bg-black/20 backdrop-blur-sm border border-white/20 dark:border-white/5 shadow-sm transition-transform group-hover:scale-110"
+                            style={{ color: chartVar } as React.CSSProperties}
+                        >
+                            <Icon className="h-4 w-4" />
                         </div>
                     )}
                 </div>
 
-                <div className="mt-4 z-10">
+                <div className="mt-2 z-10">
                     <div className="flex items-baseline gap-1">
-                        <p className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/70">
+                        <p
+                            className="text-2xl font-black tracking-tighter transition-colors duration-500"
+                            style={{ color: chartVar } as React.CSSProperties}
+                        >
                             {animatedValue}{suffix}
                         </p>
                     </div>
                     {description && (
-                        <p className="text-xs text-muted-foreground mt-1 font-medium italic">
+                        <p className="text-[9px] text-muted-foreground mt-0.5 font-semibold uppercase opacity-70 group-hover:opacity-100 transition-opacity">
                             {description}
                         </p>
                     )}
                 </div>
 
                 {/* Bottom decorative bar */}
-                <div className={cn(
-                    "absolute bottom-0 left-0 h-1 transition-all duration-300 group-hover:w-full w-2",
-                    "bg-gradient-to-r",
-                    selectedGradient.split(' ')[0],
-                    selectedGradient.split(' ')[1]
-                )} />
+                <div
+                    className="absolute bottom-0 left-0 h-0.5 transition-all duration-300 group-hover:w-full w-4"
+                    style={{ background: chartVar } as React.CSSProperties}
+                />
             </Card>
         </motion.div>
     );

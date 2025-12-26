@@ -11,12 +11,12 @@ interface GradientIconProps extends LucideProps {
   isActive?: boolean;
 }
 
-export const GradientIcon = ({ 
-  icon: Icon, 
-  size = 'default', 
+export const GradientIcon = ({
+  icon: Icon,
+  size = 'default',
   className,
   isActive = false,
-  ...props 
+  ...props
 }: GradientIconProps) => {
 
   const sizeClasses = {
@@ -25,12 +25,21 @@ export const GradientIcon = ({
     'lg': 'w-6 h-6',
     'xl': 'w-7 h-7',
   };
-  
+
   return (
-    <Icon 
-      className={cn(sizeClasses[size], className)}
-      strokeWidth={isActive ? 2.5 : 2}
-      {...props}
-    />
+    <div className="relative flex items-center justify-center">
+      {isActive && (
+        <div className="absolute inset-0 bg-primary/40 blur-[8px] rounded-full scale-110" />
+      )}
+      <Icon
+        className={cn(
+          sizeClasses[size],
+          className,
+          isActive ? "text-primary relative z-10 drop-shadow-[0_0_5px_rgba(var(--primary),0.8)]" : "text-sidebar-muted-foreground"
+        )}
+        strokeWidth={isActive ? 2.5 : 2}
+        {...props}
+      />
+    </div>
   );
 };

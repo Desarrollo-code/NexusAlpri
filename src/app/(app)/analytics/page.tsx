@@ -307,15 +307,15 @@ function AdminAnalyticsPage() {
                 </motion.div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-4" id="analytics-metric-cards">
-                <MetricCard title="Usuarios" value={stats?.totalUsers || 0} icon={IconUsersTotal} index={0} description="Crecimiento total" />
-                <MetricCard title="Cursos" value={stats?.totalCourses || 0} icon={IconLibrary} index={1} description="Catálogo activo" />
-                <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={IconGraduationCap} index={2} description="Interés generado" />
-                <MetricCard title="Cursos Publ." value={stats?.totalPublishedCourses || 0} icon={IconBookMarked} index={3} description="Contenido visible" />
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8 gap-3" id="analytics-metric-cards">
+                <MetricCard title="Usuarios" value={stats?.totalUsers || 0} icon={IconUsersTotal} index={0} description="Crecimiento" />
+                <MetricCard title="Cursos" value={stats?.totalCourses || 0} icon={IconLibrary} index={1} description="Catálogo" />
+                <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={IconGraduationCap} index={2} description="Interés" />
+                <MetricCard title="Cursos Publ." value={stats?.totalPublishedCourses || 0} icon={IconBookMarked} index={3} description="Contenido" />
                 <MetricCard title="Recursos" value={stats?.totalResources || 0} icon={IconFolderYellow} index={4} description="Biblioteca" />
-                <MetricCard title="Anuncios" value={stats?.totalAnnouncements || 0} icon={IconMegaphone} index={5} description="Comunicaciones" />
-                <MetricCard title="Exámenes" value={stats?.totalForms || 0} icon={IconFileText} index={6} description="Evaluaciones" />
-                <MetricCard title="Finalización" value={stats?.averageCompletionRate || 0} icon={IconPercent} suffix="%" description="Tasa de éxito" index={7} />
+                <MetricCard title="Anuncios" value={stats?.totalAnnouncements || 0} icon={IconMegaphone} index={5} description="Avisos" />
+                <MetricCard title="Exámenes" value={stats?.totalForms || 0} icon={IconFileText} index={6} description="Evaluación" />
+                <MetricCard title="Éxito" value={stats?.averageCompletionRate || 0} icon={IconPercent} suffix="%" description="Progreso" index={7} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

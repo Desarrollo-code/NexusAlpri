@@ -52,15 +52,8 @@ const containerVariants = {
 };
 
 const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-        y: 0,
-        opacity: 1,
-        transition: {
-            type: "spring",
-            stiffness: 100
-        }
-    }
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
 };
 
 // Carga dinámica del componente PDF para evitar problemas de SSR
@@ -127,18 +120,18 @@ const CourseSelector = ({ courses, onSelect, selectedCourseId, isLoading }: { co
                     variant="outline"
                     role="combobox"
                     aria-expanded={open}
-                    className="w-full sm:w-[350px] justify-between"
+                    className="w-full sm:w-[350px] justify-between rounded-xl border-white/20 bg-white/50 dark:bg-black/20 backdrop-blur-md hover:border-primary transition-all"
                     disabled={isLoading || courses.length === 0}
                     id="enrollments-course-selector"
                 >
                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    <span className="truncate">{isLoading ? "Cargando cursos..." : selectedCourseTitle}</span>
+                    <span className="truncate font-bold">{isLoading ? "Cargando cursos..." : selectedCourseTitle}</span>
                     <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[350px] p-0">
-                <Command>
-                    <CommandInput placeholder="Buscar curso..." />
+            <PopoverContent className="w-[350px] p-0 rounded-2xl overflow-hidden border-white/20 shadow-2xl">
+                <Command className="bg-white/80 dark:bg-black/80 backdrop-blur-xl">
+                    <CommandInput placeholder="Buscar curso..." className="h-12" />
                     <CommandList>
                         <CommandEmpty>No se encontraron cursos.</CommandEmpty>
                         <CommandGroup>
@@ -150,6 +143,7 @@ const CourseSelector = ({ courses, onSelect, selectedCourseId, isLoading }: { co
                                         onSelect(course.id);
                                         setOpen(false);
                                     }}
+                                    className="h-11 px-4 aria-selected:bg-primary/10 aria-selected:text-primary transition-colors cursor-pointer"
                                 >
                                     {course.title}
                                 </CommandItem>
@@ -479,23 +473,17 @@ function EnrollmentsPageComponent() {
                                         variants={containerVariants}
                                         initial="hidden"
                                         animate="visible"
-                                        className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
                                         id="enrollments-stats-cards"
                                     >
-                                        <motion.div variants={itemVariants} whileHover={{ y: -5 }} className="h-full">
-                                            <div className="h-full rounded-xl border bg-card text-card-foreground shadow transition-all duration-300 hover:shadow-lg bg-gradient-to-br from-blue-50 to-transparent dark:from-blue-950/30">
-                                                <MetricCard title="Total Inscritos" value={selectedCourseInfo._count.enrollments} icon={UsersRound} index={0} />
-                                            </div>
+                                        <motion.div variants={itemVariants}>
+                                            <MetricCard title="Total Inscritos" value={selectedCourseInfo._count.enrollments} icon={UsersRound} index={0} />
                                         </motion.div>
-                                        <motion.div variants={itemVariants} whileHover={{ y: -5 }} className="h-full">
-                                            <div className="h-full rounded-xl border bg-card text-card-foreground shadow transition-all duration-300 hover:shadow-lg bg-gradient-to-br from-green-50 to-transparent dark:from-green-950/30">
-                                                <MetricCard title="Finalización Promedio" value={selectedCourseInfo.avgProgress || 0} icon={Percent} suffix="%" index={1} />
-                                            </div>
+                                        <motion.div variants={itemVariants}>
+                                            <MetricCard title="Finalización Promedio" value={selectedCourseInfo.avgProgress || 0} icon={Percent} suffix="%" index={1} />
                                         </motion.div>
-                                        <motion.div variants={itemVariants} whileHover={{ y: -5 }} className="h-full">
-                                            <div className="h-full rounded-xl border bg-card text-card-foreground shadow transition-all duration-300 hover:shadow-lg bg-gradient-to-br from-purple-50 to-transparent dark:from-purple-950/30">
-                                                <MetricCard title="Nota Quizzes Promedio" value={selectedCourseInfo.avgQuizScore || 0} icon={CheckCircle} suffix="%" index={2} />
-                                            </div>
+                                        <motion.div variants={itemVariants}>
+                                            <MetricCard title="Nota Quizzes Promedio" value={selectedCourseInfo.avgQuizScore || 0} icon={CheckCircle} suffix="%" index={2} />
                                         </motion.div>
                                     </motion.div>
 
@@ -506,24 +494,29 @@ function EnrollmentsPageComponent() {
                                         className="grid grid-cols-1 xl:grid-cols-3 gap-6"
                                     >
                                         <motion.div variants={itemVariants} className="xl:col-span-2 h-full">
-                                            <Card className="h-full overflow-hidden border-none shadow-md bg-gradient-to-br from-background to-muted/20">
-                                                <CardHeader>
-                                                    <CardTitle className="text-base flex items-center gap-2 text-primary"><LineChart className="h-5 w-5" /> Tendencia de Finalización</CardTitle>
+                                            <Card className="h-full overflow-hidden bg-white/40 dark:bg-black/40 backdrop-blur-xl border-white/20 dark:border-white/10 shadow-xl transition-all duration-300 hover:shadow-primary/5">
+                                                <CardHeader className="pb-2">
+                                                    <CardTitle className="text-lg font-bold flex items-center gap-2">
+                                                        <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                                                            <LineChart className="h-4 w-4" />
+                                                        </div>
+                                                        Tendencia de Finalización
+                                                    </CardTitle>
                                                 </CardHeader>
-                                                <CardContent className="h-[300px] pr-4">
+                                                <CardContent className="h-[300px] pr-4 pt-4">
                                                     <ResponsiveContainer width="100%" height="100%">
-                                                        <AreaChart data={selectedCourseInfo.completionTrend}>
+                                                        <AreaChart data={selectedCourseInfo.completionTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                                             <defs>
                                                                 <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                                                                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8} />
+                                                                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
                                                                     <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                                                                 </linearGradient>
                                                             </defs>
-                                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted)/0.5)" />
+                                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted)/0.3)" />
                                                             <XAxis
                                                                 dataKey="date"
                                                                 tickFormatter={(str) => format(new Date(str), 'd MMM', { locale: es })}
-                                                                fontSize={12}
+                                                                fontSize={10}
                                                                 stroke="hsl(var(--muted-foreground))"
                                                                 tickLine={false}
                                                                 axisLine={false}
@@ -531,12 +524,12 @@ function EnrollmentsPageComponent() {
                                                             />
                                                             <YAxis
                                                                 allowDecimals={false}
-                                                                width={30}
+                                                                fontSize={10}
                                                                 stroke="hsl(var(--muted-foreground))"
                                                                 tickLine={false}
                                                                 axisLine={false}
                                                             />
-                                                            <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1, strokeDasharray: '3 3' }} />
+                                                            <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '3 3' }} />
                                                             <Area
                                                                 type="monotone"
                                                                 dataKey="count"
@@ -545,6 +538,7 @@ function EnrollmentsPageComponent() {
                                                                 fillOpacity={1}
                                                                 fill="url(#colorCount)"
                                                                 name="Finalizados"
+                                                                animationDuration={1500}
                                                             />
                                                         </AreaChart>
                                                     </ResponsiveContainer>
@@ -552,36 +546,51 @@ function EnrollmentsPageComponent() {
                                             </Card>
                                         </motion.div>
                                         <motion.div variants={itemVariants} className="h-full">
-                                            <Card className="h-full border-none shadow-md bg-gradient-to-br from-background to-red-50/10 dark:to-red-950/10">
-                                                <CardHeader>
-                                                    <CardTitle className="text-base flex items-center gap-2 text-destructive"><TrendingDown className="h-5 w-5" /> Puntos de Fricción</CardTitle>
-                                                    <CardDescription className="text-xs">Lecciones con menos finalizaciones.</CardDescription>
+                                            <Card className="h-full bg-white/40 dark:bg-black/40 backdrop-blur-xl border-white/20 dark:border-white/10 shadow-xl transition-all duration-300 hover:shadow-destructive/5 overflow-hidden">
+                                                <CardHeader className="pb-2">
+                                                    <CardTitle className="text-lg font-bold flex items-center gap-2">
+                                                        <div className="p-1.5 rounded-lg bg-destructive/10 text-destructive">
+                                                            <TrendingDown className="h-4 w-4" />
+                                                        </div>
+                                                        Puntos de Fricción
+                                                    </CardTitle>
+                                                    <CardDescription className="text-xs font-medium">Lecciones con menor tasa de finalización</CardDescription>
                                                 </CardHeader>
                                                 <CardContent>
-                                                    <div className="space-y-4">
+                                                    <div className="space-y-4 pt-2">
                                                         {mostDifficultLessons.length > 0 ? mostDifficultLessons.map((l, i) => (
                                                             <motion.div
                                                                 key={l.lessonId}
                                                                 initial={{ x: -20, opacity: 0 }}
                                                                 animate={{ x: 0, opacity: 1 }}
                                                                 transition={{ delay: 0.2 + (i * 0.1) }}
-                                                                className="text-sm p-3 rounded-lg bg-background/50 border hover:bg-background transition-colors"
+                                                                className="group/item relative p-3 rounded-xl bg-white/50 dark:bg-black/20 border border-white/20 dark:border-white/5 hover:bg-white dark:hover:bg-black/40 transition-all"
                                                             >
                                                                 <div className="flex justify-between items-center mb-2">
-                                                                    <p className="font-medium truncate pr-2 text-foreground/90">{l.title}</p>
-                                                                    <Badge variant="outline" className="font-bold shrink-0">{l.completions}</Badge>
+                                                                    <p className="font-bold text-sm truncate pr-2 group-hover/item:text-destructive transition-colors">{l.title}</p>
+                                                                    <Badge variant="outline" className="font-black h-5 border-destructive/20 text-destructive bg-destructive/5">{l.completions}</Badge>
                                                                 </div>
-                                                                <div className="relative h-2 w-full bg-secondary rounded-full overflow-hidden">
+                                                                <div className="relative h-2 w-full bg-destructive/10 rounded-full overflow-hidden border border-destructive/5">
                                                                     <motion.div
                                                                         initial={{ width: 0 }}
-                                                                        animate={{ width: `${(l.completions / selectedCourseInfo._count.enrollments) * 100}%` }}
-                                                                        transition={{ duration: 1, delay: 0.5 }}
-                                                                        className="absolute top-0 left-0 h-full bg-destructive/80 rounded-full"
+                                                                        animate={{ width: `${(l.completions / Math.max(1, selectedCourseInfo._count.enrollments)) * 100}%` }}
+                                                                        transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
+                                                                        className="absolute top-0 left-0 h-full bg-gradient-to-r from-destructive to-rose-400 shadow-[0_0_10px_rgba(var(--destructive),0.3)]"
                                                                     />
                                                                 </div>
-                                                                <p className="text-[10px] text-muted-foreground text-right mt-1">de {selectedCourseInfo._count.enrollments} estudiantes</p>
+                                                                <div className="flex justify-between mt-1 px-0.5">
+                                                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">Retención</p>
+                                                                    <p className="text-[10px] text-muted-foreground font-bold">{Math.round((l.completions / Math.max(1, selectedCourseInfo._count.enrollments)) * 100)}%</p>
+                                                                </div>
                                                             </motion.div>
-                                                        )) : <div className="flex flex-col items-center justify-center h-40 text-muted-foreground"><CheckCircle className="h-8 w-8 mb-2 opacity-20" /><p className="text-sm">Todo marcha bien</p></div>}
+                                                        )) : (
+                                                            <div className="flex flex-col items-center justify-center py-12 text-center opacity-50">
+                                                                <div className="h-12 w-12 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-3">
+                                                                    <CheckCircle className="h-6 w-6" />
+                                                                </div>
+                                                                <p className="text-sm font-bold">Sin anomalías</p>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </CardContent>
                                             </Card>

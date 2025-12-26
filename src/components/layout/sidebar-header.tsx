@@ -7,51 +7,70 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
 import { Skeleton } from "../ui/skeleton";
+import { motion } from "framer-motion";
 
 export const SidebarHeader = () => {
   const { isCollapsed, isMobile } = useSidebar();
   const { settings, isLoading } = useAuth();
-  
+
   // Para móvil, el encabezado siempre está expandido y dentro de un `Sheet`.
   if (isMobile) {
-      return (
-         <div className="bg-[hsl(var(--sidebar-header-background))] flex items-center h-20 shadow-[0_4px_6px_-2px_hsl(var(--sidebar-border)/0.5)]">
-             <Link href="/dashboard" className="inline-flex items-center gap-3 px-4">
-                 <div className="relative h-12 w-12 flex-shrink-0 rounded-lg overflow-hidden bg-gradient-to-br from-primary to-accent">
-                    {isLoading ? <Skeleton className="h-full w-full"/> : 
-                     settings?.logoUrl ? <div className="relative w-full h-full"><Image src={settings.logoUrl} alt="Logo" fill className="object-contain p-1" /></div> : <div className="w-full h-full rounded-md bg-muted" />
-                    }
-                 </div>
-                 <span className="text-xl font-bold text-sidebar-foreground whitespace-nowrap">{isLoading ? <Skeleton className="h-6 w-32"/> : settings?.platformName || 'NexusAlpri'}</span>
-             </Link>
-         </div>
-      );
+    return (
+      <div className="bg-[hsl(var(--sidebar-header-background))] flex items-center h-20 shadow-[0_4px_6px_-2px_hsl(var(--sidebar-border)/0.5)]">
+        <Link href="/dashboard" className="inline-flex items-center gap-3 px-4">
+          <div className="relative h-12 w-12 flex-shrink-0 rounded-xl overflow-hidden bg-gradient-to-br from-primary via-primary/80 to-accent shadow-[0_0_20px_rgba(var(--primary),0.3)] border border-white/20">
+            {isLoading ? <Skeleton className="h-full w-full" /> :
+              settings?.logoUrl ? <div className="relative w-full h-full"><Image src={settings.logoUrl} alt="Logo" fill className="object-contain p-2 hover:scale-110 transition-transform duration-300" /></div> : <div className="w-full h-full rounded-md bg-muted" />
+            }
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xl font-black text-sidebar-foreground tracking-tighter">{isLoading ? <Skeleton className="h-6 w-32" /> : settings?.platformName || 'NexusAlpri'}</span>
+            <span className="text-[10px] font-bold text-primary/80 uppercase tracking-[0.2em] -mt-1">Plataforma</span>
+          </div>
+        </Link>
+      </div>
+    );
   }
 
   // Vista para escritorio
   return (
     <div className={cn(
-      "flex items-center h-20 bg-[hsl(var(--sidebar-header-background))] shadow-[0_4px_6px_-2px_hsl(var(--sidebar-border)/0.5)] z-10",
-      isCollapsed ? 'justify-center' : 'justify-start px-4'
+      "flex items-center h-24 bg-transparent border-b border-sidebar-border/10 z-10 transition-all duration-300",
+      isCollapsed ? 'justify-center' : 'justify-start px-6'
     )}>
-      <Link href="/dashboard" className="inline-flex items-center gap-3">
-          <div className={cn(
-              "bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg relative overflow-hidden",
-              "h-12 w-12"
-          )}>
-            {isLoading ? <Skeleton className="h-full w-full"/> : 
-             settings?.logoUrl ? 
+      <Link href="/dashboard" className="inline-flex items-center gap-4 group">
+        <motion.div
+          animate={{
+            width: 52,
+            height: 52,
+            borderRadius: isCollapsed ? "16px" : "14px"
+          }}
+          className={cn(
+            "bg-gradient-to-br from-primary via-primary/80 to-accent flex items-center justify-center shadow-[0_0_30px_rgba(var(--primary),0.2)] flex-shrink-0 relative overflow-hidden border border-white/20 group-hover:shadow-[0_0_40px_rgba(var(--primary),0.4)] transition-shadow duration-500",
+          )}
+        >
+          {isLoading ? <Skeleton className="h-full w-full" /> :
+            settings?.logoUrl ?
               <div className="relative w-full h-full">
-                <Image src={settings.logoUrl} alt="Logo" data-ai-hint="logo" quality={100} fill className={cn("object-contain p-1.5")} />
-              </div> 
+                <Image src={settings.logoUrl} alt="Logo" data-ai-hint="logo" quality={100} fill className={cn("object-contain p-2 group-hover:scale-110 transition-transform duration-500")} />
+              </div>
               : <div className="w-full h-full rounded-md bg-muted" />
-            }
-          </div>
-        
+          }
+        </motion.div>
+
         {!isCollapsed && (
-            <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-sidebar-foreground">
-              {isLoading ? <Skeleton className="h-6 w-32"/> : settings?.platformName || 'NexusAlpri'}
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex flex-col"
+          >
+            <span className="text-xl font-black font-headline tracking-tighter whitespace-nowrap text-sidebar-foreground group-hover:text-primary transition-colors duration-300">
+              {isLoading ? <Skeleton className="h-6 w-32" /> : settings?.platformName || 'NexusAlpri'}
             </span>
+            <span className="text-[10px] font-bold text-primary/70 uppercase tracking-[0.3em] font-sans -mt-1 leading-none">
+              Ecosystem
+            </span>
+          </motion.div>
         )}
       </Link>
     </div>
