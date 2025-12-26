@@ -791,28 +791,28 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     }
 
     return (
-        <div className="max-w-6xl mx-auto">
-            <Tabs defaultValue="general" className="w-full space-y-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card/60 backdrop-blur-md p-2 rounded-2xl border border-primary/10 sticky top-24 z-30 shadow-lg">
-                    <TabsList className="bg-transparent border-0 gap-2 h-auto p-0 flex-wrap md:flex-nowrap">
-                        <TabsTrigger value="general" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-6 py-2.5 rounded-xl transition-all font-medium flex items-center gap-2">
-                            <Layout className="h-4 w-4" /> Información General
+        <div className="max-w-6xl mx-auto px-4 pb-20">
+            <Tabs defaultValue="general" className="w-full">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card/80 backdrop-blur-xl p-3 rounded-2xl border border-primary/10 sticky top-20 z-40 shadow-xl mb-8">
+                    <TabsList className="bg-transparent border-0 gap-1 h-auto p-0 flex-wrap md:flex-nowrap">
+                        <TabsTrigger value="general" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-5 py-2 rounded-xl transition-all font-semibold flex items-center gap-2 text-xs sm:text-sm">
+                            <Layout className="h-4 w-4" /> <span className="hidden sm:inline">Información General</span><span className="sm:hidden">General</span>
                         </TabsTrigger>
-                        <TabsTrigger value="structure" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-6 py-2.5 rounded-xl transition-all font-medium flex items-center gap-2">
-                            <Layers3 className="h-4 w-4" /> Estructura
+                        <TabsTrigger value="structure" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-5 py-2 rounded-xl transition-all font-semibold flex items-center gap-2 text-xs sm:text-sm">
+                            <Layers3 className="h-4 w-4" /> <span className="hidden sm:inline">Estructura del Curso</span><span className="sm:hidden">Estructura</span>
                         </TabsTrigger>
-                        <TabsTrigger value="advanced" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-6 py-2.5 rounded-xl transition-all font-medium flex items-center gap-2">
-                            <Settings2 className="h-4 w-4" /> Avanzado
+                        <TabsTrigger value="advanced" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-5 py-2 rounded-xl transition-all font-semibold flex items-center gap-2 text-xs sm:text-sm">
+                            <Settings2 className="h-4 w-4" /> <span className="hidden sm:inline">Avanzado</span><span className="sm:hidden">Avanzado</span>
                         </TabsTrigger>
                     </TabsList>
 
-                    <div className="flex items-center gap-2 px-2">
-                        <Button asChild variant="ghost" className="hover:bg-primary/10 rounded-xl" size="sm">
+                    <div className="flex items-center gap-2 self-end md:self-center">
+                        <Button asChild variant="ghost" className="hover:bg-primary/10 rounded-xl hidden sm:flex" size="sm">
                             <Link href={`/courses/${courseId}`} target="_blank">
-                                <Eye className="mr-2 h-4 w-4" /> Vista Previa
+                                <Eye className="mr-2 h-4 w-4" /> Ver
                             </Link>
                         </Button>
-                        <Button onClick={handleSaveCourse} disabled={isSaving || !isDirty} size="sm" className="bg-primary hover:bg-primary/90 text-white rounded-xl shadow-md">
+                        <Button onClick={handleSaveCourse} disabled={isSaving || !isDirty} size="sm" className="bg-primary hover:bg-primary/90 text-white rounded-xl shadow-lg px-6 font-bold">
                             {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                             {isSaving ? 'Guardando...' : 'Guardar'}
                         </Button>
@@ -820,7 +820,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                 </div>
 
                 <AnimatePresence mode="wait">
-                    <TabsContent value="general" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+                    <TabsContent value="general" className="focus-visible:outline-none focus-visible:ring-0">
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
