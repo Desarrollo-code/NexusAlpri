@@ -154,118 +154,114 @@ const QuestionEditor = ({ question, isQuiz, onQuestionChange, onOptionChange, on
     };
 
     return (
-        <div className="h-full flex flex-col gap-6">
-            <Tabs defaultValue="content" className="flex-1 flex flex-col gap-6">
-                <div className="flex items-center justify-between bg-card/40 backdrop-blur-xl p-2 rounded-2xl border border-primary/10 shadow-sm shrink-0">
-                    <TabsList className="bg-transparent gap-2">
-                        <TabsTrigger value="options" className="rounded-xl px-6 py-2.5 font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all">
-                            <CheckSquare className="h-4 w-4" /> Pregunta / Opciones
-                        </TabsTrigger>
-                    </TabsList>
-
-                    {/* Acciones Rápidas */}
-                    <div className="px-4 border-l border-primary/10 flex items-center gap-4">
-                        <Label className="text-[12px] font-black text-muted-foreground uppercase opacity-60">Tipo:</Label>
-                        <Select value={question.template || 'default'} onValueChange={(v) => onQuestionChange('template', v)}>
-                            <SelectTrigger className="h-10 w-48 rounded-xl border-primary/10 bg-background/50 font-bold text-sm">
-                                <SelectValue placeholder="Tipo de Pregunta" />
-                            </SelectTrigger>
-                            <SelectContent className="rounded-xl border-primary/10 overflow-hidden">
-                                {templateOptions.map((opt) => (
-                                    <SelectItem key={opt.value} value={opt.value} className="font-bold py-2.5">
-                                        <div className="flex items-center gap-2">
-                                            <opt.icon className="h-4 w-4 text-primary" />
-                                            {opt.label}
-                                        </div>
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+        <div className="h-full flex flex-col gap-4">
+            <div className="flex items-center justify-between bg-card/40 backdrop-blur-xl p-3 rounded-2xl border border-primary/10 shadow-sm shrink-0">
+                <div className="flex items-center gap-3 px-2">
+                    <div className="bg-primary/10 p-2 rounded-lg">
+                        <Pencil className="h-4 w-4 text-primary" />
                     </div>
+                    <span className="text-sm font-bold tracking-tight">Editando Pregunta</span>
                 </div>
 
-                <div className="flex-1 overflow-hidden min-h-0">
-                    <TabsContent value="options" className="h-full m-0 p-0 focus-visible:ring-0">
-                        <ScrollArea className="h-full scrollbar-thin">
-                            <motion.div initial={{ opacity: 0, x: 0 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-                                <Card className="backdrop-blur-xl bg-card/40 border-primary/10 shadow-xl overflow-hidden rounded-3xl">
-                                    <CardHeader className="bg-primary/5 pb-4 pt-6 px-8 flex flex-row items-center justify-between">
-                                        <CardTitle className="text-lg font-bold flex items-center gap-3">
-                                            <Pencil className="h-5 w-5 text-primary" /> Enunciado
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="p-8 space-y-6">
-                                        <div className="bg-background/40 rounded-3xl overflow-hidden border-2 border-primary/10 transition-all shadow-inner">
-                                            <ReactQuill
-                                                theme="snow"
-                                                value={question.text || ''}
-                                                onChange={(v) => onQuestionChange('text', v)}
-                                                modules={quillModules}
-                                                placeholder="Escribe el enunciado..."
-                                                className="quill-editor-custom text-base font-medium"
-                                            />
+                <div className="px-4 border-l border-primary/10 flex items-center gap-4">
+                    <Label className="text-[11px] font-bold text-muted-foreground uppercase opacity-60 tracking-wider">Tipo:</Label>
+                    <Select value={question.template || 'default'} onValueChange={(v) => onQuestionChange('template', v)}>
+                        <SelectTrigger className="h-10 w-48 rounded-xl border-primary/10 bg-background/50 font-bold text-sm">
+                            <SelectValue placeholder="Tipo de Pregunta" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-primary/10 overflow-hidden">
+                            {templateOptions.map((opt) => (
+                                <SelectItem key={opt.value} value={opt.value} className="font-bold py-2.5">
+                                    <div className="flex items-center gap-2">
+                                        <opt.icon className="h-4 w-4 text-primary" />
+                                        {opt.label}
+                                    </div>
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
+
+            <div className="flex-1 overflow-hidden min-h-0 pt-2">
+                <ScrollArea className="h-full scrollbar-thin">
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 pb-8">
+                        <Card className="backdrop-blur-xl bg-card/40 border-primary/10 shadow-xl overflow-hidden rounded-3xl">
+                            <CardHeader className="bg-primary/5 pb-3 pt-5 px-6 flex flex-row items-center justify-between">
+                                <CardTitle className="text-base font-bold flex items-center gap-2">
+                                    <Pencil className="h-4 w-4 text-primary" /> Enunciado
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-6 space-y-4">
+                                <div className="bg-background/40 rounded-2xl overflow-hidden border border-primary/10 transition-all shadow-inner">
+                                    <ReactQuill
+                                        theme="snow"
+                                        value={question.text || ''}
+                                        onChange={(v) => onQuestionChange('text', v)}
+                                        modules={quillModules}
+                                        placeholder="Escribe el enunciado..."
+                                        className="quill-editor-custom text-sm font-medium"
+                                    />
+                                </div>
+
+                                {question.template === 'image' && (
+                                    <div className="space-y-3 pt-3 border-t border-primary/5">
+                                        <Label className="text-[11px] font-bold text-muted-foreground/80 uppercase tracking-widest ml-1">Imagen de Apoyo</Label>
+                                        <div className="max-w-[280px]">
+                                            <ImageUploadWidget inputId={`q-img-${question.id}`} imageUrl={question.imageUrl} onUpload={(url) => onQuestionChange('imageUrl', url)} onRemove={() => onQuestionChange('imageUrl', null)} disabled={false} isCorrect={false} />
                                         </div>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
 
-                                        {question.template === 'image' && (
-                                            <div className="space-y-4 pt-4 border-t border-primary/5">
-                                                <Label className="text-[12px] font-bold text-muted-foreground/80 uppercase tracking-widest ml-1">Imagen</Label>
-                                                <div className="max-w-[320px]">
-                                                    <ImageUploadWidget inputId={`q-img-${question.id}`} imageUrl={question.imageUrl} onUpload={(url) => onQuestionChange('imageUrl', url)} onRemove={() => onQuestionChange('imageUrl', null)} disabled={false} isCorrect={false} />
-                                                </div>
-                                            </div>
-                                        )}
-                                    </CardContent>
-                                </Card>
-
-                                <Card className="backdrop-blur-xl bg-card/40 border-primary/10 shadow-xl overflow-hidden rounded-3xl">
-                                    <CardHeader className="bg-primary/5 pb-5 pt-6 px-8 flex flex-row items-center justify-between">
-                                        <CardTitle className="text-lg font-bold flex items-center gap-3">
-                                            <CheckSquare className="h-5 w-5 text-primary" /> Opciones de Respuesta
-                                        </CardTitle>
-                                        {question.options.length < 4 && !isImageOptionsTemplate && question.template !== 'true_false' && (
-                                            <Button type="button" variant="outline" size="sm" onClick={onOptionAdd} className="bg-primary/10 hover:bg-primary/20 text-primary border-primary/20 rounded-xl font-bold px-4 h-10 transition-all hover:scale-105 active:scale-95">
-                                                <PlusCircle className="mr-2 h-4 w-4" /> Añadir
-                                            </Button>
-                                        )}
-                                    </CardHeader>
-                                    <CardContent className={cn("p-8 grid gap-6", isImageOptionsTemplate ? "grid-cols-2 md:grid-cols-4" : "grid-cols-1 md:grid-cols-2")}>
-                                        <AnimatePresence mode="popLayout">
-                                            {(question.options || []).slice(0, 4).map((opt: any, index: number) => (
-                                                <motion.div key={opt.id} layout initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="group relative">
+                        <Card className="backdrop-blur-xl bg-card/40 border-primary/10 shadow-xl overflow-hidden rounded-3xl">
+                            <CardHeader className="bg-primary/5 pb-4 pt-5 px-6 flex flex-row items-center justify-between">
+                                <CardTitle className="text-base font-bold flex items-center gap-2">
+                                    <CheckSquare className="h-4 w-4 text-primary" /> Opciones de Respuesta
+                                </CardTitle>
+                                {question.options.length < 4 && !isImageOptionsTemplate && question.template !== 'true_false' && (
+                                    <Button type="button" variant="outline" size="sm" onClick={onOptionAdd} className="bg-primary/10 hover:bg-primary/20 text-primary border-primary/20 rounded-xl font-bold px-4 h-9 transition-all hover:scale-105 active:scale-95 text-xs">
+                                        <PlusCircle className="mr-2 h-3.5 w-3.5" /> Añadir
+                                    </Button>
+                                )}
+                            </CardHeader>
+                            <CardContent className={cn("p-6 grid gap-4", isImageOptionsTemplate ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-1 lg:grid-cols-2")}>
+                                <AnimatePresence mode="popLayout">
+                                    {(question.options || []).slice(0, 4).map((opt: any, index: number) => (
+                                        <motion.div key={opt.id} layout initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="group relative">
+                                            <div className={cn(
+                                                "relative flex flex-col gap-2 p-4 rounded-2xl border transition-all duration-300 group-hover:shadow-md",
+                                                opt.isCorrect ? "border-green-500 bg-green-500/5 shadow-lg shadow-green-500/5" : "border-primary/5 bg-background/40 hover:border-primary/20"
+                                            )}>
+                                                <div className="flex items-center justify-between mb-1">
                                                     <div className={cn(
-                                                        "relative flex flex-col gap-3 p-5 rounded-3xl border-2 transition-all duration-300 group-hover:shadow-lg",
-                                                        opt.isCorrect ? "border-green-500 bg-green-500/10 shadow-xl shadow-green-500/10" : "border-primary/5 bg-background/40 hover:border-primary/20"
+                                                        "px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest",
+                                                        opt.isCorrect ? "bg-green-500 text-white" : "bg-primary/10 text-primary/70"
                                                     )}>
-                                                        <div className="flex items-center justify-between mb-2">
-                                                            <div className={cn(
-                                                                "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest",
-                                                                opt.isCorrect ? "bg-green-500 text-white" : "bg-primary/10 text-primary/70"
-                                                            )}>
-                                                                Opción {index + 1}
-                                                            </div>
-                                                            <div className="flex items-center gap-2">
-                                                                <button type="button" onClick={() => onSetCorrect(opt.id)} className={cn(
-                                                                    "h-7 w-7 rounded-full flex items-center justify-center transition-all duration-300",
-                                                                    opt.isCorrect ? "bg-green-500 text-white shadow-lg scale-110" : "bg-background/50 text-muted-foreground hover:bg-green-500/20 hover:text-green-600 border border-primary/10"
-                                                                )}><Check className="h-3 w-3" /></button>
-                                                                {(question.options.length > (question.template === 'true_false' ? 2 : 1)) && (
-                                                                    <button type="button" onClick={() => onOptionDelete(index)} className="h-7 w-7 rounded-full flex items-center justify-center bg-destructive/10 text-destructive/70 hover:bg-destructive hover:text-white transition-all duration-300 border border-destructive/5">
-                                                                        <X className="h-3 w-3" /></button>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex-grow rounded-2xl overflow-hidden">{renderOptionEditor(opt, index)}</div>
+                                                        Opción {index + 1}
                                                     </div>
-                                                </motion.div>
-                                            ))}
-                                        </AnimatePresence>
-                                    </CardContent>
-                                </Card>
-                            </motion.div>
-                        </ScrollArea>
-                    </TabsContent>
-                </div>
-            </Tabs>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <button type="button" onClick={() => onSetCorrect(opt.id)} className={cn(
+                                                            "h-6 w-6 rounded-full flex items-center justify-center transition-all duration-300",
+                                                            opt.isCorrect ? "bg-green-500 text-white shadow-md scale-110" : "bg-background/50 text-muted-foreground hover:bg-green-500/20 hover:text-green-600 border border-primary/10"
+                                                        )}><Check className="h-3 w-3" /></button>
+                                                        {(question.options.length > (question.template === 'true_false' ? 2 : 1)) && (
+                                                            <button type="button" onClick={() => onOptionDelete(index)} className="h-6 w-6 rounded-full flex items-center justify-center bg-destructive/10 text-destructive/70 hover:bg-destructive hover:text-white transition-all duration-300 border border-destructive/5">
+                                                                <X className="h-3 w-3" /></button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="flex-grow rounded-xl overflow-hidden text-sm">{renderOptionEditor(opt, index)}</div>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </AnimatePresence>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                </ScrollArea>
+            </div>
         </div>
     );
 };
@@ -483,30 +479,30 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                         <ScrollArea className="h-full w-full scrollbar-visible">
                                             <div className="p-12 grid grid-cols-1 md:grid-cols-2 gap-10 max-w-[1400px] mx-auto">
                                                 <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-3xl overflow-hidden">
-                                                    <CardHeader className="bg-primary/5 pb-6 pt-8 px-8">
-                                                        <CardTitle className="text-2xl font-black flex items-center gap-3">
-                                                            <Info className="h-6 w-6 text-primary" /> Detalles del Quiz
+                                                    <CardHeader className="bg-primary/5 pb-4 pt-6 px-7">
+                                                        <CardTitle className="text-base font-bold flex items-center gap-2.5">
+                                                            <Info className="h-5 w-5 text-primary" /> Detalles del Quiz
                                                         </CardTitle>
                                                     </CardHeader>
-                                                    <CardContent className="p-8 space-y-8">
-                                                        <div className="space-y-3">
-                                                            <Label htmlFor="quiz-title" className="text-[15px] font-bold text-muted-foreground/80 ml-1">Título del Quiz</Label>
+                                                    <CardContent className="p-7 space-y-6">
+                                                        <div className="space-y-2.5">
+                                                            <Label htmlFor="quiz-title" className="text-[14px] font-bold text-muted-foreground/80 ml-1">Título del Quiz</Label>
                                                             <Input
                                                                 id="quiz-title"
                                                                 value={localQuiz.title}
                                                                 onChange={e => setLocalQuiz(p => ({ ...p, title: e.target.value }))}
-                                                                className="text-lg font-bold h-14 rounded-2xl border-primary/10 focus:ring-primary/20 bg-background/50 px-6"
+                                                                className="text-base font-bold h-12 rounded-xl border-primary/10 focus:ring-primary/20 bg-background/50 px-5"
                                                                 placeholder="Ej: Quiz Final de Módulo"
                                                             />
                                                         </div>
-                                                        <div className="space-y-3">
-                                                            <Label htmlFor="quiz-description" className="text-[15px] font-bold text-muted-foreground/80 ml-1">Instrucciones o Descripción</Label>
+                                                        <div className="space-y-2.5">
+                                                            <Label htmlFor="quiz-description" className="text-[14px] font-bold text-muted-foreground/80 ml-1">Instrucciones o Descripción</Label>
                                                             <Textarea
                                                                 id="quiz-description"
                                                                 value={localQuiz.description || ''}
                                                                 onChange={e => setLocalQuiz(p => ({ ...p, description: e.target.value }))}
                                                                 rows={4}
-                                                                className="text-base font-semibold rounded-2xl border-primary/10 focus:ring-primary/20 bg-background/50 p-6 resize-none"
+                                                                className="text-sm font-semibold rounded-xl border-primary/10 focus:ring-primary/20 bg-background/50 p-5 resize-none"
                                                                 placeholder="Instrucciones para tus alumnos..."
                                                             />
                                                         </div>
@@ -514,34 +510,34 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                                 </Card>
 
                                                 <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-3xl overflow-hidden">
-                                                    <CardHeader className="bg-primary/5 pb-6 pt-8 px-8">
-                                                        <CardTitle className="text-2xl font-black flex items-center gap-3">
-                                                            <Timer className="h-6 w-6 text-primary" /> Configuración de Juego
+                                                    <CardHeader className="bg-primary/5 pb-4 pt-6 px-7">
+                                                        <CardTitle className="text-base font-bold flex items-center gap-2.5">
+                                                            <Timer className="h-5 w-5 text-primary" /> Configuración de Juego
                                                         </CardTitle>
                                                     </CardHeader>
-                                                    <CardContent className="p-8 space-y-8">
-                                                        <div className="space-y-3">
-                                                            <Label htmlFor="quiz-max-attempts" className="text-[15px] font-bold text-muted-foreground/80 ml-1">Límite de Intentos</Label>
+                                                    <CardContent className="p-7 space-y-6">
+                                                        <div className="space-y-2.5">
+                                                            <Label htmlFor="quiz-max-attempts" className="text-[14px] font-bold text-muted-foreground/80 ml-1">Límite de Intentos</Label>
                                                             <Input
                                                                 id="quiz-max-attempts"
                                                                 type="number"
                                                                 value={localQuiz.maxAttempts || ''}
                                                                 onChange={e => setLocalQuiz(p => ({ ...p, maxAttempts: e.target.value ? parseInt(e.target.value) : null }))}
-                                                                className="text-lg font-bold h-14 rounded-2xl border-primary/10 focus:ring-primary/20 bg-background/50 px-6"
+                                                                className="text-base font-bold h-12 rounded-xl border-primary/10 focus:ring-primary/20 bg-background/50 px-5"
                                                                 placeholder="Ilimitados"
                                                             />
-                                                            <p className="text-[13px] font-bold text-muted-foreground/60 pl-1 italic">Deja vacío para que no haya límite.</p>
+                                                            <p className="text-[12px] font-bold text-muted-foreground/60 pl-1 italic">Deja vacío para que no haya límite.</p>
                                                         </div>
-                                                        <div className="space-y-3">
-                                                            <Label htmlFor="quiz-timer-style" className="text-[15px] font-bold text-muted-foreground/80 ml-1">Estilo Visual del Tiempo</Label>
+                                                        <div className="space-y-2.5">
+                                                            <Label htmlFor="quiz-timer-style" className="text-[14px] font-bold text-muted-foreground/80 ml-1">Estilo Visual del Tiempo</Label>
                                                             <Select value={localQuiz.timerStyle || 'circular'} onValueChange={(v) => setLocalQuiz(p => ({ ...p, timerStyle: v }))}>
-                                                                <SelectTrigger id="quiz-timer-style" className="h-14 rounded-2xl border-primary/10 bg-background/50 text-sm font-bold px-6">
+                                                                <SelectTrigger id="quiz-timer-style" className="h-12 rounded-xl border-primary/10 bg-background/50 text-sm font-bold px-5">
                                                                     <SelectValue />
                                                                 </SelectTrigger>
-                                                                <SelectContent className="rounded-2xl border-primary/10 overflow-hidden">
-                                                                    <SelectItem value="circular" className="rounded-xl py-3 font-bold">Reloj Circular</SelectItem>
-                                                                    <SelectItem value="bar" className="rounded-xl py-3 font-bold">Barra de Progreso</SelectItem>
-                                                                    <SelectItem value="pill" className="rounded-xl py-3 font-bold">Píldora Flotante</SelectItem>
+                                                                <SelectContent className="rounded-xl border-primary/10 overflow-hidden">
+                                                                    <SelectItem value="circular" className="rounded-lg py-2 font-bold text-sm">Reloj Circular</SelectItem>
+                                                                    <SelectItem value="bar" className="rounded-lg py-2 font-bold text-sm">Barra de Progreso</SelectItem>
+                                                                    <SelectItem value="pill" className="rounded-lg py-2 font-bold text-sm">Píldora Flotante</SelectItem>
                                                                 </SelectContent>
                                                             </Select>
                                                         </div>

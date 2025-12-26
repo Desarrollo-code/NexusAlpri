@@ -13,13 +13,15 @@ import { renderHtml, stripHtml } from '../../../lib/html-utils';
 import Image from 'next/image';
 
 interface MultipleChoiceTemplateProps {
-    question: AppQuestion;
+    question: any;
     onSubmit: (isCorrect: boolean, answerData: any) => void;
     onTimeUp: () => void;
     questionNumber: number;
     totalQuestions: number;
     template?: string | null;
     timerStyle?: string | null;
+    selectedOptionId?: string | null;
+    showFeedback?: boolean;
 }
 
 const SegmentedProgress = ({ current, total }: { current: number; total: number }) => {
@@ -44,12 +46,12 @@ const SegmentedProgress = ({ current, total }: { current: number; total: number 
 };
 
 
-export function MultipleChoiceTemplate({ question, onSubmit, onTimeUp, questionNumber, totalQuestions, template, timerStyle }: MultipleChoiceTemplateProps) {
-    const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
-    const [isAnswered, setIsAnswered] = useState(false);
+export function MultipleChoiceTemplate({ question, onSubmit, onTimeUp, questionNumber, totalQuestions, template, timerStyle, selectedOptionId: initialSelectedOptionId, showFeedback = true }: MultipleChoiceTemplateProps) {
+    const [selectedOptionId, setSelectedOptionId] = useState<string | null>(initialSelectedOptionId || null);
+    const [isAnswered, setIsAnswered] = useState(!!initialSelectedOptionId);
     const [timeLeft, setTimeLeft] = useState(20);
 
-    const correctOption = question.options.find(opt => opt.isCorrect);
+    const correctOption = question.options.find((opt: any) => opt.isCorrect);
 
     useEffect(() => {
         if (isAnswered) return;
@@ -72,9 +74,12 @@ export function MultipleChoiceTemplate({ question, onSubmit, onTimeUp, questionN
 
     const getOptionState = (optionId: string) => {
         if (!isAnswered) return 'default';
-        if (optionId === correctOption?.id) return 'correct';
-        if (optionId === selectedOptionId && optionId !== correctOption?.id) return 'incorrect';
-        return 'disabled';
+        if (showFeedback) {
+            if (optionId === correctOption?.id) return 'correct';
+            if (optionId === selectedOptionId && optionId !== correctOption?.id) return 'incorrect';
+            return 'disabled';
+        }
+        return optionId === selectedOptionId ? 'selected' : 'default';
     };
 
     const TimerDisplay = () => {
@@ -112,40 +117,57 @@ export function MultipleChoiceTemplate({ question, onSubmit, onTimeUp, questionN
             )}
 
             <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-3">
-                {(question.options as FormFieldOption[]).map((option, index) => {
-                    const state = getOptionState(option.id);
-                    const showResult = isAnswered && (state === 'correct' || state === 'incorrect');
+                {question.options.map((opt: FormFieldOption, index: number) => {
+                    const shape = React.createElement(optionShapes[index % optionShapes.length]);
+                    const color = optionColors[index % optionColors.length];
+                    const isSelected = selectedOptionId === opt.id;
+                    const isCorrect = correctOption?.id === opt.id;
+                    const showResult = isAnswered && showFeedback;
 
                     return (
-                        <div key={option.id} className="relative">
-                            <AnimatePresence>
-                                {showResult && (
-                                    <motion.div
-                                        initial={{ scale: 0.5, opacity: 0 }}
-                                        animate={{ scale: 1, opacity: 1 }}
-                                        className="absolute right-2 top-1/2 -translate-y-1/2 z-10"
-                                    >
-                                        {state === 'correct' && <Check className="h-8 w-8 text-white bg-green-500 rounded-full p-1" />}
-                                        {state === 'incorrect' && <X className="h-8 w-8 text-white bg-red-500 rounded-full p-1" />}
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                        <motion.div
+                            key={opt.id}
+                            whileHover={{ scale: 1.01, x: 2 }}
+                            whileTap={{ scale: 0.99 }}
+                        >
                             <Button
-                                onClick={() => handleOptionClick(option)}
-                                disabled={isAnswered}
+                                variant="outline"
                                 className={cn(
-                                    "w-full h-auto min-h-[4rem] py-3 px-4 text-base md:text-lg font-bold text-white shadow-lg transition-all duration-300 transform-gpu hover:scale-105",
-                                    optionColors[index % optionColors.length],
-                                    isAnswered && state !== 'correct' && state !== 'incorrect' && 'opacity-30'
+                                    "w-full h-auto py-5 px-6 flex items-center gap-4 text-left transition-all border-2",
+                                    "rounded-2xl shadow-sm hover:shadow-md",
+                                    isSelected
+                                        ? "bg-primary/10 border-primary ring-2 ring-primary/20"
+                                        : "bg-background border-border hover:border-primary/50",
+                                    isAnswered && !isSelected && 'opacity-50' // Dim non-selected options after answering
                                 )}
+                                onClick={() => handleOptionClick(opt)}
+                                disabled={isAnswered}
                             >
-                                <div className="flex items-center justify-start w-full gap-4">
-                                    <svg viewBox="0 0 24 24" className="h-8 w-8 fill-current shrink-0">{React.createElement(optionShapes[index % optionShapes.length])}</svg>
-                                    <span className="flex-grow text-left whitespace-normal break-words" {...renderHtml(option.text)}></span>
+                                <div className={cn(
+                                    "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border-2",
+                                    isSelected ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-transparent"
+                                )}>
+                                    {shape}
                                 </div>
+
+                                <div className="flex-grow font-medium text-lg leading-snug" {...renderHtml(opt.text)} />
+
+                                {showResult && (
+                                    <div className="shrink-0">
+                                        {isCorrect ? (
+                                            <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center">
+                                                <Check className="h-5 w-5" />
+                                            </div>
+                                        ) : isSelected ? (
+                                            <div className="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center">
+                                                <X className="h-5 w-5" />
+                                            </div>
+                                        ) : null}
+                                    </div>
+                                )}
                             </Button>
-                        </div>
-                    )
+                        </motion.div>
+                    );
                 })}
             </div>
         </div>

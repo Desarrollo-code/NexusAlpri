@@ -1042,65 +1042,63 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                 </Card>
                             </motion.div>
                         </TabsContent>
+                    </AnimatePresence>
+                </Tabs>
 
-                    </TabsContent>
-                </AnimatePresence>
-            </Tabs>
+                {/* Modales */}
+                <AlertDialog open={!!itemToDeleteDetails} onOpenChange={(isOpen) => !isOpen && setItemToDeleteDetails(null)}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Confirmar eliminación</AlertDialogTitle>
+                            <AlertDialogDescription>¿Estás seguro? Esta acción eliminará "{itemToDeleteDetails?.name}" y su contenido.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => { itemToDeleteDetails.onDelete(); setItemToDeleteDetails(null) }} className={buttonVariants({ variant: "destructive" })}>Sí, eliminar</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
 
-            {/* Modales */}
-            <AlertDialog open={!!itemToDeleteDetails} onOpenChange={(isOpen) => !isOpen && setItemToDeleteDetails(null)}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Confirmar eliminación</AlertDialogTitle>
-                        <AlertDialogDescription>¿Estás seguro? Esta acción eliminará "{itemToDeleteDetails?.name}" y su contenido.</AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => { itemToDeleteDetails.onDelete(); setItemToDeleteDetails(null) }} className={buttonVariants({ variant: "destructive" })}>Sí, eliminar</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-
-            <TemplateSelectorModal
-                isOpen={showTemplateModal}
-                templates={templates}
-                onClose={() => { setShowTemplateModal(false); setActiveModuleIndexForTemplate(null); }}
-                onSelect={(template) => {
-                    if (activeModuleIndexForTemplate !== null) {
-                        handleAddLesson(activeModuleIndexForTemplate, template);
-                        setShowTemplateModal(false);
-                        setActiveModuleIndexForTemplate(null);
-                    }
-                }}
-            />
-
-            {lessonToSaveAsTemplate && (
-                <SaveTemplateModal
-                    isOpen={!!lessonToSaveAsTemplate}
-                    onClose={() => setLessonToSaveAsTemplate(null)}
-                    onSave={handleSaveTemplate}
+                <TemplateSelectorModal
+                    isOpen={showTemplateModal}
+                    templates={templates}
+                    onClose={() => { setShowTemplateModal(false); setActiveModuleIndexForTemplate(null); }}
+                    onSelect={(template) => {
+                        if (activeModuleIndexForTemplate !== null) {
+                            handleAddLesson(activeModuleIndexForTemplate, template);
+                            setShowTemplateModal(false);
+                            setActiveModuleIndexForTemplate(null);
+                        }
+                    }}
                 />
-            )}
 
-            {isAssignmentModalOpen && (
-                <CourseAssignmentModal
-                    isOpen={isAssignmentModalOpen}
-                    onClose={() => setIsAssignmentModalOpen(false)}
-                    courseId={course.id}
-                    courseTitle={course.title}
-                />
-            )}
+                {lessonToSaveAsTemplate && (
+                    <SaveTemplateModal
+                        isOpen={!!lessonToSaveAsTemplate}
+                        onClose={() => setLessonToSaveAsTemplate(null)}
+                        onSave={handleSaveTemplate}
+                    />
+                )}
 
-            {quizToEdit && (
-                <QuizEditorModal
-                    isOpen={!!quizToEdit}
-                    onClose={() => setQuizToEdit(null)}
-                    quiz={quizToEdit.quiz}
-                    onSave={quizToEdit.onSave}
-                />
-            )}
+                {isAssignmentModalOpen && (
+                    <CourseAssignmentModal
+                        isOpen={isAssignmentModalOpen}
+                        onClose={() => setIsAssignmentModalOpen(false)}
+                        courseId={course.id}
+                        courseTitle={course.title}
+                    />
+                )}
+
+                {quizToEdit && (
+                    <QuizEditorModal
+                        isOpen={!!quizToEdit}
+                        onClose={() => setQuizToEdit(null)}
+                        quiz={quizToEdit.quiz}
+                        onSave={quizToEdit.onSave}
+                    />
+                )}
+            </div>
         </div>
-        </div >
     );
 }
 

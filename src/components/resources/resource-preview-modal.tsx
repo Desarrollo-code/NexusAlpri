@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogFooter } from '@/components/ui/dialog';
 import type { AppResourceType } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Download, Share2, ChevronLeft, ChevronRight, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users, ExternalLink, FileText, Archive as ZipIcon, FileCode, List, X, Edit, Save, Expand, Minimize } from 'lucide-react';
+import { Download, Share2, ChevronLeft, ChevronRight, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users, ExternalLink, FileText, Archive as ZipIcon, FileCode, List, X, Edit, Save, Expand, Minimize, BrainCircuit, Briefcase } from 'lucide-react';
 import { getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
@@ -18,6 +18,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import JSZip from 'jszip';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getInitials } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
 import { addXp, XP_CONFIG, checkFirstDownload } from '@/lib/gamification';
@@ -54,8 +55,8 @@ const DocxPreviewer = ({ url }: { url: string }) => {
         loadDocx();
     }, [url]);
 
-    if (isLoading) return <div className="flex items-center justify-center h-full"><Loader2 className="h-6 w-6 animate-spin"/></div>;
-    if (error) return <div className="p-4 text-center text-destructive-foreground bg-destructive/80 text-sm"><AlertTriangle className="inline-block h-4 w-4 mr-1"/>{error}</div>;
+    if (isLoading) return <div className="flex items-center justify-center h-full"><Loader2 className="h-6 w-6 animate-spin" /></div>;
+    if (error) return <div className="p-4 text-center text-destructive-foreground bg-destructive/80 text-sm"><AlertTriangle className="inline-block h-4 w-4 mr-1" />{error}</div>;
     return <div className="prose prose-sm dark:prose-invert max-w-none p-4 bg-background h-full overflow-auto" dangerouslySetInnerHTML={{ __html: html || '' }} />;
 };
 
@@ -63,7 +64,7 @@ const ZipPreviewer = ({ url }: { url: string }) => {
     const [files, setFiles] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    
+
     useEffect(() => {
         const loadZip = async () => {
             setIsLoading(true);
@@ -75,7 +76,7 @@ const ZipPreviewer = ({ url }: { url: string }) => {
                 const zip = await JSZip.loadAsync(blob);
                 const fileList = Object.keys(zip.files).filter(fileName => !zip.files[fileName].dir);
                 setFiles(fileList);
-            } catch(e) {
+            } catch (e) {
                 setError("No se pudo leer el contenido del archivo ZIP.");
             } finally {
                 setIsLoading(false);
@@ -84,19 +85,19 @@ const ZipPreviewer = ({ url }: { url: string }) => {
         loadZip();
     }, [url]);
 
-    if (isLoading) return <div className="flex items-center justify-center h-full"><Loader2 className="h-6 w-6 animate-spin"/></div>;
-    if (error) return <div className="p-4 text-center text-destructive-foreground bg-destructive/80 text-sm"><AlertTriangle className="inline-block h-4 w-4 mr-1"/>{error}</div>;
-    
+    if (isLoading) return <div className="flex items-center justify-center h-full"><Loader2 className="h-6 w-6 animate-spin" /></div>;
+    if (error) return <div className="p-4 text-center text-destructive-foreground bg-destructive/80 text-sm"><AlertTriangle className="inline-block h-4 w-4 mr-1" />{error}</div>;
+
     return (
         <div className="flex flex-col h-full bg-muted/30">
             <div className="p-4 border-b bg-background/70">
-                <h4 className="font-semibold flex items-center gap-2"><ZipIcon className="h-5 w-5 text-primary"/>Contenido del Archivo ZIP</h4>
+                <h4 className="font-semibold flex items-center gap-2"><ZipIcon className="h-5 w-5 text-primary" />Contenido del Archivo ZIP</h4>
             </div>
             <ScrollArea className="flex-grow">
                 <ul className="p-4 text-sm">
                     {files.map(file => (
                         <li key={file} className="flex items-center gap-2 py-1.5 border-b border-border/50">
-                            <FileText className="h-4 w-4 text-muted-foreground"/>
+                            <FileText className="h-4 w-4 text-muted-foreground" />
                             {file}
                         </li>
                     ))}
@@ -110,9 +111,9 @@ const ZipPreviewer = ({ url }: { url: string }) => {
 const FallbackPreview = ({ resource }: { resource: AppResourceType }) => {
     const isExternalLink = resource.type === 'EXTERNAL_LINK';
     const { user } = useAuth();
-    
+
     const onDownload = () => {
-        if(user) {
+        if (user) {
             addXp(user.id, XP_CONFIG.DOWNLOAD_RESOURCE || 1);
             checkFirstDownload(user.id);
         }
@@ -123,12 +124,12 @@ const FallbackPreview = ({ resource }: { resource: AppResourceType }) => {
             <FallbackIcon resource={resource} />
             <h3 className="text-xl font-semibold text-foreground mt-4">{resource.title}</h3>
             <p className="text-sm mt-2 max-w-sm">
-                {isExternalLink 
+                {isExternalLink
                     ? "Este es un enlace a un recurso externo. Haz clic en el botón para visitarlo."
                     : "No hay una vista previa disponible para este tipo de archivo, pero puedes descargarlo."
                 }
             </p>
-             <div className="mt-6">
+            <div className="mt-6">
                 {isExternalLink ? (
                     <Button asChild>
                         <a href={resource.url!} target="_blank" rel="noopener noreferrer">
@@ -137,7 +138,7 @@ const FallbackPreview = ({ resource }: { resource: AppResourceType }) => {
                         </a>
                     </Button>
                 ) : (
-                     <DownloadButton 
+                    <DownloadButton
                         url={resource.url!}
                         resourceId={resource.id}
                         hasPin={resource.hasPin}
@@ -149,8 +150,8 @@ const FallbackPreview = ({ resource }: { resource: AppResourceType }) => {
     );
 };
 
-const ContentPreview = ({ resource, onPinVerified }: { 
-    resource: AppResourceType; 
+const ContentPreview = ({ resource, onPinVerified }: {
+    resource: AppResourceType;
     onPinVerified: (url: string) => void;
 }) => {
     const { toast } = useToast();
@@ -163,13 +164,13 @@ const ContentPreview = ({ resource, onPinVerified }: {
 
     // This state will hold the verified URL after PIN entry
     const [verifiedUrl, setVerifiedUrl] = useState<string | null>(resource.hasPin ? null : resource.url);
-    
+
     useEffect(() => {
         setVerifiedUrl(resource.hasPin ? null : resource.url);
         setPin('');
         setError(null);
     }, [resource]);
-   
+
     const handlePinSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsVerifying(true);
@@ -186,7 +187,7 @@ const ContentPreview = ({ resource, onPinVerified }: {
             setVerifiedUrl(data.url); // Set the verified URL
             onPinVerified(data.url);
 
-            if(user) {
+            if (user) {
                 addXp(user.id, XP_CONFIG.DOWNLOAD_RESOURCE || 1);
                 checkFirstDownload(user.id);
             }
@@ -197,7 +198,7 @@ const ContentPreview = ({ resource, onPinVerified }: {
             setIsVerifying(false);
         }
     };
-    
+
     const toggleFullScreen = () => {
         if (!previewContainerRef.current) return;
         if (document.fullscreenElement) {
@@ -208,42 +209,34 @@ const ContentPreview = ({ resource, onPinVerified }: {
             });
         }
     }
-     useEffect(() => {
+    useEffect(() => {
         const handleFullscreenChange = () => {
             setIsFullScreen(!!document.fullscreenElement);
         };
         document.addEventListener('fullscreenchange', handleFullscreenChange);
         return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
     }, []);
-    
-    if (resource.hasPin && !verifiedUrl) {
-       return (
-         <div className="flex flex-col items-center justify-center h-full p-4 bg-muted/30">
-            <Lock className="h-16 w-16 text-amber-500 mb-4"/>
-            <h4 className="font-semibold text-xl text-center">Recurso Protegido</h4>
-            <p className="text-sm text-muted-foreground text-center mb-6">Ingresa el PIN para acceder al contenido.</p>
-            <form onSubmit={handlePinSubmit} className="flex flex-col items-center gap-2 w-full max-w-xs">
-                <Input type="password" value={pin} onChange={(e) => setPin(e.target.value)} placeholder="****" disabled={isVerifying} className="text-center text-lg h-12" maxLength={8} />
-                <Button type="submit" disabled={isVerifying || !pin} className="w-full">
-                    {isVerifying ? <Loader2 className="h-4 w-4 animate-spin"/> : 'Desbloquear'}
-                </Button>
-            </form>
-            {error && <p className="text-xs text-destructive mt-2">{error}</p>}
-         </div>
-       );
-    }
-    
-    const displayUrl = verifiedUrl || resource.url;
-    
-    const renderPreview = () => {
-        if (resource.quiz) {
-            return (
-                <div className="flex items-center justify-center h-full w-full bg-muted">
-                    <QuizViewer quiz={resource.quiz} lessonId="resource-quiz" isCreatorPreview={false} isEnrolled={true} />
-                </div>
-            )
-        }
 
+    if (resource.hasPin && !verifiedUrl) {
+        return (
+            <div className="flex flex-col items-center justify-center h-full p-4 bg-muted/30">
+                <Lock className="h-16 w-16 text-amber-500 mb-4" />
+                <h4 className="font-semibold text-xl text-center">Recurso Protegido</h4>
+                <p className="text-sm text-muted-foreground text-center mb-6">Ingresa el PIN para acceder al contenido.</p>
+                <form onSubmit={handlePinSubmit} className="flex flex-col items-center gap-2 w-full max-w-xs">
+                    <Input type="password" value={pin} onChange={(e) => setPin(e.target.value)} placeholder="****" disabled={isVerifying} className="text-center text-lg h-12" maxLength={8} />
+                    <Button type="submit" disabled={isVerifying || !pin} className="w-full">
+                        {isVerifying ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Desbloquear'}
+                    </Button>
+                </form>
+                {error && <p className="text-xs text-destructive mt-2">{error}</p>}
+            </div>
+        );
+    }
+
+    const displayUrl = verifiedUrl || resource.url;
+
+    const renderPreview = () => {
         if (displayUrl) {
             const isPdf = displayUrl.toLowerCase().endsWith('.pdf');
             const youtubeId = getYoutubeVideoId(displayUrl);
@@ -264,12 +257,12 @@ const ContentPreview = ({ resource, onPinVerified }: {
 
     return (
         <div ref={previewContainerRef} className="relative w-full h-full group bg-muted/20">
-             {renderPreview()}
-             <div className="absolute top-2 right-2 z-20">
-                 <Button variant="secondary" size="icon" className="h-10 w-10 opacity-0 group-hover:opacity-100 transition-opacity rounded-full shadow-lg" onClick={toggleFullScreen}>
-                    {isFullScreen ? <Minimize className="h-5 w-5"/> : <Expand className="h-5 w-5"/>}
-                 </Button>
-             </div>
+            {renderPreview()}
+            <div className="absolute top-2 right-2 z-20">
+                <Button variant="secondary" size="icon" className="h-10 w-10 opacity-0 group-hover:opacity-100 transition-opacity rounded-full shadow-lg" onClick={toggleFullScreen}>
+                    {isFullScreen ? <Minimize className="h-5 w-5" /> : <Expand className="h-5 w-5" />}
+                </Button>
+            </div>
         </div>
     );
 }
@@ -282,27 +275,27 @@ const ResourceDetailsContent = ({ resource }: { resource: AppResourceType }) => 
             <p className="font-semibold text-base">{resource.title}</p>
         </div>
         {resource.description && (
-             <div>
+            <div>
                 <h4 className="font-medium text-muted-foreground mb-1">Descripción</h4>
                 <p className="text-muted-foreground whitespace-pre-wrap">{resource.description}</p>
             </div>
         )}
-         <div>
+        <div>
             <h4 className="font-medium text-muted-foreground mb-2">Información</h4>
             <div className="space-y-2">
-                <div className="flex items-center gap-2"><User className="h-4 w-4 shrink-0"/><span>Subido por: <strong>{resource.uploaderName}</strong></span></div>
-                <div className="flex items-center gap-2"><Calendar className="h-4 w-4 shrink-0"/><span>Fecha: <strong>{new Date(resource.uploadDate).toLocaleDateString()}</strong></span></div>
-                <div className="flex items-center gap-2"><Tag className="h-4 w-4 shrink-0"/><span>Categoría: <Badge variant="secondary">{resource.category}</Badge></span></div>
+                <div className="flex items-center gap-2"><User className="h-4 w-4 shrink-0" /><span>Subido por: <strong>{resource.uploaderName}</strong></span></div>
+                <div className="flex items-center gap-2"><Calendar className="h-4 w-4 shrink-0" /><span>Fecha: <strong>{new Date(resource.uploadDate).toLocaleDateString()}</strong></span></div>
+                <div className="flex items-center gap-2"><Tag className="h-4 w-4 shrink-0" /><span>Categoría: <Badge variant="secondary">{resource.category}</Badge></span></div>
             </div>
-         </div>
-         <Separator/>
-         <div>
+        </div>
+        <Separator />
+        <div>
             <h4 className="font-medium text-muted-foreground mb-2">Permisos</h4>
-             <div className="flex items-center gap-2">
-                {resource.ispublic ? <Globe className="h-4 w-4 text-green-500 shrink-0"/> : <Users className="h-4 w-4 text-blue-500 shrink-0"/>}
-                <span>{resource.ispublic ? 'Acceso Público' : 'Compartido con usuarios específicos'}</span>
+            <div className="flex items-center gap-2">
+                {resource.sharingMode === 'PUBLIC' ? <Globe className="h-4 w-4 text-green-500 shrink-0" /> : <Users className="h-4 w-4 text-blue-500 shrink-0" />}
+                <span>{resource.sharingMode === 'PUBLIC' ? 'Acceso Público' : (resource.sharingMode === 'PROCESS' ? 'Compartido por Proceso' : 'Privado')}</span>
             </div>
-            {!resource.ispublic && resource.sharedWith && resource.sharedWith.length > 0 && (
+            {resource.sharingMode === 'PRIVATE' && resource.sharedWith && resource.sharedWith.length > 0 && (
                 <div className="mt-2 space-y-2 pl-6">
                     {resource.sharedWith.map(user => (
                         <div key={user.id} className="flex items-center gap-2">
@@ -312,7 +305,17 @@ const ResourceDetailsContent = ({ resource }: { resource: AppResourceType }) => 
                     ))}
                 </div>
             )}
-         </div>
+            {resource.sharingMode === 'PROCESS' && resource.sharedWithProcesses && resource.sharedWithProcesses.length > 0 && (
+                <div className="mt-2 space-y-2 pl-6">
+                    {resource.sharedWithProcesses.map(process => (
+                        <div key={process.id} className="flex items-center gap-2 text-muted-foreground italic">
+                            <Briefcase className="h-4 w-4" />
+                            <span>{process.name}</span>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
     </div>
 );
 
@@ -326,6 +329,7 @@ interface ResourcePreviewModalProps {
 export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ resource, onClose, onNavigate }) => {
     const [pinVerifiedUrl, setPinVerifiedUrl] = useState<string | null>(null);
     const [showDetails, setShowDetails] = useState(false);
+    const [activeTab, setActiveTab] = useState<'content' | 'quiz'>('content');
     const isMobile = useIsMobile();
     const { user } = useAuth();
 
@@ -335,9 +339,9 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
             setShowDetails(false);
         }
     }, [resource]);
-    
+
     if (!resource) return null;
-    
+
     const fileExtension = resource.filetype?.split('/')[1] || resource.url?.split('.').pop() || 'file';
     const { label, bgColor } = getFileTypeDetails(fileExtension);
 
@@ -345,42 +349,69 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
         <>
             <Dialog open={!!resource} onOpenChange={(isOpen) => !isOpen && onClose()}>
                 <DialogContent className="w-[95vw] h-[90vh] max-w-6xl p-0 flex flex-col bg-background/80 backdrop-blur-lg gap-0">
-                  <DialogHeader className="p-4 flex-shrink-0 h-16 px-4 flex flex-row justify-between items-center border-b z-10 bg-background/70">
-                    <div className="flex items-center gap-3 overflow-hidden flex-1">
-                      <div className="w-auto h-8 flex items-center justify-center rounded-md px-2" style={{ backgroundColor: bgColor }}>
-                        <span className="text-xs font-bold uppercase text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.2)' }}>{label}</span>
-                      </div>
-                      <DialogTitle className="font-semibold truncate text-foreground">{resource.title}</DialogTitle>
+                    <DialogHeader className="p-4 flex-shrink-0 h-16 px-4 flex flex-row justify-between items-center border-b z-10 bg-background/70">
+                        <div className="flex items-center gap-3 overflow-hidden flex-1">
+                            <div className="w-auto h-8 flex items-center justify-center rounded-md px-2" style={{ backgroundColor: bgColor }}>
+                                <span className="text-xs font-bold uppercase text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.2)' }}>{label}</span>
+                            </div>
+                            <DialogTitle className="font-semibold truncate text-foreground">{resource.title}</DialogTitle>
+                        </div>
+                        <DialogClose asChild><Button variant="ghost" size="icon" className="h-8 w-8"><X className="h-4 w-4" /></Button></DialogClose>
+                    </DialogHeader>
+                    <div className="flex-grow flex relative overflow-hidden bg-muted/5">
+                        <div className="flex-grow flex-1 relative flex flex-col">
+                            {resource.quiz && (
+                                <div className="px-4 py-3 border-b bg-background/50 backdrop-blur-sm z-20 flex justify-center">
+                                    <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="w-auto">
+                                        <TabsList className="bg-muted/50 p-1">
+                                            <TabsTrigger value="content" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                                                <FileText className="h-4 w-4 mr-2" /> Contenido
+                                            </TabsTrigger>
+                                            <TabsTrigger value="quiz" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                                                <BrainCircuit className="h-4 w-4 mr-2" /> Evaluación
+                                            </TabsTrigger>
+                                        </TabsList>
+                                    </Tabs>
+                                </div>
+                            )}
+                            <div className="flex-grow relative w-full h-full overflow-hidden">
+                                {activeTab === 'quiz' && resource.quiz ? (
+                                    <div className="absolute inset-0 z-10 bg-background overflow-auto p-4 md:p-8 thin-scrollbar">
+                                        <div className="max-w-4xl mx-auto">
+                                            <QuizViewer
+                                                quiz={resource.quiz}
+                                                lessonId={`resource-${resource.id}`}
+                                                isCreatorPreview={false}
+                                                isEnrolled={true}
+                                            />
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <ContentPreview resource={resource} onPinVerified={setPinVerifiedUrl} />
+                                )}
+                            </div>
+                        </div>
+                        {!isMobile && showDetails && (
+                            <aside className="w-80 h-full flex-shrink-0 border-l bg-background/70">
+                                <ScrollArea className="h-full p-4">
+                                    <ResourceDetailsContent resource={resource} />
+                                </ScrollArea>
+                            </aside>
+                        )}
                     </div>
-                    <DialogClose asChild><Button variant="ghost" size="icon" className="h-8 w-8"><X className="h-4 w-4"/></Button></DialogClose>
-                  </DialogHeader>
-                  <div className="flex-grow flex relative overflow-hidden">
-                    <div className="flex-grow flex-1 relative">
-                      <div className="absolute inset-0 flex items-center justify-center bg-muted/20">
-                          <ContentPreview resource={resource} onPinVerified={setPinVerifiedUrl} />
-                      </div>
-                    </div>
-                    {!isMobile && showDetails && (
-                      <aside className="w-80 h-full flex-shrink-0 border-l bg-background/70">
-                        <ScrollArea className="h-full p-4">
-                          <ResourceDetailsContent resource={resource} />
-                        </ScrollArea>
-                      </aside>
-                    )}
-                  </div>
-                  <DialogFooter className="p-2 border-t flex-shrink-0 bg-background/70 justify-between items-center">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => setShowDetails(prev => !prev)}>
-                        <Info className="h-5 w-5"/>
-                        <span className="sr-only">Ver detalles</span>
-                    </Button>
-                    <div className="flex items-center gap-2">
-                         <DownloadButton url={resource.url} resourceId={resource.id} hasPin={resource.hasPin} onDownloadSuccess={() => user && addXp(user.id, XP_CONFIG.DOWNLOAD_RESOURCE)} variant="default" size="sm" />
-                    </div>
-                  </DialogFooter>
+                    <DialogFooter className="p-2 border-t flex-shrink-0 bg-background/70 justify-between items-center">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => setShowDetails(prev => !prev)}>
+                            <Info className="h-5 w-5" />
+                            <span className="sr-only">Ver detalles</span>
+                        </Button>
+                        <div className="flex items-center gap-2">
+                            {resource.url && <DownloadButton url={resource.url} resourceId={resource.id} hasPin={resource.hasPin} onDownloadSuccess={() => user && addXp(user.id, XP_CONFIG.DOWNLOAD_RESOURCE)} variant="default" size="sm" />}
+                        </div>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
-            <Button variant="ghost" size="icon" onClick={() => onNavigate('prev')} className="fixed left-2 md:left-4 top-1/2 -translate-y-1/2 z-[100] h-12 w-12 bg-background/50 hover:bg-background/80 rounded-full shadow-lg"><ChevronLeft/></Button>
-            <Button variant="ghost" size="icon" onClick={() => onNavigate('next')} className="fixed right-2 md:right-4 top-1/2 -translate-y-1/2 z-[100] h-12 w-12 bg-background/50 hover:bg-background/80 rounded-full shadow-lg"><ChevronRight/></Button>
+            <Button variant="ghost" size="icon" onClick={() => onNavigate('prev')} className="fixed left-2 md:left-4 top-1/2 -translate-y-1/2 z-[100] h-12 w-12 bg-background/50 hover:bg-background/80 rounded-full shadow-lg"><ChevronLeft /></Button>
+            <Button variant="ghost" size="icon" onClick={() => onNavigate('next')} className="fixed right-2 md:right-4 top-1/2 -translate-y-1/2 z-[100] h-12 w-12 bg-background/50 hover:bg-background/80 rounded-full shadow-lg"><ChevronRight /></Button>
         </>
     );
 };

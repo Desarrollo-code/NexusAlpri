@@ -17,8 +17,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import { cn } from '@/lib/utils';
-import { Loader2, FolderPlus, Save, Globe, Users, Briefcase, PlusCircle, Edit } from 'lucide-react';
-import type { AppResourceType, User as AppUser, Process, ResourceSharingMode } from '@/types';
+import { Loader2, FolderPlus, Save, Globe, Users, Briefcase, PlusCircle, Edit, BrainCircuit } from 'lucide-react';
+import type { AppResourceType, User as AppUser, Process, ResourceSharingMode, Quiz as AppQuiz } from '@/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -26,6 +26,7 @@ import { Identicon } from '@/components/ui/identicon';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FolderContentView } from './folder-content-view';
+import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
 
 interface FolderEditorModalProps {
     isOpen: boolean;
@@ -67,6 +68,9 @@ export function FolderEditorModal({ isOpen, onClose, parentId, onSave, folderToE
     const [folderContent, setFolderContent] = useState<AppResourceType[]>([]);
     const [isLoadingContent, setIsLoadingContent] = useState(false);
 
+    const [quiz, setQuiz] = useState<AppQuiz | null>(null);
+    const [isQuizEditorOpen, setIsQuizEditorOpen] = useState(false);
+
     const [isSaving, setIsSaving] = useState(false);
 
     const flattenProcesses = (processList: any[], level = 0): FlatProcess[] => {
@@ -94,6 +98,7 @@ export function FolderEditorModal({ isOpen, onClose, parentId, onSave, folderToE
                 setSharedWithUserIds(folderToEdit.sharedWith?.map(u => u.id) || []);
                 setSharedWithProcessIds(folderToEdit.sharedWithProcesses?.map(p => p.id) || []);
                 setCollaboratorIds(folderToEdit.collaborators?.map(u => u.id) || []);
+                setQuiz(folderToEdit.quiz || null);
 
                 // Load content
                 setIsLoadingContent(true);
@@ -113,6 +118,7 @@ export function FolderEditorModal({ isOpen, onClose, parentId, onSave, folderToE
                 setSharedWithProcessIds([]);
                 setCollaboratorIds([]);
                 setFolderContent([]);
+                setQuiz(null);
             }
 
             if (user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') {
@@ -172,7 +178,8 @@ export function FolderEditorModal({ isOpen, onClose, parentId, onSave, folderToE
                 title, description, category, parentId,
                 type: 'FOLDER',
                 tags: tags.join(','),
-                sharingMode, sharedWithUserIds, sharedWithProcessIds, collaboratorIds
+                sharingMode, sharedWithUserIds, sharedWithProcessIds, collaboratorIds,
+                quiz
             };
 
             const response = await fetch(endpoint, {
@@ -261,6 +268,21 @@ export function FolderEditorModal({ isOpen, onClose, parentId, onSave, folderToE
                                                 </div>
                                             </CardContent>
                                         </Card>
+
+                                        <Card className="overflow-hidden border-primary/20 bg-primary/5">
+                                            <CardHeader className="pb-3 text-center">
+                                                <CardTitle className="text-base flex items-center justify-center gap-2">
+                                                    <BrainCircuit className="h-5 w-5 text-primary" /> Evaluación del Conocimiento
+                                                </CardTitle>
+                                                <CardDescription className="text-xs">Valida que el contenido ha sido comprendido mediante un examen rápido.</CardDescription>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <Button className="w-full bg-background hover:bg-muted border-primary/30 text-foreground" variant="outline" type="button" onClick={() => setIsQuizEditorOpen(true)}>
+                                                    {quiz ? <Edit className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />}
+                                                    {quiz ? 'Modificar Quiz Existente' : 'Añadir Quiz de Evaluación'}
+                                                </Button>
+                                            </CardContent>
+                                        </Card>
                                     </TabsContent>
                                     <TabsContent value="content" className="space-y-6 m-0">
                                         <Card>
@@ -310,7 +332,34 @@ export function FolderEditorModal({ isOpen, onClose, parentId, onSave, folderToE
                     </DialogFooter>
                 </form>
             </DialogContent>
+            {isQuizEditorOpen && (
+                <QuizEditorWrapper
+                    isOpen={isQuizEditorOpen}
+                    onClose={() => setIsQuizEditorOpen(false)}
+                    quiz={quiz}
+                    onSave={setQuiz}
+                />
+            )}
         </Dialog>
+    );
+}
+
+function QuizEditorWrapper({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, onClose: () => void, quiz: AppQuiz | null, onSave: (q: AppQuiz) => void }) {
+    return (
+        <QuizEditorModal
+            isOpen={isOpen}
+            onClose={onClose}
+            quiz={quiz || {
+                id: `new-quiz-${Date.now()}`,
+                title: 'Evaluación de Carpeta',
+                questions: [],
+                maxAttempts: null,
+            }}
+            onSave={(updatedQuiz) => {
+                onSave(updatedQuiz);
+                onClose();
+            }}
+        />
     );
 }
 
