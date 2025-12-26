@@ -469,23 +469,25 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                         </div>
 
                                         {/* Main: Question Editor */}
-                                        <div className="md:col-span-9 flex flex-col h-full bg-background/20 overflow-hidden">
-                                            <ScrollArea className="flex-grow">
-                                                <div className="p-8 max-w-4xl mx-auto">
+                                        <div className="md:col-span-9 flex flex-col h-full bg-background/5 overflow-hidden">
+                                            <ScrollArea className="flex-grow w-full h-full scrollbar-visible">
+                                                <div className="p-10 w-full">
                                                     {activeQuestion ? (
-                                                        <QuestionEditor
-                                                            question={activeQuestion}
-                                                            isQuiz={true}
-                                                            onQuestionChange={handleQuestionChange}
-                                                            onOptionChange={handleOptionChange}
-                                                            onSetCorrect={handleSetCorrect}
-                                                            onOptionAdd={addOption}
-                                                            onOptionDelete={deleteOption}
-                                                        />
+                                                        <div className="max-w-[1200px] mx-auto">
+                                                            <QuestionEditor
+                                                                question={activeQuestion}
+                                                                isQuiz={true}
+                                                                onQuestionChange={handleQuestionChange}
+                                                                onOptionChange={handleOptionChange}
+                                                                onSetCorrect={handleSetCorrect}
+                                                                onOptionAdd={addOption}
+                                                                onOptionDelete={deleteOption}
+                                                            />
+                                                        </div>
                                                     ) : (
-                                                        <div className="flex flex-col items-center justify-center h-[50vh] text-muted-foreground opacity-50">
-                                                            <HelpCircle className="h-16 w-16 mb-4" />
-                                                            <p className="font-bold text-lg">Selecciona una pregunta para editarla.</p>
+                                                        <div className="flex flex-col items-center justify-center h-[60vh] text-muted-foreground opacity-50">
+                                                            <HelpCircle className="h-20 w-20 mb-6" />
+                                                            <p className="font-bold text-xl uppercase tracking-widest">Selecciona una pregunta</p>
                                                         </div>
                                                     )}
                                                 </div>
@@ -499,75 +501,77 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, y: -20 }}
-                                        className="p-12 h-full overflow-y-auto"
+                                        className="h-full"
                                     >
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-6xl mx-auto">
-                                            <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-3xl overflow-hidden">
-                                                <CardHeader className="bg-primary/5 pb-6 pt-8 px-8">
-                                                    <CardTitle className="text-2xl font-black flex items-center gap-3">
-                                                        <Info className="h-6 w-6 text-primary" /> Detalles del Quiz
-                                                    </CardTitle>
-                                                </CardHeader>
-                                                <CardContent className="p-8 space-y-8">
-                                                    <div className="space-y-3">
-                                                        <Label htmlFor="quiz-title" className="text-[15px] font-bold text-muted-foreground/80 ml-1">Título del Quiz</Label>
-                                                        <Input
-                                                            id="quiz-title"
-                                                            value={localQuiz.title}
-                                                            onChange={e => setLocalQuiz(p => ({ ...p, title: e.target.value }))}
-                                                            className="text-xl font-black h-16 rounded-2xl border-primary/10 focus:ring-primary/20 bg-background/50 px-6"
-                                                            placeholder="Ej: Quiz Final de Módulo"
-                                                        />
-                                                    </div>
-                                                    <div className="space-y-3">
-                                                        <Label htmlFor="quiz-description" className="text-[15px] font-bold text-muted-foreground/80 ml-1">Instrucciones o Descripción</Label>
-                                                        <Textarea
-                                                            id="quiz-description"
-                                                            value={localQuiz.description || ''}
-                                                            onChange={e => setLocalQuiz(p => ({ ...p, description: e.target.value }))}
-                                                            rows={4}
-                                                            className="text-base font-semibold rounded-2xl border-primary/10 focus:ring-primary/20 bg-background/50 p-6 resize-none"
-                                                            placeholder="Instrucciones para tus alumnos..."
-                                                        />
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
+                                        <ScrollArea className="h-full w-full scrollbar-visible">
+                                            <div className="p-12 grid grid-cols-1 md:grid-cols-2 gap-10 max-w-[1400px] mx-auto">
+                                                <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-3xl overflow-hidden">
+                                                    <CardHeader className="bg-primary/5 pb-6 pt-8 px-8">
+                                                        <CardTitle className="text-2xl font-black flex items-center gap-3">
+                                                            <Info className="h-6 w-6 text-primary" /> Detalles del Quiz
+                                                        </CardTitle>
+                                                    </CardHeader>
+                                                    <CardContent className="p-8 space-y-8">
+                                                        <div className="space-y-3">
+                                                            <Label htmlFor="quiz-title" className="text-[15px] font-bold text-muted-foreground/80 ml-1">Título del Quiz</Label>
+                                                            <Input
+                                                                id="quiz-title"
+                                                                value={localQuiz.title}
+                                                                onChange={e => setLocalQuiz(p => ({ ...p, title: e.target.value }))}
+                                                                className="text-xl font-black h-16 rounded-2xl border-primary/10 focus:ring-primary/20 bg-background/50 px-6"
+                                                                placeholder="Ej: Quiz Final de Módulo"
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-3">
+                                                            <Label htmlFor="quiz-description" className="text-[15px] font-bold text-muted-foreground/80 ml-1">Instrucciones o Descripción</Label>
+                                                            <Textarea
+                                                                id="quiz-description"
+                                                                value={localQuiz.description || ''}
+                                                                onChange={e => setLocalQuiz(p => ({ ...p, description: e.target.value }))}
+                                                                rows={4}
+                                                                className="text-base font-semibold rounded-2xl border-primary/10 focus:ring-primary/20 bg-background/50 p-6 resize-none"
+                                                                placeholder="Instrucciones para tus alumnos..."
+                                                            />
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
 
-                                            <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-3xl overflow-hidden">
-                                                <CardHeader className="bg-primary/5 pb-6 pt-8 px-8">
-                                                    <CardTitle className="text-2xl font-black flex items-center gap-3">
-                                                        <Timer className="h-6 w-6 text-primary" /> Configuración de Juego
-                                                    </CardTitle>
-                                                </CardHeader>
-                                                <CardContent className="p-8 space-y-8">
-                                                    <div className="space-y-3">
-                                                        <Label htmlFor="quiz-max-attempts" className="text-[15px] font-bold text-muted-foreground/80 ml-1">Límite de Intentos</Label>
-                                                        <Input
-                                                            id="quiz-max-attempts"
-                                                            type="number"
-                                                            value={localQuiz.maxAttempts || ''}
-                                                            onChange={e => setLocalQuiz(p => ({ ...p, maxAttempts: e.target.value ? parseInt(e.target.value) : null }))}
-                                                            className="text-xl font-black h-16 rounded-2xl border-primary/10 focus:ring-primary/20 bg-background/50 px-6"
-                                                            placeholder="Ilimitados"
-                                                        />
-                                                        <p className="text-[11px] font-medium text-muted-foreground/60 pl-1 italic">Deja vacío para que no haya límite.</p>
-                                                    </div>
-                                                    <div className="space-y-3">
-                                                        <Label htmlFor="quiz-timer-style" className="text-[15px] font-bold text-muted-foreground/80 ml-1">Estilo Visual del Tiempo</Label>
-                                                        <Select value={localQuiz.timerStyle || 'circular'} onValueChange={(v) => setLocalQuiz(p => ({ ...p, timerStyle: v }))}>
-                                                            <SelectTrigger id="quiz-timer-style" className="h-16 rounded-2xl border-primary/10 bg-background/50 text-base font-bold px-6">
-                                                                <SelectValue />
-                                                            </SelectTrigger>
-                                                            <SelectContent className="rounded-2xl border-primary/10 overflow-hidden">
-                                                                <SelectItem value="circular" className="rounded-xl py-3 font-bold">Reloj Circular</SelectItem>
-                                                                <SelectItem value="bar" className="rounded-xl py-3 font-bold">Barra de Progreso</SelectItem>
-                                                                <SelectItem value="pill" className="rounded-xl py-3 font-bold">Píldora Flotante</SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
-                                        </div>
+                                                <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-3xl overflow-hidden">
+                                                    <CardHeader className="bg-primary/5 pb-6 pt-8 px-8">
+                                                        <CardTitle className="text-2xl font-black flex items-center gap-3">
+                                                            <Timer className="h-6 w-6 text-primary" /> Configuración de Juego
+                                                        </CardTitle>
+                                                    </CardHeader>
+                                                    <CardContent className="p-8 space-y-8">
+                                                        <div className="space-y-3">
+                                                            <Label htmlFor="quiz-max-attempts" className="text-[15px] font-bold text-muted-foreground/80 ml-1">Límite de Intentos</Label>
+                                                            <Input
+                                                                id="quiz-max-attempts"
+                                                                type="number"
+                                                                value={localQuiz.maxAttempts || ''}
+                                                                onChange={e => setLocalQuiz(p => ({ ...p, maxAttempts: e.target.value ? parseInt(e.target.value) : null }))}
+                                                                className="text-xl font-black h-16 rounded-2xl border-primary/10 focus:ring-primary/20 bg-background/50 px-6"
+                                                                placeholder="Ilimitados"
+                                                            />
+                                                            <p className="text-[11px] font-medium text-muted-foreground/60 pl-1 italic">Deja vacío para que no haya límite.</p>
+                                                        </div>
+                                                        <div className="space-y-3">
+                                                            <Label htmlFor="quiz-timer-style" className="text-[15px] font-bold text-muted-foreground/80 ml-1">Estilo Visual del Tiempo</Label>
+                                                            <Select value={localQuiz.timerStyle || 'circular'} onValueChange={(v) => setLocalQuiz(p => ({ ...p, timerStyle: v }))}>
+                                                                <SelectTrigger id="quiz-timer-style" className="h-16 rounded-2xl border-primary/10 bg-background/50 text-base font-bold px-6">
+                                                                    <SelectValue />
+                                                                </SelectTrigger>
+                                                                <SelectContent className="rounded-2xl border-primary/10 overflow-hidden">
+                                                                    <SelectItem value="circular" className="rounded-xl py-3 font-bold">Reloj Circular</SelectItem>
+                                                                    <SelectItem value="bar" className="rounded-xl py-3 font-bold">Barra de Progreso</SelectItem>
+                                                                    <SelectItem value="pill" className="rounded-xl py-3 font-bold">Píldora Flotante</SelectItem>
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
+                                            </div>
+                                        </ScrollArea>
                                     </motion.div>
                                 </TabsContent>
                             </AnimatePresence>
@@ -577,8 +581,8 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
             </Dialog>
 
             <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-                <DialogContent className="max-w-4xl p-0">
-                    <div className="bg-gradient-to-br from-background via-muted to-background p-8 rounded-lg">
+                <DialogContent className="max-w-6xl p-0 overflow-hidden rounded-3xl border-primary/20 bg-background/40 backdrop-blur-3xl">
+                    <div className="p-10">
                         <QuizGameView form={quizPreviewForm as any} isEditorPreview={true} activeQuestionIndex={activeQuestionIndex} />
                     </div>
                 </DialogContent>
