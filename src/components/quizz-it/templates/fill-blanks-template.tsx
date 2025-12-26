@@ -1,14 +1,16 @@
 // src/components/quizz-it/templates/fill-blanks-template.tsx
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { renderHtml } from '../../../lib/html-utils';
+import type { AppQuestion } from '@/types';
 
 interface FillBlanksTemplateProps {
-    question: any;
+    question: AppQuestion;
     onAnswer: (isCorrect: boolean, answerData: any) => void;
 }
 
@@ -69,7 +71,7 @@ export function FillBlanksTemplate({ question, onAnswer }: FillBlanksTemplatePro
                             </span>
                         );
                     }
-                    return <span key={i} dangerouslySetInnerHTML={{ __html: part }} />;
+                    return <span key={i} {...renderHtml(part)} />;
                 })}
             </div>
 

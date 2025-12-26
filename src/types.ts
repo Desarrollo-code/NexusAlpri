@@ -5,18 +5,18 @@ import type { Prisma, User as PrismaUser } from '@prisma/client';
 export type UserRole = 'ADMINISTRATOR' | 'INSTRUCTOR' | 'STUDENT';
 
 export interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatar: string | null;
-  role: UserRole;
-  isTwoFactorEnabled?: boolean;
-  registeredDate?: string | Date;
-  theme?: string | null;
-  xp?: number | null;
-  isActive?: boolean;
-  showInLeaderboard?: boolean;
-  customPermissions?: string[]; // Para permisos granulares
+    id: string;
+    name: string;
+    email: string;
+    avatar: string | null;
+    role: UserRole;
+    isTwoFactorEnabled?: boolean;
+    registeredDate?: string | Date;
+    theme?: string | null;
+    xp?: number | null;
+    isActive?: boolean;
+    showInLeaderboard?: boolean;
+    customPermissions?: string[]; // Para permisos granulares
 }
 
 export interface PlatformSettings {
@@ -119,58 +119,59 @@ export interface Quiz {
     questions: Question[];
     contentBlockId?: string | null; // From original schema
     resourceId?: string | null; // New for resource quizzes
+    timerStyle?: string | null;
 }
 
 
 export interface ContentBlock {
-  id: string;
-  type: LessonType;
-  content?: string;
-  order: number;
-  quiz?: Quiz;
+    id: string;
+    type: LessonType;
+    content?: string;
+    order: number;
+    quiz?: Quiz;
 }
 
 export interface Lesson {
-  id: string;
-  title: string;
-  order: number;
-  contentBlocks: ContentBlock[];
+    id: string;
+    title: string;
+    order: number;
+    contentBlocks: ContentBlock[];
 }
 
 export interface Module {
-  id: string;
-  title: string;
-  order: number;
-  lessons: Lesson[];
+    id: string;
+    title: string;
+    order: number;
+    lessons: Lesson[];
 }
 
 export type CoursePrerequisiteInfo = {
-  id: string;
-  title: string;
+    id: string;
+    title: string;
 } | null;
 
 export interface Course extends Omit<Prisma.CourseGetPayload<{}>, 'instructor' | 'prerequisite' | 'isMandatory' | 'startDate' | 'endDate' | 'certificateTemplateId'> {
-  instructor: {
-      id: string;
-      name: string;
-      avatar: string | null;
-  };
-  modulesCount: number;
-  lessonsCount?: number;
-  modules: Module[];
-  isEnrolled?: boolean;
-  enrollmentsCount?: number;
-  averageCompletion?: number;
-  publicationDate?: Date | null;
-  startDate?: Date | string | null;
-  endDate?: Date | string | null;
-  prerequisite: CoursePrerequisiteInfo;
-  userProgress?: {
-      completedAt: Date | null;
-  }[] | null;
-  prerequisiteCompleted?: boolean;
-  isMandatory: boolean;
-  certificateTemplateId?: string | null;
+    instructor: {
+        id: string;
+        name: string;
+        avatar: string | null;
+    };
+    modulesCount: number;
+    lessonsCount?: number;
+    modules: Module[];
+    isEnrolled?: boolean;
+    enrollmentsCount?: number;
+    averageCompletion?: number;
+    publicationDate?: Date | null;
+    startDate?: Date | string | null;
+    endDate?: Date | string | null;
+    prerequisite: CoursePrerequisiteInfo;
+    userProgress?: {
+        completedAt: Date | null;
+    }[] | null;
+    prerequisiteCompleted?: boolean;
+    isMandatory: boolean;
+    certificateTemplateId?: string | null;
 }
 
 
@@ -213,7 +214,7 @@ export type ResourceType = 'FOLDER' | 'DOCUMENT' | 'GUIDE' | 'MANUAL' | 'POLICY'
 export type ResourceStatus = 'ACTIVE' | 'ARCHIVED';
 export type ResourceSharingMode = 'PUBLIC' | 'PRIVATE' | 'PROCESS';
 
-export interface AppResourceType extends Omit<Prisma.EnterpriseResourceGetPayload<{ include: { quiz: { include: { questions: { include: { options: true }}}}, sharedWithProcesses: true, collaborators: true }}>, 'tags' | 'status' | 'filetype'> {
+export interface AppResourceType extends Omit<Prisma.EnterpriseResourceGetPayload<{ include: { quiz: { include: { questions: { include: { options: true } } } }, sharedWithProcesses: true, collaborators: true } }>, 'tags' | 'status' | 'filetype'> {
     tags: string[];
     uploaderName: string;
     hasPin: boolean;
@@ -235,9 +236,9 @@ export interface Reaction {
     userId: string;
     reaction: string;
     user: {
-      id: string;
-      name: string | null;
-      avatar?: string | null;
+        id: string;
+        name: string | null;
+        avatar?: string | null;
     };
 }
 
@@ -262,8 +263,8 @@ export interface Announcement {
     reads: { id: string; name: string | null; avatar?: string | null; }[];
     reactions: Reaction[];
     _count: {
-      reads: number;
-      reactions: number;
+        reads: number;
+        reactions: number;
     };
 }
 
@@ -308,9 +309,9 @@ export interface CalendarEvent {
 }
 
 // --- SECURITY ---
-export type SecurityLogEvent = 
+export type SecurityLogEvent =
     | 'SUCCESSFUL_LOGIN'
-    | 'FAILED_LOGIN_ATTEMPT' 
+    | 'FAILED_LOGIN_ATTEMPT'
     | 'PASSWORD_CHANGE_SUCCESS'
     | 'TWO_FACTOR_ENABLED'
     | 'TWO_FACTOR_DISABLED'
@@ -388,27 +389,28 @@ export { type MotivationalMessageTriggerType } from '@prisma/client';
 
 // --- FORMS ---
 export type FormFieldOption = Omit<Prisma.FormFieldOptionGetPayload<{}>, 'id'> & {
-  id: string; // Ensure id is always a string on the client
+    id: string; // Ensure id is always a string on the client
 };
 
 export type AppQuestion = Omit<Prisma.FormFieldGetPayload<{
-  include: { options: true }
+    include: { options: true }
 }>, 'options' | 'id'> & {
     id: string; // Client-side ID
     options: FormFieldOption[];
+    text: string;
 };
 
 
 export type AppForm = Omit<Prisma.FormGetPayload<{
-  include: {
-    fields: { include: { options: true } },
-    _count: { select: { responses: true } },
-    creator: { select: { name: true } },
-    sharedWith: { select: { id: true, name: true, avatar: true } }
-  }
+    include: {
+        fields: { include: { options: true } },
+        _count: { select: { responses: true } },
+        creator: { select: { name: true } },
+        sharedWith: { select: { id: true, name: true, avatar: true } }
+    }
 }>, 'fields'> & {
-  fields: AppQuestion[];
-  timerStyle?: string | null;
+    fields: AppQuestion[];
+    timerStyle?: string | null;
 };
 
 // --- PROCESSES ---
@@ -417,7 +419,9 @@ export type Process = Prisma.ProcessGetPayload<{
         children: true,
         users: true
     }
-}>;
+}> & {
+    children?: Process[];
+};
 
 // --- ROADMAP ---
 export type RoadmapItem = Omit<Prisma.RoadmapItemGetPayload<{}>, 'color'>;

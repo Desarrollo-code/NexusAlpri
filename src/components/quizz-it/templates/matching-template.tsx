@@ -9,9 +9,11 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Check, X, GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { renderHtml } from '../../../lib/html-utils';
+import type { AppQuestion } from '@/types';
 
 interface MatchingTemplateProps {
-    question: any;
+    question: AppQuestion;
     onAnswer: (isCorrect: boolean, answerData: any) => void;
 }
 
@@ -36,7 +38,7 @@ const SortableItem = ({ id, text, isAnswered, isCorrect }: any) => {
                     <div {...listeners} {...attributes} className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded text-muted-foreground">
                         <GripVertical className="h-4 w-4" />
                     </div>
-                    <div className="text-sm font-medium prose-sm prose-invert" dangerouslySetInnerHTML={{ __html: text }} />
+                    <div className="text-sm font-medium prose-sm prose-invert" {...renderHtml(text)} />
                 </div>
             </Card>
         </div>
@@ -50,11 +52,6 @@ export function MatchingTemplate({ question, onAnswer }: MatchingTemplateProps) 
     const [activeId, setActiveId] = useState<any>(null);
 
     useEffect(() => {
-        // We assume options are pairs: Option 1 corresponds to Target 1, etc.
-        // In a real scenario, we might have question.pairs or similar.
-        // For now, let's use the first 2 options as keys and the last 2 as values, or similar logic.
-        // Let's assume question.options contains the "answers" in order.
-        // We will shuffle them for the user to match.
         const shuffled = [...question.options].sort(() => Math.random() - 0.5);
         setItems(shuffled);
     }, [question]);
@@ -84,7 +81,6 @@ export function MatchingTemplate({ question, onAnswer }: MatchingTemplateProps) 
     };
 
     const checkAnswer = () => {
-        // Correct order is original question.options
         const isMatched = items.every((item, index) => item.id === question.options[index].id);
         setIsAnswered(true);
         setIsCorrect(isMatched);
@@ -96,7 +92,7 @@ export function MatchingTemplate({ question, onAnswer }: MatchingTemplateProps) 
     return (
         <div className="w-full flex flex-col gap-6">
             <div className="space-y-2 text-center">
-                <h2 className="text-2xl font-bold font-headline" dangerouslySetInnerHTML={{ __html: question.text }} />
+                <h2 className="text-2xl font-bold font-headline" {...renderHtml(question.text)} />
                 <p className="text-muted-foreground italic">Ordena los elementos para que coincidan con la lógica correcta.</p>
             </div>
 
@@ -125,7 +121,7 @@ export function MatchingTemplate({ question, onAnswer }: MatchingTemplateProps) 
                         {activeId ? (
                             <Card className="p-4 flex items-center gap-4 shadow-2xl border-primary bg-primary/5 scale-105">
                                 <GripVertical className="h-4 w-4 text-muted-foreground" />
-                                <div className="text-sm font-medium prose-sm prose-invert" dangerouslySetInnerHTML={{ __html: activeItem?.text }} />
+                                <div className="text-sm font-medium prose-sm prose-invert" {...renderHtml(activeItem?.text)} />
                             </Card>
                         ) : null}
                     </DragOverlay>

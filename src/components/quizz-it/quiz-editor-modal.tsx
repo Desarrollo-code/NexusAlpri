@@ -15,6 +15,7 @@ import { Textarea } from '../ui/textarea';
 import { PlusCircle, Trash2, Pencil, Check, X, Image as ImageIcon, UploadCloud, Timer, LayoutTemplate, FlipVertical, CheckSquare, ImagePlay, BrainCircuit, Info, Eye, Save, Replace, XCircle, ListVideo, Settings2, HelpCircle } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { stripHtml } from '@/lib/html-utils';
 import type { Quiz as AppQuiz, Question as AppQuestion, AnswerOption as FormFieldOption } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
@@ -118,7 +119,7 @@ const ImageUploadWidget = ({ imageUrl, onUpload, onRemove, disabled, inputId, is
 };
 
 const QuestionEditor = ({ question, isQuiz, onQuestionChange, onOptionChange, onSetCorrect, onOptionAdd, onOptionDelete }: {
-    question: any, // Using any temporarily for flexibility with new templates
+    question: any,
     isQuiz: boolean,
     onQuestionChange: (field: 'text' | 'imageUrl' | 'template', value: string | null) => void,
     onOptionChange: (oIndex: number, field: 'text' | 'imageUrl', value: string | null) => void,
@@ -153,141 +154,123 @@ const QuestionEditor = ({ question, isQuiz, onQuestionChange, onOptionChange, on
     };
 
     return (
-        <div className="space-y-4">
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-            >
-                <Card className="backdrop-blur-xl bg-card/40 border-primary/10 shadow-xl overflow-hidden rounded-3xl">
-                    <CardHeader className="bg-primary/5 pb-6 pt-8 px-8">
-                        <CardTitle className="text-2xl font-black flex items-center gap-3"><LayoutTemplate className="h-6 w-6 text-primary" /> Plantilla y Contenido</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-8 space-y-8">
-                        <div className="grid grid-cols-1 gap-8">
-                            <div className="space-y-4">
-                                <Label className="text-[15px] font-bold text-muted-foreground/80 uppercase tracking-widest ml-1">Selecciona el tipo de pregunta</Label>
-                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                                    {templateOptions.map((opt) => (
-                                        <button
-                                            key={opt.value}
-                                            onClick={() => onQuestionChange('template', opt.value)}
-                                            className={cn(
-                                                "flex flex-col items-center justify-center p-5 rounded-3xl border-2 transition-all text-center gap-3 group relative overflow-hidden",
-                                                (question.template || 'default') === opt.value
-                                                    ? "border-primary bg-primary/10 shadow-xl shadow-primary/10 text-primary"
-                                                    : "border-primary/5 bg-background/40 hover:border-primary/30 hover:bg-primary/5"
-                                            )}
-                                        >
-                                            <div className={cn(
-                                                "p-4 rounded-2xl transition-all duration-300",
-                                                (question.template || 'default') === opt.value ? "bg-primary text-primary-foreground scale-110 shadow-lg" : "bg-primary/5 text-primary/60 group-hover:bg-primary/20 group-hover:text-primary"
-                                            )}>
-                                                <opt.icon className="h-7 w-7" />
-                                            </div>
-                                            <span className="text-[11px] font-black uppercase tracking-tight leading-none">{opt.label}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
+        <div className="h-full flex flex-col gap-6">
+            <Tabs defaultValue="content" className="flex-1 flex flex-col gap-6">
+                <div className="flex items-center justify-between bg-card/40 backdrop-blur-xl p-2 rounded-2xl border border-primary/10 shadow-sm shrink-0">
+                    <TabsList className="bg-transparent gap-2">
+                        <TabsTrigger value="content" className="rounded-xl px-6 py-2.5 font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all">
+                            <LayoutTemplate className="h-4 w-4" /> Contenido
+                        </TabsTrigger>
+                        <TabsTrigger value="options" className="rounded-xl px-6 py-2.5 font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all">
+                            <CheckSquare className="h-4 w-4" /> Opciones
+                        </TabsTrigger>
+                    </TabsList>
 
-                            {question.template === 'image' && (
-                                <div className="space-y-4 pt-2">
-                                    <Label className="text-[15px] font-bold text-muted-foreground/80 uppercase tracking-widest ml-1">Imagen de Referencia</Label>
-                                    <div className="max-w-[280px]">
-                                        <ImageUploadWidget inputId={`q-img-${question.id}`} imageUrl={question.imageUrl} onUpload={(url) => onQuestionChange('imageUrl', url)} onRemove={() => onQuestionChange('imageUrl', null)} disabled={false} isCorrect={false} />
+                    {/* Acciones Rápidas */}
+                    <div className="px-4 border-l border-primary/10 flex items-center gap-4">
+                        <Label className="text-[12px] font-black text-muted-foreground uppercase opacity-60">Tipo:</Label>
+                        <Select value={question.template || 'default'} onValueChange={(v) => onQuestionChange('template', v)}>
+                            <SelectTrigger className="h-10 w-48 rounded-xl border-primary/10 bg-background/50 font-bold text-sm">
+                                <SelectValue placeholder="Tipo de Pregunta" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl border-primary/10 overflow-hidden">
+                                {templateOptions.map((opt) => (
+                                    <SelectItem key={opt.value} value={opt.value} className="font-bold py-2.5">
+                                        <div className="flex items-center gap-2">
+                                            <opt.icon className="h-4 w-4 text-primary" />
+                                            {opt.label}
+                                        </div>
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+
+                <div className="flex-1 overflow-hidden min-h-0">
+                    <TabsContent value="content" className="h-full m-0 p-0 focus-visible:ring-0">
+                        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
+                            <Card className="backdrop-blur-xl bg-card/40 border-primary/10 shadow-xl overflow-hidden rounded-3xl">
+                                <CardHeader className="bg-primary/5 pb-4 pt-6 px-8 flex flex-row items-center justify-between">
+                                    <CardTitle className="text-xl font-bold flex items-center gap-3">
+                                        <Pencil className="h-5 w-5 text-primary" /> Enunciado de la Pregunta
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-8 space-y-6">
+                                    <div className="bg-background/40 rounded-3xl overflow-hidden border-2 border-primary/10 transition-all shadow-inner">
+                                        <ReactQuill
+                                            theme="snow"
+                                            value={question.text || ''}
+                                            onChange={(v) => onQuestionChange('text', v)}
+                                            modules={quillModules}
+                                            placeholder="Escribe el enunciado de tu pregunta aquí..."
+                                            className="quill-editor-custom text-lg font-semibold"
+                                        />
                                     </div>
-                                </div>
-                            )}
-                        </div>
 
-                        <Separator className="bg-primary/10" />
-
-                        <div className="space-y-4">
-                            <Label className="text-[15px] font-bold text-muted-foreground/80 uppercase tracking-widest ml-1">Enunciado de la Pregunta</Label>
-                            <div className="bg-background/40 rounded-3xl overflow-hidden border-2 border-primary/10 focus-within:border-primary/40 transition-all shadow-inner">
-                                <ReactQuill
-                                    theme="snow"
-                                    value={question.text || ''}
-                                    onChange={(v) => onQuestionChange('text', v)}
-                                    modules={quillModules}
-                                    placeholder="Escribe el enunciado de tu pregunta aquí..."
-                                    className="quill-editor-custom text-lg font-semibold"
-                                />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </motion.div>
-
-            <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, delay: 0.1 }}
-            >
-                <Card className="backdrop-blur-xl bg-card/40 border-primary/10 shadow-xl overflow-hidden rounded-3xl mt-8">
-                    <CardHeader className="bg-primary/5 pb-6 pt-8 px-8 flex flex-row items-center justify-between space-y-0 text-center">
-                        <CardTitle className="text-2xl font-black flex items-center gap-3"><CheckSquare className="h-6 w-6 text-primary" /> Opciones de Respuesta</CardTitle>
-                        {question.options.length < 4 && !isImageOptionsTemplate && question.template !== 'true_false' && (
-                            <Button type="button" variant="outline" size="sm" onClick={onOptionAdd} className="bg-primary/10 hover:bg-primary/20 text-primary border-primary/20 rounded-xl font-black px-4 h-10 transition-all hover:scale-105 active:scale-95">
-                                <PlusCircle className="mr-2 h-5 w-5" /> Añadir opción
-                            </Button>
-                        )}
-                    </CardHeader>
-                    <CardContent className={cn("p-8 grid gap-6", isImageOptionsTemplate ? "grid-cols-2 md:grid-cols-4" : "grid-cols-1 md:grid-cols-2")}>
-                        <AnimatePresence mode="popLayout">
-                            {(question.options || []).slice(0, 4).map((opt: any, index: number) => (
-                                <motion.div
-                                    key={opt.id}
-                                    layout
-                                    initial={{ scale: 0.9, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    exit={{ scale: 0.9, opacity: 0 }}
-                                    className="group relative"
-                                >
-                                    <div className={cn(
-                                        "relative flex flex-col gap-3 p-5 rounded-3xl border-2 transition-all duration-300 group-hover:shadow-lg",
-                                        opt.isCorrect
-                                            ? "border-green-500 bg-green-500/10 shadow-xl shadow-green-500/10"
-                                            : "border-primary/5 bg-background/40 hover:border-primary/20"
-                                    )}>
-                                        <div className="flex items-center justify-between mb-2">
-                                            <div className={cn(
-                                                "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
-                                                opt.isCorrect ? "bg-green-500 text-white shadow-lg" : "bg-primary/10 text-primary/70"
-                                            )}>
-                                                Opción {index + 1}
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => onSetCorrect(opt.id)}
-                                                    className={cn(
-                                                        "h-8 w-8 rounded-full flex items-center justify-center transition-all duration-300",
-                                                        opt.isCorrect ? "bg-green-500 text-white shadow-lg scale-110" : "bg-background/50 text-muted-foreground hover:bg-green-500/20 hover:text-green-600 border border-primary/10"
-                                                    )}
-                                                >
-                                                    <Check className="h-4 w-4" />
-                                                </button>
-                                                {(question.options.length > (question.template === 'true_false' ? 2 : 1)) && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => onOptionDelete(index)}
-                                                        className="h-8 w-8 rounded-full flex items-center justify-center bg-destructive/10 text-destructive/70 hover:bg-destructive hover:text-white transition-all duration-300 border border-destructive/5"
-                                                    >
-                                                        <X className="h-4 w-4" />
-                                                    </button>
-                                                )}
+                                    {question.template === 'image' && (
+                                        <div className="space-y-4 pt-4 border-t border-primary/5">
+                                            <Label className="text-[15px] font-bold text-muted-foreground/80 uppercase tracking-widest ml-1">Imagen de Referencia</Label>
+                                            <div className="max-w-[320px]">
+                                                <ImageUploadWidget inputId={`q-img-${question.id}`} imageUrl={question.imageUrl} onUpload={(url) => onQuestionChange('imageUrl', url)} onRemove={() => onQuestionChange('imageUrl', null)} disabled={false} isCorrect={false} />
                                             </div>
                                         </div>
-                                        <div className="flex-grow rounded-2xl overflow-hidden">{renderOptionEditor(opt, index)}</div>
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </AnimatePresence>
-                    </CardContent>
-                </Card>
-            </motion.div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    </TabsContent>
+
+                    <TabsContent value="options" className="h-full m-0 p-0 focus-visible:ring-0">
+                        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
+                            <Card className="backdrop-blur-xl bg-card/40 border-primary/10 shadow-xl overflow-hidden rounded-3xl">
+                                <CardHeader className="bg-primary/5 pb-5 pt-6 px-8 flex flex-row items-center justify-between text-center">
+                                    <CardTitle className="text-xl font-bold flex items-center gap-3">
+                                        <CheckSquare className="h-5 w-5 text-primary" /> Opciones de Respuesta
+                                    </CardTitle>
+                                    {question.options.length < 4 && !isImageOptionsTemplate && question.template !== 'true_false' && (
+                                        <Button type="button" variant="outline" size="sm" onClick={onOptionAdd} className="bg-primary/10 hover:bg-primary/20 text-primary border-primary/20 rounded-xl font-black px-4 h-10 transition-all hover:scale-105 active:scale-95">
+                                            <PlusCircle className="mr-2 h-5 w-5" /> Añadir opción
+                                        </Button>
+                                    )}
+                                </CardHeader>
+                                <CardContent className={cn("p-8 grid gap-6", isImageOptionsTemplate ? "grid-cols-2 md:grid-cols-4" : "grid-cols-1 md:grid-cols-2")}>
+                                    <AnimatePresence mode="popLayout">
+                                        {(question.options || []).slice(0, 4).map((opt: any, index: number) => (
+                                            <motion.div key={opt.id} layout initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="group relative">
+                                                <div className={cn(
+                                                    "relative flex flex-col gap-3 p-5 rounded-3xl border-2 transition-all duration-300 group-hover:shadow-lg",
+                                                    opt.isCorrect ? "border-green-500 bg-green-500/10 shadow-xl shadow-green-500/10" : "border-primary/5 bg-background/40 hover:border-primary/20"
+                                                )}>
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <div className={cn(
+                                                            "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
+                                                            opt.isCorrect ? "bg-green-500 text-white shadow-lg" : "bg-primary/10 text-primary/70"
+                                                        )}>
+                                                            Opción {index + 1}
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <button type="button" onClick={() => onSetCorrect(opt.id)} className={cn(
+                                                                "h-8 w-8 rounded-full flex items-center justify-center transition-all duration-300",
+                                                                opt.isCorrect ? "bg-green-500 text-white shadow-lg scale-110" : "bg-background/50 text-muted-foreground hover:bg-green-500/20 hover:text-green-600 border border-primary/10"
+                                                            )}><Check className="h-4 w-4" /></button>
+                                                            {(question.options.length > (question.template === 'true_false' ? 2 : 1)) && (
+                                                                <button type="button" onClick={() => onOptionDelete(index)} className="h-8 w-8 rounded-full flex items-center justify-center bg-destructive/10 text-destructive/70 hover:bg-destructive hover:text-white transition-all duration-300 border border-destructive/5">
+                                                                    <X className="h-4 w-4" /></button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex-grow rounded-2xl overflow-hidden">{renderOptionEditor(opt, index)}</div>
+                                                </div>
+                                            </motion.div>
+                                        ))}
+                                    </AnimatePresence>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    </TabsContent>
+                </div>
+            </Tabs>
         </div>
     );
 };
@@ -449,7 +432,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                                                 )}>
                                                                     {index + 1}
                                                                 </span>
-                                                                <span className="truncate flex-grow font-bold text-sm tracking-tight">{q.text?.replace(/<[^>]*>/g, '') || "Sin título"}</span>
+                                                                <span className="truncate flex-grow font-bold text-sm tracking-tight">{stripHtml(q.text) || "Sin título"}</span>
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="icon"
@@ -468,10 +451,9 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                             </ScrollArea>
                                         </div>
 
-                                        {/* Main: Question Editor */}
                                         <div className="md:col-span-9 flex flex-col h-full bg-background/5 overflow-hidden">
-                                            <ScrollArea className="flex-grow w-full h-full scrollbar-visible">
-                                                <div className="p-10 w-full">
+                                            <ScrollArea className="flex-grow scrollbar-visible h-full">
+                                                <div className="p-8 w-full min-h-0">
                                                     {activeQuestion ? (
                                                         <div className="max-w-[1200px] mx-auto">
                                                             <QuestionEditor
