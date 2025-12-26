@@ -829,8 +829,13 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                             </div>
                                             <div className="space-y-3">
                                                 <Label htmlFor="description" className="text-[15px] font-bold text-muted-foreground/80 ml-1">Descripción Detallada</Label>
-                                                <div className="rounded-2xl border border-primary/10 overflow-hidden bg-background/50">
-                                                    <RichTextEditor value={course.description || ''} onChange={v => updateCourseField('description', v)} placeholder="Describe qué aprenderán los estudiantes..." className="min-h-[250px] text-lg" />
+                                                <div className="rounded-3xl border-2 border-primary/10 overflow-hidden bg-background/40 focus-within:border-primary/40 transition-all shadow-inner">
+                                                    <RichTextEditor
+                                                        value={course.description || ''}
+                                                        onChange={v => updateCourseField('description', v)}
+                                                        placeholder="Describe qué aprenderán los estudiantes..."
+                                                        className="min-h-[180px] text-lg border-0"
+                                                    />
                                                 </div>
                                             </div>
                                         </CardContent>
@@ -998,13 +1003,13 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                                     }}
                                                 />
                                             </div>
-                                            <p className="text-[10px] text-muted-foreground pl-1">Deja vacío para acceso ilimitado.</p>
+                                            <p className="text-[13px] font-bold text-muted-foreground/60 pl-1 italic">Deja vacío para acceso ilimitado.</p>
                                         </div>
 
                                         <div className="flex items-center justify-between gap-4 p-4 border border-primary/10 rounded-2xl bg-primary/5">
                                             <div className="space-y-0.5">
                                                 <Label htmlFor="isMandatory" className="text-base font-bold">Curso Asignable</Label>
-                                                <p className="text-xs text-muted-foreground">Este curso se puede asignar de forma obligatoria.</p>
+                                                <p className="text-sm font-bold text-muted-foreground/70">Este curso se puede asignar de forma obligatoria.</p>
                                             </div>
                                             <Switch id="isMandatory" checked={course.isMandatory} onCheckedChange={handleMandatorySwitchChange} disabled={isSaving} className="data-[state=checked]:bg-primary" />
                                         </div>
@@ -1030,7 +1035,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                                     {allCoursesForPrereq.map(c => (<SelectItem key={c.id} value={c.id} className="rounded-lg text-base">{c.title}</SelectItem>))}
                                                 </SelectContent>
                                             </Select>
-                                            <p className="text-[11px] font-medium text-muted-foreground/70 pl-1">El alumno debe finalizar el curso seleccionado antes de iniciar este.</p>
+                                            <p className="text-[13px] font-bold text-muted-foreground/60 pl-2 italic">El alumno debe finalizar el curso seleccionado antes de iniciar este.</p>
                                         </div>
 
                                         <div className="space-y-3">
@@ -1045,7 +1050,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                                     {certificateTemplates.map(t => (<SelectItem key={t.id} value={t.id} className="rounded-lg text-base">{t.name}</SelectItem>))}
                                                 </SelectContent>
                                             </Select>
-                                            <p className="text-[11px] font-medium text-muted-foreground/70 pl-1">Se generará automáticamente al completar el 100% del curso.</p>
+                                            <p className="text-[13px] font-bold text-muted-foreground/60 pl-2 italic">Se generará automáticamente al completar el 100% del curso.</p>
                                         </div>
                                     </CardContent>
                                 </Card>

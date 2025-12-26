@@ -390,8 +390,8 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                     <CheckSquare className="h-6 w-6 text-primary" />
                                 </div>
                                 <div>
-                                    <h2 className="text-xl font-black tracking-tight">{localQuiz.title || 'Editando Quiz'}</h2>
-                                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest leading-none mt-1">Configuración y Contenido</p>
+                                    <h2 className="text-2xl font-black tracking-tight">{localQuiz.title || 'Editando Quiz'}</h2>
+                                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest leading-none mt-1.5 opacity-80">Configuración y Contenido del Examen</p>
                                 </div>
                             </div>
 
@@ -553,7 +553,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                                                 className="text-xl font-black h-16 rounded-2xl border-primary/10 focus:ring-primary/20 bg-background/50 px-6"
                                                                 placeholder="Ilimitados"
                                                             />
-                                                            <p className="text-[11px] font-medium text-muted-foreground/60 pl-1 italic">Deja vacío para que no haya límite.</p>
+                                                            <p className="text-[13px] font-bold text-muted-foreground/60 pl-1 italic">Deja vacío para que no haya límite.</p>
                                                         </div>
                                                         <div className="space-y-3">
                                                             <Label htmlFor="quiz-timer-style" className="text-[15px] font-bold text-muted-foreground/80 ml-1">Estilo Visual del Tiempo</Label>

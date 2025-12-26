@@ -23,24 +23,24 @@ import { ColorfulLoader } from '@/components/ui/colorful-loader';
 function IdleTimeoutDialog({ isOpen, onStay, countdown }: { isOpen: boolean, onStay: () => void, countdown: number }) {
   return (
     <AlertDialog open={isOpen}>
-        <AlertDialogContent>
-            <AlertDialogHeader>
-                <div className="flex justify-center mb-4">
-                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                        <Clock className="w-8 h-8 text-primary" />
-                    </div>
-                </div>
-                <AlertDialogTitle className="text-center">¿Sigues ahí?</AlertDialogTitle>
-                <AlertDialogDescription className="text-center">
-                    Tu sesión está a punto de cerrarse por inactividad.
-                    <br />
-                    La sesión se cerrará en <span className="font-bold">{countdown}</span> segundos.
-                </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter className="flex-row justify-center gap-4">
-                <Button onClick={onStay} className="w-full">Continuar Sesión</Button>
-            </AlertDialogFooter>
-        </AlertDialogContent>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+              <Clock className="w-8 h-8 text-primary" />
+            </div>
+          </div>
+          <AlertDialogTitle className="text-center">¿Sigues ahí?</AlertDialogTitle>
+          <AlertDialogDescription className="text-center">
+            Tu sesión está a punto de cerrarse por inactividad.
+            <br />
+            La sesión se cerrará en <span className="font-bold">{countdown}</span> segundos.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter className="flex-row justify-center gap-4">
+          <Button onClick={onStay} className="w-full">Continuar Sesión</Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
     </AlertDialog>
   );
 }
@@ -63,7 +63,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     promptInSeconds: 60,
     enabled: settings?.enableIdleTimeout ?? true,
   });
-  
+
   React.useEffect(() => {
     if (user?.theme) {
       setTheme(user.theme);
@@ -73,35 +73,42 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   }, [user, setTheme]);
 
   return (
-      <div className="flex min-h-screen bg-background text-foreground">
-        <Sidebar>
-          <SidebarHeader />
-          <SidebarContent />
-          <SidebarFooter />
-        </Sidebar>
-        <div className={cn(
-          "relative flex-1 flex flex-col transition-[margin-left] duration-300 ease-in-out bg-background", 
-          !isMobile && (isCollapsed ? "ml-20" : "ml-72")
-        )}>
-          <TopBar />
-          <main className="flex-1 overflow-y-auto" style={{ transform: 'translateZ(0px)' }}>
-            <div className="relative z-10 p-4 md:p-6 lg:p-8">
-              {children}
-            </div>
-          </main>
-        </div>
-        {isTourActive && (
-          <TourGuide
-            steps={steps}
-            currentStepIndex={currentStepIndex}
-            onNext={nextStep}
-            onStop={stopTour}
-          />
-        )}
-        <AppWatermark />
-        <Toaster />
-        <IdleTimeoutDialog isOpen={isIdlePromptVisible} onStay={stay} countdown={countdown}/>
+    <div className="flex min-h-screen bg-background text-foreground">
+      <Sidebar>
+        <SidebarHeader />
+        <SidebarContent />
+        <SidebarFooter />
+      </Sidebar>
+      <div className={cn(
+        "relative flex-1 flex flex-col transition-[margin-left] duration-300 ease-in-out bg-background",
+        !isMobile && (isCollapsed ? "ml-20" : "ml-72")
+      )}>
+        <TopBar />
+        <main className="flex-1 overflow-y-auto relative" style={{ transform: 'translateZ(0px)' }}>
+          {/* Adornos de Fondo Premium */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
+            <div className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-primary/5 rounded-full blur-[120px] animate-pulse" />
+            <div className="absolute top-[20%] right-[-5%] w-[30%] h-[40%] bg-primary/10 rounded-full blur-[100px] opacity-60" />
+            <div className="absolute bottom-[-10%] left-[20%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[110px]" />
+          </div>
+
+          <div className="relative z-10 p-4 md:p-6 lg:p-8">
+            {children}
+          </div>
+        </main>
       </div>
+      {isTourActive && (
+        <TourGuide
+          steps={steps}
+          currentStepIndex={currentStepIndex}
+          onNext={nextStep}
+          onStop={stopTour}
+        />
+      )}
+      <AppWatermark />
+      <Toaster />
+      <IdleTimeoutDialog isOpen={isIdlePromptVisible} onStay={stay} countdown={countdown} />
+    </div>
   );
 }
 
@@ -109,9 +116,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <TitleProvider>
-          <TourProvider>
-              <AppLayoutContent>{children}</AppLayoutContent>
-          </TourProvider>
+        <TourProvider>
+          <AppLayoutContent>{children}</AppLayoutContent>
+        </TourProvider>
       </TitleProvider>
     </SidebarProvider>
   );
