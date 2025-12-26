@@ -58,9 +58,8 @@ interface FlatProcess {
 }
 
 const STEPS = [
-    { id: 'info', name: 'Información' },
-    { id: 'content', name: 'Contenido' },
-    { id: 'config', name: 'Acceso' },
+    { id: 'info', name: 'Información y Acceso' },
+    { id: 'content', name: 'Contenido / Quiz' },
 ];
 
 const ProgressBar = ({ currentStep }: { currentStep: number }) => {
@@ -396,6 +395,8 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                         </div>
                     </CardContent>
                 </Card>
+
+                <AccessStep />
             </div>
         );
     };
@@ -604,7 +605,6 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                     >
                         {creationStep === 1 && <InfoStep />}
                         {creationStep === 2 && <ContentStep />}
-                        {creationStep === 3 && <AccessStep />}
                     </motion.div>
                 </AnimatePresence>
             </ScrollArea>
@@ -628,17 +628,15 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
         <form id="resource-form" onSubmit={handleSave} className="flex-1 min-h-0 flex flex-col">
             <Tabs defaultValue={activeEditTab} onValueChange={setActiveEditTab} className="flex-1 min-h-0 flex flex-col">
                 <div className="px-6 pt-2 flex-shrink-0">
-                    <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="info">Información</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="info">Información / Acceso</TabsTrigger>
                         <TabsTrigger value="content">Recurso / Quiz</TabsTrigger>
-                        <TabsTrigger value="config">Acceso</TabsTrigger>
                     </TabsList>
                 </div>
                 <ScrollArea className="flex-1 min-h-[300px] overflow-y-auto">
                     <div className="px-6 py-4">
                         <TabsContent value="info" className="mt-0 focus-visible:outline-none"><InfoStep /></TabsContent>
                         <TabsContent value="content" className="mt-0 focus-visible:outline-none"><ContentStep /></TabsContent>
-                        <TabsContent value="config" className="mt-0 focus-visible:outline-none"><AccessStep /></TabsContent>
                     </div>
                 </ScrollArea>
                 <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2 bg-background">

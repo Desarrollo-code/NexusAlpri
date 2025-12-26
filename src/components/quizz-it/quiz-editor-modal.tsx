@@ -158,11 +158,8 @@ const QuestionEditor = ({ question, isQuiz, onQuestionChange, onOptionChange, on
             <Tabs defaultValue="content" className="flex-1 flex flex-col gap-6">
                 <div className="flex items-center justify-between bg-card/40 backdrop-blur-xl p-2 rounded-2xl border border-primary/10 shadow-sm shrink-0">
                     <TabsList className="bg-transparent gap-2">
-                        <TabsTrigger value="content" className="rounded-xl px-6 py-2.5 font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all">
-                            <LayoutTemplate className="h-4 w-4" /> Contenido
-                        </TabsTrigger>
                         <TabsTrigger value="options" className="rounded-xl px-6 py-2.5 font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all">
-                            <CheckSquare className="h-4 w-4" /> Opciones
+                            <CheckSquare className="h-4 w-4" /> Pregunta / Opciones
                         </TabsTrigger>
                     </TabsList>
 
@@ -188,86 +185,84 @@ const QuestionEditor = ({ question, isQuiz, onQuestionChange, onOptionChange, on
                 </div>
 
                 <div className="flex-1 overflow-hidden min-h-0">
-                    <TabsContent value="content" className="h-full m-0 p-0 focus-visible:ring-0">
-                        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-                            <Card className="backdrop-blur-xl bg-card/40 border-primary/10 shadow-xl overflow-hidden rounded-3xl">
-                                <CardHeader className="bg-primary/5 pb-4 pt-6 px-8 flex flex-row items-center justify-between">
-                                    <CardTitle className="text-xl font-bold flex items-center gap-3">
-                                        <Pencil className="h-5 w-5 text-primary" /> Enunciado de la Pregunta
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="p-8 space-y-6">
-                                    <div className="bg-background/40 rounded-3xl overflow-hidden border-2 border-primary/10 transition-all shadow-inner">
-                                        <ReactQuill
-                                            theme="snow"
-                                            value={question.text || ''}
-                                            onChange={(v) => onQuestionChange('text', v)}
-                                            modules={quillModules}
-                                            placeholder="Escribe el enunciado de tu pregunta aquí..."
-                                            className="quill-editor-custom text-lg font-semibold"
-                                        />
-                                    </div>
-
-                                    {question.template === 'image' && (
-                                        <div className="space-y-4 pt-4 border-t border-primary/5">
-                                            <Label className="text-[15px] font-bold text-muted-foreground/80 uppercase tracking-widest ml-1">Imagen de Referencia</Label>
-                                            <div className="max-w-[320px]">
-                                                <ImageUploadWidget inputId={`q-img-${question.id}`} imageUrl={question.imageUrl} onUpload={(url) => onQuestionChange('imageUrl', url)} onRemove={() => onQuestionChange('imageUrl', null)} disabled={false} isCorrect={false} />
-                                            </div>
-                                        </div>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        </motion.div>
-                    </TabsContent>
-
                     <TabsContent value="options" className="h-full m-0 p-0 focus-visible:ring-0">
-                        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-                            <Card className="backdrop-blur-xl bg-card/40 border-primary/10 shadow-xl overflow-hidden rounded-3xl">
-                                <CardHeader className="bg-primary/5 pb-5 pt-6 px-8 flex flex-row items-center justify-between text-center">
-                                    <CardTitle className="text-xl font-bold flex items-center gap-3">
-                                        <CheckSquare className="h-5 w-5 text-primary" /> Opciones de Respuesta
-                                    </CardTitle>
-                                    {question.options.length < 4 && !isImageOptionsTemplate && question.template !== 'true_false' && (
-                                        <Button type="button" variant="outline" size="sm" onClick={onOptionAdd} className="bg-primary/10 hover:bg-primary/20 text-primary border-primary/20 rounded-xl font-black px-4 h-10 transition-all hover:scale-105 active:scale-95">
-                                            <PlusCircle className="mr-2 h-5 w-5" /> Añadir opción
-                                        </Button>
-                                    )}
-                                </CardHeader>
-                                <CardContent className={cn("p-8 grid gap-6", isImageOptionsTemplate ? "grid-cols-2 md:grid-cols-4" : "grid-cols-1 md:grid-cols-2")}>
-                                    <AnimatePresence mode="popLayout">
-                                        {(question.options || []).slice(0, 4).map((opt: any, index: number) => (
-                                            <motion.div key={opt.id} layout initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="group relative">
-                                                <div className={cn(
-                                                    "relative flex flex-col gap-3 p-5 rounded-3xl border-2 transition-all duration-300 group-hover:shadow-lg",
-                                                    opt.isCorrect ? "border-green-500 bg-green-500/10 shadow-xl shadow-green-500/10" : "border-primary/5 bg-background/40 hover:border-primary/20"
-                                                )}>
-                                                    <div className="flex items-center justify-between mb-2">
-                                                        <div className={cn(
-                                                            "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
-                                                            opt.isCorrect ? "bg-green-500 text-white shadow-lg" : "bg-primary/10 text-primary/70"
-                                                        )}>
-                                                            Opción {index + 1}
-                                                        </div>
-                                                        <div className="flex items-center gap-2">
-                                                            <button type="button" onClick={() => onSetCorrect(opt.id)} className={cn(
-                                                                "h-8 w-8 rounded-full flex items-center justify-center transition-all duration-300",
-                                                                opt.isCorrect ? "bg-green-500 text-white shadow-lg scale-110" : "bg-background/50 text-muted-foreground hover:bg-green-500/20 hover:text-green-600 border border-primary/10"
-                                                            )}><Check className="h-4 w-4" /></button>
-                                                            {(question.options.length > (question.template === 'true_false' ? 2 : 1)) && (
-                                                                <button type="button" onClick={() => onOptionDelete(index)} className="h-8 w-8 rounded-full flex items-center justify-center bg-destructive/10 text-destructive/70 hover:bg-destructive hover:text-white transition-all duration-300 border border-destructive/5">
-                                                                    <X className="h-4 w-4" /></button>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex-grow rounded-2xl overflow-hidden">{renderOptionEditor(opt, index)}</div>
+                        <ScrollArea className="h-full scrollbar-thin">
+                            <motion.div initial={{ opacity: 0, x: 0 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
+                                <Card className="backdrop-blur-xl bg-card/40 border-primary/10 shadow-xl overflow-hidden rounded-3xl">
+                                    <CardHeader className="bg-primary/5 pb-4 pt-6 px-8 flex flex-row items-center justify-between">
+                                        <CardTitle className="text-lg font-bold flex items-center gap-3">
+                                            <Pencil className="h-5 w-5 text-primary" /> Enunciado
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="p-8 space-y-6">
+                                        <div className="bg-background/40 rounded-3xl overflow-hidden border-2 border-primary/10 transition-all shadow-inner">
+                                            <ReactQuill
+                                                theme="snow"
+                                                value={question.text || ''}
+                                                onChange={(v) => onQuestionChange('text', v)}
+                                                modules={quillModules}
+                                                placeholder="Escribe el enunciado..."
+                                                className="quill-editor-custom text-base font-medium"
+                                            />
+                                        </div>
+
+                                        {question.template === 'image' && (
+                                            <div className="space-y-4 pt-4 border-t border-primary/5">
+                                                <Label className="text-[12px] font-bold text-muted-foreground/80 uppercase tracking-widest ml-1">Imagen</Label>
+                                                <div className="max-w-[320px]">
+                                                    <ImageUploadWidget inputId={`q-img-${question.id}`} imageUrl={question.imageUrl} onUpload={(url) => onQuestionChange('imageUrl', url)} onRemove={() => onQuestionChange('imageUrl', null)} disabled={false} isCorrect={false} />
                                                 </div>
-                                            </motion.div>
-                                        ))}
-                                    </AnimatePresence>
-                                </CardContent>
-                            </Card>
-                        </motion.div>
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+
+                                <Card className="backdrop-blur-xl bg-card/40 border-primary/10 shadow-xl overflow-hidden rounded-3xl">
+                                    <CardHeader className="bg-primary/5 pb-5 pt-6 px-8 flex flex-row items-center justify-between">
+                                        <CardTitle className="text-lg font-bold flex items-center gap-3">
+                                            <CheckSquare className="h-5 w-5 text-primary" /> Opciones de Respuesta
+                                        </CardTitle>
+                                        {question.options.length < 4 && !isImageOptionsTemplate && question.template !== 'true_false' && (
+                                            <Button type="button" variant="outline" size="sm" onClick={onOptionAdd} className="bg-primary/10 hover:bg-primary/20 text-primary border-primary/20 rounded-xl font-bold px-4 h-10 transition-all hover:scale-105 active:scale-95">
+                                                <PlusCircle className="mr-2 h-4 w-4" /> Añadir
+                                            </Button>
+                                        )}
+                                    </CardHeader>
+                                    <CardContent className={cn("p-8 grid gap-6", isImageOptionsTemplate ? "grid-cols-2 md:grid-cols-4" : "grid-cols-1 md:grid-cols-2")}>
+                                        <AnimatePresence mode="popLayout">
+                                            {(question.options || []).slice(0, 4).map((opt: any, index: number) => (
+                                                <motion.div key={opt.id} layout initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="group relative">
+                                                    <div className={cn(
+                                                        "relative flex flex-col gap-3 p-5 rounded-3xl border-2 transition-all duration-300 group-hover:shadow-lg",
+                                                        opt.isCorrect ? "border-green-500 bg-green-500/10 shadow-xl shadow-green-500/10" : "border-primary/5 bg-background/40 hover:border-primary/20"
+                                                    )}>
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <div className={cn(
+                                                                "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest",
+                                                                opt.isCorrect ? "bg-green-500 text-white" : "bg-primary/10 text-primary/70"
+                                                            )}>
+                                                                Opción {index + 1}
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <button type="button" onClick={() => onSetCorrect(opt.id)} className={cn(
+                                                                    "h-7 w-7 rounded-full flex items-center justify-center transition-all duration-300",
+                                                                    opt.isCorrect ? "bg-green-500 text-white shadow-lg scale-110" : "bg-background/50 text-muted-foreground hover:bg-green-500/20 hover:text-green-600 border border-primary/10"
+                                                                )}><Check className="h-3 w-3" /></button>
+                                                                {(question.options.length > (question.template === 'true_false' ? 2 : 1)) && (
+                                                                    <button type="button" onClick={() => onOptionDelete(index)} className="h-7 w-7 rounded-full flex items-center justify-center bg-destructive/10 text-destructive/70 hover:bg-destructive hover:text-white transition-all duration-300 border border-destructive/5">
+                                                                        <X className="h-3 w-3" /></button>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex-grow rounded-2xl overflow-hidden">{renderOptionEditor(opt, index)}</div>
+                                                    </div>
+                                                </motion.div>
+                                            ))}
+                                        </AnimatePresence>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                        </ScrollArea>
                     </TabsContent>
                 </div>
             </Tabs>
@@ -373,8 +368,8 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                     <CheckSquare className="h-6 w-6 text-primary" />
                                 </div>
                                 <div>
-                                    <h2 className="text-2xl font-black tracking-tight">{localQuiz.title || 'Editando Quiz'}</h2>
-                                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest leading-none mt-1.5 opacity-80">Configuración y Contenido del Examen</p>
+                                    <h2 className="text-lg font-bold tracking-tight">{localQuiz.title || 'Editando Quiz'}</h2>
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mt-1 opacity-80">Configuración del Examen</p>
                                 </div>
                             </div>
 
@@ -391,8 +386,8 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                 <Button variant="outline" size="lg" className="rounded-2xl px-6 font-bold border-primary/20 hover:bg-primary/5 hidden sm:flex" onClick={() => setIsPreviewOpen(true)}>
                                     <Eye className="mr-2 h-5 w-5" /> Vista Previa
                                 </Button>
-                                <Button size="lg" onClick={handleSaveChanges} className="bg-primary hover:bg-primary/90 text-white rounded-2xl px-8 font-black shadow-xl shadow-primary/20 transition-all hover:scale-105 active:scale-95">
-                                    <Save className="mr-2 h-5 w-5" /> Guardar Cambios
+                                <Button size="lg" onClick={handleSaveChanges} className="bg-primary hover:bg-primary/90 text-white rounded-2xl px-8 py-5 font-bold shadow-xl shadow-primary/20 transition-all hover:scale-105 active:scale-95">
+                                    <Save className="mr-2 h-4 w-4" /> Guardar
                                 </Button>
                             </div>
                         </div>
@@ -409,8 +404,8 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                         {/* Sidebar: Question List */}
                                         <div className="md:col-span-3 border-r border-primary/10 flex flex-col bg-card/30 backdrop-blur-md h-full">
                                             <div className="p-6 border-b border-primary/5 shrink-0">
-                                                <Button onClick={addQuestion} className="w-full h-14 bg-primary/10 hover:bg-primary/20 text-primary border-0 rounded-2xl font-black text-base shadow-none transition-all hover:scale-[1.02]">
-                                                    <PlusCircle className="mr-2 h-5 w-5" /> Añadir Pregunta
+                                                <Button onClick={addQuestion} className="w-full h-12 bg-primary/10 hover:bg-primary/20 text-primary border-0 rounded-2xl font-bold text-sm shadow-none transition-all hover:scale-[1.02]">
+                                                    <PlusCircle className="mr-2 h-4 w-4" /> Nueva Pregunta
                                                 </Button>
                                             </div>
                                             <ScrollArea className="flex-1 px-4 py-6">
@@ -427,7 +422,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                                                 )}
                                                             >
                                                                 <span className={cn(
-                                                                    "h-8 w-8 rounded-full flex items-center justify-center font-black text-sm shrink-0",
+                                                                    "h-6 w-6 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0",
                                                                     activeQuestionIndex === index ? "bg-white text-primary" : "bg-primary/20 text-primary"
                                                                 )}>
                                                                     {index + 1}
@@ -500,7 +495,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                                                 id="quiz-title"
                                                                 value={localQuiz.title}
                                                                 onChange={e => setLocalQuiz(p => ({ ...p, title: e.target.value }))}
-                                                                className="text-xl font-black h-16 rounded-2xl border-primary/10 focus:ring-primary/20 bg-background/50 px-6"
+                                                                className="text-lg font-bold h-14 rounded-2xl border-primary/10 focus:ring-primary/20 bg-background/50 px-6"
                                                                 placeholder="Ej: Quiz Final de Módulo"
                                                             />
                                                         </div>
@@ -532,7 +527,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                                                 type="number"
                                                                 value={localQuiz.maxAttempts || ''}
                                                                 onChange={e => setLocalQuiz(p => ({ ...p, maxAttempts: e.target.value ? parseInt(e.target.value) : null }))}
-                                                                className="text-xl font-black h-16 rounded-2xl border-primary/10 focus:ring-primary/20 bg-background/50 px-6"
+                                                                className="text-lg font-bold h-14 rounded-2xl border-primary/10 focus:ring-primary/20 bg-background/50 px-6"
                                                                 placeholder="Ilimitados"
                                                             />
                                                             <p className="text-[13px] font-bold text-muted-foreground/60 pl-1 italic">Deja vacío para que no haya límite.</p>
@@ -540,7 +535,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boo
                                                         <div className="space-y-3">
                                                             <Label htmlFor="quiz-timer-style" className="text-[15px] font-bold text-muted-foreground/80 ml-1">Estilo Visual del Tiempo</Label>
                                                             <Select value={localQuiz.timerStyle || 'circular'} onValueChange={(v) => setLocalQuiz(p => ({ ...p, timerStyle: v }))}>
-                                                                <SelectTrigger id="quiz-timer-style" className="h-16 rounded-2xl border-primary/10 bg-background/50 text-base font-bold px-6">
+                                                                <SelectTrigger id="quiz-timer-style" className="h-14 rounded-2xl border-primary/10 bg-background/50 text-sm font-bold px-6">
                                                                     <SelectValue />
                                                                 </SelectTrigger>
                                                                 <SelectContent className="rounded-2xl border-primary/10 overflow-hidden">
