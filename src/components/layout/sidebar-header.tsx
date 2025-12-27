@@ -24,7 +24,7 @@ export const SidebarHeader = () => {
             }
           </div>
           <div className="flex flex-col">
-            <span className="text-xl font-black text-sidebar-foreground tracking-tighter">{isLoading ? <Skeleton className="h-6 w-32" /> : settings?.platformName || 'NexusAlpri'}</span>
+            <span className="text-2xl font-black text-primary tracking-tighter">{isLoading ? <Skeleton className="h-6 w-32" /> : settings?.platformName || 'NexusAlpri'}</span>
             <span className="text-[10px] font-bold text-primary/80 uppercase tracking-[0.2em] -mt-1">Plataforma</span>
           </div>
         </Link>
@@ -64,12 +64,10 @@ export const SidebarHeader = () => {
             animate={{ opacity: 1, x: 0 }}
             className="flex flex-col"
           >
-            <span className="text-xl font-black font-headline tracking-tighter whitespace-nowrap text-sidebar-foreground group-hover:text-primary transition-colors duration-300">
+            <span className="text-2xl font-black font-headline tracking-tighter whitespace-nowrap text-primary transition-colors duration-300">
               {isLoading ? <Skeleton className="h-6 w-32" /> : settings?.platformName || 'NexusAlpri'}
             </span>
-            <span className="text-[10px] font-bold text-primary/70 uppercase tracking-[0.3em] font-sans -mt-1 leading-none">
-              Ecosystem
-            </span>
+            {/* Etiqueta eliminada: antes mostraba 'Ecosystem' */}
           </motion.div>
         )}
       </Link>
