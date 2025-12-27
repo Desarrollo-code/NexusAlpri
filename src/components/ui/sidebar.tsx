@@ -183,7 +183,10 @@ const SidebarSectionHeader = ({ item, isActive }: { item: NavItem, isActive: boo
       isCollapsed ? 'h-12 w-12 justify-center mx-0 gap-0' : 'p-3 mx-2',
       isActive ? "bg-primary/5 text-primary" : "hover:bg-primary/5 text-sidebar-muted-foreground hover:text-primary"
     )}>
-      <div className="flex items-center gap-3">
+      <div className={cn(
+        "flex items-center",
+        isCollapsed ? "gap-0" : "gap-3"
+      )}>
         <div className={cn(
           "transition-transform duration-300 group-hover:scale-110",
           isCollapsed ? "w-12 h-12 flex-shrink-0 flex items-center justify-center ml-1" : "w-10 flex-shrink-0 flex items-center justify-center",
