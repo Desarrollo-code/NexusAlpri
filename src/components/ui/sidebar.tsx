@@ -5,7 +5,7 @@ import * as React from "react";
 import { useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogOut, ChevronDown, ChevronLeftCircle, ChevronRightCircle } from "lucide-react";
+import { ChevronDown, ChevronLeftCircle, ChevronRightCircle } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/auth-context";
 import { getNavItemsForRole } from "@/lib/nav-items";
@@ -85,7 +85,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
     <>
       {isMobile && openMobile && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+          className="lg:hidden fixed inset-0 bg-primary/10 z-40"
           onClick={() => setOpenMobile(false)}
         />
       )}
@@ -97,8 +97,8 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
         }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className={cn(
-          "fixed top-0 left-0 z-50 h-screen flex flex-col bg-sidebar-background/60 backdrop-blur-xl border-r border-sidebar-border/30 shadow-2xl",
-          isMobile && !openMobile && "invisible lg:visible"
+          "fixed top-0 left-0 z-50 h-screen flex flex-col border-r border-sidebar-border/30 shadow-2xl",
+          isMobile ? (openMobile ? "bg-primary/95" : "invisible lg:visible") : "bg-sidebar-background/60 backdrop-blur-xl",
         )}
       >
         <div className="flex flex-col h-full w-full overflow-hidden">
@@ -119,13 +119,13 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
     return activeItem.startsWith(item.path);
   }, [activeItem, item.path]);
 
-  const linkContent = (
+    const linkContent = (
     <div className={cn(
-      "flex items-center gap-3 rounded-xl transition-all duration-300 font-semibold group/menu-item relative overflow-hidden",
-      isCollapsed ? "justify-center h-12 w-12" : "p-3 mx-2",
+      "flex items-center rounded-xl transition-all duration-300 font-semibold group/menu-item relative overflow-hidden",
+      isCollapsed ? "justify-center h-12 w-12 gap-0" : "p-3 mx-2 gap-3",
       isActive
         ? "bg-primary/10 text-primary"
-        : "text-sidebar-muted-foreground hover:bg-white/5 hover:text-sidebar-foreground"
+        : "text-sidebar-muted-foreground hover:bg-primary/5 hover:text-primary"
     )}>
       {isActive && (
         <motion.div
@@ -138,6 +138,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
       )}
       <div className={cn(
         "flex items-center justify-center transition-transform duration-300 group-hover/menu-item:scale-110",
+        isCollapsed ? "w-12 h-12 flex-shrink-0 items-center justify-center ml-1" : "w-10 flex-shrink-0 items-center justify-center",
         isActive && "scale-110"
       )}>
         <GradientIcon icon={item.icon} isActive={isActive} />
@@ -145,7 +146,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
       {!isCollapsed && (
         <span className={cn(
           "whitespace-nowrap transition-colors duration-300",
-          isActive ? "text-primary" : "group-hover/menu-item:text-sidebar-foreground"
+          isActive ? "text-primary" : "group-hover/menu-item:text-primary"
         )}>
           {item.label}
         </span>
@@ -178,12 +179,19 @@ const SidebarSectionHeader = ({ item, isActive }: { item: NavItem, isActive: boo
 
   const headerContent = (
     <div className={cn(
-      "flex items-center justify-between w-full rounded-xl transition-all duration-300 group mx-2",
-      isCollapsed ? 'h-12 w-12 justify-center mx-0' : 'p-3',
-      isActive ? "bg-primary/5 text-primary" : "hover:bg-white/5 text-sidebar-muted-foreground hover:text-sidebar-foreground"
+      "flex items-center justify-between w-full rounded-xl transition-all duration-300 group",
+      isCollapsed ? 'h-12 w-12 justify-center mx-0 gap-0' : 'p-3 mx-2',
+      isActive ? "bg-primary/5 text-primary" : "hover:bg-primary/5 text-sidebar-muted-foreground hover:text-primary"
     )}>
-      <div className="flex items-center gap-3">
-        <div className={cn("transition-transform duration-300 group-hover:scale-110", isActive && "scale-110")}>
+      <div className={cn(
+        "flex items-center",
+        isCollapsed ? "gap-0" : "gap-3"
+      )}>
+        <div className={cn(
+          "transition-transform duration-300 group-hover:scale-110",
+          isCollapsed ? "w-12 h-12 flex-shrink-0 flex items-center justify-center ml-1" : "w-10 flex-shrink-0 flex items-center justify-center",
+          isActive && "scale-110"
+        )}>
           <GradientIcon icon={item.icon} isActive={isActive} />
         </div>
         {!isCollapsed && <span className="text-base font-semibold whitespace-nowrap">{item.label}</span>}
@@ -275,7 +283,7 @@ export const SidebarContent = () => {
 
 
 export const SidebarFooter = () => {
-  const { logout, settings } = useAuth();
+  const { settings } = useAuth();
   const { isCollapsed, toggleSidebar, isMobile } = useSidebar();
 
   if (isMobile) return null;
@@ -283,28 +291,16 @@ export const SidebarFooter = () => {
   return (
     <div className="p-4 flex flex-col gap-3 bg-white/5 backdrop-blur-sm border-t border-sidebar-border/20 z-10 transition-all duration-300">
       {!isCollapsed && settings?.projectVersion && (
-        <div className="px-3 py-1 text-center text-[10px] uppercase tracking-widest text-sidebar-muted-foreground/60 font-medium">
-          Build {settings.projectVersion}
+        <div className="px-3 py-1 text-center text-[10px] lowercase tracking-widest text-sidebar-muted-foreground/60 font-medium">
+          versión {settings.projectVersion}
         </div>
       )}
-      <Button
-        onClick={logout}
-        variant="ghost"
-        className={cn(
-          "w-full rounded-xl transition-all duration-300",
-          "text-sidebar-muted-foreground hover:bg-red-500/10 hover:text-red-400 hover:shadow-[0_0_20px_rgba(239,68,68,0.1)]",
-          isCollapsed ? 'justify-center p-0 h-12 w-12 mx-auto' : 'justify-start gap-3 p-3 px-4'
-        )}
-      >
-        <LogOut className="h-5 w-5" />
-        {!isCollapsed && <span className="font-semibold">Cerrar Sesión</span>}
-      </Button>
       <Button
         onClick={toggleSidebar}
         variant="ghost"
         size="icon"
         className={cn(
-          "w-full h-10 text-sidebar-muted-foreground hover:bg-white/5 hover:text-sidebar-foreground transition-colors duration-300 rounded-lg",
+          "w-full h-10 text-sidebar-muted-foreground hover:bg-primary/5 hover:text-primary transition-colors duration-300 rounded-lg",
           isCollapsed ? "h-12 w-12 mx-auto" : ""
         )}
       >

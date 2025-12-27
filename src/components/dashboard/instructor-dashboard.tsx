@@ -71,7 +71,7 @@ export function InstructorDashboard({ instructorStats, recentAnnouncements, taug
                     animate={{ y: [0, -10, 0] }}
                     transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                   >
-                    <Image src={settings.dashboardImageUrlInstructor} alt="Mascota Instructor" width={160} height={160} className="object-contain drop-shadow-2xl" />
+                    <Image src={settings.dashboardImageUrlInstructor} alt="Instructor" width={160} height={160} className="object-contain drop-shadow-2xl" />
                   </motion.div>
                 </div>
               )}

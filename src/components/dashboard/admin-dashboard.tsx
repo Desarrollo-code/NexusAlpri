@@ -112,7 +112,7 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
                               animate={{ y: [0, -10, 0] }}
                               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                            >
-                              <Image src={settings.dashboardImageUrlAdmin} alt="Mascota Admin" width={192} height={192} className="object-contain drop-shadow-2xl" />
+                              <Image src={settings.dashboardImageUrlAdmin} alt=" Admin" width={192} height={192} className="object-contain drop-shadow-2xl" />
                            </motion.div>
                         </div>
                      )}

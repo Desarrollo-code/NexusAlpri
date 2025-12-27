@@ -111,7 +111,7 @@ export function StudentDashboard({ studentStats, myDashboardCourses, assignedCou
                         animate={{ y: [0, -8, 0], rotate: [0, 2, 0] }}
                         transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
                       >
-                        <Image src={settings.dashboardImageUrlStudent} alt="Mascota Estudiante" width={128} height={128} className="object-contain drop-shadow-2xl" />
+                        <Image src={settings.dashboardImageUrlStudent} alt="Estudiante" width={128} height={128} className="object-contain drop-shadow-2xl" />
                       </motion.div>
                     </div>
                   )}

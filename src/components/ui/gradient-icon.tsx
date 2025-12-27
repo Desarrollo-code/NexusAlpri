@@ -27,13 +27,14 @@ export const GradientIcon = ({
   };
 
   return (
-    <div className="relative flex items-center justify-center">
+    <div className="relative flex items-center justify-center w-full h-full">
       {isActive && (
         <div className="absolute inset-0 bg-primary/40 blur-[8px] rounded-full scale-110" />
       )}
       <Icon
         className={cn(
           sizeClasses[size],
+          "block mx-auto",
           className,
           isActive ? "text-primary relative z-10 drop-shadow-[0_0_5px_rgba(var(--primary),0.8)]" : "text-sidebar-muted-foreground"
         )}
