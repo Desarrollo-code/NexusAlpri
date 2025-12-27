@@ -1,4 +1,4 @@
-// src/components/analytics/metric-card.tsx
+
 'use client';
 import { Card } from "@/components/ui/card"
 import { useAnimatedCounter } from "@/hooks/use-animated-counter"
@@ -27,10 +27,8 @@ export const MetricCard = ({
 }) => {
     const animatedValue = useAnimatedCounter(value, 0, 1000);
 
-    // Map index to chart variables (1-5)
     const chartIndex = (index % 5) + 1;
     const chartVar = `hsl(var(--chart-${chartIndex}))`;
-    const chartVarMuted = `hsl(var(--chart-${chartIndex}) / 0.2)`;
     const chartVarBorder = `hsl(var(--chart-${chartIndex}) / 0.4)`;
 
     return (
@@ -44,7 +42,7 @@ export const MetricCard = ({
             <Card
                 onClick={onClick}
                 className={cn(
-                    "relative overflow-hidden h-full flex flex-col justify-between p-3.5 transition-all duration-300",
+                    "relative overflow-hidden h-full flex flex-col justify-between p-4 transition-all duration-300", // Aumentado padding de 3.5 a 4
                     "bg-white/60 dark:bg-black/60 backdrop-blur-md",
                     "border transition-colors duration-500",
                     "hover:shadow-lg hover:bg-white/80 dark:hover:bg-black/80",
@@ -53,45 +51,48 @@ export const MetricCard = ({
                 )}
                 style={{ borderColor: chartVarBorder } as React.CSSProperties}
             >
-                {/* Background Glow - Theme Aware */}
                 <div
                     className="absolute -right-6 -top-6 w-24 h-24 blur-2xl opacity-20 rounded-full transition-opacity group-hover:opacity-40"
                     style={{ background: chartVar } as React.CSSProperties}
                 />
 
-                <div className="flex justify-between items-center z-10">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors truncate pr-2">
+                <div className="flex justify-between items-start z-10">
+                    <p className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors truncate pr-2">
+                        {/* Aumentado de text-[10px] a [12px] */}
                         {title}
                     </p>
                     {Icon && (
                         <div
-                            className="p-1.5 rounded-lg bg-white/40 dark:bg-black/20 backdrop-blur-sm border border-white/20 dark:border-white/5 shadow-sm transition-transform group-hover:scale-110"
+                            className="p-2 rounded-lg bg-white/40 dark:bg-black/20 backdrop-blur-sm border border-white/20 dark:border-white/5 shadow-sm transition-transform group-hover:scale-110"
                             style={{ color: chartVar } as React.CSSProperties}
                         >
-                            <Icon className="h-4 w-4" />
+                            {/* Aumentado icono de h-4 a h-5 */}
+                            <Icon className="h-5 w-5" /> 
                         </div>
                     )}
                 </div>
 
-                <div className="mt-2 z-10">
+                <div className="mt-4 z-10">
                     <div className="flex items-baseline gap-1">
                         <p
-                            className="text-2xl font-black tracking-tighter transition-colors duration-500"
+                            className="text-4xl font-black tracking-tighter transition-colors duration-500" 
+                            /* Aumentado de text-2xl a text-4xl */
                             style={{ color: chartVar } as React.CSSProperties}
                         >
                             {animatedValue}{suffix}
                         </p>
                     </div>
                     {description && (
-                        <p className="text-[9px] text-muted-foreground mt-0.5 font-semibold uppercase opacity-70 group-hover:opacity-100 transition-opacity">
+                        <p className="text-[11px] text-muted-foreground mt-1 font-semibold uppercase opacity-70 group-hover:opacity-100 transition-opacity">
+                            {/* Aumentado de text-[9px] a [11px] */}
                             {description}
                         </p>
                     )}
                 </div>
 
-                {/* Bottom decorative bar */}
                 <div
-                    className="absolute bottom-0 left-0 h-0.5 transition-all duration-300 group-hover:w-full w-4"
+                    className="absolute bottom-0 left-0 h-1 transition-all duration-300 group-hover:w-full w-6" 
+                    /* Engrosado un poco la barra de h-0.5 a h-1 */
                     style={{ background: chartVar } as React.CSSProperties}
                 />
             </Card>
