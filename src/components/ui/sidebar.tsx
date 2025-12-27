@@ -85,7 +85,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
     <>
       {isMobile && openMobile && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+          className="lg:hidden fixed inset-0 bg-primary/10 z-40"
           onClick={() => setOpenMobile(false)}
         />
       )}
@@ -97,8 +97,8 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
         }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className={cn(
-          "fixed top-0 left-0 z-50 h-screen flex flex-col bg-sidebar-background/60 backdrop-blur-xl border-r border-sidebar-border/30 shadow-2xl",
-          isMobile && !openMobile && "invisible lg:visible"
+          "fixed top-0 left-0 z-50 h-screen flex flex-col border-r border-sidebar-border/30 shadow-2xl",
+          isMobile ? (openMobile ? "bg-primary/95" : "invisible lg:visible") : "bg-sidebar-background/60 backdrop-blur-xl",
         )}
       >
         <div className="flex flex-col h-full w-full overflow-hidden">

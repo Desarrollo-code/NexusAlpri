@@ -25,7 +25,6 @@ export const SidebarHeader = () => {
           </div>
           <div className="flex flex-col">
             <span className="text-2xl font-black text-primary tracking-tighter">{isLoading ? <Skeleton className="h-6 w-32" /> : settings?.platformName || 'NexusAlpri'}</span>
-            <span className="text-[10px] font-bold text-primary/80 uppercase tracking-[0.2em] -mt-1">Plataforma</span>
           </div>
         </Link>
       </div>
