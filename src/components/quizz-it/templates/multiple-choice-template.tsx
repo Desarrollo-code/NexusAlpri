@@ -3,16 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { Check, X, Timer, Circle, Square, Triangle, Diamond } from 'lucide-react';
 
-/* ===================== UTIL ===================== */
-const decodeHtml = (html: string) => {
-  if (typeof window === 'undefined') return html;
-  const txt = document.createElement('textarea');
-  txt.innerHTML = html;
-  return txt.value;
-};
-
 const shapes = [Circle, Square, Triangle, Diamond];
-const colors = [
+const gradients = [
   'from-blue-500 to-blue-600',
   'from-emerald-500 to-emerald-600',
   'from-amber-500 to-amber-600',
@@ -34,7 +26,9 @@ export function MultipleChoiceTemplate({
   const [answered, setAnswered] = useState(!!selectedOptionId);
   const [time, setTime] = useState(20);
 
-  const correct = question.options.find((o: any) => o.isCorrect);
+  const correct = question.options.find(
+    (o: any) => o.isCorrect
+  );
 
   useEffect(() => {
     if (answered) return;
@@ -48,7 +42,6 @@ export function MultipleChoiceTemplate({
 
   return (
     <div className="space-y-5">
-      {/* HEADER */}
       <header className="flex justify-between items-center">
         <span className="text-sm font-semibold text-slate-500">
           Pregunta {questionNumber} / {totalQuestions}
@@ -67,18 +60,18 @@ export function MultipleChoiceTemplate({
         </div>
       </header>
 
-      {/* QUESTION */}
-      <div className="p-4 bg-slate-50 rounded-xl border">
-        <h2 className="text-base md:text-lg font-bold text-center text-slate-800">
-          {decodeHtml(question.text)}
-        </h2>
+      {/* QUESTION (HTML RENDER) */}
+      <div className="p-4 bg-slate-50 rounded-xl border prose prose-sm max-w-none">
+        <div
+          dangerouslySetInnerHTML={{ __html: question.text }}
+        />
       </div>
 
       {/* OPTIONS */}
       <div className="grid gap-3 md:grid-cols-2">
         {question.options.map((opt: any, i: number) => {
           const Shape = shapes[i % shapes.length];
-          const gradient = colors[i % colors.length];
+          const gradient = gradients[i % gradients.length];
           const isSelected = selected === opt.id;
           const isCorrect = correct?.id === opt.id;
 
@@ -122,8 +115,10 @@ export function MultipleChoiceTemplate({
                 <Shape size={18} />
               </div>
 
-              <div className="flex-1 text-sm md:text-base font-medium text-slate-700 leading-snug whitespace-normal break-words">
-                {decodeHtml(opt.text)}
+              <div className="flex-1 prose prose-sm max-w-none text-slate-700">
+                <div
+                  dangerouslySetInnerHTML={{ __html: opt.text }}
+                />
               </div>
 
               {answered && showFeedback && (

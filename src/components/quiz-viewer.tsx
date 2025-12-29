@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import type { Quiz as AppQuiz } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,14 +19,6 @@ import { MultipleChoiceTemplate } from './quizz-it/templates/multiple-choice-tem
 import { ResultScreenTemplate } from './quizz-it/templates/result-screen-template';
 import { AnimatePresence, motion } from 'framer-motion';
 
-/* ===================== UTIL ===================== */
-const decodeHtml = (html: string) => {
-  if (typeof window === 'undefined') return html;
-  const txt = document.createElement('textarea');
-  txt.innerHTML = html;
-  return txt.value;
-};
-
 interface QuizViewerProps {
   quiz: AppQuiz | null | undefined;
   lessonId: string;
@@ -43,67 +35,76 @@ const SummaryView = ({
   onNavigate,
   onSubmit,
   isSubmitting
-}: any) => (
-  <div className="space-y-6">
-    <header className="text-center space-y-2">
-      <h3 className="text-xl md:text-2xl font-extrabold text-slate-900">
-        Resumen de respuestas
-      </h3>
-      <p className="text-sm text-slate-500">
-        Revisa tus respuestas antes de enviar el quiz.
-      </p>
-    </header>
+}: any) => {
+  const stripHtml = (html: string) =>
+    html.replace(/<[^>]+>/g, '');
 
-    <div className="grid gap-3 max-h-[55vh] overflow-y-auto pr-2">
-      {questions.map((q: any, idx: number) => {
-        const answer = answers[q.id];
-        const selected = q.options.find((o: any) => o.id === answer?.answerId);
+  return (
+    <div className="space-y-6">
+      <header className="text-center space-y-2">
+        <h3 className="text-xl md:text-2xl font-extrabold text-slate-900">
+          Resumen de respuestas
+        </h3>
+        <p className="text-sm text-slate-500">
+          Revisa antes de enviar el quiz.
+        </p>
+      </header>
 
-        return (
-          <Card key={q.id} className="border-slate-200">
-            <CardContent className="p-4 flex flex-col sm:flex-row gap-3">
-              <div className="flex-1">
-                <span className="block text-xs font-bold text-primary mb-1">
-                  Pregunta {idx + 1}
-                </span>
-                <p className="text-sm font-semibold text-slate-800">
-                  {decodeHtml(q.text)}
-                </p>
-                <p className="text-sm text-slate-500 mt-1">
-                  Respuesta:{' '}
-                  <span className="font-medium text-slate-700">
-                    {selected ? decodeHtml(selected.text) : 'Sin responder'}
+      <div className="grid gap-3 max-h-[55vh] overflow-y-auto pr-2">
+        {questions.map((q: any, idx: number) => {
+          const answer = answers[q.id];
+          const selected = q.options.find(
+            (o: any) => o.id === answer?.answerId
+          );
+
+          return (
+            <Card key={q.id}>
+              <CardContent className="p-4 flex flex-col sm:flex-row gap-3">
+                <div className="flex-1">
+                  <span className="text-xs font-bold text-primary">
+                    Pregunta {idx + 1}
                   </span>
-                </p>
-              </div>
+                  <p className="text-sm font-semibold text-slate-800 mt-1">
+                    {stripHtml(q.text)}
+                  </p>
+                  <p className="text-sm text-slate-500 mt-1">
+                    Respuesta:{' '}
+                    <span className="font-medium text-slate-700">
+                      {selected
+                        ? stripHtml(selected.text)
+                        : 'Sin responder'}
+                    </span>
+                  </p>
+                </div>
 
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onNavigate(idx)}
-              >
-                Editar
-              </Button>
-            </CardContent>
-          </Card>
-        );
-      })}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onNavigate(idx)}
+                >
+                  Editar
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      <Button
+        onClick={onSubmit}
+        disabled={isSubmitting}
+        className="w-full h-11 font-bold rounded-xl"
+      >
+        {isSubmitting ? (
+          <Loader2 className="mr-2 animate-spin" />
+        ) : (
+          <CheckCircle2 className="mr-2" />
+        )}
+        {isSubmitting ? 'Calculando…' : 'Enviar quiz'}
+      </Button>
     </div>
-
-    <Button
-      onClick={onSubmit}
-      disabled={isSubmitting}
-      className="w-full h-11 text-base font-bold rounded-xl"
-    >
-      {isSubmitting ? (
-        <Loader2 className="mr-2 animate-spin" />
-      ) : (
-        <CheckCircle2 className="mr-2" />
-      )}
-      {isSubmitting ? 'Calculando…' : 'Enviar quiz'}
-    </Button>
-  </div>
-);
+  );
+};
 
 /* ===================== VIEWER ===================== */
 export function QuizViewer({
@@ -117,7 +118,8 @@ export function QuizViewer({
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const [state, setState] = useState<'intro' | 'playing' | 'summary' | 'finished'>('intro');
+  const [state, setState] =
+    useState<'intro' | 'playing' | 'summary' | 'finished'>('intro');
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [score, setScore] = useState(0);
@@ -184,9 +186,6 @@ export function QuizViewer({
       <AnimatePresence mode="wait">
         <motion.div
           key={state + index}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
           className="w-full max-w-3xl bg-white rounded-3xl shadow-xl flex flex-col max-h-[95vh]"
         >
           <div className="flex-1 overflow-y-auto p-5 md:p-8">
@@ -196,9 +195,6 @@ export function QuizViewer({
                 <h2 className="text-2xl font-black">
                   {quiz?.title}
                 </h2>
-                <p className="text-slate-500">
-                  {quiz?.description}
-                </p>
 
                 {!isEnrolled && !isCreatorPreview ? (
                   <Alert variant="destructive">
