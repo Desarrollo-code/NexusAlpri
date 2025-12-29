@@ -4,7 +4,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import type { Quiz as AppQuiz } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, PlayCircle, ShieldAlert, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
+import {
+  Loader2,
+  PlayCircle,
+  ShieldAlert,
+  ChevronLeft,
+  ChevronRight,
+  CheckCircle2
+} from 'lucide-react';
 import { Alert, AlertTitle } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
@@ -12,217 +19,265 @@ import { MultipleChoiceTemplate } from './quizz-it/templates/multiple-choice-tem
 import { ResultScreenTemplate } from './quizz-it/templates/result-screen-template';
 import { AnimatePresence, motion } from 'framer-motion';
 
+/* ===================== UTIL ===================== */
+const decodeHtml = (html: string) => {
+  if (typeof window === 'undefined') return html;
+  const txt = document.createElement('textarea');
+  txt.innerHTML = html;
+  return txt.value;
+};
+
 interface QuizViewerProps {
-    quiz: AppQuiz | null | undefined;
-    lessonId: string;
-    courseId?: string;
-    isEnrolled?: boolean | null;
-    isCreatorPreview?: boolean;
-    onQuizCompleted?: (lessonId: string, score: number) => void;
+  quiz: AppQuiz | null | undefined;
+  lessonId: string;
+  courseId?: string;
+  isEnrolled?: boolean | null;
+  isCreatorPreview?: boolean;
+  onQuizCompleted?: (lessonId: string, score: number) => void;
 }
 
-/* ====================== SUMMARY ====================== */
+/* ===================== SUMMARY ===================== */
 const SummaryView = ({
-    questions,
-    answers,
-    onNavigate,
-    onSubmit,
-    isSubmitting
+  questions,
+  answers,
+  onNavigate,
+  onSubmit,
+  isSubmitting
 }: any) => (
-    <div className="space-y-6">
-        <header className="text-center space-y-2">
-            <h3 className="text-xl md:text-2xl font-extrabold text-slate-900">
-                Resumen de respuestas
-            </h3>
-            <p className="text-sm text-slate-500">
-                Verifica antes de enviar el quiz.
-            </p>
-        </header>
+  <div className="space-y-6">
+    <header className="text-center space-y-2">
+      <h3 className="text-xl md:text-2xl font-extrabold text-slate-900">
+        Resumen de respuestas
+      </h3>
+      <p className="text-sm text-slate-500">
+        Revisa tus respuestas antes de enviar el quiz.
+      </p>
+    </header>
 
-        <div className="grid gap-3 max-h-[55vh] overflow-y-auto pr-2">
-            {questions.map((q: any, idx: number) => {
-                const answer = answers[q.id];
-                const selected = q.options.find((o: any) => o.id === answer?.answerId);
+    <div className="grid gap-3 max-h-[55vh] overflow-y-auto pr-2">
+      {questions.map((q: any, idx: number) => {
+        const answer = answers[q.id];
+        const selected = q.options.find((o: any) => o.id === answer?.answerId);
 
-                return (
-                    <Card key={q.id} className="border-slate-200">
-                        <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-3">
-                            <div className="flex-grow">
-                                <span className="inline-block mb-1 text-xs font-bold text-primary">
-                                    Pregunta {idx + 1}
-                                </span>
-                                <p
-                                    className="text-sm font-semibold text-slate-800"
-                                    dangerouslySetInnerHTML={{ __html: q.text }}
-                                />
-                                <p className="text-sm text-slate-500 mt-1">
-                                    Respuesta:
-                                    <span className="ml-1 font-medium text-slate-700">
-                                        {selected?.text || 'Sin responder'}
-                                    </span>
-                                </p>
-                            </div>
+        return (
+          <Card key={q.id} className="border-slate-200">
+            <CardContent className="p-4 flex flex-col sm:flex-row gap-3">
+              <div className="flex-1">
+                <span className="block text-xs font-bold text-primary mb-1">
+                  Pregunta {idx + 1}
+                </span>
+                <p className="text-sm font-semibold text-slate-800">
+                  {decodeHtml(q.text)}
+                </p>
+                <p className="text-sm text-slate-500 mt-1">
+                  Respuesta:{' '}
+                  <span className="font-medium text-slate-700">
+                    {selected ? decodeHtml(selected.text) : 'Sin responder'}
+                  </span>
+                </p>
+              </div>
 
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => onNavigate(idx)}
-                            >
-                                Editar
-                            </Button>
-                        </CardContent>
-                    </Card>
-                );
-            })}
-        </div>
-
-        <Button
-            onClick={onSubmit}
-            disabled={isSubmitting}
-            className="w-full h-11 text-base font-bold rounded-xl"
-        >
-            {isSubmitting ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 className="mr-2" />}
-            {isSubmitting ? 'Calculando…' : 'Enviar quiz'}
-        </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onNavigate(idx)}
+              >
+                Editar
+              </Button>
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
+
+    <Button
+      onClick={onSubmit}
+      disabled={isSubmitting}
+      className="w-full h-11 text-base font-bold rounded-xl"
+    >
+      {isSubmitting ? (
+        <Loader2 className="mr-2 animate-spin" />
+      ) : (
+        <CheckCircle2 className="mr-2" />
+      )}
+      {isSubmitting ? 'Calculando…' : 'Enviar quiz'}
+    </Button>
+  </div>
 );
 
-/* ====================== VIEWER ====================== */
+/* ===================== VIEWER ===================== */
 export function QuizViewer({
-    quiz,
-    lessonId,
-    courseId,
-    isEnrolled,
-    isCreatorPreview = false,
-    onQuizCompleted
+  quiz,
+  lessonId,
+  courseId,
+  isEnrolled,
+  isCreatorPreview = false,
+  onQuizCompleted
 }: QuizViewerProps) {
-    const { user } = useAuth();
-    const { toast } = useToast();
+  const { user } = useAuth();
+  const { toast } = useToast();
 
-    const [state, setState] = useState<'intro' | 'playing' | 'summary' | 'finished'>('intro');
-    const [index, setIndex] = useState(0);
-    const [answers, setAnswers] = useState<Record<string, any>>({});
-    const [score, setScore] = useState(0);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+  const [state, setState] = useState<'intro' | 'playing' | 'summary' | 'finished'>('intro');
+  const [index, setIndex] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [score, setScore] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const question = quiz?.questions[index];
+  const question = quiz?.questions[index];
 
-    const handleAnswerSubmit = useCallback((isCorrect: boolean, data: any) => {
-        if (!question) return;
-        setAnswers(prev => ({
-            ...prev,
-            [question.id]: { ...data, isCorrect, answerId: data.answer }
-        }));
-    }, [question]);
-
-    const handleFinalSubmit = async () => {
-        try {
-            setIsSubmitting(true);
-            let correct = 0;
-            quiz?.questions.forEach(q => answers[q.id]?.isCorrect && correct++);
-            const percent = (correct / (quiz?.questions.length || 1)) * 100;
-
-            setScore(correct);
-
-            if (user && courseId && !isCreatorPreview) {
-                await fetch(`/api/progress/${user.id}/${courseId}/quiz`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ lessonId, quizId: quiz?.id, score: percent })
-                });
-                onQuizCompleted?.(lessonId, percent);
-            }
-
-            setState('finished');
-        } catch (e: any) {
-            toast({ title: 'Error', description: e.message, variant: 'destructive' });
-        } finally {
-            setIsSubmitting(false);
+  const handleAnswerSubmit = useCallback(
+    (isCorrect: boolean, data: any) => {
+      if (!question) return;
+      setAnswers(prev => ({
+        ...prev,
+        [question.id]: {
+          ...data,
+          isCorrect,
+          answerId: data.answer
         }
-    };
+      }));
+    },
+    [question]
+  );
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur p-4">
-            <AnimatePresence mode="wait">
-                <motion.div
-                    key={state + index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="w-full max-w-3xl bg-white rounded-3xl shadow-xl flex flex-col max-h-[95vh]"
-                >
-                    <div className="flex-grow overflow-y-auto p-5 md:p-8">
-                        {state === 'intro' && (
-                            <div className="text-center space-y-4">
-                                <PlayCircle className="mx-auto h-10 w-10 text-primary" />
-                                <h2 className="text-2xl font-black">{quiz?.title}</h2>
-                                <p className="text-slate-500">{quiz?.description}</p>
+  const handleFinalSubmit = async () => {
+    try {
+      setIsSubmitting(true);
+      let correct = 0;
+      quiz?.questions.forEach(q => {
+        if (answers[q.id]?.isCorrect) correct++;
+      });
 
-                                <Button
-                                    size="lg"
-                                    className="w-full max-w-xs mx-auto"
-                                    onClick={() => setState('playing')}
-                                    disabled={!isEnrolled && !isCreatorPreview}
-                                >
-                                    Comenzar quiz
-                                </Button>
-                            </div>
-                        )}
+      const percentage =
+        (correct / (quiz?.questions.length || 1)) * 100;
 
-                        {state === 'playing' && question && (
-                            <MultipleChoiceTemplate
-                                question={question}
-                                onSubmit={handleAnswerSubmit}
-                                onTimeUp={() => handleAnswerSubmit(false, { timedOut: true })}
-                                questionNumber={index + 1}
-                                totalQuestions={quiz?.questions.length || 0}
-                                selectedOptionId={answers[question.id]?.answerId}
-                            />
-                        )}
+      setScore(correct);
 
-                        {state === 'summary' && (
-                            <SummaryView
-                                questions={quiz?.questions}
-                                answers={answers}
-                                onNavigate={(i: number) => { setIndex(i); setState('playing'); }}
-                                onSubmit={handleFinalSubmit}
-                                isSubmitting={isSubmitting}
-                            />
-                        )}
+      if (user && courseId && !isCreatorPreview) {
+        await fetch(`/api/progress/${user.id}/${courseId}/quiz`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            lessonId,
+            quizId: quiz?.id,
+            score: percentage
+          })
+        });
 
-                        {state === 'finished' && (
-                            <ResultScreenTemplate
-                                score={score}
-                                totalQuestions={quiz?.questions.length || 0}
-                                formTitle={quiz?.title || ''}
-                                onRestart={() => setState('intro')}
-                            />
-                        )}
-                    </div>
+        onQuizCompleted?.(lessonId, percentage);
+      }
 
-                    {state === 'playing' && (
-                        <footer className="border-t p-4 flex justify-between items-center">
-                            <Button
-                                variant="ghost"
-                                disabled={index === 0}
-                                onClick={() => setIndex(i => i - 1)}
-                            >
-                                <ChevronLeft /> Anterior
-                            </Button>
+      setState('finished');
+    } catch (err: any) {
+      toast({
+        title: 'Error',
+        description: err.message,
+        variant: 'destructive'
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-                            {index < (quiz?.questions.length || 0) - 1 ? (
-                                <Button onClick={() => setIndex(i => i + 1)}>
-                                    Siguiente <ChevronRight />
-                                </Button>
-                            ) : (
-                                <Button onClick={() => setState('summary')}>
-                                    Finalizar
-                                </Button>
-                            )}
-                        </footer>
-                    )}
-                </motion.div>
-            </AnimatePresence>
-        </div>
-    );
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur p-4">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={state + index}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="w-full max-w-3xl bg-white rounded-3xl shadow-xl flex flex-col max-h-[95vh]"
+        >
+          <div className="flex-1 overflow-y-auto p-5 md:p-8">
+            {state === 'intro' && (
+              <div className="text-center space-y-4">
+                <PlayCircle className="mx-auto h-10 w-10 text-primary" />
+                <h2 className="text-2xl font-black">
+                  {quiz?.title}
+                </h2>
+                <p className="text-slate-500">
+                  {quiz?.description}
+                </p>
+
+                {!isEnrolled && !isCreatorPreview ? (
+                  <Alert variant="destructive">
+                    <ShieldAlert className="h-4 w-4" />
+                    <AlertTitle>No estás inscrito</AlertTitle>
+                  </Alert>
+                ) : (
+                  <Button
+                    size="lg"
+                    className="w-full max-w-xs mx-auto"
+                    onClick={() => setState('playing')}
+                  >
+                    Comenzar quiz
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {state === 'playing' && question && (
+              <MultipleChoiceTemplate
+                question={question}
+                onSubmit={handleAnswerSubmit}
+                onTimeUp={() =>
+                  handleAnswerSubmit(false, { timedOut: true })
+                }
+                questionNumber={index + 1}
+                totalQuestions={quiz?.questions.length || 0}
+                selectedOptionId={answers[question.id]?.answerId}
+              />
+            )}
+
+            {state === 'summary' && (
+              <SummaryView
+                questions={quiz?.questions}
+                answers={answers}
+                onNavigate={(i: number) => {
+                  setIndex(i);
+                  setState('playing');
+                }}
+                onSubmit={handleFinalSubmit}
+                isSubmitting={isSubmitting}
+              />
+            )}
+
+            {state === 'finished' && (
+              <ResultScreenTemplate
+                score={score}
+                totalQuestions={quiz?.questions.length || 0}
+                formTitle={quiz?.title || ''}
+                onRestart={() => setState('intro')}
+              />
+            )}
+          </div>
+
+          {state === 'playing' && (
+            <footer className="border-t p-4 flex justify-between items-center">
+              <Button
+                variant="ghost"
+                disabled={index === 0}
+                onClick={() => setIndex(i => i - 1)}
+              >
+                <ChevronLeft className="mr-1" />
+                Anterior
+              </Button>
+
+              {index < (quiz?.questions.length || 0) - 1 ? (
+                <Button onClick={() => setIndex(i => i + 1)}>
+                  Siguiente
+                  <ChevronRight className="ml-1" />
+                </Button>
+              ) : (
+                <Button onClick={() => setState('summary')}>
+                  Finalizar
+                </Button>
+              )}
+            </footer>
+          )}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
 }
