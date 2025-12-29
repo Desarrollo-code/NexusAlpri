@@ -25,36 +25,36 @@ const SummaryView = ({ questions, answers, onNavigate, onSubmit, isSubmitting }:
   const stripHtml = (html: string) => html.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ');
   
   return (
-    <div className="space-y-4 p-4 md:p-6">
-      <header className="text-center space-y-2 p-4 bg-gradient-to-r from-slate-50 to-blue-50 rounded-xl">
-        <h3 className="text-xl md:text-2xl font-bold text-slate-900">Resumen de respuestas</h3>
-        <p className="text-xs md:text-sm text-slate-500">Revisa antes de enviar el quiz.</p>
+    <div className="space-y-4 p-3 md:p-4">
+      <header className="text-center space-y-1 p-3 bg-gradient-to-r from-slate-50 to-blue-50 rounded-lg">
+        <h3 className="text-lg md:text-xl font-bold text-slate-900">Resumen de respuestas</h3>
+        <p className="text-xs text-slate-500">Revisa antes de enviar.</p>
       </header>
       
-      <div className="max-h-48 md:max-h-60vh overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-300">
+      <div className="max-h-40 md:max-h-56 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-300">
         {questions.map((q: any, idx: number) => {
           const answer = answers[q.id];
           const selected = q.options.find((o: any) => o.id === answer?.answerId);
           return (
-            <Card key={q.id} className="hover:shadow-md">
-              <CardContent className="p-4 flex flex-col lg:flex-row gap-3 break-words">
+            <Card key={q.id} className="hover:shadow-sm">
+              <CardContent className="p-3 flex flex-col lg:flex-row gap-2 break-words">
                 <div className="flex-1 min-w-0">
-                  <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded mb-2 inline-block">
+                  <span className="text-xs font-bold text-primary bg-primary/10 px-1 py-0.5 rounded mb-1 inline-block">
                     P{idx + 1}
                   </span>
-                  <p className="text-sm font-medium text-slate-800 leading-tight break-words max-w-full">
+                  <p className="text-xs md:text-sm text-slate-800 leading-tight break-words max-w-full">
                     {stripHtml(q.text)}
                   </p>
                 </div>
                 
-                <div className="flex items-start gap-3 min-w-0 flex-1 lg:flex-none">
-                  <span className="text-xs md:text-sm text-slate-700 bg-slate-50 px-3 py-2 rounded-lg flex-1 break-words min-h-[32px] flex items-center">
+                <div className="flex items-start gap-2 min-w-0 flex-1 lg:flex-none">
+                  <span className="text-xs text-slate-700 bg-slate-50 px-2 py-1 rounded-lg flex-1 break-words min-h-[28px] flex items-center">
                     {selected ? stripHtml(selected.text) : 'Sin responder'}
                   </span>
                   <Button 
                     variant="outline" 
-                    size="sm" 
-                    className="h-9 px-3 text-xs whitespace-nowrap flex-shrink-0"
+                    size="xs" 
+                    className="h-8 px-2 text-xs whitespace-nowrap flex-shrink-0"
                     onClick={() => onNavigate(idx)}
                   >
                     Editar
@@ -69,16 +69,16 @@ const SummaryView = ({ questions, answers, onNavigate, onSubmit, isSubmitting }:
       <Button 
         onClick={onSubmit} 
         disabled={isSubmitting}
-        className="w-full h-12 text-sm font-bold rounded-xl bg-gradient-to-r from-primary to-primary/90 hover:shadow-xl"
+        className="w-full h-10 text-xs font-bold rounded-lg bg-gradient-to-r from-primary to-primary/90 hover:shadow-md"
       >
         {isSubmitting ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="mr-1 h-3 w-3 animate-spin" />
             Calculando...
           </>
         ) : (
           <>
-            <CheckCircle2 className="mr-2 h-4 w-4" />
+            <CheckCircle2 className="mr-1 h-3 w-3" />
             Enviar quiz
           </>
         )}
@@ -142,33 +142,33 @@ export function QuizViewer({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur p-2 md:p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur p-1 md:p-2">
       <AnimatePresence mode="wait">
         <motion.div
           key={state}
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
-          className="w-full max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl flex flex-col max-h-[90vh]"
+          className="w-full max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto bg-white rounded-xl shadow-xl flex flex-col max-h-[90vh]"
         >
           <div className="flex-1 overflow-hidden flex flex-col min-h-0">
             {state === 'intro' && (
-              <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-8 text-center space-y-4">
-                <PlayCircle className="h-12 w-12 text-primary" />
-                <h2 className="text-2xl md:text-3xl font-bold text-slate-900 leading-tight">
+              <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-6 text-center space-y-3">
+                <PlayCircle className="h-10 w-10 text-primary" />
+                <h2 className="text-xl md:text-2xl font-bold text-slate-900 leading-tight">
                   {quiz?.title}
                 </h2>
-                <p className="text-sm md:text-base text-slate-600 max-w-sm">
+                <p className="text-xs md:text-sm text-slate-600 max-w-xs">
                   {quiz?.description}
                 </p>
                 {!isEnrolled && !isCreatorPreview && (
-                  <Alert variant="destructive" className="max-w-sm">
-                    <ShieldAlert className="h-4 w-4" />
+                  <Alert variant="destructive" className="max-w-xs">
+                    <ShieldAlert className="h-3 w-3" />
                     <AlertTitle>No estás inscrito</AlertTitle>
                   </Alert>
                 )}
                 <Button 
-                  className="w-full max-w-sm h-12 text-sm font-bold rounded-xl bg-primary hover:bg-primary/90"
+                  className="w-full max-w-xs h-10 text-xs font-bold rounded-lg bg-primary hover:bg-primary/90"
                   onClick={() => setState('playing')}
                 >
                   Comenzar quiz
@@ -178,7 +178,7 @@ export function QuizViewer({
 
             {state === 'playing' && question && (
               <>
-                <div className="flex-1 overflow-y-auto p-4 md:p-6 scrollbar-thin scrollbar-thumb-slate-300">
+                <div className="flex-1 overflow-y-auto p-3 md:p-4 scrollbar-thin scrollbar-thumb-slate-300">
                   <MultipleChoiceTemplate
                     question={question}
                     onSubmit={handleAnswerSubmit}
@@ -189,24 +189,24 @@ export function QuizViewer({
                   />
                 </div>
                 
-                <footer className="border-t p-4 flex justify-between items-center gap-2 bg-slate-50">
+                <footer className="border-t p-3 flex justify-between items-center gap-1 bg-slate-50">
                   <Button
                     variant="ghost"
                     size="sm"
                     disabled={index === 0}
-                    className="h-10 px-4 text-sm"
+                    className="h-8 px-3 text-xs"
                     onClick={() => setIndex(i => i - 1)}
                   >
-                    <ChevronLeft className="mr-1 h-4 w-4" />
+                    <ChevronLeft className="mr-0.5 h-3 w-3" />
                     Anterior
                   </Button>
                   
                   {index < (quiz?.questions.length || 0) - 1 ? (
-                    <Button className="h-10 px-6 text-sm font-medium bg-primary text-white rounded-lg" onClick={() => setIndex(i => i + 1)}>
-                      Siguiente <ChevronRight className="ml-1 h-4 w-4" />
+                    <Button className="h-8 px-4 text-xs font-medium bg-primary text-white rounded-lg" onClick={() => setIndex(i => i + 1)}>
+                      Siguiente <ChevronRight className="ml-0.5 h-3 w-3" />
                     </Button>
                   ) : (
-                    <Button className="h-10 px-6 font-bold bg-primary text-white rounded-lg" onClick={() => setState('summary')}>
+                    <Button className="h-8 px-4 font-bold bg-primary text-white rounded-lg" onClick={() => setState('summary')}>
                       Finalizar
                     </Button>
                   )}
@@ -228,7 +228,7 @@ export function QuizViewer({
             )}
 
             {state === 'finished' && (
-              <div className="flex-1 flex flex-col p-6 md:p-8">
+              <div className="flex-1 flex flex-col p-4 md:p-6">
                 <ResultScreenTemplate
                   score={score}
                   totalQuestions={quiz?.questions.length || 0}

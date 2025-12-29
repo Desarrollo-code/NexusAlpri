@@ -77,27 +77,27 @@ export function MultipleChoiceTemplate({
   const cleanText = (html: string) => html.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim();
 
   return (
-    <div className="space-y-8 w-full max-w-4xl mx-auto">
+    <div className="space-y-6 w-full max-w-3xl mx-auto">
       {/* HEADER MEJORADO */}
-      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 p-6 bg-gradient-to-r from-slate-50 to-slate-100 rounded-2xl">
-        <span className="text-sm font-bold text-slate-500 uppercase tracking-wider bg-white px-4 py-2 rounded-xl shadow-sm">
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6 p-4 bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl">
+        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider bg-white px-3 py-1 rounded-lg shadow-sm">
           Pregunta {questionNumber} de {totalQuestions}
         </span>
-        <div className="flex items-center gap-3 px-5 py-3 rounded-2xl text-lg font-mono font-bold transition-all duration-300 bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl hover:scale-105 w-fit">
-          <Timer size={24} />
+        <div className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-mono font-bold transition-all duration-300 bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md hover:shadow-lg hover:scale-105 w-fit">
+          <Timer size={20} />
           <span>{time}s</span>
         </div>
       </header>
 
       {/* QUESTION CARD MEJORADA */}
-      <div className="p-8 md:p-10 bg-gradient-to-br from-white via-slate-50 to-slate-100 rounded-3xl border-2 border-slate-100 shadow-xl mb-8">
-        <div className="text-slate-800 text-xl md:text-2xl lg:text-3xl font-semibold text-center leading-[1.4] md:leading-[1.3] tracking-tight break-words hyphens-auto max-w-full overflow-wrap-anywhere">
+      <div className="p-6 md:p-8 bg-gradient-to-br from-white via-slate-50 to-slate-100 rounded-2xl border-2 border-slate-100 shadow-lg mb-6">
+        <div className="text-slate-800 text-lg md:text-xl font-semibold text-center leading-[1.4] md:leading-[1.3] tracking-tight break-words hyphens-auto max-w-full overflow-wrap-anywhere">
           <div dangerouslySetInnerHTML={{ __html: question.text }} />
         </div>
       </div>
 
       {/* OPTIONS GRID RESPONSIVE */}
-      <div className="grid gap-6 md:gap-8 lg:grid-cols-2">
+      <div className="grid gap-4 md:gap-6 lg:grid-cols-2">
         {question.options.map((opt, i) => {
           const ShapeIcon = shapes[i % shapes.length];
           const gradient = gradients[i % gradients.length];
@@ -105,7 +105,7 @@ export function MultipleChoiceTemplate({
           const isCorrect = opt.isCorrect;
 
           // Lógica de colores post-respuesta
-          let cardStyles = "bg-white border-slate-200 hover:border-slate-300 hover:shadow-xl";
+          let cardStyles = "bg-white border-slate-200 hover:border-slate-300 hover:shadow-md";
           if (answered) {
             if (isCorrect) {
               cardStyles = "border-emerald-500 bg-gradient-to-br from-emerald-50 to-emerald-100 ring-2 ring-emerald-200 shadow-emerald-200/50";
@@ -121,37 +121,31 @@ export function MultipleChoiceTemplate({
               key={opt.id}
               disabled={answered}
               onClick={() => handleSelect(opt)}
-              className={`
-                group relative flex flex-col lg:flex-row lg:items-center gap-6 p-8 rounded-3xl border-4 border-slate-200
-                transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] active:border-b-0 active:translate-y-[2px]
-                min-h-[120px] md:min-h-[140px] text-left break-inside-avoid overflow-hidden max-w-full
-                hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-primary/20
-                ${cardStyles}
-              `}
+              className={`group relative flex flex-col lg:flex-row lg:items-center gap-4 p-6 rounded-2xl border-4 border-slate-200 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] active:border-b-0 active:translate-y-[1px] min-h-[100px] md:min-h-[120px] text-left break-inside-avoid overflow-hidden max-w-full hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-primary/20 ${cardStyles}`}
             >
               {/* ÍCONO DE FORMA */}
-              <div className="w-20 h-20 lg:w-16 lg:h-16 rounded-2xl flex items-center justify-center text-white shrink-0 flex-shrink-0 bg-gradient-to-br shadow-2xl group-hover:shadow-3xl transition-all duration-300">
-                <ShapeIcon size={28} fill="currentColor" />
+              <div className="w-16 h-16 lg:w-14 lg:h-14 rounded-xl flex items-center justify-center text-white shrink-0 bg-gradient-to-br shadow-lg group-hover:shadow-xl transition-all duration-300">
+                <ShapeIcon size={24} fill="currentColor" />
               </div>
 
               {/* CONTENIDO DE TEXTO MEJORADO */}
               <div className="flex-1 min-w-0 max-w-full prose prose-slate">
-                <div className="text-slate-800 font-semibold text-lg md:text-xl leading-relaxed md:leading-snug hyphens-auto overflow-wrap-anywhere break-words max-w-full">
+                <div className="text-slate-800 font-semibold text-sm md:text-base leading-relaxed md:leading-snug hyphens-auto overflow-wrap-anywhere break-words max-w-full">
                   <div dangerouslySetInnerHTML={{ __html: opt.text }} />
                 </div>
               </div>
 
               {/* FEEDBACK VISUAL */}
               {answered && showFeedback && (
-                <div className="absolute top-6 right-6 flex flex-col items-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="absolute top-4 right-4 flex flex-col items-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   {isCorrect && (
-                    <div className="bg-emerald-100 border-2 border-emerald-300 p-2 rounded-2xl shadow-lg">
-                      <Check className="h-6 w-6 text-emerald-600" />
+                    <div className="bg-emerald-100 border-2 border-emerald-300 p-1 rounded-xl shadow-md">
+                      <Check className="h-5 w-5 text-emerald-600" />
                     </div>
                   )}
                   {isSelected && !isCorrect && (
-                    <div className="bg-rose-100 border-2 border-rose-300 p-2 rounded-2xl shadow-lg">
-                      <X className="h-6 w-6 text-rose-600" />
+                    <div className="bg-rose-100 border-2 border-rose-300 p-1 rounded-xl shadow-md">
+                      <X className="h-5 w-5 text-rose-600" />
                     </div>
                   )}
                 </div>
