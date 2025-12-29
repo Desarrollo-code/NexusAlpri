@@ -138,7 +138,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
       )}
       <div className={cn(
         "flex items-center justify-center transition-transform duration-300 group-hover/menu-item:scale-110",
-        isCollapsed ? "w-12 h-12 flex-shrink-0 items-center justify-center ml-1" : "w-10 flex-shrink-0 items-center justify-center",
+        isCollapsed ? "w-12 h-12 flex-shrink-0 items-center justify-center" : "w-10 flex-shrink-0 items-center justify-center",
         isActive && "scale-110"
       )}>
         <GradientIcon icon={item.icon} isActive={isActive} />
@@ -181,29 +181,25 @@ const SidebarSectionHeader = ({ item, isActive }: { item: NavItem, isActive: boo
 
   const headerContent = (
     <div className={cn(
-      "flex items-center rounded-xl transition-all duration-300 font-semibold group/menu-item relative overflow-hidden",
-      isCollapsed ? "justify-center h-12 w-12 gap-0" : "pl-6 pr-3 py-3 mx-0 gap-3",
-      isActive
-        ? (isMobile ? "bg-primary/10 text-primary" : "bg-primary/10 text-primary")
-        : (isMobile ? "text-foreground/80" : "text-sidebar-muted-foreground hover:bg-primary/5 hover:text-primary")
+      "flex items-center justify-between w-full rounded-xl transition-all duration-300 group",
+      isCollapsed ? 'h-12 w-12 justify-center mx-0 gap-0' : 'pl-6 pr-3 py-3 mx-0',
+      isActive ? (isMobile ? "bg-primary/10 text-primary" : "bg-primary/5 text-primary") : (isMobile ? "text-foreground/80" : "hover:bg-primary/5 text-sidebar-muted-foreground hover:text-primary")
     )}>
       <div className={cn(
-        "flex items-center justify-center transition-transform duration-300 group-hover/menu-item:scale-110",
-        isCollapsed
-          ? (shiftedParentIds.has(item.id) ? "w-12 h-12 flex-shrink-0 flex items-center justify-center mx-auto" : "w-12 h-12 flex-shrink-0 flex items-center justify-center ml-1")
-          : "w-10 flex-shrink-0 items-center justify-center",
-        isActive && "scale-110"
+        "flex items-center",
+        isCollapsed ? "gap-0" : "gap-3"
       )}>
-        <GradientIcon icon={item.icon} isActive={isActive} />
-      </div>
-      {!isCollapsed && (
-        <span className={cn(
-          "whitespace-nowrap transition-colors duration-300",
-          isActive ? "text-primary" : "group-hover/menu-item:text-primary"
+        <div className={cn(
+          "transition-transform duration-300 group-hover:scale-110",
+          isCollapsed
+            ? "w-12 h-12 flex-shrink-0 flex items-center justify-center"
+            : "w-10 flex-shrink-0 flex items-center justify-center",
+          isActive && "scale-110"
         )}>
-          {item.label}
-        </span>
-      )}
+          <GradientIcon icon={item.icon} isActive={isActive} />
+        </div>
+        {!isCollapsed && <span className="text-base font-semibold whitespace-nowrap">{item.label}</span>}
+      </div>
       {!isCollapsed && <ChevronDown className={cn("h-4 w-4 shrink-0 transition-transform duration-300 text-inherit", "group-data-[state=open]:rotate-180")} />}
     </div>
   );
