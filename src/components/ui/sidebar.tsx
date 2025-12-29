@@ -138,7 +138,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
       )}
       <div className={cn(
         "flex items-center justify-center transition-transform duration-300 group-hover/menu-item:scale-110",
-        isCollapsed ? "w-12 h-12 flex-shrink-0 items-center justify-center ml-1" : "w-10 flex-shrink-0 items-center justify-center",
+        isCollapsed ? "w-12 h-12 flex-shrink-0 items-center justify-center" : "w-10 flex-shrink-0 items-center justify-center",
         isActive && "scale-110"
       )}>
         <GradientIcon icon={item.icon} isActive={isActive} />
@@ -192,7 +192,7 @@ const SidebarSectionHeader = ({ item, isActive }: { item: NavItem, isActive: boo
         <div className={cn(
           "transition-transform duration-300 group-hover:scale-110",
           isCollapsed
-            ? (shiftedParentIds.has(item.id) ? "w-12 h-12 flex-shrink-0 flex items-center justify-center ml-3" : "w-12 h-12 flex-shrink-0 flex items-center justify-center ml-1")
+            ? "w-12 h-12 flex-shrink-0 flex items-center justify-center"
             : "w-10 flex-shrink-0 flex items-center justify-center",
           isActive && "scale-110"
         )}>
