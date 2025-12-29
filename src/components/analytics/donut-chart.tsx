@@ -1,31 +1,24 @@
 // src/components/analytics/donut-chart.tsx
  'use client';
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { ChartConfig, ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import { Pie, PieChart, ResponsiveContainer, Cell, Label, Sector } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
 
 const renderActiveShape = (props: any) => {
-  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent, value } = props;
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
 
+  // Only render the highlighted slice visuals (no central text) to avoid
+  // duplicating the label/total rendered by the Pie's <Label />.
   return (
     <g>
-      <text x={cx} y={cy - 12} textAnchor="middle" fill="currentColor" className="text-3xl font-bold fill-foreground">
-        {value}
-      </text>
-      <text x={cx} y={cy + 12} textAnchor="middle" fill="currentColor" className="text-xs font-medium fill-muted-foreground uppercase tracking-wider">
-        ({(percent * 100).toFixed(0)}%)
-      </text>
-      <text x={cx} y={cy + 35} textAnchor="middle" fill={fill} className="text-sm font-semibold italic">
-        {payload.label}
-      </text>
       <Sector
         cx={cx}
         cy={cy}
         innerRadius={innerRadius}
-        outerRadius={outerRadius + 6}
+        outerRadius={outerRadius + 8}
         startAngle={startAngle}
         endAngle={endAngle}
         fill={fill}
@@ -34,7 +27,7 @@ const renderActiveShape = (props: any) => {
       <Sector
         cx={cx}
         cy={cy}
-        innerRadius={innerRadius - 4}
+        innerRadius={Math.max(0, innerRadius - 4)}
         outerRadius={innerRadius - 1}
         startAngle={startAngle}
         endAngle={endAngle}
@@ -64,16 +57,55 @@ export function DonutChart({ title, data, config, id }: { title: string, data: a
     }
   }, [onToggleKey]);
 
-  const onPieEnter = useCallback((_: any, index: number) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  const [tooltipSide, setTooltipSide] = useState<'left' | 'right'>('right');
+
+  const onPieEnter = useCallback((_: any, index: number, e?: any) => {
     setHoverIndex(index);
+
+    try {
+      const rect = containerRef.current?.getBoundingClientRect();
+      let localX: number | undefined;
+
+      if (e && typeof e.chartX === 'number') {
+        localX = e.chartX;
+      } else if (e && e.event && typeof e.event.clientX === 'number' && rect) {
+        localX = e.event.clientX - rect.left;
+      }
+
+      if (rect && typeof localX === 'number') {
+        setTooltipSide(localX > rect.width / 2 ? 'left' : 'right');
+      }
+    } catch (err) {
+      // ignore positioning errors
+    }
   }, []);
 
   const onPieLeave = useCallback(() => {
     setHoverIndex(undefined);
   }, []);
 
-  const onPieClick = useCallback((_: any, index: number) => {
+  const onPieClick = useCallback((_: any, index: number, e?: any) => {
     setSelectedIndex(prev => prev === index ? undefined : index);
+
+    // Also update tooltip side when clicking (for keyboard users the side remains default)
+    try {
+      const rect = containerRef.current?.getBoundingClientRect();
+      let localX: number | undefined;
+
+      if (e && typeof e.chartX === 'number') {
+        localX = e.chartX;
+      } else if (e && e.event && typeof e.event.clientX === 'number' && rect) {
+        localX = e.event.clientX - rect.left;
+      }
+
+      if (rect && typeof localX === 'number') {
+        setTooltipSide(localX > rect.width / 2 ? 'left' : 'right');
+      }
+    } catch (err) {
+      // ignore
+    }
   }, []);
 
   const activeIndex = hoverIndex !== undefined ? hoverIndex : selectedIndex;
@@ -108,9 +140,9 @@ export function DonutChart({ title, data, config, id }: { title: string, data: a
         </CardHeader>
         <CardContent className="h-72">
           <ChartContainer config={config} className="w-full h-full">
-            <ResponsiveContainer>
-              <PieChart>
-                <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} content={<ChartTooltipContent hideIndicator />} />
+            <div className="relative w-full h-full" ref={containerRef}>
+              <ResponsiveContainer>
+                <PieChart>
                 {filteredData.length === 0 ? (
                   <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="text-sm text-muted-foreground">Todos los segmentos están ocultos</text>
                 ) : (
@@ -154,8 +186,26 @@ export function DonutChart({ title, data, config, id }: { title: string, data: a
                             </text>
                           );
                         }
-                        return (
-                          <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle">
+                      </PieChart>
+                      </ResponsiveContainer>
+
+                      {/* Tooltip flotante lateral: siempre fuera del donut, evita solapamiento central */}
+                      {activeIndex !== undefined && filteredData[activeIndex] && (
+                        <div
+                          className={`hidden sm:block absolute top-1/2 z-30 transform -translate-y-1/2 ${
+                            tooltipSide === 'right' ? 'right-4' : 'left-4'
+                          }`}
+                        >
+                          <div className="grid min-w-[8rem] items-start gap-1.5 rounded-lg border bg-background/95 px-3 py-2 text-xs shadow-xl backdrop-blur-sm">
+                            <div className="font-medium">{filteredData[activeIndex].label}</div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-muted-foreground">Usuarios</span>
+                              <span className="font-mono font-medium tabular-nums text-foreground">{filteredData[activeIndex].count.toLocaleString()}</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                             <tspan x={cx} y={cy - 8} className="text-3xl font-bold fill-foreground">{total.toLocaleString()}</tspan>
                             <tspan x={cx} y={cy + 14} className="text-xs font-medium fill-muted-foreground uppercase tracking-widest">Total</tspan>
                           </text>
