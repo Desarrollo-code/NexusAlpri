@@ -113,6 +113,8 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
 const SidebarMenuItem = ({ item }: { item: NavItem }) => {
   const { activeItem, isCollapsed, isMobile } = useSidebar();
 
+  const forceCenteredIds = new Set(['dashboard', 'competition']);
+
   const isActive = useMemo(() => {
     if (!activeItem || !item.path) return false;
     if (item.path === '/dashboard') return activeItem === '/dashboard';
@@ -122,12 +124,12 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
     const linkContent = (
     <div className={cn(
       "flex items-center rounded-xl transition-all duration-300 font-semibold group/menu-item relative overflow-hidden",
-      isCollapsed ? "justify-center h-12 w-12 gap-0" : "pl-6 pr-3 py-3 mx-0 gap-3",
+      isCollapsed ? (forceCenteredIds.has(item.id) ? "justify-center h-12 w-12 gap-0" : "justify-center h-12 w-12 gap-0") : "pl-6 pr-3 py-3 mx-0 gap-3",
       isActive
         ? (isMobile ? "bg-primary/10 text-primary" : "bg-primary/10 text-primary")
         : (isMobile ? "text-foreground/80" : "text-sidebar-muted-foreground hover:bg-primary/5 hover:text-primary")
     )}>
-      {isActive && (
+      {isActive && !isCollapsed && (
         <motion.div
           layoutId="active-indicator"
           className="absolute left-0 top-2 bottom-2 w-1 bg-primary rounded-r-full shadow-[0_0_8px_rgba(var(--primary),0.5)]"
@@ -139,6 +141,8 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
       <div className={cn(
         "flex items-center justify-center transition-transform duration-300 group-hover/menu-item:scale-110",
         isCollapsed ? "w-12 h-12 flex-shrink-0 items-center justify-center" : "w-10 flex-shrink-0 items-center justify-center",
+        // Reset any horizontal margin/padding for specific ids to ensure perfect centering
+        isCollapsed && forceCenteredIds.has(item.id) ? "mx-0 p-0" : "",
         isActive && "scale-110"
       )}>
         <GradientIcon icon={item.icon} isActive={isActive} />
@@ -181,13 +185,13 @@ const SidebarSectionHeader = ({ item, isActive }: { item: NavItem, isActive: boo
 
   const headerContent = (
     <div className={cn(
-      "flex items-center justify-between w-full rounded-xl transition-all duration-300 group",
-      isCollapsed ? 'h-12 w-12 justify-center mx-0 gap-0' : 'pl-6 pr-3 py-3 mx-0',
+      "flex items-center w-full rounded-xl transition-all duration-300 group",
+      isCollapsed ? 'h-12 w-12 justify-center mx-0 gap-0' : 'pl-6 pr-3 py-3 mx-0 justify-between',
       isActive ? (isMobile ? "bg-primary/10 text-primary" : "bg-primary/5 text-primary") : (isMobile ? "text-foreground/80" : "hover:bg-primary/5 text-sidebar-muted-foreground hover:text-primary")
     )}>
       <div className={cn(
         "flex items-center",
-        isCollapsed ? "gap-0" : "gap-3"
+        isCollapsed ? "gap-0 justify-center" : "gap-3"
       )}>
         <div className={cn(
           "transition-transform duration-300 group-hover:scale-110",
@@ -208,8 +212,7 @@ const SidebarSectionHeader = ({ item, isActive }: { item: NavItem, isActive: boo
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          {/* The div wrapper is the single child needed by TooltipTrigger */}
-          <div>{headerContent}</div>
+          <div className="w-full flex items-center justify-center">{headerContent}</div>
         </TooltipTrigger>
         <TooltipContent side="right" align="center" sideOffset={10}>
           <p>{item.label}</p>
