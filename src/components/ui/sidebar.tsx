@@ -177,6 +177,8 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
 const SidebarSectionHeader = ({ item, isActive }: { item: NavItem, isActive: boolean }) => {
   const { isCollapsed, isMobile } = useSidebar();
 
+  const shiftedParentIds = new Set(["dashboard", "competition", "communications", "learning", "organization", "admin"]);
+
   const headerContent = (
     <div className={cn(
       "flex items-center justify-between w-full rounded-xl transition-all duration-300 group",
@@ -189,7 +191,9 @@ const SidebarSectionHeader = ({ item, isActive }: { item: NavItem, isActive: boo
       )}>
         <div className={cn(
           "transition-transform duration-300 group-hover:scale-110",
-          isCollapsed ? "w-12 h-12 flex-shrink-0 flex items-center justify-center ml-1" : "w-10 flex-shrink-0 flex items-center justify-center",
+          isCollapsed
+            ? (shiftedParentIds.has(item.id) ? "w-12 h-12 flex-shrink-0 flex items-center justify-center ml-3" : "w-12 h-12 flex-shrink-0 flex items-center justify-center ml-1")
+            : "w-10 flex-shrink-0 flex items-center justify-center",
           isActive && "scale-110"
         )}>
           <GradientIcon icon={item.icon} isActive={isActive} />
