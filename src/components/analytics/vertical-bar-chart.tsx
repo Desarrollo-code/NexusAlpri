@@ -12,7 +12,17 @@ type Row = {
 };
 
 export function VerticalBarChart({ title = 'Distribución', data = [] as Row[] }: { title?: string; data: Row[] }) {
-  const total = useMemo(() => data.reduce((s, d) => s + (d.count || 0), 0), [data]);
+  const total = useMemo(() => (data || []).reduce((s, d) => s + (d.count || 0), 0), [data]);
+
+  // Build a safe ChartConfig for ChartContainer so ChartStyle/Object.entries never receives undefined
+  const config = useMemo(() => {
+    const cfg: Record<string, { label?: string; color?: string }> = {};
+    (data || []).forEach((d, i) => {
+      const key = (d.role || d.label || `key${i}`).toString();
+      cfg[key] = { label: d.label || key, color: d.fill || 'hsl(var(--chart-1))' };
+    });
+    return cfg;
+  }, [data]);
 
   const tooltipFormatter = (value: number, name: string, props: any) => {
     const percent = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
@@ -32,7 +42,7 @@ export function VerticalBarChart({ title = 'Distribución', data = [] as Row[] }
         <CardTitle className="text-lg font-bold">{title}</CardTitle>
       </CardHeader>
       <CardContent className="h-64 p-4">
-        <ChartContainer className="w-full h-full">
+        <ChartContainer className="w-full h-full" config={config}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
               <defs>
