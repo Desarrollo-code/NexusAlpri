@@ -16,7 +16,7 @@ import Image from "next/image";
 import { CalendarWidget } from "./calendar-widget";
 import { ChartConfig, ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import { ComposedChart, Legend, Line, XAxis, YAxis, CartesianGrid, Tooltip, Bar } from "recharts";
-import { DonutChart } from "../analytics/donut-chart";
+import { VerticalBarChart } from "../analytics/vertical-bar-chart";
 import { HealthStatusWidget } from "./health-status-widget";
 import { NotificationsWidget } from "./notifications-widget";
 import { MetricCard } from "../analytics/metric-card";
@@ -163,7 +163,7 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
                </motion.div>
 
                <motion.div variants={item}>
-                  <DonutChart title="Distribución de Roles" data={userRolesChartData} config={userRolesChartConfig} />
+                  <VerticalBarChart title="Distribución de Roles" data={userRolesChartData} />
                </motion.div>
             </div>
 
