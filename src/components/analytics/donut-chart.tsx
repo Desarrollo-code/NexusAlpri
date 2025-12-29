@@ -138,11 +138,10 @@ export function DonutChart({ title, data, config, id }: { title: string; data: a
                           const cy = viewBox.cy as number;
                           if (activeIndex !== undefined && filteredData[activeIndex]) {
                             const slice = filteredData[activeIndex];
-                            const percent = total > 0 ? (slice.count / total) * 100 : 0;
+                            // Center shows only the role (slice.label) styled nicely
                             return (
                               <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle">
-                                <tspan x={cx} y={cy - 10} className="text-2xl font-bold fill-foreground">{slice.count.toLocaleString()}</tspan>
-                                <tspan x={cx} y={cy + 10} className="text-xs font-medium fill-muted-foreground uppercase tracking-widest">{slice.label} • {percent.toFixed(0)}%</tspan>
+                                <tspan x={cx} y={cy - 4} className="text-lg font-semibold text-primary">{slice.label}</tspan>
                               </text>
                             );
                           }
@@ -161,13 +160,23 @@ export function DonutChart({ title, data, config, id }: { title: string; data: a
 
               {activeIndex !== undefined && filteredData[activeIndex] && (
                 <div className={`hidden sm:block absolute top-1/2 z-30 transform -translate-y-1/2 ${tooltipSide === "right" ? "right-4" : "left-4"}`}>
-                  <div className="grid min-w-[8rem] items-start gap-1.5 rounded-lg border bg-background/95 px-3 py-2 text-xs shadow-xl backdrop-blur-sm">
-                    <div className="font-medium">{filteredData[activeIndex].label}</div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Usuarios</span>
-                      <span className="font-mono font-medium tabular-nums text-foreground">{filteredData[activeIndex].count.toLocaleString()}</span>
-                    </div>
-                  </div>
+                  {(() => {
+                    const slice = filteredData[activeIndex];
+                    const percent = total > 0 ? (slice.count / total) * 100 : 0;
+                    return (
+                      <div className="grid min-w-[10rem] items-start gap-1.5 rounded-lg border bg-background/95 px-3 py-2 text-xs shadow-xl backdrop-blur-sm">
+                        <div className="font-medium">{slice.label}</div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground">Cantidad</span>
+                          <span className="font-mono font-medium tabular-nums text-foreground">{slice.count.toLocaleString()}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground">Porcentaje</span>
+                          <span className="font-mono font-medium tabular-nums text-foreground">{percent.toFixed(0)}%</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
             </div>
