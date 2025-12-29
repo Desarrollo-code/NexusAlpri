@@ -129,7 +129,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         ? (isMobile ? "bg-primary/10 text-primary" : "bg-primary/10 text-primary")
         : (isMobile ? "text-foreground/80" : "text-sidebar-muted-foreground hover:bg-primary/5 hover:text-primary")
     )}>
-      {isActive && (
+      {isActive && !isCollapsed && (
         <motion.div
           layoutId="active-indicator"
           className="absolute left-0 top-2 bottom-2 w-1 bg-primary rounded-r-full shadow-[0_0_8px_rgba(var(--primary),0.5)]"
