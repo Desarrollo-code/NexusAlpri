@@ -70,7 +70,7 @@ const CircularProgress = ({ value, size = 48, strokeWidth = 4, className = '' }:
                     strokeLinecap="round"
                 />
             </svg>
-            <span className="absolute text-sm font-bold">{Math.round(value / 5)}</span>
+            <span className="absolute text-sm font-bold text-gray-800">{Math.round(value / 5)}</span>
         </div>
     );
 };
@@ -78,12 +78,12 @@ const CircularProgress = ({ value, size = 48, strokeWidth = 4, className = '' }:
 const SegmentedProgress = ({ current, total }: { current: number; total: number }) => {
     return (
         <div className="flex items-center gap-3 w-full">
-            <div className="flex-grow grid gap-1.5" style={{ gridTemplateColumns: `repeat(${total}, 1fr)` }}>
+            <div className="flex-grow grid gap-2" style={{ gridTemplateColumns: `repeat(${total}, 1fr)` }}>
                 {Array.from({ length: total }).map((_, index) => (
                     <div
                         key={index}
                         className={cn(
-                            "h-2.5 rounded-full transition-all duration-500",
+                            "h-3 rounded-full transition-all duration-500",
                             index < current 
                                 ? "bg-gradient-to-r from-pink-500 to-purple-600 shadow-lg" 
                                 : "bg-gray-200"
@@ -91,7 +91,7 @@ const SegmentedProgress = ({ current, total }: { current: number; total: number 
                     />
                 ))}
             </div>
-            <div className="text-sm font-bold text-gray-700 whitespace-nowrap tabular-nums">
+            <div className="text-base font-bold text-gray-700 whitespace-nowrap tabular-nums">
                 {current}<span className="text-gray-400">/</span>{total}
             </div>
         </div>
@@ -187,29 +187,28 @@ export function MultipleChoiceTemplate({
     };
 
     return (
-        <div className="w-full max-w-4xl mx-auto flex flex-col items-center gap-4 md:gap-5 px-3">
-            {/* Card de Pregunta */}
-            <div className="w-full bg-gradient-to-br from-white via-gray-50 to-white rounded-2xl p-4 md:p-6 shadow-2xl border-2 border-gray-200 relative overflow-hidden">
-                {/* Decoración de fondo */}
+        <div className="w-full max-w-6xl mx-auto flex flex-col items-center gap-6 md:gap-8 px-4 py-6">
+            {/* Card de Pregunta - Más espacioso */}
+            <div className="w-full bg-gradient-to-br from-white via-gray-50 to-white rounded-2xl p-6 md:p-8 shadow-2xl border-2 border-gray-200 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 opacity-50 pointer-events-none" />
                 
-                <div className="relative z-10 space-y-4">
+                <div className="relative z-10 space-y-6">
                     {/* Header con progreso y timer */}
-                    <div className="flex justify-between items-center gap-4 flex-wrap">
-                        <div className="flex-grow min-w-[200px]">
+                    <div className="flex justify-between items-center gap-6 flex-wrap">
+                        <div className="flex-grow min-w-[250px]">
                             <SegmentedProgress current={questionNumber} total={totalQuestions} />
                         </div>
-                        <div className="flex items-center gap-2.5 shrink-0">
+                        <div className="flex items-center gap-3 shrink-0">
                             <Timer className={cn(
-                                "h-5 w-5 transition-colors",
+                                "h-6 w-6 transition-colors",
                                 isLowTime ? "text-red-500" : "text-blue-600"
                             )} />
                             <TimerDisplay />
                         </div>
                     </div>
 
-                    {/* Pregunta - LETRA MÁS PEQUEÑA Y CON COLOR */}
-                    <h2 className="text-base md:text-xl font-bold leading-snug break-words text-center text-gray-800">
+                    {/* Pregunta - Mejor tamaño y espaciado */}
+                    <h2 className="text-lg md:text-2xl font-bold leading-relaxed break-words text-center text-gray-800 px-4">
                         {stripHtml(question.text)}
                     </h2>
                 </div>
@@ -217,21 +216,21 @@ export function MultipleChoiceTemplate({
 
             {/* Imagen de la pregunta */}
             {question.imageUrl && (
-                <div className="w-full max-w-2xl">
+                <div className="w-full max-w-3xl">
                     <div className="overflow-hidden rounded-xl shadow-lg border-2 border-gray-200 bg-white">
                         <div className="w-full aspect-video relative bg-gray-100">
                             <img 
                                 src={question.imageUrl} 
                                 alt={stripHtml(question.text)} 
-                                className="w-full h-full object-contain p-3 md:p-4"
+                                className="w-full h-full object-contain p-4 md:p-6"
                             />
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Grid de Opciones - MÁS COLORIDO */}
-            <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* Grid de Opciones - REFACTORIZADO CON GRID INTERNO */}
+            <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
                 {question.options.map((opt: FormFieldOption, index: number) => {
                     const ShapeIcon = optionShapes[index % optionShapes.length];
                     const colorGradient = optionColors[index % optionColors.length];
@@ -244,31 +243,33 @@ export function MultipleChoiceTemplate({
                         <div key={opt.id} className="w-full">
                             <button
                                 className={cn(
-                                    "w-full h-auto min-h-[70px] p-3 md:p-4",
-                                    "grid grid-cols-[auto_1fr_auto] items-center gap-3",
+                                    // ESTRUCTURA GRID DE 3 COLUMNAS: [icono] [texto] [feedback]
+                                    "w-full h-auto min-h-[90px] p-4 md:p-5",
+                                    "grid grid-cols-[auto_1fr_auto] items-center gap-4",
                                     "text-left transition-all duration-300",
                                     "rounded-xl shadow-md hover:shadow-xl overflow-hidden",
                                     "border-2 relative group",
-                                    // Estados normales
-                                    !isAnswered && "bg-white hover:bg-gray-50 border-gray-200 hover:border-gray-300",
+                                    // Estados normales - FONDO CLARO SIEMPRE
+                                    !isAnswered && "bg-white hover:bg-gray-50 border-gray-300 hover:border-gray-400",
                                     // Estado seleccionado sin feedback
-                                    isSelected && !showResult && "bg-blue-50 border-blue-400 ring-4 ring-blue-200 shadow-xl",
+                                    isSelected && !showResult && "bg-blue-50 border-blue-500 ring-4 ring-blue-200 shadow-xl",
                                     // Estados con feedback
                                     showResult && isCorrect && "bg-green-50 border-green-500 ring-4 ring-green-200",
                                     showResult && isWrong && "bg-red-50 border-red-500 ring-4 ring-red-200",
-                                    showResult && !isSelected && !isCorrect && "opacity-50",
+                                    // Opciones NO seleccionadas mantienen visibilidad - NO SE OSCURECEN
+                                    showResult && !isSelected && !isCorrect && "bg-white opacity-70",
                                     isAnswered && "cursor-default",
-                                    !isAnswered && "hover:scale-[1.02] active:scale-[0.98]"
+                                    !isAnswered && "hover:scale-[1.01] active:scale-[0.99]"
                                 )}
                                 onClick={() => handleOptionClick(opt)}
                                 disabled={isAnswered}
                             >
-                                {/* Icono de forma con color */}
+                                {/* COLUMNA 1: Icono de forma con color */}
                                 <div 
                                     className={cn(
-                                        "w-11 h-11 rounded-lg flex items-center justify-center shrink-0 border-2 transition-all duration-300 relative z-10",
+                                        "w-12 h-12 rounded-lg flex items-center justify-center shrink-0 border-2 transition-all duration-300",
                                         isSelected && !showResult && `bg-gradient-to-br ${colorGradient} text-white border-transparent shadow-lg scale-110`,
-                                        !isSelected && !showResult && `bg-gradient-to-br ${colorGradient} text-white border-transparent opacity-80 group-hover:opacity-100`,
+                                        !isSelected && !showResult && `bg-gradient-to-br ${colorGradient} text-white border-transparent opacity-90 group-hover:opacity-100`,
                                         showResult && isCorrect && "bg-gradient-to-br from-green-500 to-green-600 text-white border-transparent scale-110",
                                         showResult && isWrong && "bg-gradient-to-br from-red-500 to-red-600 text-white border-transparent scale-110"
                                     )}
@@ -276,22 +277,22 @@ export function MultipleChoiceTemplate({
                                     <ShapeIcon />
                                 </div>
 
-                                {/* Texto de la opción - MÁS PEQUEÑO Y CON COLOR */}
-                                <div className="font-semibold text-sm md:text-base leading-relaxed break-words overflow-hidden relative z-10 text-gray-800">
+                                {/* COLUMNA 2: Texto de la opción - SIN TRUNCAR, PERMITE MÚLTIPLES LÍNEAS */}
+                                <div className="font-semibold text-sm md:text-lg leading-relaxed whitespace-normal break-words text-gray-800">
                                     {stripHtml(opt.text)}
                                 </div>
 
-                                {/* Indicador de resultado */}
-                                <div className="flex justify-end min-w-[32px] relative z-10">
+                                {/* COLUMNA 3: Indicador de resultado */}
+                                <div className="flex justify-end items-center min-w-[36px]">
                                     {showResult && (
                                         <div className="shrink-0">
                                             {isCorrect ? (
-                                                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center shadow-lg ring-2 ring-green-300">
-                                                    <Check className="h-4 w-4 stroke-[3px]" />
+                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center shadow-lg ring-2 ring-green-300">
+                                                    <Check className="h-5 w-5 stroke-[3px]" />
                                                 </div>
                                             ) : isSelected ? (
-                                                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-red-500 to-red-600 text-white flex items-center justify-center shadow-lg ring-2 ring-red-300">
-                                                    <X className="h-4 w-4 stroke-[3px]" />
+                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-red-600 text-white flex items-center justify-center shadow-lg ring-2 ring-red-300">
+                                                    <X className="h-5 w-5 stroke-[3px]" />
                                                 </div>
                                             ) : null}
                                         </div>
@@ -305,7 +306,7 @@ export function MultipleChoiceTemplate({
 
             {/* Indicador de tiempo crítico */}
             {isLowTime && !isAnswered && (
-                <div className="flex items-center gap-2 text-red-600 font-semibold bg-red-50 px-4 py-2 rounded-full border-2 border-red-300">
+                <div className="flex items-center gap-2 text-red-600 font-semibold bg-red-50 px-5 py-3 rounded-full border-2 border-red-300 shadow-lg">
                     <Zap className="h-5 w-5 animate-pulse" />
                     <span className="text-sm md:text-base">¡Tiempo casi agotado!</span>
                 </div>
