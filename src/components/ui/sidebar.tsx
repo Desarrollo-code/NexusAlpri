@@ -181,13 +181,13 @@ const SidebarSectionHeader = ({ item, isActive }: { item: NavItem, isActive: boo
 
   const headerContent = (
     <div className={cn(
-      "flex items-center justify-between w-full rounded-xl transition-all duration-300 group",
-      isCollapsed ? 'h-12 w-12 justify-center mx-0 gap-0' : 'pl-6 pr-3 py-3 mx-0',
+      "flex items-center w-full rounded-xl transition-all duration-300 group",
+      isCollapsed ? 'h-12 w-12 justify-center mx-0 gap-0' : 'pl-6 pr-3 py-3 mx-0 justify-between',
       isActive ? (isMobile ? "bg-primary/10 text-primary" : "bg-primary/5 text-primary") : (isMobile ? "text-foreground/80" : "hover:bg-primary/5 text-sidebar-muted-foreground hover:text-primary")
     )}>
       <div className={cn(
         "flex items-center",
-        isCollapsed ? "gap-0" : "gap-3"
+        isCollapsed ? "gap-0 justify-center" : "gap-3"
       )}>
         <div className={cn(
           "transition-transform duration-300 group-hover:scale-110",
@@ -208,8 +208,7 @@ const SidebarSectionHeader = ({ item, isActive }: { item: NavItem, isActive: boo
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          {/* The div wrapper is the single child needed by TooltipTrigger */}
-          <div>{headerContent}</div>
+          <div className="w-full flex items-center justify-center">{headerContent}</div>
         </TooltipTrigger>
         <TooltipContent side="right" align="center" sideOffset={10}>
           <p>{item.label}</p>
