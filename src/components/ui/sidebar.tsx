@@ -98,7 +98,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className={cn(
           "fixed top-0 left-0 z-50 h-screen flex flex-col border-r border-sidebar-border/30 shadow-2xl",
-          isMobile ? (openMobile ? "bg-primary/95" : "invisible lg:visible") : "bg-sidebar-background/60 backdrop-blur-xl",
+          isMobile ? (openMobile ? "bg-white text-foreground" : "invisible lg:visible") : "bg-sidebar-background/60 backdrop-blur-xl",
         )}
       >
         <div className="flex flex-col h-full w-full overflow-hidden">
@@ -111,7 +111,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
 
 
 const SidebarMenuItem = ({ item }: { item: NavItem }) => {
-  const { activeItem, isCollapsed } = useSidebar();
+  const { activeItem, isCollapsed, isMobile } = useSidebar();
 
   const isActive = useMemo(() => {
     if (!activeItem || !item.path) return false;
@@ -122,10 +122,10 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
     const linkContent = (
     <div className={cn(
       "flex items-center rounded-xl transition-all duration-300 font-semibold group/menu-item relative overflow-hidden",
-      isCollapsed ? "justify-center h-12 w-12 gap-0" : "p-3 mx-2 gap-3",
+      isCollapsed ? "justify-center h-12 w-12 gap-0" : "pl-6 pr-3 py-3 mx-0 gap-3",
       isActive
-        ? "bg-primary/10 text-primary"
-        : "text-sidebar-muted-foreground hover:bg-primary/5 hover:text-primary"
+        ? (isMobile ? "bg-primary/10 text-primary" : "bg-primary/10 text-primary")
+        : (isMobile ? "text-foreground/80" : "text-sidebar-muted-foreground hover:bg-primary/5 hover:text-primary")
     )}>
       {isActive && (
         <motion.div
@@ -175,13 +175,13 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
 };
 
 const SidebarSectionHeader = ({ item, isActive }: { item: NavItem, isActive: boolean }) => {
-  const { isCollapsed } = useSidebar();
+  const { isCollapsed, isMobile } = useSidebar();
 
   const headerContent = (
     <div className={cn(
       "flex items-center justify-between w-full rounded-xl transition-all duration-300 group",
-      isCollapsed ? 'h-12 w-12 justify-center mx-0 gap-0' : 'p-3 mx-2',
-      isActive ? "bg-primary/5 text-primary" : "hover:bg-primary/5 text-sidebar-muted-foreground hover:text-primary"
+      isCollapsed ? 'h-12 w-12 justify-center mx-0 gap-0' : 'pl-6 pr-3 py-3 mx-0',
+      isActive ? (isMobile ? "bg-primary/10 text-primary" : "bg-primary/5 text-primary") : (isMobile ? "text-foreground/80" : "hover:bg-primary/5 text-sidebar-muted-foreground hover:text-primary")
     )}>
       <div className={cn(
         "flex items-center",
