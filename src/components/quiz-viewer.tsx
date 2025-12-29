@@ -29,35 +29,35 @@ const SummaryView = ({ questions, answers, onNavigate, onSubmit, isSubmitting }:
     isSubmitting: boolean
 }) => {
     return (
-        <div className="w-full space-y-6 py-2">
+        <div className="w-full space-y-4 py-2">
             <div className="text-center space-y-1">
-                <h3 className="text-2xl font-bold text-gray-900">Resumen de Respuestas</h3>
-                <p className="text-gray-500 text-sm">Revisa tus selecciones antes de enviar.</p>
+                <h3 className="text-xl font-bold text-gray-900">Resumen de Respuestas</h3>
+                <p className="text-gray-500 text-xs">Revisa tus selecciones antes de enviar.</p>
             </div>
 
-            <div className="grid gap-3 max-h-[55vh] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="grid gap-2 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
                 {questions.map((q, idx) => {
                     const answer = answers[q.id];
                     const selectedOption = q.options.find((o: any) => o.id === answer?.answerId);
 
                     return (
                         <Card key={q.id} className="border border-gray-100 shadow-sm hover:border-primary/20 transition-colors">
-                            <CardContent className="p-4 flex items-center justify-between gap-4">
+                            <CardContent className="p-3 flex items-center justify-between gap-3">
                                 <div className="flex-grow min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-[10px] font-bold bg-gray-100 px-2 py-0.5 rounded uppercase">P{idx + 1}</span>
+                                    <div className="flex items-center gap-2 mb-0.5">
+                                        <span className="text-[9px] font-black bg-gray-100 px-1.5 py-0.5 rounded text-gray-500 uppercase">P{idx + 1}</span>
                                         {answer ? (
-                                            <span className="text-[10px] font-bold text-green-600 uppercase">Respondida</span>
+                                            <span className="text-[9px] font-bold text-green-600 uppercase">Respondida</span>
                                         ) : (
-                                            <span className="text-[10px] font-bold text-amber-600 uppercase">Pendiente</span>
+                                            <span className="text-[9px] font-bold text-amber-600 uppercase">Pendiente</span>
                                         )}
                                     </div>
-                                    <p className="font-semibold text-gray-800 text-sm truncate" dangerouslySetInnerHTML={{ __html: q.text }}></p>
-                                    <p className="text-xs text-gray-500 mt-0.5 italic">
+                                    <p className="font-bold text-gray-800 text-xs truncate" dangerouslySetInnerHTML={{ __html: q.text }}></p>
+                                    <p className="text-[10px] text-gray-500 mt-0.5 italic truncate">
                                         Tu respuesta: <span className="text-primary not-italic font-medium" dangerouslySetInnerHTML={{ __html: selectedOption?.text || "Sin selección" }}></span>
                                     </p>
                                 </div>
-                                <Button variant="outline" size="xs" onClick={() => onNavigate(idx)} className="h-8 text-xs font-bold shrink-0">
+                                <Button variant="outline" size="sm" onClick={() => onNavigate(idx)} className="h-7 text-[10px] font-bold shrink-0">
                                     Editar
                                 </Button>
                             </CardContent>
@@ -67,8 +67,8 @@ const SummaryView = ({ questions, answers, onNavigate, onSubmit, isSubmitting }:
             </div>
 
             <div className="flex justify-center pt-2">
-                <Button onClick={onSubmit} disabled={isSubmitting} size="lg" className="w-full max-w-xs font-bold text-base h-12 shadow-lg rounded-xl bg-primary">
-                    {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+                <Button onClick={onSubmit} disabled={isSubmitting} size="sm" className="w-full max-w-xs font-bold text-sm h-10 shadow-lg rounded-xl bg-primary">
+                    {isSubmitting ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <CheckCircle2 className="mr-2 h-3 w-3" />}
                     {isSubmitting ? 'CALCULANDO...' : 'ENVIAR QUIZ'}
                 </Button>
             </div>
@@ -155,34 +155,28 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPrev
     const renderContent = () => {
         if (gameState === 'intro') {
             return (
-                <div className="w-full text-center space-y-4 py-6">
-                    <div className="inline-flex p-3 rounded-2xl bg-primary/10 text-primary">
-                        <PlayCircle className="h-10 w-10" />
+                <div className="w-full text-center space-y-3 py-4">
+                    <div className="inline-flex p-2.5 rounded-2xl bg-primary/10 text-primary">
+                        <PlayCircle className="h-8 w-8" />
                     </div>
-                    <h3 className="text-2xl font-black text-gray-900 leading-tight">{quiz?.title}</h3>
-                    <p className="max-w-md mx-auto text-base text-gray-500">{quiz?.description || "Demuestra lo que has aprendido."}</p>
+                    <h3 className="text-xl font-black text-gray-900 leading-tight">{quiz?.title}</h3>
+                    <p className="max-w-xs mx-auto text-xs text-gray-500">{quiz?.description || "Demuestra lo que has aprendido."}</p>
                     
-                    <div className="flex justify-center gap-3 py-2">
-                        <div className="px-4 py-2 bg-gray-100 rounded-xl text-xs font-bold text-gray-600">
+                    <div className="flex justify-center gap-2 py-1">
+                        <div className="px-3 py-1 bg-gray-100 rounded-xl text-[10px] font-bold text-gray-600">
                             {quiz?.questions.length} Preguntas
                         </div>
-                        {!isCreatorPreview && quiz?.maxAttempts && (
-                            <div className="px-4 py-2 bg-blue-50 text-blue-700 rounded-xl text-xs font-bold border border-blue-100">
-                                {Math.max(0, quiz.maxAttempts - userAttempts)} Intentos
-                            </div>
-                        )}
                     </div>
 
-                    <div className="pt-4">
+                    <div className="pt-2">
                         {!canRetry && !isCreatorPreview ? (
-                            <Alert variant="destructive" className="max-w-sm mx-auto text-left rounded-xl">
-                                <ShieldAlert className="h-4 w-4" />
-                                <AlertTitle className="text-xs font-bold">Límite alcanzado</AlertTitle>
-                                <AlertDescription className="text-xs">Has agotado los intentos permitidos.</AlertDescription>
+                            <Alert variant="destructive" className="max-w-xs mx-auto text-left rounded-xl py-2">
+                                <ShieldAlert className="h-3 w-3" />
+                                <AlertTitle className="text-[10px] font-bold">Límite alcanzado</AlertTitle>
                             </Alert>
                         ) : (
-                            <Button size="lg" className="w-full max-w-xs h-12 text-base font-bold rounded-xl shadow-md" onClick={() => setGameState('playing')} disabled={(!isEnrolled && !isCreatorPreview) || isCheckingAttempts}>
-                                {isCheckingAttempts ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'COMENZAR'}
+                            <Button size="sm" className="w-full max-w-[200px] h-10 text-xs font-bold rounded-xl shadow-md" onClick={() => setGameState('playing')} disabled={(!isEnrolled && !isCreatorPreview) || isCheckingAttempts}>
+                                {isCheckingAttempts ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : 'COMENZAR'}
                             </Button>
                         )}
                     </div>
@@ -192,19 +186,17 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPrev
 
         if (gameState === 'playing' && currentQuestion) {
             return (
-                <div className="flex flex-col h-full">
-                    <div className="flex-grow pb-4">
-                        <MultipleChoiceTemplate
-                            key={currentQuestion.id}
-                            question={currentQuestion}
-                            onSubmit={handleAnswerSubmit}
-                            onTimeUp={handleTimeUp}
-                            questionNumber={currentQuestionIndex + 1}
-                            totalQuestions={quiz?.questions.length || 0}
-                            selectedOptionId={answers[currentQuestion.id]?.answerId}
-                            showFeedback={false}
-                        />
-                    </div>
+                <div className="flex flex-col h-full w-full">
+                    <MultipleChoiceTemplate
+                        key={currentQuestion.id}
+                        question={currentQuestion}
+                        onSubmit={handleAnswerSubmit}
+                        onTimeUp={handleTimeUp}
+                        questionNumber={currentQuestionIndex + 1}
+                        totalQuestions={quiz?.questions.length || 0}
+                        selectedOptionId={answers[currentQuestion.id]?.answerId}
+                        showFeedback={false}
+                    />
                 </div>
             );
         }
@@ -220,47 +212,50 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPrev
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/90 backdrop-blur-md p-3 md:p-4 overflow-hidden">
             <AnimatePresence mode="wait">
                 <motion.div
                     key={gameState === 'playing' ? currentQuestionIndex : gameState}
-                    initial={{ opacity: 0, scale: 0.98 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.98 }}
-                    className="w-full max-w-4xl bg-white rounded-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    transition={{ duration: 0.2 }}
+                    className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl flex flex-col max-h-[95vh] overflow-hidden border border-white/20"
                 >
-                    <div className="flex-grow overflow-y-auto p-6 md:p-10 custom-scrollbar">
+                    {/* Cuerpo con Scroll Interno */}
+                    <div className="flex-grow overflow-y-auto p-5 md:p-8 custom-scrollbar">
                         {renderContent()}
                     </div>
 
+                    {/* Footer de Navegación Compacto */}
                     {gameState === 'playing' && (
-                        <div className="border-t bg-gray-50/50 p-4 px-6 md:px-10 flex justify-between items-center shrink-0">
+                        <div className="border-t bg-slate-50/50 p-3 px-5 md:px-8 flex justify-between items-center shrink-0">
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                className="font-bold text-gray-500"
+                                className="font-bold text-gray-400 hover:text-gray-600 text-[11px] h-8 px-2"
                                 onClick={() => setCurrentQuestionIndex(prev => Math.max(0, prev - 1))}
                                 disabled={currentQuestionIndex === 0}
                             >
-                                <ChevronLeft className="h-4 w-4 mr-1" /> Anterior
+                                <ChevronLeft className="h-3 w-3 mr-1" /> Anterior
                             </Button>
 
-                            <div className="text-[10px] font-black text-gray-400 tracking-widest uppercase">
+                            <div className="text-[10px] font-black text-slate-300 tracking-[0.2em] uppercase">
                                 {currentQuestionIndex + 1} / {quiz?.questions.length}
                             </div>
 
                             {currentQuestionIndex < (quiz?.questions.length || 0) - 1 ? (
                                 <Button
                                     size="sm"
-                                    className="font-bold px-6 rounded-lg"
+                                    className="font-bold text-[11px] h-8 px-5 rounded-lg shadow-sm"
                                     onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
                                 >
-                                    Siguiente <ChevronRight className="h-4 w-4 ml-1" />
+                                    Siguiente <ChevronRight className="h-3 w-3 ml-1" />
                                 </Button>
                             ) : (
                                 <Button
                                     size="sm"
-                                    className="bg-primary font-bold px-6 rounded-lg"
+                                    className="bg-primary font-bold text-[11px] h-8 px-5 rounded-lg shadow-lg"
                                     onClick={() => setGameState('summary')}
                                 >
                                     FINALIZAR

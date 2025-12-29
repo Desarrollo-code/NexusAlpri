@@ -20,12 +20,11 @@ interface MultipleChoiceTemplateProps {
 
 const cn = (...classes: any[]) => classes.filter(Boolean).join(' ');
 
-// Iconos más pequeños para ahorrar espacio
 const optionShapes = [
-    () => <Circle className="w-4 h-4" />,
-    () => <Square className="w-4 h-4" />,
-    () => <Triangle className="w-4 h-4" />,
-    () => <Diamond className="w-4 h-4" />
+    () => <Circle className="w-3.5 h-3.5" />,
+    () => <Square className="w-3.5 h-3.5" />,
+    () => <Triangle className="w-3.5 h-3.5" />,
+    () => <Diamond className="w-3.5 h-3.5" />
 ];
 
 const optionColors = [
@@ -75,30 +74,30 @@ export function MultipleChoiceTemplate({
     };
 
     return (
-        <div className="w-full flex flex-col gap-4">
-            {/* Header compacto: Tiempo y Progreso */}
+        <div className="w-full flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            {/* Header Mini */}
             <div className="flex justify-between items-center px-1">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                    Pregunta {questionNumber} de {totalQuestions}
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">
+                    Pregunta {questionNumber} / {totalQuestions}
                 </span>
                 <div className={cn(
-                    "flex items-center gap-1.5 px-3 py-1 rounded-full border text-sm font-bold transition-all",
-                    timeLeft <= 5 ? "bg-red-50 text-red-600 border-red-200 animate-pulse" : "bg-blue-50 text-blue-600 border-blue-200"
+                    "flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10px] font-bold transition-all",
+                    timeLeft <= 5 ? "bg-red-50 text-red-600 border-red-200 animate-pulse" : "bg-slate-50 text-slate-500 border-slate-200"
                 )}>
-                    <Timer className="h-3.5 w-3.5" />
+                    <Timer className="h-3 w-3" />
                     <span className="tabular-nums">{timeLeft}s</span>
                 </div>
             </div>
 
-            {/* Caja de Pregunta: Reducida en padding y tamaño de fuente */}
-            <div className="bg-slate-50 rounded-xl p-5 border border-slate-100 shadow-sm">
-                <h2 className="text-lg md:text-xl font-bold text-slate-800 text-center leading-snug">
+            {/* Pregunta Compacta */}
+            <div className="bg-slate-50/50 rounded-xl p-4 border border-slate-100 shadow-sm">
+                <h2 className="text-sm md:text-base font-bold text-slate-800 text-center leading-snug">
                     {stripHtml(question.text)}
                 </h2>
             </div>
 
-            {/* Grid de Opciones: h-auto y sin truncate para que el texto fluya */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* Grid de Opciones: h-auto para evitar cortes */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {question.options.map((opt: FormFieldOption, index: number) => {
                     const ShapeIcon = optionShapes[index % optionShapes.length];
                     const colorGradient = optionColors[index % optionColors.length];
@@ -112,34 +111,32 @@ export function MultipleChoiceTemplate({
                             disabled={isAnswered}
                             onClick={() => handleOptionClick(opt)}
                             className={cn(
-                                "group relative flex items-center gap-3 p-3.5 text-left transition-all rounded-xl border-2 shadow-sm",
-                                "min-h-[70px] h-auto w-full", // h-auto permite que crezca si el texto es largo
-                                !isAnswered && "bg-white border-slate-200 hover:border-primary/40 hover:bg-slate-50",
-                                isSelected && !showResult && "bg-blue-50 border-blue-500 ring-2 ring-blue-100",
-                                showResult && isCorrect && "bg-green-50 border-green-500 ring-2 ring-green-100",
-                                showResult && isSelected && !isCorrect && "bg-red-50 border-red-500 ring-2 ring-red-100",
-                                showResult && !isSelected && "bg-white opacity-60"
+                                "group relative flex items-center gap-3 p-3 text-left transition-all rounded-lg border-2",
+                                "min-h-[56px] h-auto w-full", 
+                                !isAnswered && "bg-white border-slate-100 hover:border-blue-300 hover:bg-slate-50",
+                                isSelected && !showResult && "bg-blue-50 border-blue-500",
+                                showResult && isCorrect && "bg-emerald-50 border-emerald-500",
+                                showResult && isSelected && !isCorrect && "bg-rose-50 border-rose-500",
+                                showResult && !isSelected && !isCorrect && "bg-white opacity-60"
                             )}
                         >
-                            {/* Icono de Opción pequeño */}
                             <div className={cn(
-                                "w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0 shadow-sm",
-                                `bg-gradient-to-br ${colorGradient}`
+                                "w-7 h-7 rounded-md flex items-center justify-center text-white shrink-0 shadow-sm transition-transform",
+                                `bg-gradient-to-br ${colorGradient}`,
+                                !isAnswered && "group-hover:scale-105"
                             )}>
                                 <ShapeIcon />
                             </div>
 
-                            {/* Texto de Opción: Sin truncate, con break-words */}
-                            <div className="flex-grow font-semibold text-sm text-slate-700 leading-snug break-words">
+                            <div className="flex-grow font-semibold text-[11px] md:text-xs text-slate-700 leading-tight break-words py-0.5">
                                 {stripHtml(opt.text)}
                             </div>
 
-                            {/* Indicador Check/X */}
-                            <div className="shrink-0 w-5 flex justify-center">
+                            <div className="shrink-0 w-4 flex justify-center">
                                 {showResult && (
                                     isCorrect ? 
-                                    <Check className="text-green-600 h-5 w-5 stroke-[3px]" /> : 
-                                    (isSelected && <X className="text-red-600 h-5 w-5 stroke-[3px]" />)
+                                    <Check className="text-emerald-600 h-4 w-4 stroke-[3px]" /> : 
+                                    (isSelected && <X className="text-rose-600 h-4 w-4 stroke-[3px]" />)
                                 )}
                             </div>
                         </button>
