@@ -57,6 +57,8 @@ export function DonutChart({ title, data, config, id }: { title: string; data: a
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [tooltipSide, setTooltipSide] = useState<"left" | "right">("right");
+  const tooltipRef = useRef<HTMLDivElement | null>(null);
+  const [tooltipPos, setTooltipPos] = useState<{ left?: number; top?: number } | null>(null);
 
   // Keep tooltip side updated while moving mouse in the container (robust across Recharts events)
   const onContainerMouseMove = useCallback((e: React.MouseEvent) => {
@@ -75,6 +77,39 @@ export function DonutChart({ title, data, config, id }: { title: string; data: a
   const onPieClick = useCallback((_: any, index: number) => setSelectedIndex((prev) => (prev === index ? undefined : index)), []);
 
   const activeIndex = hoverIndex !== undefined ? hoverIndex : selectedIndex;
+
+  // Recompute tooltip pixel position whenever activeIndex changes or container resizes
+  React.useEffect(() => {
+    if (activeIndex === undefined) {
+      setTooltipPos(null);
+      return;
+    }
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const cx = rect.width / 2;
+    const cy = rect.height / 2;
+    // approximate outer radius in pixels (account for padding)
+    const outer = Math.min(rect.width, rect.height) / 2 * 0.9;
+    const offset = outer + 12; // place tooltip just outside the ring
+
+    if (tooltipSide === "right") {
+      setTooltipPos({ left: Math.round(cx + offset), top: Math.round(cy) });
+    } else {
+      setTooltipPos({ left: Math.round(cx - offset), top: Math.round(cy) });
+    }
+
+    const onResize = () => {
+      const r = containerRef.current?.getBoundingClientRect();
+      if (!r) return;
+      const cxx = r.width / 2;
+      const cyy = r.height / 2;
+      const out = Math.min(r.width, r.height) / 2 * 0.9;
+      const off = out + 12;
+      setTooltipPos(tooltipSide === "right" ? { left: Math.round(cxx + off), top: Math.round(cyy) } : { left: Math.round(cxx - off), top: Math.round(cyy) });
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [activeIndex, tooltipSide]);
 
   if (!data || data.length === 0) {
     return (
@@ -138,10 +173,10 @@ export function DonutChart({ title, data, config, id }: { title: string; data: a
                           const cy = viewBox.cy as number;
                           if (activeIndex !== undefined && filteredData[activeIndex]) {
                             const slice = filteredData[activeIndex];
-                            // Center shows only the role (slice.label) styled nicely
+                            // Center shows only the role (slice.label) styled nicely with gradient
                             return (
                               <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle">
-                                <tspan x={cx} y={cy - 4} className="text-lg font-semibold text-primary">{slice.label}</tspan>
+                                <tspan x={cx} y={cy - 4} className="text-lg font-semibold bg-clip-text text-transparent bg-gradient-to-r from-primary to-violet-500">{slice.label}</tspan>
                               </text>
                             );
                           }
@@ -159,12 +194,26 @@ export function DonutChart({ title, data, config, id }: { title: string; data: a
               </ResponsiveContainer>
 
               {activeIndex !== undefined && filteredData[activeIndex] && (
-                <div className={`hidden sm:block absolute top-1/2 z-30 transform -translate-y-1/2 ${tooltipSide === "right" ? "right-4" : "left-4"}`}>
+                <div
+                  ref={tooltipRef}
+                  className={`hidden sm:block absolute z-30 transform -translate-y-1/2`}
+                  style={(() => {
+                    if (!tooltipPos) return { visibility: "hidden" } as React.CSSProperties;
+                    const style: React.CSSProperties = { top: tooltipPos.top };
+                    if (tooltipSide === "right") {
+                      style.left = tooltipPos.left;
+                      // keep tooltip fully visible by translating its left edge into place
+                    } else {
+                      style.left = tooltipPos.left;
+                    }
+                    return style;
+                  })()}
+                >
                   {(() => {
                     const slice = filteredData[activeIndex];
                     const percent = total > 0 ? (slice.count / total) * 100 : 0;
                     return (
-                      <div className="grid min-w-[10rem] items-start gap-1.5 rounded-lg border bg-background/95 px-3 py-2 text-xs shadow-xl backdrop-blur-sm">
+                      <div className="min-w-[10rem] grid items-start gap-1.5 rounded-lg border bg-background/95 px-3 py-2 text-xs shadow-xl backdrop-blur-sm">
                         <div className="font-medium">{slice.label}</div>
                         <div className="flex items-center justify-between">
                           <span className="text-muted-foreground">Cantidad</span>
