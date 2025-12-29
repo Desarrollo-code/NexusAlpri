@@ -131,7 +131,14 @@ export function MultipleChoiceTemplate({
               {/* CONTENIDO DE TEXTO MEJORADO */}
               <div className="flex-1 min-w-0 max-w-full prose prose-slate">
                 <div className="text-slate-800 font-semibold text-sm md:text-base leading-relaxed md:leading-snug hyphens-auto overflow-wrap-anywhere break-words max-w-full">
-                  <div dangerouslySetInnerHTML={{ __html: opt.text }} />
+                  <div 
+                    dangerouslySetInnerHTML={{ __html: opt.text }} 
+                    style={{
+                      wordBreak: 'break-word', // 👈 Evita cortes brutales
+                      overflowWrap: 'break-word', // 👈 Compatible con más navegadores
+                      padding: '0 4px' // 👈 Espacio interno extra para evitar que el texto toque los bordes
+                    }}
+                  />
                 </div>
               </div>
 
