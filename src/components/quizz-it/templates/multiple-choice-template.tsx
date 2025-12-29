@@ -133,7 +133,7 @@ export function MultipleChoiceTemplate({ question, onSubmit, onTimeUp, questionN
                             <Button
                                 variant="outline"
                                 className={cn(
-                                    "w-full h-auto py-5 px-6 flex items-center gap-4 text-left transition-all border-2",
+                                    "w-full h-auto py-4 px-6 flex items-start gap-4 text-left transition-all border-2",
                                     "rounded-2xl shadow-sm hover:shadow-md",
                                     isSelected
                                         ? "bg-primary/10 border-primary ring-2 ring-primary/20"
@@ -150,7 +150,7 @@ export function MultipleChoiceTemplate({ question, onSubmit, onTimeUp, questionN
                                     {shape}
                                 </div>
 
-                                <div className="flex-grow font-medium text-lg leading-snug" {...renderHtml(opt.text)} />
+                                <div className="flex-grow font-medium text-lg leading-relaxed break-words whitespace-normal" {...renderHtml(opt.text)} />
 
                                 {showResult && (
                                     <div className="shrink-0">

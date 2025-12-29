@@ -267,7 +267,7 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPrev
   }
 
   return (
-    <div className="flex flex-col items-center justify-center p-4 min-h-[300px]">
+    <div className="flex flex-col items-center justify-center p-4 min-h-[300px] bg-black text-white">
       <AnimatePresence mode="wait">
         <motion.div
           key={gameState === 'playing' ? currentQuestionIndex : gameState}
@@ -275,7 +275,7 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPrev
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-4xl"
+          className="w-full max-w-2xl mx-auto"
         >
           {renderContent()}
         </motion.div>
