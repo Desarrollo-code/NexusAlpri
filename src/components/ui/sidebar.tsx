@@ -167,7 +167,9 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
   if (isCollapsed) {
     return (
       <Tooltip>
-        <TooltipTrigger asChild>{linkWrapper}</TooltipTrigger>
+        <TooltipTrigger asChild>
+          <div className="w-full flex items-center justify-center">{linkWrapper}</div>
+        </TooltipTrigger>
         <TooltipContent side="right" align="center" sideOffset={10}>
           <p>{item.label}</p>
         </TooltipContent>
