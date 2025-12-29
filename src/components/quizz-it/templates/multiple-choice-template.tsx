@@ -1,14 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '@/lib/utils';
-import { Check, X, Timer, Zap } from 'lucide-react';
-import { CircularProgress } from '@/components/ui/circular-progress';
-import { optionShapes, optionColors } from '../quiz-editor-modal';
-import { renderHtml, stripHtml } from '../../../lib/html-utils';
-import Image from 'next/image';
+import { Check, X, Timer, Zap, Circle, Square, Triangle, Diamond } from 'lucide-react';
 
 interface FormFieldOption {
     id: string;
@@ -28,27 +20,79 @@ interface MultipleChoiceTemplateProps {
     showFeedback?: boolean;
 }
 
+// Utility function
+const cn = (...classes: any[]) => classes.filter(Boolean).join(' ');
+
+// Formas para las opciones
+const optionShapes = [
+    () => <Circle className="w-5 h-5" />,
+    () => <Square className="w-5 h-5" />,
+    () => <Triangle className="w-5 h-5" />,
+    () => <Diamond className="w-5 h-5" />
+];
+
+// Colores vibrantes para las opciones
+const optionColors = [
+    'from-blue-500 to-blue-600',
+    'from-green-500 to-green-600',
+    'from-purple-500 to-purple-600',
+    'from-orange-500 to-orange-600'
+];
+
+// Componente de progreso circular
+const CircularProgress = ({ value, size = 48, strokeWidth = 4, className = '' }: any) => {
+    const radius = (size - strokeWidth) / 2;
+    const circumference = radius * 2 * Math.PI;
+    const offset = circumference - (value / 100) * circumference;
+
+    return (
+        <div className={cn("relative inline-flex items-center justify-center", className)} style={{ width: size, height: size }}>
+            <svg className="transform -rotate-90" width={size} height={size}>
+                <circle
+                    cx={size / 2}
+                    cy={size / 2}
+                    r={radius}
+                    stroke="currentColor"
+                    strokeWidth={strokeWidth}
+                    fill="none"
+                    className="text-gray-200"
+                />
+                <circle
+                    cx={size / 2}
+                    cy={size / 2}
+                    r={radius}
+                    stroke="currentColor"
+                    strokeWidth={strokeWidth}
+                    fill="none"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={offset}
+                    className={cn("transition-all duration-300", value <= 25 ? "text-red-500" : "text-blue-500")}
+                    strokeLinecap="round"
+                />
+            </svg>
+            <span className="absolute text-sm font-bold">{Math.round(value / 5)}</span>
+        </div>
+    );
+};
+
 const SegmentedProgress = ({ current, total }: { current: number; total: number }) => {
     return (
         <div className="flex items-center gap-3 w-full">
             <div className="flex-grow grid gap-1.5" style={{ gridTemplateColumns: `repeat(${total}, 1fr)` }}>
                 {Array.from({ length: total }).map((_, index) => (
-                    <motion.div
+                    <div
                         key={index}
-                        initial={{ scaleX: 0 }}
-                        animate={{ scaleX: index < current ? 1 : 0 }}
-                        transition={{ duration: 0.5, ease: "easeOut" }}
                         className={cn(
-                            "h-2.5 rounded-full origin-left",
+                            "h-2.5 rounded-full transition-all duration-500",
                             index < current 
-                                ? "bg-gradient-to-r from-primary to-primary/80" 
-                                : "bg-muted/50"
+                                ? "bg-gradient-to-r from-pink-500 to-purple-600 shadow-lg" 
+                                : "bg-gray-200"
                         )}
                     />
                 ))}
             </div>
-            <div className="text-sm font-bold text-foreground/80 whitespace-nowrap tabular-nums">
-                {current}<span className="text-muted-foreground">/</span>{total}
+            <div className="text-sm font-bold text-gray-700 whitespace-nowrap tabular-nums">
+                {current}<span className="text-gray-400">/</span>{total}
             </div>
         </div>
     );
@@ -100,230 +144,172 @@ export function MultipleChoiceTemplate({
         switch (timerStyle) {
             case 'bar':
                 return (
-                    <div className="w-full max-w-[200px] h-3 bg-muted/50 rounded-full overflow-hidden border border-border/50">
-                        <motion.div 
+                    <div className="w-full max-w-[200px] h-3 bg-gray-200 rounded-full overflow-hidden border border-gray-300">
+                        <div 
                             className={cn(
                                 "h-full transition-all duration-1000 linear rounded-full",
                                 isLowTime 
                                     ? "bg-gradient-to-r from-red-500 to-orange-500" 
-                                    : "bg-gradient-to-r from-primary to-primary/70"
+                                    : "bg-gradient-to-r from-blue-500 to-purple-600"
                             )}
                             style={{ width: `${progress}%` }}
-                            animate={isLowTime ? { opacity: [1, 0.7, 1] } : {}}
-                            transition={{ duration: 0.5, repeat: Infinity }}
                         />
                     </div>
                 );
             case 'pill':
                 return (
-                    <motion.div 
+                    <div 
                         className={cn(
-                            "px-4 py-1.5 font-bold rounded-full text-lg tabular-nums border-2 transition-colors",
+                            "px-4 py-1.5 font-bold rounded-full text-base tabular-nums border-2 transition-colors",
                             isLowTime 
-                                ? "bg-red-500/10 text-red-600 border-red-500/50" 
-                                : "bg-primary/10 text-primary border-primary/30"
+                                ? "bg-red-100 text-red-600 border-red-400" 
+                                : "bg-blue-100 text-blue-600 border-blue-400"
                         )}
-                        animate={isLowTime ? { scale: [1, 1.05, 1] } : {}}
-                        transition={{ duration: 0.5, repeat: Infinity }}
                     >
                         {timeLeft}s
-                    </motion.div>
+                    </div>
                 );
             default:
                 return (
-                    <div className={cn(
-                        "transition-all",
-                        isLowTime && "animate-pulse"
-                    )}>
-                        <CircularProgress 
-                            value={progress} 
-                            size={48} 
-                            strokeWidth={5}
-                            className={isLowTime ? "text-red-500" : ""}
-                        />
-                    </div>
+                    <CircularProgress 
+                        value={progress} 
+                        size={48} 
+                        strokeWidth={5}
+                    />
                 );
         }
     };
 
+    const stripHtml = (html: string) => {
+        const tmp = document.createElement("DIV");
+        tmp.innerHTML = html;
+        return tmp.textContent || tmp.innerText || "";
+    };
+
     return (
-        <motion.div 
-            className="w-full max-w-4xl mx-auto flex flex-col items-center gap-5 md:gap-7 px-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-        >
+        <div className="w-full max-w-4xl mx-auto flex flex-col items-center gap-4 md:gap-5 px-3">
             {/* Card de Pregunta */}
-            <Card className="w-full bg-gradient-to-br from-background via-background to-background/95 backdrop-blur-md p-5 md:p-7 shadow-xl border-2 border-border/50 relative overflow-hidden">
+            <div className="w-full bg-gradient-to-br from-white via-gray-50 to-white rounded-2xl p-4 md:p-6 shadow-2xl border-2 border-gray-200 relative overflow-hidden">
                 {/* Decoración de fondo */}
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 opacity-50 pointer-events-none" />
                 
-                <div className="relative z-10 space-y-5">
+                <div className="relative z-10 space-y-4">
                     {/* Header con progreso y timer */}
                     <div className="flex justify-between items-center gap-4 flex-wrap">
                         <div className="flex-grow min-w-[200px]">
                             <SegmentedProgress current={questionNumber} total={totalQuestions} />
                         </div>
-                        <motion.div 
-                            className="flex items-center gap-2.5 shrink-0"
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ delay: 0.2 }}
-                        >
+                        <div className="flex items-center gap-2.5 shrink-0">
                             <Timer className={cn(
                                 "h-5 w-5 transition-colors",
-                                isLowTime ? "text-red-500" : "text-primary"
+                                isLowTime ? "text-red-500" : "text-blue-600"
                             )} />
                             <TimerDisplay />
-                        </motion.div>
+                        </div>
                     </div>
 
-                    {/* Pregunta */}
-                    <motion.h2 
-                        className="text-xl md:text-3xl font-bold font-headline leading-tight break-words text-center bg-gradient-to-br from-foreground to-foreground/80 bg-clip-text text-transparent"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                        {...renderHtml(question.text)}
-                    />
+                    {/* Pregunta - LETRA MÁS PEQUEÑA Y CON COLOR */}
+                    <h2 className="text-base md:text-xl font-bold leading-snug break-words text-center text-gray-800">
+                        {stripHtml(question.text)}
+                    </h2>
                 </div>
-            </Card>
+            </div>
 
             {/* Imagen de la pregunta */}
-            <AnimatePresence>
-                {question.imageUrl && (
-                    <motion.div 
-                        className="w-full max-w-2xl"
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        transition={{ duration: 0.3 }}
-                    >
-                        <Card className="overflow-hidden shadow-lg border-2 border-border/50 bg-card">
-                            <div className="w-full aspect-video relative">
-                                <Image 
-                                    src={question.imageUrl} 
-                                    alt={stripHtml(question.text)} 
-                                    fill 
-                                    className="object-contain p-3 md:p-4"
-                                    priority
-                                />
-                            </div>
-                        </Card>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            {question.imageUrl && (
+                <div className="w-full max-w-2xl">
+                    <div className="overflow-hidden rounded-xl shadow-lg border-2 border-gray-200 bg-white">
+                        <div className="w-full aspect-video relative bg-gray-100">
+                            <img 
+                                src={question.imageUrl} 
+                                alt={stripHtml(question.text)} 
+                                className="w-full h-full object-contain p-3 md:p-4"
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
 
-            {/* Grid de Opciones */}
-            <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+            {/* Grid de Opciones - MÁS COLORIDO */}
+            <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-3">
                 {question.options.map((opt: FormFieldOption, index: number) => {
-                    const shape = React.createElement(optionShapes[index % optionShapes.length]);
+                    const ShapeIcon = optionShapes[index % optionShapes.length];
+                    const colorGradient = optionColors[index % optionColors.length];
                     const isSelected = selectedOptionId === opt.id;
                     const isCorrect = correctOption?.id === opt.id;
                     const showResult = isAnswered && showFeedback;
                     const isWrong = isSelected && !isCorrect;
 
                     return (
-                        <motion.div
-                            key={opt.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.05 * index, duration: 0.3 }}
-                            whileHover={!isAnswered ? { scale: 1.02, y: -3 } : {}}
-                            whileTap={!isAnswered ? { scale: 0.98 } : {}}
-                            className="w-full"
-                        >
-                            <Button
-                                variant="outline"
+                        <div key={opt.id} className="w-full">
+                            <button
                                 className={cn(
-                                    "w-full h-auto min-h-[80px] p-4 md:p-5",
-                                    "grid grid-cols-[auto_1fr_auto] items-center gap-4",
+                                    "w-full h-auto min-h-[70px] p-3 md:p-4",
+                                    "grid grid-cols-[auto_1fr_auto] items-center gap-3",
                                     "text-left transition-all duration-300",
-                                    "rounded-2xl shadow-md hover:shadow-lg overflow-hidden",
+                                    "rounded-xl shadow-md hover:shadow-xl overflow-hidden",
                                     "border-2 relative group",
                                     // Estados normales
-                                    !isAnswered && "bg-card hover:bg-accent/50 border-border hover:border-primary/50",
+                                    !isAnswered && "bg-white hover:bg-gray-50 border-gray-200 hover:border-gray-300",
                                     // Estado seleccionado sin feedback
-                                    isSelected && !showResult && "bg-primary/15 border-primary ring-4 ring-primary/20 shadow-lg",
+                                    isSelected && !showResult && "bg-blue-50 border-blue-400 ring-4 ring-blue-200 shadow-xl",
                                     // Estados con feedback
-                                    showResult && isCorrect && "bg-green-50 dark:bg-green-950/20 border-green-500 ring-4 ring-green-500/20",
-                                    showResult && isWrong && "bg-red-50 dark:bg-red-950/20 border-red-500 ring-4 ring-red-500/20",
+                                    showResult && isCorrect && "bg-green-50 border-green-500 ring-4 ring-green-200",
+                                    showResult && isWrong && "bg-red-50 border-red-500 ring-4 ring-red-200",
                                     showResult && !isSelected && !isCorrect && "opacity-50",
-                                    isAnswered && "cursor-default"
+                                    isAnswered && "cursor-default",
+                                    !isAnswered && "hover:scale-[1.02] active:scale-[0.98]"
                                 )}
                                 onClick={() => handleOptionClick(opt)}
                                 disabled={isAnswered}
                             >
-                                {/* Efecto de brillo en hover */}
-                                {!isAnswered && (
-                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 -translate-x-full group-hover:translate-x-full" />
-                                )}
-
-                                {/* Icono de forma */}
-                                <motion.div 
-                                    className={cn(
-                                        "w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border-2 transition-all duration-300 relative z-10",
-                                        isSelected && !showResult && "bg-primary text-primary-foreground border-primary shadow-md scale-110",
-                                        !isSelected && !showResult && "bg-muted/50 text-muted-foreground border-transparent group-hover:bg-primary/10 group-hover:border-primary/30",
-                                        showResult && isCorrect && "bg-green-500 text-white border-green-600 scale-110",
-                                        showResult && isWrong && "bg-red-500 text-white border-red-600 scale-110"
-                                    )}
-                                    animate={isSelected && !showResult ? { rotate: [0, -5, 5, 0] } : {}}
-                                    transition={{ duration: 0.5 }}
-                                >
-                                    {shape}
-                                </motion.div>
-
-                                {/* Texto de la opción */}
+                                {/* Icono de forma con color */}
                                 <div 
-                                    className="font-semibold text-base md:text-lg leading-relaxed break-words overflow-hidden relative z-10"
-                                    {...renderHtml(opt.text)} 
-                                />
+                                    className={cn(
+                                        "w-11 h-11 rounded-lg flex items-center justify-center shrink-0 border-2 transition-all duration-300 relative z-10",
+                                        isSelected && !showResult && `bg-gradient-to-br ${colorGradient} text-white border-transparent shadow-lg scale-110`,
+                                        !isSelected && !showResult && `bg-gradient-to-br ${colorGradient} text-white border-transparent opacity-80 group-hover:opacity-100`,
+                                        showResult && isCorrect && "bg-gradient-to-br from-green-500 to-green-600 text-white border-transparent scale-110",
+                                        showResult && isWrong && "bg-gradient-to-br from-red-500 to-red-600 text-white border-transparent scale-110"
+                                    )}
+                                >
+                                    <ShapeIcon />
+                                </div>
+
+                                {/* Texto de la opción - MÁS PEQUEÑO Y CON COLOR */}
+                                <div className="font-semibold text-sm md:text-base leading-relaxed break-words overflow-hidden relative z-10 text-gray-800">
+                                    {stripHtml(opt.text)}
+                                </div>
 
                                 {/* Indicador de resultado */}
                                 <div className="flex justify-end min-w-[32px] relative z-10">
-                                    <AnimatePresence>
-                                        {showResult && (
-                                            <motion.div
-                                                initial={{ scale: 0, rotate: -180 }}
-                                                animate={{ scale: 1, rotate: 0 }}
-                                                exit={{ scale: 0, rotate: 180 }}
-                                                transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                                                className="shrink-0"
-                                            >
-                                                {isCorrect ? (
-                                                    <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg ring-2 ring-green-300">
-                                                        <Check className="h-5 w-5 stroke-[3px]" />
-                                                    </div>
-                                                ) : isSelected ? (
-                                                    <div className="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg ring-2 ring-red-300">
-                                                        <X className="h-5 w-5 stroke-[3px]" />
-                                                    </div>
-                                                ) : null}
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
+                                    {showResult && (
+                                        <div className="shrink-0">
+                                            {isCorrect ? (
+                                                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center shadow-lg ring-2 ring-green-300">
+                                                    <Check className="h-4 w-4 stroke-[3px]" />
+                                                </div>
+                                            ) : isSelected ? (
+                                                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-red-500 to-red-600 text-white flex items-center justify-center shadow-lg ring-2 ring-red-300">
+                                                    <X className="h-4 w-4 stroke-[3px]" />
+                                                </div>
+                                            ) : null}
+                                        </div>
+                                    )}
                                 </div>
-                            </Button>
-                        </motion.div>
+                            </button>
+                        </div>
                     );
                 })}
             </div>
 
             {/* Indicador de tiempo crítico */}
-            <AnimatePresence>
-                {isLowTime && !isAnswered && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="flex items-center gap-2 text-red-600 dark:text-red-400 font-semibold"
-                    >
-                        <Zap className="h-5 w-5 animate-pulse" />
-                        <span className="text-sm md:text-base">¡Tiempo casi agotado!</span>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </motion.div>
+            {isLowTime && !isAnswered && (
+                <div className="flex items-center gap-2 text-red-600 font-semibold bg-red-50 px-4 py-2 rounded-full border-2 border-red-300">
+                    <Zap className="h-5 w-5 animate-pulse" />
+                    <span className="text-sm md:text-base">¡Tiempo casi agotado!</span>
+                </div>
+            )}
+        </div>
     );
 }
