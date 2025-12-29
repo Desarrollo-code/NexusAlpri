@@ -27,7 +27,7 @@ const SummaryView = ({ questions, answers, onNavigate, onSubmit, isSubmitting }:
   
   return (
     <div className="space-y-4 p-4 md:p-6 max-w-full">
-      <header className="text-center space-y-2 p-4 bg-gradient-to-r from-slate-50 to-blue-50 rounded-xl shadow-sm">
+      <header className="text-center space-y-2 p-4 bg-gradient-to-r from-violet-50 via-purple-50 to-indigo-50 rounded-xl shadow-sm">
         <h3 className="text-lg md:text-xl font-bold text-slate-900 leading-tight">Resumen de respuestas</h3>
         <p className="text-sm text-slate-500">Revisa antes de enviar.</p>
       </header>
@@ -70,7 +70,7 @@ const SummaryView = ({ questions, answers, onNavigate, onSubmit, isSubmitting }:
       <Button 
         onClick={onSubmit} 
         disabled={isSubmitting}
-        className="w-full h-12 text-sm font-bold rounded-xl bg-gradient-to-r from-primary to-primary/90 hover:shadow-lg transition-all"
+        className="w-full h-12 text-sm font-bold rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:shadow-lg transition-all"
       >
         {isSubmitting ? (
           <>
@@ -112,7 +112,7 @@ export function QuizViewer({
     setAnswers(prev => ({
       ...prev,
       [question.id]: { ...data, isCorrect, answerId: data.answer }
-    }), question);
+    }));
   }, [question]);
 
   const handleFinalSubmit = async () => {
@@ -156,7 +156,7 @@ export function QuizViewer({
           <div className="flex-1 overflow-hidden flex flex-col min-h-0">
             {state === 'intro' && (
               <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-8 text-center space-y-4 max-w-md mx-auto">
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-lg">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-violet-500 via-purple-600 to-indigo-700 rounded-2xl flex items-center justify-center shadow-lg">
                   <PlayCircle className="h-8 w-8 md:h-10 md:w-10 text-white" />
                 </div>
                 <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-slate-900 leading-tight break-words px-4">
@@ -172,7 +172,7 @@ export function QuizViewer({
                   </Alert>
                 )}
                 <Button 
-                  className="w-full max-w-sm h-12 text-sm font-bold rounded-xl bg-gradient-to-r from-primary to-primary/90 hover:shadow-xl transition-all"
+                  className="w-full max-w-sm h-12 text-sm font-bold rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:shadow-xl transition-all"
                   onClick={() => setState('playing')}
                 >
                   Comenzar quiz
@@ -211,14 +211,14 @@ export function QuizViewer({
                     <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:flex-1 sm:justify-end">
                       {index < (quiz?.questions.length || 0) - 1 ? (
                         <Button 
-                          className="h-11 px-6 text-sm font-semibold bg-primary text-white rounded-xl shadow-sm hover:shadow-md flex-1 sm:flex-none whitespace-nowrap" 
+                          className="h-11 px-6 text-sm font-semibold bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white rounded-xl shadow-sm hover:shadow-md flex-1 sm:flex-none whitespace-nowrap" 
                           onClick={() => setIndex(i => i + 1)}
                         >
                           Siguiente <ChevronRight className="ml-1.5 h-4 w-4 inline" />
                         </Button>
                       ) : (
                         <Button 
-                          className="h-11 px-8 font-bold bg-gradient-to-r from-primary to-primary/90 text-white rounded-xl shadow-lg hover:shadow-xl flex-1 sm:flex-none" 
+                          className="h-11 px-8 font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white rounded-xl shadow-lg hover:shadow-xl flex-1 sm:flex-none" 
                           onClick={() => setState('summary')}
                         >
                           Finalizar Quiz

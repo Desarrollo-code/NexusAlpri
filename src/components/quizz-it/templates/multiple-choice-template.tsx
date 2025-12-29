@@ -27,10 +27,10 @@ interface MultipleChoiceProps {
 
 const shapes = [Circle, Square, Triangle, Diamond];
 const gradients = [
-  'from-blue-500 via-blue-600 to-blue-700',
-  'from-emerald-500 via-emerald-600 to-emerald-700',
-  'from-amber-500 via-amber-600 to-amber-700',
-  'from-rose-500 via-rose-600 to-rose-700'
+  'from-violet-500 via-purple-600 to-indigo-700',
+  'from-emerald-500 via-teal-600 to-cyan-700',
+  'from-orange-500 via-amber-600 to-yellow-600',
+  'from-rose-500 via-pink-600 to-fuchsia-700'
 ];
 
 export function MultipleChoiceTemplate({
@@ -45,21 +45,30 @@ export function MultipleChoiceTemplate({
   const [selected, setSelected] = useState(selectedOptionId ?? null);
   const [answered, setAnswered] = useState(!!selectedOptionId);
   const [time, setTime] = useState(20);
-  const correctOption = question.options.find(o => o.isCorrect);
 
   const handleTimeUp = useCallback(() => {
-    onTimeUp();
-  }, [onTimeUp]);
+    if (!answered) {
+      setAnswered(true);
+      onTimeUp();
+    }
+  }, [answered, onTimeUp]);
 
   useEffect(() => {
-    if (answered) return;
-    if (time <= 0) {
-      handleTimeUp();
+    if (answered || time <= 0) {
+      if (time <= 0 && !answered) {
+        handleTimeUp();
+      }
       return;
     }
 
     const timer = setInterval(() => {
-      setTime(prev => prev - 1);
+      setTime(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
 
     return () => clearInterval(timer);
@@ -72,28 +81,20 @@ export function MultipleChoiceTemplate({
     onSubmit(opt.isCorrect, { answer: opt.id });
   };
 
-  // ✅ FUNCIÓN MEJORADA: Elimina TODO HTML y &nbsp; correctamente
-  const cleanText = (html: string) => 
-    html
-      .replace(/<[^>]+>/g, '')                                    // Elimina tags HTML
-      .replace(/&nbsp;|&#160;/g, ' ')                              // Elimina &nbsp; y equivalentes
-      .replace(/\s+/g, ' ')                                        // Normaliza espacios múltiples
-      .trim();
-
   return (
     <div className="space-y-6 w-full">
-      {/* ✅ HEADER FLEXIBLE */}
-      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 md:p-6 bg-gradient-to-r from-slate-50 via-blue-50 to-slate-100 rounded-xl shadow-sm border border-slate-200">
+      {/* HEADER */}
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 md:p-6 bg-gradient-to-r from-violet-50 via-purple-50 to-indigo-100 rounded-xl shadow-sm border border-slate-200">
         <span className="text-xs md:text-sm font-bold text-slate-700 uppercase tracking-wide bg-white/80 px-4 py-2 rounded-lg shadow-sm border">
           Pregunta {questionNumber} de {totalQuestions}
         </span>
-        <div className="flex items-center gap-2 px-4 py-2 rounded-xl text-base font-mono font-bold bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 min-w-[80px] justify-center">
+        <div className="flex items-center gap-2 px-4 py-2 rounded-xl text-base font-mono font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 min-w-[80px] justify-center">
           <Timer size={20} />
           <span className="tabular-nums">{time}s</span>
         </div>
       </header>
 
-      {/* ✅ PREGUNTA CON TEXTO COMPLETO */}
+      {/* PREGUNTA */}
       <div className="p-6 md:p-8 lg:p-10 bg-gradient-to-br from-white via-slate-50/50 to-slate-100 rounded-2xl border border-slate-200 shadow-xl">
         <div className="text-center">
           <div 
@@ -105,7 +106,7 @@ export function MultipleChoiceTemplate({
         </div>
       </div>
 
-      {/* ✅ OPCIONES CON FLEX-WRAP TOTAL */}
+      {/* OPCIONES */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 w-full">
         {question.options.map((opt, i) => {
           const ShapeIcon = shapes[i % shapes.length];
@@ -132,12 +133,12 @@ export function MultipleChoiceTemplate({
               onClick={() => handleSelect(opt)}
               className={`relative flex flex-col items-stretch p-6 md:p-8 rounded-2xl ${cardStyles} hover:scale-[1.01] active:scale-[0.99] active:translate-y-0.5 min-h-[120px] md:min-h-[140px] max-w-full focus:outline-none focus:ring-4 focus:ring-primary/25 break-inside-avoid overflow-hidden`}
             >
-              {/* ÍCONO FIJO */}
-              <div className={`w-14 h-14 md:w-16 md:h-16 rounded-2xl flex items-center justify-center text-white shadow-lg mb-4 md:mb-0 md:mr-6 shrink-0 ${gradient}`}>
+              {/* ÍCONO CON GRADIENTE VIBRANTE */}
+              <div className={`w-14 h-14 md:w-16 md:h-16 rounded-2xl flex items-center justify-center text-white shadow-lg mb-4 md:mb-0 md:mr-6 shrink-0 bg-gradient-to-br ${gradient}`}>
                 <ShapeIcon size={24} fill="currentColor" className="drop-shadow-sm" />
               </div>
 
-              {/* ✅ TEXTO TOTALMENTE FLEXIBLE */}
+              {/* TEXTO */}
               <div className="flex-1 min-w-0 flex flex-col justify-center">
                 <div 
                   className="text-slate-800 font-semibold text-base md:text-lg leading-relaxed md:leading-snug break-words overflow-wrap-anywhere hyphens-auto max-w-full line-clamp-4 px-1 prose prose-sm md:prose max-w-none"
@@ -152,7 +153,7 @@ export function MultipleChoiceTemplate({
                 />
               </div>
 
-              {/* Feedback */}
+              {/* FEEDBACK */}
               {answered && showFeedback && (
                 <div className="absolute -top-2 -right-2 p-2 bg-white/90 rounded-2xl shadow-lg border">
                   {isCorrect ? (
