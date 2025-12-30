@@ -42,32 +42,29 @@ export function MultipleChoiceTemplate({
   };
 
   return (
-    <div className="space-y-6 w-full">
-      {/* Header Info */}
+    <div className="space-y-5 w-full">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">Evaluación de Lección</span>
+          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Lección en curso</span>
           <div className="flex gap-1">
             {Array.from({ length: totalQuestions }).map((_, i) => (
-              <div key={i} className={`h-1 w-6 rounded-full ${i < questionNumber ? 'bg-indigo-500' : 'bg-zinc-800'}`} />
+              <div key={i} className={`h-1 w-5 rounded-full ${i < questionNumber ? 'bg-indigo-500' : 'bg-zinc-800'}`} />
             ))}
           </div>
         </div>
-        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border font-mono font-bold text-sm ${time < 10 ? 'text-rose-500 border-rose-500/20 bg-rose-500/5' : 'text-zinc-400 border-zinc-800'}`}>
-          <Timer size={14} className={time < 10 ? 'animate-pulse' : ''} />
+        <div className={`flex items-center gap-2 px-3 py-1 rounded-lg border font-mono font-bold text-xs ${time < 10 ? 'text-rose-500 border-rose-500/20 bg-rose-500/5' : 'text-zinc-500 border-zinc-800'}`}>
+          <Timer size={12} className={time < 10 ? 'animate-pulse' : ''} />
           <span>0:{time.toString().padStart(2, '0')}</span>
         </div>
       </div>
 
-      {/* Question Text */}
-      <div className="py-2">
-        <h3 className="text-xl md:text-2xl font-bold text-white leading-snug" 
+      <div className="py-1">
+        <h3 className="text-lg md:text-xl font-bold text-white leading-snug" 
             dangerouslySetInnerHTML={{ __html: question.text }} 
         />
       </div>
 
-      {/* Options List */}
-      <div className="grid grid-cols-1 gap-3">
+      <div className="grid grid-cols-1 gap-2.5">
         {question.options.map((opt: any, i: number) => {
           const ShapeIcon = shapes[i % shapes.length];
           const isSelected = selected === opt.id;
@@ -77,25 +74,21 @@ export function MultipleChoiceTemplate({
               key={opt.id}
               disabled={answered}
               onClick={() => handleSelect(opt)}
-              className={`group w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left
-                ${isSelected ? 'border-indigo-500 bg-indigo-500/5' : 'border-zinc-800 bg-zinc-900/30 hover:border-zinc-700 hover:bg-zinc-900/50'}
-                ${answered && opt.isCorrect ? 'border-emerald-500 bg-emerald-500/5' : ''}
-                ${answered && isSelected && !opt.isCorrect ? 'border-rose-500 bg-rose-500/5' : ''}
-                active:scale-[0.98]
+              className={`group w-full flex items-center gap-3 p-3.5 rounded-2xl border-2 transition-all text-left
+                ${isSelected ? 'border-indigo-500 bg-indigo-500/5' : 'border-zinc-800 bg-zinc-900/40 hover:border-zinc-700'}
+                ${answered && opt.isCorrect ? 'border-emerald-500 bg-emerald-500/10' : ''}
+                ${answered && isSelected && !opt.isCorrect ? 'border-rose-500 bg-rose-500/10' : ''}
               `}
             >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors 
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors 
                 ${isSelected ? 'bg-indigo-500 text-white' : shapeColors[i % shapeColors.length]}`}>
-                <ShapeIcon size={18} fill="currentColor" strokeWidth={3} />
+                <ShapeIcon size={16} fill="currentColor" />
               </div>
               
-              <span className={`flex-1 text-sm md:text-base font-semibold leading-tight ${isSelected ? 'text-white' : 'text-zinc-400 group-hover:text-zinc-200'}`}>
-                {opt.text}
-              </span>
-              
-              {isSelected && !answered && (
-                <div className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.8)]" />
-              )}
+              {/* CORRECCIÓN AQUÍ: Renderizado de HTML en la opción */}
+              <div className={`flex-1 text-sm font-semibold leading-tight ${isSelected ? 'text-white' : 'text-zinc-400 group-hover:text-zinc-200'}`}
+                   dangerouslySetInnerHTML={{ __html: opt.text }} 
+              />
               
               {answered && opt.isCorrect && (
                 <CheckCircle2 className="h-5 w-5 text-emerald-500" />
