@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Check, X, Timer, Circle, Square, Triangle, Diamond } from 'lucide-react';
+import { Button } from '@/components/ui/button'; // ✅ Añadido aquí
 
 // Tipado para mejor mantenimiento
 interface Option {
