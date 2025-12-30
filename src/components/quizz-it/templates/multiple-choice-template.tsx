@@ -87,30 +87,28 @@ export function MultipleChoiceTemplate({
     ? 'from-amber-500 to-orange-500'
     : 'from-rose-500 to-pink-500';
 
-  return (
-    <div className="space-y-6 md:space-y-8 w-full max-w-4xl mx-auto overflow-x-hidden px-4 md:px-0">
-      {/* HEADER CON PROGRESO Y TIMER */}
-      <div className="space-y-3">
+return (
+    <div className="space-y-4 w-full max-w-2xl mx-auto overflow-x-hidden px-3">
+      {/* HEADER COMPACTO CON PROGRESO Y TIMER */}
+      <div className="space-y-2">
         <div className="flex justify-between items-center gap-2">
-          <div className="flex items-center">
-            <span className="text-xs md:text-sm font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200 shadow-sm whitespace-nowrap">
-              Pregunta {questionNumber} de {totalQuestions}
-            </span>
-          </div>
+          <span className="text-xs font-bold text-purple-700 bg-gradient-to-r from-purple-100 to-pink-100 px-3 py-1 rounded-full border border-purple-200 shadow-sm whitespace-nowrap">
+            {questionNumber}/{totalQuestions}
+          </span>
 
           <motion.div
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold bg-gradient-to-r ${timeColor} text-white shadow-lg`}
-            animate={{ scale: time <= 5 && !answered ? [1, 1.05, 1] : 1 }}
-            transition={{ repeat: time <= 5 && !answered ? Infinity : 0, duration: 0.5 }}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r ${timeColor} text-white shadow-lg`}
+            animate={{ scale: time <= 5 && !answered ? [1, 1.08, 1] : 1 }}
+            transition={{ repeat: time <= 5 && !answered ? Infinity : 0, duration: 0.4 }}
           >
-            <Timer size={18} />
+            <Timer size={14} />
             <span>{time}s</span>
           </motion.div>
         </div>
 
-        <div className="h-2 bg-slate-200 rounded-full overflow-hidden shadow-inner">
+        <div className="h-1.5 bg-gradient-to-r from-purple-100 to-pink-100 rounded-full overflow-hidden shadow-inner">
           <motion.div
-            className={`h-full bg-gradient-to-r ${timeColor}`}
+            className={`h-full bg-gradient-to-r ${timeColor} shadow-sm`}
             initial={{ width: '100%' }}
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.5, ease: 'easeInOut' }}
@@ -118,13 +116,14 @@ export function MultipleChoiceTemplate({
         </div>
       </div>
 
-      {/* TARJETA DE PREGUNTA */}
+      {/* TARJETA DE PREGUNTA COMPACTA Y COLORIDA */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="p-6 md:p-10 bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 text-center"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="p-5 bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-600 rounded-2xl shadow-xl text-center relative overflow-hidden"
       >
-        <div className="text-slate-800 text-lg md:text-2xl font-bold leading-snug break-words">
+        <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none" />
+        <div className="relative text-white text-base md:text-xl font-bold leading-snug break-words">
           <div
             className="max-w-full"
             dangerouslySetInnerHTML={{ __html: question.text || 'Nueva Pregunta' }}
@@ -132,30 +131,35 @@ export function MultipleChoiceTemplate({
         </div>
       </motion.div>
 
-      {/* GRID DE OPCIONES: 2 COLUMNAS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-5">
+      {/* GRID DE OPCIONES COMPACTO: 2 COLUMNAS */}
+      <div className="grid grid-cols-2 gap-2.5">
         {question.options.map((opt, i) => {
           const ShapeIcon = shapes[i % shapes.length];
           const isSelected = selected === opt.id;
 
-          // Lógica de estilos mejorada para tarjetas
-          let cardBase = 'relative flex flex-col items-center justify-center p-4 md:p-6 rounded-2xl border-2 transition-all duration-200 h-full min-h-[120px] md:min-h-[160px] shadow-sm hover:shadow-md';
-          let cardStyles = 'bg-white border-slate-200 hover:border-purple-300 hover:bg-purple-50/30';
-          let iconBg = 'bg-slate-100 text-slate-500 group-hover:bg-purple-100 group-hover:text-purple-600';
-          let iconSize = 'w-12 h-12';
+          // Paleta de colores vibrantes para cada opción
+          const colors = [
+            { base: 'from-blue-500 to-cyan-500', hover: 'from-blue-600 to-cyan-600', ring: 'ring-blue-200' },
+            { base: 'from-rose-500 to-pink-500', hover: 'from-rose-600 to-pink-600', ring: 'ring-rose-200' },
+            { base: 'from-amber-500 to-orange-500', hover: 'from-amber-600 to-orange-600', ring: 'ring-amber-200' },
+            { base: 'from-emerald-500 to-teal-500', hover: 'from-emerald-600 to-teal-600', ring: 'ring-emerald-200' }
+          ];
+          const color = colors[i % colors.length];
 
-          if (isSelected) {
-            cardStyles = 'bg-purple-600 border-purple-600 ring-4 ring-purple-100 shadow-lg scale-[1.02]';
-            iconBg = 'bg-white/20 text-white';
+          let cardBase = 'relative flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all duration-200 h-full min-h-[100px] shadow-md';
+          let cardStyles = `bg-gradient-to-br ${color.base} border-transparent text-white hover:shadow-lg hover:scale-[1.02]`;
+
+          if (isSelected && !showFeedback) {
+            cardStyles = `bg-gradient-to-br ${color.hover} border-white ring-4 ${color.ring} shadow-xl scale-[1.05]`;
           }
 
           if (answered && showFeedback) {
             if (opt.isCorrect) {
-              cardStyles = 'bg-emerald-50 border-emerald-400 ring-4 ring-emerald-100 shadow-lg';
-              iconBg = 'bg-emerald-500 text-white';
+              cardStyles = 'bg-gradient-to-br from-emerald-500 to-green-500 border-white ring-4 ring-emerald-300 shadow-xl scale-[1.05]';
             } else if (isSelected) {
-              cardStyles = 'bg-rose-50 border-rose-400 ring-4 ring-rose-100 opacity-90';
-              iconBg = 'bg-rose-500 text-white';
+              cardStyles = 'bg-gradient-to-br from-rose-600 to-red-600 border-white ring-4 ring-rose-300 opacity-90';
+            } else {
+              cardStyles = `bg-gradient-to-br ${color.base} border-transparent text-white/70 opacity-60`;
             }
           }
 
@@ -164,31 +168,44 @@ export function MultipleChoiceTemplate({
               key={opt.id}
               disabled={answered}
               onClick={() => handleSelect(opt)}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-              className={`${cardBase} ${cardStyles} ${!answered && 'cursor-pointer active:scale-[0.98]'}`}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: i * 0.08, type: 'spring', stiffness: 300 }}
+              className={`${cardBase} ${cardStyles} ${!answered && 'cursor-pointer active:scale-95'}`}
             >
-              {/* Icono geométrico grande y centrado */}
-              <div className={`${iconSize} md:w-16 md:h-16 mb-3 rounded-full flex items-center justify-center transition-colors duration-300 ${iconBg}`}>
-                <ShapeIcon size={24} fill="currentColor" className="opacity-90 md:w-8 md:h-8" />
+              {/* Icono geométrico compacto */}
+              <div className="w-10 h-10 mb-2 rounded-full bg-white/25 backdrop-blur-sm flex items-center justify-center transition-transform duration-300">
+                <ShapeIcon size={20} fill="currentColor" className="opacity-90" />
               </div>
 
               {/* Texto de la opción */}
               <div className="w-full">
                 <div
-                  className="text-slate-700 font-bold text-sm md:text-lg leading-tight text-center break-words"
+                  className="text-white font-bold text-xs md:text-sm leading-tight text-center break-words drop-shadow-sm"
                   dangerouslySetInnerHTML={{ __html: opt.text }}
                 />
               </div>
 
-              {/* Indicador visual de selección/check (opcional, sutil) */}
-              {isSelected && !showFeedback && (
+              {/* Checkmark para respuesta correcta */}
+              {answered && showFeedback && opt.isCorrect && (
                 <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="absolute top-2 right-2 w-2 h-2 bg-white rounded-full shadow-sm"
-                />
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  className="absolute -top-1 -right-1 w-6 h-6 bg-white rounded-full shadow-lg flex items-center justify-center"
+                >
+                  <span className="text-emerald-600 text-lg font-black">✓</span>
+                </motion.div>
+              )}
+
+              {/* X para respuesta incorrecta */}
+              {answered && showFeedback && !opt.isCorrect && isSelected && (
+                <motion.div
+                  initial={{ scale: 0, rotate: 180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  className="absolute -top-1 -right-1 w-6 h-6 bg-white rounded-full shadow-lg flex items-center justify-center"
+                >
+                  <span className="text-rose-600 text-lg font-black">✕</span>
+                </motion.div>
               )}
             </motion.button>
           );
