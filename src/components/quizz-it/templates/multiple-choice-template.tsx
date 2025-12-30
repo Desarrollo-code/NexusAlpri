@@ -43,9 +43,18 @@ export function MultipleChoiceTemplate({
   selectedOptionId,
   showFeedback = true
 }: MultipleChoiceProps) {
-  const [selected, setSelected] = useState(selectedOptionId ?? null);
-  const [answered, setAnswered] = useState(!!selectedOptionId);
+  // 👇 Estado local: Se resetea cada vez que cambia la pregunta
+  const [selected, setSelected] = useState<string | null>(null);
+  const [answered, setAnswered] = useState(false);
   const [time, setTime] = useState(20);
+
+  // 👇 Resetear estado cuando cambia la pregunta
+  useEffect(() => {
+    setSelected(selectedOptionId ?? null);
+    setAnswered(!!selectedOptionId);
+    setTime(20); // Reiniciar temporizador
+  }, [question.id, selectedOptionId]); // ← ¡Importante! Solo se ejecuta cuando cambia la pregunta o su ID
+
   const correctOption = question.options.find(o => o.isCorrect);
 
   // Memorizamos onTimeUp para evitar re-ejecuciones innecesarias del efecto
@@ -161,6 +170,19 @@ export function MultipleChoiceTemplate({
           );
         })}
       </div>
+
+      {/* BOTÓN "SIGUIENTE" DESHABILITADO HASTA QUE SE RESPONDA */}
+      {!answered && (
+        <div className="text-center mt-6">
+          <Button 
+            variant="outline" 
+            disabled 
+            className="h-10 text-xs font-bold rounded-lg bg-slate-100 text-slate-400 cursor-not-allowed"
+          >
+            Siguiente (responde primero)
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
