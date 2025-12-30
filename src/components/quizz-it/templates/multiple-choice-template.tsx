@@ -88,11 +88,11 @@ export function MultipleChoiceTemplate({
     : 'from-rose-500 to-pink-500';
 
 return (
-    <div className="space-y-4 w-full max-w-2xl mx-auto overflow-x-hidden px-3">
+    <div className="space-y-4 w-full max-w-3xl mx-auto overflow-x-hidden px-3 py-4">
       {/* HEADER COMPACTO CON PROGRESO Y TIMER */}
       <div className="space-y-2">
         <div className="flex justify-between items-center gap-2">
-          <span className="text-xs font-bold text-purple-700 bg-gradient-to-r from-purple-100 to-pink-100 px-3 py-1 rounded-full border border-purple-200 shadow-sm whitespace-nowrap">
+          <span className="text-xs font-bold text-purple-400 bg-purple-950/50 px-3 py-1 rounded-full border border-purple-800 shadow-sm whitespace-nowrap">
             {questionNumber}/{totalQuestions}
           </span>
 
@@ -106,7 +106,7 @@ return (
           </motion.div>
         </div>
 
-        <div className="h-1.5 bg-gradient-to-r from-purple-100 to-pink-100 rounded-full overflow-hidden shadow-inner">
+        <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden shadow-inner">
           <motion.div
             className={`h-full bg-gradient-to-r ${timeColor} shadow-sm`}
             initial={{ width: '100%' }}
@@ -116,13 +116,13 @@ return (
         </div>
       </div>
 
-      {/* TARJETA DE PREGUNTA COMPACTA Y COLORIDA */}
+      {/* TARJETA DE PREGUNTA CON FONDO NEGRO */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="p-5 bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-600 rounded-2xl shadow-xl text-center relative overflow-hidden"
+        className="p-5 md:p-6 bg-black rounded-2xl shadow-xl border border-zinc-700 text-center relative overflow-hidden"
       >
-        <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-transparent to-blue-600/10 pointer-events-none" />
         <div className="relative text-white text-base md:text-xl font-bold leading-snug break-words">
           <div
             className="max-w-full"
@@ -131,35 +131,40 @@ return (
         </div>
       </motion.div>
 
-      {/* GRID DE OPCIONES COMPACTO: 2 COLUMNAS */}
-      <div className="grid grid-cols-2 gap-2.5">
+      {/* OPCIONES - DISEÑO RESPONSIVO: 1 columna en móvil, 2 en desktop */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {question.options.map((opt, i) => {
           const ShapeIcon = shapes[i % shapes.length];
           const isSelected = selected === opt.id;
 
-          // Paleta de colores vibrantes para cada opción
+          // Paleta de colores para iconos
           const colors = [
-            { base: 'from-blue-500 to-cyan-500', hover: 'from-blue-600 to-cyan-600', ring: 'ring-blue-200' },
-            { base: 'from-rose-500 to-pink-500', hover: 'from-rose-600 to-pink-600', ring: 'ring-rose-200' },
-            { base: 'from-amber-500 to-orange-500', hover: 'from-amber-600 to-orange-600', ring: 'ring-amber-200' },
-            { base: 'from-emerald-500 to-teal-500', hover: 'from-emerald-600 to-teal-600', ring: 'ring-emerald-200' }
+            { icon: 'text-blue-400', border: 'border-blue-500/30', bg: 'bg-blue-950/30', selected: 'border-blue-400 bg-blue-950/50', correct: 'border-emerald-400 bg-emerald-950/50', wrong: 'border-rose-400 bg-rose-950/50' },
+            { icon: 'text-rose-400', border: 'border-rose-500/30', bg: 'bg-rose-950/30', selected: 'border-rose-400 bg-rose-950/50', correct: 'border-emerald-400 bg-emerald-950/50', wrong: 'border-rose-400 bg-rose-950/50' },
+            { icon: 'text-amber-400', border: 'border-amber-500/30', bg: 'bg-amber-950/30', selected: 'border-amber-400 bg-amber-950/50', correct: 'border-emerald-400 bg-emerald-950/50', wrong: 'border-rose-400 bg-rose-950/50' },
+            { icon: 'text-emerald-400', border: 'border-emerald-500/30', bg: 'bg-emerald-950/30', selected: 'border-emerald-400 bg-emerald-950/50', correct: 'border-emerald-400 bg-emerald-950/50', wrong: 'border-rose-400 bg-rose-950/50' }
           ];
           const color = colors[i % colors.length];
 
-          let cardBase = 'relative flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all duration-200 h-full min-h-[100px] shadow-md';
-          let cardStyles = `bg-gradient-to-br ${color.base} border-transparent text-white hover:shadow-lg hover:scale-[1.02]`;
+          let cardBase = 'relative flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-xl border-2 transition-all duration-200 bg-zinc-900';
+          let cardStyles = `${color.border} ${color.bg} hover:${color.selected} hover:shadow-lg`;
+          let iconColor = color.icon;
+          let textColor = 'text-white';
 
           if (isSelected && !showFeedback) {
-            cardStyles = `bg-gradient-to-br ${color.hover} border-white ring-4 ${color.ring} shadow-xl scale-[1.05]`;
+            cardStyles = `${color.selected} shadow-lg ring-2 ring-purple-500/50`;
           }
 
           if (answered && showFeedback) {
             if (opt.isCorrect) {
-              cardStyles = 'bg-gradient-to-br from-emerald-500 to-green-500 border-white ring-4 ring-emerald-300 shadow-xl scale-[1.05]';
+              cardStyles = `${color.correct} shadow-lg ring-2 ring-emerald-500/50`;
+              iconColor = 'text-emerald-400';
             } else if (isSelected) {
-              cardStyles = 'bg-gradient-to-br from-rose-600 to-red-600 border-white ring-4 ring-rose-300 opacity-90';
+              cardStyles = `${color.wrong} opacity-80 ring-2 ring-rose-500/50`;
+              iconColor = 'text-rose-400';
             } else {
-              cardStyles = `bg-gradient-to-br ${color.base} border-transparent text-white/70 opacity-60`;
+              cardStyles = `${color.border} ${color.bg} opacity-50`;
+              textColor = 'text-white/50';
             }
           }
 
@@ -168,20 +173,20 @@ return (
               key={opt.id}
               disabled={answered}
               onClick={() => handleSelect(opt)}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.08, type: 'spring', stiffness: 300 }}
-              className={`${cardBase} ${cardStyles} ${!answered && 'cursor-pointer active:scale-95'}`}
+              className={`${cardBase} ${cardStyles} ${!answered && 'cursor-pointer active:scale-[0.98]'} text-left`}
             >
-              {/* Icono geométrico compacto */}
-              <div className="w-10 h-10 mb-2 rounded-full bg-white/25 backdrop-blur-sm flex items-center justify-center transition-transform duration-300">
-                <ShapeIcon size={20} fill="currentColor" className="opacity-90" />
+              {/* Icono geométrico a la izquierda */}
+              <div className={`flex-shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-lg bg-zinc-800/50 flex items-center justify-center ${iconColor} transition-colors duration-300`}>
+                <ShapeIcon size={24} fill="currentColor" className="opacity-90" />
               </div>
 
               {/* Texto de la opción */}
-              <div className="w-full">
+              <div className="flex-1 min-w-0">
                 <div
-                  className="text-white font-bold text-xs md:text-sm leading-tight text-center break-words drop-shadow-sm"
+                  className={`${textColor} font-semibold text-sm md:text-base leading-snug break-words`}
                   dangerouslySetInnerHTML={{ __html: opt.text }}
                 />
               </div>
@@ -191,9 +196,9 @@ return (
                 <motion.div
                   initial={{ scale: 0, rotate: -180 }}
                   animate={{ scale: 1, rotate: 0 }}
-                  className="absolute -top-1 -right-1 w-6 h-6 bg-white rounded-full shadow-lg flex items-center justify-center"
+                  className="flex-shrink-0 w-6 h-6 bg-emerald-500 rounded-full shadow-lg flex items-center justify-center"
                 >
-                  <span className="text-emerald-600 text-lg font-black">✓</span>
+                  <span className="text-white text-sm font-black">✓</span>
                 </motion.div>
               )}
 
@@ -202,9 +207,9 @@ return (
                 <motion.div
                   initial={{ scale: 0, rotate: 180 }}
                   animate={{ scale: 1, rotate: 0 }}
-                  className="absolute -top-1 -right-1 w-6 h-6 bg-white rounded-full shadow-lg flex items-center justify-center"
+                  className="flex-shrink-0 w-6 h-6 bg-rose-500 rounded-full shadow-lg flex items-center justify-center"
                 >
-                  <span className="text-rose-600 text-lg font-black">✕</span>
+                  <span className="text-white text-sm font-black">✕</span>
                 </motion.div>
               )}
             </motion.button>
