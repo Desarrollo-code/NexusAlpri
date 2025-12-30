@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Check, X, Timer, Circle, Square, Triangle, Diamond } from 'lucide-react';
-import { Button } from '@/components/ui/button'; // ✅ Añadido aquí
+import { motion } from 'framer-motion';
 
-// Tipado para mejor mantenimiento
+// ============================================================================
+// TIPOS
+// ============================================================================
 interface Option {
   id: string;
   text: string;
@@ -27,14 +29,20 @@ interface MultipleChoiceProps {
   showFeedback?: boolean;
 }
 
+// ============================================================================
+// CONFIGURACIÓN
+// ============================================================================
 const shapes = [Circle, Square, Triangle, Diamond];
 const gradients = [
-  'from-blue-500 to-blue-600',
-  'from-emerald-500 to-emerald-600',
-  'from-amber-500 to-amber-600',
-  'from-rose-500 to-rose-600'
+  'from-purple-500 to-pink-500',
+  'from-blue-500 to-cyan-500',
+  'from-emerald-500 to-teal-500',
+  'from-orange-500 to-amber-500'
 ];
 
+// ============================================================================
+// COMPONENTE PRINCIPAL
+// ============================================================================
 export function MultipleChoiceTemplate({
   question,
   onSubmit,
@@ -44,29 +52,29 @@ export function MultipleChoiceTemplate({
   selectedOptionId,
   showFeedback = true
 }: MultipleChoiceProps) {
-  // 👇 Estado local: Se resetea cada vez que cambia la pregunta
   const [selected, setSelected] = useState<string | null>(null);
   const [answered, setAnswered] = useState(false);
-  const [time, setTime] = useState(20);
+  const [time, setTime] = useState(30);
 
-  // 👇 Resetear estado cuando cambia la pregunta
+  // Resetear estado cuando cambia la pregunta
   useEffect(() => {
     setSelected(selectedOptionId ?? null);
     setAnswered(!!selectedOptionId);
-    setTime(20); // Reiniciar temporizador
-  }, [question.id, selectedOptionId]); // ← ¡Importante! Solo se ejecuta cuando cambia la pregunta o su ID
+    setTime(30);
+  }, [question.id, selectedOptionId]);
 
-  const correctOption = question.options.find(o => o.isCorrect);
-
-  // Memorizamos onTimeUp para evitar re-ejecuciones innecesarias del efecto
+  // Manejar tiempo agotado
   const handleTimeUp = useCallback(() => {
-    onTimeUp();
-  }, [onTimeUp]);
+    if (!answered) {
+      setAnswered(true);
+      onTimeUp();
+    }
+  }, [answered, onTimeUp]);
 
+  // Timer countdown
   useEffect(() => {
-    if (answered) return;
-    if (time <= 0) {
-      handleTimeUp();
+    if (answered || time <= 0) {
+      if (time <= 0) handleTimeUp();
       return;
     }
 
@@ -77,6 +85,7 @@ export function MultipleChoiceTemplate({
     return () => clearInterval(timer);
   }, [time, answered, handleTimeUp]);
 
+  // Manejar selección de opción
   const handleSelect = (opt: Option) => {
     if (answered) return;
     setSelected(opt.id);
@@ -84,106 +93,143 @@ export function MultipleChoiceTemplate({
     onSubmit(opt.isCorrect, { answer: opt.id });
   };
 
-  const cleanText = (html: string) => html.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim();
+  // Calcular progreso y color del timer
+  const progress = (time / 30) * 100;
+  const timeColor = time > 20 
+    ? 'from-emerald-500 to-teal-500' 
+    : time > 10 
+    ? 'from-amber-500 to-orange-500' 
+    : 'from-rose-500 to-pink-500';
 
   return (
-    <div className="space-y-6 w-full max-w-3xl mx-auto">
-      {/* HEADER MEJORADO */}
-      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6 p-4 bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl">
-        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider bg-white px-3 py-1 rounded-lg shadow-sm">
-          Pregunta {questionNumber} de {totalQuestions}
-        </span>
-        <div className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-mono font-bold transition-all duration-300 bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md hover:shadow-lg hover:scale-105 w-fit">
-          <Timer size={20} />
-          <span>{time}s</span>
+    <div className="space-y-4 md:space-y-6 w-full">
+      {/* ====================================================================
+          HEADER CON PROGRESO Y TIMER
+          ==================================================================== */}
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          {/* Indicador de pregunta actual */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-slate-600 bg-gradient-to-r from-purple-100 to-pink-100 px-3 py-1.5 rounded-full">
+              Pregunta {questionNumber} de {totalQuestions}
+            </span>
+            <div className="h-2 w-20 bg-slate-200 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-300"
+                style={{ width: `${(questionNumber / totalQuestions) * 100}%` }}
+              />
+            </div>
+          </div>
+          
+          {/* Timer animado */}
+          <motion.div 
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold bg-gradient-to-r ${timeColor} text-white shadow-lg`}
+            animate={{ scale: time <= 5 && !answered ? [1, 1.05, 1] : 1 }}
+            transition={{ repeat: time <= 5 && !answered ? Infinity : 0, duration: 0.5 }}
+          >
+            <Timer size={18} />
+            <span>{time}s</span>
+          </motion.div>
         </div>
-      </header>
 
-      {/* QUESTION CARD MEJORADA */}
-      <div className="p-6 md:p-8 bg-gradient-to-br from-white via-slate-50 to-slate-100 rounded-2xl border-2 border-slate-100 shadow-lg mb-6">
-        <div className="text-slate-800 text-lg md:text-xl font-semibold text-center leading-[1.4] md:leading-[1.3] tracking-tight break-words hyphens-auto max-w-full overflow-wrap-anywhere">
-          <div dangerouslySetInnerHTML={{ __html: question.text }} />
+        {/* Barra de tiempo visual */}
+        <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+          <motion.div 
+            className={`h-full bg-gradient-to-r ${timeColor}`}
+            initial={{ width: '100%' }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.3 }}
+          />
         </div>
       </div>
 
-      {/* OPTIONS GRID RESPONSIVE */}
-      <div className="grid gap-4 md:gap-6 lg:grid-cols-2">
+      {/* ====================================================================
+          TARJETA DE PREGUNTA
+          ==================================================================== */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="p-6 md:p-8 bg-gradient-to-br from-white via-purple-50/30 to-pink-50/30 rounded-2xl border-2 border-purple-100 shadow-xl"
+      >
+        <div className="text-slate-800 text-base md:text-xl font-bold text-center leading-relaxed">
+          <div dangerouslySetInnerHTML={{ __html: question.text }} />
+        </div>
+      </motion.div>
+
+      {/* ====================================================================
+          GRID DE OPCIONES
+          ==================================================================== */}
+      <div className="grid gap-3 md:gap-4">
         {question.options.map((opt, i) => {
           const ShapeIcon = shapes[i % shapes.length];
           const gradient = gradients[i % gradients.length];
           const isSelected = selected === opt.id;
           const isCorrect = opt.isCorrect;
 
-          // Lógica de colores post-respuesta
-          let cardStyles = "bg-emerald-50 border-emerald-200 hover:border-emerald-300 hover:shadow-md";
+          // Determinar estilos según el estado
+          let cardStyles = "bg-white border-slate-200 hover:border-purple-300 hover:shadow-lg hover:scale-[1.02]";
+          let iconBg = "bg-gradient-to-br from-slate-100 to-slate-200 text-slate-600";
+          
           if (answered) {
             if (isCorrect) {
-              cardStyles = "border-emerald-500 bg-gradient-to-br from-emerald-100 to-emerald-200 ring-2 ring-emerald-200 shadow-emerald-200/50";
+              cardStyles = "bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-400 ring-2 ring-emerald-200 shadow-emerald-200/50";
+              iconBg = "bg-gradient-to-br from-emerald-500 to-teal-500 text-white";
             } else if (isSelected) {
-              cardStyles = "border-rose-500 bg-gradient-to-br from-rose-50 to-rose-100 ring-2 ring-rose-200 shadow-rose-200/50";
+              cardStyles = "bg-gradient-to-br from-rose-50 to-pink-50 border-rose-400 ring-2 ring-rose-200 shadow-rose-200/50";
+              iconBg = "bg-gradient-to-br from-rose-500 to-pink-500 text-white";
             } else {
-              cardStyles = "opacity-60 border-slate-100 shadow-sm";
+              cardStyles = "bg-slate-50 border-slate-200 opacity-50";
             }
           }
 
           return (
-            <button
+            <motion.button
               key={opt.id}
               disabled={answered}
               onClick={() => handleSelect(opt)}
-              className={`group relative flex flex-col lg:flex-row lg:items-center gap-4 p-6 rounded-2xl border-4 border-emerald-200 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] active:border-b-0 active:translate-y-[1px] min-h-[100px] md:min-h-[120px] text-left break-inside-avoid overflow-hidden max-w-full hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-primary/20 ${cardStyles}`}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.1 }}
+              whileHover={!answered ? { scale: 1.02 } : {}}
+              whileTap={!answered ? { scale: 0.98 } : {}}
+              className={`group relative flex items-center gap-4 p-4 md:p-5 rounded-xl border-2 transition-all duration-300 ${cardStyles} ${!answered && 'cursor-pointer active:translate-y-0.5'}`}
             >
-              {/* ÍCONO DE FORMA (SIEMPRE FONDO BLANCO Y BORDE SUAVE) */}
-              <div className="w-16 h-16 lg:w-14 lg:h-14 rounded-xl flex items-center justify-center text-emerald-600 shrink-0 bg-white shadow-lg group-hover:shadow-xl transition-all duration-300 border-2 border-emerald-200">
-                <ShapeIcon size={24} fill="currentColor" />
+              {/* Icono con forma geométrica */}
+              <div className={`w-12 h-12 md:w-14 md:h-14 rounded-xl flex items-center justify-center shrink-0 shadow-lg transition-all duration-300 ${iconBg}`}>
+                <ShapeIcon size={24} fill="currentColor" className="drop-shadow-sm" />
               </div>
 
-              {/* CONTENIDO DE TEXTO MEJORADO */}
-              <div className="flex-1 min-w-0 max-w-full prose prose-slate">
+              {/* Texto de la opción */}
+              <div className="flex-1 text-left">
                 <div 
-                  className="text-slate-800 font-semibold text-sm md:text-base leading-relaxed md:leading-snug hyphens-auto overflow-wrap-anywhere break-words max-w-full"
-                  style={{
-                    wordBreak: 'break-word',
-                    overflowWrap: 'break-word',
-                    padding: '0 8px'
-                  }}
-                >
-                  <div dangerouslySetInnerHTML={{ __html: opt.text }} />
-                </div>
+                  className="text-slate-800 font-semibold text-sm md:text-base leading-snug break-words"
+                  dangerouslySetInnerHTML={{ __html: opt.text }}
+                />
               </div>
 
-              {/* FEEDBACK VISUAL */}
+              {/* Feedback visual (correcto/incorrecto) */}
               {answered && showFeedback && (
-                <div className="absolute top-4 right-4 flex flex-col items-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <motion.div 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute top-3 right-3"
+                >
                   {isCorrect && (
-                    <div className="bg-emerald-100 border-2 border-emerald-300 p-1 rounded-xl shadow-md">
-                      <Check className="h-5 w-5 text-emerald-600" />
+                    <div className="bg-emerald-500 p-1.5 rounded-full shadow-lg">
+                      <Check className="h-4 w-4 text-white" strokeWidth={3} />
                     </div>
                   )}
                   {isSelected && !isCorrect && (
-                    <div className="bg-rose-100 border-2 border-rose-300 p-1 rounded-xl shadow-md">
-                      <X className="h-5 w-5 text-rose-600" />
+                    <div className="bg-rose-500 p-1.5 rounded-full shadow-lg">
+                      <X className="h-4 w-4 text-white" strokeWidth={3} />
                     </div>
                   )}
-                </div>
+                </motion.div>
               )}
-            </button>
+            </motion.button>
           );
         })}
       </div>
-
-      {/* BOTÓN "SIGUIENTE" DESHABILITADO HASTA QUE SE RESPONDA */}
-      {!answered && (
-        <div className="text-center mt-6">
-          <Button 
-            variant="outline" 
-            disabled 
-            className="h-10 text-xs font-bold rounded-lg bg-slate-100 text-slate-400 cursor-not-allowed"
-          >
-            Siguiente (responde primero)
-          </Button>
-        </div>
-      )}
     </div>
   );
 }
