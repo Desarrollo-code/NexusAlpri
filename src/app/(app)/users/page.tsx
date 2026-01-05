@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import { UserManagementTable } from "@/components/users/user-management-table";
 import { useTitle } from "@/contexts/title-context";
