@@ -35,7 +35,8 @@ import {
     Mail,
     CheckCircle,
     XCircle,
-    Plus
+    Plus,
+    Settings2
 } from "lucide-react";
 import { UserEditModal } from "./user-edit-modal";
 import { Button } from "@/components/ui/button";
@@ -58,6 +59,23 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -266,6 +284,11 @@ export function UserManagementTable() {
     const [isBulkProcessModalOpen, setIsBulkProcessModalOpen] = useState(false);
     const [processes, setProcesses] = useState<any[]>([]);
 
+    // Filter states
+    const [selectedProcessId, setSelectedProcessId] = useState<string | null>(null);
+    const [selectedRole, setSelectedRole] = useState<string>("ALL");
+    const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
+
     const fetchData = async () => {
         setIsLoading(true);
         try {
@@ -275,6 +298,10 @@ export function UserManagementTable() {
                 pageSize: pagination.pageSize.toString(),
                 search: search,
             });
+
+            if (selectedRole !== "ALL") params.append('role', selectedRole);
+            if (selectedStatus !== "ALL") params.append('status', selectedStatus);
+            if (selectedProcessId) params.append('processId', selectedProcessId);
 
             const response = await fetch(`/api/users?${params.toString()}`);
             if (response.ok) {
@@ -303,7 +330,7 @@ export function UserManagementTable() {
 
     React.useEffect(() => {
         fetchData();
-    }, [pagination.pageIndex, pagination.pageSize, columnFilters, sorting]);
+    }, [pagination.pageIndex, pagination.pageSize, columnFilters, sorting, selectedProcessId, selectedRole, selectedStatus]);
 
     const handleEdit = (user: User) => {
         setEditingUser(user);
@@ -363,14 +390,13 @@ export function UserManagementTable() {
     return (
         <div className="flex gap-6 h-full items-start">
             <div className="flex-1 space-y-4 min-w-0">
-                {/* KPI CARDS */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                {/* COMPACT METRIC BAR */}
+                <div className="flex flex-wrap gap-4 mb-8 bg-slate-50/50 p-2 rounded-[2.5rem] border border-slate-100">
                     <StatCard
                         title="Usuarios Totales"
                         value={totalUsers}
                         icon={Users}
                         color="from-primary to-chart-3"
-                        textColor="text-white"
                         description="Crecimiento del 12% este mes"
                     />
                     <StatCard
@@ -378,7 +404,6 @@ export function UserManagementTable() {
                         value={data.filter(u => u.status === 'active').length}
                         icon={CheckCircle}
                         color="from-chart-2 to-emerald-400"
-                        textColor="text-white"
                         description="Usuarios con sesión iniciada"
                     />
                     <StatCard
@@ -386,7 +411,6 @@ export function UserManagementTable() {
                         value={data.filter(u => u.role === 'INSTRUCTOR').length}
                         icon={Briefcase}
                         color="from-chart-1 to-blue-400"
-                        textColor="text-white"
                         description="Personal docente verificado"
                     />
                     <StatCard
@@ -394,12 +418,11 @@ export function UserManagementTable() {
                         value={data.filter(u => u.status === 'pending').length}
                         icon={Mail}
                         color="from-chart-5 to-orange-400"
-                        textColor="text-white"
                         description="Esperando confirmación"
                     />
                 </div>
 
-                <div className="flex items-center justify-between py-4 bg-white p-4 rounded-2xl border shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-4 py-4 bg-white p-4 rounded-2xl border shadow-sm">
                     <div className="relative w-full max-w-sm">
                         <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                         <Input
@@ -411,7 +434,7 @@ export function UserManagementTable() {
                             className="pl-10 h-10 bg-slate-50 border-none rounded-xl"
                         />
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-3">
                         <div className="flex items-center bg-slate-100 p-1 rounded-xl border">
                             <Button
                                 variant={viewMode === "table" ? "ghost" : "ghost"}
@@ -431,10 +454,36 @@ export function UserManagementTable() {
                             </Button>
                         </div>
 
+                        {/* Roles Filter */}
+                        <Select value={selectedRole} onValueChange={(val) => { setSelectedRole(val); setPagination(prev => ({ ...prev, pageIndex: 0 })); }}>
+                            <SelectTrigger className="h-10 w-36 rounded-xl border-slate-200 bg-white font-bold text-xs shadow-sm">
+                                <SelectValue placeholder="Rol" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl font-inter">
+                                <SelectItem value="ALL">Todos los Roles</SelectItem>
+                                <SelectItem value="ADMINISTRATOR">Administradores</SelectItem>
+                                <SelectItem value="INSTRUCTOR">Instructores</SelectItem>
+                                <SelectItem value="STUDENT">Estudiantes</SelectItem>
+                            </SelectContent>
+                        </Select>
+
+                        {/* Status Filter */}
+                        <Select value={selectedStatus} onValueChange={(val) => { setSelectedStatus(val); setPagination(prev => ({ ...prev, pageIndex: 0 })); }}>
+                            <SelectTrigger className="h-10 w-36 rounded-xl border-slate-200 bg-white font-bold text-xs shadow-sm">
+                                <SelectValue placeholder="Estado" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl font-inter">
+                                <SelectItem value="ALL">Cualquier Estado</SelectItem>
+                                <SelectItem value="active">Activos</SelectItem>
+                                <SelectItem value="inactive">Inactivos</SelectItem>
+                                <SelectItem value="pending">Pendientes</SelectItem>
+                            </SelectContent>
+                        </Select>
+
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="rounded-xl border-slate-200">
-                                    <Filter className="mr-2 h-4 w-4" /> Columnas
+                                <Button variant="outline" className="rounded-xl border-slate-200 h-10 font-bold text-xs shadow-sm">
+                                    <Filter className="mr-2 h-4 w-4 text-primary" /> Columnas
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="rounded-xl p-2 w-48 font-inter">
@@ -496,7 +545,7 @@ export function UserManagementTable() {
                         </Table>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 pb-20">
                         {filteredData.map((user) => (
                             <UserCard key={user.id} user={user} onEdit={handleEdit} onDelete={handleDelete} />
                         ))}
@@ -560,7 +609,7 @@ export function UserManagementTable() {
                 />
             </div>
 
-            {/* ORGANIZATIONAL SIDEBAR - INDUSTRIAL REDESIGN */}
+            {/* ORGANIZATIONAL SIDEBAR */}
             <div className={`w-85 bg-white border border-slate-100 rounded-[2.5rem] p-8 transition-all duration-500 shadow-xl overflow-y-auto h-fit sticky top-8 ${isSidebarOpen ? '' : 'hidden lg:block'}`}>
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-3">
@@ -573,14 +622,20 @@ export function UserManagementTable() {
                         </div>
                     </div>
                     <Button variant="ghost" size="sm" className="h-10 w-10 p-0 rounded-xl hover:bg-slate-50 transition-all">
-                        <ChevronDown className="h-5 w-5 text-slate-400 group-hover:text-primary" />
+                        <ChevronDown className="h-5 w-5 text-slate-400" />
                     </Button>
                 </div>
 
                 <div className="space-y-1 relative">
-                    {/* Vertical guideline for the root */}
                     <div className="absolute left-6 top-4 bottom-4 w-px bg-slate-100" />
-                    <ProcessTree nodes={processes} />
+                    <ProcessTree
+                        nodes={processes}
+                        onSelect={(id) => {
+                            setSelectedProcessId(id);
+                            setPagination(prev => ({ ...prev, pageIndex: 0 }));
+                        }}
+                        selectedId={selectedProcessId}
+                    />
                 </div>
             </div>
 
@@ -606,27 +661,48 @@ function UserCard({ user, onEdit, onDelete }: { user: User, onEdit: (u: User) =>
     const processColor = user.process ? processColors[colorIndex] : "from-slate-400 to-slate-500";
 
     return (
-        <Card className="hover:shadow-2xl transition-all duration-500 border-none shadow-lg overflow-hidden rounded-[2rem] group relative bg-white font-inter">
-            {/* Top Pattern/Glow */}
-            <div className={`absolute top-0 left-0 right-0 h-2 bg-gradient-to-r ${processColor}`} />
+        <Card className="hover:shadow-xl transition-all duration-500 border border-slate-100 shadow-sm overflow-hidden rounded-3xl group relative bg-white font-inter">
+            <CardContent className="p-5">
+                <div className="flex items-center gap-5">
+                    {/* AVATAR LEFT */}
+                    <div className="relative shrink-0">
+                        <Avatar className="h-16 w-16 border-2 border-white shadow-md group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
+                            <AvatarImage src={(user as any).avatar} />
+                            <AvatarFallback className={`bg-gradient-to-br ${processColor} text-white font-black text-xl`}>
+                                {user.name.charAt(0)}
+                            </AvatarFallback>
+                        </Avatar>
+                        <div className={`absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full border-2 border-white shadow-sm ${user.status === 'active' ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+                    </div>
 
-            <CardContent className="p-0">
-                <div className="p-8">
-                    <div className="flex items-start justify-between mb-6">
-                        <div className="relative">
-                            <Avatar className="h-20 w-20 border-4 border-white shadow-xl group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
-                                <AvatarImage src={(user as any).avatar} />
-                                <AvatarFallback className={`bg-gradient-to-br ${processColor} text-white font-black text-2xl`}>
-                                    {user.name.charAt(0)}
-                                </AvatarFallback>
-                            </Avatar>
-                            <div className={`absolute -bottom-1 -right-1 h-6 w-6 rounded-full border-4 border-white shadow-sm ${user.status === 'active' ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+                    {/* NAME & EMAIL CENTER */}
+                    <div className="flex-1 min-w-0">
+                        <h4 className="font-black text-lg text-slate-800 tracking-tight group-hover:text-primary transition-colors line-clamp-1">
+                            {user.name}
+                        </h4>
+                        <p className="text-[11px] font-bold text-slate-400 truncate tracking-tight">{user.email}</p>
+
+                        <div className="mt-2 flex flex-wrap gap-2">
+                            <Badge className={`rounded-lg px-2 py-0.5 font-black text-[9px] uppercase tracking-wider border-none shadow-sm ${user.role === 'ADMINISTRATOR' ? 'bg-purple-100 text-purple-700' :
+                                user.role === 'INSTRUCTOR' ? 'bg-blue-100 text-blue-700' :
+                                    'bg-slate-100 text-slate-600'
+                                }`}>
+                                {user.role === 'ADMINISTRATOR' ? 'Admin' : user.role === 'INSTRUCTOR' ? 'Instructor' : 'Estudiante'}
+                            </Badge>
+                            {user.process && (
+                                <Badge variant="outline" className={`rounded-lg px-2 py-0.5 font-black text-[9px] uppercase tracking-wider border-slate-200 bg-slate-50 text-slate-500`}>
+                                    {user.process.name}
+                                </Badge>
+                            )}
                         </div>
+                    </div>
 
+                    {/* ACTIONS RIGHT */}
+                    <div className="flex flex-col gap-2 items-end">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="h-10 w-10 p-0 rounded-2xl hover:bg-slate-100 text-slate-400 hover:text-slate-900 transition-colors">
-                                    <MoreHorizontal className="h-6 w-6" />
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-900 transition-colors">
+                                    <MoreHorizontal className="h-5 w-5" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="rounded-2xl p-2 border-none shadow-2xl min-w-[180px] font-inter">
@@ -644,68 +720,56 @@ function UserCard({ user, onEdit, onDelete }: { user: User, onEdit: (u: User) =>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
-                    </div>
 
-                    <div className="space-y-2">
-                        <h4 className="font-black text-xl text-slate-800 tracking-tight group-hover:text-indigo-600 transition-colors line-clamp-1">{user.name}</h4>
-                        <div className="flex items-center gap-2 text-slate-400">
-                            <Mail className="h-3.5 w-3.5" />
-                            <p className="text-xs font-bold truncate">{user.email}</p>
-                        </div>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 rounded-lg bg-slate-50 border border-slate-100 text-slate-400 hover:text-primary hover:bg-primary/5 transition-all shadow-sm group-hover:border-primary/20"
+                            onClick={() => onEdit(user)}
+                            title="Gestionar"
+                        >
+                            <Settings2 className="h-4 w-4" />
+                        </Button>
                     </div>
-
-                    <div className="mt-8 flex flex-col gap-3">
-                        <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">Rol del Usuario</span>
-                            <Badge className={`rounded-xl px-4 py-1 font-black text-[10px] uppercase tracking-wider border-none shadow-sm ${user.role === 'ADMINISTRATOR' ? 'bg-purple-100 text-purple-700' :
-                                user.role === 'INSTRUCTOR' ? 'bg-blue-100 text-blue-700' :
-                                    'bg-slate-100 text-slate-600'
-                                }`}>
-                                {user.role === 'ADMINISTRATOR' ? 'Admin' : user.role === 'INSTRUCTOR' ? 'Instructor' : 'Estudiante'}
-                            </Badge>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">Departamento</span>
-                            {user.process ? (
-                                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r ${processColor} text-white shadow-lg`}>
-                                    <span className="text-[10px] font-black">{user.process.name}</span>
-                                </div>
-                            ) : (
-                                <span className="text-[10px] font-black text-slate-400 italic">No Asignado</span>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-slate-50/50 p-6 border-t border-slate-100 flex items-center justify-between transition-all group-hover:bg-indigo-600 group-hover:text-white group-hover:shadow-inner group-hover:rounded-b-[2rem]">
-                    <div className="flex flex-col">
-                        <span className="text-[9px] font-black uppercase tracking-widest opacity-60">Último Ingreso</span>
-                        <span className="text-xs font-bold leading-none mt-1">{user.lastLogin || 'Hoy'}</span>
-                    </div>
-                    <Button variant="ghost" size="sm" className="h-12 rounded-[1.25rem] px-6 font-black text-xs uppercase tracking-widest gap-2 bg-indigo-50 text-indigo-600 group-hover:bg-white group-hover:text-indigo-600 transition-all shadow-sm" onClick={() => onEdit(user)}>
-                        Gestionar <ChevronRight className="h-4 w-4" />
-                    </Button>
                 </div>
             </CardContent>
         </Card>
     );
 }
 
-function ProcessTree({ nodes, level = 0 }: { nodes: any[], level?: number }) {
+function ProcessTree({ nodes, level = 0, onSelect, selectedId }: { nodes: any[], level?: number, onSelect?: (id: string | null) => void, selectedId?: string | null }) {
     const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({ "root": true });
 
     if (!nodes || nodes.length === 0) return null;
 
-    const toggleNode = (id: string) => {
+    const toggleNode = (id: string, e: React.MouseEvent) => {
+        e.stopPropagation();
         setExpandedNodes(prev => ({ ...prev, [id]: !prev[id] }));
     };
 
     return (
         <div className="space-y-2 font-inter relative">
+            {level === 0 && (
+                <div
+                    onClick={() => onSelect?.(null)}
+                    className={`
+                        group flex items-center gap-3 p-3 rounded-[1.25rem] transition-all duration-300 cursor-pointer mb-4
+                        ${selectedId === null ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-slate-50 hover:bg-slate-100'}
+                    `}
+                >
+                    <div className={`h-6 w-6 rounded-lg flex items-center justify-center ${selectedId === null ? 'bg-white/20' : 'bg-white border text-primary'}`}>
+                        <Users className="h-3.5 w-3.5" />
+                    </div>
+                    <span className={`text-[11px] font-black uppercase tracking-widest ${selectedId === null ? 'text-white' : 'text-slate-500'}`}>
+                        Todos los Usuarios
+                    </span>
+                </div>
+            )}
+
             {nodes.map((node, index) => {
                 const isExpanded = expandedNodes[node.id] || level === 0;
                 const hasChildren = node.children && node.children.length > 0;
+                const isSelected = selectedId === node.id;
 
                 return (
                     <div key={node.id} className="relative">
@@ -715,38 +779,43 @@ function ProcessTree({ nodes, level = 0 }: { nodes: any[], level?: number }) {
                         )}
 
                         <div
-                            onClick={() => hasChildren && toggleNode(node.id)}
+                            onClick={() => onSelect?.(node.id)}
                             className={`
                                 group flex items-center gap-3 p-3 rounded-[1.25rem] transition-all duration-300 cursor-pointer
-                                ${level === 0 ? 'bg-slate-50/50 hover:bg-slate-50' : 'hover:bg-slate-50'}
-                                ${isExpanded && level === 0 ? 'ring-1 ring-slate-200' : ''}
+                                ${isSelected ? 'bg-primary/10 ring-2 ring-primary' : (level === 0 ? 'bg-slate-50/50 hover:bg-slate-50' : 'hover:bg-slate-50')}
                             `}
                         >
                             <div className="relative">
                                 {hasChildren ? (
-                                    <div className={`
-                                        h-6 w-6 rounded-lg flex items-center justify-center transition-all duration-500
-                                        ${isExpanded ? 'bg-primary text-white rotate-180' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200'}
-                                    `}>
-                                        <ChevronDown className="h-3.5 w-3.5" />
+                                    <div
+                                        onClick={(e) => toggleNode(node.id, e)}
+                                        className={`
+                                            h-7 w-7 rounded-lg flex items-center justify-center transition-all duration-500
+                                            ${isExpanded ? 'bg-primary text-white rotate-180' : 'bg-white border text-slate-400 group-hover:border-primary group-hover:text-primary'}
+                                        `}
+                                    >
+                                        <ChevronDown className="h-4 w-4" />
                                     </div>
                                 ) : (
-                                    <div className="h-6 w-6 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center">
-                                        <div className="h-1.5 w-1.5 rounded-full bg-slate-300" />
+                                    <div className="h-7 w-7 rounded-lg bg-white border border-slate-100 flex items-center justify-center">
+                                        <div className={`h-2 w-2 rounded-full ${isSelected ? 'bg-primary animate-pulse' : 'bg-slate-200'}`} />
                                     </div>
                                 )}
                             </div>
 
                             <span className={`
                                 text-sm tracking-tight transition-colors duration-300
-                                ${level === 0 ? 'font-black uppercase text-[11px] tracking-[0.1em] text-slate-500' : 'font-bold text-slate-700 group-hover:text-primary'}
+                                ${isSelected ? 'font-black text-primary' : (level === 0 ? 'font-black uppercase text-[11px] tracking-[0.1em] text-slate-500' : 'font-bold text-slate-700 group-hover:text-primary')}
                             `}>
                                 {node.name}
                             </span>
 
                             {node.users && (
                                 <div className="ml-auto">
-                                    <span className="bg-slate-50 text-slate-400 text-[9px] font-black h-5 min-w-[20px] px-1.5 flex items-center justify-center rounded-full border border-slate-100 group-hover:border-primary/30 group-hover:text-primary transition-all shadow-sm">
+                                    <span className={`
+                                        text-[11px] font-black h-7 min-w-[28px] px-2 flex items-center justify-center rounded-full border transition-all shadow-sm
+                                        ${isSelected ? 'bg-primary text-white border-primary' : 'bg-white text-primary border-primary/20 group-hover:bg-primary group-hover:text-white'}
+                                    `}>
                                         {node.users.length}
                                     </span>
                                 </div>
@@ -755,7 +824,7 @@ function ProcessTree({ nodes, level = 0 }: { nodes: any[], level?: number }) {
 
                         {/* Recursive Children with motion/animation */}
                         <AnimatePresence>
-                            {isExpanded && hasChildren && (
+                            {(isExpanded || level === 0) && hasChildren && (
                                 <motion.div
                                     initial={{ height: 0, opacity: 0 }}
                                     animate={{ height: "auto", opacity: 1 }}
@@ -763,7 +832,7 @@ function ProcessTree({ nodes, level = 0 }: { nodes: any[], level?: number }) {
                                     className="ml-6 border-l border-slate-100 overflow-hidden"
                                 >
                                     <div className="pt-2 pb-1">
-                                        <ProcessTree nodes={node.children} level={level + 1} />
+                                        <ProcessTree nodes={node.children} level={level + 1} onSelect={onSelect} selectedId={selectedId} />
                                     </div>
                                 </motion.div>
                             )}
@@ -780,53 +849,37 @@ function StatCard({
     value,
     icon: Icon,
     color,
-    textColor,
     description
 }: {
     title: string,
     value: number,
     icon: any,
     color: string,
-    textColor: string,
     description?: string
 }) {
     return (
-        <Card className="overflow-hidden border-none shadow-xl hover:shadow-2xl transition-all duration-500 rounded-[2rem] group relative">
-            {/* Background Gradient Layer */}
-            <div className={`absolute inset-0 bg-gradient-to-br ${color} opacity-[0.03] group-hover:opacity-[0.07] transition-opacity`} />
+        <div className="flex items-center gap-3 px-6 py-4 bg-white border border-slate-100 rounded-3xl shadow-sm hover:shadow-md transition-all group min-w-[200px] flex-1">
+            <div className={`h-10 w-10 shrink-0 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-500`}>
+                <Icon className="h-5 w-5 text-white" />
+            </div>
 
-            <CardContent className="p-8 relative z-10">
-                <div className="flex items-start justify-between">
-                    <div className="space-y-4">
-                        <div className="flex flex-col">
-                            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-primary transition-colors">
-                                {title}
-                            </span>
-                            <span className="text-4xl font-black text-slate-900 tracking-tighter mt-1 group-hover:scale-105 origin-left transition-transform duration-500">
-                                {value}
-                            </span>
-                        </div>
-                        {description && (
-                            <div className="flex items-center gap-1.5 pt-2">
-                                <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                                <span className="text-[10px] font-bold text-slate-400">{description}</span>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className={`h-16 w-16 rounded-[1.25rem] bg-gradient-to-br ${color} flex items-center justify-center shadow-lg group-hover:rotate-12 group-hover:scale-110 transition-all duration-500 shadow-primary/20`}>
-                        <Icon className={`h-8 w-8 text-white`} />
-                    </div>
+            <div className="flex flex-col min-w-0">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-primary transition-colors truncate">
+                    {title}
+                </span>
+                <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-black text-slate-900 tracking-tighter">
+                        {value}
+                    </span>
+                    {description && (
+                        <span className="text-[9px] font-bold text-slate-300 truncate hidden xl:block">{description.split(' ')[0]}</span>
+                    )}
                 </div>
-            </CardContent>
-
-            {/* Bottom Glow Effect */}
-            <div className={`absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r ${color} opacity-0 group-hover:opacity-100 transition-opacity`} />
-        </Card>
+            </div>
+        </div>
     );
 }
 
-import { motion, AnimatePresence } from "framer-motion";
 
 function BulkActionsBar({ count, onAssignProcess, onClear }: { count: number, onAssignProcess: () => void, onClear: () => void }) {
     return (
@@ -870,9 +923,6 @@ function BulkActionsBar({ count, onAssignProcess, onClear }: { count: number, on
     );
 }
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 
 function BulkProcessAssignModal({ isOpen, onClose, onAssign, processes }: { isOpen: boolean, onClose: () => void, onAssign: (id: string | null) => void, processes: any[] }) {
     const [selectedProcessId, setSelectedProcessId] = useState<string>("unassigned");
