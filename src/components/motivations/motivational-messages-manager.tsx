@@ -10,14 +10,14 @@ import { Loader2, AlertTriangle, PlusCircle, Sparkles, Edit, Trash2 } from 'luci
 import Image from 'next/image';
 import { MotivationEditorModal } from './motivation-editor-modal';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from '@/lib/utils';
 import { getMotivationalTriggerLabel } from '@/lib/utils';
@@ -27,62 +27,88 @@ import { Skeleton } from '../ui/skeleton';
 const MotivationCardSkeleton = () => (
     <Card className="flex flex-col">
         <CardHeader className="p-4">
-            <Skeleton className="h-5 w-3/4"/>
-            <Skeleton className="h-4 w-1/2"/>
+            <Skeleton className="h-5 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
         </CardHeader>
         <CardContent className="flex-grow flex items-center justify-center bg-muted">
-            <Skeleton className="w-full aspect-video"/>
+            <Skeleton className="w-full aspect-video" />
         </CardContent>
-         <CardFooter className="p-2 border-t flex justify-end gap-2">
-            <Skeleton className="h-9 w-24"/>
-            <Skeleton className="h-9 w-24"/>
-         </CardFooter>
+        <CardFooter className="p-2 border-t flex justify-end gap-2">
+            <Skeleton className="h-9 w-24" />
+            <Skeleton className="h-9 w-24" />
+        </CardFooter>
     </Card>
 );
 
+interface MotivationalMessagesManagerProps {
+    isEditorOpen: boolean;
+    onOpenEditor: (message?: MotivationalMessage | null) => void;
+    onCloseEditor: () => void;
+    editingMessage: MotivationalMessage | null;
+    onSave: () => void;
+    refreshTrigger: number;
+}
+
 const MotivationCard = ({ message, onEdit, onDelete }: { message: MotivationalMessage & { triggerCourse?: { title: string } | null }, onEdit: (m: MotivationalMessage) => void, onDelete: (m: MotivationalMessage) => void }) => {
     return (
-        <Card className="flex flex-col h-full overflow-hidden group card-border-animated">
-            <CardHeader className="p-4">
-                <CardTitle className="text-base font-bold truncate">{message.title}</CardTitle>
-                <CardDescription className="text-xs truncate">
-                    {getMotivationalTriggerLabel(message.triggerType, message.triggerCourse)}
-                </CardDescription>
+        <Card className="flex flex-col h-full overflow-hidden group hover:shadow-xl transition-all duration-300 border-border/60 hover:border-primary/50 bg-white/50 dark:bg-black/20 backdrop-blur-sm">
+            <CardHeader className="p-4 bg-muted/20 border-b border-border/50">
+                <div className="flex items-start justify-between gap-2">
+                    <div className="space-y-1">
+                        <CardTitle className="text-base font-bold truncate pr-2" title={message.title}>{message.title}</CardTitle>
+                        <CardDescription className="text-xs truncate flex items-center gap-1">
+                            <Sparkles className="h-3 w-3 text-primary/70" />
+                            {getMotivationalTriggerLabel(message.triggerType, message.triggerCourse)}
+                        </CardDescription>
+                    </div>
+                </div>
             </CardHeader>
-            <CardContent className="p-0 flex-grow flex items-center justify-center bg-muted/30">
-                 {message.imageUrl ? (
-                    <div className="relative w-full aspect-video">
-                        <Image src={message.imageUrl} alt={message.title} fill className="object-contain" />
+            <CardContent className="p-0 flex-grow flex items-center justify-center bg-muted/10 relative overflow-hidden">
+                {message.imageUrl ? (
+                    <div className="relative w-full aspect-video group-hover:scale-105 transition-transform duration-500">
+                        <Image src={message.imageUrl} alt={message.title} fill className="object-cover" />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                     </div>
                 ) : (
-                    <div className="text-center text-muted-foreground p-4">
-                        <Sparkles className="mx-auto h-8 w-8" />
-                        <p className="text-sm mt-2">Mensaje de texto</p>
+                    <div className="text-center text-muted-foreground p-8 flex flex-col items-center">
+                        <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/20 transition-colors">
+                            <Sparkles className="h-6 w-6 text-primary" />
+                        </div>
+                        <p className="text-sm font-medium">Solo Texto</p>
                     </div>
                 )}
             </CardContent>
-             <CardFooter className="p-2 border-t bg-card flex justify-end gap-2">
-                <Button variant="outline" size="sm" onClick={() => onEdit(message)}><Edit className="mr-2 h-4 w-4"/>Editar</Button>
-                <Button variant="destructive" size="sm" onClick={() => onDelete(message)}><Trash2 className="mr-2 h-4 w-4"/>Eliminar</Button>
-             </CardFooter>
+            <CardFooter className="p-3 border-t bg-card/50 flex justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-primary" onClick={() => onEdit(message)} title="Editar">
+                    <Edit className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive" onClick={() => onDelete(message)} title="Eliminar">
+                    <Trash2 className="h-4 w-4" />
+                </Button>
+            </CardFooter>
         </Card>
     )
 }
 
-export function MotivationalMessagesManager() {
+export function MotivationalMessagesManager({
+    isEditorOpen,
+    onOpenEditor,
+    onCloseEditor,
+    editingMessage,
+    onSave,
+    refreshTrigger
+}: MotivationalMessagesManagerProps) {
     const { user, settings } = useAuth();
     const { toast } = useToast();
     const [messages, setMessages] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const [isEditorOpen, setIsEditorOpen] = useState(false);
-    const [editingMessage, setEditingMessage] = useState<MotivationalMessage | null>(null);
     const [deletingMessage, setDeletingMessage] = useState<MotivationalMessage | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
 
-    const fetchMessages = useCallback(async (isMountedRef: { current: boolean }) => {
+    const fetchMessages = useCallback(async (isMountedRef?: { current: boolean }) => {
         setIsLoading(true);
         setError(null);
         try {
@@ -92,17 +118,17 @@ export function MotivationalMessagesManager() {
                 throw new Error(errorData.message);
             }
             const data = await response.json();
-            if (isMountedRef.current) {
+            if (!isMountedRef || isMountedRef.current) {
                 setMessages(Array.isArray(data) ? data : []);
             }
         } catch (err) {
-            if(isMountedRef.current) {
+            if (!isMountedRef || isMountedRef.current) {
                 const errorMessage = err instanceof Error ? err.message : 'Ocurrió un error desconocido';
                 setError(errorMessage);
                 setMessages([]);
             }
         } finally {
-            if (isMountedRef.current) {
+            if (!isMountedRef || isMountedRef.current) {
                 setIsLoading(false);
             }
         }
@@ -115,19 +141,9 @@ export function MotivationalMessagesManager() {
             fetchMessages(isMountedRef);
         }
         return () => { isMountedRef.current = false };
-    }, [user, fetchMessages]);
+    }, [user, fetchMessages, refreshTrigger]);
 
-    const handleOpenEditor = (message: MotivationalMessage | null = null) => {
-        setEditingMessage(message);
-        setIsEditorOpen(true);
-    };
 
-    const handleSaveChanges = () => {
-        const isMountedRef = { current: true };
-        fetchMessages(isMountedRef);
-        setIsEditorOpen(false);
-    }
-    
     const handleDeleteConfirm = async () => {
         if (!deletingMessage) return;
         setIsDeleting(true);
@@ -140,10 +156,9 @@ export function MotivationalMessagesManager() {
                 throw new Error(errorData.message || 'No se pudo eliminar el mensaje.');
             }
             toast({ title: "Mensaje Eliminado", description: `El mensaje "${deletingMessage.title}" ha sido eliminado.` });
-            const isMountedRef = { current: true };
-            fetchMessages(isMountedRef);
+            fetchMessages();
         } catch (err) {
-             toast({ title: 'Error al Eliminar', description: (err as Error).message, variant: 'destructive' });
+            toast({ title: 'Error al Eliminar', description: (err as Error).message, variant: 'destructive' });
         } finally {
             setIsDeleting(false);
             setDeletingMessage(null);
@@ -153,12 +168,9 @@ export function MotivationalMessagesManager() {
     if (isLoading) {
         return (
             <div className="space-y-6">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div className="space-y-1">
-                        <Skeleton className="h-8 w-80" />
-                        <Skeleton className="h-5 w-96" />
-                    </div>
-                    <Skeleton className="h-10 w-48" />
+                <div className="space-y-1">
+                    <Skeleton className="h-8 w-80" />
+                    <Skeleton className="h-5 w-96" />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {[...Array(4)].map((_, i) => <MotivationCardSkeleton key={i} />)}
@@ -172,22 +184,15 @@ export function MotivationalMessagesManager() {
     }
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4" id="motivations-header">
-                <div className="space-y-1">
-                    <h1 className="text-2xl font-semibold">Gestionar Mensajes de Motivación</h1>
-                    <p className="text-muted-foreground">Crea y personaliza las ventanas emergentes de felicitación para tus usuarios.</p>
-                </div>
-                <Button onClick={() => handleOpenEditor()}>
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Crear Nuevo Mensaje
-                </Button>
+        <div className="space-y-8 animate-in fade-in duration-500">
+            <div className="flex flex-col gap-2 " id="motivations-header">
+                <p className="text-muted-foreground text-lg">Crea y personaliza las ventanas emergentes de felicitación para tus usuarios.</p>
             </div>
 
             {Array.isArray(messages) && messages.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="motivations-list">
                     {messages.map(msg => (
-                        <MotivationCard key={msg.id} message={msg} onEdit={handleOpenEditor} onDelete={setDeletingMessage}/>
+                        <MotivationCard key={msg.id} message={msg} onEdit={onOpenEditor} onDelete={setDeletingMessage} />
                     ))}
                 </div>
             ) : (
@@ -197,7 +202,7 @@ export function MotivationalMessagesManager() {
                     description="Aún no has creado ningún mensaje. ¡Crea el primero para celebrar los logros de tus estudiantes!"
                     imageUrl={settings?.emptyStateMotivationsUrl}
                     actionButton={
-                         <Button onClick={() => handleOpenEditor()}>
+                        <Button onClick={() => onOpenEditor(null)}>
                             <PlusCircle className="mr-2 h-4 w-4" />
                             Crear Mi Primer Mensaje
                         </Button>
@@ -206,15 +211,15 @@ export function MotivationalMessagesManager() {
             )}
 
             {isEditorOpen && (
-                <MotivationEditorModal 
+                <MotivationEditorModal
                     isOpen={isEditorOpen}
-                    onClose={() => setIsEditorOpen(false)}
+                    onClose={onCloseEditor}
                     message={editingMessage}
-                    onSave={handleSaveChanges}
+                    onSave={onSave}
                 />
             )}
 
-             <AlertDialog open={!!deletingMessage} onOpenChange={(open) => !open && setDeletingMessage(null)}>
+            <AlertDialog open={!!deletingMessage} onOpenChange={(open) => !open && setDeletingMessage(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
@@ -225,7 +230,7 @@ export function MotivationalMessagesManager() {
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
                         <AlertDialogAction onClick={handleDeleteConfirm} disabled={isDeleting} className={cn(buttonVariants({ variant: "destructive" }))}>
-                            {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Trash2 className="mr-2 h-4 w-4"/>}
+                            {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
                             Sí, eliminar
                         </AlertDialogAction>
                     </AlertDialogFooter>

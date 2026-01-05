@@ -39,12 +39,46 @@ export function EventCreatorModal({ open, onOpenChange }: EventCreatorModalProps
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        const formData = new FormData(e.currentTarget as HTMLFormElement);
+        const title = formData.get('title') as string;
+        const time = formData.get('time') as string;
+        const description = formData.get('description') as string;
+        const categoryId = formData.get('category') as string;
+        const allDay = formData.get('allDay') === 'on';
+
+        if (!date || !title) return;
+
+        const start = new Date(date);
+        const [hours, minutes] = time.split(':').map(Number);
+        start.setHours(hours, minutes);
+
+        const end = new Date(start);
+        end.setHours(start.getHours() + 1);
+
         setIsLoading(true);
-        // Simulate API call
-        setTimeout(() => {
+        try {
+            const response = await fetch('/api/events', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title,
+                    description,
+                    start,
+                    end,
+                    allDay,
+                    audienceType: categoryId === "1" ? "ALL" : categoryId === "2" ? "ADMINISTRATOR" : categoryId === "3" ? "INSTRUCTOR" : "STUDENT",
+                    color: categoryId === "1" ? "#3b82f6" : categoryId === "2" ? "#ef4444" : categoryId === "3" ? "#10b981" : "#8b5cf6"
+                }),
+            });
+            if (response.ok) {
+                onOpenChange(false);
+                window.location.reload();
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
             setIsLoading(false);
-            onOpenChange(false);
-        }, 1000);
+        }
     };
 
     return (
@@ -59,7 +93,7 @@ export function EventCreatorModal({ open, onOpenChange }: EventCreatorModalProps
                 <form onSubmit={handleSubmit} className="space-y-4 py-4">
                     <div className="space-y-2">
                         <Label htmlFor="title">Título del Evento</Label>
-                        <Input id="title" placeholder="Ej. Reunión de Estrategia" required />
+                        <Input id="title" name="title" placeholder="Ej. Reunión de Estrategia" required />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -90,31 +124,31 @@ export function EventCreatorModal({ open, onOpenChange }: EventCreatorModalProps
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="time">Hora</Label>
-                            <Input id="time" type="time" defaultValue="09:00" />
+                            <Input id="time" name="time" type="time" defaultValue="09:00" />
                         </div>
                     </div>
 
                     <div className="space-y-2">
                         <Label htmlFor="category">Categoría</Label>
-                        <Select defaultValue="1">
+                        <Select defaultValue="1" name="category">
                             <SelectTrigger>
                                 <SelectValue placeholder="Seleccionar categoría" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="1">Reunión de Equipo</SelectItem>
-                                <SelectItem value="2">Fecha Límite</SelectItem>
-                                <SelectItem value="3">Evento Corporativo</SelectItem>
-                                <SelectItem value="4">Formación</SelectItem>
+                                <SelectItem value="1">General (Todos)</SelectItem>
+                                <SelectItem value="2">Administración</SelectItem>
+                                <SelectItem value="3">Instructores</SelectItem>
+                                <SelectItem value="4">Estudiantes</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
 
                     <div className="space-y-2">
                         <Label htmlFor="description">Descripción</Label>
-                        <Textarea id="description" placeholder="Detalles adicionales del evento..." />
+                        <Textarea id="description" name="description" placeholder="Detalles adicionales del evento..." />
                     </div>
                     <div className="flex items-center space-x-2">
-                        <Checkbox id="all-day" />
+                        <Checkbox id="all-day" name="allDay" />
                         <Label htmlFor="all-day" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Todo el día</Label>
                     </div>
 

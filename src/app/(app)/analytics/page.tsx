@@ -196,7 +196,75 @@ function AdminAnalyticsPage() {
         return () => setHeaderActions(null);
     }, [setPageTitle, startTour, setHeaderActions, date, forceStartTour]); // Added dependencies
 
-    // ... (rest of fetchStats) ...
+    const fetchStats = useCallback(async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const queryParams = new URLSearchParams();
+            if (date?.from) queryParams.append('from', date.from.toISOString());
+            if (date?.to) queryParams.append('to', date.to.toISOString());
+
+            const response = await fetch(`/api/dashboard/data?${queryParams.toString()}`);
+            if (!response.ok) throw new Error('Failed to fetch stats');
+            const data: AdminDashboardStats = await response.json();
+            setStats(data);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An error occurred');
+        } finally {
+            setIsLoading(false);
+        }
+    }, [date]);
+
+    useEffect(() => {
+        if (user?.role === 'ADMINISTRATOR') {
+            fetchStats();
+        }
+    }, [user, fetchStats]);
+
+
+    const combinedTrendData = useMemo(() => {
+        if (!stats) return [];
+
+        const trendMap = new Map<string, any>();
+
+        // Safely handle arrays if undefined
+        (stats.userRegistrationTrend || []).forEach(item => {
+            const date = item.date;
+            if (!trendMap.has(date)) trendMap.set(date, { date, count: 0, newEnrollments: 0, newCourses: 0 });
+            trendMap.get(date).count = item.count;
+        });
+
+        (stats.contentActivityTrend || []).forEach(item => {
+            const date = item.date;
+            if (!trendMap.has(date)) trendMap.set(date, { date, count: 0, newEnrollments: 0, newCourses: 0 });
+            const entry = trendMap.get(date);
+            entry.newEnrollments = item.newEnrollments;
+            entry.newCourses = item.newCourses;
+        });
+
+        return Array.from(trendMap.values()).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    }, [stats]);
+
+    const userRolesChartData = useMemo(() => {
+        if (!stats) return [];
+        const getCount = (role: string) => stats.usersByRole?.find(r => r.role === role)?.count || 0;
+        return [
+            { role: 'STUDENT', count: getCount('STUDENT'), fill: "hsl(var(--chart-1))" },
+            { role: 'INSTRUCTOR', count: getCount('INSTRUCTOR'), fill: "hsl(var(--chart-2))" },
+            { role: 'ADMINISTRATOR', count: getCount('ADMINISTRATOR'), fill: "hsl(var(--chart-3))" },
+        ];
+    }, [stats]);
+
+
+    const courseStatusChartData = useMemo(() => {
+        if (!stats) return [];
+        const getCount = (status: string) => stats.coursesByStatus?.find(s => s.status === status)?.count || 0;
+        return [
+            { status: 'PUBLISHED', count: getCount('PUBLISHED'), fill: "hsl(var(--chart-1))" },
+            { status: 'DRAFT', count: getCount('DRAFT'), fill: "hsl(var(--chart-4))" },
+            { status: 'ARCHIVED', count: getCount('ARCHIVED'), fill: "hsl(var(--chart-5))" },
+        ]
+    }, [stats]);
 
     return (
         <motion.div
@@ -304,7 +372,7 @@ function AdminAnalyticsPage() {
                     <p className="text-muted-foreground mb-6">NexusAlpri está impulsando el aprendizaje corporativo con métricas sólidas y crecimiento constante.</p>
                     <div className="flex gap-4">
                         <div className="space-y-1">
-                            <p className="text-3xl font-bold text-primary">+{combinedTrendData.reduce((acc, curr) => acc + curr.count, 0)}</p>
+                            <p className="text-3xl font-bold text-primary">+{combinedTrendData.reduce((acc: number, curr: any) => acc + (curr.count || 0), 0)}</p>
                             <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground leading-tight">Nuevos Usuarios<br />este mes</p>
                         </div>
                         <Separator orientation="vertical" className="h-12" />

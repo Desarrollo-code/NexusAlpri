@@ -36,26 +36,49 @@ type Form = {
     id: string;
     title: string;
     description: string;
-    status: "published" | "draft" | "archived";
+    status: "PUBLISHED" | "DRAFT" | "ARCHIVED";
     responses: number;
     lastUpdated: Date;
     author: string;
 };
 
-const MOCK_FORMS: Form[] = [
-    { id: "1", title: "Encuesta de Satisfacción 2024", description: "Evaluación anual del clima laboral.", status: "published", responses: 142, lastUpdated: new Date(), author: "Ana García" },
-    { id: "2", title: "Evaluación de Curso: React", description: "Feedback sobre el curso de React Avanzado.", status: "published", responses: 89, lastUpdated: new Date(Date.now() - 86400000), author: "Carlos Perez" },
-    { id: "3", title: "Registro de Evento de Fin de Año", description: "Formulario de inscripción para la fiesta.", status: "draft", responses: 0, lastUpdated: new Date(Date.now() - 172800000), author: "Ana García" },
-    { id: "4", title: "Quiz: Seguridad Industrial", description: "Evaluación rápida de conocimientos.", status: "archived", responses: 310, lastUpdated: new Date(Date.now() - 604800000), author: "Admin" },
-];
-
 export default function ModernFormsDashboard() {
     const router = useRouter();
     const [filter, setFilter] = useState("all");
     const [search, setSearch] = useState("");
+    const [forms, setForms] = useState<Form[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const filteredForms = MOCK_FORMS.filter(f => {
-        if (filter !== "all" && f.status !== filter) return false;
+    React.useEffect(() => {
+        const fetchForms = async () => {
+            setIsLoading(true);
+            try {
+                // Map filter to API expected 'tab' or query param. 
+                // The API supports: my-forms, shared-with-me, all, for-student.
+                // The UI filter has: all, published, draft, archived. 
+                // We might need to adjust the API or the UI to match better, or filter client side.
+                // For now, let's fetch 'all' (if admin) or 'my-forms' and then client-side filter for status?
+                // The API /api/forms?tab=all checks for ADMIN role.
+                // Let's assume we want to see 'my-forms' by default if not admin, or 'all' if admin.
+                // Simplest: Fetch 'my-forms' as default context for a dashboard.
+                const response = await fetch(`/api/forms?tab=my-forms`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setForms(data.forms || []);
+                }
+            } catch (error) {
+                console.error("Failed to fetch forms", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchForms();
+    }, []);
+
+    const filteredForms = forms.filter(f => {
+        if (filter === "published" && f.status !== "PUBLISHED") return false;
+        if (filter === "draft" && f.status !== "DRAFT") return false;
+        if (filter === "archived" && f.status !== "ARCHIVED") return false;
         if (search && !f.title.toLowerCase().includes(search.toLowerCase())) return false;
         return true;
     });
@@ -64,10 +87,10 @@ export default function ModernFormsDashboard() {
         <div className="space-y-8">
             {/* HEDAER & KPI */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <KPICard title="Total Formularios" value={MOCK_FORMS.length} icon={FileText} />
-                <KPICard title="Activos" value={MOCK_FORMS.filter(f => f.status === 'published').length} icon={CheckCircle2} color="text-green-500" />
-                <KPICard title="Respuestas Totales" value={541} icon={Users} color="text-blue-500" />
-                <KPICard title="Borradores" value={MOCK_FORMS.filter(f => f.status === 'draft').length} icon={Clock} color="text-amber-500" />
+                <KPICard title="Total Formularios" value={forms.length} icon={FileText} />
+                <KPICard title="Activos" value={forms.filter(f => f.status === 'PUBLISHED').length} icon={CheckCircle2} color="text-green-500" />
+                <KPICard title="Respuestas Totales" value={forms.reduce((acc, curr) => acc + (curr.responses || 0), 0)} icon={Users} color="text-blue-500" />
+                <KPICard title="Borradores" value={forms.filter(f => f.status === 'DRAFT').length} icon={Clock} color="text-amber-500" />
             </div>
 
             {/* CONTROLS */}
@@ -104,9 +127,17 @@ export default function ModernFormsDashboard() {
 
             {/* GRID */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredForms.map((form) => (
-                    <ModernFormCard key={form.id} form={form} />
-                ))}
+                {isLoading ? (
+                    [1, 2, 3].map(i => <div key={i} className="h-48 bg-muted/20 animate-pulse rounded-xl" />)
+                ) : filteredForms.length > 0 ? (
+                    filteredForms.map((form) => (
+                        <ModernFormCard key={form.id} form={form} />
+                    ))
+                ) : (
+                    <div className="col-span-full py-12 text-center text-muted-foreground">
+                        No se encontraron formularios.
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -114,17 +145,17 @@ export default function ModernFormsDashboard() {
 
 function ModernFormCard({ form }: { form: Form }) {
     const statusColors = {
-        published: "bg-green-100 text-green-700 border-green-200",
-        draft: "bg-amber-100 text-amber-700 border-amber-200",
-        archived: "bg-slate-100 text-slate-700 border-slate-200",
+        PUBLISHED: "bg-green-100 text-green-700 border-green-200",
+        DRAFT: "bg-amber-100 text-amber-700 border-amber-200",
+        ARCHIVED: "bg-slate-100 text-slate-700 border-slate-200",
     };
 
     return (
         <Card className="group hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary/0 hover:border-l-primary">
             <CardHeader className="pb-2">
                 <div className="flex justify-between items-start mb-2">
-                    <Badge variant="outline" className={`capitalize ${statusColors[form.status]}`}>
-                        {form.status === 'published' ? 'Publicado' : form.status === 'draft' ? 'Borrador' : 'Archivado'}
+                    <Badge variant="outline" className={`capitalize ${statusColors[form.status] || statusColors.DRAFT}`}>
+                        {form.status === 'PUBLISHED' ? 'Publicado' : form.status === 'DRAFT' ? 'Borrador' : 'Archivado'}
                     </Badge>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -136,7 +167,22 @@ function ModernFormCard({ form }: { form: Form }) {
                             <DropdownMenuItem><FileText className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>
                             <DropdownMenuItem><Share2 className="mr-2 h-4 w-4" /> Compartir</DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem>
+                            <DropdownMenuItem
+                                className="text-red-600 focus:text-red-600"
+                                onClick={async () => {
+                                    if (confirm(`¿Estás seguro de que deseas eliminar el formulario "${form.title}"?`)) {
+                                        try {
+                                            const res = await fetch(`/api/forms/${form.id}`, { method: 'DELETE' });
+                                            if (res.ok) window.location.reload();
+                                            else alert("Error al eliminar el formulario");
+                                        } catch (e) {
+                                            console.error(e);
+                                        }
+                                    }
+                                }}
+                            >
+                                <Trash2 className="mr-2 h-4 w-4" /> Eliminar
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
@@ -155,7 +201,7 @@ function ModernFormCard({ form }: { form: Form }) {
                     </div>
                     <div className="flex items-center gap-1">
                         <Clock className="h-4 w-4" />
-                        <span>Actualizado {format(form.lastUpdated, "d MMM", { locale: es })}</span>
+                        <span>Actualizado {format(new Date(form.lastUpdated), "d MMM", { locale: es })}</span>
                     </div>
                 </div>
             </CardContent>

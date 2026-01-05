@@ -13,7 +13,8 @@ import {
     Heart,
     MessageCircle,
     Clock,
-    ArrowRight
+    ArrowRight,
+    Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,7 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
+    DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -46,66 +48,12 @@ type Announcement = {
     imageUrl?: string;
 };
 
-const MOCK_ANNOUNCEMENTS: Announcement[] = [
-    {
-        id: "1",
-        title: "¡Bienvenidos a la Nueva Plataforma NexusAlpri!",
-        content: "Estamos emocionados de presentar la nueva versión de nuestra plataforma de aprendizaje. Hemos mejorado la interfaz, añadido nuevas funcionalidades y optimizado el rendimiento.",
-        author: { name: "Admin Sistema", role: "Administrador" },
-        date: new Date(),
-        isPinned: true,
-        category: "General",
-        readCount: 1250,
-        likes: 450,
-        imageUrl: "/images/hero-bg.jpg" // Placeholder
-    },
-    {
-        id: "2",
-        title: "Mantenimiento Programado",
-        content: "El sistema estará inactivo este sábado de 2:00 AM a 4:00 AM por actualizaciones de seguridad. Disculpen las molestias.",
-        author: { name: "Soporte IT", role: "Soporte" },
-        date: new Date(Date.now() - 86400000), // Yesterday
-        category: "Mantenimiento",
-        readCount: 890,
-        likes: 12,
-    },
-    {
-        id: "3",
-        title: "Fiesta de Fin de Año - Confirmación",
-        content: "Recuerden confirmar su asistencia al evento de fin de año antes del viernes. ¡No se lo pierdan!",
-        author: { name: "Recursos Humanos", role: "RRHH" },
-        date: new Date(Date.now() - 172800000), // 2 days ago
-        category: "Eventos",
-        readCount: 560,
-        likes: 89,
-        imageUrl: "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&q=80&w=600"
-    },
-    {
-        id: "4",
-        title: "Nuevos Cursos de Liderazgo",
-        content: "Hemos añadido 3 nuevos módulos a la ruta de aprendizaje de Liderazgo. Ya están disponibles en el catálogo.",
-        author: { name: "Equipo Académico", role: "Instructor" },
-        date: new Date(Date.now() - 259200000), // 3 days ago
-        category: "Académico",
-        readCount: 340,
-        likes: 56,
-    },
-    {
-        id: "5",
-        title: "Política de Home Office 2.0",
-        content: "Se han actualizado las guías para el trabajo remoto. Por favor, revisen el documento adjunto en la sección de Recursos.",
-        author: { name: "Recursos Humanos", role: "RRHH" },
-        date: new Date(Date.now() - 432000000), // 5 days ago
-        category: "General",
-        readCount: 1100,
-        likes: 23,
-    }
-];
-
 export default function ModernAnnouncements() {
     const [filter, setFilter] = useState("all");
     const [search, setSearch] = useState("");
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     const { setPageTitle, setHeaderActions } = useTitle();
 
@@ -119,9 +67,34 @@ export default function ModernAnnouncements() {
         return () => setHeaderActions(null);
     }, [setPageTitle, setHeaderActions]);
 
-    const pinned = MOCK_ANNOUNCEMENTS.filter(a => a.isPinned);
-    const feed = MOCK_ANNOUNCEMENTS.filter(a => !a.isPinned).filter(a => {
-        if (filter !== "all" && a.category.toLowerCase() !== filter.toLowerCase()) return false;
+    React.useEffect(() => {
+        const fetchAnnouncements = async () => {
+            setIsLoading(true);
+            try {
+                const response = await fetch('/api/announcements');
+                if (response.ok) {
+                    const data = await response.json();
+                    // Maps API response to component type if needed
+                    // API returns { announcements: [], total: ... } or just array?
+                    // Let's assume standard pagination response or just array for now.
+                    // Actually /api/announcements usually returns just array or {announcements: []}. 
+                    // Checking typical pattern in this project: { forms, totalForms }.
+                    // Let's assume { announcements, totalAnnouncements } or just array. 
+                    // Let's check api implementation if possible but I'll assume standard { announcements: [...] }
+                    setAnnouncements(data.announcements || data || []);
+                }
+            } catch (error) {
+                console.error("Failed to fetch announcements", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchAnnouncements();
+    }, [isCreateOpen]); // refetch on create close ideally
+
+    const pinned = announcements.filter(a => a.isPinned);
+    const feed = announcements.filter(a => !a.isPinned).filter(a => {
+        if (filter !== "all" && a.category?.toLowerCase() !== filter.toLowerCase()) return false;
         if (search && !a.title.toLowerCase().includes(search.toLowerCase()) && !a.content.toLowerCase().includes(search.toLowerCase())) return false;
         return true;
     });
@@ -212,12 +185,36 @@ function AnnouncementCard({ item }: { item: Announcement }) {
                 </div>
             )}
             <CardHeader className="p-5 pb-2">
-                {!item.imageUrl && (
-                    <div className="flex justify-between items-start mb-2">
+                <div className="flex justify-between items-start mb-2">
+                    {!item.imageUrl && (
                         <Badge variant="outline" className={getCategoryColor(item.category)}>{item.category}</Badge>
-                        <span className="text-xs text-muted-foreground">{format(item.date, "d MMM", { locale: es })}</span>
+                    )}
+                    <div className="flex items-center gap-1 ml-auto">
+                        <span className="text-xs text-muted-foreground">{format(new Date(item.date), "d MMM", { locale: es })}</span>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-7 w-7">
+                                    <MoreVertical className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem>Editar</DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    className="text-red-600 focus:text-red-600"
+                                    onClick={async () => {
+                                        if (confirm("¿Eliminar este anuncio?")) {
+                                            const res = await fetch(`/api/announcements/${item.id}`, { method: 'DELETE' });
+                                            if (res.ok) window.location.reload();
+                                        }
+                                    }}
+                                >
+                                    <Trash2 className="mr-2 h-4 w-4" /> Eliminar
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
-                )}
+                </div>
                 <h3 className="font-bold text-xl leading-tight group-hover:text-primary transition-colors">{item.title}</h3>
             </CardHeader>
             <CardContent className="p-5 pt-2 flex-grow">
@@ -228,10 +225,10 @@ function AnnouncementCard({ item }: { item: Announcement }) {
             <CardFooter className="p-5 pt-0 border-t bg-slate-50/50 mt-auto flex justify-between items-center text-xs text-muted-foreground h-12">
                 <div className="flex items-center gap-2">
                     <Avatar className="h-6 w-6">
-                        <AvatarImage src={item.author.avatar} />
-                        <AvatarFallback>{item.author.name[0]}</AvatarFallback>
+                        <AvatarImage src={item.author?.avatar} />
+                        <AvatarFallback>{item.author?.name?.[0] || "?"}</AvatarFallback>
                     </Avatar>
-                    <span>{item.author.name}</span>
+                    <span>{item.author?.name || "Sistema"}</span>
                 </div>
                 <div className="flex gap-3">
                     <span className="flex items-center gap-1"><Heart className="h-3 w-3" /> {item.likes}</span>

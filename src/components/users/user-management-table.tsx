@@ -175,13 +175,35 @@ export const columns: ColumnDef<User>[] = [
                         <DropdownMenuItem>Ver Perfil Completo</DropdownMenuItem>
                         <DropdownMenuItem>Asignar Curso</DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-600">Desactivar</DropdownMenuItem>
+                        <DropdownMenuItem
+                            className="text-red-600 focus:text-red-600"
+                            onClick={() => {
+                                if (confirm(`¿Estás seguro de que deseas eliminar al usuario ${user.name}?`)) {
+                                    handleDelete(user.id);
+                                }
+                            }}
+                        >
+                            Eliminar Usuario
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             );
         },
     },
 ];
+
+async function handleDelete(id: string) {
+    try {
+        const response = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+            window.location.reload(); // Simple refresh for now to update table
+        } else {
+            alert("Error al eliminar el usuario");
+        }
+    } catch (error) {
+        console.error("Delete failed", error);
+    }
+}
 
 export function UserManagementTable() {
     const [data, setData] = useState<User[]>([]);
@@ -234,10 +256,10 @@ export function UserManagementTable() {
         <div className="space-y-4">
             {/* KPI CARDS */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <StatCard title="Usuarios Totales" value={MOCK_USERS.length} icon={Shield} />
-                <StatCard title="Activos Ahora" value={3} icon={CheckCircle} color="text-green-500" />
-                <StatCard title="Nuevos (Mes)" value={5} icon={UserPlus} color="text-blue-500" />
-                <StatCard title="Pendientes" value={1} icon={Mail} color="text-amber-500" />
+                <StatCard title="Usuarios Totales" value={data.length} icon={Shield} />
+                <StatCard title="Activos Ahora" value={data.filter(u => u.status === 'active').length} icon={CheckCircle} color="text-green-500" />
+                <StatCard title="Instructores" value={data.filter(u => u.role === 'INSTRUCTOR').length} icon={Briefcase} color="text-blue-500" />
+                <StatCard title="Pendientes" value={data.filter(u => u.status === 'pending').length} icon={Mail} color="text-amber-500" />
             </div>
 
             <div className="flex items-center justify-between py-4 bg-white p-4 rounded-lg border shadow-sm">
@@ -283,7 +305,7 @@ export function UserManagementTable() {
                 </div>
             </div>
 
-            <div className="rounded-md border bg-white shadow-sm overflow-hidden">
+            <div className="rounded-md border bg-white shadow-sm overflow-x-auto">
                 <Table>
                     <TableHeader className="bg-slate-50">
                         {table.getHeaderGroups().map((headerGroup) => (

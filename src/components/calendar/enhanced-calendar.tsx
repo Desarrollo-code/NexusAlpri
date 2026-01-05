@@ -14,6 +14,7 @@ import {
     List,
     Filter,
     Plus,
+    Loader2
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -48,53 +49,11 @@ export type CalendarEvent = {
     start: Date;
     end: Date;
     categoryId: string;
+    color?: string;
     description?: string;
     location?: string;
     allDay?: boolean;
 };
-
-const CATEGORIES: EventCategory[] = [
-    { id: "1", name: "Reunión de Equipo", color: "#3b82f6" }, // Blue
-    { id: "2", name: "Fecha Límite", color: "#ef4444" }, // Red
-    { id: "3", name: "Evento Corporativo", color: "#10b981" }, // Green
-    { id: "4", name: "Formación", color: "#8b5cf6" }, // Purple
-];
-
-const EVENTS: CalendarEvent[] = [
-    {
-        id: "1",
-        title: "Reunión Semanal",
-        start: new Date(new Date().setHours(10, 0, 0, 0)),
-        end: new Date(new Date().setHours(11, 0, 0, 0)),
-        categoryId: "1",
-        description: "Revisión de objetivos semanales.",
-    },
-    {
-        id: "2",
-        title: "Entrega de Proyecto",
-        start: new Date(new Date().setDate(new Date().getDate() + 2)),
-        end: new Date(new Date().setDate(new Date().getDate() + 2)),
-        allDay: true,
-        categoryId: "2",
-        description: "Entrega final del módulo de ventas.",
-    },
-    {
-        id: "3",
-        title: "Fiesta de la Empresa",
-        start: new Date(new Date().setDate(new Date().getDate() + 5)),
-        end: new Date(new Date().setDate(new Date().getDate() + 5)),
-        allDay: true,
-        categoryId: "3",
-        location: "Sala de Conferencias B",
-    },
-    {
-        id: "4",
-        title: "Curso React Avanzado",
-        start: new Date(new Date().setHours(14, 0, 0, 0)),
-        end: new Date(new Date().setHours(16, 0, 0, 0)),
-        categoryId: "4",
-    },
-];
 
 // --- LOCALIZER SETUP ---
 
@@ -236,14 +195,48 @@ const CustomToolbar: React.FC<ToolbarProps> = ({
 
 interface EnhancedCalendarProps {
     onEventClick?: (event: CalendarEvent) => void;
+    refreshTrigger?: number;
 }
 
-export function EnhancedCalendar({ onEventClick }: EnhancedCalendarProps) {
+const CATEGORIES: EventCategory[] = [
+    { id: "ALL", name: "Todos", color: "#3b82f6" },
+    { id: "ADMINISTRATOR", name: "Administración", color: "#8b5cf6" },
+    { id: "INSTRUCTOR", name: "Instructores", color: "#10b981" },
+    { id: "STUDENT", name: "Estudiantes", color: "#f59e0b" },
+];
+
+export function EnhancedCalendar({ onEventClick, refreshTrigger }: EnhancedCalendarProps) {
     const [view, setView] = useState<View>(Views.MONTH);
     const [date, setDate] = useState(new Date());
+    const [events, setEvents] = useState<CalendarEvent[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [selectedCategories, setSelectedCategories] = useState<string[]>(
         CATEGORIES.map((c) => c.id)
     );
+
+    React.useEffect(() => {
+        const fetchEvents = async () => {
+            setIsLoading(true);
+            try {
+                const response = await fetch('/api/events');
+                if (response.ok) {
+                    const data = await response.json();
+                    const formatted = data.map((e: any) => ({
+                        ...e,
+                        start: new Date(e.start),
+                        end: new Date(e.end),
+                        categoryId: e.audienceType || "ALL"
+                    }));
+                    setEvents(formatted);
+                }
+            } catch (err) {
+                console.error("Fetch events failed", err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchEvents();
+    }, [refreshTrigger]);
 
     const handleNavigate = (action: "PREV" | "NEXT" | "TODAY") => {
         let newDate = new Date(date);
@@ -266,12 +259,12 @@ export function EnhancedCalendar({ onEventClick }: EnhancedCalendarProps) {
     };
 
     const filteredEvents = useMemo(() => {
-        return EVENTS.filter((evt) => selectedCategories.includes(evt.categoryId));
-    }, [selectedCategories]);
+        return events.filter((evt) => selectedCategories.includes(evt.categoryId));
+    }, [events, selectedCategories]);
 
     const eventStyleGetter = (event: CalendarEvent) => {
-        const category = CATEGORIES.find((c) => c.id === event.categoryId);
-        const backgroundColor = category ? category.color : "#3174ad";
+        const category = CATEGORIES.find((c) => c.id === event.categoryId) || CATEGORIES[0];
+        const backgroundColor = event.color || category.color;
         return {
             style: {
                 backgroundColor,
@@ -284,8 +277,12 @@ export function EnhancedCalendar({ onEventClick }: EnhancedCalendarProps) {
         };
     };
 
+    if (isLoading) {
+        return <div className="h-[800px] flex items-center justify-center border rounded-xl"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+    }
+
     return (
-        <div className="h-[800px] flex flex-col bg-background p-4 rounded-xl border shadow-sm">
+        <div className="min-h-[600px] lg:h-[800px] flex flex-col bg-background p-2 md:p-4 rounded-xl border shadow-sm">
             <CustomToolbar
                 date={date}
                 view={view}

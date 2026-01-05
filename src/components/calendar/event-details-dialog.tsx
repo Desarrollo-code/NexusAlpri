@@ -104,10 +104,31 @@ export function EventDetailsDialog({ event, open, onOpenChange }: EventDetailsDi
                     <div className="space-y-3 pt-4 border-t">
                         <div className="flex items-center justify-between">
                             <span className="text-sm font-medium">¿Asistirás?</span>
-                            <Button variant="outline" size="sm" className="gap-2">
-                                <Download className="h-4 w-4" />
-                                Exportar .ics
-                            </Button>
+                            <div className="flex gap-2">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-red-500 hover:text-red-600 hover:bg-red-50 gap-2"
+                                    onClick={async () => {
+                                        if (confirm(`¿Estás seguro de que deseas eliminar el evento "${event.title}"?`)) {
+                                            try {
+                                                const res = await fetch(`/api/events/${event.id}`, { method: 'DELETE' });
+                                                if (res.ok) window.location.reload();
+                                                else alert("Error al eliminar el evento");
+                                            } catch (e) {
+                                                console.error(e);
+                                            }
+                                        }
+                                    }}
+                                >
+                                    <XCircle className="h-4 w-4" />
+                                    Eliminar
+                                </Button>
+                                <Button variant="outline" size="sm" className="gap-2">
+                                    <Download className="h-4 w-4" />
+                                    Exportar .ics
+                                </Button>
+                            </div>
                         </div>
                         <div className="grid grid-cols-3 gap-3">
                             <Button

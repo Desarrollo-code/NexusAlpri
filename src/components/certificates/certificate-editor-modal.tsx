@@ -11,6 +11,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, Save, Image as ImageIcon, Replace, XCircle, Award, MousePointerClick, Palette as PaletteIcon, Type, FileText } from 'lucide-react';
@@ -55,7 +56,7 @@ const UploadWidget = ({
     label: string;
     id: string;
     currentImageUrl?: string | null;
-    onFileSelect: (file: File | null) => void;
+    onFileSelect: (url: string | null) => void;
     onRemove: () => void;
     disabled: boolean;
 }) => {
@@ -114,7 +115,7 @@ const UploadWidget = ({
                     <div className="absolute inset-0 bg-[url('/images/transparent-pattern.png')] opacity-20" />
                     <Image src={finalImageUrl} alt={`Previsualización de ${label}`} fill className="object-contain p-2" />
                     <div className="absolute top-2 right-2 flex flex-col gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <UploadArea onFileSelect={(file) => file && handleUpload(file)} disabled={disabled} inputId={id} className="h-8 w-8 rounded-full shadow-md bg-white text-slate-700 hover:bg-slate-100 p-0 border-0 flex items-center justify-center">
+                        <UploadArea onFileSelect={(files) => files && files[0] && handleUpload(files[0])} disabled={disabled} inputId={id} className="h-8 w-8 rounded-full shadow-md bg-white text-slate-700 hover:bg-slate-100 p-0 border-0 flex items-center justify-center">
                             <Replace className="h-4 w-4" />
                         </UploadArea>
                         <Button type="button" variant="destructive" size="icon" className="h-8 w-8 rounded-full shadow-md" onClick={onRemove} disabled={disabled}>
@@ -239,7 +240,7 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
     };
 
     const fakeTemplateForPreview: Partial<CertificateTemplate> = {
-        name, backgroundImageUrl, textColor, fontFamilyHeadline, fontFamilyBody,
+        name, backgroundImageUrl: backgroundImageUrl || undefined, textColor, fontFamilyHeadline, fontFamilyBody,
         studentNamePosition: positions.studentName, courseNamePosition: positions.courseName,
         datePosition: positions.date, scorePosition: showScore ? positions.score : null,
         logoUrl, watermarkUrl, footerText, logoPosition: positions.logo, footerTextPosition: positions.footerText,
