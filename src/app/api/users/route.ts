@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
         const search = searchParams.get('search');
         const role = searchParams.get('role') as UserRole | null;
         const status = searchParams.get('status'); // 'active' or 'inactive'
-        const processId = searchParams.get('processId'); 
+        const processId = searchParams.get('processId');
 
         const skip = (page - 1) * pageSize;
 
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
                 ],
             });
         }
-        
+
         if (role) {
             filters.push({ role: role });
         }
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
         if (status) {
             filters.push({ isActive: status === 'active' });
         }
-        
+
         if (processId) {
             if (processId === 'unassigned') {
                 filters.push({ processId: null });
@@ -70,8 +70,13 @@ export async function GET(req: NextRequest) {
                     registeredDate: true,
                     updatedAt: true,
                     isActive: true,
-                    process: true,
-                    customPermissions: true, // Incluir permisos personalizados
+                    process: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    },
+                    customPermissions: true,
                 },
                 orderBy: {
                     registeredDate: 'desc'
@@ -95,16 +100,16 @@ export async function POST(req: NextRequest) {
     if (!session || session.role !== 'ADMINISTRATOR') {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
-    
+
     try {
         const { name, email, password, role, processId } = await req.json();
 
         if (!name || !email || !password || !role) {
             return NextResponse.json({ message: 'Nombre, email, contraseña y rol son requeridos' }, { status: 400 });
         }
-        
+
         const settings = await prisma.platformSettings.findFirst();
-        
+
         if (settings && settings.emailWhitelist && settings.emailWhitelist.trim() !== '') {
             const allowedDomains = settings.emailWhitelist.split(',').map(d => d.trim().toLowerCase());
             const emailDomain = email.substring(email.lastIndexOf('@') + 1).toLowerCase();
@@ -112,14 +117,14 @@ export async function POST(req: NextRequest) {
                 return NextResponse.json({ message: `Solo se permiten correos con los dominios autorizados: ${settings.emailWhitelist}.` }, { status: 403 });
             }
         }
-        
+
         const existingUser = await prisma.user.findUnique({
             where: { email: email.toLowerCase() }
         });
         if (existingUser) {
             return NextResponse.json({ message: 'El correo electrónico ya está en uso' }, { status: 409 });
         }
-        
+
         if (settings) {
             if (password.length < settings.passwordMinLength) {
                 return NextResponse.json({ message: `La contraseña debe tener al menos ${settings.passwordMinLength} caracteres.` }, { status: 400 });
@@ -131,7 +136,7 @@ export async function POST(req: NextRequest) {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        
+
         const newUser = await prisma.user.create({
             data: {
                 name,
