@@ -503,9 +503,9 @@ function EnrollmentsPageComponent() {
                                                         Tendencia de Finalización
                                                     </CardTitle>
                                                 </CardHeader>
-                                                <CardContent className="h-[300px] pr-4 pt-4">
+                                                <CardContent className="h-[340px] pr-4 pt-4 pb-2">
                                                     <ResponsiveContainer width="100%" height="100%">
-                                                        <AreaChart data={selectedCourseInfo.completionTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                                        <AreaChart data={selectedCourseInfo.completionTrend} margin={{ top: 10, right: 10, left: -20, bottom: 40 }}>
                                                             <defs>
                                                                 <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
                                                                     <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
@@ -515,12 +515,19 @@ function EnrollmentsPageComponent() {
                                                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted)/0.3)" />
                                                             <XAxis
                                                                 dataKey="date"
-                                                                tickFormatter={(str) => format(new Date(str), 'd MMM', { locale: es })}
+                                                                tickFormatter={(str) => {
+                                                                    const date = new Date(str);
+                                                                    return format(date, 'd MMM', { locale: es });
+                                                                }}
                                                                 fontSize={10}
                                                                 stroke="hsl(var(--muted-foreground))"
                                                                 tickLine={false}
                                                                 axisLine={false}
-                                                                minTickGap={30}
+                                                                interval="preserveStartEnd"
+                                                                minTickGap={20}
+                                                                angle={-45}
+                                                                textAnchor="end"
+                                                                height={60}
                                                             />
                                                             <YAxis
                                                                 allowDecimals={false}
