@@ -24,17 +24,22 @@ export default function UsersPage() {
     }, [setPageTitle, setHeaderActions]);
 
     return (
-        <div className="container mx-auto py-6 space-y-6">
+        <div className="w-full px-8 py-8 space-y-8 animate-in fade-in duration-700">
             <UserCreatorModal
                 open={isCreateOpen}
                 onOpenChange={setIsCreateOpen}
                 onUserCreated={() => setRefreshTrigger(prev => prev + 1)}
             />
 
-            <div className="flex flex-col gap-2">
-                <p className="text-muted-foreground text-lg">
+            <div className="flex flex-col gap-3 text-left max-w-4xl">
+                <h1 className="text-4xl font-black text-slate-900 tracking-tight">
+                    Control Central de Colaboradores
+                </h1>
+                <p className="text-slate-500 text-lg font-medium leading-relaxed">
                     Gestiona usuarios, roles y accesos de la plataforma desde un solo lugar.
+                    Optimice la estructura organizacional y supervise el rendimiento de su equipo.
                 </p>
+                <div className="h-1 w-20 bg-indigo-600 rounded-full mt-2" />
             </div>
 
             <UserManagementTable key={refreshTrigger} />

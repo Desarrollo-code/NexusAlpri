@@ -48,17 +48,28 @@ interface UserEditModalProps {
 
 const PERMISSION_CATEGORIES = [
     {
-        title: "Panel Principal",
+        title: "Panel & Análisis",
         icon: LayoutDashboard,
         permissions: [
-            { id: "view_dashboard", label: "Panel Principal" },
+            { id: "view_dashboard", label: "Dashboard" },
+            { id: "view_analytics", label: "Analíticas" },
         ]
     },
     {
-        title: "Competición",
-        icon: Trophy,
+        title: "Formación",
+        icon: BookOpen,
         permissions: [
-            { id: "view_leaderboard", label: "Competición" },
+            { id: "view_catalog", label: "Catálogo" },
+            { id: "view_my_courses", label: "Mis Cursos" },
+            { id: "manage_courses", label: "Gestionar Cursos" },
+        ]
+    },
+    {
+        title: "Evaluaciones",
+        icon: FileText,
+        permissions: [
+            { id: "manage_quizzes", label: "Quices" },
+            { id: "manage_forms", label: "Formularios" },
         ]
     },
     {
@@ -67,27 +78,33 @@ const PERMISSION_CATEGORIES = [
         permissions: [
             { id: "view_announcements", label: "Anuncios" },
             { id: "view_calendar", label: "Calendario" },
+            { id: "manage_announcements", label: "Postear Anuncios" },
         ]
     },
     {
-        title: "Formación",
-        icon: BookOpen,
-        permissions: [
-            { id: "view_catalog", label: "Catálogo de Cursos" },
-            { id: "view_my_courses", label: "Mis Cursos" },
-        ]
-    },
-    {
-        title: "Gestión",
+        title: "Estructura & Personas",
         icon: Users,
         permissions: [
-            { id: "view_users", label: "Usuarios" },
-            { id: "manage_processes", label: "Procesos" },
+            { id: "view_users", label: "Ver Usuarios" },
+            { id: "manage_users", label: "Gestionar Usuarios" },
+            { id: "manage_processes", label: "Estructura Org." },
+        ]
+    },
+    {
+        title: "Reconocimientos",
+        icon: Award,
+        permissions: [
             { id: "manage_certificates", label: "Certificados" },
-            { id: "manage_forms", label: "Formularios" },
+            { id: "view_leaderboard", label: "Competición" },
         ]
     }
 ];
+
+const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
+    STUDENT: ["view_dashboard", "view_announcements", "view_catalog", "view_my_courses", "view_leaderboard"],
+    INSTRUCTOR: ["view_dashboard", "view_analytics", "view_announcements", "view_catalog", "view_my_courses", "view_leaderboard", "view_calendar", "view_users", "manage_quizzes", "manage_forms"],
+    ADMINISTRATOR: PERMISSION_CATEGORIES.flatMap(c => c.permissions.map(p => p.id))
+};
 
 export function UserEditModal({ user, isOpen, onClose, onSuccess }: UserEditModalProps) {
     const [formData, setFormData] = useState({
@@ -120,6 +137,27 @@ export function UserEditModal({ user, isOpen, onClose, onSuccess }: UserEditModa
             setPermissions((user as any).customPermissions || {});
         }
     }, [user]);
+
+    // Handle role-based default permissions
+    const handleRoleChange = (role: string) => {
+        setFormData(prev => ({ ...prev, role }));
+
+        // Auto-provision standard permissions for the selected role
+        const defaultPerms = DEFAULT_ROLE_PERMISSIONS[role] || [];
+        const newPermissions: Record<string, boolean> = {};
+
+        // We start with a clean slate for the role's base permissions
+        defaultPerms.forEach(pId => {
+            newPermissions[pId] = true;
+        });
+
+        setPermissions(newPermissions);
+
+        toast({
+            title: `Perfil ${role} aplicado`,
+            description: "Se han pre-configurado los permisos estándar para este rol.",
+        });
+    };
 
     useEffect(() => {
         const fetchProcesses = async () => {
@@ -281,15 +319,15 @@ export function UserEditModal({ user, isOpen, onClose, onSuccess }: UserEditModa
                                         <Label className="text-sm font-semibold text-slate-700">Rol</Label>
                                         <Select
                                             value={formData.role}
-                                            onValueChange={val => setFormData(prev => ({ ...prev, role: val }))}
+                                            onValueChange={handleRoleChange}
                                         >
                                             <SelectTrigger className="bg-slate-50 border-slate-200">
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="ADMINISTRATOR">Administrador</SelectItem>
-                                                <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
-                                                <SelectItem value="STUDENT">Estudiante</SelectItem>
+                                                <SelectItem value="ADMINISTRATOR" className="font-bold">Administrador</SelectItem>
+                                                <SelectItem value="INSTRUCTOR" className="font-bold">Instructor</SelectItem>
+                                                <SelectItem value="STUDENT" className="font-bold">Estudiante</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -354,7 +392,7 @@ export function UserEditModal({ user, isOpen, onClose, onSuccess }: UserEditModa
                                                             />
                                                             <label
                                                                 htmlFor={perm.id}
-                                                                className="text-sm font-medium leading-none cursor-pointer"
+                                                                className="text-xs font-bold leading-none cursor-pointer group-hover:text-primary transition-colors"
                                                             >
                                                                 {perm.label}
                                                             </label>
@@ -371,13 +409,13 @@ export function UserEditModal({ user, isOpen, onClose, onSuccess }: UserEditModa
                 </div>
 
                 <DialogFooter className="p-6 bg-slate-50 border-t flex items-center justify-between">
-                    <Button variant="ghost" onClick={onClose} disabled={isLoading} className="text-slate-500 hover:text-slate-700 hover:bg-slate-200">
+                    <Button variant="ghost" onClick={onClose} disabled={isLoading} className="text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded-xl px-6">
                         Cancelar
                     </Button>
                     <Button
                         onClick={handleSubmit}
                         disabled={isLoading}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 px-8 py-6 rounded-xl gap-2 font-bold"
+                        className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 px-8 py-6 rounded-xl gap-2 font-bold transition-all active:scale-95"
                     >
                         {isLoading ? <div className="h-4 w-4 border-2 border-white border-t-transparent animate-spin rounded-full" /> : <Save className="h-5 w-5" />}
                         Guardar Cambios
