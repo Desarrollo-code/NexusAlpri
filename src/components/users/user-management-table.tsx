@@ -254,7 +254,8 @@ export function UserManagementTable() {
                 </div>
                 <div className="flex gap-2">
                     <DropdownMenu>
-                    <Button variant="outline" className="ml-auto">
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="ml-auto">
                                 Columnas <ChevronDown className="ml-2 h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
