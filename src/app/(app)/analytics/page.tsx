@@ -22,8 +22,35 @@ import {
 } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, AreaChart, Pie, PieChart, ResponsiveContainer, Cell, Label, Sector, CartesianGrid, BarChart, Bar, Legend, ComposedChart, Line, XAxis, YAxis, Tooltip } from "recharts";
+import {
+    Area,
+    AreaChart,
+    Pie,
+    PieChart,
+    ResponsiveContainer,
+    Cell,
+    Label,
+    Sector,
+    CartesianGrid,
+    BarChart,
+    Bar,
+    Legend,
+    ComposedChart,
+    Line,
+    XAxis,
+    YAxis,
+    Tooltip,
+    Radar,
+    RadarChart,
+    PolarGrid,
+    PolarAngleAxis,
+    PolarRadiusAxis,
+    RadialBarChart,
+    RadialBar
+} from "recharts";
 import type { AdminDashboardStats } from '@/types';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import { Separator } from '@/components/ui/separator';
 import { format, parseISO, startOfDay, subDays, isValid } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -90,24 +117,24 @@ const courseStatusChartConfig = {
 function RankingList({ title, items, icon: Icon, unit = '', variant = 'primary' }: { title: string, items: any[], icon: React.ElementType, unit?: string, variant?: 'primary' | 'success' | 'warning' }) {
     if (!items || items.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground bg-muted/20 rounded-xl border border-dashed">
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground bg-muted/10 rounded-2xl border border-dashed border-primary/20">
                 <Icon className="h-8 w-8 mb-2 opacity-20" />
-                <p className="text-sm">Sin datos para mostrar</p>
+                <p className="text-xs font-bold uppercase tracking-widest leading-none">Sin datos activos</p>
             </div>
         );
     }
 
     const colorClasses = {
-        primary: "text-blue-500 bg-blue-500/10",
-        success: "text-emerald-500 bg-emerald-500/10",
-        warning: "text-amber-500 bg-amber-500/10"
+        primary: "text-primary bg-primary/10 border-primary/20",
+        success: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20",
+        warning: "text-amber-500 bg-amber-500/10 border-amber-500/20"
     };
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h3 className="font-bold text-base flex items-center gap-2">
-                    <div className={cn("p-1.5 rounded-lg", colorClasses[variant])}>
+                <h3 className="font-black text-sm uppercase tracking-widest flex items-center gap-2 text-foreground/80">
+                    <div className={cn("p-1.5 rounded-lg border", colorClasses[variant])}>
                         <Icon className="h-4 w-4" />
                     </div>
                     {title}
@@ -120,33 +147,37 @@ function RankingList({ title, items, icon: Icon, unit = '', variant = 'primary' 
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.05 }}
-                        className="flex items-center gap-4 p-2 rounded-lg transition-all hover:bg-muted/50 group"
+                        className="flex items-center gap-4 p-3 rounded-2xl transition-all hover:bg-primary/5 group border border-transparent hover:border-primary/10"
                     >
                         <div className="relative shrink-0">
-                            <span className="absolute -left-1 top-1/2 -translate-y-1/2 text-[10px] font-black text-muted-foreground/30 w-4 text-center">
+                            <span className="absolute -left-2 top-1/2 -translate-y-1/2 text-[10px] font-black text-muted-foreground/40 w-4 text-center">
                                 {index + 1}
                             </span>
-                            <Avatar className="h-10 w-10 border-2 border-background shadow-sm group-hover:scale-105 transition-transform ml-2">
+                            <Avatar className="h-10 w-10 border-2 border-background shadow-md group-hover:scale-110 transition-transform ml-2">
                                 <AvatarImage src={item.imageUrl || item.avatar || undefined} />
-                                <AvatarFallback><Identicon userId={item.id} /></AvatarFallback>
+                                <AvatarFallback className="bg-muted text-[10px] font-bold text-muted-foreground"><Identicon userId={item.id} /></AvatarFallback>
                             </Avatar>
-                            {index === 0 && <Trophy className="absolute -top-2 -right-1 h-4 w-4 text-yellow-500 drop-shadow-sm" />}
+                            {index === 0 && (
+                                <div className="absolute -top-2 -right-1 bg-yellow-500 rounded-full p-0.5 shadow-lg animate-bounce">
+                                    <Trophy className="h-3 w-3 text-white" />
+                                </div>
+                            )}
                         </div>
                         <div className="flex-grow min-w-0">
-                            <p className="truncate font-semibold text-sm group-hover:text-primary transition-colors">
+                            <p className="truncate font-bold text-sm group-hover:text-primary transition-colors leading-tight">
                                 {item.title || item.name}
                             </p>
-                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black opacity-60">
                                 {item.category || (item.role === 'INSTRUCTOR' ? 'Instructor' : 'Estudiante')}
                             </p>
                         </div>
                         <div className="flex flex-col items-end shrink-0">
-                            <div className="font-black text-sm bg-clip-text text-transparent bg-gradient-to-br from-primary to-primary/60">
+                            <div className="font-black text-sm bg-clip-text text-transparent bg-gradient-to-br from-primary to-primary/60 tracking-tighter">
                                 {item.value?.toLocaleString() ?? 0}{unit}
                             </div>
-                            <div className="flex items-center gap-0.5 mt-0.5">
-                                <Flame className="h-3 w-3 text-orange-500" />
-                                <span className="text-[10px] font-bold text-orange-500/70">Top</span>
+                            <div className="flex items-center gap-0.5 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Flame className="h-3 w-3 text-orange-500 fill-orange-500" />
+                                <span className="text-[9px] font-black text-orange-500 uppercase tracking-tighter">Explosivo</span>
                             </div>
                         </div>
                     </motion.div>
@@ -166,6 +197,39 @@ function AdminAnalyticsPage() {
     const { setPageTitle, setHeaderActions } = useTitle();
     const isMobile = useIsMobile();
     const { startTour, forceStartTour } = useTour();
+    const [isExporting, setIsExporting] = useState(false);
+
+    const handleExportPDF = async () => {
+        const element = document.getElementById('analytics-content');
+        if (!element) return;
+
+        setIsExporting(true);
+        try {
+            const canvas = await html2canvas(element, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: null,
+            });
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            const imgProps = pdf.getImageProperties(imgData);
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save(`NexusAlpri-Analytics-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+        } catch (err) {
+            console.error('Error exporting PDF:', err);
+        } finally {
+            setIsExporting(false);
+        }
+    };
 
     const [date, setDate] = React.useState<DateRange | undefined>({
         from: startOfDay(subDays(new Date(), 29)),
@@ -177,6 +241,16 @@ function AdminAnalyticsPage() {
         startTour('analytics', analyticsTour);
         setHeaderActions(
             <div className="flex items-center gap-2">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="hidden md:flex items-center gap-2 font-bold h-9 rounded-xl border-primary/20 hover:bg-primary/10 transition-all"
+                    onClick={handleExportPDF}
+                    disabled={isExporting}
+                >
+                    {isExporting ? <ColorfulLoader className="h-4 w-4" /> : <IconFileText className="h-4 w-4" />}
+                    {isExporting ? 'Generando...' : 'Exportar PDF'}
+                </Button>
                 <Popover>
                     <PopoverTrigger asChild>
                         <Button id="date" variant="outline" className={cn("min-w-[240px] justify-start text-left font-normal shadow-sm h-9", !date && "text-muted-foreground")}>
@@ -266,16 +340,43 @@ function AdminAnalyticsPage() {
         ]
     }, [stats]);
 
+    const activityRadarData = useMemo(() => {
+        if (!stats) return [];
+        return [
+            { subject: 'Usuarios', A: stats.totalUsers || 0, fullMark: 100 },
+            { subject: 'Cursos', A: stats.totalCourses || 0, fullMark: 100 },
+            { subject: 'Inscrip.', A: stats.totalEnrollments || 0, fullMark: 100 },
+            { subject: 'Recursos', A: stats.totalResources || 0, fullMark: 100 },
+            { subject: 'Anuncios', A: stats.totalAnnouncements || 0, fullMark: 100 },
+            { subject: 'Exámenes', A: stats.totalForms || 0, fullMark: 100 },
+        ];
+    }, [stats]);
+
+    const overallEfficiencyData = useMemo(() => {
+        if (!stats) return [];
+        return [
+            {
+                name: 'Completado',
+                value: stats.averageCompletionRate || 0,
+                fill: 'hsl(var(--primary))',
+            }
+        ];
+    }, [stats]);
+
     return (
         <motion.div
             variants={container}
             initial="hidden"
             animate="show"
             className="space-y-8 pb-10"
+            id="analytics-content"
         >
             <div className="flex flex-col gap-2">
-                <p className="text-muted-foreground text-lg">
-                    Monitoriza el pulso de NexusAlpri en tiempo real con analíticas avanzadas e inteligencia de datos.
+                <h1 className="text-4xl md:text-5xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/50">
+                    Centro de Comando Analytics
+                </h1>
+                <p className="text-muted-foreground text-lg md:text-xl font-medium max-w-3xl leading-relaxed">
+                    Inteligencia de datos en tiempo real. Monitoriza el pulso de NexusAlpri con visualizaciones de alto impacto y métricas predictivas para la toma de decisiones estratégicas.
                 </p>
             </div>
 
@@ -290,9 +391,9 @@ function AdminAnalyticsPage() {
                 <MetricCard title="Éxito" value={stats?.averageCompletionRate || 0} icon={IconPercent} suffix="%" description="Progreso" index={7} />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 <motion.div variants={item} className="lg:col-span-2">
-                    <Card className="h-full bg-white/40 dark:bg-black/40 backdrop-blur-xl border-white/20 dark:border-white/10 overflow-hidden group hover:shadow-2xl transition-all duration-300">
+                    <Card className="h-full bg-card/40 backdrop-blur-xl border-primary/10 overflow-hidden group hover:shadow-2xl transition-all duration-500 rounded-[2rem]">
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                             <div className="space-y-1">
                                 <CardTitle className="text-xl font-bold flex items-center gap-2">
@@ -300,7 +401,9 @@ function AdminAnalyticsPage() {
                                 </CardTitle>
                                 <CardDescription>Histórico de usuarios, cursos e inscripciones.</CardDescription>
                             </div>
-                            <TrendingUp className="h-5 w-5 text-emerald-500 opacity-50" />
+                            <div className="p-2 rounded-xl bg-primary/10 transition-transform group-hover:rotate-12">
+                                <TrendingUp className="h-5 w-5 text-primary" />
+                            </div>
                         </CardHeader>
                         <CardContent className="h-80 pr-4 pt-4">
                             <ChartContainer config={{
@@ -345,40 +448,106 @@ function AdminAnalyticsPage() {
                     </Card>
                 </motion.div>
 
-                <div className="space-y-6">
-                    <motion.div variants={item}>
-                        <DonutChart title="Distribución de Roles" data={userRolesChartData} config={userRolesChartConfig} />
-                    </motion.div>
-                </div>
+                <motion.div variants={item} className="lg:col-span-1">
+                    <Card className="h-full bg-card/40 backdrop-blur-xl border-primary/10 overflow-hidden group hover:shadow-2xl transition-all duration-500 rounded-[2rem]">
+                        <CardHeader>
+                            <CardTitle className="text-xl font-bold">Balance de Actividad</CardTitle>
+                            <CardDescription>Distribución de recursos y usuarios.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="h-[300px] flex items-center justify-center">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={activityRadarData}>
+                                    <PolarGrid stroke="hsl(var(--muted-foreground))" opacity={0.2} />
+                                    <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fontWeight: 700, fill: 'hsl(var(--muted-foreground))' }} />
+                                    <Radar
+                                        name="Nexus"
+                                        dataKey="A"
+                                        stroke="hsl(var(--primary))"
+                                        fill="hsl(var(--primary))"
+                                        fillOpacity={0.5}
+                                    />
+                                    <Tooltip />
+                                </RadarChart>
+                            </ResponsiveContainer>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+
+                <motion.div variants={item} className="lg:col-span-1 flex flex-col gap-4">
+                    <DonutChart title="Roles" data={userRolesChartData} config={userRolesChartConfig} />
+                </motion.div>
             </div>
 
-            <motion.div variants={item} className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <Card className="bg-white/40 dark:bg-black/40 backdrop-blur-xl border-white/20 dark:border-white/10 overflow-hidden">
+            <motion.div variants={item} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <Card className="bg-card/40 backdrop-blur-xl border-primary/10 overflow-hidden rounded-[2rem]">
                     <CardHeader>
                         <CardTitle className="text-xl font-bold flex items-center gap-2">
                             Estado del Catálogo
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="h-64">
+                    <CardContent className="h-64 pt-0">
                         <DonutChart title="" data={courseStatusChartData} config={courseStatusChartConfig} />
                     </CardContent>
                 </Card>
 
-                <Card className="bg-white/40 dark:bg-black/40 backdrop-blur-xl border-white/20 dark:border-white/10 overflow-hidden flex flex-col justify-center p-8 relative">
-                    <div className="absolute top-0 right-0 p-4 opacity-10">
-                        <Award className="h-32 w-32" />
+                <Card className="bg-card/40 backdrop-blur-xl border-primary/10 overflow-hidden rounded-[2rem] flex flex-col items-center justify-center p-6 text-center">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-xl font-bold">Salud del Ecosistema</CardTitle>
+                        <CardDescription>Eficiencia de finalización global.</CardDescription>
+                    </CardHeader>
+                    <div className="relative h-64 w-full flex items-center justify-center">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <RadialBarChart
+                                cx="50%"
+                                cy="50%"
+                                innerRadius="60%"
+                                outerRadius="100%"
+                                barSize={20}
+                                data={overallEfficiencyData}
+                                startAngle={180}
+                                endAngle={0}
+                            >
+                                <RadialBar
+                                    background
+                                    dataKey="value"
+                                    cornerRadius={15}
+                                    fill="hsl(var(--primary))"
+                                />
+                                <text
+                                    x="50%"
+                                    y="50%"
+                                    textAnchor="middle"
+                                    dominantBaseline="middle"
+                                    className="fill-foreground text-4xl font-black"
+                                >
+                                    {stats?.averageCompletionRate}%
+                                </text>
+                            </RadialBarChart>
+                        </ResponsiveContainer>
                     </div>
-                    <h3 className="text-2xl font-black mb-2">Plataforma de Alto Impacto</h3>
-                    <p className="text-muted-foreground mb-6">NexusAlpri está impulsando el aprendizaje corporativo con métricas sólidas y crecimiento constante.</p>
-                    <div className="flex gap-4">
-                        <div className="space-y-1">
-                            <p className="text-3xl font-bold text-primary">+{combinedTrendData.reduce((acc: number, curr: any) => acc + (curr.count || 0), 0)}</p>
-                            <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground leading-tight">Nuevos Usuarios<br />este mes</p>
+                    <p className="text-sm font-bold text-primary uppercase tracking-tighter mt-[-40px]">Meta de Excelencia</p>
+                </Card>
+
+                <Card className="bg-primary/10 overflow-hidden flex flex-col justify-center p-8 relative rounded-[2rem] border-primary/20">
+                    <div className="absolute top-0 right-0 p-4 opacity-10">
+                        <Award className="h-32 w-32 text-primary" />
+                    </div>
+                    <div className="relative z-10">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary text-[10px] font-black uppercase tracking-widest mb-4">
+                            <Zap className="h-3 w-3 fill-primary" /> IA Insights Activos
                         </div>
-                        <Separator orientation="vertical" className="h-12" />
-                        <div className="space-y-1">
-                            <p className="text-3xl font-bold text-primary">{stats?.averageCompletionRate}%</p>
-                            <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground leading-tight">Retención de<br />Estudiantes</p>
+                        <h3 className="text-3xl font-black mb-2 tracking-tighter leading-tight">Impulsando el Impacto</h3>
+                        <p className="text-muted-foreground mb-6 font-medium">NexusAlpri está escalando el aprendizaje corporativo con métricas de alto rendimiento.</p>
+                        <div className="flex gap-4">
+                            <div className="space-y-1">
+                                <p className="text-4xl font-black text-primary tracking-tighter">+{combinedTrendData.reduce((acc: number, curr: any) => acc + (curr.count || 0), 0)}</p>
+                                <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground leading-tight">Nuevos Usuarios<br />Periodo Actual</p>
+                            </div>
+                            <Separator orientation="vertical" className="h-12 bg-primary/20" />
+                            <div className="space-y-1">
+                                <p className="text-4xl font-black text-primary tracking-tighter">{stats?.averageCompletionRate}%</p>
+                                <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground leading-tight">Retención de<br />Estudiantes</p>
+                            </div>
                         </div>
                     </div>
                 </Card>
@@ -386,32 +555,32 @@ function AdminAnalyticsPage() {
 
             <Separator className="opacity-50" />
 
-            <motion.div variants={item} className="space-y-2">
-                <h2 className="text-3xl font-black tracking-tight flex items-center gap-3">
-                    <Trophy className="h-8 w-8 text-yellow-500" />
-                    Rankings de Elite
-                </h2>
-                <p className="text-muted-foreground">Líderes y cursos destacados en la plataforma.</p>
+            <motion.div variants={item} className="space-y-4">
+                <div className="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-yellow-500/10 border border-yellow-500/20">
+                    <Trophy className="h-6 w-6 text-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]" />
+                    <h2 className="text-2xl font-black tracking-tight uppercase">Rankings de Elite</h2>
+                </div>
+                <p className="text-muted-foreground font-medium text-lg ml-1">Reconocimiento al desempeño excepcional en la plataforma NexusAlpri.</p>
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="analytics-course-rankings">
                 <motion.div variants={item}>
-                    <Card className="h-full bg-white/40 dark:bg-black/40 backdrop-blur-xl border-white/20 dark:border-white/10 hover:shadow-xl transition-all duration-300">
-                        <CardContent className="pt-6">
+                    <Card className="h-full bg-card/40 backdrop-blur-xl border-primary/10 rounded-[2rem] hover:shadow-2xl transition-all duration-500 overflow-hidden group">
+                        <CardContent className="pt-8">
                             <RankingList title="Cursos Más Populares" items={stats?.topCoursesByEnrollment || []} icon={TrendingUp} unit=" insc." variant="primary" />
                         </CardContent>
                     </Card>
                 </motion.div>
                 <motion.div variants={item}>
-                    <Card className="h-full bg-white/40 dark:bg-black/40 backdrop-blur-xl border-white/20 dark:border-white/10 hover:shadow-xl transition-all duration-300">
-                        <CardContent className="pt-6">
+                    <Card className="h-full bg-card/40 backdrop-blur-xl border-emerald-500/10 rounded-[2rem] hover:shadow-2xl transition-all duration-500 overflow-hidden group">
+                        <CardContent className="pt-8">
                             <RankingList title="Mejor Finalización" items={stats?.topCoursesByCompletion || []} icon={Award} unit="%" variant="success" />
                         </CardContent>
                     </Card>
                 </motion.div>
                 <motion.div variants={item}>
-                    <Card className="h-full bg-white/40 dark:bg-black/40 backdrop-blur-xl border-white/20 dark:border-white/10 hover:shadow-xl transition-all duration-300">
-                        <CardContent className="pt-6">
+                    <Card className="h-full bg-card/40 backdrop-blur-xl border-amber-500/10 rounded-[2rem] hover:shadow-2xl transition-all duration-500 overflow-hidden group">
+                        <CardContent className="pt-8">
                             <RankingList title="Oportunidades" items={stats?.lowestCoursesByCompletion || []} icon={TrendingDown} unit="%" variant="warning" />
                         </CardContent>
                     </Card>
@@ -420,22 +589,22 @@ function AdminAnalyticsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="analytics-user-rankings">
                 <motion.div variants={item}>
-                    <Card className="h-full bg-white/40 dark:bg-black/40 backdrop-blur-xl border-white/20 dark:border-white/10 hover:shadow-xl transition-all duration-300">
-                        <CardContent className="pt-6">
+                    <Card className="h-full bg-card/40 backdrop-blur-xl border-primary/10 rounded-[2rem] hover:shadow-2xl transition-all duration-500 overflow-hidden group">
+                        <CardContent className="pt-8">
                             <RankingList title="Estudiantes Activos" items={stats?.topStudentsByEnrollment || []} icon={IconUsersTotal} unit=" insc." variant="primary" />
                         </CardContent>
                     </Card>
                 </motion.div>
                 <motion.div variants={item}>
-                    <Card className="h-full bg-white/40 dark:bg-black/40 backdrop-blur-xl border-white/20 dark:border-white/10 hover:shadow-xl transition-all duration-300">
-                        <CardContent className="pt-6">
+                    <Card className="h-full bg-card/40 backdrop-blur-xl border-emerald-500/10 rounded-[2rem] hover:shadow-2xl transition-all duration-500 overflow-hidden group">
+                        <CardContent className="pt-8">
                             <RankingList title="Mejores Estudiantes" items={stats?.topStudentsByCompletion || []} icon={BookOpenCheck} unit=" compl." variant="success" />
                         </CardContent>
                     </Card>
                 </motion.div>
                 <motion.div variants={item}>
-                    <Card className="h-full bg-white/40 dark:bg-black/40 backdrop-blur-xl border-white/20 dark:border-white/10 hover:shadow-xl transition-all duration-300">
-                        <CardContent className="pt-6">
+                    <Card className="h-full bg-card/40 backdrop-blur-xl border-amber-500/10 rounded-[2rem] hover:shadow-2xl transition-all duration-500 overflow-hidden group">
+                        <CardContent className="pt-8">
                             <RankingList title="Instructores Top" items={stats?.topInstructorsByCourses || []} icon={UserPlus} unit=" cursos" variant="warning" />
                         </CardContent>
                     </Card>

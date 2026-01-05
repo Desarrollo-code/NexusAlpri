@@ -37,9 +37,9 @@ type Form = {
     title: string;
     description: string;
     status: "PUBLISHED" | "DRAFT" | "ARCHIVED";
-    responses: number;
-    lastUpdated: Date;
-    author: string;
+    _count?: { responses: number };
+    updatedAt: string | Date;
+    creator?: { name: string };
 };
 
 export default function ModernFormsDashboard() {
@@ -89,7 +89,7 @@ export default function ModernFormsDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <KPICard title="Total Formularios" value={forms.length} icon={FileText} />
                 <KPICard title="Activos" value={forms.filter(f => f.status === 'PUBLISHED').length} icon={CheckCircle2} color="text-green-500" />
-                <KPICard title="Respuestas Totales" value={forms.reduce((acc, curr) => acc + (curr.responses || 0), 0)} icon={Users} color="text-blue-500" />
+                <KPICard title="Respuestas Totales" value={forms.reduce((acc, curr) => acc + (curr._count?.responses || 0), 0)} icon={Users} color="text-blue-500" />
                 <KPICard title="Borradores" value={forms.filter(f => f.status === 'DRAFT').length} icon={Clock} color="text-amber-500" />
             </div>
 
@@ -197,11 +197,11 @@ function ModernFormCard({ form }: { form: Form }) {
                 <div className="flex items-center text-sm text-muted-foreground gap-4">
                     <div className="flex items-center gap-1">
                         <BarChart3 className="h-4 w-4" />
-                        <span>{form.responses} respuestas</span>
+                        <span>{form._count?.responses || 0} respuestas</span>
                     </div>
                     <div className="flex items-center gap-1">
                         <Clock className="h-4 w-4" />
-                        <span>Actualizado {format(new Date(form.lastUpdated), "d MMM", { locale: es })}</span>
+                        <span>Actualizado {form.updatedAt ? format(new Date(form.updatedAt), "d MMM", { locale: es }) : 'N/A'}</span>
                     </div>
                 </div>
             </CardContent>

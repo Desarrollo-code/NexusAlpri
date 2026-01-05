@@ -86,35 +86,38 @@ const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdat
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: moduleIndex * 0.05 }}
             >
-                <Accordion type="single" collapsible className="w-full bg-card/30 backdrop-blur-md rounded-2xl border border-primary/10 shadow-sm overflow-hidden" defaultValue={`item-${module.id}`}>
+                <Accordion type="single" collapsible className="w-full bg-card/20 backdrop-blur-xl rounded-[2rem] border border-primary/5 shadow-2xl shadow-primary/5 overflow-hidden group" defaultValue={`item-${module.id}`}>
                     <AccordionItem value={`item-${module.id}`} className="border-0">
-                        <div className="flex items-center px-6 py-4 bg-primary/5">
-                            <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing p-1.5 hover:bg-primary/10 rounded-lg transition-colors mr-3">
-                                <GripVertical className="h-6 w-6 text-muted-foreground" />
+                        <div className="flex items-center px-8 py-6 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
+                            <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing p-2 hover:bg-primary/20 rounded-xl transition-all mr-4 text-primary/40 hover:text-primary">
+                                <GripVertical className="h-6 w-6" />
                             </div>
-                            <AccordionTrigger className="flex-grow hover:no-underline p-0 flex items-center gap-4">
-                                <div className="bg-primary/10 p-2.5 rounded-xl">
-                                    <Layers3 className="h-5 w-5 text-primary" />
+                            <AccordionTrigger className="flex-grow hover:no-underline p-0 flex items-center gap-5">
+                                <div className="bg-primary shadow-lg shadow-primary/20 p-3 rounded-2xl">
+                                    <Layers3 className="h-6 w-6 text-white" />
                                 </div>
-                                <Input
-                                    value={module.title}
-                                    onChange={e => onUpdate('title', e.target.value)}
-                                    className="text-xl font-black bg-transparent border-0 focus-visible:ring-0 p-0 h-auto"
-                                    placeholder="Nombre del Módulo"
-                                    onClick={(e) => e.stopPropagation()}
-                                    disabled={isSaving}
-                                />
+                                <div className="flex flex-col items-start gap-1">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60">Módulo {moduleIndex + 1}</span>
+                                    <Input
+                                        value={module.title}
+                                        onChange={e => onUpdate('title', e.target.value)}
+                                        className="text-2xl font-black bg-transparent border-0 focus-visible:ring-0 p-0 h-auto tracking-tighter"
+                                        placeholder="Nombre del Módulo"
+                                        onClick={(e) => e.stopPropagation()}
+                                        disabled={isSaving}
+                                    />
+                                </div>
                             </AccordionTrigger>
-                            <div className="flex items-center gap-2 ml-4">
-                                <Badge variant="secondary" className="bg-background/50 backdrop-blur-sm border-primary/10 text-xs px-3 py-1 font-bold hidden sm:flex">
+                            <div className="flex items-center gap-4 ml-6">
+                                <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm border-primary/10 text-[10px] px-4 py-1.5 font-black uppercase tracking-widest hidden sm:flex rounded-full">
                                     {module.lessons.length} Lecciones
                                 </Badge>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10 rounded-full" onClick={(e) => { e.stopPropagation(); onDelete(); }} disabled={isSaving}>
-                                    <Trash2 className="h-4 w-4" />
+                                <Button variant="ghost" size="icon" className="h-10 w-10 text-destructive hover:bg-destructive/10 rounded-2xl transition-all" onClick={(e) => { e.stopPropagation(); onDelete(); }} disabled={isSaving}>
+                                    <Trash2 className="h-5 w-5" />
                                 </Button>
                             </div>
                         </div>
-                        <AccordionContent className="p-4 pt-4 border-t border-primary/5">
+                        <AccordionContent className="p-8 pt-6 border-t border-primary/5 bg-background/20">
                             <Droppable droppableId={module.id} type="LESSONS">
                                 {(provided) => (
                                     <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
@@ -182,31 +185,34 @@ const LessonItem = React.forwardRef<HTMLDivElement, { lesson: AppLesson; onUpdat
                 className="bg-background/40 backdrop-blur-sm p-4 rounded-xl border border-primary/10 shadow-sm transition-all hover:shadow-md group/lesson"
                 layout
             >
-                <div className="flex items-center gap-4 mb-5">
-                    <div className="p-1.5 cursor-grab active:cursor-grabbing touch-none hover:bg-muted rounded-lg transition-colors group-hover/lesson:text-primary">
-                        <GripVertical className="h-6 w-6 text-muted-foreground/50 transition-colors" />
+                <div className="flex items-center gap-5 mb-6">
+                    <div className="p-2 cursor-grab active:cursor-grabbing touch-none hover:bg-primary/10 rounded-xl transition-all text-muted-foreground/30 hover:text-primary">
+                        <GripVertical className="h-6 w-6" />
                     </div>
-                    <div className="bg-primary/5 p-2 rounded-lg">
-                        <BookOpenText className="h-5 w-5 text-primary" />
+                    <div className="bg-primary/10 p-3 rounded-2xl">
+                        <BookOpenText className="h-6 w-6 text-primary" />
                     </div>
-                    <Input
-                        value={lesson.title}
-                        onChange={e => onUpdate('title', e.target.value)}
-                        placeholder="Título de la lección"
-                        className="bg-transparent border-0 font-bold focus-visible:ring-0 p-0 h-auto text-lg"
-                        disabled={isSaving}
-                    />
-                    <div className="flex items-center gap-1 opacity-0 group-hover/lesson:opacity-100 transition-opacity">
+                    <div className="flex-grow flex flex-col gap-1">
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Lección Académica</span>
+                        <Input
+                            value={lesson.title}
+                            onChange={e => onUpdate('title', e.target.value)}
+                            placeholder="Título de la lección"
+                            className="bg-transparent border-0 font-black focus-visible:ring-0 p-0 h-auto text-xl tracking-tight"
+                            disabled={isSaving}
+                        />
+                    </div>
+                    <div className="flex items-center gap-2 opacity-0 group-hover/lesson:opacity-100 transition-all">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 rounded-full"><MoreVertical className="h-4 w-4" /></Button>
+                                <Button variant="ghost" size="icon" className="h-10 w-10 hover:bg-primary/10 rounded-xl"><MoreVertical className="h-5 w-5" /></Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="rounded-xl border-primary/10 p-1">
-                                <DropdownMenuItem onSelect={onSaveAsTemplate} className="rounded-lg gap-2">
+                            <DropdownMenuContent align="end" className="rounded-2xl border-primary/10 p-1 shadow-2xl">
+                                <DropdownMenuItem onSelect={onSaveAsTemplate} className="rounded-xl gap-3 py-3 px-4 font-bold">
                                     <SaveIcon className="h-4 w-4 text-primary" /> Guardar como Plantilla
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator className="my-1 bg-primary/5" />
-                                <DropdownMenuItem onSelect={onDelete} className="text-destructive focus:bg-destructive/10 rounded-lg gap-2">
+                                <DropdownMenuItem onSelect={onDelete} className="text-destructive focus:bg-destructive/10 rounded-xl gap-3 py-3 px-4 font-bold">
                                     <Trash2 className="h-4 w-4" /> Eliminar Lección
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -778,232 +784,144 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     return (
         <div className="min-h-screen bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-primary/5 via-background to-background">
             <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pb-32 pt-8">
-                <Tabs defaultValue="general" className="w-full">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card/70 backdrop-blur-2xl p-4 rounded-3xl border border-primary/10 sticky top-6 z-40 shadow-2xl shadow-primary/5 mb-12 transition-all">
-                        <TabsList className="bg-transparent border-0 gap-2 h-auto p-0 flex-wrap md:flex-nowrap">
-                            <TabsTrigger value="general" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20 px-6 py-3 rounded-2xl transition-all font-bold flex items-center gap-2 text-sm sm:text-base tracking-tight">
-                                <Layout className="h-5 w-5" /> <span className="hidden sm:inline">Información y Ajustes</span><span className="sm:hidden">General</span>
-                            </TabsTrigger>
-                            <TabsTrigger value="structure" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20 px-6 py-3 rounded-2xl transition-all font-bold flex items-center gap-2 text-sm sm:text-base tracking-tight">
-                                <Layers3 className="h-5 w-5" /> <span className="hidden sm:inline">Estructura del Curso</span><span className="sm:hidden">Estructura</span>
-                            </TabsTrigger>
-                        </TabsList>
+                <div className="flex flex-col lg:flex-row gap-8 items-start">
+                    {/* Navigation Sidebar */}
+                    <aside className="w-full lg:w-72 sticky top-24 z-30">
+                        <div className="bg-card/40 backdrop-blur-2xl p-4 rounded-3xl border border-primary/10 shadow-xl">
+                            <TabsList className="flex flex-col items-stretch bg-transparent h-auto p-0 gap-1">
+                                <TabsTrigger value="basics" className="justify-start gap-3 px-4 py-3.5 rounded-2xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all font-bold text-sm">
+                                    <Layout className="h-5 w-5" /> Información Básica
+                                </TabsTrigger>
+                                <TabsTrigger value="curriculum" className="justify-start gap-3 px-4 py-3.5 rounded-2xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all font-bold text-sm">
+                                    <Layers3 className="h-5 w-5" /> Plan de Estudios
+                                </TabsTrigger>
+                                <TabsTrigger value="advanced" className="justify-start gap-3 px-4 py-3.5 rounded-2xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all font-bold text-sm">
+                                    <Award className="h-5 w-5" /> Ajustes Avanzados
+                                </TabsTrigger>
+                                <TabsTrigger value="distribution" className="justify-start gap-3 px-4 py-3.5 rounded-2xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all font-bold text-sm">
+                                    <Globe className="h-5 w-5" /> Distribución
+                                </TabsTrigger>
+                            </TabsList>
 
-                        <div className="flex items-center gap-3 self-end md:self-center">
-                            <Button asChild variant="ghost" className="hover:bg-primary/10 rounded-2xl hidden lg:flex font-bold" size="sm">
-                                <Link href={`/courses/${courseId}`} target="_blank">
-                                    <Eye className="mr-2 h-4 w-4" /> Vista Previa
-                                </Link>
-                            </Button>
-                            <Button onClick={handleSaveCourse} disabled={isSaving || !isDirty} size="sm" className="bg-primary hover:bg-primary/90 text-white rounded-2xl shadow-xl shadow-primary/20 px-8 py-6 font-bold text-base transition-all hover:scale-105 active:scale-95">
-                                {isSaving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
-                                {isSaving ? 'Guardando...' : 'Guardar'}
-                            </Button>
+                            <Separator className="my-4 opacity-50" />
+
+                            <div className="space-y-4 px-2 pb-2">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Acciones Privadas</span>
+                                </div>
+                                <div className="grid grid-cols-1 gap-2">
+                                    <Button asChild variant="ghost" className="justify-start hover:bg-primary/10 rounded-xl font-bold h-10 px-3" size="sm">
+                                        <Link href={`/courses/${courseId}`} target="_blank">
+                                            <Eye className="mr-2 h-4 w-4" /> Vista Previa
+                                        </Link>
+                                    </Button>
+                                    <Button onClick={handleSaveCourse} disabled={isSaving || !isDirty} className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl shadow-lg shadow-primary/20 h-10 font-bold transition-all">
+                                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                                        {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    </aside>
 
-                    <AnimatePresence mode="wait">
-                        <TabsContent value="general" className="focus-visible:outline-none focus-visible:ring-0">
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                className="grid grid-cols-1 lg:grid-cols-3 gap-6"
-                            >
-                                <div className="lg:col-span-2 space-y-6">
-                                    <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl overflow-hidden rounded-3xl">
-                                        <div className="h-2 bg-gradient-to-r from-primary/40 via-primary to-primary/40" />
-                                        <CardHeader className="pb-4">
-                                            <CardTitle className="text-xl font-bold flex items-center gap-3">
-                                                <Layout className="h-6 w-6 text-primary" /> Detalles Principales
+                    <div className="flex-1 w-full min-w-0">
+                        <AnimatePresence mode="wait">
+                            {/* BASICS TAB */}
+                            <TabsContent value="basics" className="mt-0 outline-none">
+                                <motion.div
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className="space-y-8"
+                                >
+                                    <div className="flex flex-col gap-2 mb-2">
+                                        <h2 className="text-3xl font-black tracking-tighter">Información del Curso</h2>
+                                        <p className="text-muted-foreground font-medium">Define la identidad visual y descriptiva de tu programa.</p>
+                                    </div>
+
+                                    <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl overflow-hidden rounded-[2.5rem]">
+                                        <div className="h-2 bg-primary" />
+                                        <CardHeader className="pb-4 pt-8 px-8">
+                                            <CardTitle className="text-2xl font-bold flex items-center gap-3">
+                                                <Layout className="h-7 w-7 text-primary" /> Cuerpo del Curso
                                             </CardTitle>
-                                            <CardDescription className="text-sm">Información esencial que verán los estudiantes.</CardDescription>
                                         </CardHeader>
-                                        <CardContent className="space-y-8">
+                                        <CardContent className="space-y-10 p-8 pt-2">
                                             <div className="space-y-3">
-                                                <Label htmlFor="title" className="text-[15px] font-bold text-muted-foreground/80 ml-1">Título del Curso</Label>
-                                                <Input id="title" value={course.title} onChange={e => updateCourseField('title', e.target.value)} placeholder="Ej: Master en React 2024" className="text-lg font-bold h-14 rounded-2xl border-primary/10 focus:ring-primary/20 bg-background/50 px-6" disabled={isSaving} />
+                                                <Label htmlFor="title" className="text-sm font-black uppercase tracking-widest text-muted-foreground/80 ml-1">Título de Impacto</Label>
+                                                <Input id="title" value={course.title} onChange={e => updateCourseField('title', e.target.value)} placeholder="Ej: Master en React 2024" className="text-xl font-black h-16 rounded-2xl border-primary/10 focus:ring-primary/20 bg-background/50 px-8" disabled={isSaving} />
                                             </div>
                                             <div className="space-y-3">
-                                                <Label htmlFor="description" className="text-[15px] font-bold text-muted-foreground/80 ml-1">Descripción Detallada</Label>
-                                                <div className="rounded-3xl border-2 border-primary/10 overflow-hidden bg-background/40 focus-within:border-primary/40 transition-all shadow-inner">
+                                                <Label htmlFor="description" className="text-sm font-black uppercase tracking-widest text-muted-foreground/80 ml-1">Contenido y Objetivos</Label>
+                                                <div className="rounded-[2rem] border-2 border-primary/10 overflow-hidden bg-background/40 focus-within:border-primary/40 transition-all shadow-inner">
                                                     <RichTextEditor
                                                         value={course.description || ''}
                                                         onChange={v => updateCourseField('description', v)}
                                                         placeholder="Describe qué aprenderán los estudiantes..."
-                                                        className="min-h-[180px] text-base border-0"
+                                                        className="min-h-[250px] text-lg border-0"
                                                     />
                                                 </div>
                                             </div>
                                         </CardContent>
                                     </Card>
-                                </div>
 
-                                <div className="space-y-6">
-                                    <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-3xl overflow-hidden">
-                                        <CardHeader className="pb-4">
-                                            <CardTitle className="text-lg font-bold flex items-center gap-3">
-                                                <ImagePlus className="h-5 w-5 text-primary" /> Portada del Curso
+                                    <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-[2.5rem] overflow-hidden">
+                                        <CardHeader className="pb-4 pt-8 px-8">
+                                            <CardTitle className="text-xl font-bold flex items-center gap-3">
+                                                <ImagePlus className="h-6 w-6 text-primary" /> Identidad Visual
                                             </CardTitle>
                                         </CardHeader>
-                                        <CardContent>
-                                            <div className="w-full relative aspect-video rounded-2xl border-2 border-dashed border-primary/20 bg-muted/20 flex items-center justify-center overflow-hidden transition-all hover:bg-muted/30">
+                                        <CardContent className="p-8 pt-2">
+                                            <div className="w-full relative aspect-[21/9] rounded-[2rem] border-4 border-dashed border-primary/10 bg-muted/20 flex items-center justify-center overflow-hidden transition-all hover:bg-muted/30 group">
                                                 {isUploadingImage && <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/80 z-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /><Progress value={uploadProgress} className="w-3/4 h-2 rounded-full" /></div>}
                                                 {(localCoverImagePreview || course.imageUrl) && !isUploadingImage ? (
-                                                    <div className="relative w-full h-full group">
+                                                    <div className="relative w-full h-full">
                                                         <Image src={localCoverImagePreview || course.imageUrl!} alt="Imagen del Curso" fill className="object-cover" />
-                                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                                            <Button type="button" variant="secondary" size="icon" className="h-10 w-10 rounded-full" onClick={() => document.getElementById('cover-image-upload')?.click()} disabled={isSaving || isUploadingImage} title="Cambiar imagen"><Replace className="h-5 w-5" /></Button>
-                                                            <Button type="button" variant="destructive" size="icon" className="h-10 w-10 rounded-full" onClick={() => { updateCourseField('imageUrl', null); setLocalCoverImagePreview(null); }} disabled={isSaving || isUploadingImage} title="Eliminar imagen"><XCircle className="h-5 w-5" /></Button>
+                                                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                                                            <Button type="button" variant="secondary" size="lg" className="rounded-2xl font-bold" onClick={() => document.getElementById('cover-image-upload')?.click()} disabled={isSaving || isUploadingImage}><Replace className="mr-2 h-5 w-5" /> Cambiar Imagen</Button>
+                                                            <Button type="button" variant="destructive" size="lg" className="rounded-2xl font-bold" onClick={() => { updateCourseField('imageUrl', null); setLocalCoverImagePreview(null); }} disabled={isSaving || isUploadingImage}><XCircle className="mr-2 h-5 w-5" /> Eliminar</Button>
                                                         </div>
                                                     </div>
                                                 ) : (
                                                     <UploadArea onFileSelect={(file) => { if (file) handleFileChange({ target: { files: [file] } } as any) }} inputId="cover-image-upload" disabled={isSaving || isUploadingImage} className="w-full h-full">
                                                         <div className="text-center text-muted-foreground p-4">
-                                                            <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                                                                <ImagePlus className="h-6 w-6 text-primary" />
+                                                            <div className="bg-primary/20 w-16 h-16 rounded-[1.5rem] flex items-center justify-center mx-auto mb-4 border border-primary/10">
+                                                                <ImagePlus className="h-8 w-8 text-primary" />
                                                             </div>
-                                                            <p className="text-sm font-bold">Subir Imagen</p>
-                                                            <p className="text-xs opacity-70">Recomendado: 1920x1080 (16:9)</p>
+                                                            <p className="text-lg font-black tracking-tight">Suelta aquí tu portada</p>
+                                                            <p className="text-sm font-medium opacity-60">Recomendado: 1920x1080 (16:9)</p>
                                                         </div>
                                                     </UploadArea>
                                                 )}
                                             </div>
                                         </CardContent>
                                     </Card>
+                                </motion.div>
+                            </TabsContent>
 
-                                    <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-3xl">
-                                        <CardHeader className="pb-4">
-                                            <CardTitle className="text-lg font-bold flex items-center gap-3">
-                                                <Sliders className="h-5 w-5 text-primary" /> Clasificación
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="space-y-6">
-                                            <div className="space-y-3">
-                                                <Label htmlFor="category" className="text-[15px] font-bold text-muted-foreground/80 ml-1">Categoría</Label>
-                                                <Select value={course.category || ''} onValueChange={v => updateCourseField('category', v)} disabled={isSaving}>
-                                                    <SelectTrigger id="category" className="h-14 rounded-xl border-primary/10 bg-background/50 text-base font-semibold px-4">
-                                                        <SelectValue placeholder="Selecciona..." />
-                                                    </SelectTrigger>
-                                                    <SelectContent className="rounded-xl border-primary/10">
-                                                        {(settings?.resourceCategories || []).sort().map(cat => (<SelectItem key={cat} value={cat} className="rounded-lg">{cat}</SelectItem>))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-
-                                    <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-3xl overflow-hidden">
-                                        <CardHeader className="bg-primary/5 pb-6 pt-8">
-                                            <CardTitle className="text-lg font-bold flex items-center gap-3">
-                                                <Globe className="h-6 w-6 text-primary" /> Publicación y Acceso
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="p-6 space-y-6">
-                                            <div className="space-y-3">
-                                                <Label htmlFor="status" className="font-bold text-[14px] ml-1 text-muted-foreground/80">Estado del Curso</Label>
-                                                <Select value={course.status} onValueChange={v => updateCourseField('status', v as CourseStatus)} disabled={isSaving}>
-                                                    <SelectTrigger id="status" className="h-12 rounded-xl border-primary/10 bg-background/50 text-sm font-semibold px-4">
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent className="rounded-xl border-primary/10">
-                                                        <SelectItem value="DRAFT" className="rounded-lg text-sm">Borrador (Solo tú)</SelectItem>
-                                                        <SelectItem value="PUBLISHED" className="rounded-lg text-sm">Publicado (Visible)</SelectItem>
-                                                        <SelectItem value="ARCHIVED" className="rounded-lg text-sm">Archivado (Oculto)</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-
-                                            <div className="space-y-4 pt-2">
-                                                <Label className="font-bold text-[14px] ml-1 text-muted-foreground/80">Disponibilidad Temporal</Label>
-                                                <div className="p-1 rounded-xl border border-primary/5 bg-background/30">
-                                                    <DateRangePicker
-                                                        date={{ from: course.startDate ? new Date(course.startDate) : undefined, to: course.endDate ? new Date(course.endDate) : undefined }}
-                                                        onDateChange={(range) => {
-                                                            updateCourseField('startDate', range?.from?.toISOString());
-                                                            updateCourseField('endDate', range?.to?.toISOString());
-                                                        }}
-                                                    />
-                                                </div>
-                                                <p className="text-[12px] font-bold text-muted-foreground/60 pl-1 italic">Deja vacío para acceso ilimitado.</p>
-                                            </div>
-
-                                            <div className="flex items-center justify-between gap-4 p-4 border border-primary/10 rounded-2xl bg-primary/5">
-                                                <div className="space-y-0.5">
-                                                    <Label htmlFor="isMandatory" className="text-sm font-bold">Curso Asignable</Label>
-                                                    <p className="text-xs font-bold text-muted-foreground/70">Este curso se puede asignar de forma obligatoria.</p>
-                                                </div>
-                                                <Switch id="isMandatory" checked={course.isMandatory} onCheckedChange={handleMandatorySwitchChange} disabled={isSaving} className="data-[state=checked]:bg-primary scale-90" />
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-
-                                    <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-3xl overflow-hidden">
-                                        <CardHeader className="bg-primary/5">
-                                            <CardTitle className="text-lg font-bold flex items-center gap-2">
-                                                <Award className="h-5 w-5 text-primary" /> Requisitos y Recompensas
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="p-6 space-y-6">
-                                            <div className="space-y-3">
-                                                <Label htmlFor="prerequisite" className="font-bold text-[14px] ml-1 text-muted-foreground/80">Curso Prerrequisito</Label>
-                                                <Select value={course.prerequisiteId || 'none'} onValueChange={v => updateCourseField('prerequisiteId', v === 'none' ? null : v)} disabled={isSaving}>
-                                                    <SelectTrigger id="prerequisite" className="h-12 rounded-xl border-primary/10 bg-background/50 text-sm font-semibold px-4">
-                                                        <SelectValue placeholder="Ninguno" />
-                                                    </SelectTrigger>
-                                                    <SelectContent className="rounded-xl border-primary/10 max-h-[300px]">
-                                                        <SelectItem value="none" className="rounded-lg text-sm">Sin prerrequisito</SelectItem>
-                                                        <DropdownMenuSeparator className="my-1 bg-primary/5" />
-                                                        {allCoursesForPrereq.map(c => (<SelectItem key={c.id} value={c.id} className="rounded-lg text-sm">{c.title}</SelectItem>))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-
-                                            <div className="space-y-3">
-                                                <Label htmlFor="certificateTemplate" className="font-bold text-[14px] ml-1 text-muted-foreground/80">Plantilla de Certificado</Label>
-                                                <Select value={course.certificateTemplateId || 'none'} onValueChange={v => updateCourseField('certificateTemplateId', v === 'none' ? null : v)} disabled={isSaving}>
-                                                    <SelectTrigger id="certificateTemplate" className="h-12 rounded-xl border-primary/10 bg-background/50 text-sm font-semibold px-4">
-                                                        <SelectValue placeholder="Sin certificado" />
-                                                    </SelectTrigger>
-                                                    <SelectContent className="rounded-xl border-primary/10">
-                                                        <SelectItem value="none" className="rounded-lg text-sm">No otorgar certificado</SelectItem>
-                                                        <DropdownMenuSeparator className="my-1 bg-primary/5" />
-                                                        {certificateTemplates.map(t => (<SelectItem key={t.id} value={t.id} className="rounded-lg text-sm">{t.name}</SelectItem>))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                </div>
-                            </motion.div>
-                        </TabsContent>
-
-                        <TabsContent value="structure" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.98 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.98 }}
-                                className="space-y-6"
-                            >
-                                <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-3xl overflow-hidden min-h-[500px]">
-                                    <CardHeader className="border-b border-primary/5 bg-primary/5 pb-6 pt-8">
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <CardTitle className="text-2xl font-bold flex items-center gap-3">
-                                                    <Layers3 className="h-7 w-7 text-primary" /> Estructura del Curso
-                                                </CardTitle>
-                                                <CardDescription className="text-sm">Organiza tus módulos y lecciones mediante arrastrar y soltar.</CardDescription>
-                                            </div>
-                                            <Button type="button" onClick={handleAddModule} disabled={isSaving} className="bg-primary hover:bg-primary/90 text-white rounded-2xl px-6 py-5 font-bold text-sm shadow-xl shadow-primary/20 transition-all hover:scale-105">
-                                                <PlusCircle className="mr-2 h-5 w-5" /> Añadir Módulo
-                                            </Button>
+                            {/* CURRICULUM TAB */}
+                            <TabsContent value="curriculum" className="mt-0 outline-none">
+                                <motion.div
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className="space-y-6"
+                                >
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
+                                        <div>
+                                            <h2 className="text-3xl font-black tracking-tighter">Plan de Estudios</h2>
+                                            <p className="text-muted-foreground font-medium">Diseña la arquitectura del conocimiento de tu curso.</p>
                                         </div>
-                                    </CardHeader>
-                                    <CardContent className="p-6">
+                                        <Button type="button" onClick={handleAddModule} disabled={isSaving} className="bg-primary hover:bg-primary/90 text-white rounded-2xl px-6 py-6 font-bold text-base shadow-xl shadow-primary/20 transition-all hover:scale-105">
+                                            <PlusCircle className="mr-2 h-5 w-5" /> Nuevo Módulo
+                                        </Button>
+                                    </div>
+
+                                    <div className="space-y-6 min-h-[500px]">
                                         <DragDropContext onDragEnd={onDragEnd}>
                                             <Droppable droppableId="course-modules" type="MODULES">
                                                 {(provided) => (
-                                                    <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-6">
+                                                    <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-8">
                                                         {course.modules.map((moduleItem, moduleIndex) => (
                                                             <Draggable key={moduleItem.id} draggableId={moduleItem.id} index={moduleIndex}>
                                                                 {(provided) => (
@@ -1030,20 +948,175 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                             </Droppable>
                                         </DragDropContext>
                                         {(course.modules || []).length === 0 && (
-                                            <div className="flex flex-col items-center justify-center py-20 text-center opacity-40">
-                                                <div className="bg-primary/10 p-6 rounded-full mb-4">
-                                                    <Layers3 className="h-12 w-12 text-primary" />
+                                            <div className="flex flex-col items-center justify-center py-32 text-center bg-card/20 rounded-[3rem] border-4 border-dashed border-primary/5">
+                                                <div className="bg-primary/10 p-8 rounded-full mb-6">
+                                                    <Layers3 className="h-16 w-16 text-primary" />
                                                 </div>
-                                                <p className="text-xl font-bold">Tu curso está vacío</p>
-                                                <p className="max-w-xs text-sm">Empieza añadiendo tu primer módulo para organizar el aprendizaje.</p>
+                                                <h3 className="text-2xl font-black mb-2">Construye tu curso</h3>
+                                                <p className="max-w-xs text-muted-foreground font-medium">Añade tu primer módulo para empezar a estructurar las lecciones.</p>
+                                                <Button type="button" onClick={handleAddModule} variant="outline" className="mt-8 rounded-2xl border-primary/20 font-bold px-8 h-12">Empezar Ahora</Button>
                                             </div>
                                         )}
-                                    </CardContent>
-                                </Card>
-                            </motion.div>
-                        </TabsContent>
-                    </AnimatePresence>
-                </Tabs>
+                                    </div>
+                                </motion.div>
+                            </TabsContent>
+
+                            {/* ADVANCED SETTINGS TAB */}
+                            <TabsContent value="advanced" className="mt-0 outline-none">
+                                <motion.div
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className="space-y-8"
+                                >
+                                    <div className="flex flex-col gap-2 mb-2">
+                                        <h2 className="text-3xl font-black tracking-tighter">Ajustes de Calidad</h2>
+                                        <p className="text-muted-foreground font-medium">Certificaciones, rutas de aprendizaje y control de acceso.</p>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-[2.5rem] overflow-hidden">
+                                            <div className="h-2 bg-emerald-500" />
+                                            <CardHeader className="p-8 pb-4">
+                                                <CardTitle className="text-xl font-bold flex items-center gap-3">
+                                                    <Award className="h-6 w-6 text-emerald-500" /> Reconocimiento
+                                                </CardTitle>
+                                            </CardHeader>
+                                            <CardContent className="p-8 pt-2 space-y-6">
+                                                <div className="space-y-3">
+                                                    <Label htmlFor="certificateTemplate" className="text-sm font-black uppercase tracking-widest text-muted-foreground/80 ml-1">Certificado Nexus</Label>
+                                                    <Select value={course.certificateTemplateId || 'none'} onValueChange={v => updateCourseField('certificateTemplateId', v === 'none' ? null : v)} disabled={isSaving}>
+                                                        <SelectTrigger id="certificateTemplate" className="h-14 rounded-2xl border-primary/10 bg-background/50 text-base font-bold px-6 shadow-sm">
+                                                            <SelectValue placeholder="Sin certificado" />
+                                                        </SelectTrigger>
+                                                        <SelectContent className="rounded-2xl border-primary/10">
+                                                            <SelectItem value="none" className="rounded-lg font-bold">No otorgar certificado</SelectItem>
+                                                            <DropdownMenuSeparator className="my-1 bg-primary/5" />
+                                                            {certificateTemplates.map(t => (<SelectItem key={t.id} value={t.id} className="rounded-lg font-bold">{t.name}</SelectItem>))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div className="p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl text-[11px] font-bold text-emerald-600 uppercase tracking-widest text-center">
+                                                    Los certificados se emiten automáticamente tras completar el 100%
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+
+                                        <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-[2.5rem] overflow-hidden">
+                                            <div className="h-2 bg-amber-500" />
+                                            <CardHeader className="p-8 pb-4">
+                                                <CardTitle className="text-xl font-bold flex items-center gap-3">
+                                                    <Sliders className="h-6 w-6 text-amber-500" /> Control de Flujo
+                                                </CardTitle>
+                                            </CardHeader>
+                                            <CardContent className="p-8 pt-2 space-y-8">
+                                                <div className="space-y-3">
+                                                    <Label htmlFor="prerequisite" className="text-sm font-black uppercase tracking-widest text-muted-foreground/80 ml-1">Curso Prerrequisito</Label>
+                                                    <Select value={course.prerequisiteId || 'none'} onValueChange={v => updateCourseField('prerequisiteId', v === 'none' ? null : v)} disabled={isSaving}>
+                                                        <SelectTrigger id="prerequisite" className="h-14 rounded-2xl border-primary/10 bg-background/50 text-base font-bold px-6 shadow-sm">
+                                                            <SelectValue placeholder="Ninguno" />
+                                                        </SelectTrigger>
+                                                        <SelectContent className="rounded-2xl border-primary/10 max-h-[300px]">
+                                                            <SelectItem value="none" className="rounded-lg font-bold">Sin prerrequisito</SelectItem>
+                                                            <DropdownMenuSeparator className="my-1 bg-primary/5" />
+                                                            {allCoursesForPrereq.map(c => (<SelectItem key={c.id} value={c.id} className="rounded-lg font-bold">{c.title}</SelectItem>))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+
+                                                <div className="flex items-center justify-between gap-4 p-5 border-2 border-primary/10 rounded-[1.5rem] bg-primary/5 transition-all hover:bg-primary/10">
+                                                    <div className="space-y-0.5">
+                                                        <Label htmlFor="isMandatory" className="text-base font-black tracking-tight">Asignación Obligatoria</Label>
+                                                        <p className="text-xs font-medium text-muted-foreground/80">Permite asignar este curso a grupos específicos.</p>
+                                                    </div>
+                                                    <Switch id="isMandatory" checked={course.isMandatory} onCheckedChange={handleMandatorySwitchChange} disabled={isSaving} className="data-[state=checked]:bg-primary scale-110" />
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    </div>
+                                </motion.div>
+                            </TabsContent>
+
+                            {/* DISTRIBUTION TAB */}
+                            <TabsContent value="distribution" className="mt-0 outline-none">
+                                <motion.div
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className="space-y-8"
+                                >
+                                    <div className="flex flex-col gap-2 mb-2">
+                                        <h2 className="text-3xl font-black tracking-tighter">Publicación y Alcance</h2>
+                                        <p className="text-muted-foreground font-medium">Controla cuándo y quiénes tienen acceso al curso.</p>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                        <Card className="md:col-span-2 bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-[2.5rem] overflow-hidden">
+                                            <div className="h-2 bg-primary" />
+                                            <CardHeader className="p-8 pb-4">
+                                                <CardTitle className="text-xl font-bold flex items-center gap-3">
+                                                    <CalendarIcon className="h-6 w-6 text-primary" /> Período de Validez
+                                                </CardTitle>
+                                            </CardHeader>
+                                            <CardContent className="p-8 pt-2">
+                                                <div className="bg-background/40 p-6 rounded-3xl border border-primary/5 shadow-inner">
+                                                    <DateRangePicker
+                                                        date={{ from: course.startDate ? new Date(course.startDate) : undefined, to: course.endDate ? new Date(course.endDate) : undefined }}
+                                                        onDateChange={(range) => {
+                                                            updateCourseField('startDate', range?.from?.toISOString());
+                                                            updateCourseField('endDate', range?.to?.toISOString());
+                                                        }}
+                                                    />
+                                                    <div className="mt-6 flex items-start gap-3 p-4 bg-primary/5 rounded-2xl border border-primary/10">
+                                                        <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                                                        <p className="text-sm font-medium text-muted-foreground leading-relaxed">Si dejas el rango vacío, el curso estará disponible permanentemente una vez publicado.</p>
+                                                    </div>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+
+                                        <div className="space-y-6">
+                                            <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-[2rem] overflow-hidden">
+                                                <CardHeader className="p-6 pb-2">
+                                                    <CardTitle className="text-base font-black uppercase tracking-widest text-muted-foreground/60">Estado Vital</CardTitle>
+                                                </CardHeader>
+                                                <CardContent className="p-6 pt-2">
+                                                    <Select value={course.status} onValueChange={v => updateCourseField('status', v as CourseStatus)} disabled={isSaving}>
+                                                        <SelectTrigger id="status" className="h-14 rounded-2xl border-primary/10 bg-background/50 font-black text-lg shadow-sm">
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent className="rounded-2xl border-primary/10">
+                                                            <SelectItem value="DRAFT" className="rounded-lg font-bold">Borrador</SelectItem>
+                                                            <SelectItem value="PUBLISHED" className="rounded-lg font-bold">Publicado</SelectItem>
+                                                            <SelectItem value="ARCHIVED" className="rounded-lg font-bold">Archivado</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </CardContent>
+                                            </Card>
+
+                                            <Card className="bg-card/40 backdrop-blur-xl border-primary/10 shadow-xl rounded-[2rem] overflow-hidden">
+                                                <CardHeader className="p-6 pb-2">
+                                                    <CardTitle className="text-base font-black uppercase tracking-widest text-muted-foreground/60">Especialidad</CardTitle>
+                                                </CardHeader>
+                                                <CardContent className="p-6 pt-2">
+                                                    <Select value={course.category || ''} onValueChange={v => updateCourseField('category', v)} disabled={isSaving}>
+                                                        <SelectTrigger id="category" className="h-14 rounded-2xl border-primary/10 bg-background/50 font-bold px-4">
+                                                            <SelectValue placeholder="Selecciona..." />
+                                                        </SelectTrigger>
+                                                        <SelectContent className="rounded-2xl border-primary/10">
+                                                            {(settings?.resourceCategories || []).sort().map(cat => (<SelectItem key={cat} value={cat} className="rounded-lg font-bold">{cat}</SelectItem>))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </CardContent>
+                                            </Card>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            </TabsContent>
+                        </AnimatePresence>
+                    </div>
+                </div>
+
 
                 {/* Modales */}
                 <AlertDialog open={!!itemToDeleteDetails} onOpenChange={(isOpen) => !isOpen && setItemToDeleteDetails(null)}>
@@ -1103,20 +1176,25 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 }
 
 const BlockTypeSelector = ({ onSelect }) => (
-    <div className="flex flex-wrap items-center gap-3">
-        <span className="text-[11px] font-black text-muted-foreground/60 uppercase tracking-widest mr-2">Añadir Contenido:</span>
-        <Button variant="outline" size="sm" onClick={() => onSelect('TEXT')} className="rounded-full border-primary/20 hover:bg-blue-500/10 hover:text-blue-500 hover:border-blue-500/30 transition-all font-bold gap-2 px-4 h-9">
-            <FileText className="h-4 w-4" /> Texto
-        </Button>
-        <Button variant="outline" size="sm" onClick={() => onSelect('VIDEO')} className="rounded-full border-primary/20 hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/30 transition-all font-bold gap-2 px-4 h-9">
-            <Video className="h-4 w-4" /> Video
-        </Button>
-        <Button variant="outline" size="sm" onClick={() => onSelect('FILE')} className="rounded-full border-primary/20 hover:bg-amber-500/10 hover:text-amber-500 hover:border-amber-500/30 transition-all font-bold gap-2 px-4 h-9">
-            <FileGenericIcon className="h-4 w-4" /> Archivo
-        </Button>
-        <Button variant="outline" size="sm" onClick={() => onSelect('QUIZ')} className="rounded-full border-primary/20 hover:bg-purple-500/10 hover:text-purple-500 hover:border-purple-500/30 transition-all font-bold gap-2 px-4 h-9">
-            <Pencil className="h-4 w-4" /> Quiz
-        </Button>
+    <div className="flex flex-wrap items-center gap-4 p-6 bg-primary/5 rounded-[2rem] border border-primary/5 shadow-inner">
+        <div className="flex flex-col mr-4">
+            <span className="text-[10px] font-black text-primary/40 uppercase tracking-[0.2em]">Constructor</span>
+            <span className="text-xs font-black text-primary/80">Insertar Bloque</span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={() => onSelect('TEXT')} className="rounded-2xl border-primary/10 bg-background/50 hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-all font-bold gap-2 px-5 h-11 shadow-sm">
+                <FileText className="h-4 w-4" /> Texto
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => onSelect('VIDEO')} className="rounded-2xl border-primary/10 bg-background/50 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all font-bold gap-2 px-5 h-11 shadow-sm">
+                <Video className="h-4 w-4" /> Video
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => onSelect('FILE')} className="rounded-2xl border-primary/10 bg-background/50 hover:bg-amber-500 hover:text-white hover:border-amber-500 transition-all font-bold gap-2 px-5 h-11 shadow-sm">
+                <FileGenericIcon className="h-4 w-4" /> Archivo
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => onSelect('QUIZ')} className="rounded-2xl border-primary/10 bg-background/50 hover:bg-purple-500 hover:text-white hover:border-purple-500 transition-all font-bold gap-2 px-5 h-11 shadow-sm">
+                <Pencil className="h-4 w-4" /> Quiz / Examen
+            </Button>
+        </div>
     </div>
 );
 

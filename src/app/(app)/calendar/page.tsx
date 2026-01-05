@@ -33,10 +33,9 @@ export default function CalendarPage() {
   };
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex flex-col gap-2">
-        {/* Title handled by TopBar, showing description here */}
-        <p className="text-muted-foreground text-lg">
+    <div className="w-full px-8 pt-0 pb-12 space-y-6 animate-in fade-in duration-700">
+      <div className="flex flex-col gap-1 text-left max-w-4xl">
+        <p className="text-slate-500 text-lg font-medium leading-relaxed">
           Gestiona y organiza todos tus eventos, reuniones y fechas importantes en un solo lugar.
         </p>
       </div>

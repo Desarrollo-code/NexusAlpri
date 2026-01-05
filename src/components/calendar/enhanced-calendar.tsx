@@ -53,6 +53,9 @@ export type CalendarEvent = {
     description?: string;
     location?: string;
     allDay?: boolean;
+    isInteractive?: boolean;
+    creatorId?: string;
+    attendees?: { id: string, name: string, avatar?: string | null }[];
 };
 
 // --- LOCALIZER SETUP ---
@@ -271,7 +274,8 @@ export function EnhancedCalendar({ onEventClick, refreshTrigger }: EnhancedCalen
                 borderRadius: "4px",
                 opacity: 0.9,
                 color: "white",
-                border: "0px",
+                border: event.isInteractive ? "2px solid #ef4444" : "0px",
+                boxShadow: event.isInteractive ? "0 0 10px rgba(239, 68, 68, 0.4)" : "none",
                 display: "block",
             },
         };

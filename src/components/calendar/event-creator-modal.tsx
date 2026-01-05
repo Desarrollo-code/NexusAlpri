@@ -21,7 +21,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CalendarIcon, Clock } from "lucide-react";
+import { CalendarIcon, Clock, Sparkles } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -66,6 +66,7 @@ export function EventCreatorModal({ open, onOpenChange }: EventCreatorModalProps
                     start,
                     end,
                     allDay,
+                    isInteractive: formData.get('isInteractive') === 'on',
                     audienceType: categoryId === "1" ? "ALL" : categoryId === "2" ? "ADMINISTRATOR" : categoryId === "3" ? "INSTRUCTOR" : "STUDENT",
                     color: categoryId === "1" ? "#3b82f6" : categoryId === "2" ? "#ef4444" : categoryId === "3" ? "#10b981" : "#8b5cf6"
                 }),
@@ -149,7 +150,19 @@ export function EventCreatorModal({ open, onOpenChange }: EventCreatorModalProps
                     </div>
                     <div className="flex items-center space-x-2">
                         <Checkbox id="all-day" name="allDay" />
-                        <Label htmlFor="all-day" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Todo el día</Label>
+                        <Label htmlFor="all-day" className="text-sm font-medium leading-none">Todo el día</Label>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-3">
+                        <div className="flex items-center space-x-2">
+                            <Checkbox id="is-interactive" name="isInteractive" />
+                            <Label htmlFor="is-interactive" className="text-sm font-bold text-amber-900 flex items-center gap-2">
+                                <Sparkles className="h-4 w-4 text-amber-500" /> Evento Interactivo
+                            </Label>
+                        </div>
+                        <p className="text-[10px] text-amber-700/70 font-medium pl-6">
+                            Los asistentes podrán confirmar su presencia manualmente. Ideal para sesiones en vivo o capacitaciones presenciales.
+                        </p>
                     </div>
 
                     <DialogFooter>
