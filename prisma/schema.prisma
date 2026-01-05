@@ -153,6 +153,7 @@ model User {
   achievements          UserAchievement[]
   showInLeaderboard     Boolean?     @default(true)
   customPermissions       Json?
+  department            String?      // <--- AÑADIR ESTA LÍNEA
   sharedForms           Form[]              @relation("SharedForms") // <--- FIX 2: Added opposite relation
   motivationalMessages MotivationalMessage[]
   eventParticipations EventParticipation[]
@@ -464,6 +465,8 @@ model Announcement {
   title           String
   content         String                 @db.Text
   date            DateTime               @default(now())
+  category        String?                // <--- AÑADIR ESTA LÍNEA
+  imageUrl        String?                // <--- AÑADIR ESTA LÍNEA
   author          User                   @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId        String
   audience        String // 'ALL', 'STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'
