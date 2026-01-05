@@ -234,14 +234,14 @@ export const columns: ColumnDef<User>[] = [
                         <DropdownMenuItem>Asignar Curso</DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                            className="text-red-600 focus:text-red-600"
+                            className="text-amber-600 focus:text-amber-700 font-bold"
                             onClick={() => {
-                                if (confirm(`¿Estás seguro de que deseas eliminar al usuario ${user.name}?`)) {
-                                    handleDelete(user.id);
+                                if (confirm(`¿Deseas inactivar a ${user.name}? Este usuario ya no podrá ingresar a la plataforma.`)) {
+                                    meta?.onDelete(user.id);
                                 }
                             }}
                         >
-                            Eliminar Usuario
+                            <XCircle className="mr-2 h-4 w-4" /> Inactivar Cuenta
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -250,18 +250,7 @@ export const columns: ColumnDef<User>[] = [
     },
 ];
 
-async function handleDelete(id: string) {
-    try {
-        const response = await fetch(`/api/users/${id}`, { method: 'DELETE' });
-        if (response.ok) {
-            window.location.reload(); // Simple refresh for now to update table
-        } else {
-            alert("Error al eliminar el usuario");
-        }
-    } catch (error) {
-        console.error("Delete failed", error);
-    }
-}
+
 
 export function UserManagementTable() {
     const [data, setData] = useState<User[]>([]);
@@ -332,6 +321,19 @@ export function UserManagementTable() {
         fetchData();
     }, [pagination.pageIndex, pagination.pageSize, columnFilters, sorting, selectedProcessId, selectedRole, selectedStatus]);
 
+    const handleDelete = async (id: string) => {
+        try {
+            const response = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+            if (response.ok) {
+                fetchData();
+            } else {
+                alert("Error al inactivar el usuario");
+            }
+        } catch (error) {
+            console.error("Inactivation failed", error);
+        }
+    };
+
     const handleEdit = (user: User) => {
         setEditingUser(user);
         setIsEditModalOpen(true);
@@ -359,7 +361,9 @@ export function UserManagementTable() {
             pagination,
         },
         meta: {
-            onEdit: handleEdit
+            onEdit: handleEdit,
+            onDelete: handleDelete,
+            onSuccess: fetchData
         }
     });
 
@@ -545,7 +549,7 @@ export function UserManagementTable() {
                         </Table>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 pb-20">
+                    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 pb-20">
                         {filteredData.map((user) => (
                             <UserCard key={user.id} user={user} onEdit={handleEdit} onDelete={handleDelete} />
                         ))}
@@ -661,36 +665,36 @@ function UserCard({ user, onEdit, onDelete }: { user: User, onEdit: (u: User) =>
     const processColor = user.process ? processColors[colorIndex] : "from-slate-400 to-slate-500";
 
     return (
-        <Card className="hover:shadow-xl transition-all duration-500 border border-slate-100 shadow-sm overflow-hidden rounded-3xl group relative bg-white font-inter">
-            <CardContent className="p-5">
-                <div className="flex items-center gap-5">
+        <Card className="hover:shadow-xl transition-all duration-500 border border-slate-100 shadow-sm overflow-hidden rounded-2xl md:rounded-3xl group relative bg-white font-inter">
+            <CardContent className="p-3 md:p-5">
+                <div className="flex flex-col sm:flex-row items-center sm:items-center gap-3 md:gap-5 text-center sm:text-left">
                     {/* AVATAR LEFT */}
                     <div className="relative shrink-0">
-                        <Avatar className="h-16 w-16 border-2 border-white shadow-md group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
+                        <Avatar className="h-12 w-12 md:h-16 md:w-16 border-2 border-white shadow-md group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
                             <AvatarImage src={(user as any).avatar} />
-                            <AvatarFallback className={`bg-gradient-to-br ${processColor} text-white font-black text-xl`}>
+                            <AvatarFallback className={`bg-gradient-to-br ${processColor} text-white font-black text-lg md:text-xl`}>
                                 {user.name.charAt(0)}
                             </AvatarFallback>
                         </Avatar>
-                        <div className={`absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full border-2 border-white shadow-sm ${user.status === 'active' ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+                        <div className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 md:h-4 md:w-4 rounded-full border-2 border-white shadow-sm ${user.status === 'active' ? 'bg-emerald-500' : 'bg-slate-300'}`} />
                     </div>
 
                     {/* NAME & EMAIL CENTER */}
-                    <div className="flex-1 min-w-0">
-                        <h4 className="font-black text-lg text-slate-800 tracking-tight group-hover:text-primary transition-colors line-clamp-1">
+                    <div className="flex-1 min-w-0 w-full">
+                        <h4 className="font-black text-sm md:text-lg text-slate-800 tracking-tight group-hover:text-primary transition-colors line-clamp-1">
                             {user.name}
                         </h4>
-                        <p className="text-[11px] font-bold text-slate-400 truncate tracking-tight">{user.email}</p>
+                        <p className="text-[10px] md:text-xs font-bold text-slate-400 truncate tracking-tight">{user.email}</p>
 
-                        <div className="mt-2 flex flex-wrap gap-2">
-                            <Badge className={`rounded-lg px-2 py-0.5 font-black text-[9px] uppercase tracking-wider border-none shadow-sm ${user.role === 'ADMINISTRATOR' ? 'bg-purple-100 text-purple-700' :
-                                user.role === 'INSTRUCTOR' ? 'bg-blue-100 text-blue-700' :
-                                    'bg-slate-100 text-slate-600'
+                        <div className="mt-2 flex flex-wrap justify-center sm:justify-start gap-1.5 md:gap-2">
+                            <Badge className={`rounded-lg px-2 py-0.5 md:px-2.5 md:py-1 font-black text-[8px] md:text-[10px] uppercase tracking-wider border-none shadow-sm ${user.role === 'ADMINISTRATOR' ? 'bg-purple-600 text-white' :
+                                user.role === 'INSTRUCTOR' ? 'bg-indigo-600 text-white' :
+                                    'bg-slate-600 text-white'
                                 }`}>
                                 {user.role === 'ADMINISTRATOR' ? 'Admin' : user.role === 'INSTRUCTOR' ? 'Instructor' : 'Estudiante'}
                             </Badge>
                             {user.process && (
-                                <Badge variant="outline" className={`rounded-lg px-2 py-0.5 font-black text-[9px] uppercase tracking-wider border-slate-200 bg-slate-50 text-slate-500`}>
+                                <Badge variant="outline" className={`rounded-lg px-2 py-0.5 md:px-2.5 md:py-1 font-black text-[8px] md:text-[10px] uppercase tracking-wider border-slate-200 bg-slate-50 text-slate-600`}>
                                     {user.process.name}
                                 </Badge>
                             )}
@@ -698,7 +702,7 @@ function UserCard({ user, onEdit, onDelete }: { user: User, onEdit: (u: User) =>
                     </div>
 
                     {/* ACTIONS RIGHT */}
-                    <div className="flex flex-col gap-2 items-end">
+                    <div className="flex sm:flex-col gap-2 items-center sm:items-end mt-2 sm:mt-0">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-900 transition-colors">
@@ -713,10 +717,10 @@ function UserCard({ user, onEdit, onDelete }: { user: User, onEdit: (u: User) =>
                                     <Users className="h-4 w-4" /> Ver Equipo
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator className="my-2" />
-                                <DropdownMenuItem className="text-red-500 rounded-xl h-11 font-bold gap-3 focus:bg-red-50 focus:text-red-600" onClick={() => {
-                                    if (confirm(`¿Eliminar a ${user.name}?`)) onDelete(user.id)
+                                <DropdownMenuItem className="text-amber-600 rounded-xl h-11 font-bold gap-3 focus:bg-amber-50 focus:text-amber-700" onClick={() => {
+                                    if (confirm(`¿Deseas inactivar a ${user.name}? Este usuario ya no podrá ingresar a la plataforma.`)) onDelete(user.id)
                                 }}>
-                                    <Trash2 className="h-4 w-4" /> Eliminar
+                                    <XCircle className="h-4 w-4" /> Inactivar Cuenta
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -864,7 +868,7 @@ function StatCard({
             </div>
 
             <div className="flex flex-col min-w-0">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-primary transition-colors truncate">
+                <span className="text-xs font-black uppercase tracking-widest text-slate-400 group-hover:text-primary transition-colors truncate">
                     {title}
                 </span>
                 <div className="flex items-baseline gap-2">

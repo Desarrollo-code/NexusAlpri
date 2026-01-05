@@ -24,15 +24,27 @@ import {
     Camera,
     Eye,
     EyeOff,
-    LayoutDashboard,
+    LayoutGrid,
     Trophy,
-    MessageSquare,
-    Calendar,
+    Megaphone,
+    CalendarDays,
+    GraduationCap,
     BookOpen,
-    Users,
-    Layers,
+    Library,
+    Notebook,
+    Briefcase,
+    Folder,
     FileText,
+    Shield,
+    BookMarked,
+    UsersRound,
+    Sparkles,
     Award,
+    Network,
+    BarChart3,
+    Rocket,
+    ShieldAlert,
+    Settings,
     Save,
     X
 } from "lucide-react";
@@ -48,61 +60,70 @@ interface UserEditModalProps {
 
 const PERMISSION_CATEGORIES = [
     {
-        title: "Panel & Análisis",
-        icon: LayoutDashboard,
+        title: "Panel Principal",
+        icon: LayoutGrid,
+        color: "text-blue-600",
         permissions: [
-            { id: "view_dashboard", label: "Dashboard" },
-            { id: "view_analytics", label: "Analíticas" },
+            { id: "view_dashboard", label: "Panel Principal", icon: LayoutGrid },
         ]
     },
     {
-        title: "Formación",
-        icon: BookOpen,
+        title: "Competición",
+        icon: Trophy,
+        color: "text-orange-600",
         permissions: [
-            { id: "view_catalog", label: "Catálogo" },
-            { id: "view_my_courses", label: "Mis Cursos" },
-            { id: "manage_courses", label: "Gestionar Cursos" },
-        ]
-    },
-    {
-        title: "Evaluaciones",
-        icon: FileText,
-        permissions: [
-            { id: "manage_quizzes", label: "Quices" },
-            { id: "manage_forms", label: "Formularios" },
+            { id: "view_leaderboard", label: "Competición", icon: Trophy },
         ]
     },
     {
         title: "Comunicaciones",
-        icon: MessageSquare,
+        icon: Megaphone,
+        color: "text-pink-600",
         permissions: [
-            { id: "view_announcements", label: "Anuncios" },
-            { id: "view_calendar", label: "Calendario" },
-            { id: "manage_announcements", label: "Postear Anuncios" },
+            { id: "view_announcements", label: "Anuncios", icon: Megaphone },
+            { id: "view_calendar", label: "Calendario", icon: CalendarDays },
         ]
     },
     {
-        title: "Estructura & Personas",
-        icon: Users,
+        title: "Formación",
+        icon: GraduationCap,
+        color: "text-emerald-600",
         permissions: [
-            { id: "view_users", label: "Ver Usuarios" },
-            { id: "manage_users", label: "Gestionar Usuarios" },
-            { id: "manage_processes", label: "Estructura Org." },
+            { id: "view_catalog", label: "Catálogo de Cursos", icon: BookOpen },
+            { id: "view_my_courses", label: "Mis Cursos", icon: Library },
+            { id: "view_my_notes", label: "Mis Apuntes", icon: Notebook },
         ]
     },
     {
-        title: "Reconocimientos",
-        icon: Award,
+        title: "Organización",
+        icon: Briefcase,
+        color: "text-indigo-600",
         permissions: [
-            { id: "manage_certificates", label: "Certificados" },
-            { id: "view_leaderboard", label: "Competición" },
+            { id: "view_library", label: "Biblioteca", icon: Folder },
+            { id: "manage_forms", label: "Formularios", icon: FileText },
+        ]
+    },
+    {
+        title: "Administración",
+        icon: Shield,
+        color: "text-rose-600",
+        permissions: [
+            { id: "manage_courses", label: "Gestionar Cursos", icon: BookMarked },
+            { id: "view_reports", label: "Inscripciones", icon: UsersRound },
+            { id: "manage_motivations", label: "Motivaciones", icon: Sparkles },
+            { id: "manage_certificates", label: "Certificados", icon: Award },
+            { id: "manage_users", label: "Control Central", icon: Network },
+            { id: "view_analytics", label: "Analíticas", icon: BarChart3 },
+            { id: "view_roadmap", label: "Ruta del Proyecto", icon: Rocket },
+            { id: "manage_security", label: "Seguridad", icon: ShieldAlert },
+            { id: "manage_settings", label: "Configuración", icon: Settings },
         ]
     }
 ];
 
 const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
-    STUDENT: ["view_dashboard", "view_announcements", "view_catalog", "view_my_courses", "view_leaderboard"],
-    INSTRUCTOR: ["view_dashboard", "view_analytics", "view_announcements", "view_catalog", "view_my_courses", "view_leaderboard", "view_calendar", "view_users", "manage_quizzes", "manage_forms"],
+    STUDENT: ["view_dashboard", "view_announcements", "view_calendar", "view_catalog", "view_my_courses", "view_my_notes", "view_leaderboard", "view_library"],
+    INSTRUCTOR: ["view_dashboard", "view_leaderboard", "view_announcements", "view_calendar", "view_catalog", "view_my_courses", "view_my_notes", "view_library", "manage_forms", "manage_courses", "view_reports", "manage_motivations"],
     ADMINISTRATOR: PERMISSION_CATEGORIES.flatMap(c => c.permissions.map(p => p.id))
 };
 
@@ -370,34 +391,42 @@ export function UserEditModal({ user, isOpen, onClose, onSuccess }: UserEditModa
                                         const Icon = category.icon;
                                         return (
                                             <div key={category.title} className="space-y-3">
-                                                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                                                    <Icon className="h-3 w-3" />
+                                                <h4 className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 flex items-center gap-2">
+                                                    <div className={`h-1.5 w-1.5 rounded-full ${category.color.replace('text-', 'bg-')}`} />
                                                     {category.title}
                                                 </h4>
-                                                <div className="grid grid-cols-2 gap-3">
-                                                    {category.permissions.map((perm) => (
-                                                        <div
-                                                            key={perm.id}
-                                                            className={`flex items-center space-x-3 p-3 rounded-xl border transition-all cursor-pointer hover:shadow-sm ${permissions[perm.id]
-                                                                ? "bg-white border-indigo-200 ring-1 ring-indigo-100"
-                                                                : "bg-slate-100/50 border-transparent text-slate-500"
-                                                                }`}
-                                                            onClick={() => handlePermissionChange(perm.id, !permissions[perm.id])}
-                                                        >
-                                                            <Checkbox
-                                                                id={perm.id}
-                                                                checked={!!permissions[perm.id]}
-                                                                onCheckedChange={(checked) => handlePermissionChange(perm.id, !!checked)}
-                                                                className="data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
-                                                            />
-                                                            <label
-                                                                htmlFor={perm.id}
-                                                                className="text-xs font-bold leading-none cursor-pointer group-hover:text-primary transition-colors"
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                    {category.permissions.map((perm) => {
+                                                        const PermIcon = (perm as any).icon;
+                                                        return (
+                                                            <div
+                                                                key={perm.id}
+                                                                className={`flex items-center space-x-3 p-2.5 rounded-xl border transition-all cursor-pointer hover:shadow-sm ${permissions[perm.id]
+                                                                    ? "bg-white border-indigo-200 ring-1 ring-indigo-100 shadow-sm"
+                                                                    : "bg-slate-100/50 border-transparent text-slate-400 opacity-70"
+                                                                    }`}
+                                                                onClick={() => handlePermissionChange(perm.id, !permissions[perm.id])}
                                                             >
-                                                                {perm.label}
-                                                            </label>
-                                                        </div>
-                                                    ))}
+                                                                <Checkbox
+                                                                    id={perm.id}
+                                                                    checked={!!permissions[perm.id]}
+                                                                    onCheckedChange={(checked) => handlePermissionChange(perm.id, !!checked)}
+                                                                    className="data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 rounded-md"
+                                                                />
+                                                                <div className="flex items-center gap-2 min-w-0">
+                                                                    {PermIcon && (
+                                                                        <PermIcon className={`h-3.5 w-3.5 shrink-0 ${permissions[perm.id] ? category.color : 'text-slate-400'}`} />
+                                                                    )}
+                                                                    <label
+                                                                        htmlFor={perm.id}
+                                                                        className={`text-[11px] font-bold leading-none cursor-pointer truncate transition-colors ${permissions[perm.id] ? 'text-slate-800' : 'text-slate-500'}`}
+                                                                    >
+                                                                        {perm.label}
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
                                                 </div>
                                             </div>
                                         );

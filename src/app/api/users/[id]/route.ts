@@ -102,13 +102,19 @@ export async function DELETE(
     const { id } = params;
 
     try {
-        await prisma.user.delete({
-            where: { id }
+        // Soft delete: keep history but prevent access
+        await prisma.user.update({
+            where: { id },
+            data: {
+                isActive: false,
+                // Optional: you could also clear processId or roles if needed, 
+                // but usually keeping them is better for history.
+            }
         });
 
-        return NextResponse.json({ message: 'Usuario eliminado correctamente' });
+        return NextResponse.json({ message: 'Usuario inactivado correctamente' });
     } catch (error) {
         console.error('[USER_DELETE_ERROR]', error);
-        return NextResponse.json({ message: 'Error al eliminar el usuario' }, { status: 500 });
+        return NextResponse.json({ message: 'Error al inactivar el usuario' }, { status: 500 });
     }
 }
