@@ -24,7 +24,7 @@ export default function UsersPage() {
     }, [setPageTitle, setHeaderActions]);
 
     return (
-        <div className="w-full px-8 -mt-4 md:-mt-6 pb-12 space-y-3 animate-in fade-in duration-700">
+        <div className="w-full px-8 pt-0 pb-12 space-y-6 animate-in fade-in duration-700">
             <UserCreatorModal
                 open={isCreateOpen}
                 onOpenChange={setIsCreateOpen}
@@ -32,10 +32,9 @@ export default function UsersPage() {
             />
 
             <div className="flex flex-col gap-1 text-left max-w-4xl">
-                <p className="text-slate-600 text-lg font-semibold leading-relaxed">
+                <p className="text-slate-500 text-lg font-medium leading-relaxed">
                     Gestiona los accesos y roles de tu equipo de trabajo.
                 </p>
-                <div className="h-1 w-12 bg-indigo-600 rounded-full mt-1" />
             </div>
 
             <UserManagementTable key={refreshTrigger} />
