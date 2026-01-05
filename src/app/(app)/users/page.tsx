@@ -31,15 +31,11 @@ export default function UsersPage() {
                 onUserCreated={() => setRefreshTrigger(prev => prev + 1)}
             />
 
-            <div className="flex flex-col gap-3 text-left max-w-4xl">
-                <h1 className="text-4xl font-black text-slate-900 tracking-tight">
-                    Control Central de Colaboradores
-                </h1>
-                <p className="text-slate-500 text-lg font-medium leading-relaxed">
-                    Gestiona usuarios, roles y accesos de la plataforma desde un solo lugar.
-                    Optimice la estructura organizacional y supervise el rendimiento de su equipo.
+            <div className="flex flex-col gap-1 text-left max-w-4xl">
+                <p className="text-slate-600 text-lg font-semibold leading-relaxed">
+                    Gestiona los accesos y roles de tu equipo de trabajo.
                 </p>
-                <div className="h-1 w-20 bg-indigo-600 rounded-full mt-2" />
+                <div className="h-1 w-12 bg-indigo-600 rounded-full mt-1" />
             </div>
 
             <UserManagementTable key={refreshTrigger} />
