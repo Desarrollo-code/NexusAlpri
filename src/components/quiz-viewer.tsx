@@ -1,20 +1,17 @@
-// src/components/quiz-viewer.tsx
 'use client';
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import type { Quiz as AppQuiz } from '@/types';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, PlayCircle, ShieldAlert } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Loader2, PlayCircle, ShieldAlert, ChevronLeft, ChevronRight, Trophy, Sparkles } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { MultipleChoiceTemplate } from './quizz-it/templates/multiple-choice-template';
-import { ResultScreenTemplate } from './quizz-it/templates/result-screen-template';
 import { AnimatePresence, motion } from 'framer-motion';
+import type { Quiz as AppQuiz } from '@/types';
 
 interface QuizViewerProps {
-  quiz: AppQuiz | undefined | null;
+  quiz: AppQuiz | null | undefined;
   lessonId: string;
   courseId?: string;
   isEnrolled?: boolean | null;
@@ -22,264 +19,123 @@ interface QuizViewerProps {
   onQuizCompleted?: (lessonId: string, score: number) => void;
 }
 
-const SummaryView = ({ questions, answers, onNavigate, onSubmit, isSubmitting }: {
-  questions: any[],
-  answers: Record<string, any>,
-  onNavigate: (index: number) => void,
-  onSubmit: () => void,
-  isSubmitting: boolean
-}) => {
-  return (
-    <div className="w-full space-y-6">
-      <div className="text-center mb-8">
-        <h3 className="text-2xl font-bold font-headline">Resumen de tus Respuestas</h3>
-        <p className="text-muted-foreground">Revisa tus selecciones antes de enviar el quiz.</p>
-      </div>
-
-      <div className="grid gap-4">
-        {questions.map((q, idx) => {
-          const answer = answers[q.id];
-          const selectedOption = q.options.find((o: any) => o.id === answer?.answerId);
-
-          return (
-            <Card key={q.id} className="overflow-hidden border-l-4 border-l-primary/50">
-              <CardContent className="p-4 flex items-center justify-between gap-4">
-                <div className="flex-grow min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Pregunta {idx + 1}</span>
-                    {answer ? (
-                      <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-bold uppercase">Respondida</span>
-                    ) : (
-                      <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-bold uppercase">Sin responder</span>
-                    )}
-                  </div>
-                  <p className="font-semibold truncate" dangerouslySetInnerHTML={{ __html: q.text }}></p>
-                  <p className="text-sm text-muted-foreground mt-1 italic">
-                    Seleccionado: {selectedOption ? <span dangerouslySetInnerHTML={{ __html: selectedOption.text }}></span> : "Ninguna opción seleccionada"}
-                  </p>
-                </div>
-                <Button variant="ghost" size="sm" onClick={() => onNavigate(idx)} className="shrink-0">
-                  Modificar
-                </Button>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      <div className="flex justify-center pt-6">
-        <Button onClick={onSubmit} disabled={isSubmitting} size="lg" className="w-full max-w-sm font-bold text-lg h-14 shadow-xl">
-          {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Enviar Quiz'}
-        </Button>
-      </div>
-    </div>
-  );
-};
-
 export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPreview = false, onQuizCompleted }: QuizViewerProps) {
   const { user } = useAuth();
   const { toast } = useToast();
-
-  const [gameState, setGameState] = useState<'intro' | 'playing' | 'summary' | 'finished'>('intro');
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [score, setScore] = useState(0);
+  const [state, setState] = useState<'intro' | 'playing' | 'summary' | 'finished'>('intro');
+  const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [score, setScore] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [userAttempts, setUserAttempts] = useState(0);
-  const [isCheckingAttempts, setIsCheckingAttempts] = useState(true);
-
-  const maxAttempts = quiz?.maxAttempts;
-  const canRetry = maxAttempts === null || userAttempts < maxAttempts;
-  const currentQuestion = quiz?.questions[currentQuestionIndex];
-
-  useEffect(() => {
-    if (quiz && user && !isCreatorPreview) {
-      setIsCheckingAttempts(true);
-      fetch(`/api/quizzes/${quiz.id}/attempts?userId=${user.id}`)
-        .then(res => res.json())
-        .then(data => setUserAttempts(data.count || 0))
-        .catch(() => setUserAttempts(0))
-        .finally(() => setIsCheckingAttempts(false));
-    } else {
-      setIsCheckingAttempts(false);
-    }
-  }, [quiz, user, isCreatorPreview]);
-
-  const handleAnswerSubmit = useCallback((isCorrect: boolean, answerData: any) => {
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestion?.id]: { ...answerData, isCorrect, answerId: answerData.answer }
-    }));
-  }, [currentQuestion?.id]);
+  const handleAnswerSubmit = useCallback((isCorrect: boolean, data: any) => {
+    setAnswers(prev => ({ ...prev, [quiz!.questions[index].id]: { ...data, isCorrect, answerId: data.answer } }));
+  }, [index, quiz]);
 
   const handleFinalSubmit = async () => {
     setIsSubmitting(true);
     try {
-      let finalScore = 0;
-      const totalQuestions = quiz?.questions.length || 0;
-
-      quiz?.questions.forEach(q => {
-        if (answers[q.id]?.isCorrect) {
-          finalScore += 1;
-        }
-      });
-
-      const percentage = totalQuestions > 0 ? (finalScore / totalQuestions) * 100 : 0;
-      setScore(finalScore);
-
+      let correct = quiz?.questions.reduce((acc, q) => (answers[q.id]?.isCorrect ? acc + 1 : acc), 0) || 0;
+      const percentage = (correct / (quiz?.questions.length || 1)) * 100;
+      setScore(correct);
       if (user && courseId && !isCreatorPreview) {
-        const res = await fetch(`/api/progress/${user.id}/${courseId}/quiz`, {
+        await fetch(`/api/progress/${user.id}/${courseId}/quiz`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            lessonId,
-            quizId: quiz?.id,
-            score: percentage,
-            answers: Object.values(answers)
-          }),
+          body: JSON.stringify({ lessonId, quizId: quiz?.id, score: percentage })
         });
-        if (!res.ok) throw new Error("No se pudo guardar el resultado del quiz.");
-        if (onQuizCompleted) onQuizCompleted(lessonId, percentage);
       }
-
-      setGameState('finished');
-    } catch (err) {
-      toast({ title: "Error", description: (err as Error).message, variant: "destructive" });
-    } finally {
-      setIsSubmitting(false);
-    }
+      onQuizCompleted?.(lessonId, percentage);
+      setState('finished');
+    } catch (e) {
+      toast({ title: "Error", description: "Ocurrió un error al guardar", variant: "destructive" });
+    } finally { setIsSubmitting(false); }
   };
-
-  const handleTimeUp = useCallback(() => {
-    handleAnswerSubmit(false, { answer: null, timedOut: true });
-    toast({ title: "¡Tiempo!", description: "Se acabó el tiempo para esta pregunta.", variant: "destructive" });
-  }, [handleAnswerSubmit, toast]);
-
-  const resetQuiz = () => {
-    if (quiz?.maxAttempts !== undefined && quiz?.maxAttempts !== null && !canRetry && !isCreatorPreview) return;
-    setGameState('intro');
-    setCurrentQuestionIndex(0);
-    setScore(0);
-    setAnswers({});
-  };
-
-  const renderContent = () => {
-    if (gameState === 'intro') {
-      return (
-        <div className="w-full text-center">
-          <h3 className="text-xl font-bold font-headline mt-2">{quiz?.title}</h3>
-          <p className="max-w-prose mx-auto text-sm text-muted-foreground mt-2">{quiz?.description || "Prepárate para probar tus conocimientos."}</p>
-          <p className="text-xs text-muted-foreground mt-4">Este quiz contiene {quiz?.questions.length} pregunta{quiz?.questions.length !== 1 ? 's' : ''}.</p>
-          {!isCreatorPreview && quiz?.maxAttempts !== null && quiz?.maxAttempts !== undefined && userAttempts !== undefined && <p className="text-xs text-muted-foreground mt-1">Te quedan {Math.max(0, quiz.maxAttempts - userAttempts)} de {quiz.maxAttempts} intentos.</p>}
-          <div className="mt-6">
-            {!canRetry && !isCreatorPreview ? (
-              <Alert variant="destructive" className="w-full text-left"><ShieldAlert className="h-4 w-4" /><AlertTitle>Límite de Intentos Alcanzado</AlertTitle><AlertDescription>Ya no puedes volver a realizar este quiz.</AlertDescription></Alert>
-            ) : (
-              <Button className="w-full max-w-sm" onClick={() => setGameState('playing')} disabled={(!isEnrolled && !isCreatorPreview) || isCheckingAttempts}>
-                {isCheckingAttempts ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlayCircle className="mr-2 h-4 w-4" />}
-                {isCheckingAttempts ? 'Verificando...' : (isCreatorPreview ? 'Comenzar (Vista Previa)' : 'Comenzar Quiz')}
-              </Button>
-            )}
-          </div>
-        </div>
-      );
-    }
-
-    if (gameState === 'playing' && currentQuestion) {
-      return (
-        <div className="space-y-6">
-          <MultipleChoiceTemplate
-            key={currentQuestion.id}
-            question={currentQuestion}
-            onSubmit={handleAnswerSubmit}
-            onTimeUp={handleTimeUp}
-            questionNumber={currentQuestionIndex + 1}
-            totalQuestions={quiz?.questions.length || 0}
-            selectedOptionId={currentQuestion?.id ? answers[currentQuestion.id]?.answerId : undefined}
-            showFeedback={false}
-          />
-          <div className="flex justify-between items-center bg-card p-4 rounded-xl border shadow-sm mt-4">
-            <Button
-              variant="outline"
-              onClick={() => setCurrentQuestionIndex(prev => Math.max(0, prev - 1))}
-              disabled={currentQuestionIndex === 0}
-            >
-              Anterior
-            </Button>
-            {currentQuestionIndex < (quiz?.questions.length || 0) - 1 ? (
-              <Button
-                onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
-              >
-                Siguiente
-              </Button>
-            ) : (
-              <Button
-                variant="default"
-                className="bg-primary hover:bg-primary/90 font-bold"
-                onClick={() => setGameState('summary')}
-              >
-                Revisar Respuestas
-              </Button>
-            )}
-          </div>
-        </div>
-      );
-    }
-
-    if (gameState === 'summary') {
-      return (
-        <SummaryView
-          questions={quiz?.questions || []}
-          answers={answers}
-          onNavigate={(idx) => {
-            setCurrentQuestionIndex(idx);
-            setGameState('playing');
-          }}
-          onSubmit={handleFinalSubmit}
-          isSubmitting={isSubmitting}
-        />
-      );
-    }
-
-    if (gameState === 'finished') {
-      return (
-        <ResultScreenTemplate
-          score={score}
-          totalQuestions={quiz?.questions.length || 0}
-          formTitle={quiz?.title || ''}
-          onRestart={resetQuiz}
-        />
-      );
-    }
-
-    return null;
-  };
-
-  if (!isEnrolled && !isCreatorPreview) {
-    return (
-      <Alert variant="default" className="mt-4">
-        <ShieldAlert className="h-4 w-4" />
-        <AlertTitle>Inscripción Requerida</AlertTitle>
-        <AlertDescription>Debes estar inscrito en el curso para poder realizar este quiz.</AlertDescription>
-      </Alert>
-    );
-  }
 
   return (
-    <div className="flex flex-col items-center justify-center p-4 min-h-[300px]">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={gameState === 'playing' ? currentQuestionIndex : gameState}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.5 }}
-          className="w-full max-w-4xl"
-        >
-          {renderContent()}
-        </motion.div>
-      </AnimatePresence>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-md p-2 md:p-4">
+      <motion.div 
+        layout
+        className="w-full max-w-xl bg-zinc-950 border border-zinc-800 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[95vh]"
+      >
+        <AnimatePresence mode="wait">
+          {state === 'intro' && (
+            <motion.div key="intro" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="p-8 text-center">
+              <div className="w-16 h-16 bg-indigo-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <PlayCircle className="text-indigo-500 h-8 w-8" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2 leading-tight">{quiz?.title}</h2>
+              <p className="text-zinc-500 text-sm mb-8">{quiz?.description}</p>
+              
+              {!isEnrolled && !isCreatorPreview ? (
+                <Alert className="bg-rose-500/5 border-rose-500/20 text-rose-500 mb-6 py-2 px-4 rounded-xl">
+                  <ShieldAlert className="h-4 w-4" />
+                  <AlertDescription className="text-xs">Inscríbete para acceder al quiz</AlertDescription>
+                </Alert>
+              ) : (
+                <Button onClick={() => setState('playing')} className="w-full h-14 bg-indigo-600 text-white hover:bg-indigo-700 rounded-2xl font-bold text-lg shadow-lg shadow-indigo-500/10">
+                  Comenzar Evaluación
+                </Button>
+              )}
+            </motion.div>
+          )}
+
+          {state === 'playing' && (
+            <motion.div key="playing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col h-full overflow-hidden">
+              <div className="flex-1 p-5 md:p-8 overflow-y-auto custom-scrollbar">
+                <MultipleChoiceTemplate 
+                  question={quiz!.questions[index]} 
+                  onSubmit={handleAnswerSubmit} 
+                  onTimeUp={() => handleAnswerSubmit(false, { answer: '', timedOut: true })} 
+                  questionNumber={index + 1} 
+                  totalQuestions={quiz?.questions.length || 0} 
+                  selectedOptionId={answers[quiz!.questions[index].id]?.answerId} 
+                />
+              </div>
+              <div className="p-4 bg-zinc-900/30 flex justify-between items-center border-t border-zinc-900/80 px-6 h-18">
+                <Button variant="ghost" disabled={index === 0} onClick={() => setIndex(i => i - 1)} className="text-zinc-500 hover:text-white">
+                  Atrás
+                </Button>
+                <div className="flex gap-2">
+                  {index < (quiz?.questions.length || 0) - 1 ? (
+                    <Button onClick={() => setIndex(i => i + 1)} className="bg-zinc-100 text-black hover:bg-white rounded-xl px-6 font-bold">Siguiente</Button>
+                  ) : (
+                    <Button onClick={() => setState('summary')} className="bg-indigo-600 text-white rounded-xl px-6 font-bold shadow-lg shadow-indigo-500/20">Finalizar</Button>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {state === 'summary' && (
+            <motion.div key="summary" className="p-6 flex flex-col h-full overflow-hidden">
+              <h3 className="text-lg font-bold text-white text-center mb-4">Confirmar envío</h3>
+              <div className="flex-1 overflow-y-auto space-y-2 mb-6 pr-1 custom-scrollbar">
+                {quiz?.questions.map((q, idx) => (
+                  <div key={q.id} className="p-3 bg-zinc-900/50 border border-zinc-800 rounded-xl flex items-center justify-between">
+                    <span className="text-xs text-zinc-500">Pregunta {idx+1}</span>
+                    {answers[q.id]?.answerId ? <span className="text-[10px] bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-full font-bold">LISTA</span> : <span className="text-[10px] bg-rose-500/10 text-rose-500 px-2 py-0.5 rounded-full font-bold">VACÍA</span>}
+                  </div>
+                ))}
+              </div>
+              <Button onClick={handleFinalSubmit} disabled={isSubmitting} className="w-full h-12 bg-indigo-600 text-white rounded-xl font-bold">
+                {isSubmitting ? <Loader2 className="animate-spin" /> : "Enviar todo"}
+              </Button>
+            </motion.div>
+          )}
+
+          {state === 'finished' && (
+            <motion.div key="finished" className="p-10 text-center">
+              <div className="w-20 h-20 bg-emerald-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                <Trophy className="text-emerald-500 h-10 w-10" />
+              </div>
+              <h2 className="text-3xl font-black text-white mb-2">{score}/{quiz?.questions.length}</h2>
+              <p className="text-zinc-500 text-sm mb-8">Has completado la evaluación con éxito.</p>
+              <Button onClick={() => { setIndex(0); setAnswers({}); setState('intro'); }} className="w-full h-12 bg-zinc-100 text-black hover:bg-white rounded-xl font-bold">Cerrar</Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
     </div>
   );
 }

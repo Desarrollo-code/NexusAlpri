@@ -1,187 +1,201 @@
-// src/components/forms/form-viewer.tsx
-'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/auth-context';
-import { useToast } from '@/hooks/use-toast';
-import { useTitle } from '@/contexts/title-context';
-import { useRouter } from 'next/navigation';
-import { Loader2, AlertTriangle, Send, CheckCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import type { AppForm } from '@/types';
-import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
-import { Checkbox } from '../ui/checkbox';
-import Image from 'next/image';
-import { cn } from '@/lib/utils';
-import { fontMap } from '@/lib/fonts';
+"use client";
 
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Slider } from "@/components/ui/slider";
+import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChevronRight, ChevronLeft, UploadCloud, CheckCircle2, Star } from "lucide-react";
+import { FormField } from "./form-editor";
 
-const FormFieldRenderer = ({ field, value, onChange, fontStyle }: { field: AppForm['fields'][0], value: any, onChange: (fieldId: string, value: any) => void, fontStyle?: string | null }) => {
-    const fieldId = `field-${field.id}`;
-    
-    const renderInput = () => {
+// --- MOCK PROPS ---
+interface FormViewerProps {
+    fields: FormField[];
+    title: string;
+    description?: string;
+}
+
+export default function FormViewer({ fields, title, description }: FormViewerProps) {
+    const [currentPage, setCurrentPage] = useState(1);
+    const [answers, setAnswers] = useState<Record<string, any>>({});
+    const [isSubmitted, setIsSubmitted] = useState(false);
+
+    // Derive pages
+    const totalPages = Math.max(...fields.map((f) => f.page || 1));
+    const currentFields = fields.filter((f) => (f.page || 1) === currentPage);
+    const progress = (currentPage / totalPages) * 100;
+
+    const handleNext = () => {
+        if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+        else setIsSubmitted(true);
+    };
+
+    const handlePrev = () => {
+        if (currentPage > 1) setCurrentPage(currentPage - 1);
+    };
+
+    const renderField = (field: FormField) => {
+        const handleChange = (val: any) => {
+            setAnswers(prev => ({ ...prev, [field.id]: val }));
+        }
+        const value = answers[field.id];
+
         switch (field.type) {
-            case 'SHORT_TEXT':
-                return <Input id={fieldId} value={value || ''} onChange={(e) => onChange(field.id, e.target.value)} placeholder={field.placeholder || ''} required={field.required}/>;
-            case 'LONG_TEXT':
-                return <Textarea id={fieldId} value={value || ''} onChange={(e) => onChange(field.id, e.target.value)} placeholder={field.placeholder || ''} required={field.required}/>;
-            case 'SINGLE_CHOICE':
-                 return (
-                    <RadioGroup id={fieldId} value={value} onValueChange={(val) => onChange(field.id, val)} className="space-y-2">
-                        {(field.options || []).map((opt, i) => (
-                            <div key={opt.id} className="flex items-center space-x-2"><RadioGroupItem value={opt.id} id={`${fieldId}-${i}`} /><Label htmlFor={`${fieldId}-${i}`} className={cn("font-normal", fontStyle && `font-${fontStyle}`)}>{opt.text}</Label></div>
+            case "SHORT_TEXT":
+                return <Input placeholder={field.placeholder} value={value || ""} onChange={(e) => handleChange(e.target.value)} />;
+            case "PARAGRAPH":
+                return <Textarea placeholder={field.placeholder} value={value || ""} onChange={(e) => handleChange(e.target.value)} />;
+            case "SINGLE_CHOICE":
+                return (
+                    <RadioGroup value={value} onValueChange={handleChange}>
+                        {field.options?.map((opt) => (
+                            <div key={opt} className="flex items-center space-x-2 mb-2">
+                                <RadioGroupItem value={opt} id={`${field.id}-${opt}`} />
+                                <Label htmlFor={`${field.id}-${opt}`}>{opt}</Label>
+                            </div>
                         ))}
                     </RadioGroup>
                 );
-            case 'MULTIPLE_CHOICE':
-                const currentValues = new Set(value || []);
+            case "MULTIPLE_CHOICE":
                 return (
-                     <div id={fieldId} className="space-y-2">
-                        {(field.options || []).map((opt, i) => (
-                           <div key={opt.id} className="flex items-center space-x-2">
-                                <Checkbox 
-                                    id={`${fieldId}-${i}`} 
-                                    checked={currentValues.has(opt.id)}
-                                    onCheckedChange={(checked) => {
-                                        const newValues = new Set(currentValues);
-                                        if (checked) newValues.add(opt.id); else newValues.delete(opt.id);
-                                        onChange(field.id, Array.from(newValues));
-                                    }}
-                                />
-                                <Label htmlFor={`${fieldId}-${i}`} className={cn("font-normal", fontStyle && `font-${fontStyle}`)}>{opt.text}</Label>
-                            </div>
+                    <div className="space-y-2">
+                        {field.options?.map((opt) => {
+                            const checked = (value || []).includes(opt);
+                            return (
+                                <div key={opt} className="flex items-center space-x-2">
+                                    <Checkbox
+                                        id={`${field.id}-${opt}`}
+                                        checked={checked}
+                                        onCheckedChange={(c) => {
+                                            const current = value || [];
+                                            const next = c ? [...current, opt] : current.filter((v: string) => v !== opt);
+                                            handleChange(next);
+                                        }}
+                                    />
+                                    <Label htmlFor={`${field.id}-${opt}`}>{opt}</Label>
+                                </div>
+                            )
+                        })}
+                    </div>
+                );
+            case "SLIDER":
+                return (
+                    <div className="pt-4 px-2">
+                        <Slider
+                            min={0}
+                            max={10}
+                            step={1}
+                            value={[value || 0]}
+                            onValueChange={(vals) => handleChange(vals[0])}
+                        />
+                        <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+                            <span>0 (Nada probable)</span>
+                            <span>10 (Muy probable)</span>
+                        </div>
+                    </div>
+                );
+            case "STAR_RATING":
+                return (
+                    <div className="flex gap-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                                key={star}
+                                type="button"
+                                onClick={() => handleChange(star)}
+                                className={`p-1 rounded-full transition-colors ${value >= star ? "text-yellow-400" : "text-slate-200"}`}
+                            >
+                                <Star className="h-8 w-8 fill-current" />
+                            </button>
                         ))}
                     </div>
                 );
+            case "FILE_UPLOAD":
+                return (
+                    <div className="border-2 border-dashed border-slate-200 rounded-lg p-8 text-center hover:bg-slate-50 transition-colors cursor-pointer">
+                        <UploadCloud className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+                        <p className="text-sm text-muted-foreground">Arrastra archivos aquí o haz clic para subir</p>
+                    </div>
+                );
             default:
-                return <p className="text-sm text-destructive">Tipo de campo no soportado</p>;
-        }
-    }
-    
-    return (
-        <Card className="bg-card/80 backdrop-blur-sm">
-             <CardContent className="p-4">
-                <Label htmlFor={fieldId} className={cn("text-base font-semibold", fontStyle && `font-${fontStyle}`)}>{field.label}{field.required && <span className="text-destructive ml-1">*</span>}</Label>
-                <div className="mt-3">{renderInput()}</div>
-            </CardContent>
-        </Card>
-    );
-};
-
-export function FormViewer({ formId }: { formId: string }) {
-    const { user } = useAuth();
-    const router = useRouter();
-    const { toast } = useToast();
-    const { setPageTitle } = useTitle();
-
-    const [form, setForm] = useState<AppForm | null>(null);
-    const [answers, setAnswers] = useState<Record<string, any>>({});
-    const [isLoading, setIsLoading] = useState(true);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [isSubmitted, setIsSubmitted] = useState(false);
-    const [finalScore, setFinalScore] = useState<number | null>(null);
-    
-    useEffect(() => {
-        const fetchForm = async () => {
-            setIsLoading(true);
-            try {
-                const res = await fetch(`/api/forms/${formId}`);
-                if (!res.ok) throw new Error('No se pudo cargar el formulario o no tienes permiso.');
-                const data = await res.json();
-                if (data.status !== 'PUBLISHED') throw new Error('Este formulario no está aceptando respuestas actualmente.');
-                setForm(data);
-                setPageTitle(`Formulario: ${data.title}`);
-            } catch (err) {
-                setError(err instanceof Error ? err.message : 'Error desconocido.');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchForm();
-    }, [formId, setPageTitle]);
-
-    const handleAnswerChange = (fieldId: string, value: any) => {
-        setAnswers(prev => ({...prev, [fieldId]: value}));
-    };
-    
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        try {
-            const res = await fetch(`/api/forms/${formId}/submit`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ answers }),
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || 'No se pudo enviar la respuesta.');
-            setIsSubmitted(true);
-            setFinalScore(data.score); // Store the score from the response
-            toast({ title: '¡Respuesta Enviada!', description: 'Gracias por completar el formulario.' });
-        } catch (err) {
-            toast({ title: 'Error', description: err instanceof Error ? err.message : 'Error desconocido', variant: 'destructive' });
-        } finally {
-            setIsSubmitting(false);
+                return null;
         }
     };
-    
-    if (isLoading) return <div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>;
-    if (error) return <Card className="m-auto mt-10 max-w-lg text-center p-8"><AlertTriangle className="mx-auto h-12 w-12 text-destructive mb-4"/><h2 className="text-xl font-semibold">Error al Cargar</h2><p className="text-muted-foreground">{error}</p><Button className="mt-4" onClick={() => router.back()}>Volver</Button></Card>;
-    if (!form) return null;
-    
-    const fontStyle = form.fontStyle === 'serif' ? 'font-serif' : form.fontStyle === 'mono' ? 'font-mono' : 'font-sans';
 
     if (isSubmitted) {
         return (
-            <Card className="m-auto mt-10 max-w-lg text-center p-8">
-                <CheckCircle className="mx-auto h-16 w-16 text-green-500 mb-4" />
-                <h2 className="text-2xl font-bold">¡Gracias!</h2>
-                <p className="text-muted-foreground mt-2">Tu respuesta al formulario "{form.title}" ha sido registrada.</p>
-                {finalScore !== null && (
-                    <div className="mt-4 bg-primary/10 p-4 rounded-lg">
-                        <p className="text-sm text-primary">Tu puntuación final es:</p>
-                        <p className="text-3xl font-bold text-primary">{finalScore.toFixed(0)}%</p>
+            <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="max-w-md mx-auto mt-20 text-center"
+            >
+                <div className="h-24 w-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <CheckCircle2 className="h-12 w-12 text-green-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-slate-900 mb-2">¡Gracias por tu respuesta!</h2>
+                <p className="text-slate-500 mb-8">Tus datos han sido registrados correctamente.</p>
+                <Button onClick={() => window.location.reload()}>Enviar otra respuesta</Button>
+            </motion.div>
+        )
+    }
+
+    return (
+        <div className="max-w-2xl mx-auto py-10 px-4">
+            <Card className="shadow-lg border-t-8 border-t-primary">
+                <CardHeader>
+                    <CardTitle className="text-2xl">{title}</CardTitle>
+                    {description && <p className="text-muted-foreground">{description}</p>}
+                </CardHeader>
+                {totalPages > 1 && (
+                    <div className="px-6 pb-6">
+                        <div className="flex justify-between text-xs text-muted-foreground mb-2">
+                            <span>Paso {currentPage} de {totalPages}</span>
+                            <span>{Math.round(progress)}% Completado</span>
+                        </div>
+                        <Progress value={progress} className="h-2" />
                     </div>
                 )}
-                <Button className="mt-6" onClick={() => router.push('/dashboard')}>Volver al Panel Principal</Button>
-            </Card>
-        );
-    }
-    
-    return (
-        <div className="min-h-screen w-full" style={{ backgroundColor: form.backgroundColor || undefined, fontFamily: form.fontStyle ? (fontMap[form.fontStyle as keyof typeof fontMap] as any)?.style.fontFamily : undefined }}>
-            <div className="max-w-3xl mx-auto my-8 p-4">
-                <Card className="shadow-2xl overflow-hidden" style={{'--form-theme-color': form.themeColor || 'hsl(var(--primary))'} as React.CSSProperties}>
-                    <div className="w-full h-4" style={{ backgroundColor: 'var(--form-theme-color)' }}/>
-                    {form.headerImageUrl && (
-                        <div className="w-full h-48 relative">
-                            <Image src={form.headerImageUrl} alt="Encabezado del formulario" fill className="object-cover" />
-                        </div>
-                    )}
-                    <CardHeader className="text-center pt-8">
-                        <CardTitle className={cn("text-4xl font-headline", fontStyle)}>{form.title}</CardTitle>
-                        {form.description && <CardDescription className={cn("text-base", fontStyle)}>{form.description}</CardDescription>}
-                    </CardHeader>
-                    <form onSubmit={handleSubmit}>
-                        <CardContent className="space-y-6">
-                            {form.fields.map(field => (
-                                <FormFieldRenderer key={field.id} field={field} value={answers[field.id]} onChange={handleAnswerChange} fontStyle={fontStyle} />
+
+                <div className="px-6 py-2">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={currentPage}
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            transition={{ duration: 0.3 }}
+                            className="space-y-6"
+                        >
+                            {currentFields.map((field) => (
+                                <div key={field.id} className="space-y-3">
+                                    <Label className="text-base font-medium">
+                                        {field.label}
+                                        {field.required && <span className="text-red-500 ml-1">*</span>}
+                                    </Label>
+                                    {renderField(field)}
+                                </div>
                             ))}
-                        </CardContent>
-                        <CardFooter>
-                            <Button type="submit" className="w-full h-12 text-lg" disabled={isSubmitting} style={{ backgroundColor: 'var(--form-theme-color)' }}>
-                                {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin"/> : <Send className="mr-2 h-5 w-5"/>}
-                                 Enviar Respuesta
-                            </Button>
-                        </CardFooter>
-                    </form>
-                </Card>
-            </div>
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+
+                <CardFooter className="flex justify-between mt-8 pt-6 border-t bg-slate-50/50">
+                    <Button variant="ghost" onClick={handlePrev} disabled={currentPage === 1}>
+                        <ChevronLeft className="h-4 w-4 mr-2" />
+                        Anterior
+                    </Button>
+                    <Button onClick={handleNext}>
+                        {currentPage === totalPages ? "Enviar" : "Siguiente"}
+                        {currentPage !== totalPages && <ChevronRight className="h-4 w-4 ml-2" />}
+                    </Button>
+                </CardFooter>
+            </Card>
         </div>
     );
 }

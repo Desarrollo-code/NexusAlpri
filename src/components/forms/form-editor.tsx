@@ -1,546 +1,367 @@
-// src/components/forms/form-editor.tsx
-'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '@/contexts/auth-context';
-import { useToast } from '@/hooks/use-toast';
-import { useTitle } from '@/contexts/title-context';
-import { useRouter } from 'next/navigation';
-import { Loader2, AlertTriangle, Save, PlusCircle, Trash2, GripVertical, Check, Eye, BarChart, Share2, FilePen, MoreVertical, Settings, Copy, Shield, X, CheckSquare, ChevronDown, Type, CaseUpper, MessageSquare, ListChecks, Info, Palette, Image as ImageIcon, Replace, XCircle } from 'lucide-react';
-import { Button, buttonVariants } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import type { AppForm, FormField, FormFieldOption, FormFieldType, FormStatus } from '@/types';
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+"use client";
+
+import React, { useState } from "react";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Checkbox } from '../ui/checkbox';
-import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
-import { cn } from '@/lib/utils';
-import Link from 'next/link';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription } from '../ui/alert';
-import { ScrollArea } from '../ui/scroll-area';
-import { UploadArea } from '../ui/upload-area';
-import { uploadWithProgress } from '@/lib/upload-with-progress';
-import { Progress } from '../ui/progress';
-import Image from 'next/image';
-import { IconUploadCloud } from '../icons/icon-upload-cloud';
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragOverlay,
+    defaultDropAnimationSideEffects,
+    DragStartEvent,
+    DragEndEvent,
+} from "@dnd-kit/core";
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+    useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
+    AlignLeft,
+    CheckSquare,
+    Circle,
+    FileUp,
+    GripVertical,
+    Hash,
+    Image as ImageIcon,
+    MoreVertical,
+    Plus,
+    Settings,
+    Star,
+    Trash2,
+    Type,
+    ListOrdered
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
-const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+// --- TYPES ---
 
-// Componente para editar un campo individual
-const FieldEditor = ({ field, isScoringEnabled, onUpdate, onDelete, onOptionChange, onOptionAdd, onOptionDelete, onCorrectChange, isSaving }: { 
-    field: FormField,
-    isScoringEnabled: boolean,
-    onUpdate: (id: string, updates: Partial<FormField>) => void, 
-    onDelete: (id: string) => void,
-    onOptionChange: (fieldId: string, optionIndex: number, updates: Partial<{text: string; points: number}>) => void,
-    onOptionAdd: (fieldId: string) => void,
-    onOptionDelete: (fieldId: string, optionIndex: number) => void,
-    onCorrectChange: (fieldId: string, optionId: string, isCorrect: boolean) => void,
-    isSaving: boolean 
-}) => {
-    
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        onUpdate(field.id, { [e.target.name]: e.target.value });
+export type FormFieldType =
+    | "SHORT_TEXT"
+    | "PARAGRAPH"
+    | "SINGLE_CHOICE"
+    | "MULTIPLE_CHOICE"
+    | "FILE_UPLOAD"
+    | "STAR_RATING"
+    | "SLIDER";
+
+export interface FormField {
+    id: string;
+    type: FormFieldType;
+    label: string;
+    required: boolean;
+    options?: string[]; // For choice types
+    placeholder?: string;
+    page?: number;
+}
+
+// --- MOCK DATA ---
+const INITIAL_FIELDS: FormField[] = [
+    { id: "1", type: "SHORT_TEXT", label: "¿Cuál es tu nombre completo?", required: true, page: 1 },
+    { id: "2", type: "SINGLE_CHOICE", label: "Departamento", required: true, options: ["Ventas", "Marketing", "IT"], page: 1 },
+];
+
+const TOOLBOX_ITEMS: { type: FormFieldType; icon: React.ElementType; label: string }[] = [
+    { type: "SHORT_TEXT", icon: Type, label: "Texto Corto" },
+    { type: "PARAGRAPH", icon: AlignLeft, label: "Párrafo" },
+    { type: "SINGLE_CHOICE", icon: Circle, label: "Opción Única" },
+    { type: "MULTIPLE_CHOICE", icon: CheckSquare, label: "Opción Múltiple" },
+    { type: "FILE_UPLOAD", icon: FileUp, label: "Subir Archivo" },
+    { type: "STAR_RATING", icon: Star, label: "Rating" },
+    { type: "SLIDER", icon: ListOrdered, label: "Escala Numérica" },
+];
+
+// --- COMPONENTS ---
+
+function SortableField({ field, onDelete, onSelect, isSelected }: { field: FormField, onDelete: (id: string) => void, onSelect: (field: FormField) => void, isSelected: boolean }) {
+    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: field.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
     };
-
-    const handleSwitchChange = (checked: boolean, name: string) => {
-        onUpdate(field.id, { [name]: checked });
-    };
-    
-   const renderOptionsEditor = () => {
-    const options = (field.options || []) as FormFieldOption[];
-
-    const handlePointsChange = (optionIndex: number, value: string) => {
-        const points = parseInt(value, 10);
-        onOptionChange(field.id, optionIndex, { points: isNaN(points) ? 0 : points });
-    };
-
-    const renderOption = (option: FormFieldOption, index: number) => {
-        const optionId = `opt-${field.id}-${option.id}`;
-        // La puntuación solo se muestra para opción única
-        const showScoring = isScoringEnabled && field.type === 'SINGLE_CHOICE';
-
-        return (
-            <div key={option.id} className="flex items-center gap-2 p-2 bg-background/50 rounded-md border">
-                {field.type === 'SINGLE_CHOICE' ? (
-                     <RadioGroupItem value={option.id} id={optionId} />
-                ) : (
-                    <Checkbox id={optionId} checked={option.isCorrect} onCheckedChange={(checked) => onCorrectChange(field.id, option.id, !!checked)} />
-                )}
-                <Label htmlFor={optionId} className="flex-grow">
-                    <Input 
-                        value={option.text} 
-                        onChange={(e) => onOptionChange(field.id, index, { text: e.target.value })} 
-                        className="h-8"
-                    />
-                </Label>
-                {showScoring && (
-                     <div className="flex items-center gap-1 shrink-0">
-                        <Input 
-                            type="number" 
-                            value={option.points || 0} 
-                            onChange={(e) => handlePointsChange(index, e.target.value)} 
-                            className="w-16 h-8 text-center"
-                        />
-                        <span className="text-xs text-muted-foreground">pts</span>
-                    </div>
-                )}
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive/70" onClick={() => onOptionDelete(field.id, index)}><X/></Button>
-            </div>
-        );
-    };
-
-    const optionsContainer = (
-         <ScrollArea className="max-h-[400px] space-y-2 pr-3">
-              {options.map((option, index) => renderOption(option, index))}
-         </ScrollArea>
-    );
-
-    if (field.type === 'SINGLE_CHOICE') {
-        const correctOptionId = options.find(o => o.isCorrect)?.id;
-        return (
-             <RadioGroup 
-                value={correctOptionId} 
-                onValueChange={(value) => onCorrectChange(field.id, value, true)} 
-                className="space-y-2 mt-2"
-            >
-              {optionsContainer}
-              <Button variant="outline" size="sm" onClick={() => onOptionAdd(field.id)}>+ Añadir opción</Button>
-            </RadioGroup>
-        );
-    }
-    if (field.type === 'MULTIPLE_CHOICE') {
-        return (
-            <div className="space-y-2 mt-2">
-                {optionsContainer}
-                <Button variant="outline" size="sm" onClick={() => onOptionAdd(field.id)}>+ Añadir opción</Button>
-            </div>
-        )
-    }
-    
-    return null;
-   };
-
 
     return (
-      <Card className="p-4 bg-muted/50 border-l-4" style={{borderColor: 'hsl(var(--primary))'}}>
-          <div className="flex items-start gap-3">
-              <GripVertical className="h-5 w-5 text-muted-foreground mt-2 cursor-grab"/>
-              <div className="flex-grow space-y-2">
-                  <Input 
-                      name="label" 
-                      value={field.label} 
-                      onChange={handleInputChange} 
-                      placeholder="Escribe tu pregunta aquí..." 
-                      className="text-base font-semibold border-0 border-b-2 rounded-none px-1 focus-visible:ring-0"
-                  />
-                  {(field.type === 'SHORT_TEXT' || field.type === 'LONG_TEXT') && (
-                    <Input 
-                        name="placeholder" 
-                        value={field.placeholder || ''} 
-                        onChange={handleInputChange}
-                        placeholder="Texto de ejemplo o ayuda (opcional)" 
-                        className="text-xs h-8"
-                    />
-                  )}
-              </div>
-               <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => onDelete(field.id)}><Trash2 className="h-4 w-4"/></Button>
-          </div>
-          {renderOptionsEditor()}
+        <div
+            ref={setNodeRef}
+            style={style}
+            className={cn(
+                "relative group bg-white border rounded-lg p-4 mb-3 transition-colors hover:border-primary/50 cursor-pointer shadow-sm",
+                isSelected ? "border-primary ring-1 ring-primary" : "border-slate-200"
+            )}
+            onClick={() => onSelect(field)}
+        >
+            <div className="absolute top-4 left-3 text-slate-400 cursor-grab active:cursor-grabbing" {...attributes} {...listeners}>
+                <GripVertical className="h-5 w-5" />
+            </div>
 
-          <div className="mt-4 pt-3 border-t flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center space-x-2">
-                  <Switch id={`required-${field.id}`} checked={field.required} onCheckedChange={(c) => handleSwitchChange(c, 'required')} />
-                  <Label htmlFor={`required-${field.id}`}>Requerido</Label>
-              </div>
-              <div className="flex items-center gap-2">
-                  <div className="w-40">
-                      <Select value={field.type} onValueChange={(v) => onUpdate(field.id, { type: v as FormFieldType, options: v === 'SHORT_TEXT' || v === 'LONG_TEXT' ? [] : field.options || [{id: generateUniqueId('opt'), text: 'Opción 1', isCorrect: true, points: 10}] })}>
-                          <SelectTrigger>
-                              <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                              <SelectItem value="SHORT_TEXT"><Type className="inline-block mr-2 h-4 w-4"/>Texto Corto</SelectItem>
-                              <SelectItem value="LONG_TEXT"><MessageSquare className="inline-block mr-2 h-4 w-4"/>Párrafo</SelectItem>
-                              <SelectItem value="SINGLE_CHOICE"><ListChecks className="inline-block mr-2 h-4 w-4"/>Opción Única</SelectItem>
-                              <SelectItem value="MULTIPLE_CHOICE"><CheckSquare className="inline-block mr-2 h-4 w-4"/>Casillas</SelectItem>
-                          </SelectContent>
-                      </Select>
-                  </div>
-              </div>
-          </div>
-      </Card>
+            <div className="pl-8 pr-8">
+                <div className="flex items-center gap-2 mb-2">
+                    <Badge variant="outline" className="text-[10px] uppercase tracking-wider font-semibold text-slate-500">
+                        {field.type.replace("_", " ")}
+                    </Badge>
+                    {field.required && <Badge variant="secondary" className="text-[10px] bg-red-100 text-red-700 hover:bg-red-100">Requerido</Badge>}
+                </div>
+                <h4 className="font-medium text-slate-900">{field.label}</h4>
+                {field.placeholder && <p className="text-sm text-slate-400 mt-1">{field.placeholder}</p>}
+
+                {/* Preview of specialized fields */}
+                {field.type === "STAR_RATING" && (
+                    <div className="flex gap-1 mt-2 text-slate-300">
+                        {[1, 2, 3, 4, 5].map(i => <Star key={i} className="h-5 w-5 fill-slate-200" />)}
+                    </div>
+                )}
+                {(field.type === "SINGLE_CHOICE" || field.type === "MULTIPLE_CHOICE") && field.options && (
+                    <div className="mt-2 space-y-1">
+                        {field.options.map((opt, i) => (
+                            <div key={i} className="flex items-center gap-2 text-sm text-slate-600">
+                                {field.type === "SINGLE_CHOICE" ? <Circle className="h-3 w-3" /> : <CheckSquare className="h-3 w-3" />}
+                                {opt}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-2 right-2 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={(e) => { e.stopPropagation(); onDelete(field.id); }}
+
+            >
+                <Trash2 className="h-4 w-4" />
+            </Button>
+        </div>
     );
-};
+}
 
+export default function FormEditor() {
+    const [fields, setFields] = useState<FormField[]>(INITIAL_FIELDS);
+    const [selectedField, setSelectedField] = useState<FormField | null>(null);
 
-// Componente principal del editor de formularios
-export function FormEditor({ formId }: { formId: string }) {
-    const { user } = useAuth();
-    const router = useRouter();
-    const { toast } = useToast();
-    const { setPageTitle } = useTitle();
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    );
 
-    const [form, setForm] = useState<AppForm | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isSaving, setIsSaving] = useState(false);
-    const [isDirty, setIsDirty] = useState(false);
-    
-    // State for image upload
-    const [isUploading, setIsUploading] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState(0);
-    const [localImagePreview, setLocalImagePreview] = useState<string | null>(null);
-
-    
-    const handleFormUpdate = (updates: Partial<AppForm>) => {
-        setForm(prev => prev ? { ...prev, ...updates } : null);
-        setIsDirty(true);
-    };
-
-    const handleFieldUpdate = (fieldId: string, updates: Partial<FormField>) => {
-       handleFormUpdate({
-           fields: form!.fields.map(f => f.id === fieldId ? {...f, ...updates} : f)
-       });
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (active.id !== over?.id) {
+            setFields((items) => {
+                const oldIndex = items.findIndex((item) => item.id === active.id);
+                const newIndex = items.findIndex((item) => item.id === over?.id);
+                return arrayMove(items, oldIndex, newIndex);
+            });
+        }
     };
 
     const addField = (type: FormFieldType) => {
         const newField: FormField = {
-            id: generateUniqueId('field'),
-            label: 'Nueva Pregunta',
+            id: Math.random().toString(36).substr(2, 9),
             type,
+            label: "Nueva Pregunta",
             required: false,
-            options: type === 'SINGLE_CHOICE' || type === 'MULTIPLE_CHOICE' ? [{id: generateUniqueId('opt'), text: 'Opción 1', isCorrect: true, points: 10}, {id: generateUniqueId('opt'), text: 'Opción 2', isCorrect: false, points: 0}] : [],
-            placeholder: '',
-            order: form ? form.fields.length : 0,
-            formId: formId,
-            imageUrl: null,
-            template: null,
+            options: type.includes("CHOICE") ? ["Opción 1", "Opción 2"] : undefined,
+            page: 1,
         };
-        handleFormUpdate({ fields: [...(form?.fields || []), newField] });
+        setFields([...fields, newField]);
+        setSelectedField(newField);
     };
 
     const deleteField = (id: string) => {
-        handleFormUpdate({ fields: form!.fields.filter(f => f.id !== id) });
+        setFields(fields.filter((f) => f.id !== id));
+        if (selectedField?.id === id) setSelectedField(null);
     };
 
-    const onDragEnd = (result: DropResult) => {
-        if (!result.destination || !form) return;
-        const items = Array.from(form.fields);
-        const [reorderedItem] = items.splice(result.source.index, 1);
-        items.splice(result.destination.index, 0, reorderedItem);
-        handleFormUpdate({ fields: items });
+    const updateField = (id: string, updates: Partial<FormField>) => {
+        setFields(fields.map((f) => (f.id === id ? { ...f, ...updates } : f)));
+        if (selectedField?.id === id) setSelectedField({ ...selectedField, ...updates });
     };
-    
-    // --- Edición de opciones ---
-    const handleOptionAdd = (fieldId: string) => {
-        const newOption = { id: generateUniqueId('opt'), text: 'Nueva Opción', isCorrect: false, points: 0 };
-        const updatedFields = form!.fields.map(f => {
-            if (f.id === fieldId) {
-                return { ...f, options: [...(f.options as any[]), newOption] };
-            }
-            return f;
-        });
-        handleFormUpdate({ fields: updatedFields });
-    };
-
-    const handleOptionChange = (fieldId: string, optionIndex: number, updates: Partial<{text: string, points: number}>) => {
-        const updatedFields = form!.fields.map(f => {
-            if (f.id === fieldId) {
-                const newOptions = [...(f.options as any[])];
-                newOptions[optionIndex] = { ...newOptions[optionIndex], ...updates };
-                return { ...f, options: newOptions };
-            }
-            return f;
-        });
-        handleFormUpdate({ fields: updatedFields });
-    };
-    
-      const handleCorrectChange = (fieldId: string, optionId: string, isCorrect: boolean) => {
-        const updatedFields = form!.fields.map(f => {
-            if (f.id === fieldId) {
-                const newOptions = (f.options as FormFieldOption[]).map(opt => {
-                    if (f.type === 'SINGLE_CHOICE') {
-                        return { ...opt, isCorrect: opt.id === optionId };
-                    }
-                    if (opt.id === optionId) {
-                        return { ...opt, isCorrect: isCorrect };
-                    }
-                    return opt;
-                });
-                return { ...f, options: newOptions };
-            }
-            return f;
-        });
-        handleFormUpdate({ fields: updatedFields });
-    };
-
-
-    const handleOptionDelete = (fieldId: string, optionIndex: number) => {
-        const updatedFields = form!.fields.map(f => {
-            if (f.id === fieldId) {
-                 const newOptions = (f.options as any[]).filter((_, i) => i !== optionIndex);
-                 // If the deleted option was the correct one, set the first one as correct
-                if (f.type === 'SINGLE_CHOICE' && newOptions.length > 0 && !newOptions.some(opt => opt.isCorrect)) {
-                    newOptions[0].isCorrect = true;
-                }
-                 return { ...f, options: newOptions };
-            }
-            return f;
-        });
-        handleFormUpdate({ fields: updatedFields });
-    };
-    
-    const handleSaveChanges = async () => {
-        if (!form) return;
-        setIsSaving(true);
-        try {
-            const payload = {
-                title: form.title,
-                description: form.description,
-                status: form.status,
-                isQuiz: form.isQuiz,
-                headerImageUrl: form.headerImageUrl,
-                themeColor: form.themeColor,
-                backgroundColor: form.backgroundColor,
-                fontStyle: form.fontStyle,
-                fields: form.fields.map((f, index) => ({...f, order: index}))
-            };
-            const res = await fetch(`/api/forms/${formId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
-            if (!res.ok) throw new Error((await res.json()).message || 'No se pudo guardar el formulario.');
-            
-            const updatedForm = await res.json();
-            setForm(prev => prev ? { ...prev, ...updatedForm } : null);
-            setIsDirty(false);
-            toast({ title: '¡Guardado!', description: 'Tus cambios en el formulario han sido guardados.' });
-        } catch (err) {
-            toast({ title: 'Error', description: err instanceof Error ? err.message : 'Error desconocido', variant: 'destructive' });
-        } finally {
-            setIsSaving(false);
-        }
-    };
-    
-    const handleImageUpload = async (file: File | null) => {
-        if (!file) return;
-        
-        const previewUrl = URL.createObjectURL(file);
-        setLocalImagePreview(previewUrl);
-
-        setIsUploading(true);
-        setUploadProgress(0);
-        try {
-            const result = await uploadWithProgress('/api/upload/form-image', file, setUploadProgress);
-            handleFormUpdate({ headerImageUrl: result.url });
-            toast({ title: 'Imagen Subida' });
-        } catch (err) {
-            toast({ title: 'Error de subida', description: (err as Error).message, variant: 'destructive' });
-            URL.revokeObjectURL(previewUrl);
-            setLocalImagePreview(null);
-        } finally {
-            setIsUploading(false);
-        }
-    };
-    
-    const handleRemoveImage = () => {
-        if(localImagePreview) URL.revokeObjectURL(localImagePreview);
-        setLocalImagePreview(null);
-        handleFormUpdate({ headerImageUrl: null });
-    };
-
-
-    useEffect(() => {
-        const fetchForm = async () => {
-            if (!formId) return;
-            setIsLoading(true);
-            try {
-                const res = await fetch(`/api/forms/${formId}`);
-                if (!res.ok) throw new Error('No se pudo cargar el formulario o no tienes permiso.');
-                const data = await res.json();
-                setForm(data);
-                setPageTitle(`Editando: ${data.title}`);
-            } catch (err) {
-                toast({ title: 'Error', description: err instanceof Error ? err.message : 'Error desconocido', variant: 'destructive' });
-                router.push('/forms');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchForm();
-    }, [formId, router, toast, setPageTitle]);
-
-    if (isLoading || !form) {
-        return <div className="flex items-center justify-center h-full"><Loader2 className="animate-spin h-8 w-8"/></div>;
-    }
-    
-    const finalImageUrl = localImagePreview || form.headerImageUrl;
 
     return (
-        <div className="space-y-6">
-            <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                 <div>
-                     <Input value={form.title} onChange={e => handleFormUpdate({ title: e.target.value })} className="text-2xl font-bold h-auto p-1 border-0 focus-visible:ring-1"/>
-                     <Input value={form.description} onChange={e => handleFormUpdate({ description: e.target.value })} placeholder="Añade una descripción..." className="text-sm text-muted-foreground h-auto p-1 border-0 focus-visible:ring-1 mt-1"/>
-                 </div>
-                 <div className="flex items-center gap-2">
-                     <Button variant="outline" size="sm" asChild><Link href={`/forms/${formId}/results`}><BarChart className="mr-2 h-4 w-4"/>Resultados</Link></Button>
-                     <Button variant="outline" size="sm" asChild><Link href={`/forms/${formId}/view`} target="_blank"><Eye className="mr-2 h-4 w-4"/>Vista Previa</Link></Button>
-                     <Button onClick={handleSaveChanges} disabled={isSaving || !isDirty} size="sm">
-                         {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
-                         Guardar
-                     </Button>
-                 </div>
-            </header>
+        <div className="flex bg-slate-50 border rounded-xl overflow-hidden h-[900px]">
+            {/* TOOLBOX SIDEBAR */}
+            <div className="w-64 bg-white border-r p-4 flex flex-col gap-4">
+                <div>
+                    <h3 className="font-semibold text-slate-900 mb-4">Herramientas</h3>
+                    <div className="grid grid-cols-2 gap-2">
+                        {TOOLBOX_ITEMS.map((item) => (
+                            <Button
+                                key={item.type}
+                                variant="outline"
+                                className="flex flex-col items-center justify-center h-20 gap-2 hover:border-primary hover:text-primary transition-colors"
+                                onClick={() => addField(item.type)}
+                            >
+                                <item.icon className="h-6 w-6" />
+                                <span className="text-[10px] font-medium text-center leading-tight">{item.label}</span>
+                            </Button>
+                        ))}
+                    </div>
+                </div>
 
-            <main className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                <div className="lg:col-span-2 space-y-4">
-                    <DragDropContext onDragEnd={onDragEnd}>
-                        <Droppable droppableId="form-fields" type="FIELDS">
-                            {(provided) => (
-                                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
-                                    {form.fields.map((field, index) => (
-                                         <Draggable key={field.id} draggableId={field.id} index={index}>
-                                             {(provided) => (
-                                                 <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-                                                     <FieldEditor 
-                                                         field={field} 
-                                                         isScoringEnabled={!!form.isQuiz}
-                                                         onUpdate={handleFieldUpdate} 
-                                                         onDelete={deleteField}
-                                                         onOptionChange={handleOptionChange}
-                                                         onOptionAdd={handleOptionAdd}
-                                                         onOptionDelete={handleOptionDelete}
-                                                         onCorrectChange={handleCorrectChange}
-                                                         isSaving={isSaving}
-                                                     />
-                                                 </div>
-                                              )}
-                                         </Draggable>
-                                     ))}
-                                     {provided.placeholder}
+                <div className="mt-auto bg-blue-50 p-4 rounded-lg border border-blue-100">
+                    <h4 className="text-xs font-bold text-blue-800 mb-1">Tip Pro</h4>
+                    <p className="text-xs text-blue-600">
+                        Puedes dividir el formulario en varias páginas usando el panel de propiedades.
+                    </p>
+                </div>
+            </div>
+
+            {/* CANVAS */}
+            <div className="flex-1 p-8 overflow-y-auto bg-[url('/patterns/dots.svg')]">
+                <div className="max-w-2xl mx-auto">
+                    <div className="bg-white p-8 rounded-t-xl border-b shadow-sm mb-6 border-t-4 border-t-primary">
+                        <Input
+                            className="text-3xl font-bold border-none px-0 shadow-none focus-visible:ring-0 placeholder:text-slate-300"
+                            placeholder="Título del Formulario"
+                            defaultValue="Encuesta de Satisfacción 2024"
+                        />
+                        <Textarea
+                            className="mt-2 border-none px-0 shadow-none focus-visible:ring-0 resize-none text-slate-500"
+                            placeholder="Descripción del formulario..."
+                            defaultValue="Por favor, tómate unos minutos para completar esta encuesta."
+                        />
+                    </div>
+
+                    <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
+                    >
+                        <SortableContext items={fields} strategy={verticalListSortingStrategy}>
+                            <div className="space-y-4">
+                                {fields.length === 0 && (
+                                    <div className="border-2 border-dashed border-slate-300 rounded-xl p-12 text-center text-slate-400">
+                                        <p>Arrastra elementos o haz clic en la barra lateral para añadir preguntas.</p>
+                                    </div>
+                                )}
+                                {fields.map((field) => (
+                                    <SortableField
+                                        key={field.id}
+                                        field={field}
+                                        onDelete={deleteField}
+                                        onSelect={setSelectedField}
+                                        isSelected={selectedField?.id === field.id}
+                                    />
+                                ))}
+                            </div>
+                        </SortableContext>
+                    </DndContext>
+                </div>
+            </div>
+
+            {/* PROPERTIES PANEL */}
+            <div className="w-80 bg-white border-l p-6 overflow-y-auto">
+                {selectedField ? (
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h3 className="font-semibold text-lg">Propiedades</h3>
+                            <Button variant="ghost" size="sm" onClick={() => setSelectedField(null)}><Settings className="h-4 w-4" /></Button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label>Etiqueta de la Pregunta</Label>
+                                <Textarea
+                                    value={selectedField.label}
+                                    onChange={(e) => updateField(selectedField.id, { label: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-between p-3 border rounded-lg bg-slate-50">
+                                <Label className="cursor-pointer" htmlFor="required-switch">Obligatorio</Label>
+                                <Switch
+                                    id="required-switch"
+                                    checked={selectedField.required}
+                                    onCheckedChange={(c) => updateField(selectedField.id, { required: c })}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Página del Formulario</Label>
+                                <Input
+                                    type="number"
+                                    min={1}
+                                    value={selectedField.page || 1}
+                                    onChange={(e) => updateField(selectedField.id, { page: parseInt(e.target.value) })}
+                                />
+                            </div>
+
+                            {(selectedField.type === "SINGLE_CHOICE" || selectedField.type === "MULTIPLE_CHOICE") && (
+                                <div className="space-y-2">
+                                    <Label>Opciones</Label>
+                                    {selectedField.options?.map((opt, idx) => (
+                                        <div key={idx} className="flex gap-2">
+                                            <Input
+                                                value={opt}
+                                                onChange={(e) => {
+                                                    const newOptions = [...(selectedField.options || [])];
+                                                    newOptions[idx] = e.target.value;
+                                                    updateField(selectedField.id, { options: newOptions });
+                                                }}
+                                            />
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => {
+                                                    const newOptions = selectedField.options?.filter((_, i) => i !== idx);
+                                                    updateField(selectedField.id, { options: newOptions });
+                                                }}
+                                            >
+                                                <Trash2 className="h-4 w-4 text-red-400" />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="w-full mt-2 border-dashed"
+                                        onClick={() => {
+                                            const newOptions = [...(selectedField.options || []), `Opción ${(selectedField.options?.length || 0) + 1}`];
+                                            updateField(selectedField.id, { options: newOptions });
+                                        }}
+                                    >
+                                        <Plus className="h-4 w-4 mr-2" /> Añadir Opción
+                                    </Button>
                                 </div>
                             )}
-                        </Droppable>
-                    </DragDropContext>
-                     {form.fields.length === 0 && (
-                        <div className="text-center border-2 border-dashed rounded-lg p-12">
-                            <FilePen className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                            <h3 className="text-xl font-semibold mb-2">¡Empieza a construir!</h3>
-                            <p className="text-muted-foreground mb-6">Usa los botones del panel derecho para añadir tu primera pregunta.</p>
                         </div>
-                     )}
-                </div>
-                
-                 <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
-                     <Card>
-                         <CardHeader><CardTitle className="text-base">Añadir Campo</CardTitle></CardHeader>
-                         <CardContent className="grid grid-cols-2 gap-2">
-                            <Button variant="outline" onClick={() => addField('SHORT_TEXT')}><Type className="mr-2 h-4 w-4"/>Texto Corto</Button>
-                            <Button variant="outline" onClick={() => addField('LONG_TEXT')}><MessageSquare className="mr-2 h-4 w-4"/>Párrafo</Button>
-                            <Button variant="outline" onClick={() => addField('SINGLE_CHOICE')}><ListChecks className="mr-2 h-4 w-4"/>Opción Única</Button>
-                            <Button variant="outline" onClick={() => addField('MULTIPLE_CHOICE')}><CheckSquare className="mr-2 h-4 w-4"/>Casillas</Button>
-                         </CardContent>
-                     </Card>
-                     <Card>
-                        <CardHeader><CardTitle className="text-base">Configuración</CardTitle></CardHeader>
-                        <CardContent>
-                           <Tabs defaultValue="properties">
-                             <TabsList className="grid w-full grid-cols-3">
-                               <TabsTrigger value="properties">Propiedades</TabsTrigger>
-                               <TabsTrigger value="design">Diseño</TabsTrigger>
-                               <TabsTrigger value="share">Compartir</TabsTrigger>
-                             </TabsList>
-                             <TabsContent value="properties" className="pt-4 space-y-4">
-                                <div className="space-y-3">
-                                     <div className="flex items-center justify-between space-x-2 p-2.5 border rounded-lg">
-                                         <Label htmlFor="quiz-mode" className="font-semibold">Modo Evaluación (Quiz)</Label>
-                                         <Switch id="quiz-mode" name="quiz-mode" checked={!!form.isQuiz} onCheckedChange={(c) => handleFormUpdate({ isQuiz: c })}/>
-                                     </div>
-                                     {form.isQuiz && (
-                                         <Alert variant="default" className="text-xs">
-                                             <Info className="h-4 w-4"/>
-                                             <AlertDescription>
-                                                 Recuerda: la puntuación solo funciona para preguntas de <span className="font-semibold">Opción Única</span>. Asigna puntos a las opciones para que el cálculo funcione.
-                                             </AlertDescription>
-                                         </Alert>
-                                     )}
-                                 </div>
-                                 <div className="space-y-2">
-                                      <Label htmlFor="form-status">Estado del Formulario</Label>
-                                      <Select name="form-status" value={form.status} onValueChange={v => handleFormUpdate({ status: v as FormStatus })}>
-                                          <SelectTrigger id="form-status"><SelectValue/></SelectTrigger>
-                                          <SelectContent>
-                                              <SelectItem value="DRAFT">Borrador</SelectItem>
-                                              <SelectItem value="PUBLISHED">Publicado</SelectItem>
-                                              <SelectItem value="ARCHIVED">Archivado</SelectItem>
-                                          </SelectContent>
-                                      </Select>
-                                 </div>
-                             </TabsContent>
-                             <TabsContent value="design" className="pt-4 space-y-4">
-                                <div className="space-y-2">
-                                     <Label htmlFor="form-image-upload">Imagen de Encabezado</Label>
-                                      {isUploading ? <div className="p-4 h-32 flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg"><Loader2 className="h-6 w-6 animate-spin"/><Progress value={uploadProgress} className="w-full h-1.5" /></div>
-                                      : finalImageUrl ? <div className="relative w-full aspect-video rounded-lg border overflow-hidden"><Image src={finalImageUrl} alt="Encabezado" fill className="object-cover" /><Button type="button" variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={handleRemoveImage}><X className="h-4 w-4"/></Button></div>
-                                      : <UploadArea onFileSelect={(files) => files && handleImageUpload(files[0])} compact />
-                                      }
-                                 </div>
-                                 <div className="space-y-2">
-                                     <Label htmlFor="form-theme-color">Color del Tema</Label>
-                                     <Input id="form-theme-color" name="form-theme-color" type="color" value={form.themeColor || '#6366f1'} onChange={e => handleFormUpdate({ themeColor: e.target.value })} className="w-full p-1 h-10"/>
-                                 </div>
-                                 <div className="space-y-2">
-                                     <Label htmlFor="form-bg-color">Color de Fondo</Label>
-                                     <Input id="form-bg-color" name="form-bg-color" type="color" value={form.backgroundColor || '#f8fafc'} onChange={e => handleFormUpdate({ backgroundColor: e.target.value })} className="w-full p-1 h-10"/>
-                                 </div>
-                                 <div className="space-y-2">
-                                     <Label htmlFor="form-font-style">Estilo de Fuente</Label>
-                                     <Select name="form-font-style" value={form.fontStyle || 'default'} onValueChange={v => handleFormUpdate({ fontStyle: v })}>
-                                        <SelectTrigger id="form-font-style"><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="default">Por Defecto</SelectItem>
-                                            <SelectItem value="serif">Serif</SelectItem>
-                                            <SelectItem value="mono">Monoespacio</SelectItem>
-                                        </SelectContent>
-                                     </Select>
-                                 </div>
-                             </TabsContent>
-                             <TabsContent value="share" className="pt-4">
-                               {form.status === 'PUBLISHED' && (
-                                 <div className="space-y-2">
-                                      <Label htmlFor="share-link">Enlace para Compartir</Label>
-                                      <div className="flex items-center gap-2">
-                                        <Input id="share-link" name="share-link" readOnly value={`${window.location.origin}/forms/${formId}/view`} />
-                                        <Button size="icon" variant="outline" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/forms/${formId}/view`); toast({description: 'Enlace copiado al portapapeles.'})}}><Copy className="h-4 w-4"/></Button>
-                                      </div>
-                                 </div>
-                               )}
-                                {form.status !== 'PUBLISHED' && (
-                                    <p className="text-sm text-muted-foreground text-center p-4 border rounded-lg">Publica el formulario para obtener el enlace para compartir.</p>
-                                )}
-                             </TabsContent>
-                           </Tabs>
-                        </CardContent>
-                     </Card>
-                 </div>
-            </main>
+
+                        <div className="pt-6 border-t mt-6">
+                            <h4 className="font-medium text-sm mb-3">Lógica Condicional (Beta)</h4>
+                            <div className="p-3 bg-amber-50 rounded-lg border border-amber-100 text-xs text-amber-800">
+                                La configuración avanzada de lógica condicional estará disponible en la próxima actualización.
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-slate-400 text-center">
+                        <Settings className="h-12 w-12 mb-4 opacity-20" />
+                        <p>Selecciona una pregunta para editar sus propiedades.</p>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
