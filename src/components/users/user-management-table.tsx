@@ -146,9 +146,9 @@ export const columns: ColumnDef<User>[] = [
         cell: ({ row }) => {
             const role = row.getValue("role") as string;
             const config = {
-                "ADMINISTRATOR": { icon: Shield, label: "Admin", class: "bg-purple-100 text-purple-700 border-purple-200" },
-                "INSTRUCTOR": { icon: Briefcase, label: "Instructor", class: "bg-blue-100 text-blue-700 border-blue-200" },
-                "STUDENT": { icon: GraduationCap, label: "Estudiante", class: "bg-slate-100 text-slate-700 border-slate-200" }
+                "ADMINISTRATOR": { icon: Shield, label: "Admin", class: "bg-purple-500/10 text-purple-600 border-purple-200/50 dark:border-purple-500/20" },
+                "INSTRUCTOR": { icon: Briefcase, label: "Instructor", class: "bg-blue-500/10 text-blue-600 border-blue-200/50 dark:border-blue-500/20" },
+                "STUDENT": { icon: GraduationCap, label: "Estudiante", class: "bg-muted text-muted-foreground border-border" }
             }[role] || { icon: GraduationCap, label: role, class: "" };
 
             const Icon = config.icon;
@@ -168,8 +168,8 @@ export const columns: ColumnDef<User>[] = [
             const status = row.getValue("status") as string;
             return (
                 <div className="flex items-center gap-2">
-                    {status === "active" && <CheckCircle className="h-4 w-4 text-green-500" />}
-                    {status === "inactive" && <XCircle className="h-4 w-4 text-slate-400" />}
+                    {status === "active" && <CheckCircle className="h-4 w-4 text-emerald-500" />}
+                    {status === "inactive" && <XCircle className="h-4 w-4 text-muted-foreground/60" />}
                     {status === "pending" && <div className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />}
                     <span className="capitalize text-sm">{status === "active" ? "Activo" : status === "inactive" ? "Inactivo" : "Pendiente"}</span>
                 </div>
@@ -185,12 +185,11 @@ export const columns: ColumnDef<User>[] = [
 
             // Generate a deterministic color based on process name
             const colors = [
-                "bg-blue-50 text-blue-700 border-blue-100",
-                "bg-purple-50 text-purple-700 border-purple-100",
-                "bg-indigo-50 text-indigo-700 border-indigo-100",
-                "bg-pink-50 text-pink-700 border-pink-100",
-                "bg-amber-50 text-amber-700 border-amber-100",
-                "bg-emerald-50 text-emerald-700 border-emerald-100"
+                "bg-[hsl(var(--chart-1)/0.12)] text-[hsl(var(--chart-1))] border-[hsl(var(--chart-1)/0.2)]",
+                "bg-[hsl(var(--chart-2)/0.12)] text-[hsl(var(--chart-2))] border-[hsl(var(--chart-2)/0.2)]",
+                "bg-[hsl(var(--chart-3)/0.12)] text-[hsl(var(--chart-3))] border-[hsl(var(--chart-3)/0.2)]",
+                "bg-[hsl(var(--chart-4)/0.12)] text-[hsl(var(--chart-4))] border-[hsl(var(--chart-4)/0.2)]",
+                "bg-[hsl(var(--chart-5)/0.12)] text-[hsl(var(--chart-5))] border-[hsl(var(--chart-5)/0.2)]"
             ];
             const colorIndex = process.name.length % colors.length;
 
@@ -403,7 +402,7 @@ export function UserManagementTable() {
         <div className="flex gap-6 h-full items-start">
             <div className="flex-1 space-y-4 min-w-0">
                 {/* COMPACT METRIC BAR */}
-                <div className="flex flex-wrap gap-4 mb-8 bg-slate-50/50 p-2 rounded-[2.5rem] border border-slate-100">
+                <div className="flex flex-wrap gap-4 mb-8 bg-muted/30 p-2 rounded-[2.5rem] border border-border">
                     <StatCard
                         title="Usuarios Totales"
                         value={totalUsers}
@@ -430,7 +429,7 @@ export function UserManagementTable() {
                     />
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-4 py-4 bg-white p-4 rounded-2xl border shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-4 py-4 bg-card p-4 rounded-2xl border shadow-sm">
                     <div className="relative w-full max-w-sm">
                         <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                         <Input
@@ -583,7 +582,7 @@ export function UserManagementTable() {
                                 size="sm"
                                 onClick={() => table.previousPage()}
                                 disabled={!table.getCanPreviousPage()}
-                                className="rounded-xl h-10 px-6 font-bold hover:bg-slate-50 transition-all active:scale-95"
+                                className="rounded-xl h-10 px-6 font-bold hover:bg-accent transition-all active:scale-95"
                             >
                                 Anterior
                             </Button>
@@ -592,7 +591,7 @@ export function UserManagementTable() {
                                 size="sm"
                                 onClick={() => table.nextPage()}
                                 disabled={!table.getCanNextPage()}
-                                className="rounded-xl h-10 px-6 font-bold bg-white hover:bg-slate-50 border-slate-200 shadow-sm transition-all active:scale-95"
+                                className="rounded-xl h-10 px-6 font-bold bg-background hover:bg-accent border-border shadow-sm transition-all active:scale-95"
                             >
                                 Siguiente
                             </Button>
@@ -659,17 +658,17 @@ export function UserManagementTable() {
 
 function UserCard({ user, onEdit, onToggleStatus }: { user: User, onEdit: (u: User) => void, onToggleStatus: (id: string, activate: boolean) => void }) {
     const processColors = [
-        "from-blue-600 to-indigo-600",
-        "from-purple-600 to-pink-600",
-        "from-emerald-600 to-teal-600",
-        "from-amber-600 to-orange-600",
-        "from-indigo-600 to-blue-600"
+        "from-[hsl(var(--chart-1))] to-[hsl(var(--chart-2))]",
+        "from-[hsl(var(--chart-2))] to-[hsl(var(--chart-3))]",
+        "from-[hsl(var(--chart-3))] to-[hsl(var(--chart-4))]",
+        "from-[hsl(var(--chart-4))] to-[hsl(var(--chart-5))]",
+        "from-[hsl(var(--chart-5))] to-[hsl(var(--chart-1))]"
     ];
     const colorIndex = (user.process?.name?.length || 0) % processColors.length;
-    const processColor = user.process ? processColors[colorIndex] : "from-slate-400 to-slate-500";
+    const processColor = user.process ? processColors[colorIndex] : "from-muted-foreground/40 to-muted-foreground/60";
 
     return (
-        <Card className="hover:shadow-xl transition-all duration-500 border border-slate-100 shadow-sm overflow-hidden rounded-2xl md:rounded-3xl group relative bg-white font-inter">
+        <Card className="hover:shadow-xl transition-all duration-500 border border-border shadow-sm overflow-hidden rounded-2xl md:rounded-3xl group relative bg-card font-inter">
             <CardContent className="p-3 md:p-5">
                 <div className="flex flex-col sm:flex-row items-center sm:items-center gap-3 md:gap-5 text-center sm:text-left">
                     {/* AVATAR LEFT */}
