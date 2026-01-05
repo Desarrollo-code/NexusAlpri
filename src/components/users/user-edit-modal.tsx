@@ -112,7 +112,7 @@ const PERMISSION_CATEGORIES = [
             { id: "view_reports", label: "Inscripciones", icon: UsersRound },
             { id: "manage_motivations", label: "Motivaciones", icon: Sparkles },
             { id: "manage_certificates", label: "Certificados", icon: Award },
-            { id: "manage_users", label: "Control Central", icon: Network },
+            { id: "manage_users", label: "Gestión de Usuarios", icon: Network },
             { id: "view_analytics", label: "Analíticas", icon: BarChart3 },
             { id: "view_roadmap", label: "Ruta del Proyecto", icon: Rocket },
             { id: "manage_security", label: "Seguridad", icon: ShieldAlert },
@@ -382,7 +382,7 @@ export function UserEditModal({ user, isOpen, onClose, onSuccess }: UserEditModa
                                         Permisos Granulares
                                     </h3>
                                     <p className="text-xs text-slate-500 mt-1">
-                                        Sobrescribe los permisos del rol y concede acceso a páginas específicas.
+                                        Configure los accesos específicos para este colaborador.
                                     </p>
                                 </div>
 

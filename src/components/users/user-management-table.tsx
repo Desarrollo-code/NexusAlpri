@@ -401,28 +401,24 @@ export function UserManagementTable() {
                         value={totalUsers}
                         icon={Users}
                         color="from-primary to-chart-3"
-                        description="Crecimiento del 12% este mes"
                     />
                     <StatCard
                         title="Activos Ahora"
                         value={data.filter(u => u.status === 'active').length}
                         icon={CheckCircle}
                         color="from-chart-2 to-emerald-400"
-                        description="Usuarios con sesión iniciada"
                     />
                     <StatCard
                         title="Instructores"
                         value={data.filter(u => u.role === 'INSTRUCTOR').length}
                         icon={Briefcase}
                         color="from-chart-1 to-blue-400"
-                        description="Personal docente verificado"
                     />
                     <StatCard
-                        title="Pendientes"
-                        value={data.filter(u => u.status === 'pending').length}
-                        icon={Mail}
+                        title="Inactivos"
+                        value={data.filter(u => u.status === 'inactive').length}
+                        icon={XCircle}
                         color="from-chart-5 to-orange-400"
-                        description="Esperando confirmación"
                     />
                 </div>
 
@@ -549,7 +545,7 @@ export function UserManagementTable() {
                         </Table>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 pb-20">
+                    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-20">
                         {filteredData.map((user) => (
                             <UserCard key={user.id} user={user} onEdit={handleEdit} onDelete={handleDelete} />
                         ))}
@@ -852,14 +848,12 @@ function StatCard({
     title,
     value,
     icon: Icon,
-    color,
-    description
+    color
 }: {
     title: string,
     value: number,
     icon: any,
-    color: string,
-    description?: string
+    color: string
 }) {
     return (
         <div className="flex items-center gap-3 px-6 py-4 bg-white border border-slate-100 rounded-3xl shadow-sm hover:shadow-md transition-all group min-w-[200px] flex-1">
@@ -875,9 +869,6 @@ function StatCard({
                     <span className="text-2xl font-black text-slate-900 tracking-tighter">
                         {value}
                     </span>
-                    {description && (
-                        <span className="text-[9px] font-bold text-slate-300 truncate hidden xl:block">{description.split(' ')[0]}</span>
-                    )}
                 </div>
             </div>
         </div>

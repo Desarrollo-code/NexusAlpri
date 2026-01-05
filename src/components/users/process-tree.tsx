@@ -36,11 +36,11 @@ const ProcessNode = ({ process, onEdit, onDelete, onProcessClick, activeProcessI
                 </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100"><MoreVertical className="h-4 w-4"/></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100"><MoreVertical className="h-4 w-4" /></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <DropdownMenuItem onSelect={() => onEdit(process)}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => onDelete(process)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => onEdit(process)}><Edit className="mr-2 h-4 w-4" />Editar</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => onDelete(process)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" />Eliminar</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
@@ -81,8 +81,8 @@ export function ProcessTree({ processes, onProcessUpdate, onProcessClick, active
             if (!res.ok) throw new Error((await res.json()).message || "No se pudo eliminar el proceso.");
             toast({ title: 'Proceso Eliminado' });
             onProcessUpdate();
-        } catch(err) {
-            toast({ title: 'Error', description: (err as Error).message, variant: 'destructive'});
+        } catch (err) {
+            toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
         } finally {
             setIsDeleting(false);
             setProcessToDelete(null);
@@ -94,19 +94,22 @@ export function ProcessTree({ processes, onProcessUpdate, onProcessClick, active
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle className="text-lg flex items-center gap-2"><Network />Estructura Organizacional</CardTitle>
-                    <Button size="icon" variant="ghost" onClick={() => handleOpenModal()}><PlusCircle className="h-5 w-5"/></Button>
+                    <Button onClick={() => handleOpenModal()} className="rounded-xl font-bold gap-2">
+                        <PlusCircle className="h-4 w-4" />
+                        Nuevo Proceso
+                    </Button>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                     <div 
-                        ref={unassignedDroppableRef} 
+                    <div
+                        ref={unassignedDroppableRef}
                         className={cn(
-                            "flex items-center gap-2 p-2 rounded-md cursor-pointer transition-colors", 
+                            "flex items-center gap-2 p-2 rounded-md cursor-pointer transition-colors",
                             isOver && "bg-primary/20",
                             activeProcessId === 'unassigned' && 'bg-primary/10'
-                        )} 
+                        )}
                         onClick={() => onProcessClick('unassigned')}
                     >
-                        <div className="w-1.5 h-6 rounded-full bg-muted-foreground/50"/>
+                        <div className="w-1.5 h-6 rounded-full bg-muted-foreground/50" />
                         <span className="font-medium text-sm text-muted-foreground">Sin Asignar</span>
                     </div>
                     {processes.map(process => (
@@ -115,15 +118,15 @@ export function ProcessTree({ processes, onProcessUpdate, onProcessClick, active
                 </CardContent>
             </Card>
             {showProcessModal && (
-                <ProcessFormModal 
-                    isOpen={showProcessModal} 
+                <ProcessFormModal
+                    isOpen={showProcessModal}
                     onClose={() => setShowProcessModal(false)}
                     onSave={onProcessUpdate}
                     process={processToEdit}
                     allProcesses={processes}
                 />
             )}
-             <AlertDialog open={!!processToDelete} onOpenChange={() => setProcessToDelete(null)}>
+            <AlertDialog open={!!processToDelete} onOpenChange={() => setProcessToDelete(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle>
@@ -132,7 +135,7 @@ export function ProcessTree({ processes, onProcessUpdate, onProcessClick, active
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
                         <AlertDialogAction onClick={confirmDelete} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
-                            {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                            {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Eliminar
                         </AlertDialogAction>
                     </AlertDialogFooter>

@@ -13,7 +13,7 @@ import {
   BarChart3,
   UsersRound,
   ShieldAlert,
-  Settings, 
+  Settings,
   Library,
   Briefcase,
   Trophy,
@@ -34,7 +34,7 @@ const NAVIGATION_ITEMS: NavItem[] = [
     path: '/dashboard',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
   },
-  
+
   // --- Competition Section ---
   {
     id: 'competition',
@@ -43,15 +43,15 @@ const NAVIGATION_ITEMS: NavItem[] = [
     path: '/leaderboard',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
   },
-  
-   // --- Communications Section ---
+
+  // --- Communications Section ---
   {
     id: 'communications',
     label: 'Comunicaciones',
     icon: Megaphone,
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
     children: [
-       {
+      {
         id: 'announcements',
         label: 'Anuncios',
         icon: Megaphone,
@@ -98,7 +98,7 @@ const NAVIGATION_ITEMS: NavItem[] = [
       },
     ],
   },
-  
+
   // --- Organization Section ---
   {
     id: 'organization',
@@ -106,14 +106,14 @@ const NAVIGATION_ITEMS: NavItem[] = [
     icon: Briefcase,
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
     children: [
-       {
+      {
         id: 'resources',
         label: 'Biblioteca',
         icon: Folder,
         path: '/resources',
         roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
       },
-       {
+      {
         id: 'forms',
         label: 'Formularios',
         icon: FileText,
@@ -122,7 +122,7 @@ const NAVIGATION_ITEMS: NavItem[] = [
       },
     ]
   },
-  
+
   // --- Admin Section ---
   {
     id: 'admin',
@@ -144,7 +144,7 @@ const NAVIGATION_ITEMS: NavItem[] = [
         path: '/enrollments',
         roles: ['ADMINISTRATOR', 'INSTRUCTOR']
       },
-       {
+      {
         id: 'motivations',
         label: 'Motivaciones',
         icon: Sparkles,
@@ -160,7 +160,7 @@ const NAVIGATION_ITEMS: NavItem[] = [
       },
       {
         id: 'users',
-        label: 'Control Central',
+        label: 'Usuarios',
         icon: Network,
         path: '/users',
         roles: ['ADMINISTRATOR']
@@ -203,12 +203,12 @@ export const getNavItemsForRole = (role: UserRole, settings?: PlatformSettings |
       .filter(item => {
         // Regla general: el rol del usuario debe estar en la lista de roles del item.
         const hasRoleAccess = item.roles.includes(role);
-        
+
         // Regla específica para la hoja de ruta
         if (item.id === 'roadmap' && settings?.roadmapVisibleTo) {
           return settings.roadmapVisibleTo.includes(role);
         }
-        
+
         return hasRoleAccess;
       })
       .map(item => {
@@ -222,6 +222,6 @@ export const getNavItemsForRole = (role: UserRole, settings?: PlatformSettings |
       })
       .filter((item): item is NavItem => item !== null);
   };
-  
+
   return filterByRole(NAVIGATION_ITEMS);
 };
