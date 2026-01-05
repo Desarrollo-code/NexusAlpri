@@ -4,13 +4,28 @@
 import React, { useState } from "react";
 import { EnhancedCalendar, CalendarEvent } from "@/components/calendar/enhanced-calendar";
 import { EventDetailsDialog } from "@/components/calendar/event-details-dialog";
+import { EventCreatorModal } from "@/components/calendar/event-creator-modal";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { useTitle } from "@/contexts/title-context";
 
 export default function CalendarPage() {
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [isCreateOpen, setIsCreateOpen] = useState(false); // Placeholder for create modal
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+  const { setPageTitle, setHeaderActions } = useTitle();
+
+  React.useEffect(() => {
+    setPageTitle("Calendario");
+    setHeaderActions(
+      <Button onClick={() => setIsCreateOpen(true)} className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm">
+        <Plus className="h-4 w-4" />
+        Nuevo Evento
+      </Button>
+    );
+    return () => setHeaderActions(null);
+  }, [setPageTitle, setHeaderActions]);
 
   const handleEventClick = (event: CalendarEvent) => {
     setSelectedEvent(event);
@@ -18,18 +33,12 @@ export default function CalendarPage() {
   };
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Calendario</h1>
-          <p className="text-muted-foreground">
-            Gestiona tus eventos, reuniones y fechas importantes.
-          </p>
-        </div>
-        <Button onClick={() => setIsCreateOpen(true)} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Nuevo Evento
-        </Button>
+    <div className="container mx-auto py-6 space-y-6">
+      <div className="flex flex-col gap-2">
+        {/* Title handled by TopBar, showing description here */}
+        <p className="text-muted-foreground text-lg">
+          Gestiona y organiza todos tus eventos, reuniones y fechas importantes en un solo lugar.
+        </p>
       </div>
 
       <EnhancedCalendar onEventClick={handleEventClick} />
@@ -38,6 +47,11 @@ export default function CalendarPage() {
         event={selectedEvent}
         open={isDetailsOpen}
         onOpenChange={setIsDetailsOpen}
+      />
+
+      <EventCreatorModal
+        open={isCreateOpen}
+        onOpenChange={setIsCreateOpen}
       />
     </div>
   );

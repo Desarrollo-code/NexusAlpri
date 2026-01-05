@@ -184,13 +184,35 @@ export const columns: ColumnDef<User>[] = [
 ];
 
 export function UserManagementTable() {
+    const [data, setData] = useState<User[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
     const [rowSelection, setRowSelection] = useState({});
 
+    React.useEffect(() => {
+        const fetchData = async () => {
+            setIsLoading(true);
+            try {
+                const response = await fetch('/api/users');
+                if (response.ok) {
+                    const result = await response.json();
+                    // Map backend data to table shape if needed, currently matching types
+                    setData(result.users || []);
+                }
+            } catch (error) {
+                console.error("Failed to fetch users:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
     const table = useReactTable({
-        data: MOCK_USERS,
+        data,
         columns,
         onSortingChange: setSorting,
         onColumnFiltersChange: setColumnFilters,
@@ -232,8 +254,7 @@ export function UserManagementTable() {
                 </div>
                 <div className="flex gap-2">
                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="ml-auto">
+                    <Button variant="outline" className="ml-auto">
                                 Columnas <ChevronDown className="ml-2 h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
@@ -257,9 +278,7 @@ export function UserManagementTable() {
                                 })}
                         </DropdownMenuContent>
                     </DropdownMenu>
-                    <Button className="gap-2">
-                        <UserPlus className="h-4 w-4" /> Nuevo Usuario
-                    </Button>
+                    {/* Button moved to TopBar */}
                 </div>
             </div>
 
@@ -337,7 +356,7 @@ export function UserManagementTable() {
                     </Button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
 

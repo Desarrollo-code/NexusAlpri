@@ -29,6 +29,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { useTitle } from "@/contexts/title-context";
+import { AnnouncementCreatorModal } from "./announcement-creator-modal";
 
 // --- MOCK DATA ---
 type Announcement = {
@@ -103,6 +105,19 @@ const MOCK_ANNOUNCEMENTS: Announcement[] = [
 export default function ModernAnnouncements() {
     const [filter, setFilter] = useState("all");
     const [search, setSearch] = useState("");
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+    const { setPageTitle, setHeaderActions } = useTitle();
+
+    React.useEffect(() => {
+        setPageTitle("Anuncios");
+        setHeaderActions(
+            <Button onClick={() => setIsCreateOpen(true)} className="bg-primary text-primary-foreground shadow-sm">
+                <Megaphone className="mr-2 h-4 w-4" /> Nuevo Anuncio
+            </Button>
+        );
+        return () => setHeaderActions(null);
+    }, [setPageTitle, setHeaderActions]);
 
     const pinned = MOCK_ANNOUNCEMENTS.filter(a => a.isPinned);
     const feed = MOCK_ANNOUNCEMENTS.filter(a => !a.isPinned).filter(a => {
@@ -112,13 +127,14 @@ export default function ModernAnnouncements() {
     });
 
     return (
-        <div className="space-y-8">
-            {/* HEADER & SEARCH */}
+        <div className="space-y-6">
+            <AnnouncementCreatorModal open={isCreateOpen} onOpenChange={setIsCreateOpen} />
+
+            {/* SEARCH & DESCRIPTION */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Anuncios</h1>
-                    <p className="text-muted-foreground">Mantente al día con las últimas noticias y actualizaciones.</p>
-                </div>
+                <p className="text-muted-foreground text-lg">
+                    Mantente informado con las últimas noticias, actualizaciones y eventos de la plataforma.
+                </p>
                 <div className="flex w-full md:w-auto gap-2">
                     <div className="relative w-full md:w-64">
                         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -129,9 +145,6 @@ export default function ModernAnnouncements() {
                             onChange={(e) => setSearch(e.target.value)}
                         />
                     </div>
-                    <Button>
-                        <Megaphone className="mr-2 h-4 w-4" /> Nuevo Anuncio
-                    </Button>
                 </div>
             </div>
 
