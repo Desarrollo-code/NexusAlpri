@@ -639,6 +639,7 @@ model EventParticipation {
   occurrenceDate   DateTime 
   
   confirmedAt      DateTime  @default(now())
+  isVerified      Boolean   @default(false)
 
   @@unique([userId, eventId, occurrenceDate])
   @@map("event_participations")
