@@ -407,54 +407,54 @@ export function UserManagementTable() {
                         title="Usuarios Totales"
                         value={totalUsers}
                         icon={Users}
-                        color="from-primary to-chart-3"
+                        color="from-[hsl(var(--primary))] to-[hsl(var(--chart-3))]"
                     />
                     <StatCard
                         title="Activos Ahora"
                         value={data.filter(u => u.status === 'active').length}
                         icon={CheckCircle}
-                        color="from-chart-2 to-emerald-400"
+                        color="from-[hsl(var(--chart-2))] to-[hsl(var(--chart-1))]"
                     />
                     <StatCard
                         title="Instructores"
                         value={data.filter(u => u.role === 'INSTRUCTOR').length}
                         icon={Briefcase}
-                        color="from-chart-1 to-blue-400"
+                        color="from-[hsl(var(--chart-1))] to-[hsl(var(--chart-4))]"
                     />
                     <StatCard
                         title="Inactivos"
                         value={data.filter(u => u.status === 'inactive').length}
                         icon={XCircle}
-                        color="from-chart-5 to-orange-400"
+                        color="from-[hsl(var(--chart-5))] to-[hsl(var(--chart-2))]"
                     />
                 </div>
 
                 <div className="flex flex-wrap items-center justify-between gap-4 py-4 bg-card p-4 rounded-2xl border shadow-sm">
                     <div className="relative w-full max-w-sm">
-                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
                             placeholder="Buscar por nombre o email..."
                             value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
                             onChange={(event) =>
                                 table.getColumn("name")?.setFilterValue(event.target.value)
                             }
-                            className="pl-10 h-10 bg-slate-50 border-none rounded-xl"
+                            className="pl-10 h-10 bg-muted/50 border-none rounded-xl focus-visible:ring-primary/20"
                         />
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
-                        <div className="flex items-center bg-slate-100 p-1 rounded-xl border">
+                        <div className="flex items-center bg-muted p-1 rounded-xl border">
                             <Button
-                                variant={viewMode === "table" ? "ghost" : "ghost"}
+                                variant="ghost"
                                 size="sm"
-                                className={`h-8 w-10 p-0 rounded-lg ${viewMode === "table" ? "shadow-sm bg-white" : "text-slate-500"}`}
+                                className={`h-8 w-10 p-0 rounded-lg ${viewMode === "table" ? "shadow-sm bg-background" : "text-muted-foreground"}`}
                                 onClick={() => setViewMode("table")}
                             >
                                 <List className="h-4 w-4" />
                             </Button>
                             <Button
-                                variant={viewMode === "grid" ? "ghost" : "ghost"}
+                                variant="ghost"
                                 size="sm"
-                                className={`h-8 w-10 p-0 rounded-lg ${viewMode === "grid" ? "shadow-sm bg-white" : "text-slate-500"}`}
+                                className={`h-8 w-10 p-0 rounded-lg ${viewMode === "grid" ? "shadow-sm bg-background" : "text-muted-foreground"}`}
                                 onClick={() => setViewMode("grid")}
                             >
                                 <LayoutGrid className="h-4 w-4" />
@@ -870,17 +870,17 @@ function StatCard({
     color: string
 }) {
     return (
-        <div className="flex items-center gap-3 px-6 py-4 bg-white border border-slate-100 rounded-3xl shadow-sm hover:shadow-md transition-all group min-w-[200px] flex-1">
+        <div className="flex items-center gap-3 px-6 py-4 bg-card border border-border rounded-3xl shadow-sm hover:shadow-md transition-all group min-w-[200px] flex-1">
             <div className={`h-10 w-10 shrink-0 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-500`}>
                 <Icon className="h-5 w-5 text-white" />
             </div>
 
             <div className="flex flex-col min-w-0">
-                <span className="text-xs font-black uppercase tracking-widest text-slate-400 group-hover:text-primary transition-colors truncate">
+                <span className="text-xs font-black uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors truncate">
                     {title}
                 </span>
                 <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-black text-slate-900 tracking-tighter">
+                    <span className="text-2xl font-black text-foreground tracking-tighter">
                         {value}
                     </span>
                 </div>
