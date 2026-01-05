@@ -12,6 +12,11 @@ type EnrichedMotivationalMessage = PrismaMotivationalMessage & {
         id: string;
         title: string;
     } | null;
+    triggerLesson?: {
+        id: string;
+        title: string;
+        courseTitle: string;
+    } | null;
 };
 
 // GET all motivational messages
@@ -29,40 +34,69 @@ export async function GET(req: NextRequest) {
             },
         });
 
-        // 2. Extraer los IDs de los cursos de los mensajes que son de tipo COURSE_COMPLETION y tienen un triggerId válido.
+        // 2. Extraer los IDs de los cursos y lecciones de los mensajes.
         const courseIds = baseMessages
-            .filter(msg => msg.triggerType === 'COURSE_COMPLETION' && msg.triggerId)
+            .filter(msg => (msg.triggerType === 'COURSE_COMPLETION' || msg.triggerType === 'COURSE_ENROLLMENT' || msg.triggerType === 'COURSE_MID_PROGRESS' || msg.triggerType === 'COURSE_NEAR_COMPLETION') && msg.triggerId)
+            .map(msg => msg.triggerId!);
+
+        const lessonIds = baseMessages
+            .filter(msg => msg.triggerType === 'LESSON_COMPLETION' && msg.triggerId)
             .map(msg => msg.triggerId!);
 
         let coursesMap = new Map<string, { id: string; title: string }>();
+        let lessonsMap = new Map<string, { id: string; title: string; courseTitle: string }>();
 
-        // 3. Si hay IDs de cursos, hacer una única consulta para obtener sus detalles.
+        // 3. Obtener detalles de cursos y lecciones.
         if (courseIds.length > 0) {
             const courses = await prisma.course.findMany({
-                where: {
-                    id: { in: courseIds }
-                },
+                where: { id: { in: courseIds } },
+                select: { id: true, title: true }
+            });
+            courses.forEach(course => coursesMap.set(course.id, course));
+        }
+
+        if (lessonIds.length > 0) {
+            const lessons = await prisma.lesson.findMany({
+                where: { id: { in: lessonIds } },
                 select: {
                     id: true,
                     title: true,
+                    module: {
+                        select: {
+                            course: {
+                                select: { title: true }
+                            }
+                        }
+                    }
                 }
             });
-            courses.forEach(course => coursesMap.set(course.id, course));
+            lessons.forEach(lesson => {
+                lessonsMap.set(lesson.id, {
+                    id: lesson.id,
+                    title: lesson.title,
+                    courseTitle: lesson.module.course.title
+                });
+            });
         }
 
         // 4. Combinar los datos de forma segura.
         const enrichedMessages: EnrichedMotivationalMessage[] = baseMessages.map(message => {
             let triggerCourse = null;
-            // Solo buscar en el mapa si el trigger es del tipo correcto y el ID existe.
-            if (message.triggerType === 'COURSE_COMPLETION' && message.triggerId && coursesMap.has(message.triggerId)) {
+            let triggerLesson = null;
+
+            if (['COURSE_COMPLETION', 'COURSE_ENROLLMENT', 'COURSE_MID_PROGRESS', 'COURSE_NEAR_COMPLETION'].includes(message.triggerType) && message.triggerId) {
                 triggerCourse = coursesMap.get(message.triggerId) || null;
+            } else if (message.triggerType === 'LESSON_COMPLETION' && message.triggerId) {
+                triggerLesson = lessonsMap.get(message.triggerId) || null;
             }
+
             return {
                 ...message,
                 triggerCourse,
+                triggerLesson,
             };
         });
-        
+
         // 5. Devolver siempre un array.
         return NextResponse.json(enrichedMessages);
 

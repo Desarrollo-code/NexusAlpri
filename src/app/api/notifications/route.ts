@@ -9,37 +9,42 @@ export const dynamic = 'force-dynamic';
 
 // GET all notifications for the current user
 export async function GET(req: NextRequest) {
-  const session = await getCurrentUser();
-  if (!session) {
-    return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
-  }
+    const session = await getCurrentUser();
+    if (!session) {
+        return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
+    }
 
-  const { searchParams } = new URL(req.url);
-  const getAll = searchParams.get('all') === 'true';
+    const { searchParams } = new URL(req.url);
+    const getAll = searchParams.get('all') === 'true';
 
-  try {
-    const notificationsFromDb = await prisma.notification.findMany({
-      where: { userId: session.id },
-      orderBy: { createdAt: 'desc' },
-      ...(!getAll && { take: 10 }), // Limit if not requesting all
-    });
-    
-    // Map to the client-side type
-    const notifications = notificationsFromDb.map(n => ({
-        id: n.id,
-        userId: n.userId,
-        title: n.title,
-        description: n.description,
-        link: n.link,
-        read: n.read,
-        date: n.createdAt.toISOString(),
-    }));
+    try {
+        const notificationsFromDb = await prisma.notification.findMany({
+            where: { userId: session.id },
+            orderBy: { createdAt: 'desc' },
+            ...(!getAll && { take: 10 }), // Limit if not requesting all
+            include: {
+                motivationalMessage: true,
+            }
+        });
 
-    return NextResponse.json(notifications);
-  } catch (error) {
-    console.error('[NOTIFICATIONS_GET_ERROR]', error);
-    return NextResponse.json({ message: 'Error al obtener notificaciones' }, { status: 500 });
-  }
+        // Map to the client-side type
+        const notifications = notificationsFromDb.map(n => ({
+            id: n.id,
+            userId: n.userId,
+            title: n.title,
+            description: n.description,
+            link: n.link,
+            read: n.read,
+            date: n.createdAt.toISOString(),
+            isMotivational: n.isMotivational,
+            motivationalMessage: n.motivationalMessage,
+        }));
+
+        return NextResponse.json(notifications);
+    } catch (error) {
+        console.error('[NOTIFICATIONS_GET_ERROR]', error);
+        return NextResponse.json({ message: 'Error al obtener notificaciones' }, { status: 500 });
+    }
 }
 
 // PATCH to mark notifications as read
@@ -70,9 +75,9 @@ export async function PATCH(req: NextRequest) {
                 data: { read },
             });
         } else {
-             return NextResponse.json({ message: 'El campo "ids" debe ser un array o "all"' }, { status: 400 });
+            return NextResponse.json({ message: 'El campo "ids" debe ser un array o "all"' }, { status: 400 });
         }
-        
+
         return NextResponse.json({ success: true });
 
     } catch (error) {
@@ -110,7 +115,7 @@ export async function DELETE(req: NextRequest) {
             // The desired state (no such notifications) is achieved.
             return new NextResponse(null, { status: 204 });
         }
-        
+
         return new NextResponse(null, { status: 204 }); // Success, no content
 
     } catch (error) {
