@@ -24,7 +24,7 @@ export default function UsersPage() {
     }, [setPageTitle, setHeaderActions]);
 
     return (
-        <div className="w-full px-8 py-8 space-y-8 animate-in fade-in duration-700">
+        <div className="w-full px-8 -mt-4 md:-mt-6 pb-12 space-y-3 animate-in fade-in duration-700">
             <UserCreatorModal
                 open={isCreateOpen}
                 onOpenChange={setIsCreateOpen}

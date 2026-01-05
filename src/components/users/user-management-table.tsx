@@ -234,14 +234,19 @@ export const columns: ColumnDef<User>[] = [
                         <DropdownMenuItem>Asignar Curso</DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                            className="text-amber-600 focus:text-amber-700 font-bold"
+                            className={`${user.status === 'active' ? 'text-amber-600 focus:text-amber-700' : 'text-emerald-600 focus:text-emerald-700'} font-bold`}
                             onClick={() => {
-                                if (confirm(`¿Deseas inactivar a ${user.name}? Este usuario ya no podrá ingresar a la plataforma.`)) {
-                                    meta?.onDelete(user.id);
+                                const action = user.status === 'active' ? 'inactivar' : 'activar';
+                                if (confirm(`¿Deseas ${action} a ${user.name}?`)) {
+                                    meta?.onToggleStatus(user.id, user.status !== 'active');
                                 }
                             }}
                         >
-                            <XCircle className="mr-2 h-4 w-4" /> Inactivar Cuenta
+                            {user.status === 'active' ? (
+                                <><XCircle className="mr-2 h-4 w-4" /> Inactivar Cuenta</>
+                            ) : (
+                                <><CheckCircle className="mr-2 h-4 w-4" /> Activar Cuenta</>
+                            )}
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -321,16 +326,19 @@ export function UserManagementTable() {
         fetchData();
     }, [pagination.pageIndex, pagination.pageSize, columnFilters, sorting, selectedProcessId, selectedRole, selectedStatus]);
 
-    const handleDelete = async (id: string) => {
+    const handleStatusToggle = async (id: string, activate: boolean) => {
         try {
-            const response = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+            const response = await fetch(`/api/users/${id}/status`, {
+                method: 'PATCH',
+                body: JSON.stringify({ isActive: activate })
+            });
             if (response.ok) {
                 fetchData();
             } else {
-                alert("Error al inactivar el usuario");
+                alert(`Error al ${activate ? 'activar' : 'inactivar'} el usuario`);
             }
         } catch (error) {
-            console.error("Inactivation failed", error);
+            console.error("Status update failed", error);
         }
     };
 
@@ -362,7 +370,7 @@ export function UserManagementTable() {
         },
         meta: {
             onEdit: handleEdit,
-            onDelete: handleDelete,
+            onToggleStatus: handleStatusToggle,
             onSuccess: fetchData
         }
     });
@@ -547,7 +555,7 @@ export function UserManagementTable() {
                 ) : (
                     <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-20">
                         {filteredData.map((user) => (
-                            <UserCard key={user.id} user={user} onEdit={handleEdit} onDelete={handleDelete} />
+                            <UserCard key={user.id} user={user} onEdit={handleEdit} onToggleStatus={handleStatusToggle} />
                         ))}
                         {filteredData.length === 0 && (
                             <div className="col-span-full h-48 flex items-center justify-center text-slate-400">
@@ -649,7 +657,7 @@ export function UserManagementTable() {
     );
 }
 
-function UserCard({ user, onEdit, onDelete }: { user: User, onEdit: (u: User) => void, onDelete: (id: string) => void }) {
+function UserCard({ user, onEdit, onToggleStatus }: { user: User, onEdit: (u: User) => void, onToggleStatus: (id: string, activate: boolean) => void }) {
     const processColors = [
         "from-blue-600 to-indigo-600",
         "from-purple-600 to-pink-600",
@@ -713,10 +721,17 @@ function UserCard({ user, onEdit, onDelete }: { user: User, onEdit: (u: User) =>
                                     <Users className="h-4 w-4" /> Ver Equipo
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator className="my-2" />
-                                <DropdownMenuItem className="text-amber-600 rounded-xl h-11 font-bold gap-3 focus:bg-amber-50 focus:text-amber-700" onClick={() => {
-                                    if (confirm(`¿Deseas inactivar a ${user.name}? Este usuario ya no podrá ingresar a la plataforma.`)) onDelete(user.id)
-                                }}>
-                                    <XCircle className="h-4 w-4" /> Inactivar Cuenta
+                                <DropdownMenuItem
+                                    className={`${user.status === 'active' ? 'text-amber-600 focus:text-amber-700' : 'text-emerald-600 focus:text-emerald-700'} rounded-xl h-11 font-bold gap-3`}
+                                    onClick={() => {
+                                        const action = user.status === 'active' ? 'inactivar' : 'activar';
+                                        if (confirm(`¿Deseas ${action} a ${user.name}?`)) onToggleStatus(user.id, user.status !== 'active')
+                                    }}>
+                                    {user.status === 'active' ? (
+                                        <><XCircle className="h-4 w-4" /> Inactivar Cuenta</>
+                                    ) : (
+                                        <><CheckCircle className="h-4 w-4" /> Activar Cuenta</>
+                                    )}
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>

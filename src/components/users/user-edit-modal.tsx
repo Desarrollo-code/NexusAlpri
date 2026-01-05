@@ -268,9 +268,12 @@ export function UserEditModal({ user, isOpen, onClose, onSuccess }: UserEditModa
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-4xl p-0 h-[85vh] flex flex-col overflow-hidden border-none shadow-2xl">
+                <DialogHeader className="p-4 bg-slate-50 border-b">
+                    <DialogTitle className="text-lg font-black text-slate-800">Editar Colaborador</DialogTitle>
+                </DialogHeader>
 
-                <div className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-slate-200">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                <div className="flex-1 overflow-y-auto p-5 scrollbar-thin scrollbar-thumb-slate-200">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
                         {/* LEFT COLUMN: BASIC INFO */}
                         <div className="md:col-span-5 space-y-6">
                             <div className="flex flex-col items-center">
@@ -374,11 +377,11 @@ export function UserEditModal({ user, isOpen, onClose, onSuccess }: UserEditModa
                         <div className="md:col-span-7">
                             <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 space-y-6">
                                 <div>
-                                    <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
-                                        <Award className="h-5 w-5 text-indigo-600" />
+                                    <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                                        <Award className="h-4 w-4 text-indigo-600" />
                                         Permisos
                                     </h3>
-                                    <p className="text-sm text-slate-500 mt-0.5">
+                                    <p className="text-[11px] text-slate-500 mt-0.5">
                                         Gestiona los accesos específicos del usuario.
                                     </p>
                                 </div>
@@ -387,19 +390,19 @@ export function UserEditModal({ user, isOpen, onClose, onSuccess }: UserEditModa
                                     {PERMISSION_CATEGORIES.map((category) => {
                                         const Icon = category.icon;
                                         return (
-                                            <div key={category.title} className="space-y-4">
-                                                <h4 className="text-sm font-semibold uppercase tracking-wider text-slate-600 flex items-center gap-2 border-b border-slate-200 pb-2">
-                                                    <div className={`h-2 w-2 rounded-full ${category.color.replace('text-', 'bg-')}`} />
+                                            <div key={category.title} className="space-y-3">
+                                                <h4 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-2 border-b border-slate-100 pb-1.5">
+                                                    <div className={`h-1.5 w-1.5 rounded-full ${category.color.replace('text-', 'bg-')}`} />
                                                     {category.title}
                                                 </h4>
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                     {category.permissions.map((perm) => {
                                                         const PermIcon = (perm as any).icon;
                                                         return (
                                                             <div
                                                                 key={perm.id}
-                                                                className={`flex items-center space-x-4 p-4 rounded-2xl border transition-all cursor-pointer hover:shadow-md ${permissions[perm.id]
-                                                                    ? "bg-white border-indigo-300 ring-1 ring-indigo-50 shadow-sm"
+                                                                className={`flex items-center space-x-3 p-3 rounded-xl border transition-all cursor-pointer hover:shadow-md ${permissions[perm.id]
+                                                                    ? "bg-white border-indigo-200 ring-1 ring-indigo-50 shadow-sm"
                                                                     : "bg-slate-100/30 border-slate-100 text-slate-400"
                                                                     }`}
                                                                 onClick={() => handlePermissionChange(perm.id, !permissions[perm.id])}
@@ -408,15 +411,15 @@ export function UserEditModal({ user, isOpen, onClose, onSuccess }: UserEditModa
                                                                     id={perm.id}
                                                                     checked={!!permissions[perm.id]}
                                                                     onCheckedChange={(checked) => handlePermissionChange(perm.id, !!checked)}
-                                                                    className="h-5 w-5 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 rounded-lg"
+                                                                    className="h-4 w-4 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 rounded-md"
                                                                 />
-                                                                <div className="flex items-center gap-3 min-w-0">
+                                                                <div className="flex items-center gap-2.5 min-w-0">
                                                                     {PermIcon && (
-                                                                        <PermIcon className={`h-5 w-5 shrink-0 ${permissions[perm.id] ? category.color : 'text-slate-400'}`} />
+                                                                        <PermIcon className={`h-4 w-4 shrink-0 ${permissions[perm.id] ? category.color : 'text-slate-400'}`} />
                                                                     )}
                                                                     <label
                                                                         htmlFor={perm.id}
-                                                                        className={`text-base font-bold leading-none cursor-pointer truncate transition-colors ${permissions[perm.id] ? 'text-slate-900' : 'text-slate-500'}`}
+                                                                        className={`text-sm font-bold leading-none cursor-pointer truncate transition-colors ${permissions[perm.id] ? 'text-slate-900' : 'text-slate-500'}`}
                                                                     >
                                                                         {perm.label}
                                                                     </label>
