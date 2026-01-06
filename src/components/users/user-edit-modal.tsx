@@ -49,7 +49,7 @@ import {
     X
 } from "lucide-react";
 import { User } from "./user-management-table";
-import { useToast } from "@/hooks/use-toast"; // Correct hook from shadcn/ui
+import { useToast } from "@/hooks/use-toast";
 
 interface UserEditModalProps {
     user: User | null;
@@ -159,15 +159,12 @@ export function UserEditModal({ user, isOpen, onClose, onSuccess }: UserEditModa
         }
     }, [user]);
 
-    // Handle role-based default permissions
     const handleRoleChange = (role: string) => {
         setFormData(prev => ({ ...prev, role }));
 
-        // Auto-provision standard permissions for the selected role
         const defaultPerms = DEFAULT_ROLE_PERMISSIONS[role] || [];
         const newPermissions: Record<string, boolean> = {};
 
-        // We start with a clean slate for the role's base permissions
         defaultPerms.forEach(pId => {
             newPermissions[pId] = true;
         });
@@ -207,7 +204,6 @@ export function UserEditModal({ user, isOpen, onClose, onSuccess }: UserEditModa
 
         setIsUploading(true);
         try {
-            // 1. Get signed URL
             const prevResponse = await fetch('/api/upload/avatar', {
                 method: 'POST',
                 body: JSON.stringify({
@@ -219,7 +215,6 @@ export function UserEditModal({ user, isOpen, onClose, onSuccess }: UserEditModa
             if (!prevResponse.ok) throw new Error("Failed to get upload URL");
             const { uploadUrl, url } = await prevResponse.json();
 
-            // 2. Upload to Supabase
             const uploadResponse = await fetch(uploadUrl, {
                 method: 'PUT',
                 body: file,
@@ -267,13 +262,13 @@ export function UserEditModal({ user, isOpen, onClose, onSuccess }: UserEditModa
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl p-0 h-[85vh] flex flex-col overflow-hidden border-none shadow-2xl">
-                <DialogHeader className="p-4 bg-slate-50 border-b">
+            <DialogContent className="max-w-4xl p-0 h-[85vh] flex flex-col overflow-hidden border-none shadow-2xl my-4">
+                <DialogHeader className="p-6 bg-slate-50 border-b">
                     <DialogTitle className="text-lg font-black text-slate-800">Editar Colaborador</DialogTitle>
                 </DialogHeader>
 
-                <div className="flex-1 overflow-y-auto p-5 scrollbar-thin scrollbar-thumb-slate-200">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+                <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-slate-200">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                         {/* LEFT COLUMN: BASIC INFO */}
                         <div className="md:col-span-5 space-y-6">
                             <div className="flex flex-col items-center">
@@ -437,18 +432,33 @@ export function UserEditModal({ user, isOpen, onClose, onSuccess }: UserEditModa
                     </div>
                 </div>
 
-                <DialogFooter className="p-6 bg-slate-50 border-t flex items-center justify-between">
-                    <Button variant="ghost" onClick={onClose} disabled={isLoading} className="text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded-xl px-6">
-                        Cancelar
-                    </Button>
-                    <Button
-                        onClick={handleSubmit}
-                        disabled={isLoading}
-                        className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 px-8 py-6 rounded-xl gap-2 font-bold transition-all active:scale-95"
-                    >
-                        {isLoading ? <div className="h-4 w-4 border-2 border-white border-t-transparent animate-spin rounded-full" /> : <Save className="h-5 w-5" />}
-                        Guardar Cambios
-                    </Button>
+                {/* SECCIÓN INFERIOR REDISEÑADA */}
+                <DialogFooter className="p-6 bg-slate-50 border-t">
+                    <div className="w-full flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <div className="flex w-full sm:w-auto justify-center gap-4">
+                            <Button
+                                variant="ghost"
+                                onClick={onClose}
+                                disabled={isLoading}
+                                className="text-slate-600 hover:text-slate-800 hover:bg-slate-200 rounded-xl px-8 py-6 min-w-[140px] border border-slate-200 transition-all"
+                            >
+                                <X className="h-4 w-4 mr-2" />
+                                Cancelar
+                            </Button>
+                            <Button
+                                onClick={handleSubmit}
+                                disabled={isLoading}
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 px-8 py-6 rounded-xl gap-2 font-bold transition-all hover:shadow-indigo-300 min-w-[160px]"
+                            >
+                                {isLoading ? (
+                                    <div className="h-4 w-4 border-2 border-white border-t-transparent animate-spin rounded-full" />
+                                ) : (
+                                    <Save className="h-5 w-5" />
+                                )}
+                                Guardar Cambios
+                            </Button>
+                        </div>
+                    </div>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
