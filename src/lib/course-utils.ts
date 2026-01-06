@@ -1,14 +1,13 @@
-// src/lib/course-utils.ts
 import type { Course as AppCourseType, CourseStatus } from '@/types';
 import type { Course as PrismaCourse } from '@prisma/client';
 
-// Define a more specific type for the input expected by the mapper
-// This helps ensure the function is used correctly.
+// Interfaz actualizada para incluir el conteo de lecciones desde la API [cite: 17, 19]
 interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | 'status' | 'prerequisite' | 'isMandatory'> {
   instructor?: { id: string; name: string | null; avatar?: string | null; } | null;
   _count?: {
     modules?: number;
     enrollments?: number;
+    lessons?: number; // Añadido para capturar el conteo directo de lecciones [cite: 19]
   };
   modules?: { id: string; lessons: { id: string }[] }[];
   status: CourseStatus;
@@ -21,16 +20,15 @@ interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | 'status' 
   }[];
 }
 
-
 export function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCourseType {
-  // CORRECTED: Calculate total lessons by summing up the counts from each module.
-  const totalLessons = Array.isArray(apiCourse.modules)
+  // CORRECCIÓN: Priorizar el conteo de lecciones de _count si el array de módulos no viene completo
+  const totalLessons = (Array.isArray(apiCourse.modules) && apiCourse.modules.length > 0)
     ? apiCourse.modules.reduce((acc, mod) => acc + (mod?.lessons?.length || 0), 0)
-    : 0;
+    : (apiCourse._count?.lessons || 0);
 
   let computedAverageCompletion = apiCourse.averageCompletion;
 
-  // If average completion is not provided by the API (e.g. standard view), we might calculate it if enrollments are present
+  // Lógica para calcular el promedio si no viene pre-calculado [cite: 32]
   if (computedAverageCompletion === undefined && apiCourse.enrollments && apiCourse.enrollments.length > 0) {
     const validProgress = apiCourse.enrollments
       .map((e) => e.progress?.progressPercentage)
@@ -46,27 +44,29 @@ export function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCours
   return {
     id: apiCourse.id,
     title: apiCourse.title,
+    // Importante: La limpieza de HTML (<p>) se hace en el COMPONENTE (CourseCard) 
+    // usando dangerouslySetInnerHTML para que no aparezcan las etiquetas [cite: 84]
     description: apiCourse.description || '',
     category: apiCourse.category ?? null,
-    // Ensure a fallback for the instructor object
     instructor: apiCourse.instructor ? {
       id: apiCourse.instructor.id,
-      name: apiCourse.instructor.name || 'N/A',
+      name: apiCourse.instructor.name || 'Sin instructor', // [cite: 94]
       avatar: apiCourse.instructor.avatar ?? null,
     } : {
       id: 'unknown',
-      name: 'N/A',
+      name: 'Sin instructor',
       avatar: null,
     },
     instructorId: apiCourse.instructorId || undefined,
     imageUrl: apiCourse.imageUrl ?? null,
-    modulesCount: (Array.isArray(apiCourse.modules) ? apiCourse.modules.length : apiCourse._count?.modules) ?? 0,
+    // Aseguramos que tome el conteo de la propiedad correcta [cite: 18, 96, 100]
+    modulesCount: (apiCourse._count?.modules ?? (Array.isArray(apiCourse.modules) ? apiCourse.modules.length : 0)),
     lessonsCount: totalLessons,
-    enrollmentsCount: (Array.isArray(apiCourse.enrollments) ? apiCourse.enrollments.length : apiCourse._count?.enrollments) ?? 0,
-    averageCompletion: computedAverageCompletion,
+    enrollmentsCount: (apiCourse._count?.enrollments ?? (Array.isArray(apiCourse.enrollments) ? apiCourse.enrollments.length : 0)),
+    averageCompletion: computedAverageCompletion ?? 0,
     status: apiCourse.status,
-    modules: [], // Full module data is not needed for card views.
-    isEnrolled: undefined, // Determined client-side based on context.
+    modules: [], 
+    isEnrolled: undefined,
     isMandatory: apiCourse.isMandatory || false,
     prerequisite: (apiCourse as any).prerequisite,
     prerequisiteCompleted: (apiCourse as any).prerequisiteCompleted,
