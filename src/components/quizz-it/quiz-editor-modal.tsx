@@ -96,7 +96,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/componen
 
 const ReactQuill = dynamic(() => import('react-quill-new'), {
     ssr: false,
-    loading: () => <div className="h-[100px] w-full bg-gradient-to-r from-muted/30 via-muted/20 to-muted/30 animate-pulse rounded-2xl" />
+    loading: () => <div className="h-[100px] w-full bg-gradient-to-r from-muted/30 via-muted/20 to-muted/30 animate-pulse rounded-lg" />
 });
 
 // ============================================================================
@@ -197,140 +197,7 @@ const generateUniqueId = (prefix: string): string =>
     `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
 // ============================================================================
-// AI ASSISTANT COMPONENT
-// ============================================================================
-
-interface AIAssistantProps {
-    onGenerateQuestion: () => void;
-    onImproveQuestion: (questionId: string) => void;
-    onSuggestOptions: (questionId: string) => void;
-}
-
-const AIAssistant: React.FC<AIAssistantProps> = ({ 
-    onGenerateQuestion, 
-    onImproveQuestion, 
-    onSuggestOptions 
-}) => {
-    const [isExpanded, setIsExpanded] = useState(false);
-    const [isGenerating, setIsGenerating] = useState(false);
-
-    const aiFeatures = [
-        {
-            icon: Sparkles,
-            title: "Generar pregunta",
-            description: "Crea una pregunta basada en el tema",
-            action: onGenerateQuestion,
-            color: "from-purple-500 to-pink-500"
-        },
-        {
-            icon: Lightbulb,
-            title: "Mejorar pregunta",
-            description: "Optimiza la redacción y claridad",
-            action: () => {},
-            color: "from-blue-500 to-cyan-500"
-        },
-        {
-            icon: Target,
-            title: "Sugerir opciones",
-            description: "Genera opciones de respuesta relevantes",
-            action: () => {},
-            color: "from-green-500 to-emerald-500"
-        },
-        {
-            icon: TrendingUp,
-            title: "Analizar dificultad",
-            description: "Ajusta el nivel de dificultad",
-            action: () => {},
-            color: "from-orange-500 to-red-500"
-        },
-    ];
-
-    return (
-        <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="relative"
-        >
-            <Card className={cn(
-                "border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 backdrop-blur-xl overflow-hidden transition-all duration-300",
-                isExpanded ? "rounded-2xl" : "rounded-full"
-            )}>
-                <div className="p-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
-                                <Sparkles className="h-5 w-5 text-white" />
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-sm">Asistente IA</h3>
-                                <p className="text-xs text-muted-foreground">
-                                    Mejora tu quiz con inteligencia artificial
-                                </p>
-                            </div>
-                        </div>
-                        
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setIsExpanded(!isExpanded)}
-                            className="rounded-xl"
-                        >
-                            <ChevronRight className={cn(
-                                "h-4 w-4 transition-transform duration-300",
-                                isExpanded && "rotate-90"
-                            )} />
-                        </Button>
-                    </div>
-
-                    <AnimatePresence>
-                        {isExpanded && (
-                            <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="overflow-hidden"
-                            >
-                                <Separator className="my-4" />
-                                <div className="grid grid-cols-2 gap-3">
-                                    {aiFeatures.map((feature, index) => (
-                                        <motion.div
-                                            key={feature.title}
-                                            initial={{ opacity: 0, scale: 0.9 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            transition={{ delay: index * 0.1 }}
-                                        >
-                                            <Card className="border-2 border-border/30 bg-card/50 hover:bg-card/80 transition-all duration-300 cursor-pointer group"
-                                                  onClick={() => !isGenerating && feature.action()}>
-                                                <CardContent className="p-4">
-                                                    <div className={cn(
-                                                        "w-12 h-12 rounded-xl bg-gradient-to-br mb-3 flex items-center justify-center shadow-sm",
-                                                        feature.color
-                                                    )}>
-                                                        <feature.icon className="h-5 w-5 text-white" />
-                                                    </div>
-                                                    <h4 className="font-bold text-sm mb-1">{feature.title}</h4>
-                                                    <p className="text-xs text-muted-foreground">{feature.description}</p>
-                                                </CardContent>
-                                            </Card>
-                                        </motion.div>
-                                    ))}
-                                </div>
-                                <div className="mt-4 p-3 bg-gradient-to-r from-muted/30 to-muted/10 rounded-xl">
-                                    <p className="text-xs font-medium text-center text-muted-foreground">
-                                        ✨ Usa IA para crear contenido de alta calidad automáticamente
-                                    </p>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
-            </Card>
-        </motion.div>
-    );
-};
-
-// ============================================================================
-// IMAGE UPLOAD WIDGET (Mejorado)
+// COMPACT IMAGE UPLOAD WIDGET
 // ============================================================================
 
 interface ImageUploadWidgetProps {
@@ -341,7 +208,7 @@ interface ImageUploadWidgetProps {
     inputId: string;
     isCorrect?: boolean;
     label?: string;
-    aspectRatio?: string;
+    compact?: boolean;
 }
 
 const ImageUploadWidget: React.FC<ImageUploadWidgetProps> = ({ 
@@ -352,7 +219,7 @@ const ImageUploadWidget: React.FC<ImageUploadWidgetProps> = ({
     inputId, 
     isCorrect,
     label = "Subir imagen",
-    aspectRatio = "aspect-video"
+    compact = false
 }) => {
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
@@ -401,13 +268,75 @@ const ImageUploadWidget: React.FC<ImageUploadWidgetProps> = ({
         handleFileSelect(e.dataTransfer.files);
     };
 
+    if (compact) {
+        return (
+            <div 
+                className={cn(
+                    "relative w-24 h-24 rounded-lg border transition-all duration-300 flex items-center justify-center overflow-hidden group",
+                    isCorrect 
+                        ? "border-emerald-500 bg-emerald-500/10" 
+                        : imageUrl
+                        ? "border-border/50 bg-muted/20 hover:border-primary/40"
+                        : "border-dashed border-muted-foreground/25 bg-muted/10 hover:border-primary/50 hover:bg-primary/5",
+                    isDragging && "border-primary bg-primary/10 scale-[1.02]"
+                )}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+            >
+                {isUploading ? (
+                    <div className="flex flex-col items-center justify-center p-2">
+                        <ColorfulLoader className="h-4 w-4" />
+                        <span className="text-[10px] mt-1">{uploadProgress}%</span>
+                    </div>
+                ) : imageUrl ? (
+                    <div className="relative w-full h-full group">
+                        <Image 
+                            src={imageUrl} 
+                            alt="preview" 
+                            fill 
+                            className="object-cover" 
+                            sizes="100px"
+                        />
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
+                            <Button 
+                                type="button" 
+                                size="icon"
+                                variant="destructive" 
+                                className="h-6 w-6 rounded-md"
+                                onClick={(e) => { 
+                                    e.stopPropagation(); 
+                                    onRemove(); 
+                                }} 
+                                disabled={disabled}
+                            >
+                                <Trash2 className="h-3 w-3" />
+                            </Button>
+                        </div>
+                    </div>
+                ) : (
+                    <UploadArea 
+                        onFileSelect={handleFileSelect} 
+                        disabled={disabled} 
+                        inputId={inputId} 
+                        className="h-full border-0 bg-transparent p-0"
+                    >
+                        <div className="text-center p-2">
+                            <ImageIcon className="h-4 w-4 mx-auto text-muted-foreground" />
+                            <span className="text-[10px] text-muted-foreground mt-1 block">Subir</span>
+                        </div>
+                    </UploadArea>
+                )}
+            </div>
+        );
+    }
+
     return (
         <div 
             className={cn(
-                "relative w-full rounded-xl border-2 transition-all duration-300 flex items-center justify-center overflow-hidden group",
-                aspectRatio,
+                "relative w-full rounded-lg border transition-all duration-300 flex items-center justify-center overflow-hidden group",
                 isCorrect 
-                    ? "border-emerald-500 bg-emerald-500/10 ring-2 ring-emerald-500/20" 
+                    ? "border-emerald-500 bg-emerald-500/10 ring-1 ring-emerald-500/20" 
                     : imageUrl
                     ? "border-border/50 bg-muted/20 hover:border-primary/40"
                     : "border-dashed border-muted-foreground/25 bg-muted/10 hover:border-primary/50 hover:bg-primary/5",
@@ -429,42 +358,44 @@ const ImageUploadWidget: React.FC<ImageUploadWidgetProps> = ({
                     </div>
                 </div>
             ) : imageUrl ? (
-                <div className="relative w-full h-full">
-                    <Image 
-                        src={imageUrl} 
-                        alt="preview" 
-                        fill 
-                        className="object-cover rounded-lg" 
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                    />
+                <div className="relative w-full h-48">
+                    <div className="relative w-full h-full">
+                        <Image 
+                            src={imageUrl} 
+                            alt="preview" 
+                            fill 
+                            className="object-contain" 
+                            sizes="(max-width: 768px) 100vw, 50vw"
+                        />
+                    </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-end p-4">
                         <div className="flex gap-2">
                             <Button 
                                 type="button" 
                                 variant="secondary"
                                 size="sm"
-                                className="bg-white/90 hover:bg-white text-black rounded-lg shadow-lg h-9 px-3"
+                                className="bg-white/90 hover:bg-white text-black rounded-md shadow h-8 px-2"
                                 onClick={(e) => { 
                                     e.stopPropagation();
                                     // TODO: Implementar reemplazar imagen
                                 }} 
                                 disabled={disabled}
                             >
-                                <Upload className="h-3.5 w-3.5 mr-1.5" />
+                                <Upload className="h-3 w-3 mr-1" />
                                 <span className="text-xs">Reemplazar</span>
                             </Button>
                             <Button 
                                 type="button" 
                                 variant="destructive" 
                                 size="sm"
-                                className="bg-red-500/90 hover:bg-red-600 text-white rounded-lg shadow-lg h-9 px-3" 
+                                className="bg-red-500/90 hover:bg-red-600 text-white rounded-md shadow h-8 px-2" 
                                 onClick={(e) => { 
                                     e.stopPropagation(); 
                                     onRemove(); 
                                 }} 
                                 disabled={disabled}
                             >
-                                <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                                <Trash2 className="h-3 w-3 mr-1" />
                                 <span className="text-xs">Eliminar</span>
                             </Button>
                         </div>
@@ -477,23 +408,23 @@ const ImageUploadWidget: React.FC<ImageUploadWidgetProps> = ({
                     inputId={inputId} 
                     className="h-full border-0 bg-transparent p-0"
                 >
-                    <div className="text-center space-y-4 p-6">
+                    <div className="text-center space-y-3 p-4">
                         <div className={cn(
-                            "w-16 h-16 mx-auto rounded-2xl flex items-center justify-center transition-all",
+                            "w-12 h-12 mx-auto rounded-lg flex items-center justify-center transition-all",
                             isDragging 
                                 ? "bg-primary/20 scale-110" 
                                 : "bg-primary/10 group-hover:bg-primary/20"
                         )}>
-                            <ImageIcon className="h-7 w-7 text-primary" />
+                            <ImageIcon className="h-5 w-5 text-primary" />
                         </div>
                         <div>
                             <p className="text-sm font-semibold text-foreground/90">
                                 {label}
                             </p>
-                            <p className="text-xs text-muted-foreground mt-2">
+                            <p className="text-xs text-muted-foreground mt-1">
                                 Arrastra una imagen o haz clic para seleccionar
                             </p>
-                            <p className="text-[11px] text-muted-foreground/70 mt-1">
+                            <p className="text-[10px] text-muted-foreground/70 mt-0.5">
                                 PNG, JPG, GIF hasta 5MB
                             </p>
                         </div>
@@ -505,7 +436,7 @@ const ImageUploadWidget: React.FC<ImageUploadWidgetProps> = ({
 };
 
 // ============================================================================
-// OPTION CARD COMPONENT (Mejorado)
+// OPTION CARD COMPONENT (Optimizado)
 // ============================================================================
 
 interface OptionCardProps {
@@ -542,7 +473,7 @@ const OptionCard: React.FC<OptionCardProps> = ({
     const renderContent = () => {
         if (template === 'image_options') {
             return (
-                <div className="w-full h-40">
+                <div className="space-y-2">
                     <ImageUploadWidget 
                         inputId={`opt-img-${option.id}`} 
                         imageUrl={option.imageUrl} 
@@ -551,7 +482,13 @@ const OptionCard: React.FC<OptionCardProps> = ({
                         disabled={false} 
                         isCorrect={isCorrect} 
                         label={`Opción ${index + 1}`}
-                        aspectRatio="aspect-[4/3]"
+                        compact={true}
+                    />
+                    <Input
+                        value={option.text || ''}
+                        onChange={e => onTextChange(e.target.value)}
+                        placeholder="Descripción opcional"
+                        className="text-xs h-8"
                     />
                 </div>
             );
@@ -562,17 +499,17 @@ const OptionCard: React.FC<OptionCardProps> = ({
                 <Button 
                     type="button" 
                     className={cn(
-                        "w-full h-24 text-lg font-bold rounded-xl transition-all duration-300 shadow-lg transform hover:scale-[1.02]",
+                        "w-full h-16 text-base font-bold rounded-lg transition-all duration-300 shadow",
                         isCorrect 
                             ? "bg-gradient-to-br from-emerald-500 via-green-500 to-emerald-600 hover:from-emerald-600 hover:via-green-600 hover:to-emerald-700 text-white shadow-emerald-500/40" 
-                            : "bg-gradient-to-br from-muted via-muted/80 to-muted hover:from-muted/90 hover:via-muted/70 hover:to-muted/90 text-foreground/80 shadow-lg"
+                            : "bg-gradient-to-br from-muted via-muted/80 to-muted hover:from-muted/90 hover:via-muted/70 hover:to-muted/90 text-foreground/80 shadow"
                     )}
                     onClick={onSetCorrect}
                 >
-                    <div className="flex flex-col items-center gap-2">
-                        <span className="text-2xl">{option.text}</span>
+                    <div className="flex flex-col items-center gap-1">
+                        <span className="text-lg">{option.text}</span>
                         {isCorrect && (
-                            <Badge className="bg-white/20 text-white/90 border-0 px-2 py-0.5">
+                            <Badge className="bg-white/20 text-white/90 border-0 px-1.5 py-0 text-[10px]">
                                 ✓ Correcta
                             </Badge>
                         )}
@@ -582,15 +519,17 @@ const OptionCard: React.FC<OptionCardProps> = ({
         }
         
         return (
-            <div className="bg-gradient-to-br from-background/80 via-background/60 to-background/80 rounded-xl overflow-hidden border-2 border-border/50 shadow-inner">
-                <ReactQuill
-                    theme="snow"
-                    value={option.text}
-                    onChange={onTextChange}
-                    modules={{ toolbar: [['bold', 'italic', 'underline', 'strike']] }}
-                    className="quill-editor-option min-h-[80px]"
-                    placeholder="Escribe el texto de la opción..."
-                />
+            <div className="space-y-1">
+                <div className="bg-gradient-to-br from-background/80 via-background/60 to-background/80 rounded-lg overflow-hidden border border-border/50">
+                    <ReactQuill
+                        theme="snow"
+                        value={option.text}
+                        onChange={onTextChange}
+                        modules={{ toolbar: [['bold', 'italic', 'underline', 'strike']] }}
+                        className="quill-editor-option min-h-[60px] text-sm"
+                        placeholder="Escribe el texto de la opción..."
+                    />
+                </div>
             </div>
         );
     };
@@ -598,45 +537,45 @@ const OptionCard: React.FC<OptionCardProps> = ({
     return (
         <motion.div 
             layout 
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            initial={{ scale: 0.9, opacity: 0, y: 10 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
+            exit={{ scale: 0.9, opacity: 0, y: -10 }}
+            transition={{ duration: 0.15 }}
             className="group"
         >
             <Card className={cn(
-                "border-2 transition-all duration-300 overflow-hidden hover:shadow-xl",
+                "border transition-all duration-300 overflow-hidden hover:shadow-sm",
                 isCorrect 
-                    ? "border-emerald-500 bg-gradient-to-br from-emerald-500/15 via-emerald-500/10 to-emerald-500/5 shadow-lg shadow-emerald-500/20" 
-                    : "border-border/40 bg-card/60 hover:border-primary/40 hover:shadow-lg"
+                    ? "border-emerald-500 bg-gradient-to-br from-emerald-500/15 via-emerald-500/10 to-emerald-500/5 shadow shadow-emerald-500/20" 
+                    : "border-border/40 bg-card/60 hover:border-primary/40"
             )}>
-                <CardHeader className="pb-3">
+                <CardHeader className="pb-1">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5">
                             <Badge 
                                 variant={isCorrect ? "default" : "outline"}
                                 className={cn(
-                                    "font-bold text-xs tracking-wider px-3 py-1 rounded-lg",
+                                    "font-bold text-xs tracking-wider px-2 py-0.5 rounded",
                                     isCorrect && "bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600"
                                 )}
                             >
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1">
                                     <div className={cn(
-                                        "w-2 h-2 rounded-full",
+                                        "w-1.5 h-1.5 rounded-full",
                                         isCorrect ? "bg-white" : "bg-muted-foreground"
                                     )} />
-                                    Opción {index + 1}
+                                    Op {index + 1}
                                 </div>
                             </Badge>
                             
                             {isCorrect && (
-                                <Badge className="bg-gradient-to-r from-emerald-500 to-green-500 text-white border-0">
-                                    <Check className="h-3 w-3 mr-1" /> Correcta
+                                <Badge className="bg-gradient-to-r from-emerald-500 to-green-500 text-white border-0 text-[10px] px-1.5 py-0">
+                                    <Check className="h-2.5 w-2.5 mr-0.5" /> Correcta
                                 </Badge>
                             )}
                         </div>
                         
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-0.5">
                             <TooltipProvider>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
@@ -646,13 +585,13 @@ const OptionCard: React.FC<OptionCardProps> = ({
                                             variant="ghost"
                                             onClick={onSetCorrect}
                                             className={cn(
-                                                "h-8 w-8 rounded-lg transition-all duration-300",
+                                                "h-6 w-6 rounded transition-all duration-300",
                                                 isCorrect 
-                                                    ? "bg-emerald-500 hover:bg-emerald-600 text-white shadow-md" 
+                                                    ? "bg-emerald-500 hover:bg-emerald-600 text-white shadow" 
                                                     : "hover:bg-emerald-500/10 hover:text-emerald-600"
                                             )}
                                         >
-                                            <Check className="h-4 w-4" />
+                                            <Check className="h-3 w-3" />
                                         </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
@@ -669,9 +608,9 @@ const OptionCard: React.FC<OptionCardProps> = ({
                                             size="icon"
                                             variant="ghost"
                                             onClick={() => setIsExpanded(!isExpanded)}
-                                            className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary"
+                                            className="h-6 w-6 rounded hover:bg-primary/10 hover:text-primary"
                                         >
-                                            <Settings2 className="h-4 w-4" />
+                                            <Settings2 className="h-3 w-3" />
                                         </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
@@ -689,9 +628,9 @@ const OptionCard: React.FC<OptionCardProps> = ({
                                                 size="icon"
                                                 variant="ghost"
                                                 onClick={onDelete}
-                                                className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive"
+                                                className="h-6 w-6 rounded hover:bg-destructive/10 hover:text-destructive"
                                             >
-                                                <Trash2 className="h-4 w-4" />
+                                                <Trash2 className="h-3 w-3" />
                                             </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>
@@ -704,7 +643,7 @@ const OptionCard: React.FC<OptionCardProps> = ({
                     </div>
                 </CardHeader>
                 
-                <CardContent>
+                <CardContent className="pb-2">
                     {renderContent()}
                     
                     <AnimatePresence>
@@ -713,13 +652,13 @@ const OptionCard: React.FC<OptionCardProps> = ({
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: 'auto' }}
                                 exit={{ opacity: 0, height: 0 }}
-                                className="overflow-hidden"
+                                className="overflow-hidden mt-2"
                             >
-                                <Separator className="my-4" />
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
+                                <Separator className="my-1.5" />
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div className="space-y-0.5">
                                         <Label className="text-xs font-semibold">Puntos</Label>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-1.5">
                                             <Slider 
                                                 value={[option.points || 0]} 
                                                 onValueChange={([value]) => onPointsChange(value)}
@@ -728,26 +667,26 @@ const OptionCard: React.FC<OptionCardProps> = ({
                                                 step={5}
                                                 className="flex-1"
                                             />
-                                            <span className="text-sm font-bold min-w-[40px]">
+                                            <span className="text-xs font-bold min-w-[30px]">
                                                 {option.points || 0} pts
                                             </span>
                                         </div>
                                     </div>
                                     
-                                    <div className="space-y-2">
+                                    <div className="space-y-0.5">
                                         <Label className="text-xs font-semibold">Dificultad</Label>
                                         <Select 
                                             value={option.difficulty || 'medium'}
                                             onValueChange={onDifficultyChange}
                                         >
-                                            <SelectTrigger className="h-9 text-xs">
+                                            <SelectTrigger className="h-6 text-xs">
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {DIFFICULTY_LEVELS.map(level => (
                                                     <SelectItem key={level.value} value={level.value} className="text-xs">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className={`w-2 h-2 rounded-full ${level.color}`} />
+                                                        <div className="flex items-center gap-1.5">
+                                                            <div className={`w-1.5 h-1.5 rounded-full ${level.color}`} />
                                                             {level.label}
                                                         </div>
                                                     </SelectItem>
@@ -766,89 +705,7 @@ const OptionCard: React.FC<OptionCardProps> = ({
 };
 
 // ============================================================================
-// QUESTION STATS COMPONENT
-// ============================================================================
-
-interface QuestionStatsProps {
-    question: AppQuestion;
-}
-
-const QuestionStats: React.FC<QuestionStatsProps> = ({ question }) => {
-    const totalOptions = question.options?.length || 0;
-    const correctOptions = question.options?.filter(opt => opt.isCorrect).length || 0;
-    const avgDifficulty = DIFFICULTY_LEVELS.find(l => l.value === question.difficulty)?.label || 'Media';
-    const totalPoints = question.options?.reduce((sum, opt) => sum + (opt.points || 0), 0) || 0;
-
-    const stats = [
-        {
-            label: "Opciones",
-            value: totalOptions,
-            icon: CheckSquare,
-            color: "text-blue-500",
-            bgColor: "bg-blue-500/10"
-        },
-        {
-            label: "Correctas",
-            value: correctOptions,
-            icon: Check,
-            color: "text-emerald-500",
-            bgColor: "bg-emerald-500/10"
-        },
-        {
-            label: "Dificultad",
-            value: avgDifficulty,
-            icon: BrainCircuit,
-            color: "text-orange-500",
-            bgColor: "bg-orange-500/10"
-        },
-        {
-            label: "Puntos",
-            value: `${totalPoints} pts`,
-            icon: Zap,
-            color: "text-purple-500",
-            bgColor: "bg-purple-500/10"
-        }
-    ];
-
-    return (
-        <Card className="border-2 border-border/50 bg-gradient-to-br from-card/80 to-card/60 backdrop-blur-sm">
-            <CardContent className="p-4">
-                <h4 className="text-sm font-bold mb-3 flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4 text-primary" />
-                    Estadísticas
-                </h4>
-                <div className="grid grid-cols-2 gap-3">
-                    {stats.map((stat, index) => (
-                        <motion.div
-                            key={stat.label}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                        >
-                            <div className={cn(
-                                "p-3 rounded-xl border border-border/30",
-                                stat.bgColor
-                            )}>
-                                <div className="flex items-center gap-2 mb-1">
-                                    <div className={cn("p-1.5 rounded-lg", stat.bgColor)}>
-                                        <stat.icon className={cn("h-3.5 w-3.5", stat.color)} />
-                                    </div>
-                                    <span className="text-xs font-medium text-muted-foreground">
-                                        {stat.label}
-                                    </span>
-                                </div>
-                                <p className="text-lg font-bold">{stat.value}</p>
-                            </div>
-                        </motion.div>
-                    ))}
-                </div>
-            </CardContent>
-        </Card>
-    );
-};
-
-// ============================================================================
-// QUESTION EDITOR COMPONENT (Rediseñado)
+// QUESTION EDITOR COMPONENT (Completamente Optimizado)
 // ============================================================================
 
 interface QuestionEditorProps {
@@ -882,61 +739,63 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
     return (
         <div className="h-full flex flex-col">
             {/* Template Selector Ribbon */}
-            <Card className="border-2 border-border/50 bg-gradient-to-r from-card via-card/95 to-card mb-6 rounded-2xl">
-                <CardContent className="p-4">
+            <Card className="border border-border/50 bg-gradient-to-r from-card via-card/95 to-card mb-3 rounded-lg">
+                <CardContent className="p-2.5">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                             <div className={cn(
-                                "w-12 h-12 rounded-xl flex items-center justify-center shadow-lg",
+                                "w-8 h-8 rounded flex items-center justify-center shadow-sm",
                                 currentTemplate?.gradient
                             )}>
-                                {currentTemplate && <currentTemplate.icon className="h-6 w-6 text-white" />}
+                                {currentTemplate && <currentTemplate.icon className="h-4 w-4 text-white" />}
                             </div>
                             <div>
-                                <h3 className="font-bold text-base">{currentTemplate?.label}</h3>
-                                <p className="text-sm text-muted-foreground">{currentTemplate?.description}</p>
+                                <h3 className="font-bold text-xs">{currentTemplate?.label}</h3>
+                                <p className="text-[10px] text-muted-foreground">{currentTemplate?.description}</p>
                             </div>
                         </div>
                         
                         <Popover>
                             <PopoverTrigger asChild>
-                                <Button variant="outline" className="rounded-xl gap-2">
-                                    <Palette className="h-4 w-4" />
-                                    Cambiar plantilla
+                                <Button variant="outline" size="sm" className="rounded gap-1 h-7 text-xs">
+                                    <Palette className="h-3 w-3" />
+                                    Cambiar
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-80 p-0" align="end">
-                                <Command>
-                                    <CommandInput placeholder="Buscar plantilla..." />
-                                    <CommandList>
-                                        <CommandEmpty>No se encontraron plantillas</CommandEmpty>
-                                        <CommandGroup>
-                                            {TEMPLATE_OPTIONS.map((template) => (
-                                                <CommandItem
-                                                    key={template.value}
-                                                    value={template.value}
-                                                    onSelect={() => onQuestionChange('template', template.value)}
-                                                    className="py-3"
-                                                >
-                                                    <div className="flex items-center gap-3">
-                                                        <div className={cn(
-                                                            "w-10 h-10 rounded-lg flex items-center justify-center",
-                                                            template.gradient
-                                                        )}>
-                                                            <template.icon className="h-5 w-5 text-white" />
+                            <PopoverContent className="w-56 p-0" align="end">
+                                <ScrollArea className="h-60">
+                                    <Command>
+                                        <CommandInput placeholder="Buscar plantilla..." className="h-8" />
+                                        <CommandList>
+                                            <CommandEmpty>No se encontraron plantillas</CommandEmpty>
+                                            <CommandGroup>
+                                                {TEMPLATE_OPTIONS.map((template) => (
+                                                    <CommandItem
+                                                        key={template.value}
+                                                        value={template.value}
+                                                        onSelect={() => onQuestionChange('template', template.value)}
+                                                        className="py-1.5"
+                                                    >
+                                                        <div className="flex items-center gap-1.5">
+                                                            <div className={cn(
+                                                                "w-6 h-6 rounded flex items-center justify-center",
+                                                                template.gradient
+                                                            )}>
+                                                                <template.icon className="h-3 w-3 text-white" />
+                                                            </div>
+                                                            <div>
+                                                                <p className="font-semibold text-xs">{template.label}</p>
+                                                                <p className="text-[10px] text-muted-foreground">
+                                                                    {template.description}
+                                                                </p>
+                                                            </div>
                                                         </div>
-                                                        <div>
-                                                            <p className="font-semibold">{template.label}</p>
-                                                            <p className="text-xs text-muted-foreground">
-                                                                {template.description}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </CommandItem>
-                                            ))}
-                                        </CommandGroup>
-                                    </CommandList>
-                                </Command>
+                                                    </CommandItem>
+                                                ))}
+                                            </CommandGroup>
+                                        </CommandList>
+                                    </Command>
+                                </ScrollArea>
                             </PopoverContent>
                         </Popover>
                     </div>
@@ -945,185 +804,187 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
 
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-                <TabsList className="grid grid-cols-3 mb-6 bg-muted/50 p-1 rounded-xl">
-                    <TabsTrigger value="content" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                        <FileText className="h-4 w-4 mr-2" />
+                <TabsList className="grid grid-cols-3 mb-3 bg-muted/50 p-0.5 rounded">
+                    <TabsTrigger value="content" className="rounded text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm h-7">
+                        <FileText className="h-3 w-3 mr-1" />
                         Contenido
                     </TabsTrigger>
-                    <TabsTrigger value="options" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                        <CheckSquare className="h-4 w-4 mr-2" />
+                    <TabsTrigger value="options" className="rounded text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm h-7">
+                        <CheckSquare className="h-3 w-3 mr-1" />
                         Opciones
                     </TabsTrigger>
-                    <TabsTrigger value="settings" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                        <Settings2 className="h-4 w-4 mr-2" />
-                        Configuración
+                    <TabsTrigger value="settings" className="rounded text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm h-7">
+                        <Settings2 className="h-3 w-3 mr-1" />
+                        Config
                     </TabsTrigger>
                 </TabsList>
 
                 {/* Content Tab */}
                 <TabsContent value="content" className="flex-1 data-[state=active]:flex data-[state=active]:flex-col">
-                    <div className="space-y-6 flex-1">
-                        {/* Question Statement */}
-                        <Card className="border-2 border-border/50 bg-card/50 backdrop-blur-sm">
-                            <CardHeader className="pb-3">
-                                <CardTitle className="text-base font-bold flex items-center gap-2.5">
-                                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                                        <HelpCircle className="h-4 w-4 text-primary" />
-                                    </div>
-                                    Enunciado de la Pregunta
-                                </CardTitle>
-                                <CardDescription>
-                                    Escribe la pregunta principal que verán los estudiantes
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="bg-gradient-to-br from-background/80 via-background/60 to-background/80 rounded-xl overflow-hidden border-2 border-border/50 shadow-inner">
-                                    <ReactQuill
-                                        theme="snow"
-                                        value={question.text || ''}
-                                        onChange={(v) => onQuestionChange('text', v)}
-                                        modules={QUILL_MODULES}
-                                        placeholder="¿Cuál es tu pregunta?..."
-                                        className="quill-editor-custom min-h-[120px]"
-                                    />
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Question Image */}
-                        {question.template === 'image' && (
-                            <Card className="border-2 border-border/50 bg-card/50 backdrop-blur-sm">
-                                <CardHeader className="pb-3">
-                                    <CardTitle className="text-base font-bold flex items-center gap-2.5">
-                                        <ImageIcon className="h-4 w-4 text-primary" />
-                                        Imagen de Apoyo
+                    <ScrollArea className="flex-1 pr-3">
+                        <div className="space-y-3">
+                            {/* Question Statement */}
+                            <Card className="border border-border/50 bg-card/50">
+                                <CardHeader className="pb-1">
+                                    <CardTitle className="text-xs font-bold flex items-center gap-1.5">
+                                        <HelpCircle className="h-3.5 w-3.5 text-primary" />
+                                        Enunciado
                                     </CardTitle>
-                                    <CardDescription>
-                                        Añade una imagen relacionada con la pregunta
+                                    <CardDescription className="text-[10px]">
+                                        Escribe la pregunta principal
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="max-w-lg">
-                                        <ImageUploadWidget 
-                                            inputId={`q-img-${question.id}`} 
-                                            imageUrl={question.imageUrl} 
-                                            onUpload={(url) => onQuestionChange('imageUrl', url)} 
-                                            onRemove={() => onQuestionChange('imageUrl', null)} 
-                                            disabled={false} 
-                                            isCorrect={false} 
-                                            label="Imagen de la pregunta"
+                                    <div className="bg-gradient-to-br from-background/80 via-background/60 to-background/80 rounded overflow-hidden border border-border/50">
+                                        <ReactQuill
+                                            theme="snow"
+                                            value={question.text || ''}
+                                            onChange={(v) => onQuestionChange('text', v)}
+                                            modules={QUILL_MODULES}
+                                            placeholder="¿Cuál es tu pregunta?..."
+                                            className="quill-editor-custom min-h-[80px] text-sm"
                                         />
                                     </div>
                                 </CardContent>
                             </Card>
-                        )}
 
-                        {/* Explanation */}
-                        <Card className="border-2 border-border/50 bg-card/50 backdrop-blur-sm">
-                            <CardHeader className="pb-3">
-                                <CardTitle className="text-base font-bold flex items-center gap-2.5">
-                                    <Lightbulb className="h-4 w-4 text-primary" />
-                                    Explicación Detallada
-                                </CardTitle>
-                                <CardDescription>
-                                    Proporciona una explicación que se mostrará después de responder
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <Textarea
-                                    value={question.explanation || ''}
-                                    onChange={e => onQuestionChange('explanation', e.target.value)}
-                                    rows={4}
-                                    className="min-h-[100px] rounded-xl border-2 border-border/50 bg-background/60 p-4"
-                                    placeholder="Explica por qué esta respuesta es correcta y proporciona información adicional..."
-                                />
-                            </CardContent>
-                        </Card>
-                    </div>
+                            {/* Question Image */}
+                            {question.template === 'image' && (
+                                <Card className="border border-border/50 bg-card/50">
+                                    <CardHeader className="pb-1">
+                                        <CardTitle className="text-xs font-bold flex items-center gap-1.5">
+                                            <ImageIcon className="h-3.5 w-3.5 text-primary" />
+                                            Imagen
+                                        </CardTitle>
+                                        <CardDescription className="text-[10px]">
+                                            Añade una imagen relacionada
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="max-w-sm">
+                                            <ImageUploadWidget 
+                                                inputId={`q-img-${question.id}`} 
+                                                imageUrl={question.imageUrl} 
+                                                onUpload={(url) => onQuestionChange('imageUrl', url)} 
+                                                onRemove={() => onQuestionChange('imageUrl', null)} 
+                                                disabled={false} 
+                                                isCorrect={false} 
+                                                label="Imagen de la pregunta"
+                                            />
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )}
+
+                            {/* Explanation */}
+                            <Card className="border border-border/50 bg-card/50">
+                                <CardHeader className="pb-1">
+                                    <CardTitle className="text-xs font-bold flex items-center gap-1.5">
+                                        <Lightbulb className="h-3.5 w-3.5 text-primary" />
+                                        Explicación
+                                    </CardTitle>
+                                    <CardDescription className="text-[10px]">
+                                        Se mostrará después de responder
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <Textarea
+                                        value={question.explanation || ''}
+                                        onChange={e => onQuestionChange('explanation', e.target.value)}
+                                        rows={2}
+                                        className="min-h-[60px] rounded border border-border/50 bg-background/60 p-2 text-xs"
+                                        placeholder="Explica por qué esta respuesta es correcta..."
+                                    />
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </ScrollArea>
                 </TabsContent>
 
                 {/* Options Tab */}
                 <TabsContent value="options" className="flex-1 data-[state=active]:flex data-[state=active]:flex-col">
-                    <div className="space-y-6 flex-1">
+                    <div className="space-y-3 flex-1">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h3 className="text-lg font-bold">Opciones de Respuesta</h3>
-                                <p className="text-sm text-muted-foreground">
-                                    {question.options.length} {question.options.length === 1 ? 'opción' : 'opciones'} configuradas
+                                <h3 className="text-xs font-bold">Opciones de Respuesta</h3>
+                                <p className="text-[10px] text-muted-foreground">
+                                    {question.options.length} {question.options.length === 1 ? 'opción' : 'opciones'}
                                 </p>
                             </div>
                             
                             {canAddOption && (
                                 <Button 
                                     type="button" 
-                                    size="lg"
+                                    size="sm"
                                     onClick={onOptionAdd} 
-                                    className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white rounded-xl font-bold shadow-lg shadow-primary/20 gap-2"
+                                    className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white rounded font-bold shadow shadow-primary/20 gap-1 h-7 text-xs"
                                 >
-                                    <PlusCircle className="h-5 w-5" /> 
-                                    Añadir Opción
+                                    <PlusCircle className="h-3 w-3" /> 
+                                    Añadir
                                 </Button>
                             )}
                         </div>
 
-                        <div className={cn(
-                            "grid gap-4", 
-                            isImageOptionsTemplate 
-                                ? "grid-cols-2 lg:grid-cols-4" 
-                                : "grid-cols-1 lg:grid-cols-2"
-                        )}>
-                            <AnimatePresence mode="popLayout">
-                                {(question.options || []).slice(0, 6).map((opt: any, index: number) => (
-                                    <OptionCard
-                                        key={opt.id}
-                                        option={opt}
-                                        index={index}
-                                        template={question.template}
-                                        isCorrect={opt.isCorrect}
-                                        onTextChange={(v) => onOptionChange(index, 'text', v)}
-                                        onImageChange={(url) => onOptionChange(index, 'imageUrl', url)}
-                                        onSetCorrect={() => onSetCorrect(opt.id)}
-                                        onDelete={() => onOptionDelete(index)}
-                                        onPointsChange={(points) => onPointsChange(index, points)}
-                                        onDifficultyChange={(difficulty) => onDifficultyChange(index, difficulty)}
-                                        canDelete={question.options.length > (isTrueFalse ? 2 : 1)}
-                                        showAdvanced={activeTab === 'options'}
-                                    />
-                                ))}
-                            </AnimatePresence>
-                        </div>
+                        <ScrollArea className="h-[calc(100vh-350px)] pr-3">
+                            <div className={cn(
+                                "grid gap-2 pb-3", 
+                                isImageOptionsTemplate 
+                                    ? "grid-cols-2 lg:grid-cols-3" 
+                                    : "grid-cols-1 lg:grid-cols-2"
+                            )}>
+                                <AnimatePresence mode="popLayout">
+                                    {(question.options || []).slice(0, 6).map((opt: any, index: number) => (
+                                        <OptionCard
+                                            key={opt.id}
+                                            option={opt}
+                                            index={index}
+                                            template={question.template}
+                                            isCorrect={opt.isCorrect}
+                                            onTextChange={(v) => onOptionChange(index, 'text', v)}
+                                            onImageChange={(url) => onOptionChange(index, 'imageUrl', url)}
+                                            onSetCorrect={() => onSetCorrect(opt.id)}
+                                            onDelete={() => onOptionDelete(index)}
+                                            onPointsChange={(points) => onPointsChange(index, points)}
+                                            onDifficultyChange={(difficulty) => onDifficultyChange(index, difficulty)}
+                                            canDelete={question.options.length > (isTrueFalse ? 2 : 1)}
+                                            showAdvanced={activeTab === 'options'}
+                                        />
+                                    ))}
+                                </AnimatePresence>
+                            </div>
+                        </ScrollArea>
                     </div>
                 </TabsContent>
 
                 {/* Settings Tab */}
                 <TabsContent value="settings" className="flex-1 data-[state=active]:flex data-[state=active]:flex-col">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div className="lg:col-span-2 space-y-6">
+                    <ScrollArea className="h-[calc(100vh-350px)] pr-3">
+                        <div className="pb-3">
                             {/* Question Settings */}
-                            <Card className="border-2 border-border/50 bg-card/50">
-                                <CardHeader>
-                                    <CardTitle className="text-base font-bold flex items-center gap-2.5">
-                                        <Settings2 className="h-4 w-4 text-primary" />
-                                        Configuración de la Pregunta
+                            <Card className="border border-border/50 bg-card/50">
+                                <CardHeader className="pb-1">
+                                    <CardTitle className="text-xs font-bold flex items-center gap-1.5">
+                                        <Settings2 className="h-3.5 w-3.5 text-primary" />
+                                        Configuración
                                     </CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-6">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label className="text-sm font-semibold">Dificultad</Label>
+                                <CardContent className="space-y-3">
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div className="space-y-1">
+                                            <Label className="text-xs font-semibold">Dificultad</Label>
                                             <Select 
                                                 value={question.difficulty || 'medium'}
                                                 onValueChange={(v) => onQuestionChange('difficulty', v)}
                                             >
-                                                <SelectTrigger>
+                                                <SelectTrigger className="h-7 text-xs">
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     {DIFFICULTY_LEVELS.map(level => (
-                                                        <SelectItem key={level.value} value={level.value}>
-                                                            <div className="flex items-center gap-2">
-                                                                <div className={`w-2 h-2 rounded-full ${level.color}`} />
-                                                                {level.label} ({level.points} pts)
+                                                        <SelectItem key={level.value} value={level.value} className="text-xs">
+                                                            <div className="flex items-center gap-1.5">
+                                                                <div className={`w-1.5 h-1.5 rounded-full ${level.color}`} />
+                                                                {level.label}
                                                             </div>
                                                         </SelectItem>
                                                     ))}
@@ -1131,20 +992,20 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
                                             </Select>
                                         </div>
                                         
-                                        <div className="space-y-2">
-                                            <Label className="text-sm font-semibold">Límite de tiempo</Label>
+                                        <div className="space-y-1">
+                                            <Label className="text-xs font-semibold">Tiempo</Label>
                                             <Select 
                                                 value={question.timeLimit || 'none'}
                                                 onValueChange={(v) => onQuestionChange('timeLimit', v)}
                                             >
-                                                <SelectTrigger>
+                                                <SelectTrigger className="h-7 text-xs">
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     {TIME_LIMIT_OPTIONS.map(option => (
-                                                        <SelectItem key={option.value} value={option.value}>
-                                                            <div className="flex items-center gap-2">
-                                                                <Clock className="h-4 w-4" />
+                                                        <SelectItem key={option.value} value={option.value} className="text-xs">
+                                                            <div className="flex items-center gap-1.5">
+                                                                <Clock className="h-3 w-3" />
                                                                 {option.label}
                                                             </div>
                                                         </SelectItem>
@@ -1154,10 +1015,10 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
                                         </div>
                                     </div>
                                     
-                                    <div className="space-y-3">
+                                    <div className="space-y-1">
                                         <div className="flex items-center justify-between">
-                                            <Label className="text-sm font-semibold">Puntos base</Label>
-                                            <span className="text-lg font-bold text-primary">
+                                            <Label className="text-xs font-semibold">Puntos base</Label>
+                                            <span className="text-xs font-bold text-primary">
                                                 {question.basePoints || 10} pts
                                             </span>
                                         </div>
@@ -1169,100 +1030,10 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
                                             step={5}
                                         />
                                     </div>
-                                    
-                                    <div className="space-y-3">
-                                        <div className="flex items-center justify-between">
-                                            <div className="space-y-0.5">
-                                                <Label className="text-sm font-semibold">Pista/Retroalimentación</Label>
-                                                <p className="text-xs text-muted-foreground">
-                                                    Mostrar una pista si la respuesta es incorrecta
-                                                </p>
-                                            </div>
-                                            <Switch 
-                                                checked={question.showHint || false}
-                                                onCheckedChange={(checked) => onQuestionChange('showHint', checked)}
-                                            />
-                                        </div>
-                                        
-                                        {question.showHint && (
-                                            <Textarea
-                                                value={question.hint || ''}
-                                                onChange={e => onQuestionChange('hint', e.target.value)}
-                                                placeholder="Proporciona una pista útil..."
-                                                className="min-h-[80px]"
-                                            />
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                            
-                            {/* Tags */}
-                            <Card className="border-2 border-border/50 bg-card/50">
-                                <CardHeader>
-                                    <CardTitle className="text-base font-bold flex items-center gap-2.5">
-                                        <Tag className="h-4 w-4 text-primary" />
-                                        Etiquetas y Categorías
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="flex flex-wrap gap-2">
-                                        {question.tags?.map((tag: string, index: number) => (
-                                            <Badge key={index} variant="secondary" className="gap-1 pl-3">
-                                                {tag}
-                                                <button
-                                                    onClick={() => {
-                                                        const newTags = [...(question.tags || [])];
-                                                        newTags.splice(index, 1);
-                                                        onQuestionChange('tags', newTags);
-                                                    }}
-                                                    className="ml-1 hover:text-destructive"
-                                                >
-                                                    <X className="h-3 w-3" />
-                                                </button>
-                                            </Badge>
-                                        ))}
-                                        <Input
-                                            placeholder="Añadir etiqueta..."
-                                            className="w-auto flex-1"
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                                                    const newTags = [...(question.tags || []), e.currentTarget.value.trim()];
-                                                    onQuestionChange('tags', newTags);
-                                                    e.currentTarget.value = '';
-                                                }
-                                            }}
-                                        />
-                                    </div>
                                 </CardContent>
                             </Card>
                         </div>
-                        
-                        <div className="space-y-6">
-                            <QuestionStats question={question} />
-                            
-                            <Card className="border-2 border-border/50 bg-card/50">
-                                <CardHeader>
-                                    <CardTitle className="text-base font-bold flex items-center gap-2.5">
-                                        <Eye className="h-4 w-4 text-primary" />
-                                        Vista Previa Rápida
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="aspect-square bg-gradient-to-br from-muted/30 to-muted/10 rounded-xl border-2 border-dashed border-border/50 flex items-center justify-center">
-                                        <div className="text-center p-4">
-                                            <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-primary/10 flex items-center justify-center">
-                                                <Eye className="h-6 w-6 text-primary" />
-                                            </div>
-                                            <p className="text-sm font-semibold">Vista previa</p>
-                                            <p className="text-xs text-muted-foreground mt-1">
-                                                Activa la vista previa completa
-                                            </p>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    </div>
+                    </ScrollArea>
                 </TabsContent>
             </Tabs>
         </div>
@@ -1270,7 +1041,7 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
 };
 
 // ============================================================================
-// QUESTION LIST SIDEBAR (Rediseñado)
+// QUESTION LIST SIDEBAR (Completamente Optimizado)
 // ============================================================================
 
 interface QuestionListProps {
@@ -1321,90 +1092,55 @@ const QuestionList: React.FC<QuestionListProps> = ({
     };
 
     return (
-        <div className="w-96 border-r-2 border-border/50 flex flex-col bg-gradient-to-b from-background via-background to-muted/5">
+        <div className="w-72 border-r border-border/50 flex flex-col bg-gradient-to-b from-background via-background to-muted/5">
             {/* Header */}
-            <div className="p-6 border-b-2 border-border/50 bg-gradient-to-r from-card/90 via-card/80 to-card/70">
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
-                            <List className="h-6 w-6 text-white" />
+            <div className="p-3 border-b border-border/50 bg-gradient-to-r from-card/90 via-card/80 to-card/70">
+                <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-1.5">
+                        <div className="w-8 h-8 rounded bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow">
+                            <List className="h-4 w-4 text-white" />
                         </div>
                         <div>
-                            <h3 className="font-bold text-lg">Preguntas</h3>
-                            <p className="text-sm text-muted-foreground">
-                                {questions.length} {questions.length === 1 ? 'pregunta' : 'preguntas'} en total
+                            <h3 className="font-bold text-xs">Preguntas</h3>
+                            <p className="text-[10px] text-muted-foreground">
+                                {questions.length} {questions.length === 1 ? 'pregunta' : 'preguntas'}
                             </p>
                         </div>
                     </div>
                     
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="rounded-xl"
-                                    onClick={() => {
-                                        // TODO: Implementar búsqueda
-                                    }}
-                                >
-                                    <Search className="h-4 w-4" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Buscar pregunta</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-3">
                     <Button 
                         onClick={onAdd} 
-                        className="h-12 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white rounded-xl font-bold shadow-lg shadow-primary/20"
+                        className="h-7 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white rounded font-bold shadow shadow-primary/20 text-xs px-2"
                     >
-                        <PlusCircle className="mr-2 h-5 w-5" /> 
+                        <PlusCircle className="h-3 w-3 mr-1" /> 
                         Nueva
                     </Button>
-                    
-                    <Button 
-                        variant="outline"
-                        className="h-12 rounded-xl border-2 border-border/50"
-                        onClick={() => {
-                            // TODO: Importar preguntas
-                        }}
-                    >
-                        <Upload className="mr-2 h-5 w-5" /> 
-                        Importar
-                    </Button>
                 </div>
-            </div>
-
-            {/* Stats Bar */}
-            <div className="px-6 py-4 border-b border-border/30 bg-muted/10">
-                <div className="grid grid-cols-3 gap-4">
-                    <div className="text-center">
-                        <p className="text-2xl font-bold text-primary">{questions.length}</p>
-                        <p className="text-xs text-muted-foreground">Total</p>
+                
+                {/* Stats Bar */}
+                <div className="grid grid-cols-3 gap-1.5 mt-2">
+                    <div className="text-center p-1.5 rounded bg-muted/30">
+                        <p className="text-base font-bold text-primary">{questions.length}</p>
+                        <p className="text-[9px] text-muted-foreground">Total</p>
                     </div>
-                    <div className="text-center">
-                        <p className="text-2xl font-bold text-emerald-500">
+                    <div className="text-center p-1.5 rounded bg-muted/30">
+                        <p className="text-base font-bold text-emerald-500">
                             {questions.filter(q => q.difficulty === 'easy').length}
                         </p>
-                        <p className="text-xs text-muted-foreground">Fáciles</p>
+                        <p className="text-[9px] text-muted-foreground">Fáciles</p>
                     </div>
-                    <div className="text-center">
-                        <p className="text-2xl font-bold text-red-500">
+                    <div className="text-center p-1.5 rounded bg-muted/30">
+                        <p className="text-base font-bold text-red-500">
                             {questions.filter(q => q.difficulty === 'hard' || q.difficulty === 'expert').length}
                         </p>
-                        <p className="text-xs text-muted-foreground">Difíciles</p>
+                        <p className="text-[9px] text-muted-foreground">Difíciles</p>
                     </div>
                 </div>
             </div>
 
             {/* Questions List */}
             <ScrollArea className="flex-1">
-                <div className="p-4 space-y-2">
+                <div className="p-2 space-y-1.5">
                     <AnimatePresence>
                         {questions.map((q, index) => {
                             const isActive = activeIndex === index;
@@ -1415,10 +1151,10 @@ const QuestionList: React.FC<QuestionListProps> = ({
                                 <motion.div
                                     key={q.id}
                                     layout
-                                    initial={{ opacity: 0, x: -20 }}
+                                    initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: 20 }}
-                                    transition={{ duration: 0.2 }}
+                                    exit={{ opacity: 0, x: 10 }}
+                                    transition={{ duration: 0.15 }}
                                     draggable
                                     onDragStart={() => handleDragStart(index)}
                                     onDragOver={(e) => handleDragOver(e, index)}
@@ -1431,42 +1167,42 @@ const QuestionList: React.FC<QuestionListProps> = ({
                                     <div
                                         onClick={() => onSelect(index)}
                                         className={cn(
-                                            "relative p-4 rounded-xl border-2 transition-all duration-300 cursor-pointer",
-                                            "bg-gradient-to-r from-card/80 via-card/70 to-card/80 backdrop-blur-sm",
+                                            "relative p-2 rounded border transition-all duration-300 cursor-pointer",
+                                            "bg-gradient-to-r from-card/80 via-card/70 to-card/80",
                                             isActive
-                                                ? "border-primary shadow-xl shadow-primary/20 scale-[1.02]"
-                                                : "border-border/40 hover:border-primary/40 hover:shadow-lg"
+                                                ? "border-primary shadow shadow-primary/20"
+                                                : "border-border/40 hover:border-primary/40"
                                         )}
                                     >
                                         {/* Drag Handle */}
-                                        <div className="absolute left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing">
-                                            <GripVertical className="h-4 w-4 text-muted-foreground" />
+                                        <div className="absolute left-0.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing">
+                                            <GripVertical className="h-3 w-3 text-muted-foreground" />
                                         </div>
                                         
-                                        <div className="ml-6">
+                                        <div className="ml-4">
                                             <div className="flex items-start justify-between">
-                                                <div className="flex items-center gap-3">
+                                                <div className="flex items-center gap-1.5">
                                                     <div className={cn(
-                                                        "w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm",
+                                                        "w-5 h-5 rounded flex items-center justify-center text-white font-bold text-[10px]",
                                                         templateColor
                                                     )}>
                                                         {index + 1}
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-2 mb-1">
-                                                            <TemplateIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                                                            <p className="text-sm font-semibold truncate">
+                                                        <div className="flex items-center gap-1 mb-0.5">
+                                                            <TemplateIcon className="h-2.5 w-2.5 text-muted-foreground" />
+                                                            <p className="text-xs font-semibold truncate max-w-[110px]">
                                                                 {stripHtml(q.text) || "Pregunta sin título"}
                                                             </p>
                                                         </div>
-                                                        <div className="flex items-center gap-2">
-                                                            <Badge variant="outline" className="text-[10px] h-5">
+                                                        <div className="flex items-center gap-1">
+                                                            <Badge variant="outline" className="text-[9px] h-3.5 px-1">
                                                                 {q.difficulty || 'medium'}
                                                             </Badge>
-                                                            <span className="text-xs text-muted-foreground">
+                                                            <span className="text-[9px] text-muted-foreground">
                                                                 {q.options?.length || 0} opc
                                                             </span>
-                                                            <span className="text-xs font-bold text-primary">
+                                                            <span className="text-[9px] font-bold text-primary">
                                                                 {q.basePoints || 10} pts
                                                             </span>
                                                         </div>
@@ -1474,20 +1210,20 @@ const QuestionList: React.FC<QuestionListProps> = ({
                                                 </div>
                                                 
                                                 {/* Quick Actions */}
-                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <TooltipProvider>
                                                         <Tooltip>
                                                             <TooltipTrigger asChild>
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="icon"
-                                                                    className="h-7 w-7 rounded-lg"
+                                                                    className="h-5 w-5 rounded"
                                                                     onClick={(e) => {
                                                                         e.stopPropagation();
                                                                         onDuplicate(index);
                                                                     }}
                                                                 >
-                                                                    <Copy className="h-3.5 w-3.5" />
+                                                                    <Copy className="h-2.5 w-2.5" />
                                                                 </Button>
                                                             </TooltipTrigger>
                                                             <TooltipContent>
@@ -1503,13 +1239,13 @@ const QuestionList: React.FC<QuestionListProps> = ({
                                                                     <Button
                                                                         variant="ghost"
                                                                         size="icon"
-                                                                        className="h-7 w-7 rounded-lg hover:bg-destructive/10 hover:text-destructive"
+                                                                        className="h-5 w-5 rounded hover:bg-destructive/10 hover:text-destructive"
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
                                                                             onDelete(index);
                                                                         }}
                                                                     >
-                                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                                        <Trash2 className="h-2.5 w-2.5" />
                                                                     </Button>
                                                                 </TooltipTrigger>
                                                                 <TooltipContent>
@@ -1530,23 +1266,24 @@ const QuestionList: React.FC<QuestionListProps> = ({
                     {/* Empty State */}
                     {questions.length === 0 && (
                         <motion.div
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="text-center py-12"
+                            className="text-center py-6"
                         >
-                            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-muted/30 to-muted/10 flex items-center justify-center">
-                                <HelpCircle className="h-8 w-8 text-muted-foreground/50" />
+                            <div className="w-10 h-10 mx-auto mb-2 rounded bg-gradient-to-br from-muted/30 to-muted/10 flex items-center justify-center">
+                                <HelpCircle className="h-5 w-5 text-muted-foreground/50" />
                             </div>
-                            <h3 className="font-bold text-lg mb-2">No hay preguntas</h3>
-                            <p className="text-sm text-muted-foreground mb-6">
+                            <h3 className="font-bold text-xs mb-1">No hay preguntas</h3>
+                            <p className="text-[10px] text-muted-foreground mb-3">
                                 Comienza creando tu primera pregunta
                             </p>
                             <Button 
                                 onClick={onAdd} 
-                                className="bg-gradient-to-r from-primary to-primary/80"
+                                size="sm"
+                                className="bg-gradient-to-r from-primary to-primary/80 text-xs h-7 px-2"
                             >
-                                <PlusCircle className="mr-2 h-4 w-4" />
-                                Crear primera pregunta
+                                <PlusCircle className="h-3 w-3 mr-1" />
+                                Crear primera
                             </Button>
                         </motion.div>
                     )}
@@ -1554,15 +1291,15 @@ const QuestionList: React.FC<QuestionListProps> = ({
             </ScrollArea>
             
             {/* Footer */}
-            <div className="p-4 border-t border-border/30 bg-card/50">
+            <div className="p-2 border-t border-border/30 bg-card/50">
                 <div className="flex items-center justify-between">
-                    <div className="text-xs text-muted-foreground">
-                        Puntos totales: <span className="font-bold text-primary">
+                    <div className="text-[9px] text-muted-foreground">
+                        Puntos: <span className="font-bold text-primary">
                             {questions.reduce((sum, q) => sum + (q.basePoints || 0), 0)}
                         </span>
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                        Tiempo estimado: <span className="font-bold text-primary">
+                    <div className="text-[9px] text-muted-foreground">
+                        Tiempo: <span className="font-bold text-primary">
                             {Math.ceil(questions.length * 1.5)} min
                         </span>
                     </div>
@@ -1573,7 +1310,7 @@ const QuestionList: React.FC<QuestionListProps> = ({
 };
 
 // ============================================================================
-// SETTINGS TAB (Rediseñado)
+// SETTINGS TAB (Completamente Optimizado)
 // ============================================================================
 
 interface SettingsTabProps {
@@ -1588,19 +1325,17 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ quiz, onUpdate }) => {
         { id: 'general', label: 'General', icon: Settings2 },
         { id: 'appearance', label: 'Apariencia', icon: Palette },
         { id: 'access', label: 'Acceso', icon: Shield },
-        { id: 'analytics', label: 'Analíticas', icon: BarChart3 },
-        { id: 'integrations', label: 'Integraciones', icon: Link },
     ];
 
     return (
         <div className="h-full flex">
             {/* Settings Sidebar */}
-            <div className="w-64 border-r-2 border-border/50 bg-gradient-to-b from-card/50 to-card/30 p-4">
-                <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
-                    <Settings2 className="h-5 w-5 text-primary" />
+            <div className="w-48 border-r border-border/50 bg-gradient-to-b from-card/50 to-card/30 p-2">
+                <h3 className="font-bold text-xs mb-3 flex items-center gap-1">
+                    <Settings2 className="h-3.5 w-3.5 text-primary" />
                     Configuración
                 </h3>
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                     {sections.map((section) => {
                         const Icon = section.icon;
                         return (
@@ -1608,260 +1343,104 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ quiz, onUpdate }) => {
                                 key={section.id}
                                 onClick={() => setActiveSection(section.id)}
                                 className={cn(
-                                    "w-full text-left p-3 rounded-xl transition-all duration-300 flex items-center gap-3",
+                                    "w-full text-left p-1.5 rounded transition-all duration-300 flex items-center gap-1.5 text-xs",
                                     activeSection === section.id
-                                        ? "bg-gradient-to-r from-primary to-primary/80 text-white shadow-lg"
+                                        ? "bg-gradient-to-r from-primary to-primary/80 text-white shadow"
                                         : "hover:bg-muted/50"
                                 )}
                             >
-                                <Icon className="h-4 w-4" />
+                                <Icon className="h-3 w-3" />
                                 <span className="font-semibold">{section.label}</span>
                             </button>
                         );
                     })}
                 </div>
-                
-                <div className="mt-8 p-4 rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 border border-border/50">
-                    <h4 className="font-bold text-sm mb-2">Estado del Quiz</h4>
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm">Visibilidad</span>
-                            <Switch 
-                                checked={quiz.published || false}
-                                onCheckedChange={(checked) => onUpdate({ published: checked })}
-                            />
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm">Modo evaluación</span>
-                            <Switch 
-                                checked={quiz.isExam || false}
-                                onCheckedChange={(checked) => onUpdate({ isExam: checked })}
-                            />
-                        </div>
-                    </div>
-                </div>
             </div>
 
             {/* Settings Content */}
-            <ScrollArea className="flex-1 p-8">
+            <ScrollArea className="flex-1 p-4">
                 <AnimatePresence mode="wait">
                     {activeSection === 'general' && (
                         <motion.div
                             key="general"
-                            initial={{ opacity: 0, x: 20 }}
+                            initial={{ opacity: 0, x: 10 }}
                             animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            className="space-y-8 max-w-3xl"
+                            exit={{ opacity: 0, x: -10 }}
+                            className="space-y-4 max-w-2xl"
                         >
                             {/* Quiz Details */}
-                            <Card className="border-2 border-border/50 bg-card/50 backdrop-blur-sm">
-                                <CardHeader>
-                                    <CardTitle className="text-xl font-bold flex items-center gap-3">
-                                        <Sparkles className="h-5 w-5 text-primary" />
+                            <Card className="border border-border/50 bg-card/50">
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-sm font-bold flex items-center gap-1.5">
+                                        <Sparkles className="h-3.5 w-3.5 text-primary" />
                                         Información General
                                     </CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-6">
-                                    <div className="space-y-3">
-                                        <Label htmlFor="quiz-title" className="text-sm font-semibold">
+                                <CardContent className="space-y-3">
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="quiz-title" className="text-xs font-semibold">
                                             Título del Quiz
                                         </Label>
                                         <Input
                                             id="quiz-title"
                                             value={quiz.title}
                                             onChange={e => onUpdate({ title: e.target.value })}
-                                            className="text-base h-12 rounded-xl border-2 border-border/50 focus:border-primary bg-background/60"
+                                            className="text-sm h-9 rounded border border-border/50 focus:border-primary bg-background/60"
                                             placeholder="Ej: Examen Final - Módulo 3"
                                         />
                                     </div>
                                     
-                                    <div className="space-y-3">
-                                        <Label htmlFor="quiz-description" className="text-sm font-semibold">
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="quiz-description" className="text-xs font-semibold">
                                             Descripción
                                         </Label>
                                         <Textarea
                                             id="quiz-description"
                                             value={quiz.description || ''}
                                             onChange={e => onUpdate({ description: e.target.value })}
-                                            rows={4}
-                                            className="rounded-xl border-2 border-border/50 focus:border-primary bg-background/60 resize-none"
+                                            rows={2}
+                                            className="rounded border border-border/50 focus:border-primary bg-background/60 resize-none text-xs"
                                             placeholder="Describe el propósito y contenido de este quiz..."
                                         />
-                                    </div>
-                                    
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-3">
-                                            <Label htmlFor="quiz-category" className="text-sm font-semibold">
-                                                Categoría
-                                            </Label>
-                                            <Select 
-                                                value={quiz.category || 'general'}
-                                                onValueChange={(v) => onUpdate({ category: v })}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Seleccionar categoría" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="general">General</SelectItem>
-                                                    <SelectItem value="mathematics">Matemáticas</SelectItem>
-                                                    <SelectItem value="science">Ciencias</SelectItem>
-                                                    <SelectItem value="history">Historia</SelectItem>
-                                                    <SelectItem value="language">Idiomas</SelectItem>
-                                                    <SelectItem value="technology">Tecnología</SelectItem>
-                                                    <SelectItem value="business">Negocios</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        
-                                        <div className="space-y-3">
-                                            <Label htmlFor="quiz-language" className="text-sm font-semibold">
-                                                Idioma
-                                            </Label>
-                                            <Select 
-                                                value={quiz.language || 'es'}
-                                                onValueChange={(v) => onUpdate({ language: v })}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Seleccionar idioma" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="es">Español</SelectItem>
-                                                    <SelectItem value="en">English</SelectItem>
-                                                    <SelectItem value="fr">Français</SelectItem>
-                                                    <SelectItem value="de">Deutsch</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>
 
                             {/* Game Settings */}
-                            <Card className="border-2 border-border/50 bg-card/50 backdrop-blur-sm">
-                                <CardHeader>
-                                    <CardTitle className="text-xl font-bold flex items-center gap-3">
-                                        <Zap className="h-5 w-5 text-primary" />
+                            <Card className="border border-border/50 bg-card/50">
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-sm font-bold flex items-center gap-1.5">
+                                        <Zap className="h-3.5 w-3.5 text-primary" />
                                         Configuración del Juego
                                     </CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-6">
-                                    <div className="grid grid-cols-2 gap-6">
-                                        <div className="space-y-3">
-                                            <Label htmlFor="quiz-max-attempts" className="text-sm font-semibold">
-                                                Intentos máximos
-                                            </Label>
-                                            <Select 
-                                                value={quiz.maxAttempts?.toString() || 'unlimited'}
-                                                onValueChange={(v) => onUpdate({ 
-                                                    maxAttempts: v === 'unlimited' ? null : parseInt(v)
-                                                })}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="unlimited">Ilimitados</SelectItem>
-                                                    <SelectItem value="1">1 intento</SelectItem>
-                                                    <SelectItem value="2">2 intentos</SelectItem>
-                                                    <SelectItem value="3">3 intentos</SelectItem>
-                                                    <SelectItem value="5">5 intentos</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        
-                                        <div className="space-y-3">
-                                            <Label htmlFor="quiz-passing-grade" className="text-sm font-semibold">
-                                                Nota de aprobación
-                                            </Label>
-                                            <div className="flex items-center gap-3">
-                                                <Slider 
-                                                    value={[quiz.passingGrade || 70]} 
-                                                    onValueChange={([value]) => onUpdate({ passingGrade: value })}
-                                                    min={0}
-                                                    max={100}
-                                                    step={5}
-                                                    className="flex-1"
-                                                />
-                                                <span className="text-lg font-bold min-w-[50px]">
-                                                    {quiz.passingGrade || 70}%
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="space-y-4">
-                                        <h4 className="font-bold text-sm">Orden de preguntas</h4>
-                                        <RadioGroup 
-                                            value={quiz.questionOrder || 'sequential'}
-                                            onValueChange={(v) => onUpdate({ questionOrder: v })}
-                                            className="grid grid-cols-2 gap-3"
-                                        >
-                                            <div>
-                                                <RadioGroupItem value="sequential" id="order-sequential" className="peer sr-only" />
-                                                <Label
-                                                    htmlFor="order-sequential"
-                                                    className="flex flex-col items-center justify-between rounded-xl border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-                                                >
-                                                    <List className="mb-2 h-6 w-6" />
-                                                    <span className="font-semibold">Secuencial</span>
-                                                    <span className="text-xs text-muted-foreground text-center">
-                                                        Preguntas en orden fijo
-                                                    </span>
-                                                </Label>
-                                            </div>
-                                            <div>
-                                                <RadioGroupItem value="random" id="order-random" className="peer sr-only" />
-                                                <Label
-                                                    htmlFor="order-random"
-                                                    className="flex flex-col items-center justify-between rounded-xl border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-                                                >
-                                                    <Shuffle className="mb-2 h-6 w-6" />
-                                                    <span className="font-semibold">Aleatorio</span>
-                                                    <span className="text-xs text-muted-foreground text-center">
-                                                        Preguntas mezcladas
-                                                    </span>
-                                                </Label>
-                                            </div>
-                                        </RadioGroup>
-                                    </div>
-                                    
-                                    <div className="space-y-3">
+                                <CardContent className="space-y-3">
+                                    <div className="space-y-2">
                                         <div className="flex items-center justify-between">
                                             <div>
-                                                <Label className="text-sm font-semibold">Mostrar respuestas</Label>
-                                                <p className="text-xs text-muted-foreground">
+                                                <Label className="text-xs font-semibold">Mostrar respuestas</Label>
+                                                <p className="text-[10px] text-muted-foreground">
                                                     Mostrar respuestas correctas al finalizar
                                                 </p>
                                             </div>
                                             <Switch 
                                                 checked={quiz.showAnswers || true}
                                                 onCheckedChange={(checked) => onUpdate({ showAnswers: checked })}
+                                                size="sm"
                                             />
                                         </div>
                                         
                                         <div className="flex items-center justify-between">
                                             <div>
-                                                <Label className="text-sm font-semibold">Mostrar puntaje</Label>
-                                                <p className="text-xs text-muted-foreground">
+                                                <Label className="text-xs font-semibold">Mostrar puntaje</Label>
+                                                <p className="text-[10px] text-muted-foreground">
                                                     Mostrar puntuación final inmediatamente
                                                 </p>
                                             </div>
                                             <Switch 
                                                 checked={quiz.showScore || true}
                                                 onCheckedChange={(checked) => onUpdate({ showScore: checked })}
-                                            />
-                                        </div>
-                                        
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <Label className="text-sm font-semibold">Permitir retroceso</Label>
-                                                <p className="text-xs text-muted-foreground">
-                                                    Permitir volver a preguntas anteriores
-                                                </p>
-                                            </div>
-                                            <Switch 
-                                                checked={quiz.allowBack || true}
-                                                onCheckedChange={(checked) => onUpdate({ allowBack: checked })}
+                                                size="sm"
                                             />
                                         </div>
                                     </div>
@@ -1873,23 +1452,23 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ quiz, onUpdate }) => {
                     {activeSection === 'appearance' && (
                         <motion.div
                             key="appearance"
-                            initial={{ opacity: 0, x: 20 }}
+                            initial={{ opacity: 0, x: 10 }}
                             animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            className="space-y-8 max-w-3xl"
+                            exit={{ opacity: 0, x: -10 }}
+                            className="space-y-4 max-w-2xl"
                         >
-                            <Card className="border-2 border-border/50 bg-card/50 backdrop-blur-sm">
-                                <CardHeader>
-                                    <CardTitle className="text-xl font-bold flex items-center gap-3">
-                                        <Palette className="h-5 w-5 text-primary" />
+                            <Card className="border border-border/50 bg-card/50">
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-sm font-bold flex items-center gap-1.5">
+                                        <Palette className="h-3.5 w-3.5 text-primary" />
                                         Personalización
                                     </CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-6">
+                                <CardContent className="space-y-3">
                                     {/* Theme Colors */}
-                                    <div className="space-y-3">
-                                        <Label className="text-sm font-semibold">Tema de colores</Label>
-                                        <div className="grid grid-cols-5 gap-3">
+                                    <div className="space-y-1.5">
+                                        <Label className="text-xs font-semibold">Tema de colores</Label>
+                                        <div className="grid grid-cols-5 gap-1.5">
                                             {[
                                                 { name: 'Azul', value: 'blue', bg: 'bg-blue-500' },
                                                 { name: 'Verde', value: 'green', bg: 'bg-green-500' },
@@ -1900,88 +1479,26 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ quiz, onUpdate }) => {
                                                 <button
                                                     key={color.value}
                                                     onClick={() => onUpdate({ theme: color.value })}
-                                                    className="flex flex-col items-center gap-2"
+                                                    className="flex flex-col items-center gap-0.5"
                                                 >
                                                     <div className={cn(
-                                                        "w-12 h-12 rounded-xl flex items-center justify-center",
+                                                        "w-7 h-7 rounded flex items-center justify-center",
                                                         color.bg,
-                                                        quiz.theme === color.value && "ring-2 ring-offset-2 ring-primary"
+                                                        quiz.theme === color.value && "ring-1 ring-offset-1 ring-primary"
                                                     )}>
                                                         {quiz.theme === color.value && (
-                                                            <Check className="h-6 w-6 text-white" />
+                                                            <Check className="h-3 w-3 text-white" />
                                                         )}
                                                     </div>
-                                                    <span className="text-xs font-medium">{color.name}</span>
+                                                    <span className="text-[10px] font-medium">{color.name}</span>
                                                 </button>
                                             ))}
                                         </div>
                                     </div>
                                     
-                                    {/* Timer Style */}
-                                    <div className="space-y-3">
-                                        <Label className="text-sm font-semibold">Estilo del temporizador</Label>
-                                        <div className="grid grid-cols-3 gap-3">
-                                            {[
-                                                { id: 'circular', label: 'Circular', icon: Timer },
-                                                { id: 'bar', label: 'Barra', icon: BarChart3 },
-                                                { id: 'pill', label: 'Píldora', icon: Zap },
-                                            ].map((style) => {
-                                                const Icon = style.icon;
-                                                return (
-                                                    <button
-                                                        key={style.id}
-                                                        onClick={() => onUpdate({ timerStyle: style.id })}
-                                                        className={cn(
-                                                            "p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all",
-                                                            quiz.timerStyle === style.id
-                                                                ? "border-primary bg-primary/10"
-                                                                : "border-border hover:border-primary/40"
-                                                        )}
-                                                    >
-                                                        <Icon className="h-6 w-6" />
-                                                        <span className="text-sm font-medium">{style.label}</span>
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                    
-                                    {/* Layout */}
-                                    <div className="space-y-3">
-                                        <Label className="text-sm font-semibold">Diseño del quiz</Label>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <RadioGroupItem value="modern" id="layout-modern" className="peer sr-only" />
-                                                <Label
-                                                    htmlFor="layout-modern"
-                                                    className="flex flex-col items-center justify-between rounded-xl border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-                                                >
-                                                    <Monitor className="mb-2 h-6 w-6" />
-                                                    <span className="font-semibold">Moderno</span>
-                                                    <span className="text-xs text-muted-foreground text-center">
-                                                        Diseño limpio y espaciado
-                                                    </span>
-                                                </Label>
-                                            </div>
-                                            <div>
-                                                <RadioGroupItem value="compact" id="layout-compact" className="peer sr-only" />
-                                                <Label
-                                                    htmlFor="layout-compact"
-                                                    className="flex flex-col items-center justify-between rounded-xl border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-                                                >
-                                                    <Smartphone className="mb-2 h-6 w-6" />
-                                                    <span className="font-semibold">Compacto</span>
-                                                    <span className="text-xs text-muted-foreground text-center">
-                                                        Optimizado para móviles
-                                                    </span>
-                                                </Label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
                                     {/* Cover Image */}
-                                    <div className="space-y-3">
-                                        <Label className="text-sm font-semibold">Imagen de portada</Label>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-xs font-semibold">Imagen de portada</Label>
                                         <ImageUploadWidget 
                                             inputId="quiz-cover" 
                                             imageUrl={quiz.coverImage || null} 
@@ -1989,149 +1506,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ quiz, onUpdate }) => {
                                             onRemove={() => onUpdate({ coverImage: null })} 
                                             disabled={false} 
                                             label="Portada del quiz"
-                                            aspectRatio="aspect-[21/9]"
                                         />
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </motion.div>
-                    )}
-
-                    {activeSection === 'access' && (
-                        <motion.div
-                            key="access"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            className="space-y-8 max-w-3xl"
-                        >
-                            <Card className="border-2 border-border/50 bg-card/50 backdrop-blur-sm">
-                                <CardHeader>
-                                    <CardTitle className="text-xl font-bold flex items-center gap-3">
-                                        <Shield className="h-5 w-5 text-primary" />
-                                        Control de Acceso
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-6">
-                                    {/* Access Control */}
-                                    <div className="space-y-4">
-                                        <h4 className="font-bold text-sm">Visibilidad</h4>
-                                        <RadioGroup 
-                                            value={quiz.access || 'public'}
-                                            onValueChange={(v) => onUpdate({ access: v })}
-                                            className="space-y-3"
-                                        >
-                                            <div className="flex items-center space-x-3 space-y-0">
-                                                <RadioGroupItem value="public" id="access-public" />
-                                                <Label htmlFor="access-public" className="font-normal">
-                                                    <div className="flex items-center gap-2">
-                                                        <Globe className="h-4 w-4" />
-                                                        <div>
-                                                            <p className="font-semibold">Público</p>
-                                                            <p className="text-sm text-muted-foreground">
-                                                                Cualquiera con el enlace puede acceder
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </Label>
-                                            </div>
-                                            <div className="flex items-center space-x-3 space-y-0">
-                                                <RadioGroupItem value="private" id="access-private" />
-                                                <Label htmlFor="access-private" className="font-normal">
-                                                    <div className="flex items-center gap-2">
-                                                        <Lock className="h-4 w-4" />
-                                                        <div>
-                                                            <p className="font-semibold">Privado</p>
-                                                            <p className="text-sm text-muted-foreground">
-                                                                Solo usuarios invitados pueden acceder
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </Label>
-                                            </div>
-                                            <div className="flex items-center space-x-3 space-y-0">
-                                                <RadioGroupItem value="password" id="access-password" />
-                                                <Label htmlFor="access-password" className="font-normal">
-                                                    <div className="flex items-center gap-2">
-                                                        <Key className="h-4 w-4" />
-                                                        <div>
-                                                            <p className="font-semibold">Con contraseña</p>
-                                                            <p className="text-sm text-muted-foreground">
-                                                                Requiere contraseña para acceder
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </Label>
-                                            </div>
-                                        </RadioGroup>
-                                        
-                                        {quiz.access === 'password' && (
-                                            <div className="ml-7 space-y-3">
-                                                <Label htmlFor="quiz-password" className="text-sm font-semibold">
-                                                    Contraseña
-                                                </Label>
-                                                <Input
-                                                    id="quiz-password"
-                                                    type="password"
-                                                    value={quiz.password || ''}
-                                                    onChange={e => onUpdate({ password: e.target.value })}
-                                                    className="max-w-xs"
-                                                    placeholder="Ingresa la contraseña"
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
-                                    
-                                    {/* Schedule */}
-                                    <div className="space-y-4">
-                                        <h4 className="font-bold text-sm">Programación</h4>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-3">
-                                                <Label htmlFor="start-date" className="text-sm font-semibold">
-                                                    Fecha de inicio
-                                                </Label>
-                                                <Input
-                                                    id="start-date"
-                                                    type="datetime-local"
-                                                    value={quiz.startDate || ''}
-                                                    onChange={e => onUpdate({ startDate: e.target.value })}
-                                                />
-                                            </div>
-                                            <div className="space-y-3">
-                                                <Label htmlFor="end-date" className="text-sm font-semibold">
-                                                    Fecha de fin
-                                                </Label>
-                                                <Input
-                                                    id="end-date"
-                                                    type="datetime-local"
-                                                    value={quiz.endDate || ''}
-                                                    onChange={e => onUpdate({ endDate: e.target.value })}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    {/* Sharing */}
-                                    <div className="space-y-4">
-                                        <h4 className="font-bold text-sm">Compartir</h4>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <Button variant="outline" className="h-12 justify-start">
-                                                <Link className="mr-2 h-4 w-4" />
-                                                <div className="text-left">
-                                                    <p className="text-xs">Enlace público</p>
-                                                    <p className="text-sm font-semibold truncate">
-                                                        quiz.com/{quiz.id}
-                                                    </p>
-                                                </div>
-                                            </Button>
-                                            <Button variant="outline" className="h-12 justify-start">
-                                                <QrCode className="mr-2 h-4 w-4" />
-                                                <div className="text-left">
-                                                    <p className="text-xs">Código QR</p>
-                                                    <p className="text-sm font-semibold">Generar</p>
-                                                </div>
-                                            </Button>
-                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -2144,85 +1519,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ quiz, onUpdate }) => {
 };
 
 // ============================================================================
-// ANALYTICS DASHBOARD
-// ============================================================================
-
-interface AnalyticsDashboardProps {
-    quiz: AppQuiz;
-}
-
-const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ quiz }) => {
-    const stats = [
-        { label: "Vistas totales", value: "1,234", change: "+12%", icon: Eye, color: "text-blue-500" },
-        { label: "Completados", value: "892", change: "+8%", icon: Check, color: "text-emerald-500" },
-        { label: "Tasa de aprobación", value: "76%", change: "+5%", icon: TrendingUp, color: "text-green-500" },
-        { label: "Tiempo promedio", value: "4:32", change: "-2%", icon: Clock, color: "text-orange-500" },
-    ];
-
-    return (
-        <div className="p-8 space-y-8">
-            {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {stats.map((stat, index) => {
-                    const Icon = stat.icon;
-                    return (
-                        <Card key={stat.label} className="border-2 border-border/50 bg-card/50">
-                            <CardContent className="p-6">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className={cn("p-2 rounded-lg bg-opacity-10", stat.color.replace('text-', 'bg-'))}>
-                                        <Icon className={cn("h-5 w-5", stat.color)} />
-                                    </div>
-                                    <span className={cn(
-                                        "text-xs font-bold px-2 py-1 rounded",
-                                        stat.change.startsWith('+') ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"
-                                    )}>
-                                        {stat.change}
-                                    </span>
-                                </div>
-                                <p className="text-2xl font-bold">{stat.value}</p>
-                                <p className="text-sm text-muted-foreground">{stat.label}</p>
-                            </CardContent>
-                        </Card>
-                    );
-                })}
-            </div>
-
-            {/* Charts Placeholder */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="border-2 border-border/50 bg-card/50">
-                    <CardHeader>
-                        <CardTitle className="text-lg font-bold">Rendimiento por pregunta</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="h-64 flex items-center justify-center bg-gradient-to-br from-muted/30 to-muted/10 rounded-xl">
-                            <div className="text-center">
-                                <BarChart3 className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
-                                <p className="text-muted-foreground">Gráfico de rendimiento</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="border-2 border-border/50 bg-card/50">
-                    <CardHeader>
-                        <CardTitle className="text-lg font-bold">Distribución de puntajes</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="h-64 flex items-center justify-center bg-gradient-to-br from-muted/30 to-muted/10 rounded-xl">
-                            <div className="text-center">
-                                <Target className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
-                                <p className="text-muted-foreground">Gráfico de distribución</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-        </div>
-    );
-};
-
-// ============================================================================
-// MAIN MODAL COMPONENT (Rediseñado)
+// MAIN MODAL COMPONENT (Completamente Optimizado)
 // ============================================================================
 
 interface QuizEditorModalProps {
@@ -2241,7 +1538,7 @@ export function QuizEditorModal({
     const [localQuiz, setLocalQuiz] = useState<AppQuiz>(quiz);
     const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState<'questions' | 'settings' | 'analytics'>('questions');
+    const [activeTab, setActiveTab] = useState<'questions' | 'settings'>('questions');
     const [isSaving, setIsSaving] = useState(false);
     const { toast } = useToast();
 
@@ -2536,128 +1833,92 @@ export function QuizEditorModal({
     return (
         <>
             <Dialog open={isOpen} onOpenChange={onClose}>
-                <DialogContent className="w-[98vw] max-w-[1800px] h-[95vh] p-0 gap-0 rounded-3xl overflow-hidden border-2 border-border/50 bg-gradient-to-br from-background via-background to-muted/20 shadow-2xl backdrop-blur-xl">
+                <DialogContent className="w-[94vw] max-w-[1550px] h-[88vh] p-0 gap-0 rounded-lg overflow-hidden border border-border/50 bg-gradient-to-br from-background via-background to-muted/20 shadow-xl">
                     <div className="flex flex-col h-full">
                         {/* Header */}
-                        <div className="shrink-0 border-b-2 border-border/50 bg-gradient-to-r from-card/90 via-card/80 to-card/90 backdrop-blur-xl">
-                            <div className="flex items-center justify-between px-8 py-5">
-                                <div className="flex items-center gap-4">
+                        <div className="shrink-0 border-b border-border/50 bg-gradient-to-r from-card/90 via-card/80 to-card/90">
+                            <div className="flex items-center justify-between px-4 py-3">
+                                <div className="flex items-center gap-2">
                                     <Button
                                         variant="ghost"
                                         size="icon"
                                         onClick={onClose}
-                                        className="rounded-xl hover:bg-muted/80"
+                                        className="rounded hover:bg-muted/80 h-8 w-8"
                                     >
-                                        <ArrowLeft className="h-5 w-5" />
+                                        <ArrowLeft className="h-3.5 w-3.5" />
                                     </Button>
-                                    <Separator orientation="vertical" className="h-8" />
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-xl shadow-primary/30">
-                                            <CheckSquare className="h-7 w-7 text-white" />
+                                    <Separator orientation="vertical" className="h-5" />
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-10 h-10 rounded bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow">
+                                            <CheckSquare className="h-5 w-5 text-white" />
                                         </div>
                                         <div>
-                                            <div className="flex items-center gap-3">
-                                                <h2 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+                                            <div className="flex items-center gap-1.5">
+                                                <h2 className="text-base font-bold truncate max-w-[200px]">
                                                     {localQuiz.title || 'Editor de Quiz'}
                                                 </h2>
-                                                <Badge variant={localQuiz.published ? "default" : "outline"} className="rounded-lg">
+                                                <Badge variant={localQuiz.published ? "default" : "outline"} className="rounded text-[10px]">
                                                     {localQuiz.published ? "Publicado" : "Borrador"}
                                                 </Badge>
                                             </div>
-                                            <div className="flex items-center gap-4 mt-1">
-                                                <p className="text-sm font-semibold text-muted-foreground">
-                                                    {localQuiz.questions.length} preguntas · {localQuiz.category || 'General'}
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                <p className="text-xs text-muted-foreground">
+                                                    {localQuiz.questions.length} preguntas
                                                 </p>
-                                                <div className="flex items-center gap-2">
-                                                    <Badge variant="secondary" className="rounded-lg">
-                                                        <Users className="h-3 w-3 mr-1" />
-                                                        {localQuiz.access === 'public' ? 'Público' : 'Privado'}
-                                                    </Badge>
-                                                    <Badge variant="secondary" className="rounded-lg">
-                                                        <Zap className="h-3 w-3 mr-1" />
-                                                        {localQuiz.questions.reduce((sum, q) => sum + (q.basePoints || 10), 0)} pts
-                                                    </Badge>
-                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-4">
-                                    {/* AI Assistant */}
-                                    <AIAssistant
-                                        onGenerateQuestion={handleAddQuestion}
-                                        onImproveQuestion={() => {}}
-                                        onSuggestOptions={() => {}}
-                                    />
-
-                                    <Separator orientation="vertical" className="h-8" />
-
+                                <div className="flex items-center gap-2">
                                     {/* Main Tabs */}
                                     <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-auto">
-                                        <TabsList className="bg-muted/60 p-1.5 rounded-xl border-2 border-border/50 shadow-lg">
+                                        <TabsList className="bg-muted/60 p-0.5 rounded border border-border/50">
                                             <TabsTrigger 
                                                 value="questions" 
-                                                className="rounded-lg px-6 py-2.5 transition-all font-bold text-sm gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-white data-[state=active]:shadow-md"
+                                                className="rounded px-3 py-1 transition-all font-bold text-xs gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-white data-[state=active]:shadow"
                                             >
-                                                <HelpCircle className="h-4 w-4" /> 
+                                                <HelpCircle className="h-3 w-3" /> 
                                                 Preguntas
                                             </TabsTrigger>
                                             <TabsTrigger 
                                                 value="settings" 
-                                                className="rounded-lg px-6 py-2.5 transition-all font-bold text-sm gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-white data-[state=active]:shadow-md"
+                                                className="rounded px-3 py-1 transition-all font-bold text-xs gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-white data-[state=active]:shadow"
                                             >
-                                                <Settings2 className="h-4 w-4" /> 
+                                                <Settings2 className="h-3 w-3" /> 
                                                 Ajustes
-                                            </TabsTrigger>
-                                            <TabsTrigger 
-                                                value="analytics" 
-                                                className="rounded-lg px-6 py-2.5 transition-all font-bold text-sm gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-white data-[state=active]:shadow-md"
-                                            >
-                                                <BarChart3 className="h-4 w-4" /> 
-                                                Analíticas
                                             </TabsTrigger>
                                         </TabsList>
                                     </Tabs>
 
-                                    <Separator orientation="vertical" className="h-8" />
+                                    <Separator orientation="vertical" className="h-5" />
 
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-1.5">
                                         <Button 
                                             variant="outline" 
-                                            size="lg" 
-                                            className="rounded-xl px-5 font-bold border-2 border-border/50 hover:bg-muted/80 shadow-sm gap-2" 
+                                            size="sm" 
+                                            className="rounded px-2.5 font-bold border border-border/50 hover:bg-muted/80 gap-1 h-8 text-xs" 
                                             onClick={() => setIsPreviewOpen(true)}
                                         >
-                                            <Eye className="h-4 w-4" /> 
+                                            <Eye className="h-3 w-3" /> 
                                             Vista Previa
                                         </Button>
 
                                         <Button 
-                                            variant="outline" 
-                                            size="lg" 
-                                            className="rounded-xl px-5 font-bold border-2 border-border/50 hover:bg-muted/80 shadow-sm gap-2" 
-                                            onClick={handleExportQuiz}
-                                        >
-                                            <Download className="h-4 w-4" /> 
-                                            Exportar
-                                        </Button>
-
-                                        <Button 
-                                            size="lg" 
+                                            size="sm" 
                                             onClick={handleSaveChanges} 
                                             disabled={isSaving}
-                                            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white rounded-xl px-8 font-bold shadow-xl shadow-primary/30 transition-all hover:shadow-2xl hover:shadow-primary/40 gap-2"
+                                            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white rounded px-4 font-bold shadow shadow-primary/20 transition-all gap-1 h-8 text-xs"
                                         >
                                             {isSaving ? (
                                                 <>
-                                                    <ColorfulLoader className="h-4 w-4" />
+                                                    <ColorfulLoader className="h-3 w-3" />
                                                     Guardando...
                                                 </>
                                             ) : (
                                                 <>
-                                                    <Save className="h-4 w-4" /> 
-                                                    Guardar Cambios
+                                                    <Save className="h-3 w-3" /> 
+                                                    Guardar
                                                 </>
                                             )}
                                         </Button>
@@ -2672,10 +1933,10 @@ export function QuizEditorModal({
                                 {activeTab === 'questions' ? (
                                     <motion.div
                                         key="questions"
-                                        initial={{ opacity: 0, x: -20 }}
+                                        initial={{ opacity: 0, x: -10 }}
                                         animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: 20 }}
-                                        transition={{ duration: 0.2 }}
+                                        exit={{ opacity: 0, x: 10 }}
+                                        transition={{ duration: 0.15 }}
                                         className="flex h-full"
                                     >
                                         {/* Sidebar - Question List */}
@@ -2692,7 +1953,7 @@ export function QuizEditorModal({
                                         {/* Editor Area */}
                                         <div className="flex-1 overflow-hidden">
                                             <ScrollArea className="h-full">
-                                                <div className="p-8 max-w-[1200px] mx-auto min-h-full">
+                                                <div className="p-4 max-w-[900px] mx-auto min-h-full">
                                                     {activeQuestion ? (
                                                         <QuestionEditor
                                                             question={activeQuestion}
@@ -2705,20 +1966,20 @@ export function QuizEditorModal({
                                                             onDifficultyChange={handleDifficultyChange}
                                                         />
                                                     ) : (
-                                                        <div className="flex flex-col items-center justify-center h-[60vh]">
-                                                            <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-muted/30 to-muted/10 flex items-center justify-center mb-6">
-                                                                <HelpCircle className="h-12 w-12 text-muted-foreground/50" />
+                                                        <div className="flex flex-col items-center justify-center h-[40vh]">
+                                                            <div className="w-12 h-12 rounded bg-gradient-to-br from-muted/30 to-muted/10 flex items-center justify-center mb-3">
+                                                                <HelpCircle className="h-6 w-6 text-muted-foreground/50" />
                                                             </div>
-                                                            <h3 className="text-2xl font-bold mb-2">Selecciona una pregunta</h3>
-                                                            <p className="text-muted-foreground mb-8 max-w-md text-center">
-                                                                Elige una pregunta de la lista para comenzar a editar, o crea una nueva pregunta.
+                                                            <h3 className="text-sm font-bold mb-1">Selecciona una pregunta</h3>
+                                                            <p className="text-xs text-muted-foreground mb-4 max-w-xs text-center">
+                                                                Elige una pregunta de la lista para comenzar a editar
                                                             </p>
                                                             <Button 
                                                                 onClick={handleAddQuestion} 
-                                                                size="lg"
-                                                                className="bg-gradient-to-r from-primary to-primary/80"
+                                                                size="sm"
+                                                                className="bg-gradient-to-r from-primary to-primary/80 text-xs"
                                                             >
-                                                                <PlusCircle className="mr-2 h-5 w-5" />
+                                                                <PlusCircle className="h-3.5 w-3.5 mr-1" />
                                                                 Crear primera pregunta
                                                             </Button>
                                                         </div>
@@ -2727,13 +1988,13 @@ export function QuizEditorModal({
                                             </ScrollArea>
                                         </div>
                                     </motion.div>
-                                ) : activeTab === 'settings' ? (
+                                ) : (
                                     <motion.div
                                         key="settings"
-                                        initial={{ opacity: 0, x: 20 }}
+                                        initial={{ opacity: 0, x: 10 }}
                                         animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -20 }}
-                                        transition={{ duration: 0.2 }}
+                                        exit={{ opacity: 0, x: -10 }}
+                                        transition={{ duration: 0.15 }}
                                         className="h-full"
                                     >
                                         <SettingsTab 
@@ -2741,46 +2002,32 @@ export function QuizEditorModal({
                                             onUpdate={handleQuizUpdate} 
                                         />
                                     </motion.div>
-                                ) : (
-                                    <motion.div
-                                        key="analytics"
-                                        initial={{ opacity: 0, x: 20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -20 }}
-                                        transition={{ duration: 0.2 }}
-                                        className="h-full"
-                                    >
-                                        <AnalyticsDashboard quiz={localQuiz} />
-                                    </motion.div>
                                 )}
                             </AnimatePresence>
                         </div>
 
                         {/* Status Bar */}
-                        <div className="shrink-0 border-t-2 border-border/50 bg-card/80 px-6 py-3">
+                        <div className="shrink-0 border-t border-border/50 bg-card/80 px-3 py-1.5">
                             <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-6">
-                                    <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-1">
                                         <div className={cn(
-                                            "w-2 h-2 rounded-full",
+                                            "w-1.5 h-1.5 rounded-full",
                                             localQuiz.published ? "bg-emerald-500" : "bg-yellow-500"
                                         )} />
                                         <span className="text-xs font-medium">
                                             {localQuiz.published ? "Publicado" : "Borrador"}
                                         </span>
                                     </div>
-                                    <div className="text-xs text-muted-foreground">
-                                        Última edición: hace 5 minutos
-                                    </div>
                                 </div>
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2">
                                     <div className="text-xs text-muted-foreground">
                                         <span className="font-bold text-primary">{localQuiz.questions.length}</span> preguntas
                                     </div>
                                     <div className="text-xs text-muted-foreground">
                                         <span className="font-bold text-primary">
                                             {localQuiz.questions.reduce((sum, q) => sum + (q.basePoints || 10), 0)}
-                                        </span> puntos totales
+                                        </span> puntos
                                     </div>
                                 </div>
                             </div>
@@ -2791,52 +2038,38 @@ export function QuizEditorModal({
 
             {/* Preview Modal */}
             <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-                <DialogContent className="max-w-7xl h-[90vh] p-0 overflow-hidden rounded-3xl border-2 border-border/50 bg-background/95 backdrop-blur-xl shadow-2xl">
+                <DialogContent className="max-w-4xl h-[75vh] p-0 overflow-hidden rounded-lg border border-border/50 bg-background/95 shadow-lg">
                     <div className="h-full flex flex-col">
-                        <div className="shrink-0 border-b-2 border-border/50 bg-gradient-to-r from-card/90 to-card/80 px-8 py-5">
+                        <div className="shrink-0 border-b border-border/50 bg-gradient-to-r from-card/90 to-card/80 px-4 py-3">
                             <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
-                                        <Eye className="h-6 w-6 text-white" />
+                                <div className="flex items-center gap-1.5">
+                                    <div className="w-8 h-8 rounded bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow">
+                                        <Eye className="h-4 w-4 text-white" />
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-xl">Vista Previa del Quiz</h3>
-                                        <p className="text-sm text-muted-foreground">Así verán el quiz tus estudiantes</p>
+                                        <h3 className="font-bold text-sm">Vista Previa del Quiz</h3>
+                                        <p className="text-xs text-muted-foreground">Así verán el quiz tus estudiantes</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    <div className="flex items-center gap-2">
-                                        <Badge variant="outline" className="gap-1">
-                                            <Smartphone className="h-3 w-3" />
-                                            Móvil
-                                        </Badge>
-                                        <Badge variant="outline" className="gap-1">
-                                            <Tablet className="h-3 w-3" />
-                                            Tablet
-                                        </Badge>
-                                        <Badge variant="outline" className="gap-1">
-                                            <Monitor className="h-3 w-3" />
-                                            Escritorio
-                                        </Badge>
-                                    </div>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => setIsPreviewOpen(false)}
-                                        className="rounded-xl"
-                                    >
-                                        <X className="h-5 w-5" />
-                                    </Button>
-                                </div>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setIsPreviewOpen(false)}
+                                    className="rounded h-7 w-7"
+                                >
+                                    <X className="h-3.5 w-3.5" />
+                                </Button>
                             </div>
                         </div>
-                        <div className="flex-1 overflow-auto p-8">
-                            <QuizGameView 
-                                form={quizPreviewForm as any} 
-                                isEditorPreview={true} 
-                                activeQuestionIndex={activeQuestionIndex} 
-                            />
-                        </div>
+                        <ScrollArea className="flex-1">
+                            <div className="p-4">
+                                <QuizGameView 
+                                    form={quizPreviewForm as any} 
+                                    isEditorPreview={true} 
+                                    activeQuestionIndex={activeQuestionIndex} 
+                                />
+                            </div>
+                        </ScrollArea>
                     </div>
                 </DialogContent>
             </Dialog>
