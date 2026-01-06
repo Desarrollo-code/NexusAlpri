@@ -59,7 +59,9 @@ import {
     Smartphone,
     Monitor,
     Tablet,
+    Shuffle,
     Tag,
+    
 } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
