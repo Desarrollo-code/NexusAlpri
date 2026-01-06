@@ -1070,73 +1070,79 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-            {/* Header Superior con Pestañas */}
+            {/* Header Superior Simplificado */}
             <div className="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
-                <div className="max-w-7xl mx-auto">
-                    <div className="flex items-center justify-between h-16 px-6">
-                        
-                        <div className="flex items-center gap-3">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6">
+                    {/* Fila Superior: Botones alineados a la derecha */}
+                    <div className="flex items-center justify-end py-4">
+                        <div className="flex items-center gap-2 sm:gap-3">
                             <Button 
                                 variant="outline" 
                                 size="sm"
                                 asChild
-                                className="gap-2"
+                                className="gap-2 h-9 text-xs sm:text-sm"
                             >
                                 <Link href={`/courses/${courseId === 'new' ? 'preview' : courseId}`} target="_blank">
-                                    <Eye className="h-4 w-4" />
-                                    Vista previa
+                                    <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                    <span className="hidden sm:inline">Vista previa</span>
+                                    <span className="sm:hidden">Vista</span>
                                 </Link>
                             </Button>
                             
                             <Button 
                                 onClick={handleSaveCourse} 
                                 disabled={isSaving || !isDirty}
-                                className="gap-2"
+                                className="gap-2 h-9 text-xs sm:text-sm"
                             >
                                 {isSaving ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
                                 ) : (
-                                    <Save className="h-4 w-4" />
+                                    <Save className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                                 )}
-                                {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+                                <span className="hidden sm:inline">
+                                    {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+                                </span>
+                                <span className="sm:hidden">
+                                    {isSaving ? 'Guardando...' : 'Guardar'}
+                                </span>
                             </Button>
                         </div>
                     </div>
                     
                     {/* Pestañas de Navegación */}
-                    <div className="px-6">
+                    <div className="flex items-center justify-between border-t border-gray-200 dark:border-gray-800">
                         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                            <TabsList className="w-full justify-start h-12 bg-transparent p-0 border-b border-gray-200 dark:border-gray-800">
+                            <TabsList className="w-full justify-start h-12 bg-transparent p-0 overflow-x-auto">
                                 <TabsTrigger 
                                     value="basics" 
-                                    className="rounded-none h-12 px-4 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none"
+                                    className="rounded-none h-12 px-3 sm:px-4 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none whitespace-nowrap"
                                 >
-                                    <Layout className="h-4 w-4 mr-2" />
-                                    Información Básica
+                                    <span className="mr-1 sm:mr-2 text-base">加</span>
+                                    <span className="text-xs sm:text-sm">Información Básica</span>
                                 </TabsTrigger>
                                 
                                 <TabsTrigger 
                                     value="curriculum" 
-                                    className="rounded-none h-12 px-4 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none"
+                                    className="rounded-none h-12 px-3 sm:px-4 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none whitespace-nowrap"
                                 >
-                                    <Layers3 className="h-4 w-4 mr-2" />
-                                    Plan de Estudios
+                                    <span className="mr-1 sm:mr-2 text-base">。</span>
+                                    <span className="text-xs sm:text-sm">Plan de Estudios</span>
                                 </TabsTrigger>
                                 
                                 <TabsTrigger 
                                     value="advanced" 
-                                    className="rounded-none h-12 px-4 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none"
+                                    className="rounded-none h-12 px-3 sm:px-4 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none whitespace-nowrap"
                                 >
-                                    <Settings2 className="h-4 w-4 mr-2" />
-                                    Configuración
+                                    <span className="mr-1 sm:mr-2 text-base">%</span>
+                                    <span className="text-xs sm:text-sm">Configuración</span>
                                 </TabsTrigger>
                                 
                                 <TabsTrigger 
                                     value="distribution" 
-                                    className="rounded-none h-12 px-4 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none"
+                                    className="rounded-none h-12 px-3 sm:px-4 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none whitespace-nowrap"
                                 >
-                                    <GlobeIcon className="h-4 w-4 mr-2" />
-                                    Publicación
+                                    <span className="mr-1 sm:mr-2 text-base">@</span>
+                                    <span className="text-xs sm:text-sm">Publicación</span>
                                 </TabsTrigger>
                             </TabsList>
                         </Tabs>
@@ -1145,357 +1151,376 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             </div>
 
             {/* Contenido Principal */}
-            <div className="max-w-7xl mx-auto px-6 py-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
                 <AnimatePresence mode="wait">
-                    {/* PESTAÑA: INFORMACIÓN BÁSICA */}
+                    {/* PESTAÑA: INFORMACIÓN BÁSICA - Rediseñada */}
                     {activeTab === 'basics' && (
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
                             transition={{ duration: 0.2 }}
-                            className="space-y-8"
+                            className="space-y-6"
                         >
-                            {/* Resumen del Curso */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <Card className="md:col-span-2">
-                                    <CardHeader>
-                                        <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                                            <Layout className="h-5 w-5 text-primary" />
-                                            Detalles del Curso
-                                        </CardTitle>
-                                        <CardDescription>
-                                            Define la información básica que identificará tu curso
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="space-y-6">
-                                        <div className="space-y-3">
-                                            <Label htmlFor="title" className="text-sm font-medium">
-                                                Título del Curso *
-                                            </Label>
-                                            <Input
-                                                id="title"
-                                                value={course.title}
-                                                onChange={e => updateCourseField('title', e.target.value)}
-                                                placeholder="Ej: Master en Desarrollo Web con React 2024"
-                                                className="h-12"
-                                                disabled={isSaving}
-                                            />
-                                        </div>
+                            {/* Encabezado de la pestaña */}
+                            <div className="mb-4 sm:mb-6">
+                                <h2 className="text-xl sm:text-2xl font-bold mb-2">Información Básica del Curso</h2>
+                                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
+                                    Configura los detalles principales de tu curso
+                                </p>
+                            </div>
 
-                                        <div className="space-y-3">
-                                            <Label htmlFor="description" className="text-sm font-medium">
-                                                Descripción Completa
-                                            </Label>
-                                            <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-                                                <RichTextEditor
-                                                    value={course.description || ''}
-                                                    onChange={v => updateCourseField('description', v)}
-                                                    placeholder="Describe qué aprenderán los estudiantes, los objetivos del curso, los requisitos previos..."
-                                                    className="min-h-[200px]"
+                            {/* Grid responsivo: Título + Imagen lado a lado */}
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+                                {/* Columna izquierda: Título y Descripción */}
+                                <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+                                    <Card>
+                                        <CardHeader className="pb-3">
+                                            <CardTitle className="text-base sm:text-lg font-semibold">
+                                                Detalles del Curso
+                                            </CardTitle>
+                                            <CardDescription className="text-sm">
+                                                Información principal que identificará tu curso
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="space-y-4 sm:space-y-6">
+                                            <div className="space-y-2 sm:space-y-3">
+                                                <Label htmlFor="title" className="text-sm font-medium">
+                                                    Título del Curso *
+                                                </Label>
+                                                <Input
+                                                    id="title"
+                                                    value={course.title}
+                                                    onChange={e => updateCourseField('title', e.target.value)}
+                                                    placeholder="Ej: Master en Desarrollo Web con React 2024"
+                                                    className="h-11 sm:h-12 text-sm sm:text-base"
+                                                    disabled={isSaving}
                                                 />
                                             </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
 
-                                {/* Panel de Estadísticas */}
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle className="text-lg font-semibold">
-                                            Resumen
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <div className="space-y-3">
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-sm text-gray-600 dark:text-gray-300">Estado</span>
-                                                <Badge 
-                                                    variant="outline"
-                                                    className={
-                                                        course.status === 'PUBLISHED' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
-                                                        course.status === 'DRAFT' ? 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20' :
-                                                        'bg-gray-500/10 text-gray-600 border-gray-500/20'
-                                                    }
-                                                >
-                                                    {course.status === 'PUBLISHED' ? 'Publicado' :
-                                                     course.status === 'DRAFT' ? 'Borrador' : 'Archivado'}
-                                                </Badge>
+                                            <div className="space-y-2 sm:space-y-3">
+                                                <Label htmlFor="description" className="text-sm font-medium">
+                                                    Descripción Completa
+                                                </Label>
+                                                <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                                                    <RichTextEditor
+                                                        value={course.description || ''}
+                                                        onChange={v => updateCourseField('description', v)}
+                                                        placeholder="Describe qué aprenderán los estudiantes, los objetivos del curso, los requisitos previos..."
+                                                        className="min-h-[160px] sm:min-h-[180px]"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+
+                                    {/* Panel de Estadísticas - Responsivo */}
+                                    <Card>
+                                        <CardHeader className="pb-3">
+                                            <CardTitle className="text-base sm:text-lg font-semibold">
+                                                Resumen del Curso
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                                                <div className="space-y-1 sm:space-y-2">
+                                                    <div className="text-xs sm:text-sm text-gray-500">Estado</div>
+                                                    <Badge 
+                                                        variant="outline"
+                                                        className="text-xs py-0.5 px-2"
+                                                    >
+                                                        {course.status === 'PUBLISHED' ? 'Publicado' :
+                                                         course.status === 'DRAFT' ? 'Borrador' : 'Archivado'}
+                                                    </Badge>
+                                                </div>
+                                                
+                                                <div className="space-y-1 sm:space-y-2">
+                                                    <div className="text-xs sm:text-sm text-gray-500">Módulos</div>
+                                                    <div className="text-lg sm:text-xl font-bold">{courseStats.totalModules}</div>
+                                                </div>
+                                                
+                                                <div className="space-y-1 sm:space-y-2">
+                                                    <div className="text-xs sm:text-sm text-gray-500">Lecciones</div>
+                                                    <div className="text-lg sm:text-xl font-bold">{courseStats.totalLessons}</div>
+                                                </div>
+                                                
+                                                <div className="space-y-1 sm:space-y-2">
+                                                    <div className="text-xs sm:text-sm text-gray-500">Contenido</div>
+                                                    <div className="text-lg sm:text-xl font-bold">{courseStats.totalBlocks} bloques</div>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+
+                                {/* Columna derecha: Imagen de Portada Minimizada */}
+                                <div className="space-y-4 sm:space-y-6">
+                                    <Card>
+                                        <CardHeader className="pb-3">
+                                            <CardTitle className="text-base sm:text-lg font-semibold">
+                                                Imagen de Portada
+                                            </CardTitle>
+                                            <CardDescription className="text-sm">
+                                                Añade una imagen atractiva
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="space-y-3 sm:space-y-4">
+                                            <div className="relative aspect-video rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 overflow-hidden group">
+                                                {isUploadingImage && (
+                                                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 sm:gap-3 bg-black/80 z-20">
+                                                        <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-white" />
+                                                        <div className="w-3/4 max-w-xs">
+                                                            <div className="flex justify-between text-xs sm:text-sm font-medium text-white mb-1">
+                                                                <span>Subiendo...</span>
+                                                                <span>{uploadProgress}%</span>
+                                                            </div>
+                                                            <Progress value={uploadProgress} className="h-1 sm:h-2" />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                
+                                                {(localCoverImagePreview || course.imageUrl) && !isUploadingImage ? (
+                                                    <div className="relative w-full h-full">
+                                                        <Image 
+                                                            src={localCoverImagePreview || course.imageUrl!} 
+                                                            alt="Imagen del Curso" 
+                                                            fill 
+                                                            className="object-cover" 
+                                                        />
+                                                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 p-2">
+                                                            <Button 
+                                                                type="button" 
+                                                                variant="secondary" 
+                                                                size="sm"
+                                                                onClick={() => document.getElementById('cover-image-upload')?.click()}
+                                                                disabled={isSaving || isUploadingImage}
+                                                                className="h-7 sm:h-8 px-2 text-xs"
+                                                            >
+                                                                <Replace className="h-3 w-3 mr-1" />
+                                                                Cambiar
+                                                            </Button>
+                                                            <Button 
+                                                                type="button" 
+                                                                variant="destructive" 
+                                                                size="sm"
+                                                                onClick={() => { 
+                                                                    updateCourseField('imageUrl', null); 
+                                                                    setLocalCoverImagePreview(null); 
+                                                                }}
+                                                                disabled={isSaving || isUploadingImage}
+                                                                className="h-7 sm:h-8 px-2 text-xs"
+                                                            >
+                                                                <Trash2 className="h-3 w-3 mr-1" />
+                                                                Eliminar
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <UploadArea 
+                                                        onFileSelect={(file) => { 
+                                                            if (file) handleFileChange({ target: { files: [file] } } as any) 
+                                                        }} 
+                                                        inputId="cover-image-upload"
+                                                        disabled={isSaving || isUploadingImage}
+                                                        className="w-full h-full cursor-pointer"
+                                                    >
+                                                        <div className="text-center p-3 sm:p-4">
+                                                            <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-full border-2 border-dashed border-primary/20 mb-2 sm:mb-3">
+                                                                <ImagePlus className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                                                            </div>
+                                                            <p className="text-xs sm:text-sm font-medium mb-1">
+                                                                Arrastra una imagen
+                                                            </p>
+                                                            <p className="text-xs text-gray-500 mb-2">
+                                                                o haz clic para seleccionar
+                                                            </p>
+                                                            <p className="text-[10px] text-gray-400">
+                                                                Recomendado: 16:9
+                                                            </p>
+                                                        </div>
+                                                    </UploadArea>
+                                                )}
                                             </div>
                                             
+                                            <div className="text-xs text-gray-500 space-y-1">
+                                                <p>• La imagen aparecerá en el listado de cursos</p>
+                                                <p>• Usa imágenes claras y profesionales</p>
+                                                <p>• Tamaño máximo: 5MB</p>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+
+                                    {/* Información rápida del curso */}
+                                    <Card>
+                                        <CardHeader className="pb-3">
+                                            <CardTitle className="text-base sm:text-lg font-semibold">
+                                                Configuración Rápida
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="space-y-2 sm:space-y-3">
                                             <div className="flex items-center justify-between">
-                                                <span className="text-sm text-gray-600 dark:text-gray-300">Módulos</span>
-                                                <span className="font-semibold">{courseStats.totalModules}</span>
-                                            </div>
-                                            
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-sm text-gray-600 dark:text-gray-300">Lecciones</span>
-                                                <span className="font-semibold">{courseStats.totalLessons}</span>
-                                            </div>
-                                            
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-sm text-gray-600 dark:text-gray-300">Contenido</span>
-                                                <span className="font-semibold">{courseStats.totalBlocks} bloques</span>
-                                            </div>
-                                        </div>
-                                        
-                                        <Separator />
-                                        
-                                        <div className="space-y-2">
-                                            <div className="flex items-center gap-2">
-                                                {course.isMandatory ? 
-                                                    <CheckCircle className="h-4 w-4 text-green-500" /> : 
-                                                    <X className="h-4 w-4 text-gray-400" />
-                                                }
-                                                <span className="text-sm">Asignación obligatoria</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm">Certificado</span>
                                                 {course.certificateTemplateId ? 
                                                     <CheckCircle className="h-4 w-4 text-green-500" /> : 
                                                     <X className="h-4 w-4 text-gray-400" />
                                                 }
-                                                <span className="text-sm">Certificado incluido</span>
                                             </div>
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm">Obligatorio</span>
+                                                {course.isMandatory ? 
+                                                    <CheckCircle className="h-4 w-4 text-green-500" /> : 
+                                                    <X className="h-4 w-4 text-gray-400" />
+                                                }
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm">Prerrequisito</span>
                                                 {course.prerequisiteId ? 
                                                     <CheckCircle className="h-4 w-4 text-green-500" /> : 
                                                     <X className="h-4 w-4 text-gray-400" />
                                                 }
-                                                <span className="text-sm">Tiene prerrequisito</span>
                                             </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
+                                        </CardContent>
+                                    </Card>
+                                </div>
                             </div>
-
-                            {/* Imagen de Portada */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                                        <ImagePlus className="h-5 w-5 text-primary" />
-                                        Imagen de Portada
-                                    </CardTitle>
-                                    <CardDescription>
-                                        Añade una imagen atractiva para tu curso
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="relative aspect-[21/9] rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 overflow-hidden group">
-                                        {isUploadingImage && (
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/80 z-20">
-                                                <Loader2 className="h-8 w-8 animate-spin text-white" />
-                                                <div className="w-3/4 max-w-xs">
-                                                    <div className="flex justify-between text-sm font-medium text-white mb-1">
-                                                        <span>Subiendo imagen...</span>
-                                                        <span>{uploadProgress}%</span>
-                                                    </div>
-                                                    <Progress value={uploadProgress} className="h-2" />
-                                                </div>
-                                            </div>
-                                        )}
-                                        
-                                        {(localCoverImagePreview || course.imageUrl) && !isUploadingImage ? (
-                                            <div className="relative w-full h-full">
-                                                <Image 
-                                                    src={localCoverImagePreview || course.imageUrl!} 
-                                                    alt="Imagen del Curso" 
-                                                    fill 
-                                                    className="object-cover" 
-                                                />
-                                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 p-4">
-                                                    <p className="text-white font-medium text-center">
-                                                        Haz clic para cambiar la imagen de portada
-                                                    </p>
-                                                    <div className="flex gap-2">
-                                                        <Button 
-                                                            type="button" 
-                                                            variant="secondary" 
-                                                            size="sm"
-                                                            onClick={() => document.getElementById('cover-image-upload')?.click()}
-                                                            disabled={isSaving || isUploadingImage}
-                                                            className="gap-2"
-                                                        >
-                                                            <Replace className="h-4 w-4" />
-                                                            Cambiar
-                                                        </Button>
-                                                        <Button 
-                                                            type="button" 
-                                                            variant="destructive" 
-                                                            size="sm"
-                                                            onClick={() => { 
-                                                                updateCourseField('imageUrl', null); 
-                                                                setLocalCoverImagePreview(null); 
-                                                            }}
-                                                            disabled={isSaving || isUploadingImage}
-                                                            className="gap-2"
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                            Eliminar
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <UploadArea 
-                                                onFileSelect={(file) => { 
-                                                    if (file) handleFileChange({ target: { files: [file] } } as any) 
-                                                }} 
-                                                inputId="cover-image-upload"
-                                                disabled={isSaving || isUploadingImage}
-                                                className="w-full h-full cursor-pointer"
-                                            >
-                                                <div className="text-center p-8">
-                                                    <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full border-2 border-dashed border-primary/20 mb-4">
-                                                        <ImagePlus className="h-8 w-8 text-primary" />
-                                                    </div>
-                                                    <p className="text-lg font-semibold mb-2">
-                                                        Arrastra una imagen aquí
-                                                    </p>
-                                                    <p className="text-sm text-gray-500 mb-4">
-                                                        o haz clic para seleccionar un archivo
-                                                    </p>
-                                                    <p className="text-xs text-gray-400">
-                                                        Recomendado: 1920×1080px (relación 16:9)
-                                                    </p>
-                                                </div>
-                                            </UploadArea>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
                         </motion.div>
                     )}
 
-                    {/* PESTAÑA: PLAN DE ESTUDIOS */}
+                    {/* PESTAÑA: PLAN DE ESTUDIOS - Optimizado para responsividad */}
                     {activeTab === 'curriculum' && (
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
                             transition={{ duration: 0.2 }}
-                            className="space-y-8"
+                            className="space-y-4 sm:space-y-6"
                         >
-                            {/* Header del Plan de Estudios */}
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            {/* Header responsivo */}
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                                 <div>
-                                    <h2 className="text-2xl font-bold mb-2">Plan de Estudios</h2>
-                                    <p className="text-gray-600 dark:text-gray-400">
+                                    <h2 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2">Plan de Estudios</h2>
+                                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
                                         Organiza los módulos y lecciones que formarán tu curso
                                     </p>
                                 </div>
                                 
-                                <div className="flex gap-3">
+                                <div className="flex flex-wrap gap-2">
                                     <Button 
                                         type="button" 
                                         onClick={() => setShowTemplateModal(true)}
                                         variant="outline"
-                                        className="gap-2"
+                                        size="sm"
+                                        className="gap-1 h-9 text-xs sm:text-sm"
                                     >
-                                        <SparklesIcon className="h-4 w-4" />
-                                        Usar Plantilla
+                                        <SparklesIcon className="h-3.5 w-3.5" />
+                                        <span className="hidden sm:inline">Usar Plantilla</span>
+                                        <span className="sm:hidden">Plantilla</span>
                                     </Button>
                                     
                                     <Button 
                                         type="button" 
                                         onClick={handleAddModule} 
                                         disabled={isSaving}
-                                        className="gap-2"
+                                        size="sm"
+                                        className="gap-1 h-9 text-xs sm:text-sm"
                                     >
-                                        <PlusCircle className="h-4 w-4" />
-                                        Nuevo Módulo
+                                        <PlusCircle className="h-3.5 w-3.5" />
+                                        <span className="hidden sm:inline">Nuevo Módulo</span>
+                                        <span className="sm:hidden">Módulo</span>
                                     </Button>
                                 </div>
                             </div>
 
-                            {/* Estadísticas del Currículo */}
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                <Card>
-                                    <CardContent className="pt-6">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-blue-500/10 rounded-lg">
-                                                <Layers3 className="h-5 w-5 text-blue-500" />
+                            {/* Estadísticas del Currículo - Responsivas */}
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+                                <Card className="col-span-1">
+                                    <CardContent className="p-3 sm:p-4">
+                                        <div className="flex items-center gap-2 sm:gap-3">
+                                            <div className="p-1.5 sm:p-2 bg-blue-500/10 rounded-lg">
+                                                <Layers3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-500" />
                                             </div>
                                             <div>
-                                                <p className="text-sm text-gray-500">Módulos</p>
-                                                <p className="text-2xl font-bold">{courseStats.totalModules}</p>
+                                                <p className="text-xs text-gray-500">Módulos</p>
+                                                <p className="text-base sm:text-lg font-bold">{courseStats.totalModules}</p>
                                             </div>
                                         </div>
                                     </CardContent>
                                 </Card>
                                 
-                                <Card>
-                                    <CardContent className="pt-6">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-green-500/10 rounded-lg">
-                                                <BookOpenText className="h-5 w-5 text-green-500" />
+                                <Card className="col-span-1">
+                                    <CardContent className="p-3 sm:p-4">
+                                        <div className="flex items-center gap-2 sm:gap-3">
+                                            <div className="p-1.5 sm:p-2 bg-green-500/10 rounded-lg">
+                                                <BookOpenText className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500" />
                                             </div>
                                             <div>
-                                                <p className="text-sm text-gray-500">Lecciones</p>
-                                                <p className="text-2xl font-bold">{courseStats.totalLessons}</p>
+                                                <p className="text-xs text-gray-500">Lecciones</p>
+                                                <p className="text-base sm:text-lg font-bold">{courseStats.totalLessons}</p>
                                             </div>
                                         </div>
                                     </CardContent>
                                 </Card>
                                 
-                                <Card>
-                                    <CardContent className="pt-6">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-purple-500/10 rounded-lg">
-                                                <FileText className="h-5 w-5 text-purple-500" />
+                                <Card className="col-span-1">
+                                    <CardContent className="p-3 sm:p-4">
+                                        <div className="flex items-center gap-2 sm:gap-3">
+                                            <div className="p-1.5 sm:p-2 bg-purple-500/10 rounded-lg">
+                                                <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-500" />
                                             </div>
                                             <div>
-                                                <p className="text-sm text-gray-500">Bloques</p>
-                                                <p className="text-2xl font-bold">{courseStats.totalBlocks}</p>
+                                                <p className="text-xs text-gray-500">Bloques</p>
+                                                <p className="text-base sm:text-lg font-bold">{courseStats.totalBlocks}</p>
                                             </div>
                                         </div>
                                     </CardContent>
                                 </Card>
                                 
-                                <Card>
-                                    <CardContent className="pt-6">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-amber-500/10 rounded-lg">
-                                                <Clock3 className="h-5 w-5 text-amber-500" />
+                                <Card className="col-span-1">
+                                    <CardContent className="p-3 sm:p-4">
+                                        <div className="flex items-center gap-2 sm:gap-3">
+                                            <div className="p-1.5 sm:p-2 bg-amber-500/10 rounded-lg">
+                                                <Clock3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-500" />
                                             </div>
                                             <div>
-                                                <p className="text-sm text-gray-500">Duración</p>
-                                                <p className="text-2xl font-bold">--:--</p>
+                                                <p className="text-xs text-gray-500">Duración</p>
+                                                <p className="text-base sm:text-lg font-bold">--:--</p>
                                             </div>
                                         </div>
                                     </CardContent>
                                 </Card>
                             </div>
 
-                            {/* Área de Módulos */}
+                            {/* Área de Módulos - Mejorado para móviles */}
                             <div className="relative">
                                 {course.modules.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center py-16 text-center bg-gray-50 dark:bg-gray-800/50 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700">
-                                        <div className="p-4 bg-primary/10 rounded-full mb-4">
-                                            <Layers3 className="h-12 w-12 text-primary" />
+                                    <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-center bg-gray-50 dark:bg-gray-800/50 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700">
+                                        <div className="p-3 bg-primary/10 rounded-full mb-3 sm:mb-4">
+                                            <Layers3 className="h-8 w-8 sm:h-10 sm:w-10 text-primary" />
                                         </div>
-                                        <h3 className="text-xl font-semibold mb-2">
+                                        <h3 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2">
                                             Comienza a construir tu curso
                                         </h3>
-                                        <p className="text-gray-500 max-w-md mb-6">
+                                        <p className="text-gray-500 text-xs sm:text-sm max-w-md mb-4 sm:mb-6 px-4">
                                             Añade tu primer módulo para organizar el contenido en secciones lógicas
                                         </p>
-                                        <div className="flex gap-3">
+                                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                                             <Button 
                                                 type="button" 
                                                 onClick={handleAddModule} 
                                                 variant="outline"
-                                                className="gap-2"
+                                                size="sm"
+                                                className="gap-1"
                                             >
-                                                <PlusCircle className="h-4 w-4" />
+                                                <PlusCircle className="h-3.5 w-3.5" />
                                                 Crear Módulo
                                             </Button>
                                             <Button 
                                                 type="button" 
                                                 onClick={() => setShowTemplateModal(true)}
-                                                variant="default"
-                                                className="gap-2"
+                                                size="sm"
+                                                className="gap-1"
                                             >
-                                                <SparklesIcon className="h-4 w-4" />
+                                                <SparklesIcon className="h-3.5 w-3.5" />
                                                 Usar Plantilla
                                             </Button>
                                         </div>
@@ -1507,7 +1532,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                                 <div 
                                                     {...provided.droppableProps} 
                                                     ref={provided.innerRef} 
-                                                    className="space-y-6"
+                                                    className="space-y-3 sm:space-y-4"
                                                 >
                                                     <AnimatePresence>
                                                         {course.modules.map((moduleItem, moduleIndex) => (
@@ -1555,29 +1580,29 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
                             transition={{ duration: 0.2 }}
-                            className="space-y-8"
+                            className="space-y-4 sm:space-y-6"
                         >
                             <div>
-                                <h2 className="text-2xl font-bold mb-2">Configuración Avanzada</h2>
-                                <p className="text-gray-600 dark:text-gray-400">
+                                <h2 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2">Configuración Avanzada</h2>
+                                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
                                     Configura certificados, prerrequisitos y otros ajustes importantes
                                 </p>
                             </div>
 
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                                 {/* Certificado */}
                                 <Card>
-                                    <CardHeader>
-                                        <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                                            <Award className="h-5 w-5 text-primary" />
+                                    <CardHeader className="pb-3">
+                                        <CardTitle className="text-base sm:text-lg font-semibold flex items-center gap-2">
+                                            <Award className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                                             Certificado del Curso
                                         </CardTitle>
-                                        <CardDescription>
+                                        <CardDescription className="text-sm">
                                             Selecciona una plantilla de certificado para otorgar al completar el curso
                                         </CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <div className="space-y-3">
+                                    <CardContent className="space-y-3 sm:space-y-4">
+                                        <div className="space-y-2 sm:space-y-3">
                                             <Label htmlFor="certificateTemplate" className="text-sm font-medium">
                                                 Plantilla de Certificado
                                             </Label>
@@ -1605,10 +1630,10 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                             </Select>
                                         </div>
                                         
-                                        <div className="p-4 bg-primary/5 rounded-lg border border-primary/10">
-                                            <div className="flex items-start gap-3">
-                                                <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                                                <p className="text-sm text-gray-600">
+                                        <div className="p-3 sm:p-4 bg-primary/5 rounded-lg border border-primary/10">
+                                            <div className="flex items-start gap-2 sm:gap-3">
+                                                <Info className="h-4 w-4 sm:h-5 sm:w-5 text-primary shrink-0 mt-0.5" />
+                                                <p className="text-xs sm:text-sm text-gray-600">
                                                     Los certificados se generan automáticamente cuando un estudiante completa el 100% del curso
                                                 </p>
                                             </div>
@@ -1618,17 +1643,17 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
                                 {/* Prerrequisitos */}
                                 <Card>
-                                    <CardHeader>
-                                        <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                                            <Target className="h-5 w-5 text-primary" />
+                                    <CardHeader className="pb-3">
+                                        <CardTitle className="text-base sm:text-lg font-semibold flex items-center gap-2">
+                                            <Target className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                                             Prerrequisitos
                                         </CardTitle>
-                                        <CardDescription>
+                                        <CardDescription className="text-sm">
                                             Establece cursos que los estudiantes deben completar antes de acceder a este
                                         </CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <div className="space-y-3">
+                                    <CardContent className="space-y-3 sm:space-y-4">
+                                        <div className="space-y-2 sm:space-y-3">
                                             <Label htmlFor="prerequisite" className="text-sm font-medium">
                                                 Curso Prerrequisito
                                             </Label>
@@ -1660,26 +1685,26 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
                                 {/* Asignación Obligatoria */}
                                 <Card className="lg:col-span-2">
-                                    <CardHeader>
-                                        <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                                            <Shield className="h-5 w-5 text-primary" />
+                                    <CardHeader className="pb-3">
+                                        <CardTitle className="text-base sm:text-lg font-semibold flex items-center gap-2">
+                                            <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                                             Control de Acceso
                                         </CardTitle>
-                                        <CardDescription>
+                                        <CardDescription className="text-sm">
                                             Configura cómo y quién puede acceder a este curso
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
                                             <div className="space-y-1">
-                                                <Label htmlFor="isMandatory" className="text-base font-semibold">
+                                                <Label htmlFor="isMandatory" className="text-sm sm:text-base font-semibold">
                                                     Asignación Obligatoria
                                                 </Label>
-                                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                                                     Activa esta opción para poder asignar este curso a grupos específicos de estudiantes
                                                 </p>
                                             </div>
-                                            <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-2 sm:gap-3">
                                                 <Switch 
                                                     id="isMandatory" 
                                                     checked={course.isMandatory} 
@@ -1705,29 +1730,29 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
                             transition={{ duration: 0.2 }}
-                            className="space-y-8"
+                            className="space-y-4 sm:space-y-6"
                         >
                             <div>
-                                <h2 className="text-2xl font-bold mb-2">Publicación y Disponibilidad</h2>
-                                <p className="text-gray-600 dark:text-gray-400">
+                                <h2 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2">Publicación y Disponibilidad</h2>
+                                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
                                     Controla cuándo y cómo estará disponible tu curso para los estudiantes
                                 </p>
                             </div>
 
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                                 {/* Fechas de Disponibilidad */}
                                 <Card className="lg:col-span-2">
-                                    <CardHeader>
-                                        <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                                            <CalendarIcon className="h-5 w-5 text-primary" />
+                                    <CardHeader className="pb-3">
+                                        <CardTitle className="text-base sm:text-lg font-semibold flex items-center gap-2">
+                                            <CalendarIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                                             Período de Disponibilidad
                                         </CardTitle>
-                                        <CardDescription>
+                                        <CardDescription className="text-sm">
                                             Define las fechas en las que el curso estará disponible para los estudiantes
                                         </CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-6">
-                                        <div className="bg-gray-50 dark:bg-gray-800/50 p-5 rounded-lg border border-gray-200 dark:border-gray-700">
+                                    <CardContent className="space-y-4 sm:space-y-6">
+                                        <div className="bg-gray-50 dark:bg-gray-800/50 p-4 sm:p-5 rounded-lg border border-gray-200 dark:border-gray-700">
                                             <DateRangePicker
                                                 date={{ 
                                                     from: course.startDate ? new Date(course.startDate) : undefined, 
@@ -1740,10 +1765,10 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                             />
                                         </div>
                                         
-                                        <div className="p-4 bg-primary/5 rounded-lg border border-primary/10">
-                                            <div className="flex items-start gap-3">
-                                                <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                                                <div className="text-sm text-gray-600">
+                                        <div className="p-3 sm:p-4 bg-primary/5 rounded-lg border border-primary/10">
+                                            <div className="flex items-start gap-2 sm:gap-3">
+                                                <Info className="h-4 w-4 sm:h-5 sm:w-5 text-primary shrink-0 mt-0.5" />
+                                                <div className="text-xs sm:text-sm text-gray-600">
                                                     <p className="font-medium mb-1">Información importante:</p>
                                                     <ul className="space-y-1 list-disc list-inside">
                                                         <li>Si no defines fechas, el curso estará disponible permanentemente</li>
@@ -1757,10 +1782,10 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                 </Card>
 
                                 {/* Estado y Categoría */}
-                                <div className="space-y-6">
+                                <div className="space-y-4 sm:space-y-6">
                                     <Card>
-                                        <CardHeader>
-                                            <CardTitle className="text-lg font-semibold">
+                                        <CardHeader className="pb-3">
+                                            <CardTitle className="text-base sm:text-lg font-semibold">
                                                 Estado del Curso
                                             </CardTitle>
                                         </CardHeader>
@@ -1798,8 +1823,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                     </Card>
 
                                     <Card>
-                                        <CardHeader>
-                                            <CardTitle className="text-lg font-semibold">
+                                        <CardHeader className="pb-3">
+                                            <CardTitle className="text-base sm:text-lg font-semibold">
                                                 Categoría
                                             </CardTitle>
                                         </CardHeader>
@@ -1829,41 +1854,42 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                 </AnimatePresence>
             </div>
 
-            {/* Barra de Acción Flotante */}
+            {/* Barra de Acción Flotante - Responsiva */}
             {isDirty && (
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 20 }}
-                    className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+                    className="fixed bottom-4 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 z-50"
                 >
-                    <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl rounded-xl">
-                        <CardContent className="p-4">
-                            <div className="flex items-center gap-4">
-                                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                                    <AlertTriangle className="h-4 w-4 text-amber-500" />
-                                    <span>Tienes cambios sin guardar</span>
+                    <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl rounded-lg">
+                        <CardContent className="p-3">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+                                    <AlertTriangle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-500 shrink-0" />
+                                    <span className="truncate">Tienes cambios sin guardar</span>
                                 </div>
                                 <div className="flex gap-2">
                                     <Button
                                         variant="outline"
                                         size="sm"
                                         onClick={() => window.location.reload()}
-                                        className="rounded-lg"
+                                        className="flex-1 sm:flex-none text-xs"
                                     >
                                         Descartar
                                     </Button>
                                     <Button
                                         onClick={handleSaveCourse}
                                         disabled={isSaving}
-                                        className="rounded-lg gap-2"
+                                        size="sm"
+                                        className="flex-1 sm:flex-none gap-1 text-xs"
                                     >
                                         {isSaving ? (
-                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
                                         ) : (
-                                            <Save className="h-4 w-4" />
+                                            <Save className="h-3.5 w-3.5" />
                                         )}
-                                        {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+                                        {isSaving ? 'Guardando...' : 'Guardar'}
                                     </Button>
                                 </div>
                             </div>
