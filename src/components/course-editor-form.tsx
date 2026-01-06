@@ -1074,22 +1074,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             <div className="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
                 <div className="max-w-7xl mx-auto">
                     <div className="flex items-center justify-between h-16 px-6">
-                        <div className="flex items-center gap-4">
-                            <Link 
-                                href="/manage-courses" 
-                                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                            >
-                                <ArrowLeft className="h-5 w-5" />
-                            </Link>
-                            <div>
-                                <h1 className="text-lg font-semibold">
-                                    {courseId === 'new' ? 'Crear Nuevo Curso' : `Editando: ${course.title}`}
-                                </h1>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    {courseId === 'new' ? 'Completa todos los pasos para crear tu curso' : 'Modifica y actualiza tu curso'}
-                                </p>
-                            </div>
-                        </div>
                         
                         <div className="flex items-center gap-3">
                             <Button 
