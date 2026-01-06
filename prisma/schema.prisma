@@ -99,7 +99,10 @@ enum FormFieldType {
   PARAGRAPH
   SINGLE_CHOICE
   MULTIPLE_CHOICE
+  SLIDER
+  FILE_UPLOAD
   LONG_TEXT 
+  STAR_RATING
 }
 
 enum QuestionType {
