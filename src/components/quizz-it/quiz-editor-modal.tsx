@@ -153,7 +153,7 @@ const ImageUploadWidget: React.FC<ImageUploadWidgetProps> = ({
 
     return (
         <div className={cn(
-            "relative w-full aspect-square rounded-xl border-2 transition-all duration-300 flex items-center justify-center overflow-hidden group",
+            "relative w-full aspect-video rounded-lg border-2 transition-all duration-300 flex items-center justify-center overflow-hidden group",
             isCorrect 
                 ? "border-emerald-500 bg-emerald-500/5 ring-2 ring-emerald-500/20" 
                 : imageUrl
@@ -161,11 +161,11 @@ const ImageUploadWidget: React.FC<ImageUploadWidgetProps> = ({
                 : "border-dashed border-muted-foreground/25 bg-muted/10 hover:border-primary/50 hover:bg-primary/5"
         )}>
             {isUploading ? (
-                <div className="w-full h-full flex flex-col items-center justify-center gap-3 p-4">
-                    <ColorfulLoader className="h-8 w-8" />
-                    <div className="w-full space-y-1.5">
-                        <Progress value={uploadProgress} className="w-full h-1.5" />
-                        <p className="text-xs font-medium text-muted-foreground text-center">
+                <div className="w-full h-full flex flex-col items-center justify-center gap-2 p-3">
+                    <ColorfulLoader className="h-6 w-6" />
+                    <div className="w-full space-y-1">
+                        <Progress value={uploadProgress} className="w-full h-1" />
+                        <p className="text-[10px] font-medium text-muted-foreground text-center">
                             {uploadProgress}%
                         </p>
                     </div>
@@ -176,22 +176,22 @@ const ImageUploadWidget: React.FC<ImageUploadWidgetProps> = ({
                         src={imageUrl} 
                         alt="preview" 
                         fill 
-                        className="object-cover rounded-lg" 
+                        className="object-cover rounded-md" 
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
                         <Button 
                             type="button" 
                             variant="destructive" 
                             size="sm"
-                            className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-90 group-hover:scale-100 rounded-full shadow-xl" 
+                            className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-90 group-hover:scale-100 rounded-lg shadow-xl h-8 px-3" 
                             onClick={(e) => { 
                                 e.stopPropagation(); 
                                 onRemove(); 
                             }} 
                             disabled={disabled}
                         >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Eliminar
+                            <Trash2 className="h-3 w-3 mr-1.5" />
+                            <span className="text-xs">Eliminar</span>
                         </Button>
                     </div>
                 </div>
@@ -202,16 +202,16 @@ const ImageUploadWidget: React.FC<ImageUploadWidgetProps> = ({
                     inputId={inputId} 
                     className="h-full border-0 bg-transparent p-0"
                 >
-                    <div className="text-center space-y-2 p-6">
-                        <div className="w-12 h-12 mx-auto rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-all">
-                            <ImageIcon className="h-6 w-6 text-primary" />
+                    <div className="text-center space-y-1.5 p-3">
+                        <div className="w-8 h-8 mx-auto rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-all">
+                            <ImageIcon className="h-4 w-4 text-primary" />
                         </div>
                         <div>
-                            <p className="text-sm font-semibold text-foreground/80">
+                            <p className="text-xs font-semibold text-foreground/80">
                                 Subir imagen
                             </p>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                                Click o arrastra aquí
+                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                                Click o arrastra
                             </p>
                         </div>
                     </div>
@@ -389,150 +389,158 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
     const currentTemplate = TEMPLATE_OPTIONS.find(t => t.value === (question.template || 'default'));
 
     return (
-        <div className="space-y-6">
-            {/* Template Selector */}
-            <Card className="border-2 border-primary/20 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl shadow-xl overflow-hidden">
-                <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                            <div className={cn(
-                                "p-2.5 rounded-xl bg-gradient-to-br shadow-lg",
-                                currentTemplate?.color || 'from-primary to-primary/80'
-                            )}>
-                                {currentTemplate && <currentTemplate.icon className="h-5 w-5 text-white" />}
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-sm text-foreground/90">Tipo de Pregunta</h3>
-                                <p className="text-xs text-muted-foreground">{currentTemplate?.description}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        {TEMPLATE_OPTIONS.map((template) => {
-                            const isActive = question.template === template.value || (!question.template && template.value === 'default');
-                            return (
-                                <button
-                                    key={template.value}
-                                    type="button"
-                                    onClick={() => onQuestionChange('template', template.value)}
-                                    className={cn(
-                                        "relative p-4 rounded-xl border-2 transition-all duration-300 text-left group",
-                                        isActive
-                                            ? "border-primary bg-primary/10 shadow-md"
-                                            : "border-border/50 bg-card/50 hover:border-primary/40 hover:bg-primary/5"
-                                    )}
-                                >
-                                    <div className={cn(
-                                        "w-10 h-10 rounded-lg bg-gradient-to-br mb-3 flex items-center justify-center shadow-sm",
-                                        template.color
-                                    )}>
-                                        <template.icon className="h-5 w-5 text-white" />
-                                    </div>
-                                    <p className="font-bold text-xs leading-tight">{template.label}</p>
-                                    {isActive && (
-                                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow-lg">
-                                            <Check className="h-3 w-3 text-white" />
-                                        </div>
-                                    )}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Question Statement */}
-            <Card className="border-2 border-border/50 bg-card/50 backdrop-blur-sm shadow-lg overflow-hidden">
-                <CardHeader className="bg-muted/30 pb-4">
-                    <CardTitle className="text-base font-bold flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                            <FileText className="h-4 w-4 text-primary" />
-                        </div>
-                        Enunciado de la Pregunta
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6 space-y-4">
-                    <div className="bg-background/60 rounded-xl overflow-hidden border-2 border-border/50 shadow-inner">
-                        <ReactQuill
-                            theme="snow"
-                            value={question.text || ''}
-                            onChange={(v) => onQuestionChange('text', v)}
-                            modules={QUILL_MODULES}
-                            placeholder="Escribe tu pregunta aquí..."
-                            className="quill-editor-custom"
-                        />
-                    </div>
-
-                    {question.template === 'image' && (
-                        <div className="space-y-3 pt-4 border-t border-border/50">
-                            <Label className="text-sm font-semibold flex items-center gap-2">
-                                <ImageIcon className="h-4 w-4 text-primary" />
-                                Imagen de Apoyo
-                            </Label>
-                            <div className="max-w-xs">
-                                <ImageUploadWidget 
-                                    inputId={`q-img-${question.id}`} 
-                                    imageUrl={question.imageUrl} 
-                                    onUpload={(url) => onQuestionChange('imageUrl', url)} 
-                                    onRemove={() => onQuestionChange('imageUrl', null)} 
-                                    disabled={false} 
-                                    isCorrect={false} 
-                                />
+        <ScrollArea className="h-full">
+            <div className="space-y-6 pb-6">
+                {/* Template Selector */}
+                <Card className="border-2 border-primary/20 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl shadow-xl overflow-hidden">
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                                <div className={cn(
+                                    "p-2.5 rounded-xl bg-gradient-to-br shadow-lg",
+                                    currentTemplate?.color || 'from-primary to-primary/80'
+                                )}>
+                                    {currentTemplate && <currentTemplate.icon className="h-5 w-5 text-white" />}
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-sm text-foreground/90">Tipo de Pregunta</h3>
+                                    <p className="text-xs text-muted-foreground">{currentTemplate?.description}</p>
+                                </div>
                             </div>
                         </div>
-                    )}
-                </CardContent>
-            </Card>
 
-            {/* Answer Options */}
-            <Card className="border-2 border-border/50 bg-card/50 backdrop-blur-sm shadow-lg overflow-hidden">
-                <CardHeader className="bg-muted/30 pb-4">
-                    <div className="flex items-center justify-between">
+                        <ScrollArea className="w-full">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pb-2">
+                                {TEMPLATE_OPTIONS.map((template) => {
+                                    const isActive = question.template === template.value || (!question.template && template.value === 'default');
+                                    return (
+                                        <button
+                                            key={template.value}
+                                            type="button"
+                                            onClick={() => onQuestionChange('template', template.value)}
+                                            className={cn(
+                                                "relative p-4 rounded-xl border-2 transition-all duration-300 text-left group",
+                                                isActive
+                                                    ? "border-primary bg-primary/10 shadow-md"
+                                                    : "border-border/50 bg-card/50 hover:border-primary/40 hover:bg-primary/5"
+                                            )}
+                                        >
+                                            <div className={cn(
+                                                "w-10 h-10 rounded-lg bg-gradient-to-br mb-3 flex items-center justify-center shadow-sm",
+                                                template.color
+                                            )}>
+                                                <template.icon className="h-5 w-5 text-white" />
+                                            </div>
+                                            <p className="font-bold text-xs leading-tight">{template.label}</p>
+                                            {isActive && (
+                                                <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow-lg">
+                                                    <Check className="h-3 w-3 text-white" />
+                                                </div>
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </ScrollArea>
+                    </CardContent>
+                </Card>
+
+                {/* Question Statement */}
+                <Card className="border-2 border-border/50 bg-card/50 backdrop-blur-sm shadow-lg overflow-hidden">
+                    <CardHeader className="bg-muted/30 pb-4">
                         <CardTitle className="text-base font-bold flex items-center gap-2.5">
                             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                                <CheckSquare className="h-4 w-4 text-primary" />
+                                <FileText className="h-4 w-4 text-primary" />
                             </div>
-                            Opciones de Respuesta
+                            Enunciado de la Pregunta
                         </CardTitle>
-                        {canAddOption && (
-                            <Button 
-                                type="button" 
-                                size="sm"
-                                onClick={onOptionAdd} 
-                                className="bg-primary/10 hover:bg-primary/20 text-primary border-primary/30 rounded-xl font-bold shadow-sm"
-                            >
-                                <PlusCircle className="mr-2 h-4 w-4" /> 
-                                Añadir Opción
-                            </Button>
-                        )}
-                    </div>
-                </CardHeader>
-                <CardContent className={cn(
-                    "p-6 grid gap-4", 
-                    isImageOptionsTemplate 
-                        ? "grid-cols-2 lg:grid-cols-4" 
-                        : "grid-cols-1 lg:grid-cols-2"
-                )}>
-                    <AnimatePresence mode="popLayout">
-                        {(question.options || []).slice(0, 4).map((opt: any, index: number) => (
-                            <OptionCard
-                                key={opt.id}
-                                option={opt}
-                                index={index}
-                                template={question.template}
-                                isCorrect={opt.isCorrect}
-                                onTextChange={(v) => onOptionChange(index, 'text', v)}
-                                onImageChange={(url) => onOptionChange(index, 'imageUrl', url)}
-                                onSetCorrect={() => onSetCorrect(opt.id)}
-                                onDelete={() => onOptionDelete(index)}
-                                canDelete={question.options.length > (isTrueFalse ? 2 : 1)}
+                    </CardHeader>
+                    <CardContent className="p-6 space-y-4">
+                        <div className="bg-background/60 rounded-xl overflow-hidden border-2 border-border/50 shadow-inner">
+                            <ReactQuill
+                                theme="snow"
+                                value={question.text || ''}
+                                onChange={(v) => onQuestionChange('text', v)}
+                                modules={QUILL_MODULES}
+                                placeholder="Escribe tu pregunta aquí..."
+                                className="quill-editor-custom"
                             />
-                        ))}
-                    </AnimatePresence>
-                </CardContent>
-            </Card>
-        </div>
+                        </div>
+
+                        {question.template === 'image' && (
+                            <div className="space-y-3 pt-4 border-t border-border/50">
+                                <Label className="text-sm font-semibold flex items-center gap-2">
+                                    <ImageIcon className="h-4 w-4 text-primary" />
+                                    Imagen de Apoyo
+                                </Label>
+                                <div className="max-w-sm">
+                                    <ImageUploadWidget 
+                                        inputId={`q-img-${question.id}`} 
+                                        imageUrl={question.imageUrl} 
+                                        onUpload={(url) => onQuestionChange('imageUrl', url)} 
+                                        onRemove={() => onQuestionChange('imageUrl', null)} 
+                                        disabled={false} 
+                                        isCorrect={false} 
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Answer Options */}
+                <Card className="border-2 border-border/50 bg-card/50 backdrop-blur-sm shadow-lg overflow-hidden">
+                    <CardHeader className="bg-muted/30 pb-4">
+                        <div className="flex items-center justify-between">
+                            <CardTitle className="text-base font-bold flex items-center gap-2.5">
+                                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                                    <CheckSquare className="h-4 w-4 text-primary" />
+                                </div>
+                                Opciones de Respuesta
+                            </CardTitle>
+                            {canAddOption && (
+                                <Button 
+                                    type="button" 
+                                    size="sm"
+                                    onClick={onOptionAdd} 
+                                    className="bg-primary/10 hover:bg-primary/20 text-primary border-primary/30 rounded-xl font-bold shadow-sm"
+                                >
+                                    <PlusCircle className="mr-2 h-4 w-4" /> 
+                                    Añadir Opción
+                                </Button>
+                            )}
+                        </div>
+                    </CardHeader>
+                    <CardContent className="p-6">
+                        <ScrollArea className="w-full max-h-[500px]">
+                            <div className={cn(
+                                "grid gap-4 pb-2", 
+                                isImageOptionsTemplate 
+                                    ? "grid-cols-2 lg:grid-cols-4" 
+                                    : "grid-cols-1 lg:grid-cols-2"
+                            )}>
+                                <AnimatePresence mode="popLayout">
+                                    {(question.options || []).slice(0, 4).map((opt: any, index: number) => (
+                                        <OptionCard
+                                            key={opt.id}
+                                            option={opt}
+                                            index={index}
+                                            template={question.template}
+                                            isCorrect={opt.isCorrect}
+                                            onTextChange={(v) => onOptionChange(index, 'text', v)}
+                                            onImageChange={(url) => onOptionChange(index, 'imageUrl', url)}
+                                            onSetCorrect={() => onSetCorrect(opt.id)}
+                                            onDelete={() => onOptionDelete(index)}
+                                            canDelete={question.options.length > (isTrueFalse ? 2 : 1)}
+                                        />
+                                    ))}
+                                </AnimatePresence>
+                            </div>
+                        </ScrollArea>
+                    </CardContent>
+                </Card>
+            </div>
+        </ScrollArea>
     );
 };
 
@@ -1061,7 +1069,7 @@ export function QuizEditorModal({
                                         {/* Editor Area */}
                                         <div className="flex-1 overflow-hidden">
                                             <ScrollArea className="h-full">
-                                                <div className="p-8 max-w-[1200px] mx-auto">
+                                                <div className="p-8 max-w-[1200px] mx-auto min-h-full">
                                                     {activeQuestion ? (
                                                         <QuestionEditor
                                                             question={activeQuestion}
