@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'reac
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, List, Grid, Filter, UserPlus, MoreVertical, Loader2, Briefcase, MessageSquare, Edit, Trash2, UserCog, UserX, Users as UsersIcon, Key, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { PlusCircle, Search, List, Grid, Filter, UserPlus, MoreVertical, Loader2, Briefcase, MessageSquare, Edit, Trash2, UserCog, UserX, Users as UsersIcon, Key, HelpCircle, ChevronDown, ChevronUp, Menu, X } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -93,6 +93,197 @@ const DraggableUserCard = ({ user, isSelected, onSelectionChange, onEdit, onRole
         </div>
     )
 }
+
+// --- COMPONENTE DE TABLA RESPONSIVA ---
+const ResponsiveUserTable = ({ 
+    users, 
+    selectedUserIds, 
+    onSelectionChange, 
+    onEdit, 
+    onRoleChange, 
+    onStatusChange 
+}: { 
+    users: UserWithProcess[];
+    selectedUserIds: Set<string>;
+    onSelectionChange: (id: string, selected: boolean) => void;
+    onEdit: (user: User) => void;
+    onRoleChange: (user: User) => void;
+    onStatusChange: (user: User, status: boolean) => void;
+}) => {
+    const isMobile = useIsMobile();
+
+    if (isMobile) {
+        // Vista móvil - Tarjetas
+        return (
+            <div className="space-y-3">
+                {users.map((user) => (
+                    <Card key={user.id} className="overflow-hidden">
+                        <CardContent className="p-4">
+                            <div className="flex items-start justify-between mb-3">
+                                <div className="flex items-center gap-3">
+                                    <Checkbox 
+                                        checked={selectedUserIds.has(user.id)} 
+                                        onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)} 
+                                        className="mt-1"
+                                    />
+                                    <Avatar className="h-10 w-10">
+                                        <AvatarImage src={user.avatar || undefined} />
+                                        <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
+                                    </Avatar>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="font-semibold truncate">{user.name}</p>
+                                        <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                                    </div>
+                                </div>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                            <MoreVertical className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onSelect={() => onEdit(user)}>
+                                            <Edit className="mr-2 h-4 w-4" />
+                                            Editar
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => onRoleChange(user)}>
+                                            <UserCog className="mr-2 h-4 w-4" />
+                                            Cambiar rol
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem 
+                                            onSelect={() => onStatusChange(user, !user.isActive)}
+                                            className={!user.isActive ? "text-green-600" : "text-destructive"}
+                                        >
+                                            <UserX className="mr-2 h-4 w-4" />
+                                            {user.isActive ? 'Inactivar' : 'Activar'}
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                            
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm text-muted-foreground">Rol:</span>
+                                    <Badge variant={getRoleBadgeVariant(user.role)} className="text-xs">
+                                        {getRoleInSpanish(user.role)}
+                                    </Badge>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm text-muted-foreground">Estado:</span>
+                                    <Badge variant={user.isActive ? "default" : "secondary"} className="text-xs">
+                                        {user.isActive ? 'Activo' : 'Inactivo'}
+                                    </Badge>
+                                </div>
+                                {user.process && (
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-muted-foreground">Proceso:</span>
+                                        <span className="text-sm font-medium truncate ml-2 max-w-[120px]">
+                                            {user.process.name}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+        );
+    }
+
+    // Vista escritorio - Tabla
+    return (
+        <div className="relative overflow-auto rounded-lg border">
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead className="w-12 px-4">
+                            <Checkbox 
+                                checked={users.length > 0 && users.every(u => selectedUserIds.has(u.id))}
+                                onCheckedChange={(checked) => onSelectionChange('all', !!checked)}
+                            />
+                        </TableHead>
+                        <TableHead className="min-w-[200px]">Colaborador</TableHead>
+                        <TableHead className="min-w-[120px]">Rol</TableHead>
+                        <TableHead className="min-w-[100px]">Estado</TableHead>
+                        <TableHead className="min-w-[150px]">Proceso</TableHead>
+                        <TableHead className="text-right min-w-[100px]">Acciones</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {users.map((user) => (
+                        <TableRow key={user.id}>
+                            <TableCell className="px-4">
+                                <Checkbox 
+                                    checked={selectedUserIds.has(user.id)} 
+                                    onCheckedChange={(checked) => onSelectionChange(user.id, !!checked)} 
+                                />
+                            </TableCell>
+                            <TableCell>
+                                <div className="flex items-center gap-3">
+                                    <Avatar className="h-8 w-8">
+                                        <AvatarImage src={user.avatar || undefined} />
+                                        <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
+                                    </Avatar>
+                                    <div className="min-w-0">
+                                        <p className="font-medium truncate max-w-[180px]">{user.name}</p>
+                                        <p className="text-sm text-muted-foreground truncate max-w-[180px]">{user.email}</p>
+                                    </div>
+                                </div>
+                            </TableCell>
+                            <TableCell>
+                                <Badge variant={getRoleBadgeVariant(user.role)}>
+                                    {getRoleInSpanish(user.role)}
+                                </Badge>
+                            </TableCell>
+                            <TableCell>
+                                <Badge variant={user.isActive ? "default" : "secondary"}>
+                                    {user.isActive ? 'Activo' : 'Inactivo'}
+                                </Badge>
+                            </TableCell>
+                            <TableCell>
+                                {user.process ? (
+                                    <div className="flex items-center gap-1">
+                                        <Briefcase className="h-3 w-3 flex-shrink-0" />
+                                        <span className="truncate max-w-[130px]">{user.process.name}</span>
+                                    </div>
+                                ) : (
+                                    <span className="text-muted-foreground">Sin asignar</span>
+                                )}
+                            </TableCell>
+                            <TableCell className="text-right">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                            <MoreVertical className="h-4 w-4" />
+                                            <span className="sr-only">Abrir menú</span>
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onSelect={() => onEdit(user)}>
+                                            <Edit className="mr-2 h-4 w-4" />
+                                            Editar
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => onRoleChange(user)}>
+                                            <UserCog className="mr-2 h-4 w-4" />
+                                            Cambiar rol
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem 
+                                            onSelect={() => onStatusChange(user, !user.isActive)}
+                                            className={!user.isActive ? "text-green-600" : "text-destructive"}
+                                        >
+                                            <UserX className="mr-2 h-4 w-4" />
+                                            {user.isActive ? 'Inactivar' : 'Activar'}
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </div>
+    );
+};
 
 // --- MAIN PAGE COMPONENT ---
 function UsersPageComponent() {
@@ -359,61 +550,84 @@ function UsersPageComponent() {
 
     const MobileFiltersSheet = () => (
         <Sheet open={showMobileFilters} onOpenChange={setShowMobileFilters}>
-            <SheetContent side="bottom" className="h-[80vh]">
-                <SheetHeader>
-                    <SheetTitle>Filtros ({activeFiltersCount})</SheetTitle>
-                </SheetHeader>
-                <ScrollArea className="h-full pr-4">
-                    <div className="space-y-6 py-4">
-                        <div className="space-y-3">
-                            <Label>Rol</Label>
-                            <Select value={role || 'ALL'} onValueChange={(v) => handleFilterChange('role', v as UserRole)}>
-                                <SelectTrigger>
-                                    <SelectValue/>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="ALL">Todos</SelectItem>
-                                    <SelectItem value="ADMINISTRATOR">Admin</SelectItem>
-                                    <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
-                                    <SelectItem value="STUDENT">Estudiante</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        
-                        <div className="space-y-3">
-                            <Label>Estado</Label>
-                            <Select value={status || 'ALL'} onValueChange={(v) => handleFilterChange('status', v)}>
-                                <SelectTrigger>
-                                    <SelectValue/>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="ALL">Todos</SelectItem>
-                                    <SelectItem value="active">Activo</SelectItem>
-                                    <SelectItem value="inactive">Inactivo</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        
-                        <div className="space-y-3">
-                            <Label>Proceso</Label>
-                            <Select value={processId || 'ALL'} onValueChange={(v) => handleFilterChange('processId', v)}>
-                                <SelectTrigger>
-                                    <SelectValue/>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="ALL">Todos</SelectItem>
-                                    <SelectItem value="unassigned">Sin Asignar</SelectItem>
-                                    <Separator/>
-                                    {flattenedProcesses.map(p => (
-                                        <SelectItem key={p.id} value={p.id} style={{ paddingLeft: `${p.level * 1.5 + 1}rem` }}>
-                                            {p.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+            <SheetContent side="bottom" className="h-[80vh] p-0">
+                <div className="flex flex-col h-full">
+                    <div className="flex items-center justify-between p-4 border-b">
+                        <SheetTitle className="text-lg">Filtros ({activeFiltersCount})</SheetTitle>
+                        <Button variant="ghost" size="sm" onClick={() => setShowMobileFilters(false)}>
+                            <X className="h-4 w-4" />
+                        </Button>
                     </div>
-                </ScrollArea>
+                    <ScrollArea className="flex-1 p-4">
+                        <div className="space-y-6">
+                            <div className="space-y-3">
+                                <Label className="text-base">Rol</Label>
+                                <Select value={role || 'ALL'} onValueChange={(v) => handleFilterChange('role', v as UserRole)}>
+                                    <SelectTrigger className="h-12 text-base">
+                                        <SelectValue/>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="ALL">Todos</SelectItem>
+                                        <SelectItem value="ADMINISTRATOR">Admin</SelectItem>
+                                        <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
+                                        <SelectItem value="STUDENT">Estudiante</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            
+                            <div className="space-y-3">
+                                <Label className="text-base">Estado</Label>
+                                <Select value={status || 'ALL'} onValueChange={(v) => handleFilterChange('status', v)}>
+                                    <SelectTrigger className="h-12 text-base">
+                                        <SelectValue/>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="ALL">Todos</SelectItem>
+                                        <SelectItem value="active">Activo</SelectItem>
+                                        <SelectItem value="inactive">Inactivo</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            
+                            <div className="space-y-3">
+                                <Label className="text-base">Proceso</Label>
+                                <Select value={processId || 'ALL'} onValueChange={(v) => handleFilterChange('processId', v)}>
+                                    <SelectTrigger className="h-12 text-base">
+                                        <SelectValue/>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="ALL">Todos</SelectItem>
+                                        <SelectItem value="unassigned">Sin Asignar</SelectItem>
+                                        <Separator/>
+                                        {flattenedProcesses.map(p => (
+                                            <SelectItem 
+                                                key={p.id} 
+                                                value={p.id} 
+                                                className="text-base"
+                                                style={{ paddingLeft: `${p.level * 1.5 + 1}rem` }}
+                                            >
+                                                {p.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    </ScrollArea>
+                    <div className="p-4 border-t">
+                        <Button 
+                            className="w-full h-12 text-base"
+                            onClick={() => {
+                                handleFilterChange('role', null);
+                                handleFilterChange('status', null);
+                                handleFilterChange('processId', null);
+                            }}
+                            variant="outline"
+                        >
+                            Limpiar todos los filtros
+                        </Button>
+                    </div>
+                </div>
             </SheetContent>
         </Sheet>
     );
@@ -422,19 +636,35 @@ function UsersPageComponent() {
         if (selectedUserIds.size === 0) return null;
 
         return (
-             <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-background border rounded-lg shadow-lg">
-                <p className="px-2 text-sm font-semibold">{selectedUserIds.size} seleccionado(s)</p>
-                <div className="flex items-center gap-2">
-                    <Button size="sm" onClick={() => setIsBulkAssignModalOpen(true)}>
-                        <Briefcase className="mr-2 h-4 w-4"/> 
-                        <span className="hidden sm:inline">Asignar Proceso</span>
-                        <span className="sm:hidden">Asignar</span>
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => setSelectedUserIds(new Set())}>
-                        Limpiar
-                    </Button>
-                </div>
-            </div>
+            <AnimatePresence>
+                <motion.div 
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 20, opacity: 0 }}
+                    className={cn(
+                        "flex items-center justify-between p-4 bg-background border rounded-lg shadow-lg",
+                        isMobile && "fixed bottom-4 left-4 right-4 z-50"
+                    )}
+                >
+                    <p className="px-2 text-sm font-semibold">
+                        {selectedUserIds.size} seleccionado(s)
+                    </p>
+                    <div className="flex items-center gap-2">
+                        <Button size="sm" onClick={() => setIsBulkAssignModalOpen(true)}>
+                            <Briefcase className="mr-2 h-4 w-4"/> 
+                            <span className="hidden sm:inline">Asignar Proceso</span>
+                            <span className="sm:hidden">Asignar</span>
+                        </Button>
+                        <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            onClick={() => setSelectedUserIds(new Set())}
+                        >
+                            Limpiar
+                        </Button>
+                    </div>
+                </motion.div>
+            </AnimatePresence>
         )
     }
 
@@ -454,190 +684,38 @@ function UsersPageComponent() {
         </div>
     );
 
-    // Componente de tabla responsiva
-    const ResponsiveUserTable = ({ users, selectedUserIds, onSelectionChange, onEdit, onRoleChange, onStatusChange }: any) => {
-        if (isMobile) {
-            return (
-                <div className="space-y-3">
-                    {users.map((u: UserWithProcess) => (
-                        <Card key={u.id} className="overflow-hidden">
-                            <CardContent className="p-4">
-                                <div className="flex items-start justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <Checkbox 
-                                            checked={selectedUserIds.has(u.id)} 
-                                            onCheckedChange={(checked) => onSelectionChange(u.id, !!checked)} 
-                                        />
-                                        <Avatar className="h-10 w-10">
-                                            <AvatarImage src={u.avatar || undefined} />
-                                            <AvatarFallback><Identicon userId={u.id}/></AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <p className="font-semibold">{u.name}</p>
-                                            <p className="text-xs text-muted-foreground truncate">{u.email}</p>
-                                        </div>
-                                    </div>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="sm">
-                                                <MoreVertical className="h-4 w-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onSelect={() => onEdit(u)}>
-                                                <Edit className="mr-2 h-4 w-4" />
-                                                Editar
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onSelect={() => onRoleChange(u)}>
-                                                <UserCog className="mr-2 h-4 w-4" />
-                                                Cambiar rol
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onSelect={() => onStatusChange(u, !u.isActive)}>
-                                                <UserX className="mr-2 h-4 w-4" />
-                                                {u.isActive ? 'Inactivar' : 'Activar'}
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </div>
-                                
-                                <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
-                                    <div>
-                                        <span className="text-muted-foreground">Rol:</span>
-                                        <Badge variant={getRoleBadgeVariant(u.role)} className="ml-2">
-                                            {getRoleInSpanish(u.role)}
-                                        </Badge>
-                                    </div>
-                                    <div>
-                                        <span className="text-muted-foreground">Estado:</span>
-                                        <Badge variant={u.isActive ? "default" : "secondary"} className="ml-2">
-                                            {u.isActive ? 'Activo' : 'Inactivo'}
-                                        </Badge>
-                                    </div>
-                                    {u.process && (
-                                        <div className="col-span-2">
-                                            <span className="text-muted-foreground">Proceso:</span>
-                                            <span className="ml-2 font-medium">{u.process.name}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
-            );
-        }
-
-        return (
-            <div className="overflow-x-auto">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-12">
-                                <Checkbox 
-                                    checked={users.length > 0 && users.every((u: UserWithProcess) => selectedUserIds.has(u.id))}
-                                    onCheckedChange={(checked) => onSelectionChange('all', !!checked)}
-                                />
-                            </TableHead>
-                            <TableHead>Colaborador</TableHead>
-                            <TableHead>Rol</TableHead>
-                            <TableHead>Estado</TableHead>
-                            <TableHead>Proceso</TableHead>
-                            <TableHead className="text-right">Acciones</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {users.map((u: UserWithProcess) => (
-                            <TableRow key={u.id}>
-                                <TableCell>
-                                    <Checkbox 
-                                        checked={selectedUserIds.has(u.id)} 
-                                        onCheckedChange={(checked) => onSelectionChange(u.id, !!checked)} 
-                                    />
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex items-center gap-3">
-                                        <Avatar className="h-8 w-8">
-                                            <AvatarImage src={u.avatar || undefined} />
-                                            <AvatarFallback><Identicon userId={u.id}/></AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <p className="font-medium">{u.name}</p>
-                                            <p className="text-sm text-muted-foreground">{u.email}</p>
-                                        </div>
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <Badge variant={getRoleBadgeVariant(u.role)}>
-                                        {getRoleInSpanish(u.role)}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell>
-                                    <Badge variant={u.isActive ? "default" : "secondary"}>
-                                        {u.isActive ? 'Activo' : 'Inactivo'}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell>
-                                    {u.process ? (
-                                        <span className="inline-flex items-center gap-1">
-                                            <Briefcase className="h-3 w-3" />
-                                            {u.process.name}
-                                        </span>
-                                    ) : (
-                                        <span className="text-muted-foreground">Sin asignar</span>
-                                    )}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="sm">
-                                                <MoreVertical className="h-4 w-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onSelect={() => onEdit(u)}>
-                                                <Edit className="mr-2 h-4 w-4" />
-                                                Editar
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onSelect={() => onRoleChange(u)}>
-                                                <UserCog className="mr-2 h-4 w-4" />
-                                                Cambiar rol
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onSelect={() => onStatusChange(u, !u.isActive)}>
-                                                <UserX className="mr-2 h-4 w-4" />
-                                                {u.isActive ? 'Inactivar' : 'Activar'}
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </div>
-        );
-    };
-
     return (
         <DndContext sensors={sensors} onDragStart={(e) => setActiveDraggable(e.active)} onDragEnd={handleDragEnd}>
             <div className="space-y-4 sm:space-y-6">
                 {/* Header con controles */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                        <h1 className="text-2xl font-bold tracking-tight">Colaboradores</h1>
+                        <div>
+                            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Colaboradores</h1>
+                            <p className="text-sm text-muted-foreground mt-1">
+                                {totalUsers} colaboradores en total
+                            </p>
+                        </div>
                         {isMobile && (
                             <div className="flex items-center gap-2">
                                 <Button 
                                     variant="outline" 
                                     size="sm"
                                     onClick={() => setShowMobileFilters(true)}
+                                    className="h-10 w-10 p-0"
                                 >
-                                    <Filter className="h-4 w-4 mr-2" />
-                                    Filtros ({activeFiltersCount})
+                                    <Filter className="h-4 w-4" />
+                                    {activeFiltersCount > 0 && (
+                                        <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">
+                                            {activeFiltersCount}
+                                        </span>
+                                    )}
                                 </Button>
                                 <Button 
                                     variant="outline" 
                                     size="sm"
                                     onClick={() => setViewMode(viewMode === 'grid' ? 'table' : 'grid')}
+                                    className="h-10 w-10 p-0"
                                 >
                                     {viewMode === 'grid' ? <Grid className="h-4 w-4" /> : <List className="h-4 w-4" />}
                                 </Button>
@@ -653,40 +731,45 @@ function UsersPageComponent() {
                                     placeholder="Buscar por nombre o email..." 
                                     value={search} 
                                     onChange={handleSearchChange} 
-                                    className="pl-10"
+                                    className="pl-10 h-11 text-base"
                                 />
                             </div>
                             <div className="flex gap-2">
                                 <Button 
                                     onClick={() => handleOpenUserModal(null)} 
-                                    className="flex-1"
-                                    size="sm"
+                                    className="flex-1 h-11 text-base"
                                 >
                                     <UserPlus className="mr-2 h-4 w-4"/> 
-                                    Añadir
+                                    Añadir Colaborador
                                 </Button>
                                 <Sheet open={showMobileProcessTree} onOpenChange={setShowMobileProcessTree}>
                                     <SheetTrigger asChild>
-                                        <Button variant="outline" size="sm">
+                                        <Button variant="outline" size="sm" className="h-11 px-3">
                                             <Briefcase className="h-4 w-4" />
                                         </Button>
                                     </SheetTrigger>
-                                    <SheetContent side="right" className="w-full sm:w-[400px]">
-                                        <SheetHeader>
-                                            <SheetTitle>Árbol de Procesos</SheetTitle>
-                                        </SheetHeader>
-                                        <ScrollArea className="h-[calc(100vh-100px)] pr-4">
-                                            <ProcessTree 
-                                                processes={processes} 
-                                                onProcessUpdate={fetchData} 
-                                                onProcessClick={(id) => {
-                                                    handleFilterChange('processId', id);
-                                                    setShowMobileProcessTree(false);
-                                                }} 
-                                                activeProcessId={processId}
-                                                compact={true}
-                                            />
-                                        </ScrollArea>
+                                    <SheetContent side="right" className="w-full sm:w-[400px] p-0">
+                                        <div className="flex flex-col h-full">
+                                            <div className="flex items-center justify-between p-4 border-b">
+                                                <SheetTitle className="text-lg">Árbol de Procesos</SheetTitle>
+                                                <Button variant="ghost" size="sm" onClick={() => setShowMobileProcessTree(false)}>
+                                                    <X className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                            <ScrollArea className="flex-1">
+                                                <ProcessTree 
+                                                    processes={processes} 
+                                                    onProcessUpdate={fetchData} 
+                                                    onProcessClick={(id) => {
+                                                        handleFilterChange('processId', id);
+                                                        setShowMobileProcessTree(false);
+                                                    }} 
+                                                    activeProcessId={processId}
+                                                    compact={true}
+                                                    className="p-4"
+                                                />
+                                            </ScrollArea>
+                                        </div>
                                     </SheetContent>
                                 </Sheet>
                             </div>
@@ -694,16 +777,9 @@ function UsersPageComponent() {
                     )}
                 </div>
 
-                {/* Barra de acciones masivas - Móvil */}
-                {isMobile && selectedUserIds.size > 0 && (
-                    <div className="fixed bottom-20 left-4 right-4 z-50">
-                        <BulkActionsBar />
-                    </div>
-                )}
-
                 {/* Contenido principal */}
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-                    {/* Panel lateral - Desktop */}
+                    {/* Panel lateral - Desktop (oculto en móvil) */}
                     <aside className="hidden lg:block lg:col-span-1 lg:sticky lg:top-24 space-y-6">
                         <ProcessTree 
                             processes={processes} 
@@ -720,9 +796,19 @@ function UsersPageComponent() {
                     <div className="lg:col-span-3 space-y-6">
                         {/* Barra de acciones masivas - Desktop */}
                         {!isMobile && selectedUserIds.size > 0 && (
-                            <div className="animate-in fade-in slide-in-from-top-5 duration-300">
-                                <BulkActionsBar />
-                            </div>
+                            <BulkActionsBar />
+                        )}
+
+                        {/* Botón para ver árbol de procesos en móvil (si no está visible) */}
+                        {isMobile && processes.length > 0 && (
+                            <Button
+                                variant="outline"
+                                onClick={() => setShowMobileProcessTree(true)}
+                                className="w-full"
+                            >
+                                <Briefcase className="mr-2 h-4 w-4" />
+                                Ver Estructura Organizacional
+                            </Button>
                         )}
 
                         {/* Vista de carga */}
@@ -749,8 +835,8 @@ function UsersPageComponent() {
                                 {viewMode === 'grid' ? (
                                     <GridView />
                                 ) : (
-                                    <Card>
-                                        <CardContent className="p-0 sm:p-6">
+                                    <Card className="overflow-hidden">
+                                        <CardContent className="p-0">
                                             <ResponsiveUserTable 
                                                 users={usersList}
                                                 selectedUserIds={selectedUserIds}
@@ -785,6 +871,9 @@ function UsersPageComponent() {
                         )}
                     </div>
                 </div>
+
+                {/* Barra de acciones masivas - Móvil (fixed en bottom) */}
+                {isMobile && <BulkActionsBar />}
             </div>
             
             {/* Overlay de drag & drop */}
@@ -821,8 +910,8 @@ function UsersPageComponent() {
             <MobileFiltersSheet />
             
             {/* Dialogo de confirmación para cambiar estado */}
-            <AlertDialog open={!!userToDeactivate} onOpenChange={(open) => setUserToDeactivate(open ? userToDeactivate : null)}>
-                <AlertDialogContent className={isMobile ? "w-[95vw] max-w-[95vw] rounded-lg" : ""}>
+            <AlertDialog open={!!userToDeactivate} onOpenChange={(open) => !open && setUserToDeactivate(null)}>
+                <AlertDialogContent className={cn(isMobile && "w-[95vw] max-w-[95vw] rounded-lg mx-2")}>
                     <AlertDialogHeader>
                         <AlertDialogTitle>¿Confirmar cambio de estado?</AlertDialogTitle>
                         <AlertDialogDescription className={isMobile ? "text-sm" : ""}>
@@ -830,15 +919,18 @@ function UsersPageComponent() {
                             Un usuario inactivo no podrá iniciar sesión.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogFooter className={isMobile ? "flex-col gap-2" : ""}>
-                        <AlertDialogCancel disabled={isDeactivating} className={isMobile ? "w-full" : ""}>
+                    <AlertDialogFooter className={cn(isMobile && "flex-col gap-2")}>
+                        <AlertDialogCancel 
+                            disabled={isDeactivating} 
+                            className={cn(isMobile && "w-full order-2 mt-2")}
+                        >
                             Cancelar
                         </AlertDialogCancel>
                         <AlertDialogAction 
                             onClick={confirmStatusChange} 
                             disabled={isDeactivating} 
                             className={cn(
-                                isMobile ? "w-full" : "",
+                                isMobile && "w-full",
                                 !userToDeactivate?.isActive && 'bg-green-600 hover:bg-green-700', 
                                 userToDeactivate?.isActive && 'bg-destructive hover:bg-destructive/90'
                             )}
