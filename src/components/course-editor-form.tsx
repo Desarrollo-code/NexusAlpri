@@ -1070,11 +1070,48 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-            {/* Header Superior Simplificado */}
+            {/* Header Superior - Pestañas y Botones en una sola fila */}
             <div className="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6">
-                    {/* Fila Superior: Botones alineados a la derecha */}
-                    <div className="flex items-center justify-end py-4">
+                    <div className="flex items-center justify-between h-16">
+                        {/* Pestañas a la izquierda */}
+                        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-auto">
+                            <TabsList className="w-auto h-12 bg-transparent p-0 border-0">
+                                <TabsTrigger 
+                                    value="basics" 
+                                    className="rounded-none h-12 px-4 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none"
+                                >
+                                    <Layout className="h-4 w-4 mr-2" />
+                                    Información Básica
+                                </TabsTrigger>
+                                
+                                <TabsTrigger 
+                                    value="curriculum" 
+                                    className="rounded-none h-12 px-4 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none"
+                                >
+                                    <Layers3 className="h-4 w-4 mr-2" />
+                                    Plan de Estudios
+                                </TabsTrigger>
+                                
+                                <TabsTrigger 
+                                    value="advanced" 
+                                    className="rounded-none h-12 px-4 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none"
+                                >
+                                    <Settings2 className="h-4 w-4 mr-2" />
+                                    Configuración
+                                </TabsTrigger>
+                                
+                                <TabsTrigger 
+                                    value="distribution" 
+                                    className="rounded-none h-12 px-4 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none"
+                                >
+                                    <GlobeIcon className="h-4 w-4 mr-2" />
+                                    Publicación
+                                </TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+
+                        {/* Botones a la derecha */}
                         <div className="flex items-center gap-2 sm:gap-3">
                             <Button 
                                 variant="outline" 
@@ -1107,45 +1144,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                 </span>
                             </Button>
                         </div>
-                    </div>
-                    
-                    {/* Pestañas de Navegación */}
-                    <div className="flex items-center justify-between border-t border-gray-200 dark:border-gray-800">
-                        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                            <TabsList className="w-full justify-start h-12 bg-transparent p-0 overflow-x-auto">
-                                <TabsTrigger 
-                                    value="basics" 
-                                    className="rounded-none h-12 px-3 sm:px-4 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none whitespace-nowrap"
-                                >
-                                    <span className="mr-1 sm:mr-2 text-base">加</span>
-                                    <span className="text-xs sm:text-sm">Información Básica</span>
-                                </TabsTrigger>
-                                
-                                <TabsTrigger 
-                                    value="curriculum" 
-                                    className="rounded-none h-12 px-3 sm:px-4 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none whitespace-nowrap"
-                                >
-                                    <span className="mr-1 sm:mr-2 text-base">。</span>
-                                    <span className="text-xs sm:text-sm">Plan de Estudios</span>
-                                </TabsTrigger>
-                                
-                                <TabsTrigger 
-                                    value="advanced" 
-                                    className="rounded-none h-12 px-3 sm:px-4 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none whitespace-nowrap"
-                                >
-                                    <span className="mr-1 sm:mr-2 text-base">%</span>
-                                    <span className="text-xs sm:text-sm">Configuración</span>
-                                </TabsTrigger>
-                                
-                                <TabsTrigger 
-                                    value="distribution" 
-                                    className="rounded-none h-12 px-3 sm:px-4 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none whitespace-nowrap"
-                                >
-                                    <span className="mr-1 sm:mr-2 text-base">@</span>
-                                    <span className="text-xs sm:text-sm">Publicación</span>
-                                </TabsTrigger>
-                            </TabsList>
-                        </Tabs>
                     </div>
                 </div>
             </div>
