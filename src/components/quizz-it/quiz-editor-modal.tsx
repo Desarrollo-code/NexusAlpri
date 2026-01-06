@@ -58,7 +58,8 @@ import {
     TrendingUp,
     Smartphone,
     Monitor,
-    Tablet
+    Tablet,
+    Tag,
 } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
