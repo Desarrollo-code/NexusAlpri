@@ -365,6 +365,7 @@ const LessonItem = React.forwardRef<HTMLDivElement, {
 );
 LessonItem.displayName = 'LessonItem';
 
+// Componente ContentBlockItem CORREGIDO con editores específicos
 const ContentBlockItem = React.forwardRef<HTMLDivElement, { 
   block: ContentBlock; 
   blockIndex: number;
@@ -407,27 +408,35 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, {
 
     const renderBlockContent = () => {
       if (block.type === 'TEXT') return (
-        <RichTextEditor 
-          value={block.content || ''} 
-          onChange={value => onUpdate('content', value)} 
-          placeholder="Escribe aquí el contenido de la lección..." 
-          className="min-h-[80px]" 
-          disabled={isSaving} 
-        />
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Contenido de Texto</Label>
+          <RichTextEditor 
+            value={block.content || ''} 
+            onChange={value => onUpdate('content', value)} 
+            placeholder="Escribe aquí el contenido de la lección..." 
+            className="min-h-[150px] border rounded-lg p-2" 
+            disabled={isSaving} 
+          />
+          <p className="text-xs text-gray-500">Usa el editor para añadir formato, imágenes, enlaces, etc.</p>
+        </div>
       );
       
       if (block.type === 'VIDEO') return (
-        <div className="relative">
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-            <Video className="h-4 w-4" />
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">URL del Video</Label>
+          <div className="relative">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <Video className="h-4 w-4" />
+            </div>
+            <Input 
+              value={block.content || ''} 
+              onChange={e => onUpdate('content', e.target.value)} 
+              placeholder="URL del video (YouTube, Vimeo, etc.)" 
+              className="pl-10 h-10" 
+              disabled={isSaving} 
+            />
           </div>
-          <Input 
-            value={block.content} 
-            onChange={e => onUpdate('content', e.target.value)} 
-            placeholder="URL del video (YouTube, Vimeo, etc.)" 
-            className="pl-10 h-9" 
-            disabled={isSaving} 
-          />
+          <p className="text-xs text-gray-500">Pega la URL completa del video. Ej: https://www.youtube.com/watch?v=...</p>
         </div>
       );
       
@@ -438,59 +447,74 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, {
         if (displayUrl && !isFileUploading) {
           const fileName = block.content?.split('/').pop()?.split('-').slice(2).join('-') || 'Archivo adjunto';
           return (
-            <div className="flex items-center gap-2 p-2 rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-              <div className="p-1.5 bg-amber-500/10 rounded">
-                {isImage ? (
-                  <div className="w-6 h-6 relative rounded overflow-hidden">
-                    <Image src={displayUrl} alt="Preview" fill className="object-cover" sizes="24px" />
-                  </div>
-                ) : (
-                  <FileGenericIcon className="h-4 w-4 text-amber-500" />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm truncate">{fileName}</p>
-              </div>
-              <div className="flex gap-1">
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-7 w-7"
-                  onClick={() => window.open(displayUrl, '_blank')}
-                >
-                  <Eye className="h-3.5 w-3.5" />
-                </Button>
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-7 w-7"
-                  onClick={() => { onUpdate('content', ''); setLocalPreview(null); }}
-                >
-                  <X className="h-3.5 w-3.5" />
-                </Button>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Archivo Subido</Label>
+              <div className="flex items-center gap-2 p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                <div className="p-2 bg-amber-500/10 rounded-lg">
+                  {isImage ? (
+                    <div className="w-10 h-10 relative rounded overflow-hidden">
+                      <Image src={displayUrl} alt="Preview" fill className="object-cover" sizes="40px" />
+                    </div>
+                  ) : (
+                    <FileGenericIcon className="h-5 w-5 text-amber-500" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{fileName}</p>
+                  <p className="text-xs text-gray-500">Haz clic en los botones para previsualizar o eliminar</p>
+                </div>
+                <div className="flex gap-1">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    className="h-8"
+                    onClick={() => window.open(displayUrl, '_blank')}
+                  >
+                    <Eye className="h-3.5 w-3.5 mr-1" />
+                    Ver
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    className="h-8 text-destructive hover:text-destructive"
+                    onClick={() => { onUpdate('content', ''); setLocalPreview(null); }}
+                  >
+                    <X className="h-3.5 w-3.5 mr-1" />
+                    Eliminar
+                  </Button>
+                </div>
               </div>
             </div>
           );
         }
         
         return (
-          <div className="space-y-2">
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">Subir Archivo</Label>
             <UploadArea 
               onFileSelect={handleFileSelect} 
+              accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.gif"
               disabled={isSaving || isFileUploading} 
-              className="py-4"
-            />
+              className="py-6 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg hover:border-primary transition-colors"
+            >
+              <div className="text-center">
+                <UploadCloud className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                <p className="font-medium mb-1">Arrastra y suelta tu archivo aquí</p>
+                <p className="text-sm text-gray-500">o haz clic para seleccionar</p>
+              </div>
+            </UploadArea>
             {isFileUploading && (
               <div className="space-y-1">
                 <div className="flex justify-between text-xs">
-                  <span>Subiendo...</span>
+                  <span className="font-medium">Subiendo...</span>
                   <span>{fileUploadProgress}%</span>
                 </div>
-                <Progress value={fileUploadProgress} className="h-1" />
+                <Progress value={fileUploadProgress} className="h-2" />
               </div>
             )}
+            <p className="text-xs text-gray-500">Formatos soportados: PDF, Word, Excel, PowerPoint, Imágenes</p>
           </div>
         );
       }
@@ -498,27 +522,48 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, {
       if (block.type === 'QUIZ') return (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 bg-purple-500/10 rounded">
-                <Pencil className="h-4 w-4 text-purple-500" />
-              </div>
-              <Input 
-                value={block.quiz?.title || ''} 
-                onChange={e => onUpdate('quiz', { ...block.quiz, title: e.target.value })} 
-                placeholder="Título del Quiz" 
-                className="border-0 font-medium bg-transparent px-0 w-auto focus-visible:ring-0" 
-                disabled={isSaving} 
-              />
+            <div>
+              <Label className="text-sm font-medium">Configuración del Quiz</Label>
+              <p className="text-xs text-gray-500">Añade preguntas y configura las opciones del quiz</p>
             </div>
             <Button 
               type="button" 
               variant="outline" 
               size="sm" 
               onClick={onEditQuiz}
-              className="h-7 text-xs"
+              className="h-8"
             >
-              Configurar
+              Configurar Preguntas
             </Button>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="quiz-title">Título del Quiz</Label>
+            <Input 
+              id="quiz-title"
+              value={block.quiz?.title || ''} 
+              onChange={e => onUpdate('quiz', { ...block.quiz, title: e.target.value })} 
+              placeholder="Título del Quiz" 
+              className="h-9" 
+              disabled={isSaving} 
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="quiz-description">Descripción</Label>
+            <Textarea 
+              id="quiz-description"
+              value={block.quiz?.description || ''} 
+              onChange={e => onUpdate('quiz', { ...block.quiz, description: e.target.value })} 
+              placeholder="Descripción del quiz..." 
+              rows={2}
+              className="text-sm"
+              disabled={isSaving} 
+            />
+          </div>
+          <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
+            <span className="text-sm">Preguntas configuradas:</span>
+            <Badge variant="outline">
+              {block.quiz?.questions?.length || 0} preguntas
+            </Badge>
           </div>
         </div>
       );
@@ -528,11 +573,11 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, {
 
     const getBlockIcon = () => {
       switch(block.type) {
-        case 'TEXT': return <FileText className="h-3.5 w-3.5" />;
-        case 'VIDEO': return <Video className="h-3.5 w-3.5" />;
-        case 'FILE': return <FileGenericIcon className="h-3.5 w-3.5" />;
-        case 'QUIZ': return <Pencil className="h-3.5 w-3.5" />;
-        default: return <FileText className="h-3.5 w-3.5" />;
+        case 'TEXT': return <FileText className="h-4 w-4" />;
+        case 'VIDEO': return <Video className="h-4 w-4" />;
+        case 'FILE': return <FileGenericIcon className="h-4 w-4" />;
+        case 'QUIZ': return <Pencil className="h-4 w-4" />;
+        default: return <FileText className="h-4 w-4" />;
       }
     };
 
@@ -550,31 +595,34 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, {
       <motion.div
         ref={ref}
         {...rest}
-        className="flex items-start gap-2 bg-gray-50 dark:bg-gray-800/50 p-2 rounded border border-gray-200 dark:border-gray-700"
+        className="flex items-start gap-3 bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all"
       >
-        <div className="flex items-start gap-1.5">
-          <div {...dragHandleProps} className="p-1 cursor-grab active:cursor-grabbing touch-none opacity-60 hover:opacity-100">
-            <GripVertical className="h-3 w-3 text-gray-400" />
+        <div className="flex items-start gap-2">
+          <div {...dragHandleProps} className="p-1.5 cursor-grab active:cursor-grabbing touch-none hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+            <GripVertical className="h-3.5 w-3.5 text-gray-400" />
           </div>
-          <div className={`p-1.5 rounded ${getBlockColor()}`}>
+          <div className={`p-2.5 rounded-lg ${getBlockColor()}`}>
             {getBlockIcon()}
           </div>
         </div>
         
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-1">
-            <Badge variant="outline" className="text-[10px] px-1.5 capitalize">
-              {block.type.toLowerCase()}
-            </Badge>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-xs px-2 py-0.5 capitalize font-medium">
+                {block.type.toLowerCase()}
+              </Badge>
+              <span className="text-xs text-gray-500">Elemento #{blockIndex + 1}</span>
+            </div>
             <Button 
               type="button" 
               variant="ghost" 
               size="icon" 
-              className="h-6 w-6"
+              className="h-7 w-7 hover:text-destructive"
               onClick={onDelete} 
               disabled={isSaving}
             >
-              <Trash2 className="h-3 w-3" />
+              <Trash2 className="h-3.5 w-3.5" />
             </Button>
           </div>
           {renderBlockContent()}
@@ -2272,7 +2320,7 @@ const LessonCard = React.forwardRef<HTMLDivElement, {
   dragHandleProps: any;
   isSaving: boolean;
 }>(({ lesson, lessonIndex, moduleItem, onLessonUpdate, onLessonDelete, onAddBlock, onBlockUpdate, onBlockDelete, onEditQuiz, dragHandleProps, isSaving }, ref) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   const [showBlockSelector, setShowBlockSelector] = useState(false);
 
   return (
@@ -2452,7 +2500,7 @@ const LessonCard = React.forwardRef<HTMLDivElement, {
                             index={blockIndex}
                           >
                             {(provided) => (
-                              <ContentBlockItemPremium
+                              <ContentBlockItem
                                 block={block}
                                 blockIndex={blockIndex}
                                 onUpdate={(field, value) => onBlockUpdate(lessonIndex, blockIndex, field, value)}
@@ -2589,174 +2637,7 @@ const BlockTypeSelectorPremium = ({ onSelect }: { onSelect: (type: LessonType) =
   );
 };
 
-// Componente Premium para Elementos de Contenido
-const ContentBlockItemPremium = React.forwardRef<HTMLDivElement, { 
-  block: ContentBlock; 
-  blockIndex: number;
-  onUpdate: (field: string, value: any) => void; 
-  onEditQuiz: () => void; 
-  isSaving: boolean; 
-  onDelete: () => void; 
-  dragHandleProps: any; 
-}>(({ block, blockIndex, onUpdate, onEditQuiz, isSaving, onDelete, dragHandleProps, ...rest }, ref) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  const getBlockConfig = () => {
-    switch(block.type) {
-      case 'TEXT': 
-        return {
-          icon: FileText,
-          color: 'text-blue-500',
-          bgColor: 'bg-blue-500/10',
-          borderColor: 'border-blue-200 dark:border-blue-800',
-          label: 'Texto'
-        };
-      case 'VIDEO': 
-        return {
-          icon: Video,
-          color: 'text-red-500',
-          bgColor: 'bg-red-500/10',
-          borderColor: 'border-red-200 dark:border-red-800',
-          label: 'Video'
-        };
-      case 'FILE': 
-        return {
-          icon: FileGenericIcon,
-          color: 'text-amber-500',
-          bgColor: 'bg-amber-500/10',
-          borderColor: 'border-amber-200 dark:border-amber-800',
-          label: 'Archivo'
-        };
-      case 'QUIZ': 
-        return {
-          icon: Pencil,
-          color: 'text-purple-500',
-          bgColor: 'bg-purple-500/10',
-          borderColor: 'border-purple-200 dark:border-purple-800',
-          label: 'Quiz'
-        };
-      default: 
-        return {
-          icon: FileText,
-          color: 'text-gray-500',
-          bgColor: 'bg-gray-500/10',
-          borderColor: 'border-gray-200 dark:border-gray-800',
-          label: 'Elemento'
-        };
-    }
-  };
-
-  const config = getBlockConfig();
-  const Icon = config.icon;
-
-  return (
-    <motion.div
-      ref={ref}
-      {...rest}
-      whileHover={{ scale: 1.005 }}
-      className={`border-2 ${config.borderColor} rounded-xl overflow-hidden bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-300`}
-    >
-      {/* Encabezado del Bloque */}
-      <div className="p-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div {...dragHandleProps} className="cursor-grab active:cursor-grabbing p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
-              <GripVertical className="h-3.5 w-3.5 text-gray-400" />
-            </div>
-            
-            <div className={`p-2 rounded-lg ${config.bgColor}`}>
-              <Icon className={`h-4 w-4 ${config.color}`} />
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-xs font-semibold">
-                {config.label}
-              </Badge>
-              <span className="text-xs text-gray-500">#{blockIndex + 1}</span>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-1">
-            {block.type === 'QUIZ' && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 text-xs"
-                onClick={onEditQuiz}
-              >
-                <Settings2 className="h-3.5 w-3.5 mr-1" />
-                Configurar
-              </Button>
-            )}
-            
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => setIsExpanded(!isExpanded)}
-                  >
-                    {isExpanded ? 
-                      <ChevronDown className="h-3.5 w-3.5 rotate-180" /> : 
-                      <ChevronDown className="h-3.5 w-3.5" />
-                    }
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{isExpanded ? 'Contraer' : 'Expandir'}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    className="h-7 w-7 text-gray-400 hover:text-destructive"
-                    onClick={onDelete}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Eliminar elemento</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        </div>
-      </div>
-      
-      {/* Contenido Expandible del Bloque */}
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="overflow-hidden"
-          >
-            <div className="px-3 pb-3 border-t pt-3">
-              {/* Aquí iría el contenido específico del bloque (igual que en tu ContentBlockItem original) */}
-              <div className="text-sm text-gray-500 italic">
-                Contenido del {config.label.toLowerCase()}
-                {/* En tu implementación completa, aquí renderizarías el contenido específico del bloque */}
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-  );
-});
-ContentBlockItemPremium.displayName = 'ContentBlockItemPremium';
-
-// Componente para Seleccionar Tipo de Bloque
+// Componente para Seleccionar Tipo de Bloque (Versión simple)
 const BlockTypeSelector = ({ onSelect }: { onSelect: (type: LessonType) => void }) => {
   const blockTypes = [
     { type: 'TEXT' as LessonType, label: 'Texto', icon: FileText, color: 'text-blue-500', bgColor: 'bg-blue-500/10' },
@@ -2767,14 +2648,14 @@ const BlockTypeSelector = ({ onSelect }: { onSelect: (type: LessonType) => void 
 
   return (
     <div className="p-3 border rounded-lg bg-gray-50 dark:bg-gray-800/50">
-      <p className="text-sm font-medium mb-2">Añadir bloque</p>
+      <p className="text-sm font-medium mb-2">Añadir bloque de contenido</p>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {blockTypes.map(({ type, label, icon: Icon, color, bgColor }) => (
           <Button
             key={type}
             variant="outline"
             onClick={() => onSelect(type)}
-            className="flex-col h-auto py-3 gap-2"
+            className="flex-col h-auto py-3 gap-2 hover:scale-[1.02] transition-transform"
           >
             <div className={`p-2 rounded-full ${bgColor}`}>
               <Icon className={`h-4 w-4 ${color}`} />
