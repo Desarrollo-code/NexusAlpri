@@ -46,7 +46,6 @@ import { Badge } from '../ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { Switch } from '../ui/switch';
 import { Slider } from '../ui/slider';
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { 
   DndContext, 
   closestCenter,
@@ -941,8 +940,9 @@ function PropertiesPanel({
                       "w-8 h-8 rounded-full border-2",
                       quiz.theme === color 
                         ? `border-${color}-500 bg-${color}-500` 
-                        : `border-border bg-${color}-500`
+                        : "border-border"
                     )}
+                    style={{ backgroundColor: `var(--${color}-500)` }}
                   />
                 ))}
               </div>
@@ -1397,11 +1397,11 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: QuizEditorMod
             </div>
           </div>
           
-          {/* Main Content - 3 Column Layout */}
+          {/* Main Content - 3 Column Layout (Fixed without resizable) */}
           <div className="flex-1 overflow-hidden">
-            <ResizablePanelGroup direction="horizontal" className="h-full">
-              {/* Left Column - Question List */}
-              <ResizablePanel defaultSize={25} minSize={20} maxSize={35}>
+            <div className="h-full grid grid-cols-12">
+              {/* Left Column - Question List (25%) */}
+              <div className="col-span-3 h-full overflow-hidden border-r border-border">
                 <QuestionList
                   questions={localQuiz.questions}
                   activeIndex={activeQuestionIndex}
@@ -1411,12 +1411,10 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: QuizEditorMod
                   onReorder={handleReorderQuestions}
                   onDuplicate={handleDuplicateQuestion}
                 />
-              </ResizablePanel>
+              </div>
               
-              <ResizableHandle withHandle />
-              
-              {/* Middle Column - Canvas */}
-              <ResizablePanel defaultSize={50} minSize={40}>
+              {/* Middle Column - Canvas (50%) */}
+              <div className="col-span-6 h-full overflow-hidden">
                 {activeQuestion ? (
                   <QuestionCanvas
                     question={activeQuestion}
@@ -1444,12 +1442,10 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: QuizEditorMod
                     </div>
                   </div>
                 )}
-              </ResizablePanel>
+              </div>
               
-              <ResizableHandle withHandle />
-              
-              {/* Right Column - Properties */}
-              <ResizablePanel defaultSize={25} minSize={20} maxSize={35}>
+              {/* Right Column - Properties (25%) */}
+              <div className="col-span-3 h-full overflow-hidden border-l border-border">
                 <PropertiesPanel
                   selectedElement={selectedElement}
                   question={activeQuestion}
@@ -1463,8 +1459,8 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: QuizEditorMod
                   }}
                   onQuizUpdate={handleQuizUpdate}
                 />
-              </ResizablePanel>
-            </ResizablePanelGroup>
+              </div>
+            </div>
           </div>
           
           {/* Status Bar */}
