@@ -6,6 +6,8 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback,
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
+import { useIdleTimeout } from '@/hooks/use-idle-timeout';
+import { IdleTimeoutModal } from '@/components/idle-timeout-modal';
 
 interface AuthContextType {
   user: User | null;
@@ -18,37 +20,56 @@ interface AuthContextType {
 }
 
 const DEFAULT_SETTINGS: PlatformSettings = {
-    platformName: "NexusAlpri",
-    projectVersion: "1.0.0",
-    allowPublicRegistration: true,
-    enableEmailNotifications: true,
-    emailWhitelist: "",
-    resourceCategories: ["General", "Recursos Humanos", "Ventas"],
-    passwordMinLength: 8,
-    passwordRequireUppercase: true,
-    passwordRequireLowercase: true,
-    passwordRequireNumber: true,
-    passwordRequireSpecialChar: true,
-    enableIdleTimeout: true,
-    idleTimeoutMinutes: 20,
-    require2faForAdmins: false,
-    publicPagesBgUrl: null,
+  platformName: "NexusAlpri",
+  projectVersion: "1.0.0",
+  allowPublicRegistration: true,
+  enableEmailNotifications: true,
+  emailWhitelist: "",
+  resourceCategories: ["General", "Recursos Humanos", "Ventas"],
+  passwordMinLength: 8,
+  passwordRequireUppercase: true,
+  passwordRequireLowercase: true,
+  passwordRequireNumber: true,
+  passwordRequireSpecialChar: true,
+  enableIdleTimeout: true,
+  idleTimeoutMinutes: 20,
+  require2faForAdmins: false,
+  publicPagesBgUrl: null,
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const AuthProviderContent = ({ children }: { children: ReactNode }) => {
-    const { user, isLoading } = useAuth();
+  const { user, isLoading, logout, settings } = useAuth();
 
-    // Muestra el loader solo mientras se determina el estado inicial de la sesión.
-    if (isLoading) {
-      return (
-        <div className="flex items-center justify-center h-screen w-screen bg-background">
-          <ColorfulLoader />
-        </div>
-      );
-    }
-    return <>{children}</>;
+  // Idle timeout logic
+  const { isIdlePromptVisible, countdown, stay } = useIdleTimeout({
+    enabled: !!user && !!settings?.enableIdleTimeout,
+    timeoutInMinutes: settings?.idleTimeoutMinutes || 20,
+    promptInSeconds: 30,
+    onIdle: logout,
+  });
+
+  // Muestra el loader solo mientras se determina el estado inicial de la sesión.
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen w-screen bg-background">
+        <ColorfulLoader />
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {children}
+      <IdleTimeoutModal
+        open={isIdlePromptVisible}
+        countdown={countdown}
+        onStayConnected={stay}
+        onLogout={logout}
+      />
+    </>
+  );
 }
 
 
@@ -61,37 +82,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchSessionData = useCallback(async () => {
     try {
-        const [settingsRes, userRes] = await Promise.allSettled([
-            fetch('/api/settings', { cache: 'no-store' }),
-            fetch('/api/auth/me', { cache: 'no-store' })
-        ]);
+      const [settingsRes, userRes] = await Promise.allSettled([
+        fetch('/api/settings', { cache: 'no-store' }),
+        fetch('/api/auth/me', { cache: 'no-store' })
+      ]);
 
-        if (settingsRes.status === 'fulfilled' && settingsRes.value.ok) {
-            setSettings(await settingsRes.value.json());
-        } else {
-            console.warn("[AuthContext] No se pudo cargar la configuración, usando valores por defecto.");
-            setSettings(DEFAULT_SETTINGS);
-        }
-        
-        if (userRes.status === 'fulfilled' && userRes.value.ok) {
-            const userData = await userRes.value.json();
-            setUser(userData.user);
-            if (userData.user?.theme) {
-              setTheme(userData.user.theme);
-            } else {
-              setTheme('light'); 
-            }
-        } else {
-            setUser(null);
-            setTheme('light');
-        }
-    } catch (error) {
-        console.error("[AuthContext] Excepción al obtener los datos de la sesión:", error);
-        setUser(null);
+      if (settingsRes.status === 'fulfilled' && settingsRes.value.ok) {
+        setSettings(await settingsRes.value.json());
+      } else {
+        console.warn("[AuthContext] No se pudo cargar la configuración, usando valores por defecto.");
         setSettings(DEFAULT_SETTINGS);
+      }
+
+      if (userRes.status === 'fulfilled' && userRes.value.ok) {
+        const userData = await userRes.value.json();
+        setUser(userData.user);
+        if (userData.user?.theme) {
+          setTheme(userData.user.theme);
+        } else {
+          setTheme('light');
+        }
+      } else {
+        setUser(null);
         setTheme('light');
+      }
+    } catch (error) {
+      console.error("[AuthContext] Excepción al obtener los datos de la sesión:", error);
+      setUser(null);
+      setSettings(DEFAULT_SETTINGS);
+      setTheme('light');
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   }, [setTheme]);
 
@@ -102,7 +123,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = useCallback((userData: User) => {
     setUser(userData);
     if (userData.theme) {
-        setTheme(userData.theme);
+      setTheme(userData.theme);
     }
     const params = new URLSearchParams(window.location.search);
     const redirectedFrom = params.get('redirectedFrom');
@@ -119,7 +140,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     window.location.href = '/sign-in';
   }, [setTheme]);
-  
+
   const updateUser = useCallback((updatedData: Partial<User>) => {
     setUser(prevUser => {
       if (!prevUser) return null;

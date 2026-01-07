@@ -41,12 +41,12 @@ import { Checkbox } from './ui/checkbox';
 import { getRoleInSpanish } from '@/lib/security-log-utils';
 
 const availableFonts = [
-    { value: 'Inter', label: 'Inter (Sans-serif)' },
-    { value: 'Space Grotesk', label: 'Space Grotesk (Sans-serif)' },
-    { value: 'Source Code Pro', label: 'Source Code Pro (Monospace)' },
-    { value: 'Roboto', label: 'Roboto (Sans-serif)' },
-    { value: 'Lato', label: 'Lato (Sans-serif)' },
-    { value: 'Montserrat', label: 'Montserrat (Sans-serif)' },
+  { value: 'Inter', label: 'Inter (Sans-serif)' },
+  { value: 'Space Grotesk', label: 'Space Grotesk (Sans-serif)' },
+  { value: 'Source Code Pro', label: 'Source Code Pro (Monospace)' },
+  { value: 'Roboto', label: 'Roboto (Sans-serif)' },
+  { value: 'Lato', label: 'Lato (Sans-serif)' },
+  { value: 'Montserrat', label: 'Montserrat (Sans-serif)' },
 ];
 
 const UploadWidget = ({
@@ -70,16 +70,16 @@ const UploadWidget = ({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [localPreview, setLocalPreview] = useState<string | null>(null);
   const { toast } = useToast();
-  
+
   const sizeClasses = {
-      small: "w-24 h-24",
-      large: "w-40 h-32"
+    small: "w-24 h-24",
+    large: "w-40 h-32"
   }
 
   useEffect(() => {
     // Revoke object URL on unmount or when currentImageUrl changes to prevent memory leaks
     if (localPreview) {
-      URL.revokeObjectURL(localPreview); 
+      URL.revokeObjectURL(localPreview);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentImageUrl]);
@@ -92,22 +92,22 @@ const UploadWidget = ({
     setLocalPreview(preview);
 
     try {
-        const result = await uploadWithProgress('/api/upload/settings-image', file, setUploadProgress);
-        onFileSelect(result.url); 
-        toast({ title: 'Imagen Subida' });
+      const result = await uploadWithProgress('/api/upload/settings-image', file, setUploadProgress);
+      onFileSelect(result.url);
+      toast({ title: 'Imagen Subida' });
     } catch (err) {
-        toast({ title: 'Error de subida', description: (err as Error).message, variant: 'destructive' });
-        URL.revokeObjectURL(preview);
-        setLocalPreview(null);
+      toast({ title: 'Error de subida', description: (err as Error).message, variant: 'destructive' });
+      URL.revokeObjectURL(preview);
+      setLocalPreview(null);
     } finally {
-        setIsUploading(false);
+      setIsUploading(false);
     }
   };
-  
+
   const handleFileSelectInternal = (files: FileList | null) => {
-      if (files && files.length > 0) {
-          handleUpload(files[0]);
-      }
+    if (files && files.length > 0) {
+      handleUpload(files[0]);
+    }
   };
 
   const finalImageUrl = localPreview || currentImageUrl;
@@ -117,28 +117,28 @@ const UploadWidget = ({
       <Label className="text-xs text-muted-foreground">{label}</Label>
       <div className={cn("relative group", sizeClasses[size])}>
         {isUploading ? (
-           <div className="w-full h-full flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg bg-muted/80 p-2 relative">
-                {localPreview && <Image src={localPreview} alt="Subiendo" fill className="object-contain opacity-30 p-2"/>}
-                <div className="z-10 text-center space-y-2">
-                    <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto" />
-                    <p className="text-xs text-muted-foreground">Subiendo...</p>
-                    <Progress value={uploadProgress} className="w-20 h-1.5" />
-                </div>
+          <div className="w-full h-full flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg bg-muted/80 p-2 relative">
+            {localPreview && <Image src={localPreview} alt="Subiendo" fill className="object-contain opacity-30 p-2" />}
+            <div className="z-10 text-center space-y-2">
+              <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto" />
+              <p className="text-xs text-muted-foreground">Subiendo...</p>
+              <Progress value={uploadProgress} className="w-20 h-1.5" />
             </div>
+          </div>
         ) : finalImageUrl ? (
-             <div className="relative w-full h-full">
-                <Image src={finalImageUrl} alt={`Previsualización de ${label}`} fill className="object-contain p-2 rounded-lg border bg-muted/20" />
-                 <div className="absolute top-1 right-1 flex flex-col gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                     <UploadArea onFileSelect={(files) => files && handleFileSelectInternal(files)} disabled={disabled} inputId={id} className="h-7 w-7 rounded-full shadow-md bg-secondary text-secondary-foreground hover:bg-secondary/80 p-0 border-0">
-                         <Replace className="h-4 w-4" />
-                     </UploadArea>
-                     <Button type="button" variant="destructive" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={onRemove} disabled={disabled}>
-                         <XCircle className="h-4 w-4" />
-                     </Button>
-                 </div>
+          <div className="relative w-full h-full">
+            <Image src={finalImageUrl} alt={`Previsualización de ${label}`} fill className="object-contain p-2 rounded-lg border bg-muted/20" />
+            <div className="absolute top-1 right-1 flex flex-col gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+              <UploadArea onFileSelect={(files) => files && handleFileSelectInternal(files)} disabled={disabled} inputId={id} className="h-7 w-7 rounded-full shadow-md bg-secondary text-secondary-foreground hover:bg-secondary/80 p-0 border-0">
+                <Replace className="h-4 w-4" />
+              </UploadArea>
+              <Button type="button" variant="destructive" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={onRemove} disabled={disabled}>
+                <XCircle className="h-4 w-4" />
+              </Button>
             </div>
+          </div>
         ) : (
-             <UploadArea onFileSelect={handleFileSelectInternal} disabled={disabled} inputId={id} className="h-full w-full"/>
+          <UploadArea onFileSelect={handleFileSelectInternal} disabled={disabled} inputId={id} className="h-full w-full" />
         )}
       </div>
     </div>
@@ -155,18 +155,18 @@ export default function SettingsPageComponent() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  
+
   const [formState, setFormState] = useState<AppPlatformSettings | null>(null);
   const [newCategory, setNewCategory] = useState('');
-  
+
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const [isCheckingCategory, setIsCheckingCategory] = useState(false);
-  
-  const [newPhase, setNewPhase] = useState('');
-  
-    type ImageField = 'logoUrl' | 'faviconUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl' | 'announcementsImageUrl' | 'publicPagesBgUrl' | 'securityAuditImageUrl' | 'tourMascotUrl' | 'dashboardImageUrlAdmin' | 'dashboardImageUrlInstructor' | 'dashboardImageUrlStudent' | 'emptyStateCoursesUrl' | 'emptyStateMyCoursesUrl' | 'emptyStateFormsUrl' | 'emptyStateMyNotesUrl' | 'emptyStateResourcesUrl' | 'emptyStateCertificatesUrl' | 'emptyStateMotivationsUrl' | 'emptyStateUsersUrl' | 'emptyStateLeaderboardUrl' | 'emptyStateAnnouncementsUrl' | 'roadmapImageUrl';
 
-  
+  const [newPhase, setNewPhase] = useState('');
+
+  type ImageField = 'logoUrl' | 'faviconUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl' | 'announcementsImageUrl' | 'publicPagesBgUrl' | 'securityAuditImageUrl' | 'tourMascotUrl' | 'dashboardImageUrlAdmin' | 'dashboardImageUrlInstructor' | 'dashboardImageUrlStudent' | 'emptyStateCoursesUrl' | 'emptyStateMyCoursesUrl' | 'emptyStateFormsUrl' | 'emptyStateMyNotesUrl' | 'emptyStateResourcesUrl' | 'emptyStateCertificatesUrl' | 'emptyStateMotivationsUrl' | 'emptyStateUsersUrl' | 'emptyStateLeaderboardUrl' | 'emptyStateAnnouncementsUrl' | 'roadmapImageUrl';
+
+
   useEffect(() => {
     setPageTitle('Configuración');
     startTour('settings', settingsTour);
@@ -183,13 +183,22 @@ export default function SettingsPageComponent() {
       setIsLoading(false);
     }
   }, [globalSettings]);
-  
+
   const handleInputChange = (field: keyof AppPlatformSettings, value: any) => {
     setFormState(prev => prev ? { ...prev, [field]: value } : null);
   };
-  
+
   const handleSwitchChange = (field: keyof AppPlatformSettings, checked: boolean) => {
     setFormState(prev => prev ? { ...prev, [field]: checked } : null);
+
+    // Show notification when 2FA is enabled
+    if (field === 'require2faForAdmins' && checked) {
+      toast({
+        title: "Seguridad Aumentada",
+        description: "Por favor, configura tu autenticación de dos factores en tu perfil.",
+        duration: 5000,
+      });
+    }
   };
 
   const handleImageUpload = (field: ImageField, url: string) => {
@@ -198,7 +207,7 @@ export default function SettingsPageComponent() {
 
 
   const handleRemoveImage = (field: ImageField) => {
-      handleInputChange(field, null);
+    handleInputChange(field, null);
   }
 
 
@@ -208,7 +217,7 @@ export default function SettingsPageComponent() {
       handleInputChange('resourceCategories', updatedCategories);
       setNewCategory('');
     } else if (newCategory.trim()) {
-        toast({ title: "Categoría Duplicada", description: "Esta categoría ya existe.", variant: "default" });
+      toast({ title: "Categoría Duplicada", description: "Esta categoría ya existe.", variant: "default" });
     }
   };
 
@@ -216,19 +225,19 @@ export default function SettingsPageComponent() {
     if (!categoryToDelete || !formState) return;
     setIsCheckingCategory(true);
     try {
-        const response = await fetch(`/api/settings/category-check/${encodeURIComponent(categoryToDelete)}`);
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message);
-        }
-        const updatedCategories = formState.resourceCategories.filter(cat => cat !== categoryToDelete);
-        handleInputChange('resourceCategories', updatedCategories);
-        toast({ title: "Categoría Eliminada (Pendiente)", description: `"${categoryToDelete}" se eliminará al guardar los cambios.` });
+      const response = await fetch(`/api/settings/category-check/${encodeURIComponent(categoryToDelete)}`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message);
+      }
+      const updatedCategories = formState.resourceCategories.filter(cat => cat !== categoryToDelete);
+      handleInputChange('resourceCategories', updatedCategories);
+      toast({ title: "Categoría Eliminada (Pendiente)", description: `"${categoryToDelete}" se eliminará al guardar los cambios.` });
     } catch (err) {
-        toast({ title: "Error al Eliminar Categoría", description: (err as Error).message, variant: "destructive" });
+      toast({ title: "Error al Eliminar Categoría", description: (err as Error).message, variant: "destructive" });
     } finally {
-        setCategoryToDelete(null);
-        setIsCheckingCategory(false);
+      setCategoryToDelete(null);
+      setIsCheckingCategory(false);
     }
   };
 
@@ -239,24 +248,24 @@ export default function SettingsPageComponent() {
       setNewPhase('');
     }
   };
-  
+
   const handleDeletePhase = (phaseToDelete: string) => {
     if (formState) {
       const updatedPhases = formState.roadmapPhases?.filter(p => p !== phaseToDelete);
       handleInputChange('roadmapPhases', updatedPhases);
     }
   };
-  
- const handleVisibilityChange = (role: UserRole, checked: boolean) => {
+
+  const handleVisibilityChange = (role: UserRole, checked: boolean) => {
     setFormState(prevState => {
-        if (!prevState) return null;
-        const currentRoles = prevState.roadmapVisibleTo || [];
-        const newRoles = checked
-            ? [...currentRoles, role]
-            : currentRoles.filter(r => r !== role);
-        return { ...prevState, roadmapVisibleTo: [...new Set(newRoles)] };
+      if (!prevState) return null;
+      const currentRoles = prevState.roadmapVisibleTo || [];
+      const newRoles = checked
+        ? [...currentRoles, role]
+        : currentRoles.filter(r => r !== role);
+      return { ...prevState, roadmapVisibleTo: [...new Set(newRoles)] };
     });
-};
+  };
 
 
   const handleSaveSettings = async () => {
@@ -270,11 +279,11 @@ export default function SettingsPageComponent() {
       });
 
       if (!response.ok) {
-        let errorData = { message: `Failed to save settings (${response.status})`};
+        let errorData = { message: `Failed to save settings (${response.status})` };
         try {
-            if (response.headers.get('content-type')?.includes('application/json')) {
-                errorData = await response.json();
-            }
+          if (response.headers.get('content-type')?.includes('application/json')) {
+            errorData = await response.json();
+          }
         } catch (parseError) {
           // Silent catch
         }
@@ -289,287 +298,287 @@ export default function SettingsPageComponent() {
       setIsSaving(false);
     }
   };
-  
+
   if (isLoading || !formState) {
     return (
-        <div className="space-y-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div className="space-y-1">
-                <Skeleton className="h-8 w-64" />
-                <Skeleton className="h-5 w-96" />
-              </div>
-              <div className="flex items-center gap-2">
-                <Skeleton className="h-9 w-28" />
-                <Skeleton className="h-9 w-40" />
-              </div>
-            </div>
-            <Skeleton className="h-10 w-full max-w-lg" />
-            <Card>
-                <CardContent className="p-6">
-                    <Skeleton className="h-96 w-full" />
-                </CardContent>
-            </Card>
+      <div className="space-y-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="space-y-1">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-5 w-96" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-9 w-28" />
+            <Skeleton className="h-9 w-40" />
+          </div>
         </div>
+        <Skeleton className="h-10 w-full max-w-lg" />
+        <Card>
+          <CardContent className="p-6">
+            <Skeleton className="h-96 w-full" />
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   if (!user || user.role !== 'ADMINISTRATOR') {
     if (typeof window !== 'undefined') {
-        router.push('/dashboard');
+      router.push('/dashboard');
     }
-    return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>;
+    return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
   }
-  
+
   return (
     <div className="space-y-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="space-y-1">
-                <h2 className="text-2xl font-semibold">Configuración</h2>
-                <p className="text-muted-foreground">Ajusta los parámetros generales, de seguridad y apariencia de NexusAlpri.</p>
-            </div>
-            <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => forceStartTour('settings', settingsTour)}>
-                    <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
-                </Button>
-                <Button onClick={handleSaveSettings} disabled={isSaving || isLoading} size="sm">
-                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                    {isSaving ? 'Guardando...' : 'Guardar Configuración'}
-                </Button>
-            </div>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="space-y-1">
+          <h2 className="text-2xl font-semibold">Configuración</h2>
+          <p className="text-muted-foreground">Ajusta los parámetros generales, de seguridad y apariencia de NexusAlpri.</p>
         </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => forceStartTour('settings', settingsTour)}>
+            <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+          </Button>
+          <Button onClick={handleSaveSettings} disabled={isSaving || isLoading} size="sm">
+            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+            {isSaving ? 'Guardando...' : 'Guardar Configuración'}
+          </Button>
+        </div>
+      </div>
 
-        <Tabs defaultValue="appearance" className="w-full">
-            <TabsList id="settings-tabs-list" className="inline-grid w-full grid-cols-2 md:grid-cols-4 h-auto bg-primary/10 text-foreground">
-                <TabsTrigger value="appearance">Apariencia</TabsTrigger>
-                <TabsTrigger value="style">Estilo</TabsTrigger>
-                <TabsTrigger value="security">Seguridad</TabsTrigger>
-                <TabsTrigger value="general">Generales</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="appearance" className="mt-6 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                    <Card id="settings-identity-card" className="h-full">
-                        <CardHeader className="pt-4 pb-2">
-                            <CardTitle className="flex items-center gap-2 text-lg"><Building className="h-5 w-5 text-primary"/>Identidad de Marca</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4 pt-4">
-                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
-                               <div className="space-y-1.5"><Label htmlFor="platformName">Nombre de la Plataforma</Label><Input id="platformName" value={formState.platformName} onChange={(e) => handleInputChange('platformName', e.target.value)} disabled={isSaving}/></div>
-                               <div className="space-y-1.5"><Label htmlFor="projectVersion">Versión del Proyecto</Label><Input id="projectVersion" value={formState.projectVersion || ''} onChange={(e) => handleInputChange('projectVersion', e.target.value)} disabled={isSaving}/></div>
-                            </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4">
-                                <UploadWidget id="logo-upload" label="Logo" size="small" currentImageUrl={formState.logoUrl} onFileSelect={(url) => handleImageUpload('logoUrl', url)} onRemove={() => handleRemoveImage('logoUrl')} disabled={isSaving} />
-                                <UploadWidget id="favicon-upload" label="Favicon" size="small" currentImageUrl={formState.faviconUrl} onFileSelect={(url) => handleImageUpload('faviconUrl', url)} onRemove={() => handleRemoveImage('faviconUrl')} disabled={isSaving} />
-                                <UploadWidget id="watermark-upload" label="Marca de Agua" size="small" currentImageUrl={formState.watermarkUrl} onFileSelect={(url) => handleImageUpload('watermarkUrl', url)} onRemove={() => handleRemoveImage('watermarkUrl')} disabled={isSaving} />
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card id="settings-empty-states-card">
-                        <CardHeader className="pt-4 pb-2">
-                            <CardTitle className="flex items-center gap-2 text-lg"><FolderOpen className="h-5 w-5 text-primary" />Imágenes de Estados Vacíos</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
-                                <UploadWidget id="es-courses-upload" label="Catálogo" size="small" currentImageUrl={formState.emptyStateCoursesUrl} onFileSelect={(url) => handleImageUpload('emptyStateCoursesUrl', url)} onRemove={()=>handleRemoveImage('emptyStateCoursesUrl')} disabled={isSaving}/>
-                                <UploadWidget id="es-mycourses-upload" label="Mis Cursos" size="small" currentImageUrl={formState.emptyStateMyCoursesUrl} onFileSelect={(url) => handleImageUpload('emptyStateMyCoursesUrl', url)} onRemove={()=>handleRemoveImage('emptyStateMyCoursesUrl')} disabled={isSaving}/>
-                                <UploadWidget id="es-forms-upload" label="Formularios" size="small" currentImageUrl={formState.emptyStateFormsUrl} onFileSelect={(url) => handleImageUpload('emptyStateFormsUrl', url)} onRemove={()=>handleRemoveImage('emptyStateFormsUrl')} disabled={isSaving}/>
-                                <UploadWidget id="es-mynotes-upload" label="Mis Apuntes" size="small" currentImageUrl={formState.emptyStateMyNotesUrl} onFileSelect={(url) => handleImageUpload('emptyStateMyNotesUrl', url)} onRemove={()=>handleRemoveImage('emptyStateMyNotesUrl')} disabled={isSaving}/>
-                                <UploadWidget id="es-resources-upload" label="Recursos" size="small" currentImageUrl={formState.emptyStateResourcesUrl} onFileSelect={(url) => handleImageUpload('emptyStateResourcesUrl', url)} onRemove={()=>handleRemoveImage('emptyStateResourcesUrl')} disabled={isSaving}/>
-                                <UploadWidget id="es-certs-upload" label="Certificados" size="small" currentImageUrl={formState.emptyStateCertificatesUrl} onFileSelect={(url) => handleImageUpload('emptyStateCertificatesUrl', url)} onRemove={()=>handleRemoveImage('emptyStateCertificatesUrl')} disabled={isSaving}/>
-                                <UploadWidget id="es-motivations-upload" label="Motivaciones" size="small" currentImageUrl={formState.emptyStateMotivationsUrl} onFileSelect={(url) => handleImageUpload('emptyStateMotivationsUrl', url)} onRemove={()=>handleRemoveImage('emptyStateMotivationsUrl')} disabled={isSaving}/>
-                                <UploadWidget id="es-users-upload" label="Usuarios" size="small" currentImageUrl={formState.emptyStateUsersUrl} onFileSelect={(url) => handleImageUpload('emptyStateUsersUrl', url)} onRemove={()=>handleRemoveImage('emptyStateUsersUrl')} disabled={isSaving}/>
-                                <UploadWidget id="es-leaderboard-upload" label="Ranking" size="small" currentImageUrl={formState.emptyStateLeaderboardUrl} onFileSelect={(url) => handleImageUpload('emptyStateLeaderboardUrl', url)} onRemove={()=>handleRemoveImage('emptyStateLeaderboardUrl')} disabled={isSaving}/>
-                                <UploadWidget id="es-announcements-upload" label="Anuncios" size="small" currentImageUrl={formState.emptyStateAnnouncementsUrl} onFileSelect={(url) => handleImageUpload('emptyStateAnnouncementsUrl', url)} onRemove={() => handleRemoveImage('emptyStateAnnouncementsUrl')} disabled={isSaving} />
-                            </div>
-                        </CardContent>
-                    </Card>
+      <Tabs defaultValue="appearance" className="w-full">
+        <TabsList id="settings-tabs-list" className="inline-grid w-full grid-cols-2 md:grid-cols-4 h-auto bg-primary/10 text-foreground">
+          <TabsTrigger value="appearance">Apariencia</TabsTrigger>
+          <TabsTrigger value="style">Estilo</TabsTrigger>
+          <TabsTrigger value="security">Seguridad</TabsTrigger>
+          <TabsTrigger value="general">Generales</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="appearance" className="mt-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            <Card id="settings-identity-card" className="h-full">
+              <CardHeader className="pt-4 pb-2">
+                <CardTitle className="flex items-center gap-2 text-lg"><Building className="h-5 w-5 text-primary" />Identidad de Marca</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+                  <div className="space-y-1.5"><Label htmlFor="platformName">Nombre de la Plataforma</Label><Input id="platformName" value={formState.platformName} onChange={(e) => handleInputChange('platformName', e.target.value)} disabled={isSaving} /></div>
+                  <div className="space-y-1.5"><Label htmlFor="projectVersion">Versión del Proyecto</Label><Input id="projectVersion" value={formState.projectVersion || ''} onChange={(e) => handleInputChange('projectVersion', e.target.value)} disabled={isSaving} /></div>
                 </div>
-                <Card>
-                    <CardHeader><CardTitle className="text-lg flex items-center gap-2"><ImageIcon className="h-5 w-5 text-primary"/>Imágenes de Navegación Pública</CardTitle></CardHeader>
-                    <CardContent>
-                       <div className="flex flex-wrap justify-between gap-4">
-                          <UploadWidget id="public-bg-upload" label="Fondo Público" currentImageUrl={formState.publicPagesBgUrl} onFileSelect={(url) => handleImageUpload('publicPagesBgUrl', url)} onRemove={() => handleRemoveImage('publicPagesBgUrl')} disabled={isSaving} />
-                          <UploadWidget id="landing-img-upload" label="Página de Inicio" currentImageUrl={formState.landingImageUrl} onFileSelect={(url) => handleImageUpload('landingImageUrl', url)} onRemove={()=>handleRemoveImage('landingImageUrl')} disabled={isSaving}/>
-                          <UploadWidget id="about-img-upload" label="Página 'Nosotros'" currentImageUrl={formState.aboutImageUrl} onFileSelect={(url) => handleImageUpload('aboutImageUrl', url)} onRemove={()=>handleRemoveImage('aboutImageUrl')} disabled={isSaving}/>
-                          <UploadWidget id="benefits-img-upload" label="Beneficios (Inicio)" currentImageUrl={formState.benefitsImageUrl} onFileSelect={(url) => handleImageUpload('benefitsImageUrl', url)} onRemove={()=>handleRemoveImage('benefitsImageUrl')} disabled={isSaving}/>
-                          <UploadWidget id="auth-img-upload" label="Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(url) => handleImageUpload('authImageUrl', url)} onRemove={()=>handleRemoveImage('authImageUrl')} disabled={isSaving}/>
-                       </div>
-                   </CardContent>
-                </Card>
-            </TabsContent>
-            
-            <TabsContent value="style" className="mt-6 space-y-6">
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                      <Card>
-                         <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Type className="h-5 w-5 text-primary"/>Tipografía</CardTitle></CardHeader>
-                       <CardContent className="space-y-4">
-                         <div className="space-y-1.5"><Label htmlFor="fontHeadline">Fuente para Titulares</Label><Select value={formState.fontHeadline || 'Space Grotesk'} onValueChange={v => handleInputChange('fontHeadline', v)}><SelectTrigger id="fontHeadline"><SelectValue /></SelectTrigger><SelectContent>{availableFonts.map(font => <SelectItem key={font.value} value={font.value} style={{fontFamily: fontMap[font.value].style.fontFamily}}>{font.label}</SelectItem>)}</SelectContent></Select></div>
-                         <div className="space-y-1.5"><Label htmlFor="fontBody">Fuente para Cuerpo de Texto</Label><Select value={formState.fontBody || 'Inter'} onValueChange={v => handleInputChange('fontBody', v)}><SelectTrigger id="fontBody"><SelectValue /></SelectTrigger><SelectContent>{availableFonts.map(font => <SelectItem key={font.value} value={font.value} style={{fontFamily: fontMap[font.value].style.fontFamily}}>{font.label}</SelectItem>)}</SelectContent></Select></div>
-                       </CardContent>
-                    </Card>
-                    <Card>
-                       <CardHeader><CardTitle className="text-lg flex items-center gap-2"><ImagePlay className="h-5 w-5 text-primary"/>Imágenes Decorativas de la Aplicación</CardTitle></CardHeader>
-                       <CardContent>
-                          <div className="flex flex-wrap justify-center sm:justify-between gap-4">
-                                <UploadWidget id="dashboard-admin-upload" label="Dashboard Admin" currentImageUrl={formState.dashboardImageUrlAdmin} onFileSelect={(url) => handleImageUpload('dashboardImageUrlAdmin', url)} onRemove={() => handleRemoveImage('dashboardImageUrlAdmin')} disabled={isSaving} />
-                                <UploadWidget id="dashboard-instructor-upload" label="Dashboard Instructor" currentImageUrl={formState.dashboardImageUrlInstructor} onFileSelect={(url) => handleImageUpload('dashboardImageUrlInstructor', url)} onRemove={() => handleRemoveImage('dashboardImageUrlInstructor')} disabled={isSaving} />
-                                <UploadWidget id="dashboard-student-upload" label="Dashboard Estudiante" currentImageUrl={formState.dashboardImageUrlStudent} onFileSelect={(url) => handleImageUpload('dashboardImageUrlStudent', url)} onRemove={() => handleRemoveImage('dashboardImageUrlStudent')} disabled={isSaving} />
-                                <UploadWidget id="announcements-img-upload" label="Encabezado Anuncios" currentImageUrl={formState.announcementsImageUrl} onFileSelect={(url) => handleImageUpload('announcementsImageUrl', url)} onRemove={() => handleRemoveImage('announcementsImageUrl')} disabled={isSaving} />
-                                <UploadWidget id="security-audit-img-upload" label="Mascota de Seguridad" currentImageUrl={formState.securityAuditImageUrl} onFileSelect={(url) => handleImageUpload('securityAuditImageUrl', url)} onRemove={() => handleRemoveImage('securityAuditImageUrl')} disabled={isSaving} />
-                                <UploadWidget id="tour-mascot-upload" label="Mascota del Tour" currentImageUrl={formState.tourMascotUrl} onFileSelect={(url) => handleImageUpload('tourMascotUrl', url)} onRemove={() => handleRemoveImage('tourMascotUrl')} disabled={isSaving} />
-                                <UploadWidget id="roadmap-image-upload" label="Encabezado Ruta" currentImageUrl={formState.roadmapImageUrl} onFileSelect={(url) => handleImageUpload('roadmapImageUrl', url)} onRemove={() => handleRemoveImage('roadmapImageUrl')} disabled={isSaving} />   
-                           </div>
-                        </CardContent>
-                    </Card>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4">
+                  <UploadWidget id="logo-upload" label="Logo" size="small" currentImageUrl={formState.logoUrl} onFileSelect={(url) => handleImageUpload('logoUrl', url)} onRemove={() => handleRemoveImage('logoUrl')} disabled={isSaving} />
+                  <UploadWidget id="favicon-upload" label="Favicon" size="small" currentImageUrl={formState.faviconUrl} onFileSelect={(url) => handleImageUpload('faviconUrl', url)} onRemove={() => handleRemoveImage('faviconUrl')} disabled={isSaving} />
+                  <UploadWidget id="watermark-upload" label="Marca de Agua" size="small" currentImageUrl={formState.watermarkUrl} onFileSelect={(url) => handleImageUpload('watermarkUrl', url)} onRemove={() => handleRemoveImage('watermarkUrl')} disabled={isSaving} />
                 </div>
-            </TabsContent>
-            
-            <TabsContent value="security" className="mt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                    <Card>
-                         <CardHeader>
-                            <CardTitle className="text-lg flex items-center gap-2"><User className="h-5 w-5 text-primary"/>Acceso y Registro</CardTitle>
-                            <CardDescription>Configura cómo los usuarios pueden registrarse y acceder a la plataforma.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
-                                <div className="space-y-0.5">
-                                    <Label htmlFor="allowPublicRegistration" className="text-base">Registro Público</Label>
-                                    <p className="text-sm text-muted-foreground">Permite que nuevos usuarios se registren.</p>
-                                </div>
-                                <Switch id="allowPublicRegistration" checked={formState.allowPublicRegistration} onCheckedChange={(c) => handleSwitchChange('allowPublicRegistration', c)} disabled={isSaving} />
-                            </div>
-                            <div className="space-y-2 rounded-lg border p-3 shadow-sm">
-                                <Label htmlFor="emailWhitelist">Lista Blanca de Dominios</Label>
-                                <Input id="emailWhitelist" value={formState.emailWhitelist || ''} onChange={(e) => handleInputChange('emailWhitelist', e.target.value)} placeholder="ej: alprigrama.com, ejemplo.org" disabled={isSaving} />
-                                <p className="text-xs text-muted-foreground">Separa dominios con comas. Si está vacío, se permite cualquier correo.</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <div className="space-y-6">
-                         <Card>
-                            <CardHeader>
-                               <CardTitle className="text-lg flex items-center gap-2"><KeyRound className="h-5 w-5 text-primary"/>Política de Contraseñas</CardTitle>
-                               <CardDescription>Define la complejidad requerida para las contraseñas.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                                <div className="flex items-center justify-between"><Label htmlFor="passwordMinLength">Longitud Mínima</Label><Input id="passwordMinLength" type="number" className="w-20 h-8" value={formState.passwordMinLength} onChange={(e) => handleInputChange('passwordMinLength', parseInt(e.target.value, 10) || 8)} min="8" disabled={isSaving} /></div>
-                                <div className="flex items-center justify-between"><Label htmlFor="passwordRequireUppercase">Requerir Mayúscula</Label><Switch id="passwordRequireUppercase" checked={formState.passwordRequireUppercase} onCheckedChange={(c) => handleSwitchChange('passwordRequireUppercase', c)} disabled={isSaving} /></div>
-                                <div className="flex items-center justify-between"><Label htmlFor="passwordRequireLowercase">Requerir Minúscula</Label><Switch id="passwordRequireLowercase" checked={formState.passwordRequireLowercase} onCheckedChange={(c) => handleSwitchChange('passwordRequireLowercase', c)} disabled={isSaving} /></div>
-                                <div className="flex items-center justify-between"><Label htmlFor="passwordRequireNumber">Requerir Número</Label><Switch id="passwordRequireNumber" checked={formState.passwordRequireNumber} onCheckedChange={(c) => handleSwitchChange('passwordRequireNumber', c)} disabled={isSaving} /></div>
-                                <div className="flex items-center justify-between"><Label htmlFor="passwordRequireSpecialChar">Requerir Carácter Especial</Label><Switch id="passwordRequireSpecialChar" checked={formState.passwordRequireSpecialChar} onCheckedChange={(c) => handleSwitchChange('passwordRequireSpecialChar', c)} disabled={isSaving} /></div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                             <CardHeader>
-                                <CardTitle className="text-lg flex items-center gap-2"><Clock className="h-5 w-5 text-primary"/>Sesión por Inactividad</CardTitle>
-                                <CardDescription>Cierra la sesión de los usuarios automáticamente.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex items-center justify-between gap-4 rounded-lg border p-3 shadow-sm">
-                                    <Label htmlFor="enableIdleTimeout" className="text-base">Activar Cierre por Inactividad</Label>
-                                    <Switch id="enableIdleTimeout" checked={formState.enableIdleTimeout} onCheckedChange={(c) => handleSwitchChange('enableIdleTimeout', c)} disabled={isSaving} />
-                                </div>
-                                {formState.enableIdleTimeout && (
-                                    <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
-                                        <Label htmlFor="idleTimeoutMinutes">Tiempo (Minutos)</Label>
-                                        <Input id="idleTimeoutMinutes" type="number" className="w-24 h-8" value={formState.idleTimeoutMinutes} onChange={(e) => handleInputChange('idleTimeoutMinutes', parseInt(e.target.value, 10) || 1)} min="1" disabled={isSaving}/>
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader>
-                               <CardTitle className="text-lg flex items-center gap-2"><Shield className="h-5 w-5 text-primary"/>Autenticación de Dos Factores (2FA)</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="flex items-center justify-between gap-4 rounded-lg border p-3 shadow-sm">
-                                    <Label htmlFor="require2faForAdmins" className="text-base">Requerir 2FA para Admins</Label>
-                                    <Switch id="require2faForAdmins" checked={formState.require2faForAdmins} onCheckedChange={(c) => handleSwitchChange('require2faForAdmins', c)} disabled={isSaving} />
-                                </div>
-                            </CardContent>
-                        </Card>
+              </CardContent>
+            </Card>
+            <Card id="settings-empty-states-card">
+              <CardHeader className="pt-4 pb-2">
+                <CardTitle className="flex items-center gap-2 text-lg"><FolderOpen className="h-5 w-5 text-primary" />Imágenes de Estados Vacíos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                  <UploadWidget id="es-courses-upload" label="Catálogo" size="small" currentImageUrl={formState.emptyStateCoursesUrl} onFileSelect={(url) => handleImageUpload('emptyStateCoursesUrl', url)} onRemove={() => handleRemoveImage('emptyStateCoursesUrl')} disabled={isSaving} />
+                  <UploadWidget id="es-mycourses-upload" label="Mis Cursos" size="small" currentImageUrl={formState.emptyStateMyCoursesUrl} onFileSelect={(url) => handleImageUpload('emptyStateMyCoursesUrl', url)} onRemove={() => handleRemoveImage('emptyStateMyCoursesUrl')} disabled={isSaving} />
+                  <UploadWidget id="es-forms-upload" label="Formularios" size="small" currentImageUrl={formState.emptyStateFormsUrl} onFileSelect={(url) => handleImageUpload('emptyStateFormsUrl', url)} onRemove={() => handleRemoveImage('emptyStateFormsUrl')} disabled={isSaving} />
+                  <UploadWidget id="es-mynotes-upload" label="Mis Apuntes" size="small" currentImageUrl={formState.emptyStateMyNotesUrl} onFileSelect={(url) => handleImageUpload('emptyStateMyNotesUrl', url)} onRemove={() => handleRemoveImage('emptyStateMyNotesUrl')} disabled={isSaving} />
+                  <UploadWidget id="es-resources-upload" label="Recursos" size="small" currentImageUrl={formState.emptyStateResourcesUrl} onFileSelect={(url) => handleImageUpload('emptyStateResourcesUrl', url)} onRemove={() => handleRemoveImage('emptyStateResourcesUrl')} disabled={isSaving} />
+                  <UploadWidget id="es-certs-upload" label="Certificados" size="small" currentImageUrl={formState.emptyStateCertificatesUrl} onFileSelect={(url) => handleImageUpload('emptyStateCertificatesUrl', url)} onRemove={() => handleRemoveImage('emptyStateCertificatesUrl')} disabled={isSaving} />
+                  <UploadWidget id="es-motivations-upload" label="Motivaciones" size="small" currentImageUrl={formState.emptyStateMotivationsUrl} onFileSelect={(url) => handleImageUpload('emptyStateMotivationsUrl', url)} onRemove={() => handleRemoveImage('emptyStateMotivationsUrl')} disabled={isSaving} />
+                  <UploadWidget id="es-users-upload" label="Usuarios" size="small" currentImageUrl={formState.emptyStateUsersUrl} onFileSelect={(url) => handleImageUpload('emptyStateUsersUrl', url)} onRemove={() => handleRemoveImage('emptyStateUsersUrl')} disabled={isSaving} />
+                  <UploadWidget id="es-leaderboard-upload" label="Ranking" size="small" currentImageUrl={formState.emptyStateLeaderboardUrl} onFileSelect={(url) => handleImageUpload('emptyStateLeaderboardUrl', url)} onRemove={() => handleRemoveImage('emptyStateLeaderboardUrl')} disabled={isSaving} />
+                  <UploadWidget id="es-announcements-upload" label="Anuncios" size="small" currentImageUrl={formState.emptyStateAnnouncementsUrl} onFileSelect={(url) => handleImageUpload('emptyStateAnnouncementsUrl', url)} onRemove={() => handleRemoveImage('emptyStateAnnouncementsUrl')} disabled={isSaving} />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          <Card>
+            <CardHeader><CardTitle className="text-lg flex items-center gap-2"><ImageIcon className="h-5 w-5 text-primary" />Imágenes de Navegación Pública</CardTitle></CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap justify-between gap-4">
+                <UploadWidget id="public-bg-upload" label="Fondo Público" currentImageUrl={formState.publicPagesBgUrl} onFileSelect={(url) => handleImageUpload('publicPagesBgUrl', url)} onRemove={() => handleRemoveImage('publicPagesBgUrl')} disabled={isSaving} />
+                <UploadWidget id="landing-img-upload" label="Página de Inicio" currentImageUrl={formState.landingImageUrl} onFileSelect={(url) => handleImageUpload('landingImageUrl', url)} onRemove={() => handleRemoveImage('landingImageUrl')} disabled={isSaving} />
+                <UploadWidget id="about-img-upload" label="Página 'Nosotros'" currentImageUrl={formState.aboutImageUrl} onFileSelect={(url) => handleImageUpload('aboutImageUrl', url)} onRemove={() => handleRemoveImage('aboutImageUrl')} disabled={isSaving} />
+                <UploadWidget id="benefits-img-upload" label="Beneficios (Inicio)" currentImageUrl={formState.benefitsImageUrl} onFileSelect={(url) => handleImageUpload('benefitsImageUrl', url)} onRemove={() => handleRemoveImage('benefitsImageUrl')} disabled={isSaving} />
+                <UploadWidget id="auth-img-upload" label="Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(url) => handleImageUpload('authImageUrl', url)} onRemove={() => handleRemoveImage('authImageUrl')} disabled={isSaving} />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="style" className="mt-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            <Card>
+              <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Type className="h-5 w-5 text-primary" />Tipografía</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-1.5"><Label htmlFor="fontHeadline">Fuente para Titulares</Label><Select value={formState.fontHeadline || 'Space Grotesk'} onValueChange={v => handleInputChange('fontHeadline', v)}><SelectTrigger id="fontHeadline"><SelectValue /></SelectTrigger><SelectContent>{availableFonts.map(font => <SelectItem key={font.value} value={font.value} style={{ fontFamily: fontMap[font.value].style.fontFamily }}>{font.label}</SelectItem>)}</SelectContent></Select></div>
+                <div className="space-y-1.5"><Label htmlFor="fontBody">Fuente para Cuerpo de Texto</Label><Select value={formState.fontBody || 'Inter'} onValueChange={v => handleInputChange('fontBody', v)}><SelectTrigger id="fontBody"><SelectValue /></SelectTrigger><SelectContent>{availableFonts.map(font => <SelectItem key={font.value} value={font.value} style={{ fontFamily: fontMap[font.value].style.fontFamily }}>{font.label}</SelectItem>)}</SelectContent></Select></div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle className="text-lg flex items-center gap-2"><ImagePlay className="h-5 w-5 text-primary" />Imágenes Decorativas de la Aplicación</CardTitle></CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap justify-center sm:justify-between gap-4">
+                  <UploadWidget id="dashboard-admin-upload" label="Dashboard Admin" currentImageUrl={formState.dashboardImageUrlAdmin} onFileSelect={(url) => handleImageUpload('dashboardImageUrlAdmin', url)} onRemove={() => handleRemoveImage('dashboardImageUrlAdmin')} disabled={isSaving} />
+                  <UploadWidget id="dashboard-instructor-upload" label="Dashboard Instructor" currentImageUrl={formState.dashboardImageUrlInstructor} onFileSelect={(url) => handleImageUpload('dashboardImageUrlInstructor', url)} onRemove={() => handleRemoveImage('dashboardImageUrlInstructor')} disabled={isSaving} />
+                  <UploadWidget id="dashboard-student-upload" label="Dashboard Estudiante" currentImageUrl={formState.dashboardImageUrlStudent} onFileSelect={(url) => handleImageUpload('dashboardImageUrlStudent', url)} onRemove={() => handleRemoveImage('dashboardImageUrlStudent')} disabled={isSaving} />
+                  <UploadWidget id="announcements-img-upload" label="Encabezado Anuncios" currentImageUrl={formState.announcementsImageUrl} onFileSelect={(url) => handleImageUpload('announcementsImageUrl', url)} onRemove={() => handleRemoveImage('announcementsImageUrl')} disabled={isSaving} />
+                  <UploadWidget id="security-audit-img-upload" label="Mascota de Seguridad" currentImageUrl={formState.securityAuditImageUrl} onFileSelect={(url) => handleImageUpload('securityAuditImageUrl', url)} onRemove={() => handleRemoveImage('securityAuditImageUrl')} disabled={isSaving} />
+                  <UploadWidget id="tour-mascot-upload" label="Mascota del Tour" currentImageUrl={formState.tourMascotUrl} onFileSelect={(url) => handleImageUpload('tourMascotUrl', url)} onRemove={() => handleRemoveImage('tourMascotUrl')} disabled={isSaving} />
+                  <UploadWidget id="roadmap-image-upload" label="Encabezado Ruta" currentImageUrl={formState.roadmapImageUrl} onFileSelect={(url) => handleImageUpload('roadmapImageUrl', url)} onRemove={() => handleRemoveImage('roadmapImageUrl')} disabled={isSaving} />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="security" className="mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2"><User className="h-5 w-5 text-primary" />Acceso y Registro</CardTitle>
+                <CardDescription>Configura cómo los usuarios pueden registrarse y acceder a la plataforma.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="allowPublicRegistration" className="text-base">Registro Público</Label>
+                    <p className="text-sm text-muted-foreground">Permite que nuevos usuarios se registren.</p>
+                  </div>
+                  <Switch id="allowPublicRegistration" checked={formState.allowPublicRegistration} onCheckedChange={(c) => handleSwitchChange('allowPublicRegistration', c)} disabled={isSaving} />
+                </div>
+                <div className="space-y-2 rounded-lg border p-3 shadow-sm">
+                  <Label htmlFor="emailWhitelist">Lista Blanca de Dominios</Label>
+                  <Input id="emailWhitelist" value={formState.emailWhitelist || ''} onChange={(e) => handleInputChange('emailWhitelist', e.target.value)} placeholder="ej: alprigrama.com, ejemplo.org" disabled={isSaving} />
+                  <p className="text-xs text-muted-foreground">Separa dominios con comas. Si está vacío, se permite cualquier correo.</p>
+                </div>
+              </CardContent>
+            </Card>
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2"><KeyRound className="h-5 w-5 text-primary" />Política de Contraseñas</CardTitle>
+                  <CardDescription>Define la complejidad requerida para las contraseñas.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center justify-between"><Label htmlFor="passwordMinLength">Longitud Mínima</Label><Input id="passwordMinLength" type="number" className="w-20 h-8" value={formState.passwordMinLength} onChange={(e) => handleInputChange('passwordMinLength', parseInt(e.target.value, 10) || 8)} min="8" disabled={isSaving} /></div>
+                  <div className="flex items-center justify-between"><Label htmlFor="passwordRequireUppercase">Requerir Mayúscula</Label><Switch id="passwordRequireUppercase" checked={formState.passwordRequireUppercase} onCheckedChange={(c) => handleSwitchChange('passwordRequireUppercase', c)} disabled={isSaving} /></div>
+                  <div className="flex items-center justify-between"><Label htmlFor="passwordRequireLowercase">Requerir Minúscula</Label><Switch id="passwordRequireLowercase" checked={formState.passwordRequireLowercase} onCheckedChange={(c) => handleSwitchChange('passwordRequireLowercase', c)} disabled={isSaving} /></div>
+                  <div className="flex items-center justify-between"><Label htmlFor="passwordRequireNumber">Requerir Número</Label><Switch id="passwordRequireNumber" checked={formState.passwordRequireNumber} onCheckedChange={(c) => handleSwitchChange('passwordRequireNumber', c)} disabled={isSaving} /></div>
+                  <div className="flex items-center justify-between"><Label htmlFor="passwordRequireSpecialChar">Requerir Carácter Especial</Label><Switch id="passwordRequireSpecialChar" checked={formState.passwordRequireSpecialChar} onCheckedChange={(c) => handleSwitchChange('passwordRequireSpecialChar', c)} disabled={isSaving} /></div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2"><Clock className="h-5 w-5 text-primary" />Sesión por Inactividad</CardTitle>
+                  <CardDescription>Cierra la sesión de los usuarios automáticamente.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between gap-4 rounded-lg border p-3 shadow-sm">
+                    <Label htmlFor="enableIdleTimeout" className="text-base">Activar Cierre por Inactividad</Label>
+                    <Switch id="enableIdleTimeout" checked={formState.enableIdleTimeout} onCheckedChange={(c) => handleSwitchChange('enableIdleTimeout', c)} disabled={isSaving} />
+                  </div>
+                  {formState.enableIdleTimeout && (
+                    <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+                      <Label htmlFor="idleTimeoutMinutes">Tiempo (Minutos)</Label>
+                      <Input id="idleTimeoutMinutes" type="number" className="w-24 h-8" value={formState.idleTimeoutMinutes} onChange={(e) => handleInputChange('idleTimeoutMinutes', parseInt(e.target.value, 10) || 1)} min="1" disabled={isSaving} />
                     </div>
-                </div>
-            </TabsContent>
-            
-            <TabsContent value="general" className="mt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card className="card-border-animated">
-                        <CardHeader>
-                           <CardTitle className="text-lg flex items-center gap-2"><List className="h-5 w-5 text-primary"/>Categorías de Contenido</CardTitle>
-                           <CardDescription>Gestiona las categorías usadas en cursos y la biblioteca.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="newCategoryName">Nueva Categoría</Label>
-                                <div className="flex gap-2">
-                                <Input id="newCategoryName" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="Ej: Marketing" disabled={isSaving}/>
-                                <Button onClick={handleAddCategory} disabled={isSaving || !newCategory.trim()}>Añadir</Button>
-                                </div>
-                            </div>
-                            <Separator />
-                            <div>
-                                <h4 className="text-sm font-medium mb-3">Categorías Existentes:</h4>
-                                {formState.resourceCategories.length > 0 ? (
-                                <ScrollArea className="h-96 pr-3">
-                                  <div className="space-y-2">
-                                    {formState.resourceCategories.map(category => (
-                                    <div key={category} className="flex items-center justify-between p-2.5 border rounded-lg bg-card text-sm">
-                                        <span className="flex items-center gap-2"><Tag className="h-4 w-4 text-muted-foreground"/>{category}</span>
-                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:bg-destructive/10" onClick={() => setCategoryToDelete(category)} disabled={isSaving}><Trash2 className="h-4 w-4" /><span className="sr-only">Eliminar {category}</span></Button>
-                                    </div>))}
-                                   </div>
-                                </ScrollArea>
-                                ) : ( <p className="text-sm text-muted-foreground text-center py-4">No hay categorías.</p> )}
-                            </div>
-                        </CardContent>
-                    </Card>
-                     <Card className="card-border-animated">
-                        <CardHeader>
-                            <CardTitle className="text-lg flex items-center gap-2"><Rocket className="h-5 w-5 text-primary"/>Hoja de Ruta</CardTitle>
-                            <CardDescription>Configura las fases y la visibilidad de la página de la hoja de ruta del proyecto.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                           <div>
-                                <h4 className="text-sm font-medium mb-3">Fases de la Hoja de Ruta</h4>
-                                <div className="space-y-2">
-                                    {(formState.roadmapPhases || []).map(phase => (
-                                        <div key={phase} className="flex items-center gap-2">
-                                            <Input value={phase} disabled className="bg-muted"/>
-                                            <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive" onClick={() => handleDeletePhase(phase)} disabled={isSaving}><Trash2 className="h-4 w-4"/></Button>
-                                        </div>
-                                    ))}
-                                    <div className="flex gap-2 pt-2">
-                                        <Input value={newPhase} onChange={e => setNewPhase(e.target.value)} placeholder="Nombre de la nueva fase"/>
-                                        <Button onClick={handleAddPhase} disabled={isSaving || !newPhase.trim()}>Añadir Fase</Button>
-                                    </div>
-                                </div>
-                           </div>
-                           <Separator/>
-                           <div>
-                                <h4 className="text-sm font-medium mb-3">Visibilidad por Rol</h4>
-                                <div className="space-y-2">
-                                    {(['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'] as UserRole[]).map(role => (
-                                        <div key={role} className="flex items-center justify-between rounded-lg border p-3">
-                                            <Label htmlFor={`visibility-${role}`} className="font-semibold">{getRoleInSpanish(role)}</Label>
-                                            <Checkbox id={`visibility-${role}`} checked={(formState.roadmapVisibleTo || []).includes(role)} onCheckedChange={checked => handleVisibilityChange(role, !!checked)} disabled={isSaving} />
-                                        </div>
-                                    ))}
-                                </div>
-                           </div>
-                        </CardContent>
-                    </Card>
-                </div>
-             </TabsContent>
-        </Tabs>
+                  )}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2"><Shield className="h-5 w-5 text-primary" />Autenticación de Dos Factores (2FA)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between gap-4 rounded-lg border p-3 shadow-sm">
+                    <Label htmlFor="require2faForAdmins" className="text-base">Requerir 2FA para Admins</Label>
+                    <Switch id="require2faForAdmins" checked={formState.require2faForAdmins} onCheckedChange={(c) => handleSwitchChange('require2faForAdmins', c)} disabled={isSaving} />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
 
-        <AlertDialog open={!!categoryToDelete} onOpenChange={(isOpen) => { if (!isOpen) setCategoryToDelete(null); }}>
-          <AlertDialogContent>
-              <AlertDialogHeader><AlertDialogTitle>¿Confirmar Eliminación?</AlertDialogTitle><AlertDialogDescription>Se verificará si la categoría "<strong>{categoryToDelete}</strong>" está en uso. Si no lo está, se eliminará de la lista (deberás guardar los cambios para confirmar). Si está en uso, se te notificará.</AlertDialogDescription></AlertDialogHeader>
-              <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><AlertDialogCancel disabled={isCheckingCategory}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDeleteCategory} disabled={isCheckingCategory} className={buttonVariants({ variant: "destructive" })}>{isCheckingCategory ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Trash2 className="mr-2 h-4 w-4" />}Sí, eliminar</AlertDialogAction></AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <TabsContent value="general" className="mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="card-border-animated">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2"><List className="h-5 w-5 text-primary" />Categorías de Contenido</CardTitle>
+                <CardDescription>Gestiona las categorías usadas en cursos y la biblioteca.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="newCategoryName">Nueva Categoría</Label>
+                  <div className="flex gap-2">
+                    <Input id="newCategoryName" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="Ej: Marketing" disabled={isSaving} />
+                    <Button onClick={handleAddCategory} disabled={isSaving || !newCategory.trim()}>Añadir</Button>
+                  </div>
+                </div>
+                <Separator />
+                <div>
+                  <h4 className="text-sm font-medium mb-3">Categorías Existentes:</h4>
+                  {formState.resourceCategories.length > 0 ? (
+                    <ScrollArea className="h-96 pr-3">
+                      <div className="space-y-2">
+                        {formState.resourceCategories.map(category => (
+                          <div key={category} className="flex items-center justify-between p-2.5 border rounded-lg bg-card text-sm">
+                            <span className="flex items-center gap-2"><Tag className="h-4 w-4 text-muted-foreground" />{category}</span>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:bg-destructive/10" onClick={() => setCategoryToDelete(category)} disabled={isSaving}><Trash2 className="h-4 w-4" /><span className="sr-only">Eliminar {category}</span></Button>
+                          </div>))}
+                      </div>
+                    </ScrollArea>
+                  ) : (<p className="text-sm text-muted-foreground text-center py-4">No hay categorías.</p>)}
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="card-border-animated">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2"><Rocket className="h-5 w-5 text-primary" />Hoja de Ruta</CardTitle>
+                <CardDescription>Configura las fases y la visibilidad de la página de la hoja de ruta del proyecto.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <h4 className="text-sm font-medium mb-3">Fases de la Hoja de Ruta</h4>
+                  <div className="space-y-2">
+                    {(formState.roadmapPhases || []).map(phase => (
+                      <div key={phase} className="flex items-center gap-2">
+                        <Input value={phase} disabled className="bg-muted" />
+                        <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive" onClick={() => handleDeletePhase(phase)} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
+                      </div>
+                    ))}
+                    <div className="flex gap-2 pt-2">
+                      <Input value={newPhase} onChange={e => setNewPhase(e.target.value)} placeholder="Nombre de la nueva fase" />
+                      <Button onClick={handleAddPhase} disabled={isSaving || !newPhase.trim()}>Añadir Fase</Button>
+                    </div>
+                  </div>
+                </div>
+                <Separator />
+                <div>
+                  <h4 className="text-sm font-medium mb-3">Visibilidad por Rol</h4>
+                  <div className="space-y-2">
+                    {(['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'] as UserRole[]).map(role => (
+                      <div key={role} className="flex items-center justify-between rounded-lg border p-3">
+                        <Label htmlFor={`visibility-${role}`} className="font-semibold">{getRoleInSpanish(role)}</Label>
+                        <Checkbox id={`visibility-${role}`} checked={(formState.roadmapVisibleTo || []).includes(role)} onCheckedChange={checked => handleVisibilityChange(role, !!checked)} disabled={isSaving} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      <AlertDialog open={!!categoryToDelete} onOpenChange={(isOpen) => { if (!isOpen) setCategoryToDelete(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader><AlertDialogTitle>¿Confirmar Eliminación?</AlertDialogTitle><AlertDialogDescription>Se verificará si la categoría "<strong>{categoryToDelete}</strong>" está en uso. Si no lo está, se eliminará de la lista (deberás guardar los cambios para confirmar). Si está en uso, se te notificará.</AlertDialogDescription></AlertDialogHeader>
+          <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><AlertDialogCancel disabled={isCheckingCategory}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDeleteCategory} disabled={isCheckingCategory} className={buttonVariants({ variant: "destructive" })}>{isCheckingCategory ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}Sí, eliminar</AlertDialogAction></AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
