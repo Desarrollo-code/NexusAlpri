@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -34,10 +34,14 @@ import {
   TrendingUp,
   Crown,
   Zap,
+  Type,
+  AlignLeft,
+  ArrowUpDown,
+  MessageSquare,
 } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
-import type { Quiz as AppQuiz, Question as AppQuestion } from '@/types';
+import type { Quiz as AppQuiz, Question as AppQuestion, QuestionType } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 import { Label } from '../ui/label';
@@ -71,16 +75,17 @@ import { CSS } from '@dnd-kit/utilities';
 const VIEWPORT_SIZES = [
   { id: 'mobile', label: 'Móvil', icon: Smartphone, width: '375px', height: '667px', scale: 0.8 },
   { id: 'tablet', label: 'Tablet', icon: Tablet, width: '768px', height: '1024px', scale: 0.7 },
-  { id: 'desktop', label: 'Desktop', icon: Monitor, width: '1024px', height: '768px', scale: 1 },
+  { id: 'desktop', label: 'Escritorio', icon: Monitor, width: '1024px', height: '768px', scale: 1 },
 ] as const;
 
 const QUESTION_TYPES = [
-  { value: 'SINGLE_CHOICE', label: 'Opción Única', icon: Circle },
-  { value: 'MULTIPLE_CHOICE', label: 'Opción Múltiple', icon: CheckSquare },
-  { value: 'TRUE_FALSE', label: 'Verdadero/Falso', icon: BrainCircuit },
-  { value: 'SHORT_ANSWER', label: 'Respuesta Corta', icon: FileText },
-  { value: 'MATCHING', label: 'Emparejamiento', icon: Link },
-  { value: 'ORDERING', label: 'Ordenamiento', icon: ListOrdered },
+  { value: 'SINGLE_CHOICE', label: 'Opción Única', icon: Circle, color: 'bg-blue-500' },
+  { value: 'MULTIPLE_CHOICE', label: 'Opción Múltiple', icon: CheckSquare, color: 'bg-green-500' },
+  { value: 'TRUE_FALSE', label: 'Verdadero/Falso', icon: BrainCircuit, color: 'bg-purple-500' },
+  { value: 'SHORT_ANSWER', label: 'Respuesta Corta', icon: Type, color: 'bg-orange-500' },
+  { value: 'LONG_ANSWER', label: 'Respuesta Larga', icon: AlignLeft, color: 'bg-red-500' },
+  { value: 'MATCHING', label: 'Emparejamiento', icon: Link, color: 'bg-indigo-500' },
+  { value: 'ORDERING', label: 'Ordenamiento', icon: ListOrdered, color: 'bg-pink-500' },
 ] as const;
 
 const DIFFICULTY_LEVELS = [
@@ -134,6 +139,7 @@ function SortableQuestionItem({
   };
 
   const difficulty = DIFFICULTY_LEVELS.find(d => d.value === question.difficulty) || DIFFICULTY_LEVELS[1];
+  const questionType = QUESTION_TYPES.find(t => t.value === question.type) || QUESTION_TYPES[0];
 
   return (
     <div
@@ -176,19 +182,29 @@ function SortableQuestionItem({
                   </span>
                 </div>
                 
-                <Badge 
-                  variant="outline" 
-                  className={cn(
-                    "text-xs px-1.5 py-0",
-                    difficulty.value === 'easy' && "border-green-500/30 text-green-600",
-                    difficulty.value === 'medium' && "border-yellow-500/30 text-yellow-600",
-                    difficulty.value === 'hard' && "border-red-500/30 text-red-600",
-                    difficulty.value === 'expert' && "border-purple-500/30 text-purple-600"
-                  )}
-                >
-                  <div className={`w-1.5 h-1.5 rounded-full mr-1 ${difficulty.color}`} />
-                  {difficulty.label}
-                </Badge>
+                <div className="flex items-center gap-1">
+                  <Badge 
+                    variant="outline" 
+                    className={cn(
+                      "text-xs px-1.5 py-0",
+                      difficulty.value === 'easy' && "border-green-500/30 text-green-600",
+                      difficulty.value === 'medium' && "border-yellow-500/30 text-yellow-600",
+                      difficulty.value === 'hard' && "border-red-500/30 text-red-600",
+                      difficulty.value === 'expert' && "border-purple-500/30 text-purple-600"
+                    )}
+                  >
+                    <div className={`w-1.5 h-1.5 rounded-full mr-1 ${difficulty.color}`} />
+                    {difficulty.label}
+                  </Badge>
+                  
+                  <Badge 
+                    variant="outline" 
+                    className="text-xs px-1.5 py-0"
+                  >
+                    <div className={`w-1.5 h-1.5 rounded-full mr-1 ${questionType.color}`} />
+                    {questionType.label}
+                  </Badge>
+                </div>
               </div>
               
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -397,6 +413,149 @@ function QuestionList({
 }
 
 // ============================================================================
+// COMPONENT: OptionRenderer
+// ============================================================================
+
+interface OptionRendererProps {
+  option: any;
+  index: number;
+  questionType: QuestionType;
+  isEditing: boolean;
+  onStartEdit: () => void;
+  onTextChange: (text: string) => void;
+  onDelete: () => void;
+  onToggleCorrect: () => void;
+  isCorrect: boolean;
+  showCorrectIndicator?: boolean;
+}
+
+function OptionRenderer({
+  option,
+  index,
+  questionType,
+  isEditing,
+  onStartEdit,
+  onTextChange,
+  onDelete,
+  onToggleCorrect,
+  isCorrect,
+  showCorrectIndicator = true,
+}: OptionRendererProps) {
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (isEditing && textAreaRef.current) {
+      textAreaRef.current.style.height = 'auto';
+      textAreaRef.current.style.height = `${textAreaRef.current.scrollHeight}px`;
+      textAreaRef.current.focus();
+    }
+  }, [isEditing]);
+
+  const getOptionPrefix = () => {
+    switch (questionType) {
+      case 'SINGLE_CHOICE':
+      case 'MULTIPLE_CHOICE':
+        return String.fromCharCode(65 + index);
+      case 'ORDERING':
+        return `${index + 1}.`;
+      case 'MATCHING':
+        return `A${index + 1} →`;
+      default:
+        return `${index + 1}.`;
+    }
+  };
+
+  return (
+    <div
+      className={cn(
+        "relative group p-4 rounded-lg border transition-all duration-200",
+        "hover:shadow-sm",
+        isCorrect && showCorrectIndicator
+          ? "border-emerald-500 bg-emerald-500/5" 
+          : "border-border bg-card"
+      )}
+    >
+      {/* Option prefix */}
+      <div className="absolute -left-3 top-1/2 -translate-y-1/2">
+        <div className={cn(
+          "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold",
+          isCorrect && showCorrectIndicator
+            ? "bg-emerald-500 text-white" 
+            : "bg-muted text-muted-foreground"
+        )}>
+          {getOptionPrefix()}
+        </div>
+      </div>
+
+      {/* Option content */}
+      <div className="ml-4">
+        {isEditing ? (
+          <textarea
+            ref={textAreaRef}
+            value={option.text}
+            onChange={(e) => onTextChange(e.target.value)}
+            onBlur={() => {}}
+            className="w-full bg-transparent border-none outline-none resize-none"
+            rows={2}
+          />
+        ) : (
+          <div
+            onClick={onStartEdit}
+            className="cursor-text hover:bg-muted/50 transition-colors rounded p-2 -m-2"
+          >
+            <p className="text-lg">{option.text || 'Haz clic para editar esta opción'}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Option actions */}
+      <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        {showCorrectIndicator && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={onToggleCorrect}
+                >
+                  <Check className={cn(
+                    "h-4 w-4",
+                    isCorrect ? "text-emerald-500" : "text-muted-foreground"
+                  )} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Marcar como correcta</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 hover:text-destructive"
+                onClick={onDelete}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Eliminar opción</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
 // COMPONENT: QuestionCanvas
 // ============================================================================
 
@@ -408,6 +567,7 @@ interface QuestionCanvasProps {
   onAddOption: () => void;
   onDeleteOption: (optionId: string) => void;
   onSetCorrectOption: (optionId: string) => void;
+  onAddMatchingPair?: () => void;
 }
 
 function QuestionCanvas({
@@ -421,10 +581,10 @@ function QuestionCanvas({
 }: QuestionCanvasProps) {
   const [isEditingText, setIsEditingText] = useState(false);
   const [editingOptionId, setEditingOptionId] = useState<string | null>(null);
-  const textAreaRef = React.useRef<HTMLTextAreaElement>(null);
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-resize textarea
-  React.useEffect(() => {
+  useEffect(() => {
     if (textAreaRef.current) {
       textAreaRef.current.style.height = 'auto';
       textAreaRef.current.style.height = `${textAreaRef.current.scrollHeight}px`;
@@ -439,190 +599,357 @@ function QuestionCanvas({
     setEditingOptionId(null);
   };
 
-  const renderQuestionContent = () => {
-    return (
-      <div className="space-y-6">
-        {/* Question Text */}
-        <div className="relative group">
-          {isEditingText ? (
-            <textarea
-              ref={textAreaRef}
-              value={question.text || ''}
-              onChange={(e) => onQuestionChange({ text: e.target.value })}
-              onBlur={handleTextBlur}
-              className="w-full text-2xl font-bold bg-transparent border-none outline-none resize-none"
-              autoFocus
-              rows={3}
-            />
-          ) : (
-            <div
-              onClick={() => setIsEditingText(true)}
-              className="cursor-text hover:bg-muted/50 transition-colors rounded-lg p-2 -m-2"
-            >
-              <h2 className="text-2xl font-bold min-h-[60px]">
-                {question.text || 'Haz clic para editar la pregunta'}
-              </h2>
-            </div>
-          )}
-          
-          <div className="absolute -top-2 right-0 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6"
-              onClick={() => setIsEditingText(true)}
-            >
-              <PenLine className="h-3 w-3" />
-            </Button>
-          </div>
-        </div>
+  const handleOptionTextChange = (optionId: string, text: string) => {
+    onOptionChange(optionId, { text });
+  };
 
-        {/* Question Image */}
-        {question.imageUrl && (
-          <div className="relative rounded-xl overflow-hidden border border-border">
-            {/* Note: For production, configure next.config.js with allowed image domains */}
-            <div className="w-full h-48 bg-muted relative">
-              <Image
-                src={question.imageUrl}
-                alt="Question image"
-                fill
-                className="object-cover"
-                unoptimized={question.imageUrl.startsWith('blob:')}
+  const handleAddDefaultOptions = useCallback(() => {
+    if (question.type === 'TRUE_FALSE' && (!question.options || question.options.length === 0)) {
+      const trueOption = { id: generateId(), text: 'Verdadero', isCorrect: false, points: 0 };
+      const falseOption = { id: generateId(), text: 'Falso', isCorrect: false, points: 0 };
+      
+      onQuestionChange({ 
+        options: [trueOption, falseOption] 
+      });
+    } else {
+      onAddOption();
+    }
+  }, [question.type, question.options, onQuestionChange, onAddOption]);
+
+  const renderQuestionContent = () => {
+    const questionType = QUESTION_TYPES.find(t => t.value === question.type) || QUESTION_TYPES[0];
+
+    switch (question.type) {
+      case 'SHORT_ANSWER':
+      case 'LONG_ANSWER':
+        return (
+          <div className="space-y-6">
+            {/* Question Text */}
+            <div className="relative group">
+              {isEditingText ? (
+                <textarea
+                  ref={textAreaRef}
+                  value={question.text || ''}
+                  onChange={(e) => onQuestionChange({ text: e.target.value })}
+                  onBlur={handleTextBlur}
+                  className="w-full text-2xl font-bold bg-transparent border-none outline-none resize-none"
+                  autoFocus
+                  rows={3}
+                />
+              ) : (
+                <div
+                  onClick={() => setIsEditingText(true)}
+                  className="cursor-text hover:bg-muted/50 transition-colors rounded-lg p-2 -m-2"
+                >
+                  <h2 className="text-2xl font-bold min-h-[60px]">
+                    {question.text || 'Haz clic para editar la pregunta'}
+                  </h2>
+                </div>
+              )}
+            </div>
+
+            {/* Answer Field */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold">Campo de respuesta</h3>
+              <div className="p-4 rounded-lg border border-dashed border-border bg-muted/20">
+                <p className="text-muted-foreground">
+                  {question.type === 'SHORT_ANSWER' 
+                    ? 'Los estudiantes escribirán una respuesta corta aquí' 
+                    : 'Los estudiantes escribirán una respuesta extensa aquí'}
+                </p>
+              </div>
+            </div>
+
+            {/* Explanation */}
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold">Explicación</h3>
+              <Textarea
+                value={question.explanation || ''}
+                onChange={(e) => onQuestionChange({ explanation: e.target.value })}
+                placeholder="Explica la respuesta correcta (opcional)"
+                rows={3}
               />
             </div>
-            <div className="absolute top-2 right-2 opacity-0 hover:opacity-100 transition-opacity">
-              <Button
-                variant="secondary"
-                size="icon"
-                className="h-8 w-8 bg-background/80 backdrop-blur-sm"
-                onClick={() => onQuestionChange({ imageUrl: null })}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+          </div>
+        );
+
+      case 'MATCHING':
+        return (
+          <div className="space-y-6">
+            {/* Question Text */}
+            <div className="relative group">
+              {isEditingText ? (
+                <textarea
+                  ref={textAreaRef}
+                  value={question.text || ''}
+                  onChange={(e) => onQuestionChange({ text: e.target.value })}
+                  onBlur={handleTextBlur}
+                  className="w-full text-2xl font-bold bg-transparent border-none outline-none resize-none"
+                  autoFocus
+                  rows={3}
+                />
+              ) : (
+                <div
+                  onClick={() => setIsEditingText(true)}
+                  className="cursor-text hover:bg-muted/50 transition-colors rounded-lg p-2 -m-2"
+                >
+                  <h2 className="text-2xl font-bold min-h-[60px]">
+                    {question.text || 'Haz clic para editar la pregunta'}
+                  </h2>
+                </div>
+              )}
+            </div>
+
+            {/* Matching Pairs */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Pares de emparejamiento</h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddDefaultOptions}
+                  className="gap-1"
+                >
+                  <PlusCircle className="h-4 w-4" />
+                  Añadir par
+                </Button>
+              </div>
+
+              <div className="space-y-4">
+                {question.options?.map((option, index) => (
+                  <div key={option.id} className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <Input
+                        value={option.left || ''}
+                        onChange={(e) => onOptionChange(option.id, { left: e.target.value })}
+                        placeholder="Elemento izquierdo"
+                        className="h-12"
+                      />
+                    </div>
+                    <div className="text-muted-foreground">
+                      <ArrowUpDown className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1">
+                      <Input
+                        value={option.right || ''}
+                        onChange={(e) => onOptionChange(option.id, { right: e.target.value })}
+                        placeholder="Elemento derecho"
+                        className="h-12"
+                      />
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 hover:text-destructive"
+                      onClick={() => onDeleteOption(option.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Explanation */}
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold">Explicación</h3>
+              <Textarea
+                value={question.explanation || ''}
+                onChange={(e) => onQuestionChange({ explanation: e.target.value })}
+                placeholder="Explica por qué la respuesta es correcta (opcional)"
+                rows={3}
+              />
             </div>
           </div>
-        )}
+        );
 
-        {/* Options */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Opciones de respuesta</h3>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onAddOption}
-              className="gap-1"
-            >
-              <PlusCircle className="h-4 w-4" />
-              Añadir opción
-            </Button>
+      case 'ORDERING':
+        return (
+          <div className="space-y-6">
+            {/* Question Text */}
+            <div className="relative group">
+              {isEditingText ? (
+                <textarea
+                  ref={textAreaRef}
+                  value={question.text || ''}
+                  onChange={(e) => onQuestionChange({ text: e.target.value })}
+                  onBlur={handleTextBlur}
+                  className="w-full text-2xl font-bold bg-transparent border-none outline-none resize-none"
+                  autoFocus
+                  rows={3}
+                />
+              ) : (
+                <div
+                  onClick={() => setIsEditingText(true)}
+                  className="cursor-text hover:bg-muted/50 transition-colors rounded-lg p-2 -m-2"
+                >
+                  <h2 className="text-2xl font-bold min-h-[60px]">
+                    {question.text || 'Haz clic para editar la pregunta'}
+                  </h2>
+                </div>
+              )}
+            </div>
+
+            {/* Ordering Items */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Elementos a ordenar</h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onAddOption}
+                  className="gap-1"
+                >
+                  <PlusCircle className="h-4 w-4" />
+                  Añadir elemento
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                {question.options?.map((option, index) => (
+                  <OptionRenderer
+                    key={option.id}
+                    option={option}
+                    index={index}
+                    questionType={question.type}
+                    isEditing={editingOptionId === option.id}
+                    onStartEdit={() => setEditingOptionId(option.id)}
+                    onTextChange={(text) => handleOptionTextChange(option.id, text)}
+                    onDelete={() => onDeleteOption(option.id)}
+                    onToggleCorrect={() => onSetCorrectOption(option.id)}
+                    isCorrect={option.isCorrect}
+                    showCorrectIndicator={false}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Explanation */}
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold">Explicación</h3>
+              <Textarea
+                value={question.explanation || ''}
+                onChange={(e) => onQuestionChange({ explanation: e.target.value })}
+                placeholder="Explica el orden correcto (opcional)"
+                rows={3}
+              />
+            </div>
           </div>
+        );
 
-          <div className="space-y-2">
-            {question.options?.map((option, index) => (
-              <div
-                key={option.id}
-                className={cn(
-                  "relative group p-4 rounded-lg border transition-all duration-200",
-                  "hover:shadow-sm",
-                  option.isCorrect 
-                    ? "border-emerald-500 bg-emerald-500/5" 
-                    : "border-border bg-card"
-                )}
-              >
-                {/* Option number */}
-                <div className="absolute -left-3 top-1/2 -translate-y-1/2">
-                  <div className={cn(
-                    "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold",
-                    option.isCorrect 
-                      ? "bg-emerald-500 text-white" 
-                      : "bg-muted text-muted-foreground"
-                  )}>
-                    {String.fromCharCode(65 + index)}
-                  </div>
+      default: // SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE
+        return (
+          <div className="space-y-6">
+            {/* Question Text */}
+            <div className="relative group">
+              {isEditingText ? (
+                <textarea
+                  ref={textAreaRef}
+                  value={question.text || ''}
+                  onChange={(e) => onQuestionChange({ text: e.target.value })}
+                  onBlur={handleTextBlur}
+                  className="w-full text-2xl font-bold bg-transparent border-none outline-none resize-none"
+                  autoFocus
+                  rows={3}
+                />
+              ) : (
+                <div
+                  onClick={() => setIsEditingText(true)}
+                  className="cursor-text hover:bg-muted/50 transition-colors rounded-lg p-2 -m-2"
+                >
+                  <h2 className="text-2xl font-bold min-h-[60px]">
+                    {question.text || 'Haz clic para editar la pregunta'}
+                  </h2>
                 </div>
+              )}
+              
+              <div className="absolute -top-2 right-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={() => setIsEditingText(true)}
+                >
+                  <PenLine className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
 
-                {/* Option content */}
-                <div className="ml-4">
-                  {editingOptionId === option.id ? (
-                    <textarea
-                      value={option.text}
-                      onChange={(e) => onOptionChange(option.id, { text: e.target.value })}
-                      onBlur={handleOptionTextBlur}
-                      className="w-full bg-transparent border-none outline-none resize-none"
-                      autoFocus
-                      rows={2}
-                    />
-                  ) : (
-                    <div
-                      onClick={() => setEditingOptionId(option.id)}
-                      className="cursor-text hover:bg-muted/50 transition-colors rounded p-2 -m-2"
-                    >
-                      <p className="text-lg">{option.text || 'Haz clic para editar esta opción'}</p>
-                    </div>
-                  )}
+            {/* Question Image */}
+            {question.imageUrl && (
+              <div className="relative rounded-xl overflow-hidden border border-border">
+                <div className="w-full h-48 bg-muted relative">
+                  <Image
+                    src={question.imageUrl}
+                    alt="Question image"
+                    fill
+                    className="object-cover"
+                    unoptimized={question.imageUrl.startsWith('blob:')}
+                  />
                 </div>
-
-                {/* Option actions */}
-                <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          onClick={() => onSetCorrectOption(option.id)}
-                        >
-                          <Check className={cn(
-                            "h-4 w-4",
-                            option.isCorrect ? "text-emerald-500" : "text-muted-foreground"
-                          )} />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Marcar como correcta</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-
-                  {question.options.length > 1 && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 hover:text-destructive"
-                            onClick={() => onDeleteOption(option.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Eliminar opción</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
+                <div className="absolute top-2 right-2 opacity-0 hover:opacity-100 transition-opacity">
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    className="h-8 w-8 bg-background/80 backdrop-blur-sm"
+                    onClick={() => onQuestionChange({ imageUrl: null })}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
+            )}
 
-        {/* Explanation */}
-        <div className="space-y-2">
-          <h3 className="text-lg font-semibold">Explicación</h3>
-          <Textarea
-            value={question.explanation || ''}
-            onChange={(e) => onQuestionChange({ explanation: e.target.value })}
-            placeholder="Explica por qué la respuesta es correcta (opcional)"
-            rows={3}
-          />
-        </div>
-      </div>
-    );
+            {/* Options */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">
+                  {question.type === 'MULTIPLE_CHOICE' ? 'Opciones (selección múltiple)' : 
+                   question.type === 'TRUE_FALSE' ? 'Opciones (Verdadero/Falso)' : 
+                   'Opciones de respuesta'}
+                </h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddDefaultOptions}
+                  className="gap-1"
+                >
+                  <PlusCircle className="h-4 w-4" />
+                  {question.type === 'TRUE_FALSE' ? 'Restablecer opciones' : 'Añadir opción'}
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                {question.options?.map((option, index) => (
+                  <OptionRenderer
+                    key={option.id}
+                    option={option}
+                    index={index}
+                    questionType={question.type}
+                    isEditing={editingOptionId === option.id}
+                    onStartEdit={() => setEditingOptionId(option.id)}
+                    onTextChange={(text) => handleOptionTextChange(option.id, text)}
+                    onDelete={() => onDeleteOption(option.id)}
+                    onToggleCorrect={() => onSetCorrectOption(option.id)}
+                    isCorrect={option.isCorrect}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Explanation */}
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold">Explicación</h3>
+              <Textarea
+                value={question.explanation || ''}
+                onChange={(e) => onQuestionChange({ explanation: e.target.value })}
+                placeholder="Explica por qué la respuesta es correcta (opcional)"
+                rows={3}
+              />
+            </div>
+          </div>
+        );
+    }
   };
 
   return (
@@ -705,6 +1032,66 @@ function PropertiesPanel({
   onOptionUpdate,
   onQuizUpdate,
 }: PropertiesPanelProps) {
+  const [selectedQuestionType, setSelectedQuestionType] = useState<QuestionType>('SINGLE_CHOICE');
+
+  useEffect(() => {
+    if (question?.type) {
+      setSelectedQuestionType(question.type);
+    }
+  }, [question]);
+
+  const handleQuestionTypeChange = (value: string) => {
+    const newType = value as QuestionType;
+    setSelectedQuestionType(newType);
+    
+    // Reset options based on question type
+    let newOptions = [];
+    switch (newType) {
+      case 'TRUE_FALSE':
+        newOptions = [
+          { id: generateId(), text: 'Verdadero', isCorrect: false, points: 0 },
+          { id: generateId(), text: 'Falso', isCorrect: false, points: 0 },
+        ];
+        break;
+      case 'SINGLE_CHOICE':
+        newOptions = [
+          { id: generateId(), text: 'Opción 1', isCorrect: true, points: 10 },
+          { id: generateId(), text: 'Opción 2', isCorrect: false, points: 0 },
+          { id: generateId(), text: 'Opción 3', isCorrect: false, points: 0 },
+        ];
+        break;
+      case 'MULTIPLE_CHOICE':
+        newOptions = [
+          { id: generateId(), text: 'Opción 1', isCorrect: true, points: 5 },
+          { id: generateId(), text: 'Opción 2', isCorrect: true, points: 5 },
+          { id: generateId(), text: 'Opción 3', isCorrect: false, points: 0 },
+        ];
+        break;
+      case 'SHORT_ANSWER':
+      case 'LONG_ANSWER':
+        newOptions = [];
+        break;
+      case 'MATCHING':
+        newOptions = [
+          { id: generateId(), left: 'Capital de Francia', right: 'París', isCorrect: true, points: 10 },
+          { id: generateId(), left: 'Capital de España', right: 'Madrid', isCorrect: true, points: 10 },
+        ];
+        break;
+      case 'ORDERING':
+        newOptions = [
+          { id: generateId(), text: 'Primer paso', isCorrect: false, points: 0 },
+          { id: generateId(), text: 'Segundo paso', isCorrect: false, points: 0 },
+          { id: generateId(), text: 'Tercer paso', isCorrect: false, points: 0 },
+        ];
+        break;
+    }
+
+    onQuestionUpdate({ 
+      type: newType,
+      options: newOptions 
+    });
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'question' | 'quiz') => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -745,16 +1132,16 @@ function PropertiesPanel({
               <Label htmlFor="question-type">Tipo de pregunta</Label>
               <Select
                 value={question.type}
-                onValueChange={(value) => onQuestionUpdate({ type: value as any })}
+                onValueChange={handleQuestionTypeChange}
               >
-                <SelectTrigger id="question-type">
+                <SelectTrigger id="question-type" className="h-10">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {QUESTION_TYPES.map((type) => (
                     <SelectItem key={type.value} value={type.value}>
                       <div className="flex items-center gap-2">
-                        <type.icon className="h-4 w-4" />
+                        <div className={`w-2 h-2 rounded-full ${type.color}`} />
                         {type.label}
                       </div>
                     </SelectItem>
@@ -769,7 +1156,7 @@ function PropertiesPanel({
                 value={question.difficulty}
                 onValueChange={(value) => onQuestionUpdate({ difficulty: value as any })}
               >
-                <SelectTrigger id="question-difficulty">
+                <SelectTrigger id="question-difficulty" className="h-10">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -792,13 +1179,21 @@ function PropertiesPanel({
                   id="question-points"
                   value={[question.basePoints || 10]}
                   onValueChange={([value]) => onQuestionUpdate({ basePoints: value })}
+                  min={0}
                   max={100}
-                  step={5}
+                  step={1}
                   className="flex-1"
                 />
-                <span className="text-sm font-semibold w-12 text-right">
-                  {question.basePoints || 10} pts
-                </span>
+                <div className="w-16 text-right">
+                  <Input
+                    type="number"
+                    value={question.basePoints || 10}
+                    onChange={(e) => onQuestionUpdate({ basePoints: parseInt(e.target.value) || 0 })}
+                    min={0}
+                    max={100}
+                    className="h-8 w-16 text-sm"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -828,14 +1223,21 @@ function PropertiesPanel({
                     id="time-seconds"
                     value={[question.timeLimit]}
                     onValueChange={([value]) => onQuestionUpdate({ timeLimit: value })}
-                    min={10}
+                    min={5}
                     max={300}
-                    step={10}
+                    step={5}
                     className="flex-1"
                   />
-                  <span className="text-sm font-semibold w-12 text-right">
-                    {question.timeLimit}s
-                  </span>
+                  <div className="w-16 text-right">
+                    <Input
+                      type="number"
+                      value={question.timeLimit}
+                      onChange={(e) => onQuestionUpdate({ timeLimit: parseInt(e.target.value) || 30 })}
+                      min={5}
+                      max={300}
+                      className="h-8 w-16 text-sm"
+                    />
+                  </div>
                 </div>
               </div>
             )}
@@ -894,6 +1296,7 @@ function PropertiesPanel({
                 value={quiz.title}
                 onChange={(e) => onQuizUpdate({ title: e.target.value })}
                 placeholder="Escribe el título del quiz"
+                className="h-10"
               />
             </div>
 
@@ -905,6 +1308,7 @@ function PropertiesPanel({
                 onChange={(e) => onQuizUpdate({ description: e.target.value })}
                 placeholder="Describe el propósito de este quiz"
                 rows={3}
+                className="resize-none"
               />
             </div>
 
@@ -932,18 +1336,35 @@ function PropertiesPanel({
             <div>
               <Label htmlFor="quiz-theme">Tema de color</Label>
               <div className="flex gap-2 mt-2">
-                {['blue', 'green', 'purple', 'orange', 'pink'].map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => onQuizUpdate({ theme: color })}
-                    className={cn(
-                      "w-8 h-8 rounded-full border-2",
-                      quiz.theme === color 
-                        ? `border-${color}-500 bg-${color}-500` 
-                        : "border-border"
-                    )}
-                    style={{ backgroundColor: `var(--${color}-500)` }}
-                  />
+                {[
+                  { color: 'blue', name: 'Azul' },
+                  { color: 'green', name: 'Verde' },
+                  { color: 'purple', name: 'Morado' },
+                  { color: 'orange', name: 'Naranja' },
+                  { color: 'pink', name: 'Rosa' },
+                ].map((theme) => (
+                  <TooltipProvider key={theme.color}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => onQuizUpdate({ theme: theme.color })}
+                          className={cn(
+                            "w-8 h-8 rounded-full border-2 transition-all",
+                            quiz.theme === theme.color 
+                              ? "border-primary scale-110" 
+                              : "border-border hover:scale-105"
+                          )}
+                          style={{ 
+                            backgroundColor: `var(--${theme.color}-500)` 
+                          }}
+                          aria-label={theme.name}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{theme.name}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 ))}
               </div>
             </div>
@@ -1056,6 +1477,7 @@ function PropertiesPanel({
                   value={option.text}
                   onChange={(e) => onOptionUpdate({ text: e.target.value })}
                   rows={3}
+                  className="resize-none"
                 />
               </div>
 
@@ -1076,12 +1498,19 @@ function PropertiesPanel({
                     value={[option.points || 0]}
                     onValueChange={([value]) => onOptionUpdate({ points: value })}
                     max={50}
-                    step={5}
+                    step={1}
                     className="flex-1"
                   />
-                  <span className="text-sm font-semibold w-12 text-right">
-                    {option.points || 0} pts
-                  </span>
+                  <div className="w-16 text-right">
+                    <Input
+                      type="number"
+                      value={option.points || 0}
+                      onChange={(e) => onOptionUpdate({ points: parseInt(e.target.value) || 0 })}
+                      min={0}
+                      max={50}
+                      className="h-8 w-16 text-sm"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -1101,9 +1530,16 @@ interface QuizEditorModalProps {
   onClose: () => void;
   quiz: AppQuiz;
   onSave: (updatedQuiz: AppQuiz) => void;
+  onPreview?: () => void;
 }
 
-export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: QuizEditorModalProps) {
+export function QuizEditorModal({ 
+  isOpen, 
+  onClose, 
+  quiz, 
+  onSave,
+  onPreview 
+}: QuizEditorModalProps) {
   const [localQuiz, setLocalQuiz] = useState<AppQuiz>(quiz);
   const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
   const [viewport, setViewport] = useState<typeof VIEWPORT_SIZES[number]>(VIEWPORT_SIZES[2]); // Default desktop
@@ -1117,9 +1553,14 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: QuizEditorMod
     if (quiz && isOpen) {
       const clonedQuiz = {
         ...quiz,
-        questions: quiz.questions.map(q => ({
+        questions: quiz.questions.map((q, index) => ({
           ...q,
-          options: q.options?.map(opt => ({ ...opt })) || []
+          order: index,
+          options: q.options?.map(opt => ({ 
+            ...opt,
+            left: (opt as any).left || '',
+            right: (opt as any).right || ''
+          })) || []
         }))
       };
       setLocalQuiz(clonedQuiz);
@@ -1146,9 +1587,9 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: QuizEditorMod
     const question = newQuestions[activeQuestionIndex];
     const optionIndex = question.options?.findIndex(opt => opt.id === optionId);
     
-    if (optionIndex !== undefined && optionIndex !== -1) {
-      question.options![optionIndex] = {
-        ...question.options![optionIndex],
+    if (optionIndex !== undefined && optionIndex !== -1 && question.options) {
+      question.options[optionIndex] = {
+        ...question.options[optionIndex],
         ...updates,
       };
       setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
@@ -1170,6 +1611,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: QuizEditorMod
       options: [
         { id: generateId(), text: 'Opción correcta', isCorrect: true, points: 10 },
         { id: generateId(), text: 'Opción incorrecta', isCorrect: false, points: 0 },
+        { id: generateId(), text: 'Otra opción incorrecta', isCorrect: false, points: 0 },
       ],
     };
     
@@ -1222,7 +1664,9 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: QuizEditorMod
       id: generateId(),
       text: 'Nueva opción',
       isCorrect: false,
-      points: 0
+      points: 0,
+      left: '',
+      right: ''
     };
     
     const newQuestions = [...localQuiz.questions];
@@ -1245,10 +1689,24 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: QuizEditorMod
     const newQuestions = [...localQuiz.questions];
     const question = newQuestions[activeQuestionIndex];
     
-    question.options = question.options?.map(opt => ({
-      ...opt,
-      isCorrect: opt.id === optionId
-    })) || [];
+    // For single choice, only one option can be correct
+    if (question.type === 'SINGLE_CHOICE') {
+      question.options = question.options?.map(opt => ({
+        ...opt,
+        isCorrect: opt.id === optionId
+      })) || [];
+    } else if (question.type === 'MULTIPLE_CHOICE') {
+      // For multiple choice, toggle the option
+      question.options = question.options?.map(opt => 
+        opt.id === optionId ? { ...opt, isCorrect: !opt.isCorrect } : opt
+      ) || [];
+    } else {
+      // For other types, just set it
+      question.options = question.options?.map(opt => ({
+        ...opt,
+        isCorrect: opt.id === optionId
+      })) || [];
+    }
     
     setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
   };
@@ -1287,23 +1745,50 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: QuizEditorMod
       }
 
       // Validate each question
-      const invalidQuestions = localQuiz.questions.filter((q, index) => {
+      const invalidQuestions: number[] = [];
+      localQuiz.questions.forEach((q, index) => {
         const hasText = q.text?.trim().length > 0;
-        const hasCorrectOption = q.options?.some(opt => opt.isCorrect) ?? false;
-        return !hasText || !hasCorrectOption;
+        
+        // For question types that require correct options
+        if (['SINGLE_CHOICE', 'MULTIPLE_CHOICE', 'TRUE_FALSE'].includes(q.type)) {
+          const hasCorrectOption = q.options?.some(opt => opt.isCorrect) ?? false;
+          if (!hasText || !hasCorrectOption) {
+            invalidQuestions.push(index + 1);
+          }
+        } else if (['MATCHING', 'ORDERING'].includes(q.type)) {
+          const hasOptions = (q.options?.length ?? 0) >= 2;
+          if (!hasText || !hasOptions) {
+            invalidQuestions.push(index + 1);
+          }
+        } else if (['SHORT_ANSWER', 'LONG_ANSWER'].includes(q.type)) {
+          if (!hasText) {
+            invalidQuestions.push(index + 1);
+          }
+        }
       });
 
       if (invalidQuestions.length > 0) {
         toast({
           title: "Error de validación",
-          description: `${invalidQuestions.length} preguntas no tienen texto o opción correcta`,
+          description: `Preguntas ${invalidQuestions.join(', ')} no están completas`,
           variant: "destructive"
         });
         setIsSaving(false);
         return;
       }
 
-      await onSave(localQuiz);
+      // Clean up blob URLs before saving
+      const cleanedQuiz = {
+        ...localQuiz,
+        questions: localQuiz.questions.map(q => ({
+          ...q,
+          // Remove blob URLs for production
+          imageUrl: q.imageUrl?.startsWith('blob:') ? null : q.imageUrl
+        })),
+        coverImage: localQuiz.coverImage?.startsWith('blob:') ? null : localQuiz.coverImage
+      };
+
+      await onSave(cleanedQuiz);
       
       toast({
         title: "✅ Quiz guardado",
@@ -1320,6 +1805,17 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: QuizEditorMod
       });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handlePreview = () => {
+    if (onPreview) {
+      onPreview();
+    } else {
+      toast({
+        title: "Vista previa",
+        description: "Esta funcionalidad está en desarrollo",
+      });
     }
   };
 
@@ -1364,12 +1860,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: QuizEditorMod
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
-                  onClick={() => {
-                    toast({
-                      title: "Vista previa",
-                      description: "Funcionalidad en desarrollo"
-                    });
-                  }}
+                  onClick={handlePreview}
                   className="gap-2"
                 >
                   <Eye className="h-4 w-4" />
@@ -1379,7 +1870,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: QuizEditorMod
                 <Button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="gap-2"
+                  className="gap-2 bg-primary hover:bg-primary/90"
                 >
                   {isSaving ? (
                     <>
@@ -1397,7 +1888,7 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: QuizEditorMod
             </div>
           </div>
           
-          {/* Main Content - 3 Column Layout (Fixed without resizable) */}
+          {/* Main Content - 3 Column Layout */}
           <div className="flex-1 overflow-hidden">
             <div className="h-full grid grid-cols-12">
               {/* Left Column - Question List (25%) */}
@@ -1435,7 +1926,10 @@ export function QuizEditorModal({ isOpen, onClose, quiz, onSave }: QuizEditorMod
                       <p className="text-sm text-muted-foreground mb-4">
                         Elige una pregunta de la lista para comenzar a editar
                       </p>
-                      <Button onClick={handleAddQuestion}>
+                      <Button 
+                        onClick={handleAddQuestion}
+                        className="bg-primary hover:bg-primary/90"
+                      >
                         <PlusCircle className="h-4 w-4 mr-2" />
                         Crear primera pregunta
                       </Button>
