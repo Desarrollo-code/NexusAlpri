@@ -1,2195 +1,593 @@
 'use client';
 
-import { Button, buttonVariants } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, XCircle, Replace, Pencil, Eye, MoreVertical, Archive, Crop, Copy, FilePlus2, ChevronDown, BookOpenText, Video, FileText, Lightbulb, File as FileGenericIcon, BarChart3, Star, Layers3, SaveIcon, Sparkles, Award, Check, Calendar as CalendarIcon, Info, Users, BookOpen, Settings2, Layout, Sliders, Globe, Zap, Target, Filter, Shield, Clock, Palette, EyeOff, Globe as GlobeIcon, Tag, Hash, BarChart, Clock3, Lock, Unlock, CheckCircle, X, Sparkles as SparklesIcon } from 'lucide-react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Save, Eye, Trash2, PlusCircle, Pencil, Layers3, BookOpen, BookOpenText, FileText, Video, FilePlus2, Sparkles, Award, CheckCircle, X, BarChart3, GripVertical, Info, Shield, Calendar as CalendarIcon } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import React, { useEffect, useState, useCallback, ChangeEvent } from 'react';
-import type { Course as AppCourse, Module as AppModule, Lesson as AppLesson, LessonType, CourseStatus, Quiz as AppQuiz, Question as AppQuestion, AnswerOption as AppAnswerOption, ContentBlock } from '@/types';
-import Image from 'next/image';
-import { useToast } from "@/hooks/use-toast";
-import type { LessonTemplate, TemplateBlock, CertificateTemplate as PrismaCertificateTemplate } from '@prisma/client';
-import { useAuth } from '@/contexts/auth-context';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+
+import { Button, buttonVariants } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format, isValid } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { QuizGameView } from '@/components/quizz-it/quiz-game-view';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "@/components/ui/dropdown-menu";
-import { useTitle } from '@/contexts/title-context';
-import { DateRangePicker } from '@/components/ui/date-range-picker';
+import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { UploadArea } from '@/components/ui/upload-area';
-import { uploadWithProgress } from '@/lib/upload-with-progress';
-import { Switch } from '@/components/ui/switch';
-import { CourseAssignmentModal } from '@/components/course-assignment-modal';
-import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
-import type { DateRange } from 'react-day-picker';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
-// === TIPOS E INTERFACES ===
-interface ApiTemplate extends LessonTemplate {
-    templateBlocks: TemplateBlock[];
-    creator: { name: string | null } | null;
+// ECharts visualización estadísticas
+import dynamic from 'next/dynamic';
+const ECharts = dynamic(() => import('echarts-for-react'), { ssr: false });
+
+// =============== INTERFACE MOCKS ==================
+type LessonType = 'TEXT' | 'VIDEO' | 'FILE' | 'QUIZ';
+type CourseStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+
+interface ContentBlock { id: string; type: LessonType; content: any; order: number }
+interface AppLesson { id: string; title: string; order: number; contentBlocks: ContentBlock[] }
+interface AppModule { id: string; title: string; order: number; lessons: AppLesson[] }
+interface AppCourse {
+  id: string; title: string; description: string; imageUrl?: string; status: CourseStatus; startDate?: string; endDate?: string; isMandatory?: boolean;
+  modules: AppModule[]; category?: string; certificateTemplateId?: string; prerequisiteId?: string; modulesCount?: number;
 }
 
-const generateUniqueId = (prefix: string): string => {
-    if (typeof window !== 'undefined' && window.crypto?.randomUUID) {
-        return `${prefix}-${window.crypto.randomUUID()}`;
-    }
-    const timestamp = Date.now();
-    const randomPart = Math.random().toString(36).substring(2, 9);
-    return `${prefix}-${timestamp}-${randomPart}`;
+// =============== COMPONENTES PRINCIPALES ==================
+
+function generateUniqueId(prefix: string = 'id') {
+  return `${prefix}-${Math.random().toString(36).substr(2, 8)}`;
+}
+
+const defaultCourse: AppCourse = {
+  id: generateUniqueId('course'),
+  title: 'Nuevo Curso',
+  description: '',
+  status: 'DRAFT',
+  modules: [],
 };
 
-// === COMPONENTES DE INTERFAZ MEJORADOS ===
+// Sidebar Navegación + Stats
+function CourseSidebar({ modules, stats, activeTab, onTabChange, onModuleSelect }) {
+  return (
+    <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen sticky top-0 p-4 shadow-sm">
+      <div className="mb-8">
+        <h2 className="text-lg font-bold mb-2">Curso Editor</h2>
+        <div className="grid grid-cols-2 gap-2 mb-2">
+          <div className="p-2 bg-blue-50 dark:bg-blue-900 rounded text-center">
+            <div className="text-xs text-gray-500">Módulos</div>
+            <div className="font-bold">{stats.totalModules}</div>
+          </div>
+          <div className="p-2 bg-green-50 dark:bg-green-900 rounded text-center">
+            <div className="text-xs text-gray-500">Lecciones</div>
+            <div className="font-bold">{stats.totalLessons}</div>
+          </div>
+          <div className="p-2 bg-purple-50 dark:bg-purple-900 rounded text-center">
+            <div className="text-xs text-gray-500">Bloques</div>
+            <div className="font-bold">{stats.totalBlocks}</div>
+          </div>
+          <div className="p-2 bg-orange-50 dark:bg-orange-900 rounded text-center">
+            <div className="text-xs text-gray-500">Estado</div>
+            <div>{stats.status}</div>
+          </div>
+        </div>
+        <ECharts
+          option={{
+            tooltip: { trigger: 'item' },
+            series: [{
+              type: 'pie',
+              radius: ['40%', '70%'],
+              data: [
+                { value: stats.totalModules, name: 'Módulos' },
+                { value: stats.totalLessons, name: 'Lecciones' },
+                { value: stats.totalBlocks, name: 'Bloques' }
+              ]
+            }]
+          }}
+          style={{ height: 120, width: '100%' }}
+          notMerge={true}
+        />
+      </div>
+      <nav className="flex flex-col gap-1 mb-6">
+        {[
+          { key: 'basics', label: 'Información', icon: <Info className="h-4 w-4 mr-2" /> },
+          { key: 'curriculum', label: 'Currículum', icon: <Layers3 className="h-4 w-4 mr-2" /> },
+          { key: 'config', label: 'Config.', icon: <Settings2 className="h-4 w-4 mr-2" /> },
+          { key: 'publish', label: 'Publicación', icon: <CalendarIcon className="h-4 w-4 mr-2" /> },
+        ].map(tab => (
+          <button
+            key={tab.key}
+            className={cn("flex items-center px-4 py-2 rounded text-sm font-medium transition-colors",
+              activeTab === tab.key ? 'bg-primary/10 text-primary' : 'text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800')}
+            onClick={() => onTabChange(tab.key)}
+          >
+            {tab.icon}
+            {tab.label}
+          </button>
+        ))}
+      </nav>
+      <div className="flex-1 overflow-y-auto">
+        <h4 className="font-bold text-xs mb-2">Módulos:</h4>
+        {modules.map((mod, idx) => (
+          <button
+            key={mod.id}
+            className="flex w-full text-sm px-4 py-1 rounded hover:bg-primary/10 mb-1 truncate"
+            onClick={() => onModuleSelect(idx)}>
+            <Layers3 className="h-4 w-4 mr-2 text-blue-500" />
+            {mod.title}
+          </button>
+        ))}
+      </div>
+      <div className="mt-6">
+        <Button asChild variant="outline">
+          <Link href={`/courses/preview`}><Eye className="h-4 w-4 mr-1" />Vista previa</Link>
+        </Button>
+      </div>
+    </aside>
+  );
+}
 
-const ModuleItem = React.forwardRef<HTMLDivElement, { 
-    module: AppModule; 
-    moduleIndex: number;
-    onUpdate: (field: keyof AppModule, value: any) => void; 
-    onAddLesson: (type: 'blank' | 'template') => void; 
-    onLessonUpdate: (lessonIndex: number, field: keyof AppLesson, value: any) => void; 
-    onLessonDelete: (lessonIndex: number) => void; 
-    onSaveLessonAsTemplate: (lessonIndex: number) => void; 
-    onAddBlock: (lessonIndex: number, type: LessonType) => void; 
-    onBlockUpdate: (lessonIndex: number, blockIndex: number, field: string, value: any) => void; 
-    onBlockDelete: (lessonIndex: number, blockIndex: number) => void; 
-    onEditQuiz: (quiz: AppQuiz) => void; 
-    isSaving: boolean; 
-    onDelete: () => void; 
-    provided: any 
-}>(
-    ({ module, moduleIndex, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onSaveLessonAsTemplate, onAddBlock, onBlockUpdate, onBlockDelete, onEditQuiz, isSaving, onDelete, provided }, ref) => {
-        const [isExpanded, setIsExpanded] = useState(true);
-        
-        return (
-            <motion.div
-                ref={ref}
-                {...provided.draggableProps}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.2 }}
-                className="relative group"
-            >
-                <Card className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-primary/30 transition-all duration-300 rounded-2xl shadow-lg hover:shadow-xl overflow-hidden">
-                    <CardHeader className="pb-3 pt-5 px-5">
-                        <div className="flex items-start justify-between">
-                            <div className="flex items-start gap-3 flex-1">
-                                <div className="flex flex-col items-center gap-2">
-                                    <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing p-2 hover:bg-primary/10 rounded-lg transition-all text-gray-400 hover:text-primary">
-                                        <GripVertical className="h-4 w-4" />
-                                    </div>
-                                    <Badge 
-                                        variant="outline" 
-                                        className="text-[10px] font-bold bg-primary/5 text-primary border-primary/20"
-                                    >
-                                        M{moduleIndex + 1}
-                                    </Badge>
-                                </div>
-                                
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <div className="p-1.5 bg-primary/10 rounded-lg">
-                                            <Layers3 className="h-4 w-4 text-primary" />
-                                        </div>
-                                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                                            MÓDULO
-                                        </span>
-                                    </div>
-                                    
+// -------------------- TREEVIEW DEL CURRÍCULUM ----------------------
+
+function CurriculumTree({ modules, onDragEnd, onEditModule, onEditLesson, onEditBlock }) {
+  return (
+    <DragDropContext onDragEnd={onDragEnd}>
+      <Droppable droppableId="module-droppable" type="MODULE">
+        {provided => (
+          <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-4">
+            {modules.map((mod, mIdx) => (
+              <Draggable draggableId={mod.id} index={mIdx} key={mod.id}>
+                {provMod => (
+                  <div ref={provMod.innerRef} {...provMod.draggableProps}
+                    className="border rounded-lg bg-white dark:bg-gray-900 shadow-lg p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div {...provMod.dragHandleProps} className="cursor-grab"><GripVertical className="h-4 w-4" /></div>
+                      <Layers3 className="h-4 w-4 text-blue-500" />
+                      <Input
+                        value={mod.title}
+                        className="font-bold border-none bg-transparent px-1 flex-1"
+                        onChange={e => onEditModule(mIdx, 'title', e.target.value)}
+                      />
+                      <Button size="icon" variant="ghost" onClick={() => onEditModule(mIdx, 'delete', null)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                    <Droppable droppableId={`lesson-droppable-${mod.id}`} type="LESSON">
+                      {provLesson => (
+                        <div ref={provLesson.innerRef} {...provLesson.droppableProps} className="pl-6 space-y-2">
+                          {mod.lessons.map((les, lIdx) => (
+                            <Draggable draggableId={les.id} index={lIdx} key={les.id}>
+                              {provLes => (
+                                <div ref={provLes.innerRef} {...provLes.draggableProps}
+                                  className="border bg-gray-50 dark:bg-gray-800 rounded p-2">
+                                  <div className="flex items-center gap-1">
+                                    <div {...provLes.dragHandleProps}><GripVertical className="h-4 w-4" /></div>
+                                    <BookOpenText className="h-4 w-4 text-green-600" />
                                     <Input
-                                        value={module.title}
-                                        onChange={e => onUpdate('title', e.target.value)}
-                                        className="text-base font-semibold bg-transparent border-0 focus-visible:ring-0 p-0 h-auto placeholder:text-gray-400"
-                                        placeholder="Nombre del módulo..."
-                                        onClick={(e) => e.stopPropagation()}
-                                        disabled={isSaving}
+                                      value={les.title}
+                                      className="border-none flex-1 bg-transparent px-1"
+                                      onChange={e => onEditLesson(mIdx, lIdx, 'title', e.target.value)}
                                     />
-                                    
-                                    <div className="flex items-center gap-3 mt-2">
-                                        <Badge variant="secondary" className="text-xs">
-                                            {module.lessons.length} {module.lessons.length === 1 ? 'lección' : 'lecciones'}
-                                        </Badge>
-                                        <button
-                                            onClick={() => setIsExpanded(!isExpanded)}
-                                            className="text-xs text-gray-500 hover:text-primary transition-colors"
-                                        >
-                                            {isExpanded ? 'Ocultar lecciones' : 'Mostrar lecciones'}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-8 w-8 text-gray-400 hover:text-destructive hover:bg-destructive/10" 
-                                onClick={(e) => { e.stopPropagation(); onDelete(); }} 
-                                disabled={isSaving}
-                            >
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    </CardHeader>
-                    
-                    <AnimatePresence>
-                        {isExpanded && (
-                            <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                transition={{ duration: 0.2 }}
-                            >
-                                <CardContent className="px-5 pb-5 pt-0">
-                                    <Droppable droppableId={module.id} type="LESSONS">
-                                        {(provided) => (
-                                            <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3 mt-4">
-                                                {module.lessons.map((lesson, lessonIndex) => (
-                                                    <Draggable key={lesson.id} draggableId={lesson.id} index={lessonIndex}>
-                                                        {(provided) => (
-                                                            <motion.div
-                                                                initial={{ opacity: 0, x: -10 }}
-                                                                animate={{ opacity: 1, x: 0 }}
-                                                                transition={{ duration: 0.2 }}
-                                                            >
-                                                                <LessonItem
-                                                                    lesson={lesson}
-                                                                    lessonIndex={lessonIndex}
-                                                                    onDelete={() => onLessonDelete(lessonIndex)}
-                                                                    onUpdate={(field, value) => onLessonUpdate(lessonIndex, field, value)}
-                                                                    onSaveAsTemplate={() => onSaveLessonAsTemplate(lessonIndex)}
-                                                                    onAddBlock={(type) => onAddBlock(lessonIndex, type)}
-                                                                    onBlockUpdate={(blockIndex, field, value) => onBlockUpdate(lessonIndex, blockIndex, field, value)}
-                                                                    onBlockDelete={(blockIndex) => onBlockDelete(lessonIndex, blockIndex)}
-                                                                    onEditQuiz={onEditQuiz}
-                                                                    isSaving={isSaving}
-                                                                    ref={provided.innerRef}
-                                                                    {...provided.draggableProps}
-                                                                    {...provided.dragHandleProps}
-                                                                />
-                                                            </motion.div>
-                                                        )}
-                                                    </Draggable>
-                                                ))}
-                                                {provided.placeholder}
-                                            </div>
-                                        )}
-                                    </Droppable>
-                                    
-                                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                                                Añadir lección
-                                            </span>
-                                            <div className="flex gap-2">
-                                                <Button 
-                                                    size="sm" 
-                                                    variant="outline" 
-                                                    onClick={() => onAddLesson('blank')} 
-                                                    className="h-8 rounded-lg gap-1"
-                                                >
-                                                    <FilePlus2 className="h-3.5 w-3.5" />
-                                                    Nueva
-                                                </Button>
-                                                <Button 
-                                                    size="sm" 
-                                                    variant="outline" 
-                                                    onClick={() => onAddLesson('template')} 
-                                                    className="h-8 rounded-lg gap-1"
-                                                >
-                                                    <Sparkles className="h-3.5 w-3.5" />
-                                                    Plantilla
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </Card>
-            </motion.div>
-        )
-    }
-);
-ModuleItem.displayName = 'ModuleItem';
-
-const LessonItem = React.forwardRef<HTMLDivElement, { 
-    lesson: AppLesson; 
-    lessonIndex: number;
-    onUpdate: (field: keyof AppLesson, value: any) => void; 
-    onSaveAsTemplate: () => void; 
-    onAddBlock: (type: LessonType) => void; 
-    onBlockUpdate: (blockIndex: number, field: string, value: any) => void; 
-    onBlockDelete: (blockIndex: number) => void; 
-    onEditQuiz: (quiz: AppQuiz) => void; 
-    isSaving: boolean; 
-    onDelete: () => void; 
-}>(
-    ({ lesson, lessonIndex, onUpdate, onSaveAsTemplate, onAddBlock, onBlockUpdate, onBlockDelete, onEditQuiz, isSaving, onDelete, ...rest }, ref) => {
-        const [isExpanded, setIsExpanded] = useState(false);
-        
-        return (
-            <motion.div
-                ref={ref}
-                {...rest}
-                className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-primary/30 transition-all duration-200 group/lesson"
-            >
-                <div className="flex items-start gap-3">
-                    <div className="pt-1">
-                        <div {...rest.dragHandleProps} className="p-1 cursor-grab active:cursor-grabbing touch-none hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-all">
-                            <GripVertical className="h-3.5 w-3.5 text-gray-400" />
-                        </div>
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-3">
-                            <div className="flex items-center gap-2 flex-1">
-                                <div className="p-1.5 bg-blue-500/10 rounded">
-                                    <BookOpenText className="h-3.5 w-3.5 text-blue-500" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2">
-                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-medium">
-                                            L{lessonIndex + 1}
-                                        </Badge>
-                                        <Input
-                                            value={lesson.title}
-                                            onChange={e => onUpdate('title', e.target.value)}
-                                            placeholder="Título de la lección"
-                                            className="bg-transparent border-0 font-medium focus-visible:ring-0 p-0 h-auto text-sm flex-1 min-w-0"
-                                            disabled={isSaving}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div className="flex items-center gap-1">
-                                <Badge variant="secondary" className="text-[10px]">
-                                    {lesson.contentBlocks.length} bloques
-                                </Badge>
-                                <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="h-7 w-7"
-                                    onClick={() => setIsExpanded(!isExpanded)}
-                                >
-                                    {isExpanded ? 
-                                        <ChevronDown className="h-3.5 w-3.5 rotate-180" /> : 
-                                        <ChevronDown className="h-3.5 w-3.5" />
-                                    }
-                                </Button>
-                                <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="h-7 w-7 text-gray-400 hover:text-destructive"
-                                    onClick={onDelete}
-                                >
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
-                            </div>
-                        </div>
-                        
-                        <AnimatePresence>
-                            {isExpanded && (
-                                <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: 'auto' }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    transition={{ duration: 0.2 }}
-                                    className="overflow-hidden"
-                                >
-                                    <Droppable droppableId={lesson.id} type="BLOCKS">
-                                        {(provided) => (
-                                            <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2 mt-3">
-                                                {lesson.contentBlocks.map((block, blockIndex) => (
-                                                    <Draggable key={block.id} draggableId={block.id} index={blockIndex}>
-                                                        {(provided) => (
-                                                            <ContentBlockItem
-                                                                block={block}
-                                                                blockIndex={blockIndex}
-                                                                onUpdate={(field, value) => onBlockUpdate(blockIndex, field, value)}
-                                                                onDelete={() => onBlockDelete(blockIndex)}
-                                                                onEditQuiz={() => onEditQuiz(block.quiz!)}
-                                                                isSaving={isSaving}
-                                                                dragHandleProps={provided.dragHandleProps}
-                                                                ref={provided.innerRef}
-                                                                {...provided.draggableProps}
-                                                            />
-                                                        )}
-                                                    </Draggable>
-                                                ))}
-                                                {provided.placeholder}
-                                            </div>
-                                        )}
-                                    </Droppable>
-                                    
-                                    <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-                                        <BlockTypeSelector onSelect={onAddBlock} />
-                                    </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </div>
-                </div>
-            </motion.div>
-        );
-    }
-);
-LessonItem.displayName = 'LessonItem';
-
-const ContentBlockItem = React.forwardRef<HTMLDivElement, { 
-    block: ContentBlock; 
-    blockIndex: number;
-    onUpdate: (field: string, value: any) => void; 
-    onEditQuiz: () => void; 
-    isSaving: boolean; 
-    onDelete: () => void; 
-    dragHandleProps: any; 
-}>(
-    ({ block, blockIndex, onUpdate, onEditQuiz, isSaving, onDelete, dragHandleProps, ...rest }, ref) => {
-        const [isFileUploading, setIsFileUploading] = useState(false);
-        const [fileUploadProgress, setFileUploadProgress] = useState(0);
-        const [localPreview, setLocalPreview] = useState<string | null>(null);
-        const { toast } = useToast();
-
-        useEffect(() => {
-            return () => { if (localPreview) URL.revokeObjectURL(localPreview); };
-        }, [localPreview]);
-
-        const handleFileSelect = async (file: File | null) => {
-            if (!file) return;
-
-            if (file.type.startsWith('image/')) setLocalPreview(URL.createObjectURL(file));
-
-            setIsFileUploading(true);
-            setFileUploadProgress(0);
-
-            try {
-                const result = await uploadWithProgress('/api/upload/lesson-file', file, setFileUploadProgress);
-                onUpdate('content', result.url);
-                toast({ title: 'Archivo Subido', description: `El archivo ${file.name} se ha subido correctamente.` });
-            } catch (err) {
-                toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
-                if (localPreview) URL.revokeObjectURL(localPreview);
-                setLocalPreview(null);
-            } finally {
-                setIsFileUploading(false);
-            }
-        };
-
-        const renderBlockContent = () => {
-            if (block.type === 'TEXT') return (
-                <RichTextEditor 
-                    value={block.content || ''} 
-                    onChange={value => onUpdate('content', value)} 
-                    placeholder="Escribe aquí el contenido de la lección..." 
-                    className="min-h-[80px]" 
-                    disabled={isSaving} 
-                />
-            );
-            
-            if (block.type === 'VIDEO') return (
-                <div className="relative">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                        <Video className="h-4 w-4" />
-                    </div>
-                    <Input 
-                        value={block.content} 
-                        onChange={e => onUpdate('content', e.target.value)} 
-                        placeholder="URL del video (YouTube, Vimeo, etc.)" 
-                        className="pl-10 h-9" 
-                        disabled={isSaving} 
-                    />
-                </div>
-            );
-            
-            if (block.type === 'FILE') {
-                const displayUrl = localPreview || block.content;
-                const isImage = displayUrl?.match(/\.(jpeg|jpg|gif|png|webp)$/) != null || localPreview?.startsWith('blob:');
-
-                if (displayUrl && !isFileUploading) {
-                    const fileName = block.content?.split('/').pop()?.split('-').slice(2).join('-') || 'Archivo adjunto';
-                    return (
-                        <div className="flex items-center gap-2 p-2 rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                            <div className="p-1.5 bg-amber-500/10 rounded">
-                                {isImage ? (
-                                    <div className="w-6 h-6 relative rounded overflow-hidden">
-                                        <Image src={displayUrl} alt="Preview" fill className="object-cover" />
-                                    </div>
-                                ) : (
-                                    <FileGenericIcon className="h-4 w-4 text-amber-500" />
-                                )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-sm truncate">{fileName}</p>
-                            </div>
-                            <div className="flex gap-1">
-                                <Button 
-                                    type="button" 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="h-7 w-7"
-                                    onClick={() => window.open(displayUrl, '_blank')}
-                                >
-                                    <Eye className="h-3.5 w-3.5" />
-                                </Button>
-                                <Button 
-                                    type="button" 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="h-7 w-7"
-                                    onClick={() => { onUpdate('content', ''); setLocalPreview(null); }}
-                                >
-                                    <XCircle className="h-3.5 w-3.5" />
-                                </Button>
-                            </div>
-                        </div>
-                    );
-                }
-                
-                return (
-                    <div className="space-y-2">
-                        <UploadArea 
-                            onFileSelect={handleFileSelect} 
-                            disabled={isSaving || isFileUploading} 
-                            className="py-4"
-                        />
-                        {isFileUploading && (
-                            <div className="space-y-1">
-                                <div className="flex justify-between text-xs">
-                                    <span>Subiendo...</span>
-                                    <span>{fileUploadProgress}%</span>
-                                </div>
-                                <Progress value={fileUploadProgress} className="h-1" />
-                            </div>
-                        )}
-                    </div>
-                );
-            }
-            
-            if (block.type === 'QUIZ') return (
-                <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <div className="p-1.5 bg-purple-500/10 rounded">
-                                <Pencil className="h-4 w-4 text-purple-500" />
-                            </div>
-                            <Input 
-                                value={block.quiz?.title || ''} 
-                                onChange={e => onUpdate('quiz', { ...block.quiz, title: e.target.value })} 
-                                placeholder="Título del Quiz" 
-                                className="border-0 font-medium bg-transparent px-0 w-auto focus-visible:ring-0" 
-                                disabled={isSaving} 
-                            />
-                        </div>
-                        <Button 
-                            type="button" 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={onEditQuiz}
-                            className="h-7 text-xs"
-                        >
-                            Configurar
-                        </Button>
-                    </div>
-                </div>
-            );
-            
-            return null;
-        };
-
-        const getBlockIcon = () => {
-            switch(block.type) {
-                case 'TEXT': return <FileText className="h-3.5 w-3.5" />;
-                case 'VIDEO': return <Video className="h-3.5 w-3.5" />;
-                case 'FILE': return <FileGenericIcon className="h-3.5 w-3.5" />;
-                case 'QUIZ': return <Pencil className="h-3.5 w-3.5" />;
-                default: return <FileText className="h-3.5 w-3.5" />;
-            }
-        };
-
-        const getBlockColor = () => {
-            switch(block.type) {
-                case 'TEXT': return 'bg-blue-500/10 text-blue-600';
-                case 'VIDEO': return 'bg-red-500/10 text-red-600';
-                case 'FILE': return 'bg-amber-500/10 text-amber-600';
-                case 'QUIZ': return 'bg-purple-500/10 text-purple-600';
-                default: return 'bg-primary/10 text-primary';
-            }
-        };
-
-        return (
-            <motion.div
-                ref={ref}
-                {...rest}
-                className="flex items-start gap-2 bg-gray-50 dark:bg-gray-800/50 p-2 rounded border border-gray-200 dark:border-gray-700"
-            >
-                <div className="flex items-start gap-1.5">
-                    <div {...dragHandleProps} className="p-1 cursor-grab active:cursor-grabbing touch-none opacity-60 hover:opacity-100">
-                        <GripVertical className="h-3 w-3 text-gray-400" />
-                    </div>
-                    <div className={`p-1.5 rounded ${getBlockColor()}`}>
-                        {getBlockIcon()}
-                    </div>
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                        <Badge variant="outline" className="text-[10px] px-1.5 capitalize">
-                            {block.type.toLowerCase()}
-                        </Badge>
-                        <Button 
-                            type="button" 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-6 w-6"
-                            onClick={onDelete} 
-                            disabled={isSaving}
-                        >
-                            <Trash2 className="h-3 w-3" />
-                        </Button>
-                    </div>
-                    {renderBlockContent()}
-                </div>
-            </motion.div>
-        );
-    }
-);
-ContentBlockItem.displayName = 'ContentBlockItem';
-
-// === COMPONENTE PRINCIPAL DE LA PÁGINA (CourseEditor) ===
-export function CourseEditor({ courseId }: { courseId: string }) {
-    const router = useRouter();
-    const { toast } = useToast();
-    const { user, settings, isLoading: isAuthLoading } = useAuth();
-    const { setPageTitle, setHeaderActions, setShowBackButton } = useTitle();
-
-    const [course, setCourse] = useState<AppCourse | null>(null);
-    const [allCoursesForPrereq, setAllCoursesForPrereq] = useState<AppCourse[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isSaving, setIsSaving] = useState(false);
-    const [isDirty, setIsDirty] = useState(false);
-    const [activeTab, setActiveTab] = useState('basics');
-
-    const [itemToDeleteDetails, setItemToDeleteDetails] = useState<any>(null);
-    const [isUploadingImage, setIsUploadingImage] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState(0);
-    const [localCoverImagePreview, setLocalCoverImagePreview] = useState<string | null>(null);
-
-    const [templates, setTemplates] = useState<ApiTemplate[]>([]);
-    const [certificateTemplates, setCertificateTemplates] = useState<PrismaCertificateTemplate[]>([]);
-    const [showTemplateModal, setShowTemplateModal] = useState(false);
-    const [activeModuleIndexForTemplate, setActiveModuleIndexForTemplate] = useState<number | null>(null);
-    const [lessonToSaveAsTemplate, setLessonToSaveAsTemplate] = useState<AppLesson | null>(null);
-    const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
-    const [quizToEdit, setQuizToEdit] = useState<{ quiz: AppQuiz; onSave: (updatedQuiz: AppQuiz) => void } | null>(null);
-
-    // --- Data Fetching ---
-    useEffect(() => {
-        const fetchAllData = async () => {
-            if (!user) return;
-
-            try {
-                setIsLoading(true);
-
-                if (courseId === 'new') {
-                    setCourse({
-                        id: generateUniqueId('course'),
-                        title: 'Nuevo Curso sin Título',
-                        description: 'Añade una descripción aquí.',
-                        instructor: user as any,
-                        instructorId: user?.id,
-                        status: 'DRAFT',
-                        category: '',
-                        modules: [],
-                        modulesCount: 0,
-                        prerequisiteId: null,
-                        isMandatory: false,
-                        certificateTemplateId: null,
-                    });
-                    setPageTitle('Crear Nuevo Curso');
-                    return;
-                }
-
-                const [courseRes, templatesRes, certificatesRes, coursesRes] = await Promise.all([
-                    fetch(`/api/courses/${courseId}`),
-                    fetch('/api/templates'),
-                    fetch('/api/certificates/templates'),
-                    fetch('/api/courses?simple=true')
-                ]);
-
-                if (!courseRes.ok) throw new Error("Curso no encontrado");
-
-                const courseData: AppCourse = await courseRes.json();
-                setCourse(courseData);
-
-                if (templatesRes.ok) setTemplates(await templatesRes.json());
-                if (certificatesRes.ok) setCertificateTemplates(await certificatesRes.json());
-                if (coursesRes.ok) {
-                    const data = await coursesRes.json();
-                    setAllCoursesForPrereq((data.courses || []).filter((c: AppCourse) => c.id !== courseId));
-                }
-
-            } catch (err) {
-                toast({ 
-                    title: "Error", 
-                    description: "No se pudo cargar el curso para editar.", 
-                    variant: "destructive" 
-                });
-                router.push('/manage-courses');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchAllData();
-    }, [courseId, user, router, toast, setPageTitle]);
-
-    const handleSaveCourse = useCallback(async () => {
-        if (!course) return;
-        setIsSaving(true);
-
-        const payload = { ...course };
-        (payload.modules || []).forEach((mod, mIdx) => {
-            mod.order = mIdx;
-            (mod.lessons || []).forEach((les, lIdx) => {
-                les.order = lIdx;
-                (les.contentBlocks || []).forEach((block, bIdx) => {
-                    block.order = bIdx;
-                });
-            });
-        });
-
-        try {
-            const endpoint = courseId === 'new' ? '/api/courses' : `/api/courses/${courseId}`;
-            const method = courseId === 'new' ? 'POST' : 'PUT';
-
-            const response = await fetch(endpoint, {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
-            
-            if (!response.ok) throw new Error((await response.json()).message || 'Error al guardar el curso.');
-
-            const savedCourse = await response.json();
-
-            toast({ 
-                title: "✅ Curso Guardado", 
-                description: "La información del curso se ha guardado correctamente.",
-                duration: 3000
-            });
-
-            setCourse(savedCourse);
-            setIsDirty(false);
-
-            if (courseId === 'new') {
-                router.replace(`/manage-courses/${savedCourse.id}/edit`, { scroll: false });
-            }
-
-            return savedCourse;
-
-        } catch (error: any) {
-            console.error('Error al guardar el curso:', error);
-            toast({ 
-                title: "❌ Error al Guardar", 
-                description: error.message || "No se pudo guardar. Intenta nuevamente.", 
-                variant: "destructive",
-                duration: 5000
-            });
-            return null;
-        } finally {
-            setIsSaving(false);
-        }
-    }, [course, courseId, router, toast]);
-
-    const handleMandatorySwitchChange = async (checked: boolean) => {
-        if (!course) return;
-
-        updateCourseField('isMandatory', checked);
-
-        if (checked) {
-            const savedCourse = await handleSaveCourse();
-            if (savedCourse) {
-                setTimeout(() => setIsAssignmentModalOpen(true), 300);
-            }
-        }
-    };
-
-    useEffect(() => {
-        if (course) {
-            setPageTitle(`Editando: ${course.title}`);
-            setShowBackButton(true);
-        }
-        return () => {
-            setPageTitle('');
-            setHeaderActions(null);
-            setShowBackButton(false);
-        }
-    }, [course, setPageTitle, setHeaderActions, setShowBackButton]);
-
-    const handleStateUpdate = useCallback((updater: (prev: AppCourse) => AppCourse) => {
-        setCourse(prev => {
-            if (!prev) return null;
-            const newCourse = JSON.parse(JSON.stringify(prev));
-            return updater(newCourse);
-        });
-        setIsDirty(true);
-    }, []);
-
-    const updateCourseField = (field: keyof AppCourse, value: any) => {
-        handleStateUpdate(prev => {
-            prev[field] = value;
-            return prev;
-        });
-    };
-
-    const updateModuleField = (moduleIndex: number, field: keyof AppModule, value: any) => {
-        handleStateUpdate(prev => {
-            prev.modules[moduleIndex][field] = value;
-            return prev;
-        });
-    };
-
-    const updateLessonField = (moduleIndex: number, lessonIndex: number, field: keyof AppLesson, value: any) => {
-        handleStateUpdate(prev => {
-            prev.modules[moduleIndex].lessons[lessonIndex][field] = value;
-            return prev;
-        });
-    };
-
-    const updateBlockField = (moduleIndex: number, lessonIndex: number, blockIndex: number, field: string, value: any) => {
-        handleStateUpdate(prev => {
-            prev.modules[moduleIndex].lessons[lessonIndex].contentBlocks[blockIndex][field] = value;
-            return prev;
-        });
-    };
-
-    const handleEditQuiz = (quizToEdit: AppQuiz) => {
-        const handleSave = (updatedQuiz: AppQuiz) => {
-            handleStateUpdate(prev => {
-                for (const mod of (prev.modules || [])) {
-                    for (const les of (mod.lessons || [])) {
-                        const blockIndex = (les.contentBlocks || []).findIndex(b => b.quiz?.id === quizToEdit.id);
-                        if (blockIndex !== -1) {
-                            les.contentBlocks[blockIndex].quiz = updatedQuiz;
-                            break;
-                        }
-                    }
-                }
-                return prev;
-            });
-            setQuizToEdit(null);
-        };
-
-        setQuizToEdit({ quiz: quizToEdit, onSave: handleSave });
-    };
-
-    const handleAddModule = () => {
-        handleStateUpdate(prev => {
-            const newModule: AppModule = {
-                id: generateUniqueId('module'),
-                title: 'Nuevo Módulo',
-                order: (prev.modules || []).length,
-                lessons: [],
-            };
-            if (!prev.modules) prev.modules = [];
-            prev.modules.push(newModule);
-            return prev;
-        });
-    };
-
-    const handleAddLessonAction = (moduleIndex: number, type: 'blank' | 'template') => {
-        if (type === 'blank') {
-            handleAddLesson(moduleIndex);
-        } else {
-            setActiveModuleIndexForTemplate(moduleIndex);
-            setShowTemplateModal(true);
-        }
-    };
-
-    const handleAddLesson = useCallback((moduleIndex: number, template?: ApiTemplate) => {
-        handleStateUpdate(prev => {
-            let newBlocks: ContentBlock[] = [];
-            if (template) {
-                newBlocks = template.templateBlocks.map(tb => ({
-                    id: generateUniqueId('block'),
-                    type: tb.type as LessonType,
-                    content: '',
-                    order: tb.order,
-                    quiz: tb.type === 'QUIZ' ? {
-                        id: generateUniqueId('quiz'),
-                        title: 'Nuevo Quiz desde Plantilla',
-                        description: '',
-                        questions: [],
-                        maxAttempts: null,
-                    } : undefined
-                }));
-            }
-
-            const newLesson: AppLesson = {
-                id: generateUniqueId('lesson'),
-                title: template ? `Lección de "${template.name}"` : 'Nueva Lección',
-                order: (prev.modules?.[moduleIndex]?.lessons || []).length,
-                contentBlocks: newBlocks,
-            };
-
-            if (!prev.modules[moduleIndex].lessons) prev.modules[moduleIndex].lessons = [];
-            prev.modules[moduleIndex].lessons.push(newLesson);
-            return prev;
-        });
-        setShowTemplateModal(false);
-        setActiveModuleIndexForTemplate(null);
-    }, [handleStateUpdate]);
-
-    const handleAddBlock = useCallback((moduleIndex: number, lessonIndex: number, type: LessonType) => {
-        handleStateUpdate(prev => {
-            const newBlock: ContentBlock = {
-                id: generateUniqueId('block'),
-                type: type,
-                content: '',
-                order: prev.modules[moduleIndex].lessons[lessonIndex].contentBlocks.length,
-                quiz: type === 'QUIZ' ? {
-                    id: generateUniqueId('quiz'),
-                    title: 'Nuevo Quiz',
-                    description: '',
-                    questions: [],
-                    maxAttempts: null,
-                    remedialContent: null,
-                } : undefined
-            };
-            if (!prev.modules[moduleIndex].lessons[lessonIndex].contentBlocks) {
-                prev.modules[moduleIndex].lessons[lessonIndex].contentBlocks = [];
-            }
-            prev.modules[moduleIndex].lessons[lessonIndex].contentBlocks.push(newBlock);
-            return prev;
-        });
-    }, [handleStateUpdate]);
-
-    const handleRemoveModule = (moduleIndex: number) => {
-        setItemToDeleteDetails({
-            name: course?.modules?.[moduleIndex]?.title,
-            onDelete: () => handleStateUpdate(prev => {
-                prev.modules.splice(moduleIndex, 1);
-                return prev;
-            })
-        })
-    };
-
-    const handleRemoveLesson = (moduleIndex: number, lessonIndex: number) => {
-        setItemToDeleteDetails({
-            name: course?.modules?.[moduleIndex]?.lessons?.[lessonIndex]?.title,
-            onDelete: () => {
-                handleStateUpdate(prev => {
-                    prev.modules[moduleIndex].lessons.splice(lessonIndex, 1);
-                    return prev;
-                });
-            }
-        })
-    };
-
-    const handleRemoveBlock = (moduleIndex: number, lessonIndex: number, blockIndex: number) => {
-        handleStateUpdate(prev => {
-            prev.modules[moduleIndex].lessons[lessonIndex].contentBlocks.splice(blockIndex, 1);
-            return prev;
-        });
-    };
-
-    const onDragEnd = (result: DropResult) => {
-        const { source, destination, type } = result;
-        if (!destination || !course) return;
-
-        handleStateUpdate(prev => {
-            if (type === 'MODULES') {
-                const [reorderedItem] = prev.modules.splice(source.index, 1);
-                prev.modules.splice(destination.index, 0, reorderedItem);
-            } else if (type === 'LESSONS') {
-                const sourceModule = prev.modules.find(m => m.id === source.droppableId);
-                const destModule = prev.modules.find(m => m.id === destination.droppableId);
-                if (!sourceModule || !destModule) return prev;
-
-                const [movedItem] = sourceModule.lessons.splice(source.index, 1);
-                destModule.lessons.splice(destination.index, 0, movedItem);
-            } else if (type === 'BLOCKS') {
-                const sourceLesson = prev.modules.flatMap(m => m.lessons).find(l => l.id === source.droppableId);
-                const destLesson = prev.modules.flatMap(m => m.lessons).find(l => l.id === destination.droppableId);
-                if (!sourceLesson || !destLesson) return prev;
-
-                const [movedItem] = sourceLesson.contentBlocks.splice(source.index, 1);
-                destLesson.contentBlocks.splice(destination.index, 0, movedItem);
-            }
-            return prev;
-        });
-    };
-
-    const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            const previewUrl = URL.createObjectURL(file);
-            setLocalCoverImagePreview(previewUrl);
-
-            setIsUploadingImage(true);
-            setUploadProgress(0);
-
-            try {
-                const result = await uploadWithProgress('/api/upload/course-image', file, setUploadProgress);
-                updateCourseField('imageUrl', result.url);
-                toast({ 
-                    title: '✅ Imagen Subida', 
-                    description: 'La imagen de portada se ha actualizado correctamente.',
-                    duration: 3000
-                });
-            } catch (err) {
-                toast({ 
-                    title: '❌ Error de Subida', 
-                    description: (err as Error).message, 
-                    variant: "destructive",
-                    duration: 5000
-                });
-                setLocalCoverImagePreview(null);
-            } finally {
-                setIsUploadingImage(false);
-            }
-        }
-    };
-
-    useEffect(() => {
-        return () => {
-            if (localCoverImagePreview) {
-                URL.revokeObjectURL(localCoverImagePreview);
-            }
-        };
-    }, [localCoverImagePreview]);
-
-    const handleSaveTemplate = async (templateName: string, templateDescription: string) => {
-        if (!lessonToSaveAsTemplate) return;
-        try {
-            const res = await fetch('/api/templates', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    name: templateName, 
-                    description: templateDescription, 
-                    lessonId: lessonToSaveAsTemplate.id 
-                })
-            });
-            if (!res.ok) throw new Error('No se pudo guardar la plantilla');
-            toast({ 
-                title: '✅ Plantilla Guardada', 
-                description: `La plantilla "${templateName}" se ha guardado correctamente.`,
-                duration: 3000
-            });
-            const newTemplate = await res.json();
-            setTemplates(prev => [...prev, newTemplate]);
-            setLessonToSaveAsTemplate(null);
-        } catch (err) {
-            toast({ 
-                title: "❌ Error", 
-                description: (err as Error).message, 
-                variant: "destructive",
-                duration: 5000
-            });
-        }
-    };
-
-    const handleTabChange = (value: string) => {
-        setActiveTab(value);
-    };
-
-    // Calcular estadísticas del curso
-    const courseStats = {
-        totalModules: course?.modules?.length || 0,
-        totalLessons: course?.modules?.reduce((acc, mod) => acc + (mod.lessons?.length || 0), 0) || 0,
-        totalBlocks: course?.modules?.reduce((acc, mod) => 
-            acc + (mod.lessons?.reduce((lessonAcc, lesson) => 
-                lessonAcc + (lesson.contentBlocks?.length || 0), 0) || 0), 0) || 0,
-        hasCertificate: !!course?.certificateTemplateId,
-        isMandatory: course?.isMandatory || false,
-        hasPrerequisite: !!course?.prerequisiteId,
-    };
-
-    if (isLoading || isAuthLoading || !course) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-screen">
-                <div className="relative">
-                    <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl"></div>
-                    <Loader2 className="h-12 w-12 animate-spin text-primary relative" />
-                </div>
-                <p className="mt-4 text-lg font-medium text-muted-foreground animate-pulse">
-                    Cargando editor de cursos...
-                </p>
-            </div>
-        );
-    }
-
-    if (courseId !== 'new' && !isAuthLoading && user?.role !== 'ADMINISTRATOR' && user?.id !== course.instructorId) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-screen text-center p-8">
-                <div className="bg-destructive/10 p-6 rounded-full mb-6">
-                    <ShieldAlert className="h-16 w-16 text-destructive" />
-                </div>
-                <h2 className="text-2xl font-bold mb-2">Acceso Denegado</h2>
-                <p className="text-muted-foreground mb-6 max-w-md">
-                    No tienes los permisos necesarios para editar este curso.
-                </p>
-                <Link href="/manage-courses" className={buttonVariants({ variant: "outline", size: "lg" })}>
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Volver a mis cursos
-                </Link>
-            </div>
-        );
-    }
-
-    return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-            {/* Header Superior - Pestañas y Botones en una sola fila */}
-            <div className="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6">
-                    <div className="flex items-center justify-between h-16">
-                        {/* Pestañas a la izquierda */}
-                        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-auto">
-                            <TabsList className="w-auto h-12 bg-transparent p-0 border-0">
-                                <TabsTrigger 
-                                    value="basics" 
-                                    className="rounded-none h-12 px-4 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none"
-                                >
-                                    <Layout className="h-4 w-4 mr-2" />
-                                    Información Básica
-                                </TabsTrigger>
-                                
-                                <TabsTrigger 
-                                    value="curriculum" 
-                                    className="rounded-none h-12 px-4 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none"
-                                >
-                                    <Layers3 className="h-4 w-4 mr-2" />
-                                    Plan de Estudios
-                                </TabsTrigger>
-                                
-                                <TabsTrigger 
-                                    value="advanced" 
-                                    className="rounded-none h-12 px-4 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none"
-                                >
-                                    <Settings2 className="h-4 w-4 mr-2" />
-                                    Configuración
-                                </TabsTrigger>
-                                
-                                <TabsTrigger 
-                                    value="distribution" 
-                                    className="rounded-none h-12 px-4 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none"
-                                >
-                                    <GlobeIcon className="h-4 w-4 mr-2" />
-                                    Publicación
-                                </TabsTrigger>
-                            </TabsList>
-                        </Tabs>
-
-                        {/* Botones a la derecha */}
-                        <div className="flex items-center gap-2 sm:gap-3">
-                            <Button 
-                                variant="outline" 
-                                size="sm"
-                                asChild
-                                className="gap-2 h-9 text-xs sm:text-sm"
-                            >
-                                <Link href={`/courses/${courseId === 'new' ? 'preview' : courseId}`} target="_blank">
-                                    <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                                    <span className="hidden sm:inline">Vista previa</span>
-                                    <span className="sm:hidden">Vista</span>
-                                </Link>
-                            </Button>
-                            
-                            <Button 
-                                onClick={handleSaveCourse} 
-                                disabled={isSaving || !isDirty}
-                                className="gap-2 h-9 text-xs sm:text-sm"
-                            >
-                                {isSaving ? (
-                                    <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
-                                ) : (
-                                    <Save className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                                )}
-                                <span className="hidden sm:inline">
-                                    {isSaving ? 'Guardando...' : 'Guardar Cambios'}
-                                </span>
-                                <span className="sm:hidden">
-                                    {isSaving ? 'Guardando...' : 'Guardar'}
-                                </span>
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Contenido Principal */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-                <AnimatePresence mode="wait">
-                    {/* PESTAÑA: INFORMACIÓN BÁSICA - Rediseñada */}
-                    {activeTab === 'basics' && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            transition={{ duration: 0.2 }}
-                            className="space-y-6"
-                        >
-                            {/* Encabezado de la pestaña */}
-                            <div className="mb-4 sm:mb-6">
-                                <h2 className="text-xl sm:text-2xl font-bold mb-2">Información Básica del Curso</h2>
-                                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
-                                    Configura los detalles principales de tu curso
-                                </p>
-                            </div>
-
-                            {/* Grid responsivo: Título + Imagen lado a lado */}
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-                                {/* Columna izquierda: Título y Descripción */}
-                                <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-                                    <Card>
-                                        <CardHeader className="pb-3">
-                                            <CardTitle className="text-base sm:text-lg font-semibold">
-                                                Detalles del Curso
-                                            </CardTitle>
-                                            <CardDescription className="text-sm">
-                                                Información principal que identificará tu curso
-                                            </CardDescription>
-                                        </CardHeader>
-                                        <CardContent className="space-y-4 sm:space-y-6">
-                                            <div className="space-y-2 sm:space-y-3">
-                                                <Label htmlFor="title" className="text-sm font-medium">
-                                                    Título del Curso *
-                                                </Label>
-                                                <Input
-                                                    id="title"
-                                                    value={course.title}
-                                                    onChange={e => updateCourseField('title', e.target.value)}
-                                                    placeholder="Ej: Master en Desarrollo Web con React 2024"
-                                                    className="h-11 sm:h-12 text-sm sm:text-base"
-                                                    disabled={isSaving}
+                                    <Button size="icon" variant="ghost" onClick={() => onEditLesson(mIdx, lIdx, 'delete', null)}>
+                                      <Trash2 className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                  </div>
+                                  <Droppable droppableId={`block-droppable-${les.id}`} type="BLOCK">
+                                    {provBlock => (
+                                      <div ref={provBlock.innerRef} {...provBlock.droppableProps} className="pl-7 space-y-1">
+                                        {les.contentBlocks.map((bl, bIdx) => (
+                                          <Draggable draggableId={bl.id} index={bIdx} key={bl.id}>
+                                            {provBl => (
+                                              <div ref={provBl.innerRef} {...provBl.draggableProps}
+                                                className="bg-white dark:bg-gray-900 rounded border p-1 flex items-center gap-2">
+                                                <div {...provBl.dragHandleProps}><GripVertical className="h-3 w-3" /></div>
+                                                <Badge className="text-xs">{bl.type}</Badge>
+                                                <InlineBlockEditor
+                                                  block={bl}
+                                                  onChange={v => onEditBlock(mIdx, lIdx, bIdx, v)}
                                                 />
-                                            </div>
-
-                                            <div className="space-y-2 sm:space-y-3">
-                                                <Label htmlFor="description" className="text-sm font-medium">
-                                                    Descripción Completa
-                                                </Label>
-                                                <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-                                                    <RichTextEditor
-                                                        value={course.description || ''}
-                                                        onChange={v => updateCourseField('description', v)}
-                                                        placeholder="Describe qué aprenderán los estudiantes, los objetivos del curso, los requisitos previos..."
-                                                        className="min-h-[160px] sm:min-h-[180px]"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-
-                                    {/* Panel de Estadísticas - Responsivo */}
-                                    <Card>
-                                        <CardHeader className="pb-3">
-                                            <CardTitle className="text-base sm:text-lg font-semibold">
-                                                Resumen del Curso
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-                                                <div className="space-y-1 sm:space-y-2">
-                                                    <div className="text-xs sm:text-sm text-gray-500">Estado</div>
-                                                    <Badge 
-                                                        variant="outline"
-                                                        className="text-xs py-0.5 px-2"
-                                                    >
-                                                        {course.status === 'PUBLISHED' ? 'Publicado' :
-                                                         course.status === 'DRAFT' ? 'Borrador' : 'Archivado'}
-                                                    </Badge>
-                                                </div>
-                                                
-                                                <div className="space-y-1 sm:space-y-2">
-                                                    <div className="text-xs sm:text-sm text-gray-500">Módulos</div>
-                                                    <div className="text-lg sm:text-xl font-bold">{courseStats.totalModules}</div>
-                                                </div>
-                                                
-                                                <div className="space-y-1 sm:space-y-2">
-                                                    <div className="text-xs sm:text-sm text-gray-500">Lecciones</div>
-                                                    <div className="text-lg sm:text-xl font-bold">{courseStats.totalLessons}</div>
-                                                </div>
-                                                
-                                                <div className="space-y-1 sm:space-y-2">
-                                                    <div className="text-xs sm:text-sm text-gray-500">Contenido</div>
-                                                    <div className="text-lg sm:text-xl font-bold">{courseStats.totalBlocks} bloques</div>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                </div>
-
-                                {/* Columna derecha: Imagen de Portada Minimizada */}
-                                <div className="space-y-4 sm:space-y-6">
-                                    <Card>
-                                        <CardHeader className="pb-3">
-                                            <CardTitle className="text-base sm:text-lg font-semibold">
-                                                Imagen de Portada
-                                            </CardTitle>
-                                            <CardDescription className="text-sm">
-                                                Añade una imagen atractiva
-                                            </CardDescription>
-                                        </CardHeader>
-                                        <CardContent className="space-y-3 sm:space-y-4">
-                                            <div className="relative aspect-video rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 overflow-hidden group">
-                                                {isUploadingImage && (
-                                                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 sm:gap-3 bg-black/80 z-20">
-                                                        <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-white" />
-                                                        <div className="w-3/4 max-w-xs">
-                                                            <div className="flex justify-between text-xs sm:text-sm font-medium text-white mb-1">
-                                                                <span>Subiendo...</span>
-                                                                <span>{uploadProgress}%</span>
-                                                            </div>
-                                                            <Progress value={uploadProgress} className="h-1 sm:h-2" />
-                                                        </div>
-                                                    </div>
-                                                )}
-                                                
-                                                {(localCoverImagePreview || course.imageUrl) && !isUploadingImage ? (
-                                                    <div className="relative w-full h-full">
-                                                        <Image 
-                                                            src={localCoverImagePreview || course.imageUrl!} 
-                                                            alt="Imagen del Curso" 
-                                                            fill 
-                                                            className="object-cover" 
-                                                        />
-                                                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 p-2">
-                                                            <Button 
-                                                                type="button" 
-                                                                variant="secondary" 
-                                                                size="sm"
-                                                                onClick={() => document.getElementById('cover-image-upload')?.click()}
-                                                                disabled={isSaving || isUploadingImage}
-                                                                className="h-7 sm:h-8 px-2 text-xs"
-                                                            >
-                                                                <Replace className="h-3 w-3 mr-1" />
-                                                                Cambiar
-                                                            </Button>
-                                                            <Button 
-                                                                type="button" 
-                                                                variant="destructive" 
-                                                                size="sm"
-                                                                onClick={() => { 
-                                                                    updateCourseField('imageUrl', null); 
-                                                                    setLocalCoverImagePreview(null); 
-                                                                }}
-                                                                disabled={isSaving || isUploadingImage}
-                                                                className="h-7 sm:h-8 px-2 text-xs"
-                                                            >
-                                                                <Trash2 className="h-3 w-3 mr-1" />
-                                                                Eliminar
-                                                            </Button>
-                                                        </div>
-                                                    </div>
-                                                ) : (
-                                                    <UploadArea 
-                                                        onFileSelect={(file) => { 
-                                                            if (file) handleFileChange({ target: { files: [file] } } as any) 
-                                                        }} 
-                                                        inputId="cover-image-upload"
-                                                        disabled={isSaving || isUploadingImage}
-                                                        className="w-full h-full cursor-pointer"
-                                                    >
-                                                        <div className="text-center p-3 sm:p-4">
-                                                            <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-full border-2 border-dashed border-primary/20 mb-2 sm:mb-3">
-                                                                <ImagePlus className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                                                            </div>
-                                                            <p className="text-xs sm:text-sm font-medium mb-1">
-                                                                Arrastra una imagen
-                                                            </p>
-                                                            <p className="text-xs text-gray-500 mb-2">
-                                                                o haz clic para seleccionar
-                                                            </p>
-                                                            <p className="text-[10px] text-gray-400">
-                                                                Recomendado: 16:9
-                                                            </p>
-                                                        </div>
-                                                    </UploadArea>
-                                                )}
-                                            </div>
-                                            
-                                            <div className="text-xs text-gray-500 space-y-1">
-                                                <p>• La imagen aparecerá en el listado de cursos</p>
-                                                <p>• Usa imágenes claras y profesionales</p>
-                                                <p>• Tamaño máximo: 5MB</p>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-
-                                    {/* Información rápida del curso */}
-                                    <Card>
-                                        <CardHeader className="pb-3">
-                                            <CardTitle className="text-base sm:text-lg font-semibold">
-                                                Configuración Rápida
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="space-y-2 sm:space-y-3">
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-sm">Certificado</span>
-                                                {course.certificateTemplateId ? 
-                                                    <CheckCircle className="h-4 w-4 text-green-500" /> : 
-                                                    <X className="h-4 w-4 text-gray-400" />
-                                                }
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-sm">Obligatorio</span>
-                                                {course.isMandatory ? 
-                                                    <CheckCircle className="h-4 w-4 text-green-500" /> : 
-                                                    <X className="h-4 w-4 text-gray-400" />
-                                                }
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-sm">Prerrequisito</span>
-                                                {course.prerequisiteId ? 
-                                                    <CheckCircle className="h-4 w-4 text-green-500" /> : 
-                                                    <X className="h-4 w-4 text-gray-400" />
-                                                }
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
-
-                    {/* PESTAÑA: PLAN DE ESTUDIOS - Optimizado para responsividad */}
-                    {activeTab === 'curriculum' && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            transition={{ duration: 0.2 }}
-                            className="space-y-4 sm:space-y-6"
-                        >
-                            {/* Header responsivo */}
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-                                <div>
-                                    <h2 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2">Plan de Estudios</h2>
-                                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
-                                        Organiza los módulos y lecciones que formarán tu curso
-                                    </p>
-                                </div>
-                                
-                                <div className="flex flex-wrap gap-2">
-                                    <Button 
-                                        type="button" 
-                                        onClick={() => setShowTemplateModal(true)}
-                                        variant="outline"
-                                        size="sm"
-                                        className="gap-1 h-9 text-xs sm:text-sm"
-                                    >
-                                        <SparklesIcon className="h-3.5 w-3.5" />
-                                        <span className="hidden sm:inline">Usar Plantilla</span>
-                                        <span className="sm:hidden">Plantilla</span>
-                                    </Button>
-                                    
-                                    <Button 
-                                        type="button" 
-                                        onClick={handleAddModule} 
-                                        disabled={isSaving}
-                                        size="sm"
-                                        className="gap-1 h-9 text-xs sm:text-sm"
-                                    >
-                                        <PlusCircle className="h-3.5 w-3.5" />
-                                        <span className="hidden sm:inline">Nuevo Módulo</span>
-                                        <span className="sm:hidden">Módulo</span>
-                                    </Button>
-                                </div>
-                            </div>
-
-                            {/* Estadísticas del Currículo - Responsivas */}
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-                                <Card className="col-span-1">
-                                    <CardContent className="p-3 sm:p-4">
-                                        <div className="flex items-center gap-2 sm:gap-3">
-                                            <div className="p-1.5 sm:p-2 bg-blue-500/10 rounded-lg">
-                                                <Layers3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-500" />
-                                            </div>
-                                            <div>
-                                                <p className="text-xs text-gray-500">Módulos</p>
-                                                <p className="text-base sm:text-lg font-bold">{courseStats.totalModules}</p>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                                
-                                <Card className="col-span-1">
-                                    <CardContent className="p-3 sm:p-4">
-                                        <div className="flex items-center gap-2 sm:gap-3">
-                                            <div className="p-1.5 sm:p-2 bg-green-500/10 rounded-lg">
-                                                <BookOpenText className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500" />
-                                            </div>
-                                            <div>
-                                                <p className="text-xs text-gray-500">Lecciones</p>
-                                                <p className="text-base sm:text-lg font-bold">{courseStats.totalLessons}</p>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                                
-                                <Card className="col-span-1">
-                                    <CardContent className="p-3 sm:p-4">
-                                        <div className="flex items-center gap-2 sm:gap-3">
-                                            <div className="p-1.5 sm:p-2 bg-purple-500/10 rounded-lg">
-                                                <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-500" />
-                                            </div>
-                                            <div>
-                                                <p className="text-xs text-gray-500">Bloques</p>
-                                                <p className="text-base sm:text-lg font-bold">{courseStats.totalBlocks}</p>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                                
-                                <Card className="col-span-1">
-                                    <CardContent className="p-3 sm:p-4">
-                                        <div className="flex items-center gap-2 sm:gap-3">
-                                            <div className="p-1.5 sm:p-2 bg-amber-500/10 rounded-lg">
-                                                <Clock3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-500" />
-                                            </div>
-                                            <div>
-                                                <p className="text-xs text-gray-500">Duración</p>
-                                                <p className="text-base sm:text-lg font-bold">--:--</p>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </div>
-
-                            {/* Área de Módulos - Mejorado para móviles */}
-                            <div className="relative">
-                                {course.modules.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-center bg-gray-50 dark:bg-gray-800/50 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700">
-                                        <div className="p-3 bg-primary/10 rounded-full mb-3 sm:mb-4">
-                                            <Layers3 className="h-8 w-8 sm:h-10 sm:w-10 text-primary" />
-                                        </div>
-                                        <h3 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2">
-                                            Comienza a construir tu curso
-                                        </h3>
-                                        <p className="text-gray-500 text-xs sm:text-sm max-w-md mb-4 sm:mb-6 px-4">
-                                            Añade tu primer módulo para organizar el contenido en secciones lógicas
-                                        </p>
-                                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                                            <Button 
-                                                type="button" 
-                                                onClick={handleAddModule} 
-                                                variant="outline"
-                                                size="sm"
-                                                className="gap-1"
-                                            >
-                                                <PlusCircle className="h-3.5 w-3.5" />
-                                                Crear Módulo
-                                            </Button>
-                                            <Button 
-                                                type="button" 
-                                                onClick={() => setShowTemplateModal(true)}
-                                                size="sm"
-                                                className="gap-1"
-                                            >
-                                                <SparklesIcon className="h-3.5 w-3.5" />
-                                                Usar Plantilla
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <DragDropContext onDragEnd={onDragEnd}>
-                                        <Droppable droppableId="course-modules" type="MODULES">
-                                            {(provided) => (
-                                                <div 
-                                                    {...provided.droppableProps} 
-                                                    ref={provided.innerRef} 
-                                                    className="space-y-3 sm:space-y-4"
-                                                >
-                                                    <AnimatePresence>
-                                                        {course.modules.map((moduleItem, moduleIndex) => (
-                                                            <Draggable 
-                                                                key={moduleItem.id} 
-                                                                draggableId={moduleItem.id} 
-                                                                index={moduleIndex}
-                                                            >
-                                                                {(provided) => (
-                                                                    <ModuleItem
-                                                                        module={moduleItem} 
-                                                                        moduleIndex={moduleIndex}
-                                                                        onDelete={() => handleRemoveModule(moduleIndex)}
-                                                                        onUpdate={(field, value) => updateModuleField(moduleIndex, field, value)}
-                                                                        onAddLesson={(type) => handleAddLessonAction(moduleIndex, type)}
-                                                                        onLessonUpdate={(lessonIndex, field, value) => updateLessonField(moduleIndex, lessonIndex, field, value)}
-                                                                        onLessonDelete={(lessonIndex) => handleRemoveLesson(moduleIndex, lessonIndex)}
-                                                                        onSaveLessonAsTemplate={(lessonIndex) => setLessonToSaveAsTemplate(course.modules[moduleIndex].lessons[lessonIndex])}
-                                                                        onAddBlock={(lessonIndex, type) => handleAddBlock(moduleIndex, lessonIndex, type)}
-                                                                        onBlockUpdate={(lessonIndex, blockIndex, field, value) => updateBlockField(moduleIndex, lessonIndex, blockIndex, field, value)}
-                                                                        onBlockDelete={(lessonIndex, blockIndex) => handleRemoveBlock(moduleIndex, lessonIndex, blockIndex)}
-                                                                        onEditQuiz={handleEditQuiz}
-                                                                        isSaving={isSaving} 
-                                                                        provided={provided} 
-                                                                        ref={provided.innerRef}
-                                                                    />
-                                                                )}
-                                                            </Draggable>
-                                                        ))}
-                                                    </AnimatePresence>
-                                                    {provided.placeholder}
-                                                </div>
+                                                <Button size="icon" variant="ghost" onClick={() => onEditBlock(mIdx, lIdx, bIdx, { action: 'delete' })}>
+                                                  <Trash2 className="h-3 w-3 text-destructive" />
+                                                </Button>
+                                              </div>
                                             )}
-                                        </Droppable>
-                                    </DragDropContext>
-                                )}
-                            </div>
-                        </motion.div>
-                    )}
-
-                    {/* PESTAÑA: CONFIGURACIÓN */}
-                    {activeTab === 'advanced' && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            transition={{ duration: 0.2 }}
-                            className="space-y-4 sm:space-y-6"
-                        >
-                            <div>
-                                <h2 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2">Configuración Avanzada</h2>
-                                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
-                                    Configura certificados, prerrequisitos y otros ajustes importantes
-                                </p>
-                            </div>
-
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-                                {/* Certificado */}
-                                <Card>
-                                    <CardHeader className="pb-3">
-                                        <CardTitle className="text-base sm:text-lg font-semibold flex items-center gap-2">
-                                            <Award className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                                            Certificado del Curso
-                                        </CardTitle>
-                                        <CardDescription className="text-sm">
-                                            Selecciona una plantilla de certificado para otorgar al completar el curso
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="space-y-3 sm:space-y-4">
-                                        <div className="space-y-2 sm:space-y-3">
-                                            <Label htmlFor="certificateTemplate" className="text-sm font-medium">
-                                                Plantilla de Certificado
-                                            </Label>
-                                            <Select 
-                                                value={course.certificateTemplateId || 'none'} 
-                                                onValueChange={v => updateCourseField('certificateTemplateId', v === 'none' ? null : v)} 
-                                                disabled={isSaving}
-                                            >
-                                                <SelectTrigger id="certificateTemplate">
-                                                    <SelectValue placeholder="Sin certificado" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="none">No otorgar certificado</SelectItem>
-                                                    {certificateTemplates.length > 0 && (
-                                                        <>
-                                                            <Separator className="my-2" />
-                                                            {certificateTemplates.map(template => (
-                                                                <SelectItem key={template.id} value={template.id}>
-                                                                    {template.name}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </>
-                                                    )}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        
-                                        <div className="p-3 sm:p-4 bg-primary/5 rounded-lg border border-primary/10">
-                                            <div className="flex items-start gap-2 sm:gap-3">
-                                                <Info className="h-4 w-4 sm:h-5 sm:w-5 text-primary shrink-0 mt-0.5" />
-                                                <p className="text-xs sm:text-sm text-gray-600">
-                                                    Los certificados se generan automáticamente cuando un estudiante completa el 100% del curso
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-
-                                {/* Prerrequisitos */}
-                                <Card>
-                                    <CardHeader className="pb-3">
-                                        <CardTitle className="text-base sm:text-lg font-semibold flex items-center gap-2">
-                                            <Target className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                                            Prerrequisitos
-                                        </CardTitle>
-                                        <CardDescription className="text-sm">
-                                            Establece cursos que los estudiantes deben completar antes de acceder a este
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="space-y-3 sm:space-y-4">
-                                        <div className="space-y-2 sm:space-y-3">
-                                            <Label htmlFor="prerequisite" className="text-sm font-medium">
-                                                Curso Prerrequisito
-                                            </Label>
-                                            <Select 
-                                                value={course.prerequisiteId || 'none'} 
-                                                onValueChange={v => updateCourseField('prerequisiteId', v === 'none' ? null : v)} 
-                                                disabled={isSaving}
-                                            >
-                                                <SelectTrigger id="prerequisite">
-                                                    <SelectValue placeholder="Sin prerrequisito" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="none">Sin prerrequisito</SelectItem>
-                                                    {allCoursesForPrereq.length > 0 && (
-                                                        <>
-                                                            <Separator className="my-2" />
-                                                            {allCoursesForPrereq.map(course => (
-                                                                <SelectItem key={course.id} value={course.id}>
-                                                                    {course.title}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </>
-                                                    )}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-
-                                {/* Asignación Obligatoria */}
-                                <Card className="lg:col-span-2">
-                                    <CardHeader className="pb-3">
-                                        <CardTitle className="text-base sm:text-lg font-semibold flex items-center gap-2">
-                                            <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                                            Control de Acceso
-                                        </CardTitle>
-                                        <CardDescription className="text-sm">
-                                            Configura cómo y quién puede acceder a este curso
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-                                            <div className="space-y-1">
-                                                <Label htmlFor="isMandatory" className="text-sm sm:text-base font-semibold">
-                                                    Asignación Obligatoria
-                                                </Label>
-                                                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                                                    Activa esta opción para poder asignar este curso a grupos específicos de estudiantes
-                                                </p>
-                                            </div>
-                                            <div className="flex items-center gap-2 sm:gap-3">
-                                                <Switch 
-                                                    id="isMandatory" 
-                                                    checked={course.isMandatory} 
-                                                    onCheckedChange={handleMandatorySwitchChange} 
-                                                    disabled={isSaving} 
-                                                    className="data-[state=checked]:bg-primary"
-                                                />
-                                                <span className="text-sm font-medium">
-                                                    {course.isMandatory ? 'Activado' : 'Desactivado'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </div>
-                        </motion.div>
-                    )}
-
-                    {/* PESTAÑA: PUBLICACIÓN */}
-                    {activeTab === 'distribution' && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            transition={{ duration: 0.2 }}
-                            className="space-y-4 sm:space-y-6"
-                        >
-                            <div>
-                                <h2 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2">Publicación y Disponibilidad</h2>
-                                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
-                                    Controla cuándo y cómo estará disponible tu curso para los estudiantes
-                                </p>
-                            </div>
-
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-                                {/* Fechas de Disponibilidad */}
-                                <Card className="lg:col-span-2">
-                                    <CardHeader className="pb-3">
-                                        <CardTitle className="text-base sm:text-lg font-semibold flex items-center gap-2">
-                                            <CalendarIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                                            Período de Disponibilidad
-                                        </CardTitle>
-                                        <CardDescription className="text-sm">
-                                            Define las fechas en las que el curso estará disponible para los estudiantes
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="space-y-4 sm:space-y-6">
-                                        <div className="bg-gray-50 dark:bg-gray-800/50 p-4 sm:p-5 rounded-lg border border-gray-200 dark:border-gray-700">
-                                            <DateRangePicker
-                                                date={{ 
-                                                    from: course.startDate ? new Date(course.startDate) : undefined, 
-                                                    to: course.endDate ? new Date(course.endDate) : undefined 
-                                                }}
-                                                onDateChange={(range) => {
-                                                    updateCourseField('startDate', range?.from?.toISOString());
-                                                    updateCourseField('endDate', range?.to?.toISOString());
-                                                }}
-                                            />
-                                        </div>
-                                        
-                                        <div className="p-3 sm:p-4 bg-primary/5 rounded-lg border border-primary/10">
-                                            <div className="flex items-start gap-2 sm:gap-3">
-                                                <Info className="h-4 w-4 sm:h-5 sm:w-5 text-primary shrink-0 mt-0.5" />
-                                                <div className="text-xs sm:text-sm text-gray-600">
-                                                    <p className="font-medium mb-1">Información importante:</p>
-                                                    <ul className="space-y-1 list-disc list-inside">
-                                                        <li>Si no defines fechas, el curso estará disponible permanentemente</li>
-                                                        <li>Los estudiantes no podrán acceder fuera del período definido</li>
-                                                        <li>Puedes modificar estas fechas en cualquier momento</li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-
-                                {/* Estado y Categoría */}
-                                <div className="space-y-4 sm:space-y-6">
-                                    <Card>
-                                        <CardHeader className="pb-3">
-                                            <CardTitle className="text-base sm:text-lg font-semibold">
-                                                Estado del Curso
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <Select 
-                                                value={course.status} 
-                                                onValueChange={v => updateCourseField('status', v as CourseStatus)} 
-                                                disabled={isSaving}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="DRAFT">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                                                            <span>Borrador</span>
-                                                        </div>
-                                                    </SelectItem>
-                                                    <SelectItem value="PUBLISHED">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                                            <span>Publicado</span>
-                                                        </div>
-                                                    </SelectItem>
-                                                    <SelectItem value="ARCHIVED">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
-                                                            <span>Archivado</span>
-                                                        </div>
-                                                    </SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </CardContent>
-                                    </Card>
-
-                                    <Card>
-                                        <CardHeader className="pb-3">
-                                            <CardTitle className="text-base sm:text-lg font-semibold">
-                                                Categoría
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <Select 
-                                                value={course.category || ''} 
-                                                onValueChange={v => updateCourseField('category', v)} 
-                                                disabled={isSaving}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Selecciona una categoría" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {(settings?.resourceCategories || []).sort().map(category => (
-                                                        <SelectItem key={category} value={category}>
-                                                            {category}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </CardContent>
-                                    </Card>
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
-
-            {/* Barra de Acción Flotante - Responsiva */}
-            {isDirty && (
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 20 }}
-                    className="fixed bottom-4 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 z-50"
-                >
-                    <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl rounded-lg">
-                        <CardContent className="p-3">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
-                                    <AlertTriangle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-500 shrink-0" />
-                                    <span className="truncate">Tienes cambios sin guardar</span>
-                                </div>
-                                <div className="flex gap-2">
+                                          </Draggable>
+                                        ))}
+                                        {provBlock.placeholder}
+                                      </div>
+                                    )}
+                                  </Droppable>
+                                  <div className="pt-2">
                                     <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => window.location.reload()}
-                                        className="flex-1 sm:flex-none text-xs"
-                                    >
-                                        Descartar
-                                    </Button>
+                                      variant="outline"
+                                      size="sm"
+                                      className="gap-1"
+                                      onClick={() => onEditBlock(mIdx, lIdx, les.contentBlocks.length, { type: 'TEXT' })}
+                                    >+ Texto</Button>
                                     <Button
-                                        onClick={handleSaveCourse}
-                                        disabled={isSaving}
-                                        size="sm"
-                                        className="flex-1 sm:flex-none gap-1 text-xs"
-                                    >
-                                        {isSaving ? (
-                                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                        ) : (
-                                            <Save className="h-3.5 w-3.5" />
-                                        )}
-                                        {isSaving ? 'Guardando...' : 'Guardar'}
-                                    </Button>
+                                      variant="outline"
+                                      size="sm"
+                                      className="gap-1 ml-1"
+                                      onClick={() => onEditBlock(mIdx, lIdx, les.contentBlocks.length, { type: 'VIDEO' })}
+                                    >+ Video</Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="gap-1 ml-1"
+                                      onClick={() => onEditBlock(mIdx, lIdx, les.contentBlocks.length, { type: 'FILE' })}
+                                    >+ Archivo</Button>
+                                  </div>
                                 </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-            )}
-
-            {/* Modales */}
-            <AlertDialog open={!!itemToDeleteDetails} onOpenChange={(isOpen) => !isOpen && setItemToDeleteDetails(null)}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 bg-destructive/10 rounded-lg">
-                                <Trash2 className="h-5 w-5 text-destructive" />
-                            </div>
-                            <AlertDialogTitle>Confirmar eliminación</AlertDialogTitle>
+                              )}
+                            </Draggable>
+                          ))}
+                          {provLesson.placeholder}
+                          <Button variant="secondary" size="sm" className="mt-2" onClick={() => onEditLesson(mIdx, mod.lessons.length, 'add', null)}>
+                            <FilePlus2 className="h-4 w-4 mr-1" />Añadir lección
+                          </Button>
                         </div>
-                        <AlertDialogDescription className="text-base">
-                            ¿Estás seguro de que quieres eliminar "
-                            <span className="font-semibold">{itemToDeleteDetails?.name}</span>"?
-                            <br />
-                            <span className="text-sm text-gray-500 mt-2 block">
-                                Esta acción no se puede deshacer y eliminará todo el contenido asociado.
-                            </span>
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction 
-                            onClick={() => { 
-                                itemToDeleteDetails.onDelete(); 
-                                setItemToDeleteDetails(null);
-                                toast({
-                                    title: "✅ Elemento eliminado",
-                                    description: "El elemento se ha eliminado correctamente.",
-                                    duration: 3000
-                                });
-                            }} 
-                            className={buttonVariants({ variant: "destructive" })}
-                        >
-                            Sí, eliminar
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-
-            <TemplateSelectorModal
-                isOpen={showTemplateModal}
-                templates={templates}
-                onClose={() => { setShowTemplateModal(false); setActiveModuleIndexForTemplate(null); }}
-                onSelect={(template) => {
-                    if (activeModuleIndexForTemplate !== null) {
-                        handleAddLesson(activeModuleIndexForTemplate, template);
-                        setShowTemplateModal(false);
-                        setActiveModuleIndexForTemplate(null);
-                    }
-                }}
-            />
-
-            {lessonToSaveAsTemplate && (
-                <SaveTemplateModal
-                    isOpen={!!lessonToSaveAsTemplate}
-                    onClose={() => setLessonToSaveAsTemplate(null)}
-                    onSave={handleSaveTemplate}
-                />
-            )}
-
-            {isAssignmentModalOpen && (
-                <CourseAssignmentModal
-                    isOpen={isAssignmentModalOpen}
-                    onClose={() => setIsAssignmentModalOpen(false)}
-                    courseId={course.id}
-                    courseTitle={course.title}
-                />
-            )}
-
-            {quizToEdit && (
-                <QuizEditorModal
-                    isOpen={!!quizToEdit}
-                    onClose={() => setQuizToEdit(null)}
-                    quiz={quizToEdit.quiz}
-                    onSave={quizToEdit.onSave}
-                />
-            )}
-        </div>
-    );
+                      )}
+                    </Droppable>
+                  </div>
+                )}
+              </Draggable>
+            ))}
+            {provided.placeholder}
+            <Button variant="primary" className="w-full" onClick={() => onEditModule(modules.length, 'add', null)}>
+              <PlusCircle className="h-4 w-4 mr-2" />Nuevo Módulo
+            </Button>
+          </div>
+        )}
+      </Droppable>
+    </DragDropContext>
+  );
 }
 
-// Selector de tipos de bloque
-const BlockTypeSelector = ({ onSelect }) => (
-    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-        <p className="text-sm font-medium mb-2">Añadir nuevo bloque</p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <Button
-                variant="outline"
-                onClick={() => onSelect('TEXT')}
-                className="flex-col h-auto py-2 rounded-md gap-1"
-            >
-                <div className="p-1.5 bg-blue-500/10 rounded">
-                    <FileText className="h-3.5 w-3.5 text-blue-500" />
-                </div>
-                <span className="text-xs">Texto</span>
+// Editor inline para bloques (texto, vídeo, archivo, quiz)
+function InlineBlockEditor({ block, onChange }) {
+  if (block.type === 'TEXT') {
+    return (
+      <Textarea
+        className="text-xs border-gray-200 dark:border-gray-800 min-w-[120px]"
+        value={block.content}
+        onChange={e => onChange({ ...block, content: e.target.value })}
+        placeholder="Contenido del texto..."
+      />
+    );
+  }
+  if (block.type === 'VIDEO') {
+    return (
+      <Input
+        className="text-xs border-gray-200 dark:border-gray-800 min-w-[120px]"
+        value={block.content}
+        onChange={e => onChange({ ...block, content: e.target.value })}
+        placeholder="URL del video..."
+      />
+    );
+  }
+  if (block.type === 'FILE') {
+    return (
+      <Input
+        className="text-xs border-gray-200 dark:border-gray-800 min-w-[120px]"
+        value={block.content}
+        onChange={e => onChange({ ...block, content: e.target.value })}
+        placeholder="URL del archivo..."
+      />
+    );
+  }
+  if (block.type === 'QUIZ') {
+    return (
+      <Input
+        className="text-xs border-gray-200 dark:border-gray-800 min-w-[120px]"
+        value={block.content}
+        onChange={e => onChange({ ...block, content: e.target.value })}
+        placeholder="Titulo del quiz..."
+      />
+    );
+  }
+  return null;
+}
+
+
+// =============== PÁGINA PRINCIPAL (container) ==================
+
+export default function CourseEditorPage() {
+  const [course, setCourse] = useState<AppCourse>(defaultCourse);
+  const [activeTab, setActiveTab] = useState('basics');
+  const [dirty, setDirty] = useState(false);
+  const [selectedModuleIdx, setSelectedModuleIdx] = useState(null);
+
+  // Estadísticas del curso
+  const courseStats = {
+    totalModules: course.modules.length,
+    totalLessons: course.modules.reduce((acc, mod) => acc + (mod.lessons?.length || 0), 0),
+    totalBlocks: course.modules.reduce((acc, mod) =>
+      acc + (mod.lessons?.reduce((lessonAcc, lesson) =>
+        lessonAcc + (lesson.contentBlocks?.length || 0), 0) || 0), 0),
+    status: course.status,
+  };
+
+  // AUTOGUARDADO
+  useEffect(() => {
+    if (dirty) {
+      const timeout = setTimeout(() => {
+        // Guardar automáticamente aquí
+        // saveCourse(course);
+      }, 2000);
+      return () => clearTimeout(timeout);
+    }
+  }, [course, dirty]);
+
+  // HISTORIAL DE CAMBIOS
+  const history = useRef<AppCourse[]>([]);
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+
+  function updateCourse(updater: (draft: AppCourse) => void) {
+    setCourse(prev => {
+      const draft = JSON.parse(JSON.stringify(prev));
+      updater(draft);
+      setDirty(true);
+      history.current.push(draft);
+      setCanUndo(history.current.length > 1);
+      return draft;
+    });
+  }
+
+  // DRAG AND DROP CURRÍCULUM
+  const handleCurriculumDragEnd = (result: DropResult) => {
+    const { source, destination, type } = result;
+    if (!destination) return;
+
+    let upd = (draft: AppCourse) => {};
+
+    if (type === 'MODULE') {
+      upd = draft => {
+        const [mod] = draft.modules.splice(source.index, 1);
+        draft.modules.splice(destination.index, 0, mod);
+      };
+    }
+    else if (type === 'LESSON') {
+      upd = draft => {
+        const modIdx = draft.modules.findIndex(m => `lesson-droppable-${m.id}` === source.droppableId);
+        if (modIdx === -1) return;
+        const [lesson] = draft.modules[modIdx].lessons.splice(source.index, 1);
+        draft.modules[modIdx].lessons.splice(destination.index, 0, lesson);
+      };
+    }
+    else if (type === 'BLOCK') {
+      upd = draft => {
+        for (const mod of draft.modules) {
+          for (const les of mod.lessons) {
+            if (`block-droppable-${les.id}` === source.droppableId) {
+              const [block] = les.contentBlocks.splice(source.index, 1);
+              les.contentBlocks.splice(destination.index, 0, block);
+            }
+          }
+        }
+      };
+    }
+
+    updateCourse(upd);
+  };
+
+  // EDICIÓN MÓDULO/LECCIÓN/BLOQUE
+  function editModule(idx, field, value) {
+    updateCourse(draft => {
+      if (field === 'add') {
+        draft.modules.push({
+          id: generateUniqueId('module'),
+          title: 'Nuevo Módulo',
+          order: draft.modules.length,
+          lessons: [],
+        });
+      } else if (field === 'delete') {
+        draft.modules.splice(idx, 1);
+      } else {
+        draft.modules[idx][field] = value;
+      }
+    });
+  }
+  function editLesson(mIdx, lIdx, field, value) {
+    updateCourse(draft => {
+      if (field === 'add') {
+        draft.modules[mIdx].lessons.push({
+          id: generateUniqueId('lesson'),
+          title: 'Nueva Lección',
+          order: draft.modules[mIdx].lessons.length,
+          contentBlocks: [],
+        });
+      } else if (field === 'delete') {
+        draft.modules[mIdx].lessons.splice(lIdx, 1);
+      } else {
+        draft.modules[mIdx].lessons[lIdx][field] = value;
+      }
+    });
+  }
+  function editBlock(mIdx, lIdx, bIdx, value) {
+    updateCourse(draft => {
+      if (value.action === 'delete') {
+        draft.modules[mIdx].lessons[lIdx].contentBlocks.splice(bIdx, 1);
+      } else if (value.type) {
+        draft.modules[mIdx].lessons[lIdx].contentBlocks.push({
+          id: generateUniqueId('block'),
+          type: value.type,
+          content: '',
+          order: draft.modules[mIdx].lessons[lIdx].contentBlocks.length,
+        });
+      } else {
+        draft.modules[mIdx].lessons[lIdx].contentBlocks[bIdx] = value;
+      }
+    });
+  }
+
+  // VALIDACIONES
+  const errors = [];
+  if (!course.title || course.title.trim().length < 3)
+    errors.push("El título del curso es obligatorio.");
+  if (course.modules.some(m => !m.title || m.title.trim().length < 3))
+    errors.push("Cada módulo debe tener un título.");
+  if (course.modules.some(m => m.lessons.some(l => !l.title || l.title.trim().length < 3)))
+    errors.push("Cada lección debe tener un título.");
+
+  // PANELES DE CONTENIDO
+  return (
+    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
+      <CourseSidebar
+        modules={course.modules}
+        stats={courseStats}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onModuleSelect={setSelectedModuleIdx}
+      />
+      <main className="flex-1 p-6 max-w-4xl">
+        <header className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold">Editor de Cursos</h1>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" disabled={!dirty}>
+              <Save className="h-4 w-4 mr-1" />
+              Guardar cambios
             </Button>
-            
-            <Button
-                variant="outline"
-                onClick={() => onSelect('VIDEO')}
-                className="flex-col h-auto py-2 rounded-md gap-1"
-            >
-                <div className="p-1.5 bg-red-500/10 rounded">
-                    <Video className="h-3.5 w-3.5 text-red-500" />
-                </div>
-                <span className="text-xs">Video</span>
+            <Button variant="secondary" size="sm" onClick={() => {/* preview */}}>
+              <Eye className="h-4 w-4 mr-1" />
+              Vista previa
             </Button>
-            
-            <Button
-                variant="outline"
-                onClick={() => onSelect('FILE')}
-                className="flex-col h-auto py-2 rounded-md gap-1"
-            >
-                <div className="p-1.5 bg-amber-500/10 rounded">
-                    <FileGenericIcon className="h-3.5 w-3.5 text-amber-500" />
+          </div>
+        </header>
+
+        <Tabs value={activeTab}>
+          <TabsList>
+            <TabsTrigger value="basics">Información Básica</TabsTrigger>
+            <TabsTrigger value="curriculum">Plan de Estudios</TabsTrigger>
+            <TabsTrigger value="config">Configuración</TabsTrigger>
+            <TabsTrigger value="publish">Publicación</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="basics">
+            <Card>
+              <CardHeader>
+                <CardTitle>Datos principales</CardTitle>
+                <CardDescription>Lo que identificará tu curso</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-4">
+                  <div className="flex flex-col w-2/3">
+                    <label className="text-sm font-medium mb-2">Título *</label>
+                    <Input
+                      value={course.title}
+                      onChange={e => updateCourse(d => { d.title = e.target.value; })}
+                      className="mb-3"
+                      placeholder="Ejemplo: Programación Avanzada"
+                    />
+                    <label className="text-sm font-medium mb-2">Descripción</label>
+                    <Textarea
+                      value={course.description}
+                      onChange={e => updateCourse(d => { d.description = e.target.value; })}
+                      placeholder="Describe el propósito y objetivos generales..."
+                      className="min-h-[80px]"
+                    />
+                  </div>
+                  <div className="w-1/3">
+                    <label className="text-sm font-medium">Imagen de portada</label>
+                    <UploadArea
+                      onFileSelect={file => {/* upload/cambiar imagen */}}
+                      className="aspect-video w-full border border-dashed border-primary/30 mt-2 rounded"
+                    />
+                  </div>
                 </div>
-                <span className="text-xs">Archivo</span>
-            </Button>
-            
-            <Button
-                variant="outline"
-                onClick={() => onSelect('QUIZ')}
-                className="flex-col h-auto py-2 rounded-md gap-1"
-            >
-                <div className="p-1.5 bg-purple-500/10 rounded">
-                    <Pencil className="h-3.5 w-3.5 text-purple-500" />
+              </CardContent>
+              <CardFooter>
+                <div className="text-xs text-red-500">{errors.length ? errors[0] : null}</div>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="curriculum">
+            <CurriculumTree
+              modules={course.modules}
+              onDragEnd={handleCurriculumDragEnd}
+              onEditModule={editModule}
+              onEditLesson={editLesson}
+              onEditBlock={editBlock}
+            />
+          </TabsContent>
+
+          <TabsContent value="config">
+            <Card>
+              <CardHeader>
+                <CardTitle>Configuración avanzada</CardTitle>
+                <CardDescription>Certificados, acceso, prerrequisitos...</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span>Curso obligatorio</span>
+                      <Switch checked={course.isMandatory || false}
+                        onCheckedChange={v => updateCourse(d => { d.isMandatory = v; })} />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm">Certificado:</label>
+                    <Select
+                      value={course.certificateTemplateId || ''}
+                      onValueChange={v => updateCourse(d => { d.certificateTemplateId = v; })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sin certificado" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">Sin certificado</SelectItem>
+                        {/* Tus plantillas de certificado aquí */}
+                        <SelectItem value="cert1">Certificado profesional 1</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <span className="text-xs">Quiz</span>
-            </Button>
-        </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="publish">
+            <Card>
+              <CardHeader>
+                <CardTitle>Publicación</CardTitle>
+                <CardDescription>Fechas y estado de publicación</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-4">
+                  <div>
+                    <label className="text-sm">Estado</label>
+                    <Select
+                      value={course.status}
+                      onValueChange={v => updateCourse(d => { d.status = v as CourseStatus; })}
+                    >
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="DRAFT">Borrador</SelectItem>
+                        <SelectItem value="PUBLISHED">Publicado</SelectItem>
+                        <SelectItem value="ARCHIVED">Archivado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-sm">Rango de fechas</label>
+                    <div className="flex gap-2">
+                      <Input type="date" value={course.startDate || ''}
+                        onChange={e => updateCourse(d => { d.startDate = e.target.value; })} />
+                      <Input type="date" value={course.endDate || ''}
+                        onChange={e => updateCourse(d => { d.endDate = e.target.value; })} />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </main>
     </div>
-);
-
-// Modal para seleccionar plantilla
-const TemplateSelectorModal = ({ isOpen, onClose, templates, onSelect }) => {
-    return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-3xl">
-                <DialogHeader>
-                    <DialogTitle className="text-xl font-bold flex items-center gap-2">
-                        <SparklesIcon className="h-5 w-5 text-primary" />
-                        Seleccionar Plantilla de Lección
-                    </DialogTitle>
-                    <DialogDescription>
-                        Elige una plantilla predefinida para crear rápidamente una lección con estructura optimizada
-                    </DialogDescription>
-                </DialogHeader>
-                <ScrollArea className="max-h-[60vh] mt-4">
-                    <div className="p-1">
-                        {templates.length === 0 ? (
-                            <div className="text-center py-12">
-                                <div className="p-4 bg-primary/10 rounded-full inline-flex mb-4">
-                                    <SparklesIcon className="h-8 w-8 text-primary" />
-                                </div>
-                                <p className="text-lg font-semibold mb-2">No hay plantillas disponibles</p>
-                                <p className="text-gray-500">
-                                    Crea tu primera plantilla guardando una lección existente como plantilla
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                {templates.map(template => (
-                                    <button
-                                        key={template.id}
-                                        onClick={() => onSelect(template)}
-                                        className="text-left p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
-                                    >
-                                        <div className="flex items-start justify-between mb-3">
-                                            <div>
-                                                <p className="font-semibold">
-                                                    {template.name}
-                                                </p>
-                                                <p className="text-sm text-gray-500 mt-1">
-                                                    {template.description || 'Sin descripción'}
-                                                </p>
-                                            </div>
-                                            <Badge variant="outline" className="text-xs">
-                                                {template.templateBlocks.length} bloques
-                                            </Badge>
-                                        </div>
-                                        <div className="flex flex-wrap gap-1">
-                                            {template.templateBlocks.slice(0, 3).map((block, i) => (
-                                                <Badge 
-                                                    key={i} 
-                                                    variant="secondary" 
-                                                    className="text-xs capitalize"
-                                                >
-                                                    {block.type.toLowerCase()}
-                                                </Badge>
-                                            ))}
-                                            {template.templateBlocks.length > 3 && (
-                                                <Badge variant="outline" className="text-xs">
-                                                    +{template.templateBlocks.length - 3} más
-                                                </Badge>
-                                            )}
-                                        </div>
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </ScrollArea>
-                <DialogFooter className="mt-6">
-                    <Button variant="outline" onClick={onClose}>
-                        Cancelar
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
-};
-
-// Modal para guardar plantilla
-const SaveTemplateModal = ({ isOpen, onClose, onSave }) => {
-    const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
-    const [isSaving, setIsSaving] = useState(false);
-
-    const handleFormSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!name.trim()) return;
-        
-        setIsSaving(true);
-        await onSave(name, description);
-        setIsSaving(false);
-        setName('');
-        setDescription('');
-    };
-
-    return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-md">
-                <form onSubmit={handleFormSubmit}>
-                    <DialogHeader>
-                        <DialogTitle className="text-xl font-bold flex items-center gap-2">
-                            <SaveIcon className="h-5 w-5 text-primary" />
-                            Guardar como Plantilla
-                        </DialogTitle>
-                        <DialogDescription>
-                            Guarda esta lección como plantilla para reutilizarla en otros cursos
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="py-6 space-y-6">
-                        <div className="space-y-3">
-                            <Label htmlFor="template-name" className="text-sm font-medium">
-                                Nombre de la plantilla *
-                            </Label>
-                            <Input
-                                id="template-name"
-                                value={name}
-                                onChange={e => setName(e.target.value)}
-                                placeholder="Ej: Lección introductoria de programación"
-                                required
-                                disabled={isSaving}
-                            />
-                        </div>
-                        <div className="space-y-3">
-                            <Label htmlFor="template-description" className="text-sm font-medium">
-                                Descripción
-                            </Label>
-                            <Textarea
-                                id="template-description"
-                                value={description}
-                                onChange={e => setDescription(e.target.value)}
-                                placeholder="Describe el propósito y contenido de esta plantilla..."
-                                disabled={isSaving}
-                                className="min-h-[100px]"
-                            />
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={onClose}
-                            disabled={isSaving}
-                        >
-                            Cancelar
-                        </Button>
-                        <Button
-                            type="submit"
-                            disabled={isSaving || !name.trim()}
-                            className="gap-2"
-                        >
-                            {isSaving ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                                <SaveIcon className="h-4 w-4" />
-                            )}
-                            {isSaving ? 'Guardando...' : 'Guardar Plantilla'}
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
-    );
-};
+  );
+}
