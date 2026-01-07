@@ -73,9 +73,9 @@ import { CSS } from '@dnd-kit/utilities';
 // ============================================================================
 
 const VIEWPORT_SIZES = [
-  { id: 'mobile', label: 'Móvil', icon: Smartphone, width: '375px', height: '667px', scale: 0.8 },
-  { id: 'tablet', label: 'Tablet', icon: Tablet, width: '768px', height: '1024px', scale: 0.7 },
-  { id: 'desktop', label: 'Escritorio', icon: Monitor, width: '1024px', height: '768px', scale: 1 },
+  { id: 'mobile', label: 'Móvil', icon: Smartphone, width: 375, height: 667, scale: 0.85 },
+  { id: 'tablet', label: 'Tablet', icon: Tablet, width: 768, height: 1024, scale: 0.65 },
+  { id: 'desktop', label: 'Escritorio', icon: Monitor, width: 1024, height: 768, scale: 0.8 },
 ] as const;
 
 const QUESTION_TYPES = [
@@ -102,6 +102,12 @@ const stripHtml = (html?: string): string => {
   const tmp = document.createElement('div');
   tmp.innerHTML = html;
   return tmp.textContent || tmp.innerText || '';
+};
+
+// Helper to get localized difficulty label
+const getDifficultyLabel = (val?: string) => {
+  const diff = DIFFICULTY_LEVELS.find(d => d.value === val);
+  return diff ? diff.label : 'Medio';
 };
 
 // ============================================================================
@@ -147,13 +153,13 @@ function SortableQuestionItem({
       style={style}
       className={cn(
         "relative group mb-2 transition-all duration-200",
-        isActive && "ring-2 ring-primary ring-offset-2"
+        isActive && "ring-2 ring-primary ring-offset-2 z-10"
       )}
     >
       <div
         onClick={onSelect}
         className={cn(
-          "relative p-3 rounded-lg border transition-all duration-200 cursor-pointer",
+          "relative p-3 rounded-lg border transition-all duration-200 cursor-pointer overflow-hidden",
           "hover:shadow-md",
           isActive 
             ? "border-primary bg-gradient-to-r from-primary/5 to-primary/10" 
@@ -164,51 +170,51 @@ function SortableQuestionItem({
         <div
           {...attributes}
           {...listeners}
-          className="absolute left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
+          className="absolute left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing z-20"
         >
           <GripVertical className="h-4 w-4 text-muted-foreground" />
         </div>
 
         <div className="ml-6">
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="flex items-center gap-1">
-                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+              <div className="flex flex-col gap-1 mb-1">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-[10px]">
                     {index + 1}
                   </div>
-                  <span className="text-sm font-medium truncate">
+                  <span className="text-sm font-medium truncate block max-w-full">
                     {stripHtml(question.text) || `Pregunta ${index + 1}`}
                   </span>
                 </div>
                 
-                <div className="flex items-center gap-1">
+                <div className="flex flex-wrap items-center gap-1">
                   <Badge 
                     variant="outline" 
                     className={cn(
-                      "text-xs px-1.5 py-0",
+                      "text-[10px] px-1.5 py-0 h-5",
                       difficulty.value === 'easy' && "border-green-500/30 text-green-600",
                       difficulty.value === 'medium' && "border-yellow-500/30 text-yellow-600",
                       difficulty.value === 'hard' && "border-red-500/30 text-red-600",
                       difficulty.value === 'expert' && "border-purple-500/30 text-purple-600"
                     )}
                   >
-                    <div className={`w-1.5 h-1.5 rounded-full mr-1 ${difficulty.color}`} />
+                    <div className={`w-1 h-1 rounded-full mr-1 shrink-0 ${difficulty.color}`} />
                     {difficulty.label}
                   </Badge>
                   
                   <Badge 
                     variant="outline" 
-                    className="text-xs px-1.5 py-0"
+                    className="text-[10px] px-1.5 py-0 h-5"
                   >
-                    <div className={`w-1.5 h-1.5 rounded-full mr-1 ${questionType.color}`} />
+                    <div className={`w-1 h-1 rounded-full mr-1 shrink-0 ${questionType.color}`} />
                     {questionType.label}
                   </Badge>
                 </div>
               </div>
               
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span>{question.options?.length || 0} opciones</span>
+              <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-1">
+                <span className="truncate">{question.options?.length || 0} opciones</span>
                 <span>•</span>
                 <span className="font-semibold text-primary">{question.basePoints || 10} pts</span>
                 {question.imageUrl && (
@@ -221,14 +227,14 @@ function SortableQuestionItem({
             </div>
 
             {/* Quick actions */}
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 bg-background/80 backdrop-blur-sm rounded-md shadow-sm border border-border/50">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-6 w-6 rounded-full hover:bg-muted"
+                      className="h-6 w-6 rounded-sm hover:bg-muted"
                       onClick={(e) => {
                         e.stopPropagation();
                         onDuplicate();
@@ -238,7 +244,7 @@ function SortableQuestionItem({
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Duplicar pregunta</p>
+                    <p>Duplicar</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -249,7 +255,7 @@ function SortableQuestionItem({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-6 w-6 rounded-full hover:bg-destructive/10 hover:text-destructive"
+                      className="h-6 w-6 rounded-sm hover:bg-destructive/10 hover:text-destructive"
                       onClick={(e) => {
                         e.stopPropagation();
                         onDelete();
@@ -259,7 +265,7 @@ function SortableQuestionItem({
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Eliminar pregunta</p>
+                    <p>Eliminar</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -295,10 +301,8 @@ function QuestionList({
   onDuplicate,
 }: QuestionListProps) {
   const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), // Prevent accidental drags
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -312,45 +316,45 @@ function QuestionList({
   };
 
   return (
-    <div className="h-full flex flex-col border-r border-border">
+    <div className="h-full flex flex-col border-r border-border bg-muted/10">
       {/* Header */}
-      <div className="shrink-0 p-4 border-b border-border">
+      <div className="shrink-0 p-4 border-b border-border bg-background">
         <div className="flex items-center justify-between">
-          <h2 className="font-semibold">Preguntas</h2>
+          <h2 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Estructura</h2>
           <Button
-            variant="outline"
+            variant="default"
             size="sm"
             onClick={onAdd}
-            className="gap-1"
+            className="gap-1 h-8"
           >
-            <PlusCircle className="h-4 w-4" />
+            <PlusCircle className="h-3.5 w-3.5" />
             Nueva
           </Button>
         </div>
         
         {/* Stats */}
         <div className="grid grid-cols-3 gap-2 mt-3">
-          <div className="text-center p-2 rounded-lg bg-muted/30">
-            <div className="text-lg font-bold text-primary">{questions.length}</div>
-            <div className="text-xs text-muted-foreground">Total</div>
+          <div className="text-center p-2 rounded-lg bg-background border shadow-sm">
+            <div className="text-lg font-bold text-primary leading-none">{questions.length}</div>
+            <div className="text-[10px] text-muted-foreground mt-1">Total</div>
           </div>
-          <div className="text-center p-2 rounded-lg bg-muted/30">
-            <div className="text-lg font-bold text-emerald-500">
+          <div className="text-center p-2 rounded-lg bg-background border shadow-sm">
+            <div className="text-lg font-bold text-emerald-500 leading-none">
               {questions.filter(q => q.difficulty === 'easy').length}
             </div>
-            <div className="text-xs text-muted-foreground">Fáciles</div>
+            <div className="text-[10px] text-muted-foreground mt-1">Fáciles</div>
           </div>
-          <div className="text-center p-2 rounded-lg bg-muted/30">
-            <div className="text-lg font-bold text-red-500">
+          <div className="text-center p-2 rounded-lg bg-background border shadow-sm">
+            <div className="text-lg font-bold text-red-500 leading-none">
               {questions.filter(q => q.difficulty === 'hard' || q.difficulty === 'expert').length}
             </div>
-            <div className="text-xs text-muted-foreground">Difíciles</div>
+            <div className="text-[10px] text-muted-foreground mt-1">Difíciles</div>
           </div>
         </div>
       </div>
 
       {/* Questions */}
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 bg-background/50">
         <div className="p-4">
           <DndContext
             sensors={sensors}
@@ -376,38 +380,22 @@ function QuestionList({
           </DndContext>
 
           {questions.length === 0 && (
-            <div className="text-center py-12">
+            <div className="text-center py-12 px-4">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
                 <HelpCircle className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h3 className="font-semibold mb-2">No hay preguntas</h3>
+              <h3 className="font-semibold mb-2">Sin preguntas</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Comienza creando tu primera pregunta
+                Tu quiz necesita contenido para brillar.
               </p>
-              <Button onClick={onAdd}>
+              <Button variant="outline" onClick={onAdd} className="w-full">
                 <PlusCircle className="h-4 w-4 mr-2" />
-                Crear primera pregunta
+                Añadir primera pregunta
               </Button>
             </div>
           )}
         </div>
       </ScrollArea>
-
-      {/* Footer */}
-      <div className="shrink-0 p-3 border-t border-border bg-muted/20">
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-muted-foreground">
-            Puntos totales: <span className="font-bold text-primary">
-              {questions.reduce((sum, q) => sum + (q.basePoints || 0), 0)}
-            </span>
-          </span>
-          <span className="text-muted-foreground">
-            Tiempo estimado: <span className="font-bold text-primary">
-              {Math.ceil(questions.length * 1.5)} min
-            </span>
-          </span>
-        </div>
-      </div>
     </div>
   );
 }
@@ -459,7 +447,7 @@ function OptionRenderer({
       case 'ORDERING':
         return `${index + 1}.`;
       case 'MATCHING':
-        return `A${index + 1} →`;
+        return `A${index + 1}`;
       default:
         return `${index + 1}.`;
     }
@@ -476,40 +464,43 @@ function OptionRenderer({
       )}
     >
       {/* Option prefix */}
-      <div className="absolute -left-3 top-1/2 -translate-y-1/2">
+      <div className="absolute -left-3 top-1/2 -translate-y-1/2 z-10">
         <div className={cn(
-          "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold",
+          "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border shadow-sm",
           isCorrect && showCorrectIndicator
-            ? "bg-emerald-500 text-white" 
-            : "bg-muted text-muted-foreground"
+            ? "bg-emerald-500 text-white border-emerald-600" 
+            : "bg-background text-muted-foreground border-border"
         )}>
           {getOptionPrefix()}
         </div>
       </div>
 
       {/* Option content */}
-      <div className="ml-4">
+      <div className="ml-4 w-full">
         {isEditing ? (
           <textarea
             ref={textAreaRef}
             value={option.text}
             onChange={(e) => onTextChange(e.target.value)}
             onBlur={() => {}}
-            className="w-full bg-transparent border-none outline-none resize-none"
-            rows={2}
+            className="w-full bg-transparent border-none outline-none resize-none min-h-[1.5em] overflow-hidden"
+            rows={1}
+            style={{ minHeight: '24px' }}
           />
         ) : (
           <div
             onClick={onStartEdit}
-            className="cursor-text hover:bg-muted/50 transition-colors rounded p-2 -m-2"
+            className="cursor-text hover:bg-muted/50 transition-colors rounded p-1 -m-1 break-words whitespace-pre-wrap"
           >
-            <p className="text-lg">{option.text || 'Haz clic para editar esta opción'}</p>
+            <p className={cn("text-base", !option.text && "text-muted-foreground italic")}>
+              {option.text || 'Haz clic para editar esta opción'}
+            </p>
           </div>
         )}
       </div>
 
       {/* Option actions */}
-      <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 backdrop-blur rounded-md shadow-sm border border-border/50 p-0.5">
         {showCorrectIndicator && (
           <TooltipProvider>
             <Tooltip>
@@ -517,13 +508,10 @@ function OptionRenderer({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6"
-                  onClick={onToggleCorrect}
+                  className={cn("h-7 w-7", isCorrect && "text-emerald-500")}
+                  onClick={(e) => { e.stopPropagation(); onToggleCorrect(); }}
                 >
-                  <Check className={cn(
-                    "h-4 w-4",
-                    isCorrect ? "text-emerald-500" : "text-muted-foreground"
-                  )} />
+                  <Check className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -539,14 +527,14 @@ function OptionRenderer({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 hover:text-destructive"
-                onClick={onDelete}
+                className="h-7 w-7 hover:text-destructive"
+                onClick={(e) => { e.stopPropagation(); onDelete(); }}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Eliminar opción</p>
+              <p>Eliminar</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -617,13 +605,14 @@ function QuestionCanvas({
   }, [question.type, question.options, onQuestionChange, onAddOption]);
 
   const renderQuestionContent = () => {
-    const questionType = QUESTION_TYPES.find(t => t.value === question.type) || QUESTION_TYPES[0];
+    // We re-verify type here to ensure render is in sync
+    const renderType = question.type;
 
-    switch (question.type) {
+    switch (renderType) {
       case 'SHORT_ANSWER':
       case 'LONG_ANSWER':
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-in fade-in duration-300">
             {/* Question Text */}
             <div className="relative group">
               {isEditingText ? (
@@ -632,17 +621,17 @@ function QuestionCanvas({
                   value={question.text || ''}
                   onChange={(e) => onQuestionChange({ text: e.target.value })}
                   onBlur={handleTextBlur}
-                  className="w-full text-2xl font-bold bg-transparent border-none outline-none resize-none"
+                  className="w-full text-2xl font-bold bg-transparent border-none outline-none resize-none overflow-hidden"
                   autoFocus
-                  rows={3}
+                  rows={2}
                 />
               ) : (
                 <div
                   onClick={() => setIsEditingText(true)}
                   className="cursor-text hover:bg-muted/50 transition-colors rounded-lg p-2 -m-2"
                 >
-                  <h2 className="text-2xl font-bold min-h-[60px]">
-                    {question.text || 'Haz clic para editar la pregunta'}
+                  <h2 className={cn("text-2xl font-bold min-h-[60px] break-words whitespace-pre-wrap", !question.text && "text-muted-foreground opacity-50")}>
+                    {question.text || 'Escribe tu pregunta aquí...'}
                   </h2>
                 </div>
               )}
@@ -650,24 +639,29 @@ function QuestionCanvas({
 
             {/* Answer Field */}
             <div className="space-y-3">
-              <h3 className="text-lg font-semibold">Campo de respuesta</h3>
-              <div className="p-4 rounded-lg border border-dashed border-border bg-muted/20">
-                <p className="text-muted-foreground">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <Type className="h-4 w-4" />
+                Campo de respuesta
+              </h3>
+              <div className="p-6 rounded-lg border-2 border-dashed border-border bg-muted/20 flex flex-col items-center justify-center min-h-[120px]">
+                <Input disabled placeholder="Espacio para la respuesta del estudiante" className="max-w-md cursor-not-allowed bg-background/50" />
+                <p className="text-sm text-muted-foreground mt-2">
                   {question.type === 'SHORT_ANSWER' 
-                    ? 'Los estudiantes escribirán una respuesta corta aquí' 
-                    : 'Los estudiantes escribirán una respuesta extensa aquí'}
+                    ? 'Respuesta corta (una línea)' 
+                    : 'Respuesta extensa (párrafo)'}
                 </p>
               </div>
             </div>
 
             {/* Explanation */}
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold">Explicación</h3>
+            <div className="space-y-2 pt-4 border-t">
+              <h3 className="text-sm font-semibold text-muted-foreground">Explicación (Opcional)</h3>
               <Textarea
                 value={question.explanation || ''}
                 onChange={(e) => onQuestionChange({ explanation: e.target.value })}
-                placeholder="Explica la respuesta correcta (opcional)"
-                rows={3}
+                placeholder="Explica la respuesta correcta para el feedback..."
+                rows={2}
+                className="bg-muted/30"
               />
             </div>
           </div>
@@ -675,7 +669,7 @@ function QuestionCanvas({
 
       case 'MATCHING':
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-in fade-in duration-300">
             {/* Question Text */}
             <div className="relative group">
               {isEditingText ? (
@@ -684,17 +678,17 @@ function QuestionCanvas({
                   value={question.text || ''}
                   onChange={(e) => onQuestionChange({ text: e.target.value })}
                   onBlur={handleTextBlur}
-                  className="w-full text-2xl font-bold bg-transparent border-none outline-none resize-none"
+                  className="w-full text-2xl font-bold bg-transparent border-none outline-none resize-none overflow-hidden"
                   autoFocus
-                  rows={3}
+                  rows={2}
                 />
               ) : (
                 <div
                   onClick={() => setIsEditingText(true)}
                   className="cursor-text hover:bg-muted/50 transition-colors rounded-lg p-2 -m-2"
                 >
-                  <h2 className="text-2xl font-bold min-h-[60px]">
-                    {question.text || 'Haz clic para editar la pregunta'}
+                  <h2 className={cn("text-2xl font-bold min-h-[60px] break-words whitespace-pre-wrap", !question.text && "text-muted-foreground opacity-50")}>
+                    {question.text || 'Escribe tu pregunta de emparejamiento...'}
                   </h2>
                 </div>
               )}
@@ -703,7 +697,10 @@ function QuestionCanvas({
             {/* Matching Pairs */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Pares de emparejamiento</h3>
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <Link className="h-4 w-4" />
+                  Pares
+                </h3>
                 <Button
                   variant="outline"
                   size="sm"
@@ -717,30 +714,30 @@ function QuestionCanvas({
 
               <div className="space-y-4">
                 {question.options?.map((option, index) => (
-                  <div key={option.id} className="flex items-center gap-4">
-                    <div className="flex-1">
-                      <Input
+                  <div key={option.id} className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-lg border bg-card/50">
+                     <div className="flex-1 w-full">
+                       <Label className="text-xs mb-1.5 block text-muted-foreground">Concepto A</Label>
+                       <Input
                         value={option.left || ''}
                         onChange={(e) => onOptionChange(option.id, { left: e.target.value })}
                         placeholder="Elemento izquierdo"
-                        className="h-12"
                       />
                     </div>
-                    <div className="text-muted-foreground">
-                      <ArrowUpDown className="h-5 w-5" />
+                    <div className="text-muted-foreground shrink-0 mt-4">
+                      <ArrowUpDown className="h-5 w-5 sm:rotate-90" />
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 w-full">
+                      <Label className="text-xs mb-1.5 block text-muted-foreground">Concepto B</Label>
                       <Input
                         value={option.right || ''}
                         onChange={(e) => onOptionChange(option.id, { right: e.target.value })}
                         placeholder="Elemento derecho"
-                        className="h-12"
                       />
                     </div>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 hover:text-destructive"
+                      className="h-8 w-8 hover:text-destructive sm:mt-6"
                       onClick={() => onDeleteOption(option.id)}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -749,42 +746,31 @@ function QuestionCanvas({
                 ))}
               </div>
             </div>
-
-            {/* Explanation */}
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold">Explicación</h3>
-              <Textarea
-                value={question.explanation || ''}
-                onChange={(e) => onQuestionChange({ explanation: e.target.value })}
-                placeholder="Explica por qué la respuesta es correcta (opcional)"
-                rows={3}
-              />
-            </div>
           </div>
         );
 
       case 'ORDERING':
         return (
-          <div className="space-y-6">
-            {/* Question Text */}
-            <div className="relative group">
+          <div className="space-y-6 animate-in fade-in duration-300">
+             {/* Question Text */}
+             <div className="relative group">
               {isEditingText ? (
                 <textarea
                   ref={textAreaRef}
                   value={question.text || ''}
                   onChange={(e) => onQuestionChange({ text: e.target.value })}
                   onBlur={handleTextBlur}
-                  className="w-full text-2xl font-bold bg-transparent border-none outline-none resize-none"
+                  className="w-full text-2xl font-bold bg-transparent border-none outline-none resize-none overflow-hidden"
                   autoFocus
-                  rows={3}
+                  rows={2}
                 />
               ) : (
                 <div
                   onClick={() => setIsEditingText(true)}
                   className="cursor-text hover:bg-muted/50 transition-colors rounded-lg p-2 -m-2"
                 >
-                  <h2 className="text-2xl font-bold min-h-[60px]">
-                    {question.text || 'Haz clic para editar la pregunta'}
+                  <h2 className={cn("text-2xl font-bold min-h-[60px] break-words whitespace-pre-wrap", !question.text && "text-muted-foreground opacity-50")}>
+                    {question.text || 'Escribe la instrucción de ordenamiento...'}
                   </h2>
                 </div>
               )}
@@ -793,7 +779,10 @@ function QuestionCanvas({
             {/* Ordering Items */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Elementos a ordenar</h3>
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <ListOrdered className="h-4 w-4" />
+                  Secuencia Correcta
+                </h3>
                 <Button
                   variant="outline"
                   size="sm"
@@ -801,7 +790,7 @@ function QuestionCanvas({
                   className="gap-1"
                 >
                   <PlusCircle className="h-4 w-4" />
-                  Añadir elemento
+                  Añadir paso
                 </Button>
               </div>
 
@@ -823,23 +812,12 @@ function QuestionCanvas({
                 ))}
               </div>
             </div>
-
-            {/* Explanation */}
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold">Explicación</h3>
-              <Textarea
-                value={question.explanation || ''}
-                onChange={(e) => onQuestionChange({ explanation: e.target.value })}
-                placeholder="Explica el orden correcto (opcional)"
-                rows={3}
-              />
-            </div>
           </div>
         );
 
       default: // SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-in fade-in duration-300">
             {/* Question Text */}
             <div className="relative group">
               {isEditingText ? (
@@ -848,16 +826,16 @@ function QuestionCanvas({
                   value={question.text || ''}
                   onChange={(e) => onQuestionChange({ text: e.target.value })}
                   onBlur={handleTextBlur}
-                  className="w-full text-2xl font-bold bg-transparent border-none outline-none resize-none"
+                  className="w-full text-2xl font-bold bg-transparent border-none outline-none resize-none overflow-hidden"
                   autoFocus
-                  rows={3}
+                  rows={2}
                 />
               ) : (
                 <div
                   onClick={() => setIsEditingText(true)}
                   className="cursor-text hover:bg-muted/50 transition-colors rounded-lg p-2 -m-2"
                 >
-                  <h2 className="text-2xl font-bold min-h-[60px]">
+                  <h2 className={cn("text-2xl font-bold min-h-[60px] break-words whitespace-pre-wrap", !question.text && "text-muted-foreground opacity-50")}>
                     {question.text || 'Haz clic para editar la pregunta'}
                   </h2>
                 </div>
@@ -877,21 +855,21 @@ function QuestionCanvas({
 
             {/* Question Image */}
             {question.imageUrl && (
-              <div className="relative rounded-xl overflow-hidden border border-border">
-                <div className="w-full h-48 bg-muted relative">
+              <div className="relative rounded-xl overflow-hidden border border-border group/image">
+                <div className="w-full h-64 bg-muted relative">
                   <Image
                     src={question.imageUrl}
                     alt="Question image"
                     fill
-                    className="object-cover"
+                    className="object-contain"
                     unoptimized={question.imageUrl.startsWith('blob:')}
                   />
                 </div>
-                <div className="absolute top-2 right-2 opacity-0 hover:opacity-100 transition-opacity">
+                <div className="absolute top-2 right-2 opacity-0 group-hover/image:opacity-100 transition-opacity">
                   <Button
-                    variant="secondary"
+                    variant="destructive"
                     size="icon"
-                    className="h-8 w-8 bg-background/80 backdrop-blur-sm"
+                    className="h-8 w-8 shadow-sm"
                     onClick={() => onQuestionChange({ imageUrl: null })}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -903,10 +881,11 @@ function QuestionCanvas({
             {/* Options */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">
-                  {question.type === 'MULTIPLE_CHOICE' ? 'Opciones (selección múltiple)' : 
-                   question.type === 'TRUE_FALSE' ? 'Opciones (Verdadero/Falso)' : 
-                   'Opciones de respuesta'}
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <CheckSquare className="h-4 w-4" />
+                  {question.type === 'MULTIPLE_CHOICE' ? 'Selección Múltiple' : 
+                   question.type === 'TRUE_FALSE' ? 'Opciones' : 
+                   'Respuestas'}
                 </h3>
                 <Button
                   variant="outline"
@@ -915,7 +894,7 @@ function QuestionCanvas({
                   className="gap-1"
                 >
                   <PlusCircle className="h-4 w-4" />
-                  {question.type === 'TRUE_FALSE' ? 'Restablecer opciones' : 'Añadir opción'}
+                  {question.type === 'TRUE_FALSE' ? 'Restablecer' : 'Añadir'}
                 </Button>
               </div>
 
@@ -938,13 +917,14 @@ function QuestionCanvas({
             </div>
 
             {/* Explanation */}
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold">Explicación</h3>
+            <div className="space-y-2 pt-4 border-t">
+              <h3 className="text-sm font-semibold text-muted-foreground">Explicación (Feedback)</h3>
               <Textarea
                 value={question.explanation || ''}
                 onChange={(e) => onQuestionChange({ explanation: e.target.value })}
-                placeholder="Explica por qué la respuesta es correcta (opcional)"
-                rows={3}
+                placeholder="Texto que verá el alumno tras responder..."
+                rows={2}
+                className="resize-none bg-muted/30"
               />
             </div>
           </div>
@@ -953,58 +933,77 @@ function QuestionCanvas({
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col bg-muted/5">
       {/* Viewport Selector */}
-      <div className="shrink-0 p-4 border-b border-border">
+      <div className="shrink-0 p-4 border-b border-border bg-background">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 bg-muted/50 p-1 rounded-lg border">
             {VIEWPORT_SIZES.map((vp) => (
               <TooltipProvider key={vp.id}>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      variant={viewport.id === vp.id ? "default" : "outline"}
+                      variant={viewport.id === vp.id ? "secondary" : "ghost"}
                       size="icon"
-                      className="h-9 w-9 rounded-lg"
+                      className={cn("h-8 w-8 rounded-md transition-all", viewport.id === vp.id && "bg-white shadow-sm")}
                       onClick={() => setViewport(vp)}
                     >
                       <vp.icon className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{vp.label}</p>
+                    <p>{vp.label} ({vp.width}x{vp.height})</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             ))}
           </div>
           
-          <div className="text-sm text-muted-foreground">
-            <span className="font-semibold text-primary">{question.basePoints || 10} puntos</span>
-            <span className="mx-2">•</span>
-            <span className="capitalize">{question.difficulty || 'medium'}</span>
+          <div className="text-sm text-muted-foreground flex items-center gap-3">
+            <span className="font-semibold text-primary">{question.basePoints || 10} pts</span>
+            <span className="h-4 w-px bg-border" />
+            <span className="capitalize">{getDifficultyLabel(question.difficulty)}</span>
           </div>
         </div>
       </div>
 
-      {/* Canvas Area */}
-      <ScrollArea className="flex-1">
-        <div className="p-6">
-          <div 
-            className="mx-auto bg-background rounded-2xl border-2 border-border shadow-xl transition-all duration-300"
-            style={{
-              width: viewport.width,
-              height: viewport.height,
-              transform: `scale(${viewport.scale})`,
-              transformOrigin: 'top center',
-            }}
-          >
-            <div className="p-8 h-full overflow-auto">
-              {renderQuestionContent()}
+      {/* Canvas Area with Responsive Scaling */}
+      <div className="flex-1 overflow-hidden relative w-full h-full flex items-center justify-center bg-dot-pattern">
+        <div className="absolute inset-0 bg-muted/10 pointer-events-none" />
+        
+        {/* Helper text */}
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 text-xs text-muted-foreground opacity-50 z-0">
+          Vista previa del dispositivo: {viewport.label}
+        </div>
+
+        <div 
+          className="relative transition-all duration-300 ease-in-out shadow-2xl rounded-[2rem] overflow-hidden bg-background border-[8px] border-zinc-800"
+          style={{
+            width: `${viewport.width}px`,
+            height: `${viewport.height}px`,
+            transform: `scale(${viewport.scale})`,
+            transformOrigin: 'center center',
+          }}
+        >
+          {/* Status Bar Mockup */}
+          <div className="h-6 bg-zinc-800 w-full flex items-center justify-between px-6">
+            <div className="w-12 h-1.5 bg-zinc-700 rounded-full" />
+            <div className="flex gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-zinc-700" />
+              <div className="w-1.5 h-1.5 rounded-full bg-zinc-700" />
+            </div>
+          </div>
+
+          <div className="h-full overflow-y-auto overflow-x-hidden scrollbar-thin">
+            <div className="p-8 pb-20">
+               {/* Key added to force re-render on type change */}
+              <div key={question.type}>
+                {renderQuestionContent()}
+              </div>
             </div>
           </div>
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 }
@@ -1032,17 +1031,9 @@ function PropertiesPanel({
   onOptionUpdate,
   onQuizUpdate,
 }: PropertiesPanelProps) {
-  const [selectedQuestionType, setSelectedQuestionType] = useState<QuestionType>('SINGLE_CHOICE');
-
-  useEffect(() => {
-    if (question?.type) {
-      setSelectedQuestionType(question.type);
-    }
-  }, [question]);
 
   const handleQuestionTypeChange = (value: string) => {
     const newType = value as QuestionType;
-    setSelectedQuestionType(newType);
     
     // Reset options based on question type
     let newOptions = [];
@@ -1054,36 +1045,26 @@ function PropertiesPanel({
         ];
         break;
       case 'SINGLE_CHOICE':
+      case 'MULTIPLE_CHOICE':
         newOptions = [
           { id: generateId(), text: 'Opción 1', isCorrect: true, points: 10 },
           { id: generateId(), text: 'Opción 2', isCorrect: false, points: 0 },
-          { id: generateId(), text: 'Opción 3', isCorrect: false, points: 0 },
         ];
-        break;
-      case 'MULTIPLE_CHOICE':
-        newOptions = [
-          { id: generateId(), text: 'Opción 1', isCorrect: true, points: 5 },
-          { id: generateId(), text: 'Opción 2', isCorrect: true, points: 5 },
-          { id: generateId(), text: 'Opción 3', isCorrect: false, points: 0 },
-        ];
-        break;
-      case 'SHORT_ANSWER':
-      case 'LONG_ANSWER':
-        newOptions = [];
         break;
       case 'MATCHING':
         newOptions = [
-          { id: generateId(), left: 'Capital de Francia', right: 'París', isCorrect: true, points: 10 },
-          { id: generateId(), left: 'Capital de España', right: 'Madrid', isCorrect: true, points: 10 },
+          { id: generateId(), left: 'Concepto A', right: 'Definición A', isCorrect: true, points: 10 },
+          { id: generateId(), left: 'Concepto B', right: 'Definición B', isCorrect: true, points: 10 },
         ];
         break;
       case 'ORDERING':
         newOptions = [
-          { id: generateId(), text: 'Primer paso', isCorrect: false, points: 0 },
-          { id: generateId(), text: 'Segundo paso', isCorrect: false, points: 0 },
-          { id: generateId(), text: 'Tercer paso', isCorrect: false, points: 0 },
+          { id: generateId(), text: 'Paso 1', isCorrect: false, points: 0 },
+          { id: generateId(), text: 'Paso 2', isCorrect: false, points: 0 },
         ];
         break;
+      default:
+        newOptions = [];
     }
 
     onQuestionUpdate({ 
@@ -1096,19 +1077,16 @@ function PropertiesPanel({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       alert('Por favor, sube solo archivos de imagen');
       return;
     }
 
-    // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
       alert('La imagen no debe superar los 5MB');
       return;
     }
 
-    // Create object URL for preview
     const objectUrl = URL.createObjectURL(file);
 
     if (type === 'question') {
@@ -1125,11 +1103,11 @@ function PropertiesPanel({
       <div className="space-y-6">
         {/* Basic Settings */}
         <div className="space-y-4">
-          <h3 className="font-semibold text-sm text-muted-foreground">Configuración básica</h3>
+          <h3 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">Configuración</h3>
           
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div>
-              <Label htmlFor="question-type">Tipo de pregunta</Label>
+              <Label htmlFor="question-type" className="mb-2 block">Tipo de pregunta</Label>
               <Select
                 value={question.type}
                 onValueChange={handleQuestionTypeChange}
@@ -1151,7 +1129,7 @@ function PropertiesPanel({
             </div>
 
             <div>
-              <Label htmlFor="question-difficulty">Dificultad</Label>
+              <Label htmlFor="question-difficulty" className="mb-2 block">Dificultad</Label>
               <Select
                 value={question.difficulty}
                 onValueChange={(value) => onQuestionUpdate({ difficulty: value as any })}
@@ -1173,35 +1151,28 @@ function PropertiesPanel({
             </div>
 
             <div>
-              <Label htmlFor="question-points">Puntos base</Label>
-              <div className="flex items-center gap-3 mt-2">
+              <div className="flex items-center justify-between mb-2">
+                 <Label htmlFor="question-points">Puntos</Label>
+                 <span className="text-xs font-mono text-muted-foreground">{question.basePoints || 10} pts</span>
+              </div>
+              <div className="flex items-center gap-3">
                 <Slider
                   id="question-points"
                   value={[question.basePoints || 10]}
                   onValueChange={([value]) => onQuestionUpdate({ basePoints: value })}
                   min={0}
                   max={100}
-                  step={1}
+                  step={5}
                   className="flex-1"
                 />
-                <div className="w-16 text-right">
-                  <Input
-                    type="number"
-                    value={question.basePoints || 10}
-                    onChange={(e) => onQuestionUpdate({ basePoints: parseInt(e.target.value) || 0 })}
-                    min={0}
-                    max={100}
-                    className="h-8 w-16 text-sm"
-                  />
-                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Time Settings */}
-        <div className="space-y-4">
-          <h3 className="font-semibold text-sm text-muted-foreground">Configuración de tiempo</h3>
+        <div className="space-y-4 pt-4 border-t">
+          <h3 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">Tiempo</h3>
           
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -1210,51 +1181,42 @@ function PropertiesPanel({
                 id="time-limit"
                 checked={!!question.timeLimit}
                 onCheckedChange={(checked) => 
-                  onQuestionUpdate({ timeLimit: checked ? 60 : undefined })
+                  onQuestionUpdate({ timeLimit: checked ? 30 : undefined })
                 }
               />
             </div>
 
             {question.timeLimit && (
-              <div>
-                <Label htmlFor="time-seconds">Segundos</Label>
-                <div className="flex items-center gap-3 mt-2">
-                  <Slider
-                    id="time-seconds"
-                    value={[question.timeLimit]}
-                    onValueChange={([value]) => onQuestionUpdate({ timeLimit: value })}
-                    min={5}
-                    max={300}
-                    step={5}
-                    className="flex-1"
-                  />
-                  <div className="w-16 text-right">
-                    <Input
-                      type="number"
-                      value={question.timeLimit}
-                      onChange={(e) => onQuestionUpdate({ timeLimit: parseInt(e.target.value) || 30 })}
-                      min={5}
-                      max={300}
-                      className="h-8 w-16 text-sm"
-                    />
-                  </div>
+              <div className="animate-in slide-in-from-top-2 fade-in">
+                <div className="flex justify-between mb-2">
+                   <Label htmlFor="time-seconds" className="text-xs">Duración</Label>
+                   <span className="text-xs font-mono">{question.timeLimit}s</span>
                 </div>
+                <Slider
+                  id="time-seconds"
+                  value={[question.timeLimit]}
+                  onValueChange={([value]) => onQuestionUpdate({ timeLimit: value })}
+                  min={5}
+                  max={300}
+                  step={5}
+                  className="flex-1"
+                />
               </div>
             )}
           </div>
         </div>
 
         {/* Media Settings */}
-        <div className="space-y-4">
-          <h3 className="font-semibold text-sm text-muted-foreground">Multimedia</h3>
+        <div className="space-y-4 pt-4 border-t">
+          <h3 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">Multimedia</h3>
           
           <div className="space-y-3">
             <div>
-              <Label htmlFor="question-image">Imagen de pregunta</Label>
+              <Label htmlFor="question-image">Imagen de apoyo</Label>
               <div className="mt-2">
                 <label
                   htmlFor="question-image-upload"
-                  className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                  className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors group"
                 >
                   <input
                     id="question-image-upload"
@@ -1264,10 +1226,10 @@ function PropertiesPanel({
                     onChange={(e) => handleImageUpload(e, 'question')}
                   />
                   <div className="text-center p-4">
-                    <ImageIcon className="h-8 w-8 mx-auto text-muted-foreground" />
+                    <ImageIcon className="h-8 w-8 mx-auto text-muted-foreground group-hover:text-primary transition-colors" />
                     <p className="text-sm font-medium mt-2">Subir imagen</p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      PNG, JPG, GIF hasta 5MB
+                      Max 5MB (JPG, PNG)
                     </p>
                   </div>
                 </label>
@@ -1286,38 +1248,34 @@ function PropertiesPanel({
       <div className="space-y-6">
         {/* Quiz Settings */}
         <div className="space-y-4">
-          <h3 className="font-semibold text-sm text-muted-foreground">Configuración general</h3>
+          <h3 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">General</h3>
           
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div>
-              <Label htmlFor="quiz-title">Título del quiz</Label>
+              <Label htmlFor="quiz-title" className="mb-1.5 block">Título</Label>
               <Input
                 id="quiz-title"
                 value={quiz.title}
                 onChange={(e) => onQuizUpdate({ title: e.target.value })}
-                placeholder="Escribe el título del quiz"
-                className="h-10"
+                placeholder="Nombre del quiz"
               />
             </div>
 
             <div>
-              <Label htmlFor="quiz-description">Descripción</Label>
+              <Label htmlFor="quiz-description" className="mb-1.5 block">Descripción</Label>
               <Textarea
                 id="quiz-description"
                 value={quiz.description || ''}
                 onChange={(e) => onQuizUpdate({ description: e.target.value })}
-                placeholder="Describe el propósito de este quiz"
+                placeholder="¿De qué trata este quiz?"
                 rows={3}
                 className="resize-none"
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <Label htmlFor="quiz-published">Estado</Label>
+            <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
+              <Label htmlFor="quiz-published">Estado Público</Label>
               <div className="flex items-center gap-2">
-                <Badge variant={quiz.published ? "default" : "outline"}>
-                  {quiz.published ? "Publicado" : "Borrador"}
-                </Badge>
                 <Switch
                   id="quiz-published"
                   checked={quiz.published}
@@ -1329,13 +1287,13 @@ function PropertiesPanel({
         </div>
 
         {/* Appearance Settings */}
-        <div className="space-y-4">
-          <h3 className="font-semibold text-sm text-muted-foreground">Apariencia</h3>
+        <div className="space-y-4 pt-4 border-t">
+          <h3 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">Diseño</h3>
           
           <div className="space-y-3">
             <div>
               <Label htmlFor="quiz-theme">Tema de color</Label>
-              <div className="flex gap-2 mt-2">
+              <div className="flex gap-3 mt-2">
                 {[
                   { color: 'blue', name: 'Azul' },
                   { color: 'green', name: 'Verde' },
@@ -1349,15 +1307,14 @@ function PropertiesPanel({
                         <button
                           onClick={() => onQuizUpdate({ theme: theme.color })}
                           className={cn(
-                            "w-8 h-8 rounded-full border-2 transition-all",
+                            "w-6 h-6 rounded-full ring-2 ring-offset-2 transition-all",
                             quiz.theme === theme.color 
-                              ? "border-primary scale-110" 
-                              : "border-border hover:scale-105"
+                              ? "ring-primary scale-110" 
+                              : "ring-transparent hover:scale-105"
                           )}
                           style={{ 
-                            backgroundColor: `var(--${theme.color}-500)` 
+                            backgroundColor: `var(--${theme.color}-500, ${theme.color})` 
                           }}
-                          aria-label={theme.name}
                         />
                       </TooltipTrigger>
                       <TooltipContent>
@@ -1370,11 +1327,11 @@ function PropertiesPanel({
             </div>
 
             <div>
-              <Label htmlFor="quiz-cover">Imagen de portada</Label>
+              <Label htmlFor="quiz-cover">Portada</Label>
               <div className="mt-2">
                 <label
                   htmlFor="quiz-cover-upload"
-                  className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                  className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
                 >
                   <input
                     id="quiz-cover-upload"
@@ -1383,64 +1340,12 @@ function PropertiesPanel({
                     className="hidden"
                     onChange={(e) => handleImageUpload(e, 'quiz')}
                   />
-                  <div className="text-center p-4">
-                    <ImageIcon className="h-8 w-8 mx-auto text-muted-foreground" />
-                    <p className="text-sm font-medium mt-2">Subir portada</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Recomendado: 1200×600px
-                    </p>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <ImageIcon className="h-4 w-4" />
+                    <span className="text-xs">Cambiar portada</span>
                   </div>
                 </label>
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Behavior Settings */}
-        <div className="space-y-4">
-          <h3 className="font-semibold text-sm text-muted-foreground">Comportamiento</h3>
-          
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="show-answers">Mostrar respuestas</Label>
-                <p className="text-xs text-muted-foreground">
-                  Mostrar respuestas correctas al finalizar
-                </p>
-              </div>
-              <Switch
-                id="show-answers"
-                checked={quiz.showAnswers ?? true}
-                onCheckedChange={(checked) => onQuizUpdate({ showAnswers: checked })}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="show-score">Mostrar puntuación</Label>
-                <p className="text-xs text-muted-foreground">
-                  Mostrar puntuación inmediatamente
-                </p>
-              </div>
-              <Switch
-                id="show-score"
-                checked={quiz.showScore ?? true}
-                onCheckedChange={(checked) => onQuizUpdate({ showScore: checked })}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="allow-retry">Permitir reintentar</Label>
-                <p className="text-xs text-muted-foreground">
-                  Permitir volver a intentar el quiz
-                </p>
-              </div>
-              <Switch
-                id="allow-retry"
-                checked={quiz.allowRetry ?? false}
-                onCheckedChange={(checked) => onQuizUpdate({ allowRetry: checked })}
-              />
             </div>
           </div>
         </div>
@@ -1449,68 +1354,47 @@ function PropertiesPanel({
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col bg-background">
       {/* Panel Header */}
-      <div className="shrink-0 p-4 border-b border-border">
+      <div className="shrink-0 p-4 border-b border-border bg-muted/10">
         <div className="flex items-center gap-2">
-          <Settings2 className="h-5 w-5 text-primary" />
-          <h2 className="font-semibold">Propiedades</h2>
-          <Badge variant="outline" className="ml-auto">
+          <Settings2 className="h-4 w-4 text-primary" />
+          <h2 className="font-semibold text-sm">Propiedades</h2>
+          <Badge variant="secondary" className="ml-auto text-xs font-normal">
             {selectedElement === 'question' && 'Pregunta'}
             {selectedElement === 'option' && 'Opción'}
-            {selectedElement === 'quiz' && 'Quiz'}
+            {selectedElement === 'quiz' && 'Quiz Global'}
           </Badge>
         </div>
       </div>
 
       {/* Panel Content */}
       <ScrollArea className="flex-1">
-        <div className="p-4">
+        <div className="p-5">
           {selectedElement === 'question' && renderQuestionProperties()}
           {selectedElement === 'quiz' && renderQuizProperties()}
           {selectedElement === 'option' && option && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="option-text">Texto de la opción</Label>
-                <Textarea
-                  id="option-text"
-                  value={option.text}
-                  onChange={(e) => onOptionUpdate({ text: e.target.value })}
-                  rows={3}
-                  className="resize-none"
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <Label htmlFor="option-correct">Respuesta correcta</Label>
-                <Switch
-                  id="option-correct"
-                  checked={option.isCorrect}
-                  onCheckedChange={(checked) => onOptionUpdate({ isCorrect: checked })}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="option-points">Puntos</Label>
-                <div className="flex items-center gap-3 mt-2">
-                  <Slider
-                    id="option-points"
-                    value={[option.points || 0]}
-                    onValueChange={([value]) => onOptionUpdate({ points: value })}
-                    max={50}
-                    step={1}
-                    className="flex-1"
+            <div className="space-y-6">
+               <div className="space-y-4">
+                <h3 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">Opción</h3>
+                <div>
+                  <Label htmlFor="option-text" className="mb-2 block">Texto</Label>
+                  <Textarea
+                    id="option-text"
+                    value={option.text}
+                    onChange={(e) => onOptionUpdate({ text: e.target.value })}
+                    rows={3}
+                    className="resize-none"
                   />
-                  <div className="w-16 text-right">
-                    <Input
-                      type="number"
-                      value={option.points || 0}
-                      onChange={(e) => onOptionUpdate({ points: parseInt(e.target.value) || 0 })}
-                      min={0}
-                      max={50}
-                      className="h-8 w-16 text-sm"
-                    />
-                  </div>
+                </div>
+
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <Label htmlFor="option-correct">Es correcta</Label>
+                  <Switch
+                    id="option-correct"
+                    checked={option.isCorrect}
+                    onCheckedChange={(checked) => onOptionUpdate({ isCorrect: checked })}
+                  />
                 </div>
               </div>
             </div>
@@ -1603,15 +1487,14 @@ export function QuizEditorModal({
   const handleAddQuestion = () => {
     const newQuestion: AppQuestion = {
       id: generateId(),
-      text: 'Nueva pregunta',
+      text: '',
       order: localQuiz.questions.length,
       type: 'SINGLE_CHOICE',
       difficulty: 'medium',
       basePoints: 10,
       options: [
-        { id: generateId(), text: 'Opción correcta', isCorrect: true, points: 10 },
-        { id: generateId(), text: 'Opción incorrecta', isCorrect: false, points: 0 },
-        { id: generateId(), text: 'Otra opción incorrecta', isCorrect: false, points: 0 },
+        { id: generateId(), text: 'Opción 1', isCorrect: true, points: 10 },
+        { id: generateId(), text: 'Opción 2', isCorrect: false, points: 0 },
       ],
     };
     
@@ -1620,13 +1503,14 @@ export function QuizEditorModal({
       questions: [...prev.questions, newQuestion]
     }));
     setActiveQuestionIndex(localQuiz.questions.length);
+    setSelectedElement('question');
   };
 
   const handleDeleteQuestion = (index: number) => {
     if (localQuiz.questions.length <= 1) {
       toast({
         title: "No se puede eliminar",
-        description: "Debe haber al menos una pregunta",
+        description: "El quiz debe tener al menos una pregunta.",
         variant: "destructive"
       });
       return;
@@ -1689,19 +1573,16 @@ export function QuizEditorModal({
     const newQuestions = [...localQuiz.questions];
     const question = newQuestions[activeQuestionIndex];
     
-    // For single choice, only one option can be correct
     if (question.type === 'SINGLE_CHOICE') {
       question.options = question.options?.map(opt => ({
         ...opt,
         isCorrect: opt.id === optionId
       })) || [];
     } else if (question.type === 'MULTIPLE_CHOICE') {
-      // For multiple choice, toggle the option
       question.options = question.options?.map(opt => 
         opt.id === optionId ? { ...opt, isCorrect: !opt.isCorrect } : opt
       ) || [];
     } else {
-      // For other types, just set it
       question.options = question.options?.map(opt => ({
         ...opt,
         isCorrect: opt.id === optionId
@@ -1726,81 +1607,39 @@ export function QuizEditorModal({
       // Validate quiz
       if (!localQuiz.title?.trim()) {
         toast({
-          title: "Error de validación",
-          description: "El título del quiz es requerido",
+          title: "Falta el título",
+          description: "Por favor añade un título al quiz.",
           variant: "destructive"
         });
         setIsSaving(false);
         return;
       }
 
-      if (localQuiz.questions.length === 0) {
+      // Basic question validation
+      const emptyQuestions = localQuiz.questions.filter(q => !q.text || q.text.trim() === '');
+      if (emptyQuestions.length > 0) {
         toast({
-          title: "Error de validación",
-          description: "Debe haber al menos una pregunta",
-          variant: "destructive"
+            title: "Preguntas incompletas",
+            description: `Hay ${emptyQuestions.length} pregunta(s) sin texto.`,
+            variant: "destructive"
         });
         setIsSaving(false);
         return;
       }
 
-      // Validate each question
-      const invalidQuestions: number[] = [];
-      localQuiz.questions.forEach((q, index) => {
-        const hasText = q.text?.trim().length > 0;
-        
-        // For question types that require correct options
-        if (['SINGLE_CHOICE', 'MULTIPLE_CHOICE', 'TRUE_FALSE'].includes(q.type)) {
-          const hasCorrectOption = q.options?.some(opt => opt.isCorrect) ?? false;
-          if (!hasText || !hasCorrectOption) {
-            invalidQuestions.push(index + 1);
-          }
-        } else if (['MATCHING', 'ORDERING'].includes(q.type)) {
-          const hasOptions = (q.options?.length ?? 0) >= 2;
-          if (!hasText || !hasOptions) {
-            invalidQuestions.push(index + 1);
-          }
-        } else if (['SHORT_ANSWER', 'LONG_ANSWER'].includes(q.type)) {
-          if (!hasText) {
-            invalidQuestions.push(index + 1);
-          }
-        }
-      });
-
-      if (invalidQuestions.length > 0) {
-        toast({
-          title: "Error de validación",
-          description: `Preguntas ${invalidQuestions.join(', ')} no están completas`,
-          variant: "destructive"
-        });
-        setIsSaving(false);
-        return;
-      }
-
-      // Clean up blob URLs before saving
-      const cleanedQuiz = {
-        ...localQuiz,
-        questions: localQuiz.questions.map(q => ({
-          ...q,
-          // Remove blob URLs for production
-          imageUrl: q.imageUrl?.startsWith('blob:') ? null : q.imageUrl
-        })),
-        coverImage: localQuiz.coverImage?.startsWith('blob:') ? null : localQuiz.coverImage
-      };
-
-      await onSave(cleanedQuiz);
+      await onSave(localQuiz);
       
       toast({
-        title: "✅ Quiz guardado",
-        description: "Los cambios se han guardado exitosamente",
+        title: "✅ Guardado",
+        description: "El quiz se ha actualizado correctamente.",
       });
       
       onClose();
     } catch (error) {
       console.error('Error saving quiz:', error);
       toast({
-        title: "❌ Error al guardar",
-        description: "Ha ocurrido un error al guardar el quiz",
+        title: "Error",
+        description: "No se pudieron guardar los cambios.",
         variant: "destructive"
       });
     } finally {
@@ -1808,105 +1647,81 @@ export function QuizEditorModal({
     }
   };
 
-  const handlePreview = () => {
-    if (onPreview) {
-      onPreview();
-    } else {
-      toast({
-        title: "Vista previa",
-        description: "Esta funcionalidad está en desarrollo",
-      });
-    }
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[95vw] w-[1800px] h-[90vh] p-0 overflow-hidden">
-        <div className="h-full flex flex-col">
-          {/* Header */}
-          <div className="shrink-0 border-b border-border bg-gradient-to-r from-card via-card/95 to-card px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onClose}
-                  className="rounded-full"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-                
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow">
-                    <CheckSquare className="h-5 w-5 text-white" />
-                  </div>
-                  
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h1 className="text-xl font-bold">
-                        {localQuiz.title || 'Editor de Quiz'}
-                      </h1>
-                      <Badge variant={localQuiz.published ? "default" : "outline"}>
-                        {localQuiz.published ? "Publicado" : "Borrador"}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {localQuiz.questions.length} preguntas • {localQuiz.questions.reduce((sum, q) => sum + (q.basePoints || 0), 0)} puntos totales
-                    </p>
-                  </div>
+      <DialogContent className="max-w-[100vw] w-screen h-screen p-0 overflow-hidden rounded-none border-none">
+        <div className="h-full flex flex-col bg-background">
+          {/* Top Bar */}
+          <div className="shrink-0 h-16 border-b border-border bg-background px-4 flex items-center justify-between z-10">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={onClose}>
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div className="h-8 w-px bg-border hidden sm:block" />
+              <div className="flex flex-col">
+                <input
+                  value={localQuiz.title}
+                  onChange={(e) => handleQuizUpdate({ title: e.target.value })}
+                  className="font-bold text-lg bg-transparent border-none outline-none placeholder:text-muted-foreground focus:ring-0 p-0"
+                  placeholder="Título del Quiz"
+                />
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                   <Badge variant={localQuiz.published ? "default" : "secondary"} className="h-5 px-1.5 font-normal text-[10px]">
+                      {localQuiz.published ? "Publicado" : "Borrador"}
+                   </Badge>
+                   <span>•</span>
+                   <span>{localQuiz.questions.length} preguntas</span>
                 </div>
               </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setSelectedElement('quiz')}
+                className={cn("gap-2 hidden sm:flex", selectedElement === 'quiz' && "bg-muted")}
+              >
+                <Settings2 className="h-4 w-4" />
+                Configuración
+              </Button>
               
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  onClick={handlePreview}
-                  className="gap-2"
-                >
-                  <Eye className="h-4 w-4" />
-                  Vista previa
-                </Button>
-                
-                <Button
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  className="gap-2 bg-primary hover:bg-primary/90"
-                >
-                  {isSaving ? (
-                    <>
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                      Guardando...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4" />
-                      Guardar cambios
-                    </>
-                  )}
-                </Button>
-              </div>
+              <Button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="gap-2 min-w-[120px]"
+              >
+                {isSaving ? (
+                  <span className="animate-spin">⌛</span>
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
+                Guardar
+              </Button>
             </div>
           </div>
           
-          {/* Main Content - 3 Column Layout */}
-          <div className="flex-1 overflow-hidden">
-            <div className="h-full grid grid-cols-12">
-              {/* Left Column - Question List (25%) */}
-              <div className="col-span-3 h-full overflow-hidden border-r border-border">
-                <QuestionList
+          {/* Main Workspace */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* Left: Questions List */}
+            <div className="w-80 border-r border-border flex flex-col bg-muted/10 shrink-0">
+               <QuestionList
                   questions={localQuiz.questions}
                   activeIndex={activeQuestionIndex}
-                  onSelect={setActiveQuestionIndex}
+                  onSelect={(idx) => {
+                    setActiveQuestionIndex(idx);
+                    setSelectedElement('question');
+                    setSelectedOptionId(null);
+                  }}
                   onDelete={handleDeleteQuestion}
                   onAdd={handleAddQuestion}
                   onReorder={handleReorderQuestions}
                   onDuplicate={handleDuplicateQuestion}
                 />
-              </div>
-              
-              {/* Middle Column - Canvas (50%) */}
-              <div className="col-span-6 h-full overflow-hidden">
-                {activeQuestion ? (
+            </div>
+            
+            {/* Center: Canvas */}
+            <div className="flex-1 bg-muted/20 relative flex flex-col min-w-0">
+               {activeQuestion ? (
                   <QuestionCanvas
                     question={activeQuestion}
                     viewport={viewport}
@@ -1917,30 +1732,16 @@ export function QuizEditorModal({
                     onSetCorrectOption={handleSetCorrectOption}
                   />
                 ) : (
-                  <div className="h-full flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-                        <HelpCircle className="h-8 w-8 text-muted-foreground" />
-                      </div>
-                      <h3 className="font-semibold mb-2">Selecciona una pregunta</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Elige una pregunta de la lista para comenzar a editar
-                      </p>
-                      <Button 
-                        onClick={handleAddQuestion}
-                        className="bg-primary hover:bg-primary/90"
-                      >
-                        <PlusCircle className="h-4 w-4 mr-2" />
-                        Crear primera pregunta
-                      </Button>
-                    </div>
+                  <div className="h-full flex flex-col items-center justify-center text-muted-foreground p-8 text-center">
+                    <BrainCircuit className="h-12 w-12 mb-4 opacity-20" />
+                    <p>Selecciona una pregunta para editarla</p>
                   </div>
                 )}
-              </div>
-              
-              {/* Right Column - Properties (25%) */}
-              <div className="col-span-3 h-full overflow-hidden border-l border-border">
-                <PropertiesPanel
+            </div>
+            
+            {/* Right: Properties */}
+            <div className="w-80 border-l border-border bg-background shrink-0">
+               <PropertiesPanel
                   selectedElement={selectedElement}
                   question={activeQuestion}
                   option={selectedOption}
@@ -1953,38 +1754,6 @@ export function QuizEditorModal({
                   }}
                   onQuizUpdate={handleQuizUpdate}
                 />
-              </div>
-            </div>
-          </div>
-          
-          {/* Status Bar */}
-          <div className="shrink-0 border-t border-border px-4 py-2 bg-muted/20">
-            <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1">
-                  <div className={cn(
-                    "w-2 h-2 rounded-full",
-                    localQuiz.published ? "bg-emerald-500" : "bg-yellow-500"
-                  )} />
-                  <span className="text-muted-foreground">
-                    {localQuiz.published ? "Publicado" : "Borrador"}
-                  </span>
-                </div>
-                
-                <div className="text-muted-foreground">
-                  <span className="font-semibold">{localQuiz.questions.length}</span> preguntas
-                </div>
-                
-                <div className="text-muted-foreground">
-                  <span className="font-semibold">
-                    {localQuiz.questions.reduce((sum, q) => sum + (q.basePoints || 0), 0)}
-                  </span> puntos totales
-                </div>
-              </div>
-              
-              <div className="text-muted-foreground">
-                Editando: <span className="font-semibold">Pregunta {activeQuestionIndex + 1}</span>
-              </div>
             </div>
           </div>
         </div>
