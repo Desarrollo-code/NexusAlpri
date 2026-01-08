@@ -1,6 +1,5 @@
-// src/app/(app)/resources/page.tsx
 'use client';
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import type { AppResourceType, ResourceStatus } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
@@ -8,734 +7,1144 @@ import { cn } from '@/lib/utils';
 import { useTitle } from '@/contexts/title-context';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronDown, Search, Folder as FolderIcon, Move, Trash2, FolderOpen, Filter, ChevronRight, Pin, ListVideo, FileText, Image as ImageIcon, Video as VideoIcon, FileQuestion, Archive as ZipIcon, PlusCircle, Edit, ArrowUpDown, FolderInput, Clock, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { 
+  Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, 
+  ChevronDown, Search, Folder as FolderIcon, Move, Trash2, FolderOpen, 
+  Filter, ChevronRight, Pin, ListVideo, FileText, Image as ImageIcon, 
+  Video as VideoIcon, FileQuestion, Archive as ZipIcon, PlusCircle, 
+  Edit, ArrowUpDown, FolderInput, Clock, PanelLeftClose, PanelLeftOpen,
+  Star, StarOff, Eye, EyeOff, Download, Share2, Copy, MoreVertical,
+  Grid3x3, LayoutGrid, Table, Columns, X, Check, RefreshCw,
+  BarChart3, HardDrive, Calendar, Tag, Users, Zap
+} from 'lucide-react';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { ResourceListItem } from '@/components/resources/resource-list-item';
-import { DndContext, type DragEndEvent, MouseSensor, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, type DragEndEvent, MouseSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
+import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 import { DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { EmptyState } from '@/components/empty-state';
 import { ResourceEditorModal } from '@/components/resources/resource-editor-modal';
 import { FolderEditorModal } from '@/components/resources/folder-editor-modal';
 import { PlaylistCreatorModal } from '@/components/resources/playlist-creator-modal';
 import { FolderTree } from '@/components/resources/folder-tree';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { getYoutubeVideoId } from '@/lib/resource-utils';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuGroup } from '@/components/ui/dropdown-menu';
 import { VideoPlaylistView } from '@/components/resources/video-playlist-view';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, LayoutGroup } from 'framer-motion';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
-import { startOfDay, subDays } from 'date-fns';
-import type { DateRange } from 'react-day-picker';
+import { type DateRange } from 'react-day-picker';
 import { useDroppable } from '@dnd-kit/core';
 import { Separator } from '@/components/ui/separator';
 import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
 import { MoveResourceModal } from '@/components/resources/move-resource-modal';
 import { useRecentResources } from '@/hooks/use-recent-resources';
-import { ResourceEmptyState } from '@/components/resources/resource-empty-state';
 import { QuickActionsFAB } from '@/components/resources/quick-actions-fab';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Switch } from '@/components/ui/switch';
+import { Slider } from '@/components/ui/slider';
+import { ResizablePanel, ResizablePanelGroup, ResizableHandle } from '@/components/ui/resizable';
 
+// Custom hook para gestor de recursos
+function useResourceManager() {
+  const [allApiResources, setAllApiResources] = useState<AppResourceType[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
+  const { toast } = useToast();
 
-// --- MAIN PAGE COMPONENT ---
-export default function ResourcesPage() {
-    const { user, settings } = useAuth();
-    const { setPageTitle } = useTitle();
-    const { toast } = useToast();
-    const { recentIds, addRecentResource } = useRecentResources();
+  const fetchResources = useCallback(async (params?: {
+    parentId?: string | null;
+    search?: string;
+    filters?: any;
+  }) => {
+    if (!user) return;
+    
+    setIsLoadingData(true);
+    setError(null);
 
-    const [allApiResources, setAllApiResources] = useState<AppResourceType[]>([]);
-    const [isLoadingData, setIsLoadingData] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    try {
+      const queryParams = new URLSearchParams({
+        status: 'ACTIVE',
+        ...(params?.parentId && { parentId: params.parentId }),
+        ...(params?.search && { search: params.search }),
+        ...params?.filters
+      });
 
-    const [searchTerm, setSearchTerm] = useState('');
-    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-    const [resourceView, setResourceView] = useState<'all' | 'favorites' | 'recent'>('all');
-
-    const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
-    const [currentFolder, setCurrentFolder] = useState<AppResourceType | null>(null);
-    const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; title: string }[]>([{ id: null, title: 'Principal' }]);
-
-    const [isPlaylistView, setIsPlaylistView] = useState(false);
-
-    const [resourceToEdit, setResourceToEdit] = useState<AppResourceType | null>(null);
-    const [resourceToDelete, setResourceToDelete] = useState<AppResourceType | null>(null);
-    const [isDeleting, setIsDeleting] = useState(false);
-
-    // New Folder Editor State
-    const [folderToEdit, setFolderToEdit] = useState<AppResourceType | null>(null);
-    const [isFolderEditorOpen, setIsFolderEditorOpen] = useState(false);
-
-    const [isPlaylistCreatorOpen, setIsPlaylistCreatorOpen] = useState(false);
-    const [playlistToEdit, setPlaylistToEdit] = useState<AppResourceType | null>(null);
-    const [isUploaderOpen, setIsUploaderOpen] = useState(false);
-
-    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-    const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
-
-    const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
-    const [fileType, setFileType] = useState('all');
-    const [hasPin, setHasPin] = useState(false);
-    const [hasExpiry, setHasExpiry] = useState(false);
-    const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
-
-    const [sortBy, setSortBy] = useState<'date' | 'name' | 'size'>('date');
-    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-
-    const debouncedSearchTerm = useDebounce(searchTerm, 300);
-
-    const [previewingResource, setPreviewingResource] = useState<AppResourceType | null>(null);
-    const [isSidebarVisible, setIsSidebarVisible] = useState(true);
-
-    const { setNodeRef: setRootDroppableRef, isOver: isOverRoot } = useDroppable({ id: 'root' });
-
-    useEffect(() => {
-        setPageTitle('Biblioteca de Recursos');
-    }, [setPageTitle]);
-
-    const canManage = useMemo(() => user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR', [user]);
-    const [tagsFilter, setTagsFilter] = useState('');
-    const activeFilterCount = [dateRange, fileType !== 'all', hasPin, hasExpiry, tagsFilter].filter(Boolean).length;
-
-    const fetchResources = useCallback(async () => {
-        if (!user) return;
-        setIsLoadingData(true);
-        setError(null);
-        setIsPlaylistView(false);
-
-        const params = new URLSearchParams({ status: 'ACTIVE' });
-        if (currentFolderId) params.append('parentId', currentFolderId);
-        if (debouncedSearchTerm) params.append('search', debouncedSearchTerm);
-        if (dateRange?.from) params.append('startDate', dateRange.from.toISOString());
-        if (dateRange?.to) params.append('endDate', dateRange.to.toISOString());
-        if (fileType !== 'all') params.append('fileType', fileType);
-        if (hasPin) params.append('hasPin', 'true');
-        if (hasExpiry) params.append('hasExpiry', 'true');
-        params.append('sortBy', sortBy);
-        params.append('sortOrder', sortOrder);
-
-        try {
-            const response = await fetch(`/api/resources?${params.toString()}`, { cache: 'no-store' });
-            if (!response.ok) throw new Error((await response.json()).message || 'Failed to fetch resources');
-            const data = await response.json();
-            const fetchedResources: AppResourceType[] = data.resources || [];
-            setAllApiResources(fetchedResources);
-
-            if (currentFolderId) {
-                const folderDataRes = await fetch(`/api/resources/${currentFolderId}`);
-                if (!folderDataRes.ok) throw new Error('No se pudo cargar la carpeta actual.');
-                const folderData = await folderDataRes.json();
-                setCurrentFolder(folderData);
-                if (folderData.type === 'VIDEO_PLAYLIST') {
-                    setIsPlaylistView(true);
-                }
-            } else {
-                setCurrentFolder(null);
-            }
-
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Ocurrió un error desconocido';
-            setError(errorMessage);
-            console.error("[ResourcesPage:fetchResources] Error cargando recursos:", err);
-        } finally {
-            setIsLoadingData(false);
-        }
-    }, [user, currentFolderId, debouncedSearchTerm, dateRange, fileType, hasPin, hasExpiry, sortBy, sortOrder]);
-
-    useEffect(() => {
-        fetchResources();
-        setSelectedIds(new Set());
-    }, [fetchResources]);
-
-    // Filter resources based on active view
-    const filteredResources = useMemo(() => {
-        if (resourceView === 'favorites') {
-            return allApiResources.filter(r => r.isPinned);
-        } else if (resourceView === 'recent') {
-            // Filter to only show resources in recentIds, maintaining order
-            const recentSet = new Set(recentIds);
-            return allApiResources
-                .filter(r => recentSet.has(r.id))
-                .sort((a, b) => recentIds.indexOf(a.id) - recentIds.indexOf(b.id));
-        }
-        return allApiResources;
-    }, [allApiResources, resourceView, recentIds]);
-
-    const groupedResources = useMemo(() => {
-        return filteredResources.reduce((acc, resource) => {
-            const category = resource.category || 'General';
-            if (!acc[category]) {
-                acc[category] = { folders: [], playlists: [], files: [] };
-            }
-            if (resource.type === 'FOLDER') {
-                acc[category].folders.push(resource);
-            } else if (resource.type === 'VIDEO_PLAYLIST') {
-                acc[category].playlists.push(resource);
-            } else {
-                acc[category].files.push(resource);
-            }
-            return acc;
-        }, {} as Record<string, { folders: AppResourceType[], playlists: AppResourceType[], files: AppResourceType[] }>);
-    }, [filteredResources]);
-
-    const handleNavigateFolder = (resource: AppResourceType) => {
-        setCurrentFolderId(resource.id);
-        setBreadcrumbs(prev => [...prev, { id: resource.id, title: resource.title }]);
-        setSearchTerm('');
-    };
-
-    const handleBreadcrumbClick = (folderId: string | null, index: number) => {
-        setCurrentFolderId(folderId);
-        setBreadcrumbs(prev => prev.slice(0, index + 1));
-        setSearchTerm('');
-    };
-
-    const handleDragEnd = async (event: DragEndEvent) => {
-        const { active, over } = event;
-        if (!over || !active) return;
-        const resourceToMove = active.data.current?.resource;
-        const targetFolderId = over.id as string;
-
-        if (resourceToMove && targetFolderId !== resourceToMove.id && targetFolderId !== resourceToMove.parentId) {
-            try {
-                await fetch(`/api/resources/${resourceToMove.id}/move`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ parentId: targetFolderId === 'root' ? null : targetFolderId })
-                });
-                toast({ title: 'Recurso Movido', description: `Se movió "${resourceToMove.title}" correctamente.` });
-                fetchResources();
-            } catch (e) {
-                toast({ title: 'Error', description: 'No se pudo mover el recurso.', variant: 'destructive' });
-            }
-        }
-    };
-
-    const handleOpenPlaylistEditor = async (resource: AppResourceType) => {
-        try {
-            const response = await fetch(`/api/resources?parentId=${resource.id}`);
-            if (!response.ok) throw new Error('No se pudieron cargar los videos de la lista.');
-            const data = await response.json();
-            const playlistWithChildren = { ...resource, children: data.resources || [] };
-            setPlaylistToEdit(playlistWithChildren);
-            setIsPlaylistCreatorOpen(true);
-        } catch (err) {
-            toast({ title: "Error", description: (err as Error).message, variant: "destructive" });
-        }
-    };
-
-    const handlePreviewResource = (resource: AppResourceType) => {
-        setPreviewingResource(resource);
-    };
-
-    const handleNavigatePreview = (direction: 'next' | 'prev') => {
-        const fileResources = allApiResources.filter(r => r.type !== 'FOLDER' && r.type !== 'VIDEO_PLAYLIST');
-        if (fileResources.length <= 1) return;
-        const currentIndex = fileResources.findIndex(r => r.id === previewingResource?.id);
-        if (currentIndex === -1) return;
-
-        let nextIndex;
-        if (direction === 'next') {
-            nextIndex = (currentIndex + 1) % fileResources.length;
-        } else {
-            nextIndex = (currentIndex - 1 + fileResources.length) % fileResources.length;
-        }
-        setPreviewingResource(fileResources[nextIndex]);
-        addRecentResource(fileResources[nextIndex].id);
+      const response = await fetch(`/api/resources?${queryParams.toString()}`, {
+        next: { revalidate: 0 }
+      });
+      
+      if (!response.ok) throw new Error('Error al cargar recursos');
+      
+      const data = await response.json();
+      setAllApiResources(data.resources || []);
+      
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
+      setError(errorMessage);
+      toast({
+        title: 'Error de carga',
+        description: errorMessage,
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoadingData(false);
     }
+  }, [user, toast]);
 
-
-    const handleSaveSuccess = () => {
-        setResourceToEdit(null);
-        setIsFolderEditorOpen(false);
-        setFolderToEdit(null);
-        setIsPlaylistCreatorOpen(false);
-        setPlaylistToEdit(null);
-        setIsUploaderOpen(false);
-        fetchResources();
-    };
-
-    const confirmDelete = async () => {
-        if (!resourceToDelete) return;
-        setIsDeleting(true);
-        try {
-            const res = await fetch(`/api/resources/${resourceToDelete.id}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error((await res.json()).message || 'No se pudo eliminar el recurso.');
-            toast({ title: "Recurso eliminado" });
-            fetchResources();
-        } catch (err) {
-            toast({ title: "Error", description: (err as Error).message, variant: "destructive" });
-        } finally {
-            setResourceToDelete(null);
-            setIsDeleting(false);
-        }
-    };
-
-    const handleTogglePin = async (resource: AppResourceType) => {
-        try {
-            await fetch(`/api/resources/${resource.id}/pin`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ isPinned: !resource.isPinned }),
-            });
-            toast({ description: `Recurso ${resource.isPinned ? 'desfijado' : 'fijado'}.` });
-            fetchResources();
-        } catch (err) {
-            toast({ title: "Error", description: (err as Error).message, variant: "destructive" });
-        }
-    };
-
-    const handleRestore = async (resource: AppResourceType) => {
-        try {
-            const res = await fetch(`/api/resources/${resource.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: 'ACTIVE' })
-            });
-            if (!res.ok) throw new Error("No se pudo restaurar el recurso.");
-            toast({ title: "Recurso Restaurado" });
-            fetchResources();
-        } catch (err) {
-            toast({ title: "Error", description: (err as Error).message, variant: "destructive" });
-        }
-    }
-
-    const handleBulkDelete = async () => {
-        setIsDeleting(true);
-        try {
-            const res = await fetch('/api/resources/bulk-delete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ids: Array.from(selectedIds) }),
-            });
-            if (!res.ok) throw new Error((await res.json()).message || "Error al eliminar.");
-            toast({ description: `${selectedIds.size} elemento(s) eliminados.` });
-            fetchResources();
-        } catch (err) {
-            toast({ title: "Error", description: (err as Error).message, variant: 'destructive' });
-        } finally {
-            setIsDeleting(false);
-            setResourceToDelete(null);
-            setSelectedIds(new Set());
-        }
-    }
-
-    const handleSelectionChange = useCallback((id: string, checked: boolean) => {
-        setSelectedIds(prev => {
-            const newSet = new Set(prev);
-            if (id === 'all') {
-                if (checked) {
-                    allApiResources.forEach(r => newSet.add(r.id));
-                } else {
-                    allApiResources.forEach(r => newSet.delete(r.id));
-                }
-            } else {
-                if (checked) newSet.add(id);
-                else newSet.delete(id);
-            }
-            return newSet;
-        });
-    }, [allApiResources]);
-
-    if (!user) {
-        return <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>
-    }
-
-    const sensors = useSensors(
-        useSensor(PointerSensor, {
-            activationConstraint: {
-                distance: 8,
-            },
-        }),
-        useSensor(TouchSensor, {
-            activationConstraint: {
-                delay: 250,
-                tolerance: 5,
-            },
-        })
-    );
-
-    return (
-        <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
-            <div className={cn(
-                "grid transition-all duration-300 items-start",
-                isSidebarVisible ? "grid-cols-1 md:grid-cols-[240px_1fr] gap-8" : "grid-cols-1 gap-0"
-            )}>
-                {/* Sidebar Navigation */}
-                <AnimatePresence mode="wait">
-                    {isSidebarVisible ? (
-                        <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            transition={{ duration: 0.2 }}
-                            className="hidden md:block sticky top-6 overflow-hidden"
-                        >
-                            <div className="pb-4 mb-4 border-b flex items-center justify-between gap-2">
-                                <div className="min-w-0">
-                                    <h2 className="font-semibold text-lg px-2 truncate">Carpetas</h2>
-                                    <p className="text-sm text-muted-foreground px-2 truncate">Navega por tu biblioteca</p>
-                                </div>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => setIsSidebarVisible(false)}
-                                    className="h-8 w-8 shrink-0 hover:bg-muted"
-                                    title="Contraer panel lateral"
-                                >
-                                    <PanelLeftClose className="h-4 w-4 text-muted-foreground" />
-                                </Button>
-                            </div>
-                            <FolderTree
-                                currentFolderId={currentFolderId}
-                                onNavigate={(folder) => handleNavigateFolder(folder)}
-                            />
-                        </motion.div>
-                    ) : (
-                        <div className="hidden md:block sticky top-6 w-0">
-                            {/* Visual marker or empty space for transition */}
-                        </div>
-                    )}
-                </AnimatePresence>
-
-                <div className="space-y-6 min-w-0 relative">
-                    {!isSidebarVisible && (
-                        <div className="hidden md:block absolute -left-6 top-0 h-full w-4 z-20 group/sidebar-trigger">
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => setIsSidebarVisible(true)}
-                                className="absolute left-0 top-0 h-8 w-8 rounded-full shadow-md bg-background border-primary/20 hover:bg-primary/5 hover:scale-110 transition-transform"
-                                title="Expandir panel lateral"
-                            >
-                                <PanelLeftOpen className="h-4 w-4 text-primary" />
-                            </Button>
-                        </div>
-                    )}
-                    <p className="text-muted-foreground">Gestiona y comparte documentos importantes, guías y materiales de formación para toda la organización.</p>
-
-                    {/* View Selector */}
-                    {!isPlaylistView && (
-                        <div className="flex items-center gap-2 border-b">
-                            <Button
-                                variant={resourceView === 'all' ? 'default' : 'ghost'}
-                                size="sm"
-                                onClick={() => setResourceView('all')}
-                                className="rounded-b-none"
-                            >
-                                Todos
-                            </Button>
-                            <Button
-                                variant={resourceView === 'favorites' ? 'default' : 'ghost'}
-                                size="sm"
-                                onClick={() => setResourceView('favorites')}
-                                className="rounded-b-none"
-                            >
-                                <Pin className="mr-2 h-4 w-4" />
-                                Favoritos
-                            </Button>
-                            <Button
-                                variant={resourceView === 'recent' ? 'default' : 'ghost'}
-                                size="sm"
-                                onClick={() => setResourceView('recent')}
-                                className="rounded-b-none"
-                            >
-                                <Clock className="mr-2 h-4 w-4" />
-                                Recientes
-                            </Button>
-                        </div>
-                    )}
-
-                    {!isPlaylistView && (
-                        <Card className="p-4 bg-card shadow-sm">
-                            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                                <div className="relative w-full flex-grow">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                    <Input placeholder="Buscar en la carpeta actual..." className="pl-10 h-10 text-base rounded-md" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-                                </div>
-                                <div className="flex items-center gap-2 w-full md:w-auto">
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="outline" className="h-10 flex-grow md:flex-none">
-                                                <ArrowUpDown className="mr-2 h-4 w-4" />
-                                                {sortBy === 'name' ? 'Nombre' : sortBy === 'size' ? 'Tamaño' : 'Fecha'}
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onSelect={() => { setSortBy('name'); setSortOrder('asc'); }}>Nombre (A-Z)</DropdownMenuItem>
-                                            <DropdownMenuItem onSelect={() => { setSortBy('name'); setSortOrder('desc'); }}>Nombre (Z-A)</DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem onSelect={() => { setSortBy('date'); setSortOrder('desc'); }}>Más recientes</DropdownMenuItem>
-                                            <DropdownMenuItem onSelect={() => { setSortBy('date'); setSortOrder('asc'); }}>Más antiguos</DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem onSelect={() => { setSortBy('size'); setSortOrder('desc'); }}>Tamaño (Mayor-Menor)</DropdownMenuItem>
-                                            <DropdownMenuItem onSelect={() => { setSortBy('size'); setSortOrder('asc'); }}>Tamaño (Menor-Mayor)</DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-
-                                    <Popover open={isFilterPopoverOpen} onOpenChange={setIsFilterPopoverOpen}>
-                                        <PopoverTrigger asChild>
-                                            <Button variant="outline" className="h-10 flex-grow md:flex-none">
-                                                <Filter className="mr-2 h-4 w-4" /> Filtros {activeFilterCount > 0 && `(${activeFilterCount})`}
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-80" align="end">
-                                            <div className="grid gap-4">
-                                                <div className="space-y-2"><h4 className="font-medium leading-none">Filtros Avanzados</h4><p className="text-sm text-muted-foreground">Refina tu búsqueda de recursos.</p></div>
-                                                <div className="space-y-2"><Label>Fecha de subida</Label><DateRangePicker date={dateRange} onDateChange={setDateRange} /></div>
-                                                <div className="space-y-2"><Label>Tipo de Archivo</Label>
-                                                    <Select value={fileType} onValueChange={setFileType}>
-                                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="all">Todos</SelectItem><SelectItem value="image">Imagen</SelectItem><SelectItem value="video">Video</SelectItem><SelectItem value="pdf">PDF</SelectItem><SelectItem value="doc">Documento</SelectItem><SelectItem value="xls">Hoja de cálculo</SelectItem><SelectItem value="ppt">Presentación</SelectItem><SelectItem value="zip">ZIP</SelectItem><SelectItem value="other">Otro</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
-                                                <div className="flex items-center space-x-2"><Checkbox id="hasPin" checked={hasPin} onCheckedChange={(c) => setHasPin(!!c)} /><Label htmlFor="hasPin">Con PIN</Label></div>
-                                                <div className="flex items-center space-x-2"><Checkbox id="hasExpiry" checked={hasExpiry} onCheckedChange={(c) => setHasExpiry(!!c)} /><Label htmlFor="hasExpiry">Con Vencimiento</Label></div>
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="tags-filter">Etiquetas (separadas por coma)</Label>
-                                                    <Input id="tags-filter" placeholder="ej. urgente, revisión" value={tagsFilter} onChange={e => setTagsFilter(e.target.value)} />
-                                                </div>
-                                                <Button onClick={() => setIsFilterPopoverOpen(false)}>Aplicar Filtros</Button>
-                                            </div>
-                                        </PopoverContent>
-                                    </Popover>
-                                    {canManage && (
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button className="h-10 flex-grow md:flex-none">
-                                                    <PlusCircle className="mr-2 h-4 w-4" /> Nuevo
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onSelect={() => { setFolderToEdit(null); setIsFolderEditorOpen(true); }}><FolderIcon className="mr-2 h-4 w-4" />Nueva Carpeta</DropdownMenuItem>
-                                                <DropdownMenuItem onSelect={() => { setPlaylistToEdit(null); setIsPlaylistCreatorOpen(true); }}><ListVideo className="mr-2 h-4 w-4" />Nueva Lista de Videos</DropdownMenuItem>
-                                                <DropdownMenuItem onSelect={() => setIsUploaderOpen(true)}><UploadCloud className="mr-2 h-4 w-4" />Subir Archivo/Enlace</DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    )}
-                                </div>
-                            </div>
-                        </Card>
-                    )}
-
-                    <nav aria-label="Breadcrumb" className="mb-4">
-                        <ol ref={setRootDroppableRef} className={cn("flex items-center gap-2 text-sm p-3 rounded-lg transition-colors", isOverRoot && "bg-primary/10 ring-2 ring-primary/30")}>
-                            {breadcrumbs.map((crumb, index) => (
-                                <li key={crumb.id || 'root'} className="flex items-center gap-2">
-                                    {/* Icon */}
-                                    {index === 0 ? (
-                                        <FolderOpen className="h-4 w-4 text-primary" />
-                                    ) : (
-                                        <FolderIcon className="h-4 w-4 text-muted-foreground" />
-                                    )}
-
-                                    {/* Crumb Button */}
-                                    <button
-                                        onClick={() => handleBreadcrumbClick(crumb.id, index)}
-                                        disabled={index === breadcrumbs.length - 1}
-                                        className={cn(
-                                            "hover:text-primary hover:underline transition-colors font-medium",
-                                            "disabled:hover:no-underline disabled:cursor-default",
-                                            index === breadcrumbs.length - 1
-                                                ? "text-foreground font-semibold"
-                                                : "text-muted-foreground"
-                                        )}
-                                    >
-                                        {crumb.title}
-                                    </button>
-
-                                    {/* Separator */}
-                                    {index < breadcrumbs.length - 1 && (
-                                        <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
-                                    )}
-                                </li>
-                            ))}
-                        </ol>
-                    </nav>
-
-                    <div>
-                        {isLoadingData ? (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-                                {[...Array(12)].map((_, i) => (
-                                    <div key={i} className="space-y-2">
-                                        <Skeleton className="aspect-[3/2] w-full" />
-                                        <Skeleton className="h-4 w-3/4" />
-                                        <Skeleton className="h-3 w-1/2" />
-                                    </div>
-                                ))}
-                            </div>
-                        ) : error ? (
-                            <div className="text-center py-10"><AlertTriangle className="mx-auto h-8 w-8 text-destructive" /><p className="mt-2 font-semibold text-destructive">{error}</p></div>
-                        ) : isPlaylistView && currentFolder ? (
-                            <VideoPlaylistView resources={allApiResources} folder={currentFolder} />
-                        ) : (
-                            <div className="space-y-8">
-                                {Object.keys(groupedResources).length === 0 ? (
-                                    <ResourceEmptyState
-                                        view={resourceView}
-                                        canManage={canManage}
-                                        onCreateFolder={() => setIsFolderEditorOpen(true)}
-                                        onUploadFile={() => setIsUploaderOpen(true)}
-                                    />
-                                ) : (
-                                    Object.entries(groupedResources).map(([category, { folders, playlists, files }]) => (
-                                        <section key={category}>
-                                            <h3 className="text-xl font-semibold mb-4 border-b pb-2">{category}</h3>
-
-                                            {/* Folders Section */}
-                                            {folders.length > 0 && (
-                                                <div className="mb-8">
-                                                    <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
-                                                        <FolderIcon className="h-4 w-4" />
-                                                        Carpetas ({folders.length})
-                                                    </h4>
-                                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-                                                        {folders.map(res => <ResourceGridItem key={res.id} resource={res} onSelect={() => handlePreviewResource(res)} onEdit={() => {
-                                                            setFolderToEdit(res); setIsFolderEditorOpen(true);
-                                                        }} onDelete={setResourceToDelete} onNavigate={handleNavigateFolder} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Playlists Section */}
-                                            {playlists.length > 0 && (
-                                                <div className="mb-8">
-                                                    <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
-                                                        <ListVideo className="h-4 w-4" />
-                                                        Listas de Reproducción ({playlists.length})
-                                                    </h4>
-                                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-                                                        {playlists.map(res => <ResourceGridItem key={res.id} resource={res} onSelect={() => handlePreviewResource(res)} onEdit={() => {
-                                                            handleOpenPlaylistEditor(res);
-                                                        }} onDelete={setResourceToDelete} onNavigate={handleNavigateFolder} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Files Section */}
-                                            {files.length > 0 && (
-                                                <>
-                                                    <div className="flex items-center justify-between mb-3">
-                                                        <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-                                                            <FileText className="h-4 w-4" />
-                                                            Recursos ({files.length})
-                                                        </h4>
-                                                        <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
-                                                            <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')}><List className="h-4 w-4" /></Button>
-                                                            <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')}><Grid className="h-4 w-4" /></Button>
-                                                        </div>
-                                                    </div>
-                                                    {viewMode === 'grid' ? (
-                                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-                                                            {files.map(res => <ResourceGridItem key={res.id} resource={res} onSelect={() => handlePreviewResource(res)} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onNavigate={handleNavigateFolder} onRestore={handleRestore} onTogglePin={handleTogglePin} isSelected={selectedIds.has(res.id)} onSelectionChange={handleSelectionChange} />)}
-                                                        </div>
-                                                    ) : (
-                                                        <ResourceListItem resources={files} onSelect={handlePreviewResource} onEdit={setResourceToEdit} onDelete={setResourceToDelete} onRestore={handleRestore} onTogglePin={handleTogglePin} selectedIds={selectedIds} onSelectionChange={handleSelectionChange} />
-                                                    )}
-                                                </>
-                                            )}
-                                        </section>
-                                    ))
-                                )}
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                <AnimatePresence>
-                    {selectedIds.size > 0 && canManage && (
-                        <motion.div
-                            initial={{ y: 100, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            exit={{ y: 100, opacity: 0 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                            className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 pointer-events-auto"
-                        >
-                            <div className="flex items-center justify-between gap-4 p-2 bg-card border rounded-lg shadow-lg">
-                                <p className="px-2 text-sm font-semibold">{selectedIds.size} seleccionado(s)</p>
-                                <Button variant="outline" size="sm" onClick={() => setIsMoveModalOpen(true)}><FolderInput className="mr-2 h-4 w-4" />Mover</Button>
-                                <Button variant="destructive" size="sm" onClick={() => setResourceToDelete({ id: 'bulk' } as any)}><Trash2 className="mr-2 h-4 w-4" />Eliminar</Button>
-                                <Button variant="ghost" size="sm" onClick={() => setSelectedIds(new Set())}>Limpiar</Button>
-                            </div>
-                        </motion.div>
-
-                    )}
-                </AnimatePresence>
-
-                <MoveResourceModal
-                    isOpen={isMoveModalOpen}
-                    onClose={() => setIsMoveModalOpen(false)}
-                    resourceIds={Array.from(selectedIds)}
-                    onMoveSuccess={() => { setSelectedIds(new Set()); fetchResources(); }}
-                />
-
-                <ResourcePreviewModal
-                    resource={previewingResource}
-                    onClose={() => setPreviewingResource(null)}
-                    onNavigate={handleNavigatePreview}
-                />
-
-                <ResourceEditorModal
-                    isOpen={isUploaderOpen || !!resourceToEdit}
-                    onClose={() => { setResourceToEdit(null); setIsUploaderOpen(false); }}
-                    resource={resourceToEdit}
-                    parentId={currentFolderId}
-                    onSave={handleSaveSuccess}
-                />
-
-                <FolderEditorModal
-                    isOpen={isFolderEditorOpen}
-                    onClose={() => { setIsFolderEditorOpen(false); setFolderToEdit(null); }}
-                    onSave={handleSaveSuccess}
-                    parentId={currentFolderId}
-                    folderToEdit={folderToEdit}
-                />
-
-                <PlaylistCreatorModal
-                    isOpen={isPlaylistCreatorOpen}
-                    onClose={() => { setIsPlaylistCreatorOpen(false); setPlaylistToEdit(null); }}
-                    onSave={handleSaveSuccess}
-                    parentId={currentFolderId}
-                    playlistToEdit={playlistToEdit}
-                />
-
-                <AlertDialog open={!!resourceToDelete} onOpenChange={(open) => !open && setResourceToDelete(null)}>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                {resourceToDelete?.id === 'bulk'
-                                    ? `Se eliminarán permanentemente los ${selectedIds.size} elementos seleccionados. Esta acción no se puede deshacer.`
-                                    : `El recurso "${resourceToDelete?.title}" será eliminado permanentemente. Si es una carpeta, debe estar vacía. Esta acción no se puede deshacer.`
-                                }
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => resourceToDelete?.id === 'bulk' ? handleBulkDelete() : confirmDelete()} disabled={isDeleting} className={cn(buttonVariants({ variant: "destructive" }))}>
-                                {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                <Trash2 className="mr-2 h-4 w-4" />Sí, eliminar
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-
-                {/* Quick Actions FAB */}
-                <QuickActionsFAB
-                    canManage={canManage}
-                    onCreateFolder={() => setIsFolderEditorOpen(true)}
-                    onUploadFile={() => setIsUploaderOpen(true)}
-                    onCreatePlaylist={() => setIsPlaylistCreatorOpen(true)}
-                />
-            </div>
-        </DndContext >
-    );
+  return {
+    allApiResources,
+    isLoadingData,
+    error,
+    fetchResources,
+    setAllApiResources
+  };
 }
 
+// Componente de estadísticas
+function ResourceStats({ resources }: { resources: AppResourceType[] }) {
+  const stats = useMemo(() => {
+    const totalSize = resources.reduce((sum, r) => sum + (r.fileSize || 0), 0);
+    const byType = resources.reduce((acc, r) => {
+      acc[r.type] = (acc[r.type] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    return {
+      total: resources.length,
+      totalSize: formatFileSize(totalSize),
+      byType,
+      favorites: resources.filter(r => r.isPinned).length,
+      recent: resources.filter(r => new Date(r.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length
+    };
+  }, [resources]);
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+      <Card className="p-3 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Total</p>
+            <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{stats.total}</p>
+          </div>
+          <HardDrive className="h-8 w-8 text-blue-600 dark:text-blue-400 opacity-70" />
+        </div>
+      </Card>
+      
+      <Card className="p-3 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-green-700 dark:text-green-300">Tamaño</p>
+            <p className="text-2xl font-bold text-green-900 dark:text-green-100">{stats.totalSize}</p>
+          </div>
+          <BarChart3 className="h-8 w-8 text-green-600 dark:text-green-400 opacity-70" />
+        </div>
+      </Card>
+      
+      <Card className="p-3 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-amber-700 dark:text-amber-300">Favoritos</p>
+            <p className="text-2xl font-bold text-amber-900 dark:text-amber-100">{stats.favorites}</p>
+          </div>
+          <Star className="h-8 w-8 text-amber-600 dark:text-amber-400 opacity-70" />
+        </div>
+      </Card>
+      
+      <Card className="p-3 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-purple-700 dark:text-purple-300">Recientes</p>
+            <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">{stats.recent}</p>
+          </div>
+          <Zap className="h-8 w-8 text-purple-600 dark:text-purple-400 opacity-70" />
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// Componente de búsqueda avanzada
+function AdvancedSearch({
+  searchTerm,
+  onSearchChange,
+  onQuickFilter
+}: {
+  searchTerm: string;
+  onSearchChange: (value: string) => void;
+  onQuickFilter: (filter: string) => void;
+}) {
+  const quickFilters = [
+    { label: 'Imágenes', value: 'type:image', icon: ImageIcon },
+    { label: 'Videos', value: 'type:video', icon: VideoIcon },
+    { label: 'PDFs', value: 'type:pdf', icon: FileText },
+    { label: 'Esta semana', value: 'date:week', icon: Calendar },
+    { label: 'Sin etiquetas', value: 'tags:none', icon: Tag },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+        <Input
+          placeholder="Buscar recursos, etiquetas, contenido..."
+          className="pl-10 pr-10 h-12 text-base rounded-xl border-2 focus:border-primary transition-all"
+          value={searchTerm}
+          onChange={(e) => onSearchChange(e.target.value)}
+        />
+        {searchTerm && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
+            onClick={() => onSearchChange('')}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+      
+      <div className="flex flex-wrap gap-2">
+        {quickFilters.map((filter) => (
+          <Badge
+            key={filter.value}
+            variant="secondary"
+            className="cursor-pointer gap-1 hover:bg-primary/10 transition-colors"
+            onClick={() => onQuickFilter(filter.value)}
+          >
+            <filter.icon className="h-3 w-3" />
+            {filter.label}
+          </Badge>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Componente de vista personalizable
+function ViewCustomizer({
+  viewMode,
+  onViewModeChange,
+  gridSize,
+  onGridSizeChange,
+  showThumbnails,
+  onShowThumbnailsChange
+}: {
+  viewMode: 'grid' | 'list' | 'table';
+  onViewModeChange: (mode: 'grid' | 'list' | 'table') => void;
+  gridSize: number;
+  onGridSizeChange: (size: number) => void;
+  showThumbnails: boolean;
+  onShowThumbnailsChange: (show: boolean) => void;
+}) {
+  return (
+    <Card className="p-4">
+      <div className="flex items-center justify-between mb-4">
+        <h4 className="font-semibold">Personalizar Vista</h4>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <Eye className="h-4 w-4" />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Ajusta cómo ves tus recursos</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+      
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label className="text-sm">Tipo de Vista</Label>
+          <div className="flex gap-2">
+            {[
+              { mode: 'grid' as const, icon: Grid3x3, label: 'Cuadrícula' },
+              { mode: 'list' as const, icon: List, label: 'Lista' },
+              { mode: 'table' as const, icon: Table, label: 'Tabla' }
+            ].map((item) => (
+              <Button
+                key={item.mode}
+                variant={viewMode === item.mode ? 'default' : 'outline'}
+                size="sm"
+                className="flex-1"
+                onClick={() => onViewModeChange(item.mode)}
+              >
+                <item.icon className="h-4 w-4 mr-2" />
+                {item.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+        
+        {viewMode === 'grid' && (
+          <>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm">Tamaño de cuadrícula</Label>
+                <span className="text-sm text-muted-foreground">{gridSize}px</span>
+              </div>
+              <Slider
+                value={[gridSize]}
+                onValueChange={([value]) => onGridSizeChange(value)}
+                min={120}
+                max={300}
+                step={20}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <Label className="text-sm">Mostrar miniaturas</Label>
+              <Switch
+                checked={showThumbnails}
+                onCheckedChange={onShowThumbnailsChange}
+              />
+            </div>
+          </>
+        )}
+      </div>
+    </Card>
+  );
+}
+
+// Componente principal mejorado
+export default function ResourcesPage() {
+  const { user, settings } = useAuth();
+  const { setPageTitle } = useTitle();
+  const { toast } = useToast();
+  const { recentIds, addRecentResource } = useRecentResources();
+  
+  const resourceManager = useResourceManager();
+  const { allApiResources, isLoadingData, error, fetchResources } = resourceManager;
+
+  // Estados principales
+  const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'table'>('grid');
+  const [resourceView, setResourceView] = useState<'all' | 'favorites' | 'recent' | 'unread'>('all');
+  const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
+  const [currentFolder, setCurrentFolder] = useState<AppResourceType | null>(null);
+  const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; title: string }[]>([
+    { id: null, title: 'Biblioteca Principal' }
+  ]);
+
+  // Estados de UI
+  const [isPlaylistView, setIsPlaylistView] = useState(false);
+  const [resourceToEdit, setResourceToEdit] = useState<AppResourceType | null>(null);
+  const [resourceToDelete, setResourceToDelete] = useState<AppResourceType | null>(null);
+  const [folderToEdit, setFolderToEdit] = useState<AppResourceType | null>(null);
+  const [playlistToEdit, setPlaylistToEdit] = useState<AppResourceType | null>(null);
+  const [previewingResource, setPreviewingResource] = useState<AppResourceType | null>(null);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  
+  // Estados de modales
+  const [isFolderEditorOpen, setIsFolderEditorOpen] = useState(false);
+  const [isPlaylistCreatorOpen, setIsPlaylistCreatorOpen] = useState(false);
+  const [isUploaderOpen, setIsUploaderOpen] = useState(false);
+  const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
+  
+  // Estados de selección
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isSelecting, setIsSelecting] = useState(false);
+  
+  // Estados de filtros avanzados
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [fileType, setFileType] = useState('all');
+  const [hasPin, setHasPin] = useState(false);
+  const [hasExpiry, setHasExpiry] = useState(false);
+  const [tagsFilter, setTagsFilter] = useState('');
+  const [sortBy, setSortBy] = useState<'date' | 'name' | 'size' | 'type'>('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  
+  // Estados de personalización
+  const [gridSize, setGridSize] = useState(160);
+  const [showThumbnails, setShowThumbnails] = useState(true);
+  const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
+
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const { setNodeRef: setRootDroppableRef, isOver: isOverRoot } = useDroppable({ id: 'root' });
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Atajos de teclado
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl/Cmd + A para seleccionar todo
+      if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+        e.preventDefault();
+        if (allApiResources.length > 0) {
+          setSelectedIds(new Set(allApiResources.map(r => r.id)));
+          setIsSelecting(true);
+        }
+      }
+      
+      // Escape para deseleccionar
+      if (e.key === 'Escape') {
+        setSelectedIds(new Set());
+        setIsSelecting(false);
+      }
+      
+      // Ctrl/Cmd + F para buscar
+      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        e.preventDefault();
+        const searchInput = document.querySelector('input[placeholder*="Buscar"]') as HTMLInputElement;
+        searchInput?.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [allApiResources]);
+
+  useEffect(() => {
+    setPageTitle('Biblioteca de Recursos - Gestor Inteligente');
+  }, [setPageTitle]);
+
+  const canManage = useMemo(() => 
+    user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR', 
+  [user]);
+
+  // Filtrado y ordenación optimizados
+  const filteredResources = useMemo(() => {
+    let resources = allApiResources;
+    
+    // Filtro por vista
+    if (resourceView === 'favorites') {
+      resources = resources.filter(r => r.isPinned);
+    } else if (resourceView === 'recent') {
+      const recentSet = new Set(recentIds);
+      resources = resources
+        .filter(r => recentSet.has(r.id))
+        .sort((a, b) => recentIds.indexOf(a.id) - recentIds.indexOf(b.id));
+    } else if (resourceView === 'unread') {
+      resources = resources.filter(r => !r.isViewed);
+    }
+
+    // Filtro por búsqueda
+    if (debouncedSearchTerm) {
+      const searchLower = debouncedSearchTerm.toLowerCase();
+      resources = resources.filter(r =>
+        r.title.toLowerCase().includes(searchLower) ||
+        r.description?.toLowerCase().includes(searchLower) ||
+        r.tags?.some(tag => tag.toLowerCase().includes(searchLower))
+      );
+    }
+
+    // Filtros adicionales
+    if (fileType !== 'all') {
+      resources = resources.filter(r => r.fileType === fileType);
+    }
+    if (hasPin) {
+      resources = resources.filter(r => r.isPinned);
+    }
+    if (hasExpiry) {
+      resources = resources.filter(r => r.expiresAt);
+    }
+    if (tagsFilter) {
+      const tags = tagsFilter.split(',').map(t => t.trim().toLowerCase());
+      resources = resources.filter(r => 
+        r.tags?.some(tag => tags.includes(tag.toLowerCase()))
+      );
+    }
+
+    // Ordenación
+    return resources.sort((a, b) => {
+      let comparison = 0;
+      switch (sortBy) {
+        case 'name':
+          comparison = a.title.localeCompare(b.title);
+          break;
+        case 'size':
+          comparison = (a.fileSize || 0) - (b.fileSize || 0);
+          break;
+        case 'type':
+          comparison = a.type.localeCompare(b.type);
+          break;
+        case 'date':
+        default:
+          comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          break;
+      }
+      return sortOrder === 'desc' ? -comparison : comparison;
+    });
+  }, [allApiResources, resourceView, recentIds, debouncedSearchTerm, fileType, hasPin, hasExpiry, tagsFilter, sortBy, sortOrder]);
+
+  // Agrupación inteligente
+  const groupedResources = useMemo(() => {
+    const groups: Record<string, AppResourceType[]> = {
+      'Carpetas': [],
+      'Listas de Videos': [],
+      'Documentos': [],
+      'Multimedia': [],
+      'Archivos': [],
+    };
+
+    filteredResources.forEach(resource => {
+      if (resource.type === 'FOLDER') {
+        groups['Carpetas'].push(resource);
+      } else if (resource.type === 'VIDEO_PLAYLIST') {
+        groups['Listas de Videos'].push(resource);
+      } else if (['pdf', 'doc', 'xls', 'ppt'].includes(resource.fileType || '')) {
+        groups['Documentos'].push(resource);
+      } else if (['image', 'video', 'audio'].includes(resource.fileType || '')) {
+        groups['Multimedia'].push(resource);
+      } else {
+        groups['Archivos'].push(resource);
+      }
+    });
+
+    // Eliminar grupos vacíos
+    Object.keys(groups).forEach(key => {
+      if (groups[key].length === 0) {
+        delete groups[key];
+      }
+    });
+
+    return groups;
+  }, [filteredResources]);
+
+  // Handlers optimizados
+  const handleNavigateFolder = useCallback((resource: AppResourceType) => {
+    setCurrentFolderId(resource.id);
+    setBreadcrumbs(prev => [...prev, { id: resource.id, title: resource.title }]);
+    setSearchTerm('');
+    setIsSelecting(false);
+    setSelectedIds(new Set());
+  }, []);
+
+  const handleBreadcrumbClick = useCallback((folderId: string | null, index: number) => {
+    setCurrentFolderId(folderId);
+    setBreadcrumbs(prev => prev.slice(0, index + 1));
+    setSearchTerm('');
+    setIsSelecting(false);
+    setSelectedIds(new Set());
+  }, []);
+
+  const handleQuickFilter = useCallback((filter: string) => {
+    const [type, value] = filter.split(':');
+    switch (type) {
+      case 'type':
+        setFileType(value);
+        break;
+      case 'date':
+        if (value === 'week') {
+          setDateRange({
+            from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+            to: new Date()
+          });
+        }
+        break;
+      case 'tags':
+        if (value === 'none') {
+          setTagsFilter('');
+        }
+        break;
+    }
+  }, []);
+
+  const handleBulkAction = useCallback(async (action: 'pin' | 'archive' | 'download') => {
+    if (selectedIds.size === 0) return;
+
+    try {
+      const endpoint = action === 'download' 
+        ? '/api/resources/bulk-download' 
+        : `/api/resources/bulk-${action}`;
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: Array.from(selectedIds) })
+      });
+
+      if (!response.ok) throw new Error('Error en acción masiva');
+
+      if (action === 'download') {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `recursos-${new Date().toISOString().split('T')[0]}.zip`;
+        a.click();
+      }
+
+      toast({
+        title: 'Acción completada',
+        description: `${selectedIds.size} recursos procesados`
+      });
+
+      fetchResources();
+      setSelectedIds(new Set());
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'No se pudo completar la acción',
+        variant: 'destructive'
+      });
+    }
+  }, [selectedIds, toast, fetchResources]);
+
+  // Renderizado condicional optimizado
+  const renderContent = () => {
+    if (isLoadingData) {
+      return (
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {[...Array(12)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.05 }}
+              >
+                <Card className="overflow-hidden">
+                  <Skeleton className="aspect-square w-full" />
+                  <div className="p-3 space-y-2">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
+                  </div>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center py-16 space-y-4"
+        >
+          <AlertTriangle className="mx-auto h-16 w-16 text-destructive/60" />
+          <div>
+            <h3 className="text-lg font-semibold text-destructive">{error}</h3>
+            <p className="text-muted-foreground mt-2">No se pudieron cargar los recursos</p>
+          </div>
+          <Button onClick={() => fetchResources()}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Reintentar
+          </Button>
+        </motion.div>
+      );
+    }
+
+    if (isPlaylistView && currentFolder) {
+      return <VideoPlaylistView resources={allApiResources} folder={currentFolder} />;
+    }
+
+    if (filteredResources.length === 0) {
+      return (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="py-16 text-center space-y-4"
+        >
+          <div className="w-24 h-24 mx-auto bg-muted rounded-full flex items-center justify-center">
+            <FolderOpen className="h-12 w-12 text-muted-foreground" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold">No hay recursos</h3>
+            <p className="text-muted-foreground">
+              {searchTerm ? 'No se encontraron resultados para tu búsqueda' : 'Comienza agregando recursos a tu biblioteca'}
+            </p>
+          </div>
+          {canManage && (
+            <div className="flex gap-2 justify-center">
+              <Button onClick={() => setIsFolderEditorOpen(true)}>
+                <FolderPlus className="mr-2 h-4 w-4" />
+                Nueva Carpeta
+              </Button>
+              <Button onClick={() => setIsUploaderOpen(true)} variant="secondary">
+                <UploadCloud className="mr-2 h-4 w-4" />
+                Subir Archivos
+              </Button>
+            </div>
+          )}
+        </motion.div>
+      );
+    }
+
+    return (
+      <LayoutGroup>
+        <div className="space-y-8">
+          <ResourceStats resources={filteredResources} />
+          
+          {Object.entries(groupedResources).map(([category, resources]) => (
+            <motion.section
+              key={category}
+              layout
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  {category === 'Carpetas' && <FolderIcon className="h-5 w-5" />}
+                  {category === 'Listas de Videos' && <ListVideo className="h-5 w-5" />}
+                  {category === 'Documentos' && <FileText className="h-5 w-5" />}
+                  {category === 'Multimedia' && <VideoIcon className="h-5 w-5" />}
+                  {category}
+                  <Badge variant="outline" className="ml-2">
+                    {resources.length}
+                  </Badge>
+                </h3>
+                
+                {category === 'Archivos' && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setViewMode('list')}
+                      className={cn(viewMode === 'list' && 'bg-muted')}
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setViewMode('grid')}
+                      className={cn(viewMode === 'grid' && 'bg-muted')}
+                    >
+                      <Grid className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setViewMode('table')}
+                      className={cn(viewMode === 'table' && 'bg-muted')}
+                    >
+                      <Table className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {viewMode === 'grid' || category !== 'Archivos' ? (
+                <div 
+                  className="grid gap-4"
+                  style={{
+                    gridTemplateColumns: `repeat(auto-fill, minmax(${gridSize}px, 1fr))`
+                  }}
+                >
+                  {resources.map((resource) => (
+                    <ResourceGridItem
+                      key={resource.id}
+                      resource={resource}
+                      onSelect={() => setPreviewingResource(resource)}
+                      onEdit={setResourceToEdit}
+                      onDelete={setResourceToDelete}
+                      onNavigate={handleNavigateFolder}
+                      onTogglePin={() => {}}
+                      isSelected={selectedIds.has(resource.id)}
+                      onSelectionChange={(id, checked) => {
+                        setSelectedIds(prev => {
+                          const newSet = new Set(prev);
+                          if (checked) newSet.add(id);
+                          else newSet.delete(id);
+                          return newSet;
+                        });
+                      }}
+                      showThumbnail={showThumbnails}
+                    />
+                  ))}
+                </div>
+              ) : viewMode === 'list' ? (
+                <ResourceListItem
+                  resources={resources}
+                  onSelect={setPreviewingResource}
+                  onEdit={setResourceToEdit}
+                  onDelete={setResourceToDelete}
+                  selectedIds={selectedIds}
+                  onSelectionChange={(id, checked) => {
+                    setSelectedIds(prev => {
+                      const newSet = new Set(prev);
+                      if (checked) newSet.add(id);
+                      else newSet.delete(id);
+                      return newSet;
+                    });
+                  }}
+                />
+              ) : (
+                <Card>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left p-4">Nombre</th>
+                          <th className="text-left p-4">Tipo</th>
+                          <th className="text-left p-4">Tamaño</th>
+                          <th className="text-left p-4">Fecha</th>
+                          <th className="text-left p-4">Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {resources.map((resource) => (
+                          <tr key={resource.id} className="border-b hover:bg-muted/50">
+                            <td className="p-4">{resource.title}</td>
+                            <td className="p-4">
+                              <Badge variant="outline">{resource.fileType}</Badge>
+                            </td>
+                            <td className="p-4">
+                              {formatFileSize(resource.fileSize || 0)}
+                            </td>
+                            <td className="p-4">
+                              {new Date(resource.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="p-4">
+                              <Button variant="ghost" size="icon">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </Card>
+              )}
+            </motion.section>
+          ))}
+        </div>
+      </LayoutGroup>
+    );
+  };
+
+  return (
+    <DndContext onDragEnd={() => {}}>
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+        <ResizablePanelGroup direction="horizontal" className="min-h-[calc(100vh-4rem)]">
+          {/* Panel lateral */}
+          <ResizablePanel 
+            defaultSize={20} 
+            minSize={15} 
+            maxSize={30}
+            collapsible
+            collapsedSize={0}
+          >
+            <AnimatePresence mode="wait">
+              {isSidebarVisible && (
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="h-full p-6 border-r"
+                >
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <h2 className="font-semibold text-lg">Biblioteca</h2>
+                      <p className="text-sm text-muted-foreground">
+                        Organiza tus recursos inteligentemente
+                      </p>
+                    </div>
+                    
+                    <Tabs defaultValue="folders" className="w-full">
+                      <TabsList className="grid grid-cols-2">
+                        <TabsTrigger value="folders">Carpetas</TabsTrigger>
+                        <TabsTrigger value="tags">Etiquetas</TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="folders" className="mt-4">
+                        <FolderTree
+                          currentFolderId={currentFolderId}
+                          onNavigate={handleNavigateFolder}
+                          compact
+                        />
+                      </TabsContent>
+                      <TabsContent value="tags" className="mt-4">
+                        <div className="space-y-2">
+                          <Input placeholder="Buscar etiquetas..." />
+                          <div className="flex flex-wrap gap-2 pt-2">
+                            {['urgente', 'revisión', 'importante', 'archivo'].map(tag => (
+                              <Badge key={tag} variant="secondary">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </TabsContent>
+                    </Tabs>
+                    
+                    <ViewCustomizer
+                      viewMode={viewMode}
+                      onViewModeChange={setViewMode}
+                      gridSize={gridSize}
+                      onGridSizeChange={setGridSize}
+                      showThumbnails={showThumbnails}
+                      onShowThumbnailsChange={setShowThumbnails}
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </ResizablePanel>
+
+          <ResizableHandle withHandle />
+
+          {/* Contenido principal */}
+          <ResizablePanel defaultSize={80}>
+            <div className="p-6 space-y-6" ref={containerRef}>
+              {/* Header */}
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-4"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-3xl font-bold tracking-tight">
+                      Biblioteca de Recursos
+                    </h1>
+                    <p className="text-muted-foreground">
+                      Gestiona y comparte documentos importantes, guías y materiales de formación
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setIsSidebarVisible(!isSidebarVisible)}
+                    >
+                      {isSidebarVisible ? (
+                        <PanelLeftClose className="h-4 w-4" />
+                      ) : (
+                        <PanelLeftOpen className="h-4 w-4" />
+                      )}
+                    </Button>
+                    {canManage && (
+                      <Button>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Nuevo Recurso
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Filtros rápidos */}
+                <Card className="p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-4">
+                      <Button
+                        variant={resourceView === 'all' ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => setResourceView('all')}
+                      >
+                        Todos
+                      </Button>
+                      <Button
+                        variant={resourceView === 'favorites' ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => setResourceView('favorites')}
+                      >
+                        <Star className="mr-2 h-4 w-4" />
+                        Favoritos
+                      </Button>
+                      <Button
+                        variant={resourceView === 'recent' ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => setResourceView('recent')}
+                      >
+                        <Clock className="mr-2 h-4 w-4" />
+                        Recientes
+                      </Button>
+                      <Button
+                        variant={resourceView === 'unread' ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => setResourceView('unread')}
+                      >
+                        <EyeOff className="mr-2 h-4 w-4" />
+                        No vistos
+                      </Button>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <Filter className="mr-2 h-4 w-4" />
+                            Filtros
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80">
+                          <div className="space-y-4">
+                            <h4 className="font-medium">Filtros avanzados</h4>
+                            <DateRangePicker date={dateRange} onDateChange={setDateRange} />
+                            <Select value={fileType} onValueChange={setFileType}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Tipo de archivo" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">Todos</SelectItem>
+                                <SelectItem value="image">Imágenes</SelectItem>
+                                <SelectItem value="video">Videos</SelectItem>
+                                <SelectItem value="pdf">PDFs</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </div>
+
+                  <AdvancedSearch
+                    searchTerm={searchTerm}
+                    onSearchChange={setSearchTerm}
+                    onQuickFilter={handleQuickFilter}
+                  />
+                </Card>
+              </motion.div>
+
+              {/* Breadcrumbs */}
+              <motion.nav
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex items-center gap-2 text-sm"
+              >
+                {breadcrumbs.map((crumb, index) => (
+                  <React.Fragment key={crumb.id || 'root'}>
+                    {index > 0 && <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+                    <button
+                      onClick={() => handleBreadcrumbClick(crumb.id, index)}
+                      className={cn(
+                        "hover:text-primary transition-colors",
+                        index === breadcrumbs.length - 1
+                          ? "font-semibold"
+                          : "text-muted-foreground"
+                      )}
+                    >
+                      {crumb.title}
+                    </button>
+                  </React.Fragment>
+                ))}
+              </motion.nav>
+
+              {/* Contenido */}
+              {renderContent()}
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
+
+      {/* Barra de acciones flotante */}
+      <AnimatePresence>
+        {selectedIds.size > 0 && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+          >
+            <Card className="px-4 py-3 shadow-xl border-2">
+              <div className="flex items-center gap-4">
+                <p className="font-medium">
+                  {selectedIds.size} seleccionado{selectedIds.size > 1 ? 's' : ''}
+                </p>
+                <div className="flex items-center gap-2">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleBulkAction('pin')}
+                        >
+                          <Pin className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Fijar seleccionados</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setIsMoveModalOpen(true)}
+                        >
+                          <Move className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Mover seleccionados</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleBulkAction('download')}
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Descargar seleccionados</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setResourceToDelete({ id: 'bulk' } as any)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                  
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedIds(new Set())}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modales */}
+      <ResourcePreviewModal
+        resource={previewingResource}
+        onClose={() => setPreviewingResource(null)}
+      />
+
+      <MoveResourceModal
+        isOpen={isMoveModalOpen}
+        onClose={() => setIsMoveModalOpen(false)}
+        resourceIds={Array.from(selectedIds)}
+        onMoveSuccess={() => {
+          setSelectedIds(new Set());
+          fetchResources();
+        }}
+      />
+
+      <QuickActionsFAB
+        canManage={canManage}
+        onCreateFolder={() => setIsFolderEditorOpen(true)}
+        onUploadFile={() => setIsUploaderOpen(true)}
+        onCreatePlaylist={() => setIsPlaylistCreatorOpen(true)}
+      />
+    </DndContext>
+  );
+}
+
+// Helper function
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
