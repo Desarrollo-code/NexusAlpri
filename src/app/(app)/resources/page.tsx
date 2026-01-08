@@ -15,12 +15,11 @@ import {
   Edit, ArrowUpDown, FolderInput, Clock, PanelLeftClose, PanelLeftOpen,
   Star, StarOff, Eye, EyeOff, Download, Share2, Copy, MoreVertical,
   Grid3x3, LayoutGrid, Table, Columns, X, Check, RefreshCw,
-  BarChart3, HardDrive, Calendar, Tag, Users, Zap
+  BarChart3, HardDrive, Calendar, Tag, Users, Zap, ChevronLeft
 } from 'lucide-react';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { ResourceListItem } from '@/components/resources/resource-list-item';
-import { DndContext, type DragEndEvent, MouseSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
-import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
+import { DndContext, type DragEndEvent, MouseSensor, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Input } from '@/components/ui/input';
@@ -34,24 +33,20 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { VideoPlaylistView } from '@/components/resources/video-playlist-view';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
-import { AnimatePresence, motion, LayoutGroup } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { type DateRange } from 'react-day-picker';
 import { useDroppable } from '@dnd-kit/core';
-import { Separator } from '@/components/ui/separator';
 import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
 import { MoveResourceModal } from '@/components/resources/move-resource-modal';
 import { useRecentResources } from '@/hooks/use-recent-resources';
 import { QuickActionsFAB } from '@/components/resources/quick-actions-fab';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Switch } from '@/components/ui/switch';
-import { Slider } from '@/components/ui/slider';
-import { ResizablePanel, ResizablePanelGroup, ResizableHandle } from '@/components/ui/resizable';
 
 // Custom hook para gestor de recursos
 function useResourceManager() {
@@ -79,9 +74,7 @@ function useResourceManager() {
         ...params?.filters
       });
 
-      const response = await fetch(`/api/resources?${queryParams.toString()}`, {
-        next: { revalidate: 0 }
-      });
+      const response = await fetch(`/api/resources?${queryParams.toString()}`);
       
       if (!response.ok) throw new Error('Error al cargar recursos');
       
@@ -173,8 +166,8 @@ function ResourceStats({ resources }: { resources: AppResourceType[] }) {
   );
 }
 
-// Componente de búsqueda avanzada
-function AdvancedSearch({
+// Componente de búsqueda mejorada
+function EnhancedSearch({
   searchTerm,
   onSearchChange,
   onQuickFilter
@@ -230,88 +223,42 @@ function AdvancedSearch({
   );
 }
 
-// Componente de vista personalizable
-function ViewCustomizer({
-  viewMode,
-  onViewModeChange,
-  gridSize,
-  onGridSizeChange,
-  showThumbnails,
-  onShowThumbnailsChange
+// Componente de breadcrumbs mejorado
+function EnhancedBreadcrumbs({
+  breadcrumbs,
+  onBreadcrumbClick
 }: {
-  viewMode: 'grid' | 'list' | 'table';
-  onViewModeChange: (mode: 'grid' | 'list' | 'table') => void;
-  gridSize: number;
-  onGridSizeChange: (size: number) => void;
-  showThumbnails: boolean;
-  onShowThumbnailsChange: (show: boolean) => void;
+  breadcrumbs: { id: string | null; title: string }[];
+  onBreadcrumbClick: (folderId: string | null, index: number) => void;
 }) {
   return (
-    <Card className="p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h4 className="font-semibold">Personalizar Vista</h4>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger>
-              <Eye className="h-4 w-4" />
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Ajusta cómo ves tus recursos</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+    <nav aria-label="Breadcrumb" className="mb-4">
+      <div className="flex items-center gap-2 text-sm flex-wrap">
+        {breadcrumbs.map((crumb, index) => (
+          <React.Fragment key={crumb.id || 'root'}>
+            {index > 0 && <ChevronRight className="h-4 w-4 text-muted-foreground/50" />}
+            <button
+              onClick={() => onBreadcrumbClick(crumb.id, index)}
+              className={cn(
+                "hover:text-primary transition-colors text-left flex items-center gap-1",
+                "disabled:hover:no-underline disabled:cursor-default",
+                index === breadcrumbs.length - 1
+                  ? "text-foreground font-semibold"
+                  : "text-muted-foreground"
+              )}
+              disabled={index === breadcrumbs.length - 1}
+            >
+              {index === 0 ? (
+                <FolderOpen className="h-4 w-4 text-primary" />
+              ) : (
+                <FolderIcon className="h-4 w-4 text-muted-foreground" />
+              )}
+              <span className="truncate max-w-[150px]">{crumb.title}</span>
+            </button>
+          </React.Fragment>
+        ))}
       </div>
-      
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label className="text-sm">Tipo de Vista</Label>
-          <div className="flex gap-2">
-            {[
-              { mode: 'grid' as const, icon: Grid3x3, label: 'Cuadrícula' },
-              { mode: 'list' as const, icon: List, label: 'Lista' },
-              { mode: 'table' as const, icon: Table, label: 'Tabla' }
-            ].map((item) => (
-              <Button
-                key={item.mode}
-                variant={viewMode === item.mode ? 'default' : 'outline'}
-                size="sm"
-                className="flex-1"
-                onClick={() => onViewModeChange(item.mode)}
-              >
-                <item.icon className="h-4 w-4 mr-2" />
-                {item.label}
-              </Button>
-            ))}
-          </div>
-        </div>
-        
-        {viewMode === 'grid' && (
-          <>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label className="text-sm">Tamaño de cuadrícula</Label>
-                <span className="text-sm text-muted-foreground">{gridSize}px</span>
-              </div>
-              <Slider
-                value={[gridSize]}
-                onValueChange={([value]) => onGridSizeChange(value)}
-                min={120}
-                max={300}
-                step={20}
-              />
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <Label className="text-sm">Mostrar miniaturas</Label>
-              <Switch
-                checked={showThumbnails}
-                onCheckedChange={onShowThumbnailsChange}
-              />
-            </div>
-          </>
-        )}
-      </div>
-    </Card>
+    </nav>
   );
 }
 
@@ -354,7 +301,7 @@ export default function ResourcesPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isSelecting, setIsSelecting] = useState(false);
   
-  // Estados de filtros avanzados
+  // Estados de filtros
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [fileType, setFileType] = useState('all');
   const [hasPin, setHasPin] = useState(false);
@@ -364,13 +311,27 @@ export default function ResourcesPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   
   // Estados de personalización
-  const [gridSize, setGridSize] = useState(160);
   const [showThumbnails, setShowThumbnails] = useState(true);
   const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const { setNodeRef: setRootDroppableRef, isOver: isOverRoot } = useDroppable({ id: 'root' });
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Configuración de sensores para drag and drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
+      },
+    })
+  );
 
   // Atajos de teclado
   useEffect(() => {
@@ -409,6 +370,41 @@ export default function ResourcesPage() {
   const canManage = useMemo(() => 
     user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR', 
   [user]);
+
+  // Fetch inicial de recursos
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        await fetchResources({
+          parentId: currentFolderId,
+          search: debouncedSearchTerm,
+          filters: {
+            fileType: fileType !== 'all' ? fileType : undefined,
+            hasPin: hasPin ? 'true' : undefined,
+            hasExpiry: hasExpiry ? 'true' : undefined,
+            sortBy,
+            sortOrder
+          }
+        });
+
+        if (currentFolderId) {
+          const folderRes = await fetch(`/api/resources/${currentFolderId}`);
+          if (folderRes.ok) {
+            const folderData = await folderRes.json();
+            setCurrentFolder(folderData);
+            setIsPlaylistView(folderData.type === 'VIDEO_PLAYLIST');
+          }
+        } else {
+          setCurrentFolder(null);
+          setIsPlaylistView(false);
+        }
+      } catch (err) {
+        console.error('Error loading resources:', err);
+      }
+    };
+
+    loadData();
+  }, [currentFolderId, debouncedSearchTerm, fileType, hasPin, hasExpiry, sortBy, sortOrder, fetchResources]);
 
   // Filtrado y ordenación optimizados
   const filteredResources = useMemo(() => {
@@ -548,16 +544,78 @@ export default function ResourcesPage() {
     }
   }, []);
 
-  const handleBulkAction = useCallback(async (action: 'pin' | 'archive' | 'download') => {
+  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || !active) return;
+    
+    const resourceToMove = active.data.current?.resource as AppResourceType;
+    const targetFolderId = over.id as string;
+
+    if (resourceToMove && targetFolderId !== resourceToMove.id && targetFolderId !== resourceToMove.parentId) {
+      try {
+        await fetch(`/api/resources/${resourceToMove.id}/move`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ parentId: targetFolderId === 'root' ? null : targetFolderId })
+        });
+        
+        toast({ 
+          title: 'Recurso Movido', 
+          description: `"${resourceToMove.title}" se movió correctamente.` 
+        });
+        
+        fetchResources({
+          parentId: currentFolderId,
+          search: debouncedSearchTerm
+        });
+      } catch (e) {
+        toast({ 
+          title: 'Error', 
+          description: 'No se pudo mover el recurso.', 
+          variant: 'destructive' 
+        });
+      }
+    }
+  }, [currentFolderId, debouncedSearchTerm, fetchResources, toast]);
+
+  const handleOpenPlaylistEditor = useCallback(async (resource: AppResourceType) => {
+    try {
+      const response = await fetch(`/api/resources?parentId=${resource.id}`);
+      if (!response.ok) throw new Error('No se pudieron cargar los videos de la lista.');
+      const data = await response.json();
+      const playlistWithChildren = { ...resource, children: data.resources || [] };
+      setPlaylistToEdit(playlistWithChildren);
+      setIsPlaylistCreatorOpen(true);
+    } catch (err) {
+      toast({ 
+        title: "Error", 
+        description: (err as Error).message, 
+        variant: "destructive" 
+      });
+    }
+  }, [toast]);
+
+  const handleBulkAction = useCallback(async (action: 'pin' | 'download' | 'delete') => {
     if (selectedIds.size === 0) return;
 
     try {
-      const endpoint = action === 'download' 
-        ? '/api/resources/bulk-download' 
-        : `/api/resources/bulk-${action}`;
+      let endpoint = '';
+      let method = 'POST';
+      
+      switch (action) {
+        case 'download':
+          endpoint = '/api/resources/bulk-download';
+          break;
+        case 'pin':
+          endpoint = '/api/resources/bulk-pin';
+          break;
+        case 'delete':
+          endpoint = '/api/resources/bulk-delete';
+          break;
+      }
 
       const response = await fetch(endpoint, {
-        method: 'POST',
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids: Array.from(selectedIds) })
       });
@@ -570,7 +628,10 @@ export default function ResourcesPage() {
         const a = document.createElement('a');
         a.href = url;
         a.download = `recursos-${new Date().toISOString().split('T')[0]}.zip`;
+        document.body.appendChild(a);
         a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
       }
 
       toast({
@@ -578,7 +639,10 @@ export default function ResourcesPage() {
         description: `${selectedIds.size} recursos procesados`
       });
 
-      fetchResources();
+      fetchResources({
+        parentId: currentFolderId,
+        search: debouncedSearchTerm
+      });
       setSelectedIds(new Set());
     } catch (error) {
       toast({
@@ -587,13 +651,135 @@ export default function ResourcesPage() {
         variant: 'destructive'
       });
     }
-  }, [selectedIds, toast, fetchResources]);
+  }, [selectedIds, toast, fetchResources, currentFolderId, debouncedSearchTerm]);
+
+  const handleTogglePin = useCallback(async (resource: AppResourceType) => {
+    try {
+      await fetch(`/api/resources/${resource.id}/pin`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isPinned: !resource.isPinned }),
+      });
+      
+      toast({ 
+        description: `Recurso ${resource.isPinned ? 'desfijado' : 'fijado'}.` 
+      });
+      
+      fetchResources({
+        parentId: currentFolderId,
+        search: debouncedSearchTerm
+      });
+    } catch (err) {
+      toast({ 
+        title: "Error", 
+        description: (err as Error).message, 
+        variant: "destructive" 
+      });
+    }
+  }, [currentFolderId, debouncedSearchTerm, fetchResources, toast]);
+
+  const handleSaveSuccess = useCallback(() => {
+    setResourceToEdit(null);
+    setIsFolderEditorOpen(false);
+    setFolderToEdit(null);
+    setIsPlaylistCreatorOpen(false);
+    setPlaylistToEdit(null);
+    setIsUploaderOpen(false);
+    
+    fetchResources({
+      parentId: currentFolderId,
+      search: debouncedSearchTerm
+    });
+  }, [currentFolderId, debouncedSearchTerm, fetchResources]);
+
+  const confirmDelete = useCallback(async () => {
+    if (!resourceToDelete) return;
+    
+    try {
+      const res = await fetch(`/api/resources/${resourceToDelete.id}`, { 
+        method: 'DELETE' 
+      });
+      
+      if (!res.ok) throw new Error((await res.json()).message || 'No se pudo eliminar el recurso.');
+      
+      toast({ 
+        title: "Recurso eliminado",
+        description: `"${resourceToDelete.title}" ha sido eliminado.`
+      });
+      
+      fetchResources({
+        parentId: currentFolderId,
+        search: debouncedSearchTerm
+      });
+    } catch (err) {
+      toast({ 
+        title: "Error", 
+        description: (err as Error).message, 
+        variant: "destructive" 
+      });
+    } finally {
+      setResourceToDelete(null);
+    }
+  }, [resourceToDelete, currentFolderId, debouncedSearchTerm, fetchResources, toast]);
+
+  const handleBulkDelete = useCallback(async () => {
+    try {
+      const res = await fetch('/api/resources/bulk-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: Array.from(selectedIds) }),
+      });
+      
+      if (!res.ok) throw new Error((await res.json()).message || "Error al eliminar.");
+      
+      toast({ 
+        description: `${selectedIds.size} elemento(s) eliminados.` 
+      });
+      
+      fetchResources({
+        parentId: currentFolderId,
+        search: debouncedSearchTerm
+      });
+    } catch (err) {
+      toast({ 
+        title: "Error", 
+        description: (err as Error).message, 
+        variant: 'destructive' 
+      });
+    } finally {
+      setResourceToDelete(null);
+      setSelectedIds(new Set());
+    }
+  }, [selectedIds, currentFolderId, debouncedSearchTerm, fetchResources, toast]);
+
+  const handleSelectionChange = useCallback((id: string, checked: boolean) => {
+    setSelectedIds(prev => {
+      const newSet = new Set(prev);
+      if (id === 'all') {
+        if (checked) {
+          filteredResources.forEach(r => newSet.add(r.id));
+        } else {
+          filteredResources.forEach(r => newSet.delete(r.id));
+        }
+      } else {
+        if (checked) newSet.add(id);
+        else newSet.delete(id);
+      }
+      return newSet;
+    });
+  }, [filteredResources]);
+
+  const handlePreviewResource = useCallback((resource: AppResourceType) => {
+    setPreviewingResource(resource);
+    addRecentResource(resource.id);
+  }, [addRecentResource]);
 
   // Renderizado condicional optimizado
   const renderContent = () => {
     if (isLoadingData) {
       return (
         <div className="space-y-6">
+          <ResourceStats resources={[]} />
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {[...Array(12)].map((_, i) => (
               <motion.div
@@ -628,7 +814,10 @@ export default function ResourcesPage() {
             <h3 className="text-lg font-semibold text-destructive">{error}</h3>
             <p className="text-muted-foreground mt-2">No se pudieron cargar los recursos</p>
           </div>
-          <Button onClick={() => fetchResources()}>
+          <Button onClick={() => fetchResources({
+            parentId: currentFolderId,
+            search: debouncedSearchTerm
+          })}>
             <RefreshCw className="mr-2 h-4 w-4" />
             Reintentar
           </Button>
@@ -637,7 +826,12 @@ export default function ResourcesPage() {
     }
 
     if (isPlaylistView && currentFolder) {
-      return <VideoPlaylistView resources={allApiResources} folder={currentFolder} />;
+      return (
+        <VideoPlaylistView 
+          resources={allApiResources} 
+          folder={currentFolder} 
+        />
+      );
     }
 
     if (filteredResources.length === 0) {
@@ -645,19 +839,24 @@ export default function ResourcesPage() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="py-16 text-center space-y-4"
+          className="py-16 text-center space-y-6"
         >
-          <div className="w-24 h-24 mx-auto bg-muted rounded-full flex items-center justify-center">
-            <FolderOpen className="h-12 w-12 text-muted-foreground" />
+          <div className="w-24 h-24 mx-auto bg-gradient-to-br from-primary/10 to-primary/5 rounded-full flex items-center justify-center">
+            <FolderOpen className="h-12 w-12 text-primary" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold">No hay recursos</h3>
-            <p className="text-muted-foreground">
-              {searchTerm ? 'No se encontraron resultados para tu búsqueda' : 'Comienza agregando recursos a tu biblioteca'}
+            <h3 className="text-2xl font-bold mb-2">
+              {searchTerm ? 'No se encontraron resultados' : 'Biblioteca vacía'}
+            </h3>
+            <p className="text-muted-foreground max-w-md mx-auto">
+              {searchTerm 
+                ? 'No hay recursos que coincidan con tu búsqueda. Intenta con otros términos.'
+                : 'Comienza agregando recursos a tu biblioteca para organizar y compartir con tu equipo.'
+              }
             </p>
           </div>
           {canManage && (
-            <div className="flex gap-2 justify-center">
+            <div className="flex gap-3 justify-center">
               <Button onClick={() => setIsFolderEditorOpen(true)}>
                 <FolderPlus className="mr-2 h-4 w-4" />
                 Nueva Carpeta
@@ -666,6 +865,10 @@ export default function ResourcesPage() {
                 <UploadCloud className="mr-2 h-4 w-4" />
                 Subir Archivos
               </Button>
+              <Button onClick={() => setIsPlaylistCreatorOpen(true)} variant="outline">
+                <ListVideo className="mr-2 h-4 w-4" />
+                Nueva Lista
+              </Button>
             </div>
           )}
         </motion.div>
@@ -673,436 +876,595 @@ export default function ResourcesPage() {
     }
 
     return (
-      <LayoutGroup>
-        <div className="space-y-8">
-          <ResourceStats resources={filteredResources} />
-          
-          {Object.entries(groupedResources).map(([category, resources]) => (
-            <motion.section
-              key={category}
-              layout
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-4"
-            >
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  {category === 'Carpetas' && <FolderIcon className="h-5 w-5" />}
-                  {category === 'Listas de Videos' && <ListVideo className="h-5 w-5" />}
-                  {category === 'Documentos' && <FileText className="h-5 w-5" />}
-                  {category === 'Multimedia' && <VideoIcon className="h-5 w-5" />}
-                  {category}
-                  <Badge variant="outline" className="ml-2">
-                    {resources.length}
-                  </Badge>
-                </h3>
-                
-                {category === 'Archivos' && (
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setViewMode('list')}
-                      className={cn(viewMode === 'list' && 'bg-muted')}
-                    >
-                      <List className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setViewMode('grid')}
-                      className={cn(viewMode === 'grid' && 'bg-muted')}
-                    >
-                      <Grid className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setViewMode('table')}
-                      className={cn(viewMode === 'table' && 'bg-muted')}
-                    >
-                      <Table className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              {viewMode === 'grid' || category !== 'Archivos' ? (
-                <div 
-                  className="grid gap-4"
-                  style={{
-                    gridTemplateColumns: `repeat(auto-fill, minmax(${gridSize}px, 1fr))`
-                  }}
-                >
-                  {resources.map((resource) => (
-                    <ResourceGridItem
-                      key={resource.id}
-                      resource={resource}
-                      onSelect={() => setPreviewingResource(resource)}
-                      onEdit={setResourceToEdit}
-                      onDelete={setResourceToDelete}
-                      onNavigate={handleNavigateFolder}
-                      onTogglePin={() => {}}
-                      isSelected={selectedIds.has(resource.id)}
-                      onSelectionChange={(id, checked) => {
-                        setSelectedIds(prev => {
-                          const newSet = new Set(prev);
-                          if (checked) newSet.add(id);
-                          else newSet.delete(id);
-                          return newSet;
-                        });
-                      }}
-                      showThumbnail={showThumbnails}
-                    />
-                  ))}
+      <div className="space-y-8">
+        <ResourceStats resources={filteredResources} />
+        
+        {Object.entries(groupedResources).map(([category, resources]) => (
+          <motion.section
+            key={category}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-4"
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                {category === 'Carpetas' && <FolderIcon className="h-5 w-5" />}
+                {category === 'Listas de Videos' && <ListVideo className="h-5 w-5" />}
+                {category === 'Documentos' && <FileText className="h-5 w-5" />}
+                {category === 'Multimedia' && <VideoIcon className="h-5 w-5" />}
+                {category === 'Archivos' && <FileQuestion className="h-5 w-5" />}
+                {category}
+                <Badge variant="outline" className="ml-2">
+                  {resources.length}
+                </Badge>
+              </h3>
+              
+              {category === 'Archivos' && resources.length > 0 && (
+                <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => setViewMode('list')}
+                        >
+                          <List className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Vista de lista</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => setViewMode('grid')}
+                        >
+                          <Grid className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Vista de cuadrícula</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant={viewMode === 'table' ? 'secondary' : 'ghost'}
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => setViewMode('table')}
+                        >
+                          <Table className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Vista de tabla</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
-              ) : viewMode === 'list' ? (
-                <ResourceListItem
-                  resources={resources}
-                  onSelect={setPreviewingResource}
-                  onEdit={setResourceToEdit}
-                  onDelete={setResourceToDelete}
-                  selectedIds={selectedIds}
-                  onSelectionChange={(id, checked) => {
-                    setSelectedIds(prev => {
-                      const newSet = new Set(prev);
-                      if (checked) newSet.add(id);
-                      else newSet.delete(id);
-                      return newSet;
-                    });
-                  }}
-                />
-              ) : (
-                <Card>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="text-left p-4">Nombre</th>
-                          <th className="text-left p-4">Tipo</th>
-                          <th className="text-left p-4">Tamaño</th>
-                          <th className="text-left p-4">Fecha</th>
-                          <th className="text-left p-4">Acciones</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {resources.map((resource) => (
-                          <tr key={resource.id} className="border-b hover:bg-muted/50">
-                            <td className="p-4">{resource.title}</td>
-                            <td className="p-4">
-                              <Badge variant="outline">{resource.fileType}</Badge>
-                            </td>
-                            <td className="p-4">
-                              {formatFileSize(resource.fileSize || 0)}
-                            </td>
-                            <td className="p-4">
-                              {new Date(resource.createdAt).toLocaleDateString()}
-                            </td>
-                            <td className="p-4">
-                              <Button variant="ghost" size="icon">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </Card>
               )}
-            </motion.section>
-          ))}
-        </div>
-      </LayoutGroup>
+            </div>
+
+            {viewMode === 'grid' || category !== 'Archivos' ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                {resources.map((resource) => (
+                  <ResourceGridItem
+                    key={resource.id}
+                    resource={resource}
+                    onSelect={() => handlePreviewResource(resource)}
+                    onEdit={(resource.type === 'FOLDER' || resource.type === 'VIDEO_PLAYLIST') 
+                      ? resource.type === 'VIDEO_PLAYLIST' 
+                        ? () => handleOpenPlaylistEditor(resource)
+                        : () => { setFolderToEdit(resource); setIsFolderEditorOpen(true); }
+                      : setResourceToEdit
+                    }
+                    onDelete={setResourceToDelete}
+                    onNavigate={handleNavigateFolder}
+                    onRestore={() => {}}
+                    onTogglePin={handleTogglePin}
+                    isSelected={selectedIds.has(resource.id)}
+                    onSelectionChange={handleSelectionChange}
+                    showThumbnail={showThumbnails}
+                  />
+                ))}
+              </div>
+            ) : viewMode === 'list' ? (
+              <ResourceListItem
+                resources={resources}
+                onSelect={handlePreviewResource}
+                onEdit={setResourceToEdit}
+                onDelete={setResourceToDelete}
+                onRestore={() => {}}
+                onTogglePin={handleTogglePin}
+                selectedIds={selectedIds}
+                onSelectionChange={handleSelectionChange}
+              />
+            ) : (
+              <Card className="overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b bg-muted/50">
+                        <th className="text-left p-4 font-semibold">
+                          <Checkbox
+                            checked={selectedIds.size === resources.length && resources.length > 0}
+                            onCheckedChange={(checked) => handleSelectionChange('all', !!checked)}
+                          />
+                        </th>
+                        <th className="text-left p-4 font-semibold">Nombre</th>
+                        <th className="text-left p-4 font-semibold">Tipo</th>
+                        <th className="text-left p-4 font-semibold">Tamaño</th>
+                        <th className="text-left p-4 font-semibold">Fecha</th>
+                        <th className="text-left p-4 font-semibold">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {resources.map((resource) => (
+                        <tr key={resource.id} className="border-b hover:bg-muted/50 transition-colors">
+                          <td className="p-4">
+                            <Checkbox
+                              checked={selectedIds.has(resource.id)}
+                              onCheckedChange={(checked) => handleSelectionChange(resource.id, !!checked)}
+                            />
+                          </td>
+                          <td className="p-4 font-medium">{resource.title}</td>
+                          <td className="p-4">
+                            <Badge variant="outline">
+                              {resource.fileType || resource.type}
+                            </Badge>
+                          </td>
+                          <td className="p-4">
+                            {formatFileSize(resource.fileSize || 0)}
+                          </td>
+                          <td className="p-4">
+                            {new Date(resource.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="p-4">
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => handlePreviewResource(resource)}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => setResourceToEdit(resource)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => setResourceToDelete(resource)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            )}
+          </motion.section>
+        ))}
+      </div>
     );
   };
 
+  const activeFilterCount = useMemo(() => {
+    return [
+      dateRange?.from || dateRange?.to ? 1 : 0,
+      fileType !== 'all' ? 1 : 0,
+      hasPin ? 1 : 0,
+      hasExpiry ? 1 : 0,
+      tagsFilter ? 1 : 0
+    ].reduce((a, b) => a + b, 0);
+  }, [dateRange, fileType, hasPin, hasExpiry, tagsFilter]);
+
+  if (!user) {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
   return (
-    <DndContext onDragEnd={() => {}}>
-      <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
-        <ResizablePanelGroup direction="horizontal" className="min-h-[calc(100vh-4rem)]">
-          {/* Panel lateral */}
-          <ResizablePanel 
-            defaultSize={20} 
-            minSize={15} 
-            maxSize={30}
-            collapsible
-            collapsedSize={0}
-          >
-            <AnimatePresence mode="wait">
-              {isSidebarVisible && (
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="h-full p-6 border-r"
-                >
-                  <div className="space-y-6">
-                    <div className="space-y-2">
-                      <h2 className="font-semibold text-lg">Biblioteca</h2>
-                      <p className="text-sm text-muted-foreground">
-                        Organiza tus recursos inteligentemente
-                      </p>
-                    </div>
-                    
-                    <Tabs defaultValue="folders" className="w-full">
-                      <TabsList className="grid grid-cols-2">
-                        <TabsTrigger value="folders">Carpetas</TabsTrigger>
-                        <TabsTrigger value="tags">Etiquetas</TabsTrigger>
-                      </TabsList>
-                      <TabsContent value="folders" className="mt-4">
-                        <FolderTree
-                          currentFolderId={currentFolderId}
-                          onNavigate={handleNavigateFolder}
-                          compact
-                        />
-                      </TabsContent>
-                      <TabsContent value="tags" className="mt-4">
-                        <div className="space-y-2">
-                          <Input placeholder="Buscar etiquetas..." />
-                          <div className="flex flex-wrap gap-2 pt-2">
-                            {['urgente', 'revisión', 'importante', 'archivo'].map(tag => (
-                              <Badge key={tag} variant="secondary">
-                                {tag}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      </TabsContent>
-                    </Tabs>
-                    
-                    <ViewCustomizer
-                      viewMode={viewMode}
-                      onViewModeChange={setViewMode}
-                      gridSize={gridSize}
-                      onGridSizeChange={setGridSize}
-                      showThumbnails={showThumbnails}
-                      onShowThumbnailsChange={setShowThumbnails}
+    <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
+      <div className={cn(
+        "grid transition-all duration-300 items-start min-h-screen",
+        isSidebarVisible ? "grid-cols-1 lg:grid-cols-[280px_1fr] gap-6" : "grid-cols-1 gap-0"
+      )}>
+        {/* Sidebar Navigation */}
+        <AnimatePresence mode="wait">
+          {isSidebarVisible ? (
+            <motion.aside
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+              className="hidden lg:block sticky top-6 h-[calc(100vh-3rem)] overflow-y-auto pb-6"
+            >
+              <div className="space-y-6 p-4">
+                <div className="pb-4 mb-4 border-b flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <h2 className="font-semibold text-lg truncate">Explorador</h2>
+                    <p className="text-sm text-muted-foreground truncate">Navega por tu biblioteca</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsSidebarVisible(false)}
+                    className="h-8 w-8 shrink-0 hover:bg-muted"
+                    title="Ocultar panel lateral"
+                  >
+                    <ChevronLeft className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                </div>
+                
+                <Tabs defaultValue="folders" className="w-full">
+                  <TabsList className="grid grid-cols-2">
+                    <TabsTrigger value="folders">Carpetas</TabsTrigger>
+                    <TabsTrigger value="tags">Etiquetas</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="folders" className="mt-4">
+                    <FolderTree
+                      currentFolderId={currentFolderId}
+                      onNavigate={handleNavigateFolder}
+                      compact
                     />
+                  </TabsContent>
+                  <TabsContent value="tags" className="mt-4">
+                    <div className="space-y-2">
+                      <Input placeholder="Buscar etiquetas..." />
+                      <div className="flex flex-wrap gap-2 pt-2">
+                        {['urgente', 'revisión', 'importante', 'archivo'].map(tag => (
+                          <Badge key={tag} variant="secondary" className="cursor-pointer hover:bg-secondary/80">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+                
+                <Card className="p-4">
+                  <div className="space-y-4">
+                    <h4 className="font-semibold">Personalizar Vista</h4>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm">Mostrar miniaturas</Label>
+                      <Switch
+                        checked={showThumbnails}
+                        onCheckedChange={setShowThumbnails}
+                      />
+                    </div>
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </ResizablePanel>
+                </Card>
+              </div>
+            </motion.aside>
+          ) : (
+            <div className="hidden lg:block"></div>
+          )}
+        </AnimatePresence>
 
-          <ResizableHandle withHandle />
-
-          {/* Contenido principal */}
-          <ResizablePanel defaultSize={80}>
-            <div className="p-6 space-y-6" ref={containerRef}>
-              {/* Header */}
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-4"
+        {/* Main Content */}
+        <div className="space-y-6 min-w-0 relative p-4 md:p-6">
+          {!isSidebarVisible && (
+            <div className="hidden lg:block absolute -left-8 top-0 h-full w-8 z-20">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setIsSidebarVisible(true)}
+                className="absolute left-0 top-4 h-8 w-8 rounded-full shadow-md bg-background border-primary/20 hover:bg-primary/5 hover:scale-110 transition-transform"
+                title="Mostrar panel lateral"
               >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h1 className="text-3xl font-bold tracking-tight">
-                      Biblioteca de Recursos
-                    </h1>
-                    <p className="text-muted-foreground">
-                      Gestiona y comparte documentos importantes, guías y materiales de formación
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setIsSidebarVisible(!isSidebarVisible)}
-                    >
-                      {isSidebarVisible ? (
-                        <PanelLeftClose className="h-4 w-4" />
-                      ) : (
-                        <PanelLeftOpen className="h-4 w-4" />
-                      )}
-                    </Button>
-                    {canManage && (
+                <PanelLeftOpen className="h-4 w-4 text-primary" />
+              </Button>
+            </div>
+          )}
+
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-4"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+                  Biblioteca de Recursos
+                </h1>
+                <p className="text-muted-foreground">
+                  Gestiona y comparte documentos importantes, guías y materiales de formación
+                </p>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setIsSidebarVisible(!isSidebarVisible)}
+                  className="lg:hidden"
+                >
+                  {isSidebarVisible ? (
+                    <PanelLeftClose className="h-4 w-4" />
+                  ) : (
+                    <PanelLeftOpen className="h-4 w-4" />
+                  )}
+                </Button>
+                
+                {canManage && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
                       <Button>
                         <PlusCircle className="mr-2 h-4 w-4" />
-                        Nuevo Recurso
+                        Nuevo
                       </Button>
-                    )}
-                  </div>
-                </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => {
+                        setFolderToEdit(null);
+                        setIsFolderEditorOpen(true);
+                      }}>
+                        <FolderIcon className="mr-2 h-4 w-4" />
+                        Nueva Carpeta
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => {
+                        setPlaylistToEdit(null);
+                        setIsPlaylistCreatorOpen(true);
+                      }}>
+                        <ListVideo className="mr-2 h-4 w-4" />
+                        Nueva Lista de Videos
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setIsUploaderOpen(true)}>
+                        <UploadCloud className="mr-2 h-4 w-4" />
+                        Subir Archivo/Enlace
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
+            </div>
 
-                {/* Filtros rápidos */}
-                <Card className="p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-4">
-                      <Button
-                        variant={resourceView === 'all' ? 'default' : 'ghost'}
-                        size="sm"
-                        onClick={() => setResourceView('all')}
-                      >
-                        Todos
-                      </Button>
-                      <Button
-                        variant={resourceView === 'favorites' ? 'default' : 'ghost'}
-                        size="sm"
-                        onClick={() => setResourceView('favorites')}
-                      >
-                        <Star className="mr-2 h-4 w-4" />
-                        Favoritos
-                      </Button>
-                      <Button
-                        variant={resourceView === 'recent' ? 'default' : 'ghost'}
-                        size="sm"
-                        onClick={() => setResourceView('recent')}
-                      >
-                        <Clock className="mr-2 h-4 w-4" />
-                        Recientes
-                      </Button>
-                      <Button
-                        variant={resourceView === 'unread' ? 'default' : 'ghost'}
-                        size="sm"
-                        onClick={() => setResourceView('unread')}
-                      >
-                        <EyeOff className="mr-2 h-4 w-4" />
-                        No vistos
-                      </Button>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button variant="outline" size="sm">
-                            <Filter className="mr-2 h-4 w-4" />
-                            Filtros
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-80">
-                          <div className="space-y-4">
-                            <h4 className="font-medium">Filtros avanzados</h4>
+            {/* View Selector */}
+            {!isPlaylistView && (
+              <div className="flex items-center gap-2 border-b overflow-x-auto">
+                <Button
+                  variant={resourceView === 'all' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setResourceView('all')}
+                  className="rounded-b-none"
+                >
+                  Todos
+                </Button>
+                <Button
+                  variant={resourceView === 'favorites' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setResourceView('favorites')}
+                  className="rounded-b-none"
+                >
+                  <Star className="mr-2 h-4 w-4" />
+                  Favoritos
+                </Button>
+                <Button
+                  variant={resourceView === 'recent' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setResourceView('recent')}
+                  className="rounded-b-none"
+                >
+                  <Clock className="mr-2 h-4 w-4" />
+                  Recientes
+                </Button>
+                <Button
+                  variant={resourceView === 'unread' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setResourceView('unread')}
+                  className="rounded-b-none"
+                >
+                  <EyeOff className="mr-2 h-4 w-4" />
+                  No vistos
+                </Button>
+              </div>
+            )}
+
+            {/* Search and Filters */}
+            {!isPlaylistView && (
+              <Card className="p-4 bg-card shadow-sm">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                  <div className="relative w-full flex-grow">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input 
+                      placeholder="Buscar en la carpeta actual..." 
+                      className="pl-10 h-10 text-base rounded-md" 
+                      value={searchTerm} 
+                      onChange={e => setSearchTerm(e.target.value)} 
+                    />
+                  </div>
+                  
+                  <div className="flex items-center gap-2 w-full md:w-auto">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="h-10 flex-grow md:flex-none">
+                          <ArrowUpDown className="mr-2 h-4 w-4" />
+                          {sortBy === 'name' ? 'Nombre' : sortBy === 'size' ? 'Tamaño' : 'Fecha'}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => { setSortBy('name'); setSortOrder('asc'); }}>
+                          Nombre (A-Z)
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => { setSortBy('name'); setSortOrder('desc'); }}>
+                          Nombre (Z-A)
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => { setSortBy('date'); setSortOrder('desc'); }}>
+                          Más recientes
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => { setSortBy('date'); setSortOrder('asc'); }}>
+                          Más antiguos
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => { setSortBy('size'); setSortOrder('desc'); }}>
+                          Tamaño (Mayor-Menor)
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => { setSortBy('size'); setSortOrder('asc'); }}>
+                          Tamaño (Menor-Mayor)
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <Popover open={isFilterPopoverOpen} onOpenChange={setIsFilterPopoverOpen}>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="h-10 flex-grow md:flex-none">
+                          <Filter className="mr-2 h-4 w-4" /> 
+                          Filtros {activeFilterCount > 0 && `(${activeFilterCount})`}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80" align="end">
+                        <div className="grid gap-4">
+                          <div className="space-y-2">
+                            <h4 className="font-medium leading-none">Filtros Avanzados</h4>
+                            <p className="text-sm text-muted-foreground">Refina tu búsqueda de recursos.</p>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label>Fecha de subida</Label>
                             <DateRangePicker date={dateRange} onDateChange={setDateRange} />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label>Tipo de Archivo</Label>
                             <Select value={fileType} onValueChange={setFileType}>
                               <SelectTrigger>
-                                <SelectValue placeholder="Tipo de archivo" />
+                                <SelectValue placeholder="Seleccionar tipo" />
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="all">Todos</SelectItem>
-                                <SelectItem value="image">Imágenes</SelectItem>
-                                <SelectItem value="video">Videos</SelectItem>
-                                <SelectItem value="pdf">PDFs</SelectItem>
+                                <SelectItem value="image">Imagen</SelectItem>
+                                <SelectItem value="video">Video</SelectItem>
+                                <SelectItem value="pdf">PDF</SelectItem>
+                                <SelectItem value="doc">Documento</SelectItem>
+                                <SelectItem value="xls">Hoja de cálculo</SelectItem>
+                                <SelectItem value="ppt">Presentación</SelectItem>
+                                <SelectItem value="zip">ZIP</SelectItem>
+                                <SelectItem value="other">Otro</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
-                        </PopoverContent>
-                      </Popover>
-                    </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            <Checkbox 
+                              id="hasPin" 
+                              checked={hasPin} 
+                              onCheckedChange={(c) => setHasPin(!!c)} 
+                            />
+                            <Label htmlFor="hasPin">Con PIN</Label>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            <Checkbox 
+                              id="hasExpiry" 
+                              checked={hasExpiry} 
+                              onCheckedChange={(c) => setHasExpiry(!!c)} 
+                            />
+                            <Label htmlFor="hasExpiry">Con Vencimiento</Label>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="tags-filter">Etiquetas (separadas por coma)</Label>
+                            <Input 
+                              id="tags-filter" 
+                              placeholder="ej. urgente, revisión" 
+                              value={tagsFilter} 
+                              onChange={e => setTagsFilter(e.target.value)} 
+                            />
+                          </div>
+                          
+                          <Button onClick={() => setIsFilterPopoverOpen(false)}>
+                            Aplicar Filtros
+                          </Button>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   </div>
+                </div>
+              </Card>
+            )}
+          </motion.div>
 
-                  <AdvancedSearch
-                    searchTerm={searchTerm}
-                    onSearchChange={setSearchTerm}
-                    onQuickFilter={handleQuickFilter}
-                  />
-                </Card>
-              </motion.div>
+          {/* Breadcrumbs */}
+          <EnhancedBreadcrumbs
+            breadcrumbs={breadcrumbs}
+            onBreadcrumbClick={handleBreadcrumbClick}
+          />
 
-              {/* Breadcrumbs */}
-              <motion.nav
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex items-center gap-2 text-sm"
-              >
-                {breadcrumbs.map((crumb, index) => (
-                  <React.Fragment key={crumb.id || 'root'}>
-                    {index > 0 && <ChevronRight className="h-4 w-4 text-muted-foreground" />}
-                    <button
-                      onClick={() => handleBreadcrumbClick(crumb.id, index)}
-                      className={cn(
-                        "hover:text-primary transition-colors",
-                        index === breadcrumbs.length - 1
-                          ? "font-semibold"
-                          : "text-muted-foreground"
-                      )}
-                    >
-                      {crumb.title}
-                    </button>
-                  </React.Fragment>
-                ))}
-              </motion.nav>
-
-              {/* Contenido */}
-              {renderContent()}
-            </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
+          {/* Main Content */}
+          <div ref={containerRef}>
+            {renderContent()}
+          </div>
+        </div>
       </div>
 
-      {/* Barra de acciones flotante */}
+      {/* Floating Action Bar */}
       <AnimatePresence>
-        {selectedIds.size > 0 && (
+        {selectedIds.size > 0 && canManage && (
           <motion.div
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto"
           >
             <Card className="px-4 py-3 shadow-xl border-2">
-              <div className="flex items-center gap-4">
-                <p className="font-medium">
+              <div className="flex items-center justify-between gap-4">
+                <p className="px-2 text-sm font-semibold">
                   {selectedIds.size} seleccionado{selectedIds.size > 1 ? 's' : ''}
                 </p>
                 <div className="flex items-center gap-2">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleBulkAction('pin')}
-                        >
-                          <Pin className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Fijar seleccionados</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setIsMoveModalOpen(true)}
-                        >
-                          <Move className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Mover seleccionados</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleBulkAction('download')}
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Descargar seleccionados</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  
-                  <Button
-                    variant="destructive"
-                    size="sm"
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setIsMoveModalOpen(true)}
+                  >
+                    <FolderInput className="mr-2 h-4 w-4" />
+                    Mover
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleBulkAction('download')}
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Descargar
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    size="sm" 
                     onClick={() => setResourceToDelete({ id: 'bulk' } as any)}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Eliminar
                   </Button>
-                  
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
                     onClick={() => setSelectedIds(new Set())}
                   >
                     <X className="h-4 w-4" />
@@ -1114,22 +1476,105 @@ export default function ResourcesPage() {
         )}
       </AnimatePresence>
 
-      {/* Modales */}
-      <ResourcePreviewModal
-        resource={previewingResource}
-        onClose={() => setPreviewingResource(null)}
-      />
-
+      {/* Modals */}
       <MoveResourceModal
         isOpen={isMoveModalOpen}
         onClose={() => setIsMoveModalOpen(false)}
         resourceIds={Array.from(selectedIds)}
-        onMoveSuccess={() => {
-          setSelectedIds(new Set());
-          fetchResources();
+        onMoveSuccess={() => { 
+          setSelectedIds(new Set()); 
+          fetchResources({
+            parentId: currentFolderId,
+            search: debouncedSearchTerm
+          }); 
         }}
       />
 
+      <ResourcePreviewModal
+        resource={previewingResource}
+        onClose={() => setPreviewingResource(null)}
+        onNavigate={(direction) => {
+          // Implement navigation between resources
+          const fileResources = allApiResources.filter(r => 
+            r.type !== 'FOLDER' && r.type !== 'VIDEO_PLAYLIST'
+          );
+          
+          if (fileResources.length <= 1 || !previewingResource) return;
+          
+          const currentIndex = fileResources.findIndex(r => r.id === previewingResource.id);
+          if (currentIndex === -1) return;
+          
+          let nextIndex;
+          if (direction === 'next') {
+            nextIndex = (currentIndex + 1) % fileResources.length;
+          } else {
+            nextIndex = (currentIndex - 1 + fileResources.length) % fileResources.length;
+          }
+          
+          setPreviewingResource(fileResources[nextIndex]);
+          addRecentResource(fileResources[nextIndex].id);
+        }}
+      />
+
+      <ResourceEditorModal
+        isOpen={isUploaderOpen || !!resourceToEdit}
+        onClose={() => { 
+          setResourceToEdit(null); 
+          setIsUploaderOpen(false); 
+        }}
+        resource={resourceToEdit}
+        parentId={currentFolderId}
+        onSave={handleSaveSuccess}
+      />
+
+      <FolderEditorModal
+        isOpen={isFolderEditorOpen}
+        onClose={() => { 
+          setIsFolderEditorOpen(false); 
+          setFolderToEdit(null); 
+        }}
+        onSave={handleSaveSuccess}
+        parentId={currentFolderId}
+        folderToEdit={folderToEdit}
+      />
+
+      <PlaylistCreatorModal
+        isOpen={isPlaylistCreatorOpen}
+        onClose={() => { 
+          setIsPlaylistCreatorOpen(false); 
+          setPlaylistToEdit(null); 
+        }}
+        onSave={handleSaveSuccess}
+        parentId={currentFolderId}
+        playlistToEdit={playlistToEdit}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!resourceToDelete} onOpenChange={(open) => !open && setResourceToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {resourceToDelete?.id === 'bulk'
+                ? `Se eliminarán permanentemente los ${selectedIds.size} elementos seleccionados. Esta acción no se puede deshacer.`
+                : `El recurso "${resourceToDelete?.title}" será eliminado permanentemente. Si es una carpeta, debe estar vacía. Esta acción no se puede deshacer.`
+              }
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => resourceToDelete?.id === 'bulk' ? handleBulkDelete() : confirmDelete()} 
+              className={cn(buttonVariants({ variant: "destructive" }))}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Sí, eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Quick Actions FAB */}
       <QuickActionsFAB
         canManage={canManage}
         onCreateFolder={() => setIsFolderEditorOpen(true)}
