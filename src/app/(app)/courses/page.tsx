@@ -7,7 +7,8 @@ import type { Course as AppCourseType, EnrolledCourse, CourseStatus, UserRole } 
 import { 
   PackageX, Loader2, AlertTriangle, Filter, Search, HelpCircle, 
   X, BookOpen, TrendingUp, Clock, Award, Grid, List, Sparkles,
-  GraduationCap, Target, Users
+  GraduationCap, Target, Users, ChevronRight, PlayCircle,
+  BarChart3, Shield, Globe, Zap
 } from 'lucide-react'; 
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
@@ -26,6 +27,9 @@ import { coursesTour } from '@/lib/tour-steps';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Switch } from '@/components/ui/switch';
+import { Progress } from '@/components/ui/progress';
 
 interface ApiCourse extends Omit<PrismaCourse, 'instructor' | '_count' | 'status'> {
   instructor: { id: string; name: string } | null;
@@ -40,8 +44,57 @@ interface ApiCourse extends Omit<PrismaCourse, 'instructor' | '_count' | 'status
   averageCompletion?: number;
 }
 
-type SortOption = 'newest' | 'popular' | 'title' | 'modules';
+type SortOption = 'newest' | 'popular' | 'title' | 'modules' | 'completion';
 type ViewMode = 'grid' | 'list';
+
+// Stats Card Component similar al de gestión
+const StatsCard = ({ 
+  icon: Icon, 
+  label, 
+  value, 
+  subtitle, 
+  trend, 
+  color = "blue" 
+}: { 
+  icon: React.ElementType; 
+  label: string; 
+  value: string | number; 
+  subtitle?: string; 
+  trend?: string;
+  color?: string;
+}) => {
+  const colorClasses = {
+    blue: 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400',
+    green: 'bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400',
+    purple: 'bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400',
+    orange: 'bg-orange-50 text-orange-600 dark:bg-orange-950 dark:text-orange-400',
+    indigo: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400'
+  };
+
+  return (
+    <Card className="overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300">
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between">
+          <div className="space-y-2 flex-1">
+            <p className="text-sm font-medium text-muted-foreground">{label}</p>
+            <p className="text-3xl font-bold tracking-tight">{value}</p>
+            {subtitle && (
+              <p className="text-xs text-muted-foreground">{subtitle}</p>
+            )}
+          </div>
+          <div className={cn("p-3 rounded-xl", colorClasses[color as keyof typeof colorClasses] || colorClasses.blue)}>
+            <Icon className="h-6 w-6" />
+          </div>
+        </div>
+        {trend && (
+          <div className="mt-4 pt-4 border-t">
+            <p className="text-xs text-muted-foreground">{trend}</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
 
 export default function CoursesPage() {
   const { user, isLoading: isAuthLoading, settings } = useAuth();
@@ -60,6 +113,8 @@ export default function CoursesPage() {
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [showMandatoryOnly, setShowMandatoryOnly] = useState(false);
+  const [showOnlyAvailable, setShowOnlyAvailable] = useState(true);
+  const [difficultyFilter, setDifficultyFilter] = useState<string>('all');
   
   useEffect(() => {
     setPageTitle('Catálogo de Cursos');
@@ -130,8 +185,12 @@ export default function CoursesPage() {
       c.isMandatory && c.status === 'PUBLISHED' && !enrolledCourseIds.includes(c.id)
     ).length;
     const totalCategories = new Set(allCoursesForDisplay.map(c => c.category)).size;
+    const inProgress = enrolledCourseIds.length;
+    const completed = allCoursesForDisplay.filter(c => 
+      c.averageCompletion && c.averageCompletion >= 100
+    ).length;
 
-    return { available, mandatory, totalCategories };
+    return { available, mandatory, totalCategories, inProgress, completed };
   }, [allCoursesForDisplay, enrolledCourseIds]);
 
   const filteredCourses = useMemo(() => {
@@ -144,8 +203,11 @@ export default function CoursesPage() {
       const isNotEnrolled = !enrolledCourseIds.includes(course?.id);
       const matchesCategory = activeCategory === 'all' || course.category === activeCategory;
       const matchesMandatory = !showMandatoryOnly || course.isMandatory;
+      const matchesAvailability = !showOnlyAvailable || isNotEnrolled;
+      const matchesDifficulty = difficultyFilter === 'all' || 
+        (course.difficulty?.toLowerCase() === difficultyFilter.toLowerCase());
 
-      return matchesSearch && isPublished && isNotEnrolled && matchesCategory && matchesMandatory;
+      return matchesSearch && isPublished && matchesCategory && matchesMandatory && matchesAvailability && matchesDifficulty;
     });
 
     // Ordenar cursos
@@ -157,6 +219,8 @@ export default function CoursesPage() {
           return a.title.localeCompare(b.title);
         case 'modules':
           return (b.modulesCount || 0) - (a.modulesCount || 0);
+        case 'completion':
+          return (b.averageCompletion || 0) - (a.averageCompletion || 0);
         case 'newest':
         default:
           return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
@@ -164,7 +228,7 @@ export default function CoursesPage() {
     });
 
     return courses;
-  }, [allCoursesForDisplay, searchTerm, enrolledCourseIds, activeCategory, sortBy, showMandatoryOnly]);
+  }, [allCoursesForDisplay, searchTerm, enrolledCourseIds, activeCategory, sortBy, showMandatoryOnly, showOnlyAvailable, difficultyFilter]);
 
   const groupedCourses = useMemo(() => {
     return filteredCourses.reduce((acc, course) => {
@@ -192,7 +256,7 @@ export default function CoursesPage() {
   const allCategories = useMemo(() => ['all', ...(settings?.resourceCategories || [])], [settings]);
 
   const CourseCardSkeleton = () => (
-    <Card className="flex flex-col overflow-hidden">
+    <Card className="flex flex-col overflow-hidden h-full">
         <Skeleton className="aspect-video w-full" />
         <CardHeader className="space-y-2">
             <Skeleton className="h-5 w-3/4" />
@@ -208,236 +272,327 @@ export default function CoursesPage() {
     </Card>
   );
 
-  const StatCard = ({ icon: Icon, label, value, color }: any) => (
-    <Card>
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">{label}</p>
-            <p className="text-3xl font-bold">{value}</p>
-          </div>
-          <div className={cn("rounded-full p-3", color)}>
-            <Icon className="h-6 w-6" />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
   const clearFilters = () => {
     setSearchTerm('');
     setActiveCategory('all');
     setShowMandatoryOnly(false);
     setSortBy('newest');
+    setShowOnlyAvailable(true);
+    setDifficultyFilter('all');
   };
 
-  const hasActiveFilters = searchTerm !== '' || activeCategory !== 'all' || showMandatoryOnly;
+  const hasActiveFilters = searchTerm !== '' || activeCategory !== 'all' || showMandatoryOnly || !showOnlyAvailable || difficultyFilter !== 'all';
 
   if (isAuthLoading || isLoading) {
     return (
-      <div className="space-y-8">
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-3/4" />
-          <Skeleton className="h-4 w-1/2" />
+      <div className="space-y-8 pb-12">
+        {/* Banner Skeleton */}
+        <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-secondary/10 border border-border/50 p-6 sm:p-8">
+          <Skeleton className="h-8 w-64 mb-2" />
+          <Skeleton className="h-4 w-3/4" />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[...Array(3)].map((_, i) => (
+        
+        {/* Stats Skeleton */}
+        <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
             <Card key={i}>
               <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <Skeleton className="h-12 w-20" />
-                  <Skeleton className="h-12 w-12 rounded-full" />
+                <div className="flex items-start justify-between">
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-8 w-12" />
+                  </div>
+                  <Skeleton className="h-12 w-12 rounded-xl" />
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
-        <Card className="p-6 space-y-4">
-          <Skeleton className="h-10 w-full" />
-          <div className="flex gap-4">
-            <Skeleton className="h-10 flex-1" />
-            <Skeleton className="h-10 w-40" />
-          </div>
-        </Card>
-        <div className="space-y-4">
-            <Skeleton className="h-8 w-48" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {[...Array(4)].map((_, i) => <CourseCardSkeleton key={i} />)}
+        
+        {/* Filters Skeleton */}
+        <Card>
+          <CardContent className="p-6 space-y-4">
+            <Skeleton className="h-10 w-full" />
+            <div className="flex gap-4">
+              <Skeleton className="h-10 flex-1" />
+              <Skeleton className="h-10 w-40" />
             </div>
+          </CardContent>
+        </Card>
+        
+        {/* Courses Skeleton */}
+        <div className="space-y-4">
+          <Skeleton className="h-8 w-48" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
+            {[...Array(10)].map((_, i) => <CourseCardSkeleton key={i} />)}
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-            <p className="text-muted-foreground">
-              Explora nuestra oferta formativa y encuentra el curso perfecto para ti
-            </p>
+    <div className="space-y-8 pb-12">
+      {/* Hero Section - Similar al de gestión */}
+      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-secondary/10 dark:from-primary/20 dark:via-primary/10 dark:to-secondary/20 border border-border/50 p-6 sm:p-8 shadow-sm">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 dark:from-blue-500/10 dark:via-purple-500/10 dark:to-pink-500/10" />
+        <div className="relative z-10 max-w-3xl">
+          <p className="text-xl font-medium text-foreground mb-2">Explora nuestro catálogo formativo</p>
+          <p className="text-base text-foreground/80 dark:text-foreground/90">
+            Descubre cursos diseñados para impulsar tu crecimiento profesional y adquirir nuevas habilidades.
+          </p>
         </div>
-        <div className="flex items-center gap-2">
-          {!isMobile && (
-            <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
-              <Button 
-                variant={viewMode === 'grid' ? 'secondary' : 'ghost'} 
-                size="icon" 
-                className="h-8 w-8" 
-                onClick={() => setViewMode('grid')}
-              >
-                <Grid className="h-4 w-4"/>
-              </Button>
-              <Button 
-                variant={viewMode === 'list' ? 'secondary' : 'ghost'} 
-                size="icon" 
-                className="h-8 w-8" 
-                onClick={() => setViewMode('list')}
-              >
-                <List className="h-4 w-4"/>
-              </Button>
-            </div>
-          )}
-          <Button variant="outline" size="sm" onClick={() => forceStartTour('courses', coursesTour)}>
-              <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
-          </Button>
+        
+        {/* Ilustración SVG similar */}
+        <div className="absolute bottom-0 right-0 opacity-15 dark:opacity-20">
+          <svg width="280" height="200" viewBox="0 0 280 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="catalogGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#6366f1" />
+                <stop offset="50%" stopColor="#8b5cf6" />
+                <stop offset="100%" stopColor="#ec4899" />
+              </linearGradient>
+              <linearGradient id="catalogPageGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#f0f9ff" stopOpacity="0.8" />
+                <stop offset="100%" stopColor="#e0f2fe" stopOpacity="0.4" />
+              </linearGradient>
+              <filter id="catalogShadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="4" stdDeviation="8" floodColor="#6366f1" floodOpacity="0.3" />
+              </filter>
+            </defs>
+            
+            {/* Libro abierto */}
+            <g filter="url(#catalogShadow)">
+              <path d="M160 70C160 50 180 40 200 50L220 60C240 70 240 90 220 100L200 110C180 120 160 110 160 90V70Z" fill="url(#catalogGradient)" />
+              <path d="M160 70L200 50L220 60L180 80L160 70Z" fill="url(#catalogGradient)" fillOpacity="0.8" />
+              <path d="M160 90L180 100L220 80L200 70L160 90Z" fill="url(#catalogGradient)" fillOpacity="0.6" />
+            </g>
+            
+            {/* Páginas */}
+            <g>
+              <path d="M165 75L205 55L215 60L175 80L165 75Z" fill="url(#catalogPageGradient)" />
+              <path d="M165 85L185 95L215 75L195 65L165 85Z" fill="url(#catalogPageGradient)" fillOpacity="0.7" />
+              <path d="M170 95L190 105L210 85L190 75L170 95Z" fill="url(#catalogPageGradient)" fillOpacity="0.5" />
+            </g>
+            
+            {/* Elementos decorativos */}
+            <circle cx="175" cy="95" r="4" fill="#ffffff" opacity="0.8" />
+            <circle cx="185" cy="105" r="3" fill="#ffffff" opacity="0.6" />
+            <circle cx="195" cy="85" r="3" fill="#ffffff" opacity="0.6" />
+          </svg>
         </div>
       </div>
 
-      {/* Statistics Cards */}
-      {!error && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <StatCard
-            icon={BookOpen}
-            label="Cursos Disponibles"
-            value={stats.available}
-            color="bg-blue-500/10 text-blue-600 dark:text-blue-400"
-          />
-          <StatCard
-            icon={Award}
-            label="Cursos Obligatorios"
-            value={stats.mandatory}
-            color="bg-amber-500/10 text-amber-600 dark:text-amber-400"
-          />
-          <StatCard
-            icon={Target}
-            label="Categorías"
-            value={stats.totalCategories}
-            color="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-          />
-        </div>
-      )}
+      {/* Stats Dashboard - Similar al de gestión */}
+      <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
+        <StatsCard
+          icon={BookOpen}
+          label="Cursos Disponibles"
+          value={stats.available}
+          subtitle={`${stats.mandatory} obligatorios pendientes`}
+          color="blue"
+        />
+        <StatsCard
+          icon={TrendingUp}
+          label="En Progreso"
+          value={stats.inProgress}
+          subtitle="Cursos activos"
+          color="green"
+        />
+        <StatsCard
+          icon={Award}
+          label="Completados"
+          value={stats.completed}
+          subtitle="Logros obtenidos"
+          color="purple"
+        />
+        <StatsCard
+          icon={Target}
+          label="Categorías"
+          value={stats.totalCategories}
+          subtitle="Áreas de conocimiento"
+          color="orange"
+        />
+      </div>
 
-      {/* Filters Card */}
-      <Card className="p-6 space-y-4 shadow-sm" id="courses-filters">
-        <div className="flex flex-col gap-4">
-          {/* Search Bar */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Buscar por título, descripción o instructor..."
-              className="pl-10 pr-10"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            {searchTerm && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
-                onClick={() => setSearchTerm('')}
-              >
-                <X className="h-4 w-4" />
+      {/* Controls Bar - Similar al de gestión */}
+      <Card className="shadow-sm border">
+        <CardContent className="p-4 sm:p-6 space-y-4">
+          {/* Top Row: Search and Actions */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            {/* Search Bar */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Buscar cursos por título, descripción o instructor..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-10"
+              />
+              {searchTerm && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2"
+                  onClick={() => setSearchTerm('')}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                    >
+                      {viewMode === 'grid' ? (
+                        <List className="h-4 w-4" />
+                      ) : (
+                        <Grid className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{viewMode === 'grid' ? 'Vista de lista' : 'Vista de cuadrícula'}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <Button onClick={() => forceStartTour('courses', coursesTour)} variant="outline" className="gap-2">
+                <HelpCircle className="h-4 w-4" />
+                <span className="hidden sm:inline">Guía</span>
               </Button>
-            )}
+            </div>
           </div>
-          
-          {/* Filter Row */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex items-center gap-2 flex-1">
-              <Filter className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-              <Select value={activeCategory} onValueChange={setActiveCategory}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Filtrar por categoría" />
+
+          {/* Bottom Row: Tabs and Quick Filters */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            {/* Status Tabs */}
+            <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full sm:w-auto">
+              <TabsList className="grid w-full grid-cols-4 sm:w-auto overflow-x-auto">
+                <TabsTrigger value="all" className="gap-2 text-xs sm:text-sm">
+                  <Globe className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span>Todos</span>
+                </TabsTrigger>
+                {allCategories.slice(1, 4).map(cat => (
+                  <TabsTrigger key={cat} value={cat} className="gap-2 text-xs sm:text-sm">
+                    {cat}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+
+            {/* Quick Filters */}
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="available"
+                  checked={showOnlyAvailable}
+                  onCheckedChange={setShowOnlyAvailable}
+                />
+                <label htmlFor="available" className="text-sm font-medium cursor-pointer">
+                  Solo disponibles
+                </label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="mandatory"
+                  checked={showMandatoryOnly}
+                  onCheckedChange={setShowMandatoryOnly}
+                />
+                <label htmlFor="mandatory" className="text-sm font-medium cursor-pointer">
+                  Solo obligatorios
+                </label>
+              </div>
+
+              <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="Dificultad" />
                 </SelectTrigger>
                 <SelectContent>
-                  {allCategories.map(cat => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat === 'all' ? 'Todas las Categorías' : cat}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="all">Todas</SelectItem>
+                  <SelectItem value="beginner">Principiante</SelectItem>
+                  <SelectItem value="intermediate">Intermedio</SelectItem>
+                  <SelectItem value="advanced">Avanzado</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="Ordenar" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Más Recientes</SelectItem>
+                  <SelectItem value="popular">Más Populares</SelectItem>
+                  <SelectItem value="title">Nombre (A-Z)</SelectItem>
+                  <SelectItem value="completion">Completación</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-
-            <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-              <SelectTrigger className="w-full sm:w-[200px]">
-                <SelectValue placeholder="Ordenar por" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">Más Recientes</SelectItem>
-                <SelectItem value="popular">Más Populares</SelectItem>
-                <SelectItem value="title">Nombre (A-Z)</SelectItem>
-                <SelectItem value="modules">Más Módulos</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Button
-              variant={showMandatoryOnly ? "default" : "outline"}
-              onClick={() => setShowMandatoryOnly(!showMandatoryOnly)}
-              className="w-full sm:w-auto"
-            >
-              <Award className="mr-2 h-4 w-4" />
-              Solo Obligatorios
-            </Button>
           </div>
 
-          {/* Active Filters */}
+          {/* Active Filters Display */}
           {hasActiveFilters && (
-            <div className="flex items-center justify-between pt-2 border-t">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm text-muted-foreground">Filtros activos:</span>
-                {searchTerm && (
-                  <Badge variant="secondary" className="gap-1">
-                    Búsqueda: {searchTerm}
-                    <X 
-                      className="h-3 w-3 cursor-pointer" 
-                      onClick={() => setSearchTerm('')}
-                    />
-                  </Badge>
-                )}
-                {activeCategory !== 'all' && (
-                  <Badge variant="secondary" className="gap-1">
-                    {activeCategory}
-                    <X 
-                      className="h-3 w-3 cursor-pointer" 
-                      onClick={() => setActiveCategory('all')}
-                    />
-                  </Badge>
-                )}
-                {showMandatoryOnly && (
-                  <Badge variant="secondary" className="gap-1">
-                    Obligatorios
-                    <X 
-                      className="h-3 w-3 cursor-pointer" 
-                      onClick={() => setShowMandatoryOnly(false)}
-                    />
-                  </Badge>
-                )}
-              </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
+            <div className="flex flex-wrap gap-2">
+              {searchTerm && (
+                <Badge variant="secondary" className="gap-1">
+                  Búsqueda: {searchTerm}
+                  <button onClick={() => setSearchTerm('')} className="ml-1">
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {activeCategory !== 'all' && (
+                <Badge variant="secondary" className="gap-1">
+                  Categoría: {activeCategory}
+                  <button onClick={() => setActiveCategory('all')} className="ml-1">
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {showMandatoryOnly && (
+                <Badge variant="secondary" className="gap-1">
+                  Solo obligatorios
+                  <button onClick={() => setShowMandatoryOnly(false)} className="ml-1">
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {!showOnlyAvailable && (
+                <Badge variant="secondary" className="gap-1">
+                  Mostrar inscritos
+                  <button onClick={() => setShowOnlyAvailable(true)} className="ml-1">
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {difficultyFilter !== 'all' && (
+                <Badge variant="secondary" className="gap-1">
+                  Dificultad: {difficultyFilter}
+                  <button onClick={() => setDifficultyFilter('all')} className="ml-1">
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={clearFilters}
-                className="text-muted-foreground hover:text-foreground"
+                className="gap-2 text-xs"
               >
+                <X className="h-3 w-3" />
                 Limpiar todo
               </Button>
             </div>
           )}
-        </div>
+        </CardContent>
       </Card>
 
       {/* Courses Display */}
@@ -456,60 +611,63 @@ export default function CoursesPage() {
           </CardContent>
         </Card>
       ) : Object.keys(groupedCourses).length > 0 ? (
-          <div className="space-y-10">
-            {Object.entries(groupedCourses)
-              .sort(([catA], [catB]) => catA.localeCompare(catB))
-              .map(([category, courses]) => (
-                <section key={category} className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <h2 className="text-2xl font-bold font-headline">{category}</h2>
-                        <Badge variant="secondary" className="text-xs">
-                          {courses.length} {courses.length === 1 ? 'curso' : 'cursos'}
-                        </Badge>
-                      </div>
-                    </div>
-                    
-                    {isMobile ? (
-                        <CourseCarousel 
-                          courses={courses} 
-                          userRole={user?.role || null} 
-                          onEnrollmentChange={handleEnrollmentChange} 
-                        />
-                    ) : (
-                        <div className={cn(
-                          "grid gap-6",
-                          viewMode === 'grid' 
-                            ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-                            : "grid-cols-1"
-                        )}>
-                            {courses.map((course: AppCourseType, index: number) => (
-                                <CourseCard 
-                                    key={course.id} 
-                                    course={course}
-                                    userRole={user?.role || null}
-                                    onEnrollmentChange={handleEnrollmentChange}
-                                    priority={index < 4}
-                                    viewMode={viewMode === 'list' ? 'horizontal' : 'vertical'}
-                                />
-                            ))}
-                        </div>
-                    )}
-                </section>
+        <div className="space-y-8">
+          {Object.entries(groupedCourses)
+            .sort(([catA], [catB]) => catA.localeCompare(catB))
+            .map(([category, courses]) => (
+              <section key={category} className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-xl font-bold text-foreground">{category}</h2>
+                    <Badge variant="secondary" className="text-xs font-medium">
+                      {courses.length} {courses.length === 1 ? 'curso' : 'cursos'}
+                    </Badge>
+                  </div>
+                  <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
+                    Ver todos <ChevronRight className="ml-1 h-4 w-4" />
+                  </Button>
+                </div>
+                
+                {isMobile ? (
+                  <CourseCarousel 
+                    courses={courses} 
+                    userRole={user?.role || null} 
+                    onEnrollmentChange={handleEnrollmentChange} 
+                  />
+                ) : (
+                  <div className={cn(
+                    "grid gap-4 sm:gap-6",
+                    viewMode === 'grid' 
+                      ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+                      : "grid-cols-1"
+                  )}>
+                    {courses.map((course: AppCourseType, index: number) => (
+                      <CourseCard 
+                        key={course.id} 
+                        course={course}
+                        userRole={user?.role || null}
+                        onEnrollmentChange={handleEnrollmentChange}
+                        priority={index < 4}
+                        viewMode={viewMode === 'list' ? 'horizontal' : 'vertical'}
+                      />
+                    ))}
+                  </div>
+                )}
+              </section>
             ))}
-          </div>
+        </div>
       ) : (
         <Card>
           <CardContent className="py-16">
             <EmptyState
-                icon={hasActiveFilters ? Search : PackageX}
-                title={hasActiveFilters ? "No se encontraron cursos" : "Ningún curso disponible"}
-                description={
-                    hasActiveFilters
-                    ? 'No hay cursos que coincidan con tus filtros actuales. Intenta ajustar tu búsqueda.' 
-                    : 'Actualmente no hay cursos publicados disponibles para inscripción.'
-                }
-                imageUrl={settings?.emptyStateCoursesUrl}
+              icon={hasActiveFilters ? Search : PackageX}
+              title={hasActiveFilters ? "No se encontraron cursos" : "Ningún curso disponible"}
+              description={
+                hasActiveFilters
+                ? 'No hay cursos que coincidan con tus filtros actuales. Intenta ajustar tu búsqueda.' 
+                : 'Actualmente no hay cursos publicados disponibles para inscripción.'
+              }
+              imageUrl={settings?.emptyStateCoursesUrl}
             >
               {hasActiveFilters && (
                 <Button onClick={clearFilters} variant="outline" className="mt-4">
