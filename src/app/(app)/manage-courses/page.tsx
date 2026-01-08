@@ -1,38 +1,15 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
-  PlusCircle, 
-  List, 
-  Grid, 
-  Filter, 
-  UserPlus, 
-  MoreVertical, 
-  Loader2, 
-  AlertTriangle, 
-  ShieldAlert, 
-  Trash2, 
-  Eye, 
-  HelpCircle, 
-  BookMarked,
-  Edit,
-  Users,
-  Search,
-  Download,
-  Upload,
-  RefreshCw,
-  Globe,
-  FileText,
-  Archive,
-  Users as UsersIcon,
-  BookOpen,
-  Layers,
-  TrendingUp,
-  Copy,
-  ChevronDown,
-  ChevronUp
+  PlusCircle, List, Grid, Filter, UserPlus, MoreVertical, 
+  Loader2, AlertTriangle, Trash2, Eye, Edit, Users, 
+  Search, Download, Upload, RefreshCw, BookOpen, 
+  TrendingUp, Copy, ChevronDown, ChevronUp, BookMarked,
+  LayoutGrid, LayoutList, X, SlidersHorizontal, Archive,
+  CheckCircle2, Clock, FolderArchive, Sparkles
 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
@@ -43,7 +20,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -59,7 +35,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CourseCreationForm } from '@/components/course-creation-form';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { SmartPagination } from '@/components/ui/pagination';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -68,30 +43,24 @@ import { useTitle } from '@/contexts/title-context';
 import { useTour } from '@/contexts/tour-context';
 import { manageCoursesTour } from '@/lib/tour-steps';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuSeparator, 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
   DropdownMenuLabel,
-  DropdownMenuGroup,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem
 } from '@/components/ui/dropdown-menu';
-import Image from 'next/image';
 import { mapApiCourseToAppCourse } from '@/lib/course-utils';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Identicon } from '@/components/ui/identicon';
 import { CourseAssignmentModal } from '@/components/course-assignment-modal';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 // Types
 interface ApiCourseForManage {
@@ -100,10 +69,10 @@ interface ApiCourseForManage {
   description: string;
   category: string;
   imageUrl: string | null;
-  instructor: { 
-    id: string; 
-    name: string; 
-    email: string; 
+  instructor: {
+    id: string;
+    name: string;
+    email: string;
     avatar: string | null;
     role: UserRole;
   } | null;
@@ -127,531 +96,286 @@ interface ApiCourseForManage {
 
 // Constants
 const PAGE_SIZE = 12;
-const STATUS_OPTIONS = [
-  { value: 'all', label: 'Todos', color: 'bg-gray-100 text-gray-800' },
-  { value: 'PUBLISHED', label: 'Publicados', color: 'bg-green-100 text-green-800' },
-  { value: 'DRAFT', label: 'Borradores', color: 'bg-yellow-100 text-yellow-800' },
-  { value: 'ARCHIVED', label: 'Archivados', color: 'bg-gray-100 text-gray-600' },
-];
 
-// Helper Functions
-const getStatusInSpanish = (status: CourseStatus) => {
-  switch (status) {
-    case 'DRAFT': return 'Borrador';
-    case 'PUBLISHED': return 'Publicado';
-    case 'ARCHIVED': return 'Archivado';
-    default: return status;
+const STATUS_CONFIG = {
+  all: { 
+    label: 'Todos', 
+    icon: LayoutGrid, 
+    color: 'text-gray-700 dark:text-gray-300',
+    bgColor: 'bg-gray-100 dark:bg-gray-800',
+    borderColor: 'border-gray-200 dark:border-gray-700'
+  },
+  PUBLISHED: { 
+    label: 'Publicados', 
+    icon: CheckCircle2, 
+    color: 'text-green-700 dark:text-green-400',
+    bgColor: 'bg-green-50 dark:bg-green-950',
+    borderColor: 'border-green-200 dark:border-green-800'
+  },
+  DRAFT: { 
+    label: 'Borradores', 
+    icon: Clock, 
+    color: 'text-amber-700 dark:text-amber-400',
+    bgColor: 'bg-amber-50 dark:bg-amber-950',
+    borderColor: 'border-amber-200 dark:border-amber-800'
+  },
+  ARCHIVED: { 
+    label: 'Archivados', 
+    icon: FolderArchive, 
+    color: 'text-slate-600 dark:text-slate-400',
+    bgColor: 'bg-slate-50 dark:bg-slate-900',
+    borderColor: 'border-slate-200 dark:border-slate-800'
   }
 };
 
-const getStatusBadgeVariant = (status: CourseStatus) => {
-  switch (status) {
-    case 'PUBLISHED': return 'default';
-    case 'DRAFT': return 'secondary';
-    case 'ARCHIVED': return 'outline';
-    default: return 'default';
-  }
-};
-
-const ManagementDropdown = ({ 
-  course, 
-  onStatusChange, 
-  onDelete, 
-  onAssign, 
-  isProcessing,
-  onDuplicate,
-  onExport
-}: {
-  course: AppCourseType;
-  onStatusChange: (courseId: string, newStatus: CourseStatus) => void;
-  onDelete: (course: AppCourseType) => void;
-  onAssign: () => void;
-  isProcessing: boolean;
-  onDuplicate?: (courseId: string) => void;
-  onExport?: (courseId: string) => void;
+// Stats Card Component
+const StatsCard = ({ 
+  icon: Icon, 
+  label, 
+  value, 
+  subtitle, 
+  trend, 
+  color = "blue" 
+}: { 
+  icon: React.ElementType; 
+  label: string; 
+  value: string | number; 
+  subtitle?: string; 
+  trend?: string;
+  color?: string;
 }) => {
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  
+  const colorClasses = {
+    blue: 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400',
+    green: 'bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400',
+    purple: 'bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400',
+    orange: 'bg-orange-50 text-orange-600 dark:bg-orange-950 dark:text-orange-400'
+  };
+
   return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <MoreVertical className="h-4 w-4" />
-            <span className="sr-only">Abrir menú</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          
-          <DropdownMenuGroup>
-            <DropdownMenuItem asChild>
-              <Link href={`/manage-courses/${course.id}/edit`}>
-                <Edit className="mr-2 h-4 w-4" />
-                Editar curso
-              </Link>
-            </DropdownMenuItem>
-            
-            <DropdownMenuItem asChild>
-              <Link href={`/courses/${course.id}`} target="_blank">
-                <Eye className="mr-2 h-4 w-4" />
-                Vista previa
-              </Link>
-            </DropdownMenuItem>
-            
-            <DropdownMenuItem asChild>
-              <Link href={`/enrollments?courseId=${course.id}`}>
-                <Users className="mr-2 h-4 w-4" />
-                Ver inscritos
-              </Link>
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-          
-          <DropdownMenuSeparator />
-          
-          <DropdownMenuGroup>
-            {course.isMandatory && (
-              <DropdownMenuItem onClick={onAssign}>
-                <UserPlus className="mr-2 h-4 w-4" />
-                Asignar usuarios
-              </DropdownMenuItem>
+    <Card className="overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300">
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between">
+          <div className="space-y-2 flex-1">
+            <p className="text-sm font-medium text-muted-foreground">{label}</p>
+            <p className="text-3xl font-bold tracking-tight">{value}</p>
+            {subtitle && (
+              <p className="text-xs text-muted-foreground">{subtitle}</p>
             )}
-            
-            {onDuplicate && (
-              <DropdownMenuItem onClick={() => onDuplicate(course.id)}>
-                <Copy className="mr-2 h-4 w-4" />
-                Duplicar curso
-              </DropdownMenuItem>
-            )}
-            
-            {onExport && (
-              <DropdownMenuItem onClick={() => onExport(course.id)}>
-                <Download className="mr-2 h-4 w-4" />
-                Exportar datos
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuGroup>
-          
-          <DropdownMenuSeparator />
-          
-          <DropdownMenuGroup>
-            <DropdownMenuLabel>Estado</DropdownMenuLabel>
-            <DropdownMenuRadioGroup 
-              value={course.status}
-              onValueChange={(value) => onStatusChange(course.id, value as CourseStatus)}
-            >
-              <DropdownMenuRadioItem value="DRAFT" disabled={isProcessing || course.status === 'DRAFT'}>
-                <Badge variant="secondary" className="mr-2 h-2 w-2 p-0" />
-                Borrador
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="PUBLISHED" disabled={isProcessing || course.status === 'PUBLISHED'}>
-                <Badge variant="default" className="mr-2 h-2 w-2 p-0" />
-                Publicado
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="ARCHIVED" disabled={isProcessing || course.status === 'ARCHIVED'}>
-                <Badge variant="outline" className="mr-2 h-2 w-2 p-0" />
-                Archivado
-              </DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup>
-          </DropdownMenuGroup>
-          
-          <DropdownMenuSeparator />
-          
-          <DropdownMenuItem 
-            onClick={() => setIsDeleteDialogOpen(true)}
-            className="text-destructive focus:text-destructive"
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Eliminar curso
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar curso?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta acción eliminará permanentemente el curso "{course.title}" y todos sus datos.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                onDelete(course);
-                setIsDeleteDialogOpen(false);
-              }}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Eliminar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
-  );
-};
-
-const CourseListView = ({ 
-  courses, 
-  isLoading, 
-  onStatusChange, 
-  onDelete, 
-  onAssign, 
-  onDuplicate,
-  onExport,
-  isProcessing 
-}: {
-  courses: AppCourseType[];
-  isLoading: boolean;
-  onStatusChange: (courseId: string, newStatus: CourseStatus) => void;
-  onDelete: (course: AppCourseType) => void;
-  onAssign: (course: AppCourseType) => void;
-  onDuplicate?: (courseId: string) => void;
-  onExport?: (courseId: string) => void;
-  isProcessing: boolean;
-}) => {
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        {[...Array(3)].map((_, i) => (
-          <div key={i} className="flex items-center space-x-4 p-4 border rounded-lg">
-            <Skeleton className="h-12 w-16 rounded-md" />
-            <div className="space-y-2 flex-1">
-              <Skeleton className="h-4 w-48" />
-              <Skeleton className="h-3 w-32" />
-            </div>
-            <Skeleton className="h-8 w-24" />
-            <Skeleton className="h-8 w-8 rounded-full" />
           </div>
-        ))}
-      </div>
-    );
-  }
-
-  return (
-    <div className="border rounded-lg overflow-hidden">
-      <ScrollArea className="h-[calc(100vh-500px)]">
-        <Table>
-          <TableHeader className="sticky top-0 bg-background">
-            <TableRow>
-              <TableHead className="w-[300px]">Curso</TableHead>
-              <TableHead>Instructor</TableHead>
-              <TableHead className="text-center">Módulos</TableHead>
-              <TableHead className="text-center">Inscritos</TableHead>
-              <TableHead className="text-center">Completación</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead className="text-right">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {courses.map((course) => (
-              <TableRow key={course.id} className="hover:bg-muted/50">
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <div className="relative h-12 w-20 flex-shrink-0 overflow-hidden rounded-md bg-muted">
-                      <Image
-                        src={course.imageUrl || '/api/placeholder/80/45'}
-                        alt={course.title}
-                        fill
-                        className="object-cover"
-                        sizes="80px"
-                      />
-                    </div>
-                    <div className="space-y-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <Link
-                          href={`/manage-courses/${course.id}/edit`}
-                          className="font-semibold hover:underline truncate"
-                          title={course.title}
-                        >
-                          {course.title}
-                        </Link>
-                        {course.isMandatory && (
-                          <Badge variant="secondary" className="text-xs">
-                            Obligatorio
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {course.category}
-                      </p>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-6 w-6">
-                      <AvatarImage src={course.instructor?.avatar || undefined} />
-                      <AvatarFallback className="text-xs">
-                        <Identicon userId={course.instructor?.id || ''} />
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm truncate" title={course.instructor?.name}>
-                      {course.instructor?.name || 'Sin asignar'}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell className="text-center">
-                  <div className="flex items-center justify-center">
-                    <Badge variant="outline">{course.modulesCount}</Badge>
-                  </div>
-                </TableCell>
-                <TableCell className="text-center">
-                  <div className="font-medium">{course.enrollmentsCount}</div>
-                </TableCell>
-                <TableCell className="text-center">
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="w-20 bg-secondary rounded-full h-2 overflow-hidden">
-                      <div 
-                        className="bg-primary h-full rounded-full transition-all duration-300" 
-                        style={{ width: `${course.averageCompletion || 0}%` }}
-                      />
-                    </div>
-                    <span className="text-xs font-medium">
-                      {Math.round(course.averageCompletion || 0)}%
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge 
-                    variant={getStatusBadgeVariant(course.status)}
-                    className="flex items-center gap-1"
-                  >
-                    {course.status === 'PUBLISHED' && <Globe className="h-3 w-3" />}
-                    {course.status === 'DRAFT' && <FileText className="h-3 w-3" />}
-                    {course.status === 'ARCHIVED' && <Archive className="h-3 w-3" />}
-                    {getStatusInSpanish(course.status)}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <ManagementDropdown
-                    course={course}
-                    onStatusChange={onStatusChange}
-                    onDelete={onDelete}
-                    onAssign={() => onAssign(course)}
-                    isProcessing={isProcessing}
-                    onDuplicate={onDuplicate}
-                    onExport={onExport}
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </ScrollArea>
-    </div>
+          <div className={cn("p-3 rounded-xl", colorClasses[color as keyof typeof colorClasses] || colorClasses.blue)}>
+            <Icon className="h-6 w-6" />
+          </div>
+        </div>
+        {trend && (
+          <div className="mt-4 pt-4 border-t">
+            <p className="text-xs text-muted-foreground">{trend}</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
-const CourseGridView = ({ 
-  courses, 
-  userRole, 
+// Enhanced Course Card for Grid View
+const EnhancedCourseCard = ({ 
+  course, 
   onStatusChange, 
   onDelete, 
   onAssign,
   onDuplicate,
-  onExport
-}: {
-  courses: AppCourseType[];
-  userRole: UserRole | null;
+  onExport,
+  isProcessing 
+}: { 
+  course: AppCourseType;
   onStatusChange: (courseId: string, newStatus: CourseStatus) => void;
   onDelete: (course: AppCourseType) => void;
   onAssign: (course: AppCourseType) => void;
   onDuplicate?: (courseId: string) => void;
   onExport?: (courseId: string) => void;
+  isProcessing: boolean;
 }) => {
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      {courses.map((course) => (
-        <CourseCard
-          key={course.id}
-          course={course}
-          userRole={userRole}
-          viewMode="management"
-          onStatusChange={onStatusChange}
-          onDelete={onDelete}
-          onAssign={() => onAssign(course)}
-          onDuplicate={onDuplicate}
-          onExport={onExport}
-        />
-      ))}
-    </div>
-  );
-};
+  const statusConfig = STATUS_CONFIG[course.status];
+  const StatusIcon = statusConfig.icon;
 
-const StatsDashboard = ({
-  totalCourses,
-  publishedCount,
-  draftCount,
-  archivedCount,
-  totalEnrollments,
-  totalModules,
-  totalLessons,
-  averageCompletion,
-  totalStudents
-}: {
-  totalCourses: number;
-  publishedCount: number;
-  draftCount: number;
-  archivedCount: number;
-  totalEnrollments: number;
-  totalModules: number;
-  totalLessons: number;
-  averageCompletion: number;
-  totalStudents: number;
-}) => {
-  const [expanded, setExpanded] = useState(false);
-  
   return (
-    <Card className="overflow-hidden">
-      <CardContent className="p-0">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-0">
-          {/* Main stats - always visible */}
-          <div className="p-4 border-r border-b">
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                <BookOpen className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Cursos</p>
-                <p className="text-2xl font-bold">{totalCourses}</p>
-              </div>
-            </div>
-            <div className="flex gap-1 mt-2">
-              <Badge variant="default" className="text-xs px-2">
-                {publishedCount} Pub
-              </Badge>
-              <Badge variant="secondary" className="text-xs px-2">
-                {draftCount} Borr
-              </Badge>
-            </div>
-          </div>
-          
-          <div className="p-4 border-r border-b">
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
-                <UsersIcon className="h-6 w-6 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Inscripciones</p>
-                <p className="text-2xl font-bold">{totalEnrollments}</p>
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              {totalStudents} estudiantes
-            </p>
-          </div>
-          
-          <div className="p-4 border-r border-b md:border-r-0">
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
-                <Layers className="h-6 w-6 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Contenido</p>
-                <p className="text-2xl font-bold">{totalModules}</p>
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              {totalLessons} lecciones
-            </p>
-          </div>
-          
-          <div className="p-4 border-b">
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center">
-                <TrendingUp className="h-6 w-6 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Completación</p>
-                <p className="text-2xl font-bold">{Math.round(averageCompletion)}%</p>
-              </div>
-            </div>
-            <div className="mt-2">
-              <Progress value={averageCompletion} className="h-2" />
-            </div>
-          </div>
-        </div>
-        
-        {/* Expanded stats - shown when expanded */}
-        {expanded && (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-4 border-t">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Cursos Publicados</span>
-                <span className="font-bold">{publishedCount}</span>
-              </div>
-              <Progress value={(publishedCount / totalCourses) * 100} className="h-1" />
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Cursos Borradores</span>
-                <span className="font-bold">{draftCount}</span>
-              </div>
-              <Progress value={(draftCount / totalCourses) * 100} className="h-1" />
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Cursos Archivados</span>
-                <span className="font-bold">{archivedCount}</span>
-              </div>
-              <Progress value={(archivedCount / totalCourses) * 100} className="h-1" />
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Promedio Módulos</span>
-                <span className="font-bold">
-                  {totalCourses > 0 ? Math.round(totalModules / totalCourses) : 0}
-                </span>
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Promedio Lecciones</span>
-                <span className="font-bold">
-                  {totalCourses > 0 ? Math.round(totalLessons / totalCourses) : 0}
-                </span>
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Inscripciones/Prom.</span>
-                <span className="font-bold">
-                  {totalCourses > 0 ? Math.round(totalEnrollments / totalCourses) : 0}
-                </span>
-              </div>
-            </div>
+    <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-sm">
+      {/* Image Header */}
+      <div className="relative h-48 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 overflow-hidden">
+        {course.imageUrl ? (
+          <img 
+            src={course.imageUrl} 
+            alt={course.title}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <BookOpen className="h-16 w-16 text-white/80" />
           </div>
         )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
         
-        {/* Expand/Collapse button */}
-        <div className="flex justify-center p-2 border-t">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setExpanded(!expanded)}
-            className="h-8"
-          >
-            {expanded ? (
-              <>
-                <ChevronUp className="h-4 w-4 mr-2" />
-                Ver menos métricas
-              </>
-            ) : (
-              <>
-                <ChevronDown className="h-4 w-4 mr-2" />
-                Ver más métricas
-              </>
-            )}
-          </Button>
+        {/* Status Badge */}
+        <div className="absolute top-3 left-3">
+          <Badge className={cn("font-medium shadow-lg", statusConfig.bgColor, statusConfig.color)}>
+            <StatusIcon className="h-3 w-3 mr-1" />
+            {statusConfig.label}
+          </Badge>
+        </div>
+
+        {/* Mandatory Badge */}
+        {course.isMandatory && (
+          <div className="absolute top-3 right-3">
+            <Badge className="bg-red-500 text-white shadow-lg">
+              <Sparkles className="h-3 w-3 mr-1" />
+              Obligatorio
+            </Badge>
+          </div>
+        )}
+
+        {/* Actions Menu */}
+        <div className="absolute bottom-3 right-3">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                size="sm" 
+                variant="secondary"
+                className="h-8 w-8 p-0 rounded-full shadow-lg bg-white/90 hover:bg-white backdrop-blur-sm"
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+              <DropdownMenuItem asChild>
+                <Link href={`/manage-courses/${course.id}/edit`}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Editar curso
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href={`/courses/${course.id}`} target="_blank">
+                  <Eye className="h-4 w-4 mr-2" />
+                  Vista previa
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href={`/manage-courses/${course.id}/enrollments`}>
+                  <Users className="h-4 w-4 mr-2" />
+                  Ver inscritos
+                </Link>
+              </DropdownMenuItem>
+              {course.isMandatory && (
+                <DropdownMenuItem onClick={() => onAssign(course)}>
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Asignar usuarios
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
+              {onDuplicate && (
+                <DropdownMenuItem onClick={() => onDuplicate(course.id)}>
+                  <Copy className="h-4 w-4 mr-2" />
+                  Duplicar
+                </DropdownMenuItem>
+              )}
+              {onExport && (
+                <DropdownMenuItem onClick={() => onExport(course.id)}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Exportar
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>Cambiar estado</DropdownMenuLabel>
+              <DropdownMenuRadioGroup 
+                value={course.status}
+                onValueChange={(value) => onStatusChange(course.id, value as CourseStatus)}
+              >
+                <DropdownMenuRadioItem value="DRAFT">Borrador</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="PUBLISHED">Publicado</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="ARCHIVED">Archivado</DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                onClick={() => onDelete(course)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Eliminar
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+
+      {/* Content */}
+      <CardContent className="p-5 space-y-4">
+        {/* Title and Category */}
+        <div className="space-y-2">
+          <h3 className="font-semibold text-lg line-clamp-2 leading-tight group-hover:text-primary transition-colors">
+            {course.title}
+          </h3>
+          <Badge variant="outline" className="text-xs">
+            {course.category}
+          </Badge>
+        </div>
+
+        {/* Instructor */}
+        {course.instructor && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="h-6 w-6 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-medium">
+              {course.instructor.name.charAt(0)}
+            </div>
+            <span className="truncate">{course.instructor.name}</span>
+          </div>
+        )}
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-3 gap-3 pt-3 border-t">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="text-center">
+                  <p className="text-lg font-semibold">{course.modulesCount}</p>
+                  <p className="text-xs text-muted-foreground">Módulos</p>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{course.lessonsCount || 0} lecciones en total</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="text-center border-x">
+                  <p className="text-lg font-semibold">{course.enrollmentsCount}</p>
+                  <p className="text-xs text-muted-foreground">Inscritos</p>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Total de estudiantes inscritos</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="text-center">
+                  <p className="text-lg font-semibold">{Math.round(course.averageCompletion || 0)}%</p>
+                  <p className="text-xs text-muted-foreground">Completo</p>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Promedio de completación</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+
+        {/* Completion Progress */}
+        <div className="space-y-2">
+          <Progress value={course.averageCompletion || 0} className="h-2" />
         </div>
       </CardContent>
     </Card>
@@ -669,41 +393,33 @@ function ManageCoursesPageComponent() {
   const { startTour, forceStartTour } = useTour();
   const isMobile = useIsMobile();
 
-  // State management
+  // State
   const [allCourses, setAllCourses] = useState<AppCourseType[]>([]);
   const [filteredCourses, setFilteredCourses] = useState<AppCourseType[]>([]);
   const [paginatedCourses, setPaginatedCourses] = useState<AppCourseType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
-  
-  // UI state
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState<AppCourseType | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [courseToAssign, setCourseToAssign] = useState<AppCourseType | null>(null);
-  
-  // View state
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>(isMobile ? 'grid' : 'list');
-  
-  // Filter state
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(isMobile ? 'grid' : 'grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showOnlyMandatory, setShowOnlyMandatory] = useState(false);
   const [showOnlyMine, setShowOnlyMine] = useState(false);
-  
-  // Pagination
+  const [showFilters, setShowFilters] = useState(false);
+
   const activeTab = searchParams.get('tab') || 'all';
   const currentPage = Number(searchParams.get('page')) || 1;
   const totalPages = Math.ceil(filteredCourses.length / PAGE_SIZE);
 
-  // Set page title and start tour
   useEffect(() => {
     setPageTitle('Gestión de Cursos');
     startTour('manageCourses', manageCoursesTour);
   }, [setPageTitle, startTour]);
 
-  // Fetch courses
   const fetchCourses = useCallback(async () => {
     if (!user) {
       setIsLoading(false);
@@ -712,52 +428,38 @@ function ManageCoursesPageComponent() {
 
     setIsLoading(true);
     setError(null);
+
     try {
       const params = new URLSearchParams();
       params.set('manageView', 'true');
       params.set('userId', user.id);
       params.set('userRole', user.role);
-      
+
       if (activeTab !== 'all') {
         params.set('status', activeTab);
       }
-      
+
       if (showOnlyMine) {
         params.set('instructorId', user.id);
       }
 
       const response = await fetch(`/api/courses?${params.toString()}`);
+      
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
+        throw new Error('Error al cargar cursos');
       }
-      
-      const data: { 
-        courses: ApiCourseForManage[]; 
-        totalCourses: number;
-        stats: {
-          totalEnrollments: number;
-          totalModules: number;
-          totalLessons: number;
-          averageCompletion: number;
-          totalStudents: number;
-        }
-      } = await response.json();
-      
+
+      const data = await response.json();
       const appCourses = data.courses.map(mapApiCourseToAppCourse);
-      
-      // Extract unique categories
-      const uniqueCategories = Array.from(new Set(appCourses.map(course => course.category)))
-        .filter(Boolean)
-        .sort();
-      setCategories(uniqueCategories);
-      
+
+      const uniqueCategories = Array.from(
+        new Set(appCourses.map((course: AppCourseType) => course.category))
+      ).filter(Boolean).sort();
+
+      setCategories(uniqueCategories as string[]);
       setAllCourses(appCourses);
-      
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido al cargar cursos');
-      setAllCourses([]);
-      setCategories([]);
+      setError(err instanceof Error ? err.message : 'Error desconocido');
       toast({
         title: "Error al cargar cursos",
         description: err instanceof Error ? err.message : 'No se pudieron cargar los cursos.',
@@ -768,21 +470,17 @@ function ManageCoursesPageComponent() {
     }
   }, [user, activeTab, showOnlyMine, toast]);
 
-  // Initial fetch
   useEffect(() => {
     fetchCourses();
   }, [fetchCourses]);
 
-  // Apply filters and sorting
   useEffect(() => {
     let result = allCourses;
 
-    // Filter by status tab
     if (activeTab !== 'all') {
       result = result.filter(course => course.status === activeTab);
     }
 
-    // Filter by search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter(course =>
@@ -792,17 +490,14 @@ function ManageCoursesPageComponent() {
       );
     }
 
-    // Filter by category
     if (selectedCategory !== 'all') {
       result = result.filter(course => course.category === selectedCategory);
     }
 
-    // Filter by mandatory
     if (showOnlyMandatory) {
       result = result.filter(course => course.isMandatory);
     }
 
-    // Apply default sorting (most recent first)
     result.sort((a, b) => 
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
@@ -810,14 +505,12 @@ function ManageCoursesPageComponent() {
     setFilteredCourses(result);
   }, [allCourses, activeTab, searchQuery, selectedCategory, showOnlyMandatory]);
 
-  // Update paginated courses
   useEffect(() => {
     const startIndex = (currentPage - 1) * PAGE_SIZE;
     const endIndex = startIndex + PAGE_SIZE;
     setPaginatedCourses(filteredCourses.slice(startIndex, endIndex));
   }, [filteredCourses, currentPage]);
 
-  // Navigation handlers
   const handleTabChange = (tab: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('tab', tab);
@@ -831,12 +524,11 @@ function ManageCoursesPageComponent() {
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  // Course management handlers
   const handleCreationSuccess = (newCourseId: string) => {
     setShowCreateModal(false);
     toast({
       title: '¡Curso creado con éxito!',
-      description: 'Serás redirigido a la página de edición para añadir contenido.',
+      description: 'Serás redirigido a la página de edición.',
     });
     router.push(`/manage-courses/${newCourseId}/edit`);
   };
@@ -849,22 +541,19 @@ function ManageCoursesPageComponent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
       });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al actualizar estado');
-      }
-      
+
+      if (!response.ok) throw new Error('Error al actualizar estado');
+
       toast({
         title: 'Estado actualizado',
-        description: `El curso ha sido ${getStatusInSpanish(newStatus).toLowerCase()}.`,
+        description: `El curso ha sido actualizado.`,
       });
-      
-      // Optimistic update
-      setAllCourses(prev => prev.map(course =>
-        course.id === courseId ? { ...course, status: newStatus } : course
-      ));
-      
+
+      setAllCourses(prev =>
+        prev.map(course =>
+          course.id === courseId ? { ...course, status: newStatus } : course
+        )
+      );
     } catch (err) {
       toast({
         title: 'Error al cambiar estado',
@@ -878,26 +567,21 @@ function ManageCoursesPageComponent() {
 
   const handleDeleteCourse = async () => {
     if (!courseToDelete) return;
-    
+
     setIsProcessing(true);
     try {
       const response = await fetch(`/api/courses/${courseToDelete.id}`, {
         method: 'DELETE',
       });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al eliminar curso');
-      }
-      
+
+      if (!response.ok) throw new Error('Error al eliminar curso');
+
       toast({
         title: 'Curso eliminado',
-        description: `"${courseToDelete.title}" ha sido eliminado exitosamente.`,
+        description: `"${courseToDelete.title}" ha sido eliminado.`,
       });
-      
-      // Optimistic update
+
       setAllCourses(prev => prev.filter(course => course.id !== courseToDelete.id));
-      
     } catch (err) {
       toast({
         title: 'Error al eliminar',
@@ -910,111 +594,16 @@ function ManageCoursesPageComponent() {
     }
   };
 
-  const handleDuplicateCourse = async (courseId: string) => {
-    setIsProcessing(true);
-    try {
-      const response = await fetch(`/api/courses/${courseId}/duplicate`, {
-        method: 'POST',
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al duplicar curso');
-      }
-      
-      toast({
-        title: 'Curso duplicado',
-        description: 'El curso ha sido duplicado exitosamente.',
-      });
-      
-      fetchCourses(); // Refresh the list
-      
-    } catch (err) {
-      toast({
-        title: 'Error al duplicar',
-        description: (err as Error).message,
-        variant: 'destructive'
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const handleExportCourse = async (courseId: string) => {
-    try {
-      const response = await fetch(`/api/courses/${courseId}/export`);
-      
-      if (!response.ok) {
-        throw new Error('Error al exportar curso');
-      }
-      
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `curso-${courseId}.zip`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      
-      toast({
-        title: 'Exportación completada',
-        description: 'El curso ha sido exportado exitosamente.',
-      });
-      
-    } catch (err) {
-      toast({
-        title: 'Error al exportar',
-        description: (err as Error).message,
-        variant: 'destructive'
-      });
-    }
-  };
-
-  const handleExportAll = async () => {
-    try {
-      toast({
-        title: 'Exportando cursos',
-        description: 'Preparando archivo de exportación...',
-      });
-      
-      setTimeout(() => {
-        toast({
-          title: 'Exportación completada',
-          description: 'Se ha descargado el archivo con todos los cursos.',
-        });
-      }, 1500);
-      
-    } catch (err) {
-      toast({
-        title: 'Error al exportar',
-        description: (err as Error).message,
-        variant: 'destructive'
-      });
-    }
-  };
-
-  const handleImportCourses = () => {
-    toast({
-      title: 'Importar cursos',
-      description: 'Esta función estará disponible próximamente.',
-    });
-  };
-
-  // Calculate statistics
   const stats = useMemo(() => {
     const publishedCount = allCourses.filter(c => c.status === 'PUBLISHED').length;
     const draftCount = allCourses.filter(c => c.status === 'DRAFT').length;
     const archivedCount = allCourses.filter(c => c.status === 'ARCHIVED').length;
     const totalEnrollments = allCourses.reduce((sum, course) => sum + course.enrollmentsCount, 0);
     const totalModules = allCourses.reduce((sum, course) => sum + course.modulesCount, 0);
-    const totalLessons = allCourses.reduce((sum, course) => sum + (course.lessonsCount || 0), 0);
-    const averageCompletion = allCourses.length > 0 
+    const averageCompletion = allCourses.length > 0
       ? allCourses.reduce((sum, course) => sum + (course.averageCompletion || 0), 0) / allCourses.length
       : 0;
-    const totalStudents = new Set(allCourses.flatMap(course => course.enrollments?.map(e => e.userId) || [])).size;
-    
+
     return {
       totalCourses: allCourses.length,
       publishedCount,
@@ -1022,315 +611,556 @@ function ManageCoursesPageComponent() {
       archivedCount,
       totalEnrollments,
       totalModules,
-      totalLessons,
-      averageCompletion,
-      totalStudents
+      averageCompletion
     };
   }, [allCourses]);
 
-  // Check permissions
+  const clearFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory('all');
+    setShowOnlyMandatory(false);
+    setShowOnlyMine(false);
+  };
+
+  const hasActiveFilters = searchQuery || selectedCategory !== 'all' || showOnlyMandatory || showOnlyMine;
+
   if (!user || (user.role !== 'ADMINISTRATOR' && user.role !== 'INSTRUCTOR')) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-4">
-        <ShieldAlert className="h-12 w-12 text-destructive mb-4" />
-        <h2 className="text-2xl font-semibold mb-2">Acceso restringido</h2>
-        <p className="text-muted-foreground max-w-md mb-6">
-          Esta sección está disponible únicamente para administradores e instructores.
-        </p>
-        <Button asChild>
-          <Link href="/dashboard">Volver al panel principal</Link>
-        </Button>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Card className="max-w-md">
+          <CardContent className="pt-6 text-center space-y-4">
+            <AlertTriangle className="h-12 w-12 mx-auto text-destructive" />
+            <h2 className="text-xl font-semibold">Acceso restringido</h2>
+            <p className="text-muted-foreground">
+              Esta sección está disponible únicamente para administradores e instructores.
+            </p>
+            <Button asChild>
+              <Link href="/dashboard">Volver al panel principal</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header - Only description */}
-      <div>
-        <p className="text-muted-foreground">
-          Crea, organiza y gestiona todos los cursos de la plataforma. 
-          Filtra por estado, busca por nombre o categoría, y administra el contenido fácilmente.
-        </p>
-      </div>
-
-      {/* Stats Dashboard */}
-      <StatsDashboard {...stats} />
-
-      {/* Main Controls Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full sm:w-auto">
-          <TabsList className="h-auto flex-wrap">
-            {STATUS_OPTIONS.map((option) => (
-              <TabsTrigger key={option.value} value={option.value}>
-                {option.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-
-        {/* View Controls and Actions */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Search */}
-          <div className="relative flex-1 sm:flex-none">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar cursos..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 w-full sm:w-[200px]"
-            />
-          </div>
-
-          {/* View Toggle */}
-          <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => setViewMode('grid')}
-                  >
-                    <Grid className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Vista de cuadrícula</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => setViewMode('list')}
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Vista de lista</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-
-          {/* Import/Export Actions */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4" />
-                <span className="sr-only sm:not-sr-only sm:ml-2">Importar/Exportar</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleImportCourses}>
-                <Upload className="mr-2 h-4 w-4" />
-                Importar cursos
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleExportAll}>
-                <Download className="mr-2 h-4 w-4" />
-                Exportar todos
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Additional Filters */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Filter className="h-4 w-4" />
-                <span className="sr-only sm:not-sr-only sm:ml-2">Filtros</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Filtrar por</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <div className="p-2 space-y-3">
-                <div className="space-y-2">
-                  <Label className="text-xs">Categoría</Label>
-                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Todas las categorías" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todas las categorías</SelectItem>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat} value={cat}>
-                          {cat}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="mandatory-filter" className="text-xs cursor-pointer">
-                      Solo obligatorios
-                    </Label>
-                    <Switch
-                      id="mandatory-filter"
-                      checked={showOnlyMandatory}
-                      onCheckedChange={setShowOnlyMandatory}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="mine-filter" className="text-xs cursor-pointer">
-                      Solo mis cursos
-                    </Label>
-                    <Switch
-                      id="mine-filter"
-                      checked={showOnlyMine}
-                      onCheckedChange={setShowOnlyMine}
-                    />
-                  </div>
-                </div>
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Guide Button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => forceStartTour('manageCourses', manageCoursesTour)}
-          >
-            <HelpCircle className="h-4 w-4" />
-            <span className="sr-only sm:not-sr-only sm:ml-2">Guía</span>
-          </Button>
-
-          {/* Create Course Button */}
-          <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-            <DialogTrigger asChild>
-              <Button id="create-course-btn" size="sm">
-                <PlusCircle className="h-4 w-4" />
-                <span className="sr-only sm:not-sr-only sm:ml-2">Crear curso</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>Crear nuevo curso</DialogTitle>
-                <DialogDescription>
-                  Completa la información básica del curso. Podrás añadir contenido después.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="mt-4">
-                <CourseCreationForm onSuccess={handleCreationSuccess} />
-              </div>
-            </DialogContent>
-          </Dialog>
-
-          {/* Refresh Button */}
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => fetchCourses()}
-                  disabled={isLoading}
-                  className="h-8 w-8"
-                >
-                  <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Actualizar cursos</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+    <div className="space-y-8 pb-12">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 p-8 text-white shadow-2xl">
+        <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black)]" />
+        <div className="relative z-10 max-w-3xl">
+          <h1 className="text-4xl font-bold tracking-tight mb-4">
+            Gestión de Cursos
+          </h1>
+          <p className="text-lg text-white/90">
+            Crea, organiza y gestiona todos los cursos de la plataforma con herramientas potentes y fáciles de usar.
+          </p>
+        </div>
+        <div className="absolute bottom-0 right-0 opacity-20">
+          <BookOpen className="h-64 w-64" />
         </div>
       </div>
 
-      {/* Courses List/Grid */}
-      <div className="mt-4">
-        {isLoading ? (
-          <div className="space-y-4">
-            <Skeleton className="h-64 w-full" />
-            <Skeleton className="h-64 w-full" />
-          </div>
-        ) : error ? (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Error al cargar cursos</h3>
-                <p className="text-muted-foreground mb-4">{error}</p>
-                <Button onClick={fetchCourses} variant="outline">
-                  Reintentar
+      {/* Stats Dashboard */}
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <StatsCard
+          icon={BookOpen}
+          label="Total de Cursos"
+          value={stats.totalCourses}
+          subtitle={`${stats.publishedCount} publicados, ${stats.draftCount} borradores`}
+          color="blue"
+        />
+        <StatsCard
+          icon={Users}
+          label="Inscripciones"
+          value={stats.totalEnrollments}
+          subtitle="Total de estudiantes inscritos"
+          color="green"
+        />
+        <StatsCard
+          icon={LayoutGrid}
+          label="Módulos Creados"
+          value={stats.totalModules}
+          subtitle="Contenido educativo disponible"
+          color="purple"
+        />
+        <StatsCard
+          icon={TrendingUp}
+          label="Completación Promedio"
+          value={`${Math.round(stats.averageCompletion)}%`}
+          subtitle="Tasa de finalización de cursos"
+          color="orange"
+        />
+      </div>
+
+      {/* Controls Bar */}
+      <Card className="shadow-sm">
+        <CardContent className="p-6 space-y-6">
+          {/* Top Row: Tabs and Actions */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            {/* Status Tabs */}
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full lg:w-auto">
+              <TabsList className="grid w-full grid-cols-4 lg:w-auto">
+                {Object.entries(STATUS_CONFIG).map(([key, config]) => {
+                  const Icon = config.icon;
+                  const count = key === 'all' 
+                    ? allCourses.length 
+                    : allCourses.filter(c => c.status === key).length;
+                  
+                  return (
+                    <TabsTrigger key={key} value={key} className="gap-2">
+                      <Icon className="h-4 w-4" />
+                      <span className="hidden sm:inline">{config.label}</span>
+                      <Badge variant="secondary" className="ml-1">
+                        {count}
+                      </Badge>
+                    </TabsTrigger>
+                  );
+                })}
+              </TabsList>
+            </Tabs>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setShowFilters(!showFilters)}
+                      className={cn(showFilters && "bg-accent")}
+                    >
+                      <SlidersHorizontal className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Mostrar filtros</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={fetchCourses}
+                      disabled={isLoading}
+                    >
+                      <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Actualizar cursos</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <div className="flex items-center gap-2 border-l pl-2">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                      >
+                        {viewMode === 'grid' ? (
+                          <LayoutList className="h-4 w-4" />
+                        ) : (
+                          <LayoutGrid className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{viewMode === 'grid' ? 'Vista de lista' : 'Vista de cuadrícula'}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                <Button onClick={() => setShowCreateModal(true)} className="gap-2">
+                  <PlusCircle className="h-4 w-4" />
+                  <span className="hidden sm:inline">Crear curso</span>
                 </Button>
               </div>
+            </div>
+          </div>
+
+          {/* Search Bar */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar cursos por título, descripción o categoría..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-10"
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2"
+                onClick={() => setSearchQuery('')}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+
+          {/* Filters Panel */}
+          {showFilters && (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 p-4 bg-muted/30 rounded-lg border">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Categoría</label>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas las categorías</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat} value={cat}>
+                        {cat}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-end">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="mandatory"
+                    checked={showOnlyMandatory}
+                    onCheckedChange={setShowOnlyMandatory}
+                  />
+                  <label htmlFor="mandatory" className="text-sm font-medium cursor-pointer">
+                    Solo obligatorios
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex items-end">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="mine"
+                    checked={showOnlyMine}
+                    onCheckedChange={setShowOnlyMine}
+                  />
+                  <label htmlFor="mine" className="text-sm font-medium cursor-pointer">
+                    Solo mis cursos
+                  </label>
+                </div>
+              </div>
+
+              {hasActiveFilters && (
+                <div className="flex items-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="w-full gap-2"
+                  >
+                    <X className="h-4 w-4" />
+                    Limpiar filtros
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Active Filters Display */}
+          {hasActiveFilters && (
+            <div className="flex flex-wrap gap-2">
+              {searchQuery && (
+                <Badge variant="secondary" className="gap-1">
+                  Búsqueda: {searchQuery}
+                  <button onClick={() => setSearchQuery('')} className="ml-1">
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {selectedCategory !== 'all' && (
+                <Badge variant="secondary" className="gap-1">
+                  Categoría: {selectedCategory}
+                  <button onClick={() => setSelectedCategory('all')} className="ml-1">
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {showOnlyMandatory && (
+                <Badge variant="secondary" className="gap-1">
+                  Solo obligatorios
+                  <button onClick={() => setShowOnlyMandatory(false)} className="ml-1">
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {showOnlyMine && (
+                <Badge variant="secondary" className="gap-1">
+                  Solo mis cursos
+                  <button onClick={() => setShowOnlyMine(false)} className="ml-1">
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Courses Display */}
+      <div className="space-y-6">
+        {isLoading ? (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[...Array(6)].map((_, i) => (
+              <Card key={i} className="overflow-hidden">
+                <div className="h-48 bg-muted animate-pulse" />
+                <CardContent className="p-5 space-y-3">
+                  <div className="h-6 bg-muted rounded animate-pulse" />
+                  <div className="h-4 bg-muted rounded w-2/3 animate-pulse" />
+                  <div className="grid grid-cols-3 gap-3 pt-3">
+                    <div className="h-12 bg-muted rounded animate-pulse" />
+                    <div className="h-12 bg-muted rounded animate-pulse" />
+                    <div className="h-12 bg-muted rounded animate-pulse" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : error ? (
+          <Card className="border-destructive">
+            <CardContent className="pt-6 text-center space-y-4">
+              <AlertTriangle className="h-12 w-12 mx-auto text-destructive" />
+              <h3 className="text-lg font-semibold">Error al cargar cursos</h3>
+              <p className="text-muted-foreground">{error}</p>
+              <Button onClick={fetchCourses} variant="outline">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Reintentar
+              </Button>
             </CardContent>
           </Card>
         ) : filteredCourses.length === 0 ? (
           <Card>
-            <CardContent className="pt-6">
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <BookMarked className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No se encontraron cursos</h3>
-                <p className="text-muted-foreground mb-4">
-                  {searchQuery || selectedCategory !== 'all' || showOnlyMandatory || showOnlyMine
-                    ? 'No hay cursos que coincidan con los filtros aplicados.'
-                    : 'No hay cursos en esta sección.'}
-                </p>
-                <Button onClick={() => {
-                  setSearchQuery('');
-                  setSelectedCategory('all');
-                  setShowOnlyMandatory(false);
-                  setShowOnlyMine(false);
-                }}>
+            <CardContent className="pt-12 pb-12 text-center space-y-4">
+              <div className="mx-auto h-24 w-24 rounded-full bg-muted flex items-center justify-center">
+                <BookOpen className="h-12 w-12 text-muted-foreground" />
+              </div>
+              <h3 className="text-xl font-semibold">No se encontraron cursos</h3>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                {hasActiveFilters
+                  ? 'No hay cursos que coincidan con los filtros aplicados. Intenta ajustar los criterios de búsqueda.'
+                  : 'Aún no hay cursos creados. Comienza creando tu primer curso.'}
+              </p>
+              {hasActiveFilters ? (
+                <Button onClick={clearFilters} variant="outline">
+                  <X className="h-4 w-4 mr-2" />
                   Limpiar filtros
                 </Button>
-              </div>
+              ) : (
+                <Button onClick={() => setShowCreateModal(true)}>
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  Crear primer curso
+                </Button>
+              )}
             </CardContent>
           </Card>
         ) : (
           <>
+            {/* Results Summary */}
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                Mostrando {paginatedCourses.length} de {filteredCourses.length} cursos
+              </p>
+            </div>
+
+            {/* Grid View */}
             {viewMode === 'grid' ? (
-              <CourseGridView
-                courses={paginatedCourses}
-                userRole={user.role}
-                onStatusChange={handleChangeStatus}
-                onDelete={setCourseToDelete}
-                onAssign={setCourseToAssign}
-                onDuplicate={handleDuplicateCourse}
-                onExport={handleExportCourse}
-              />
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {paginatedCourses.map((course) => (
+                  <EnhancedCourseCard
+                    key={course.id}
+                    course={course}
+                    onStatusChange={handleChangeStatus}
+                    onDelete={setCourseToDelete}
+                    onAssign={setCourseToAssign}
+                    isProcessing={isProcessing}
+                    onDuplicate={(id) => {
+                      toast({
+                        title: 'Duplicar curso',
+                        description: 'Esta función estará disponible próximamente.',
+                      });
+                    }}
+                    onExport={(id) => {
+                      toast({
+                        title: 'Exportar curso',
+                        description: 'Esta función estará disponible próximamente.',
+                      });
+                    }}
+                  />
+                ))}
+              </div>
             ) : (
-              <CourseListView
-                courses={paginatedCourses}
-                isLoading={isLoading}
-                onStatusChange={handleChangeStatus}
-                onDelete={setCourseToDelete}
-                onAssign={setCourseToAssign}
-                onDuplicate={handleDuplicateCourse}
-                onExport={handleExportCourse}
-                isProcessing={isProcessing}
-              />
+              /* List View */
+              <Card>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Curso</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead className="text-center">Módulos</TableHead>
+                      <TableHead className="text-center">Inscritos</TableHead>
+                      <TableHead className="text-center">Completación</TableHead>
+                      <TableHead className="text-right">Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedCourses.map((course) => {
+                      const statusConfig = STATUS_CONFIG[course.status];
+                      const StatusIcon = statusConfig.icon;
+
+                      return (
+                        <TableRow key={course.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+                                {course.imageUrl ? (
+                                  <img
+                                    src={course.imageUrl}
+                                    alt={course.title}
+                                    className="h-full w-full object-cover rounded-lg"
+                                  />
+                                ) : (
+                                  <BookOpen className="h-6 w-6 text-white" />
+                                )}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="font-medium truncate">{course.title}</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <Badge variant="outline" className="text-xs">
+                                    {course.category}
+                                  </Badge>
+                                  {course.isMandatory && (
+                                    <Badge className="text-xs bg-red-500">
+                                      Obligatorio
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={cn(statusConfig.bgColor, statusConfig.color)}>
+                              <StatusIcon className="h-3 w-3 mr-1" />
+                              {statusConfig.label}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-center font-medium">
+                            {course.modulesCount}
+                          </TableCell>
+                          <TableCell className="text-center font-medium">
+                            {course.enrollmentsCount}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Progress
+                                value={course.averageCompletion || 0}
+                                className="h-2 flex-1"
+                              />
+                              <span className="text-sm font-medium min-w-[3rem] text-right">
+                                {Math.round(course.averageCompletion || 0)}%
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/manage-courses/${course.id}/edit`}>
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Editar
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/courses/${course.id}`} target="_blank">
+                                    <Eye className="h-4 w-4 mr-2" />
+                                    Vista previa
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={() => setCourseToDelete(course)}
+                                  className="text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Eliminar
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </Card>
             )}
           </>
         )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center">
+            <SmartPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          </div>
+        )}
       </div>
 
-      {/* Pagination */}
-      {filteredCourses.length > PAGE_SIZE && (
-        <div className="mt-6">
-          <SmartPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-        </div>
-      )}
+      {/* Create Course Modal */}
+      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Crear nuevo curso</DialogTitle>
+            <DialogDescription>
+              Completa la información básica del curso. Podrás añadir contenido después.
+            </DialogDescription>
+          </DialogHeader>
+          <CourseCreationForm onSuccess={handleCreationSuccess} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!courseToDelete} onOpenChange={() => setCourseToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar curso?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará permanentemente el curso "{courseToDelete?.title}" y todos
+              sus datos. Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteCourse}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Course Assignment Modal */}
       {courseToAssign && (
@@ -1348,17 +1178,17 @@ function ManageCoursesPageComponent() {
 // Main export with Suspense boundary
 export default function ManageCoursesPage() {
   return (
-    <Suspense
+    <React.Suspense
       fallback={
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center space-y-4">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+            <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
             <p className="text-muted-foreground">Cargando gestión de cursos...</p>
           </div>
         </div>
       }
     >
       <ManageCoursesPageComponent />
-    </Suspense>
+    </React.Suspense>
   );
 }
