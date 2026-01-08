@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, X, Replace, Pencil, Eye, FilePlus2, ChevronDown, BookOpenText, Video, FileText, File as FileGenericIcon, Layers3, Sparkles, Award, CheckCircle, Calendar as CalendarIcon, Info, Settings2, Globe as GlobeIcon, Target, Shield, Clock3, Layout, Sparkles as SparklesIcon, BookOpen, Zap, Target as TargetIcon, BarChart, Users, Tag, Hash, Lock, Unlock, Filter, Palette, EyeOff, ArrowRight, Check, Plus, Minus, Grid3x3, List, Eye as EyeIcon, Maximize2, Minimize2, FolderPlus, FolderOpen, Calendar, Timer, TrendingUp, BarChart2, PieChart, Download, Share2, Bell, Star, Edit, Copy, MoreHorizontal, ExternalLink, HelpCircle, AlertCircle, Info as InfoIcon } from 'lucide-react';
+import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, X, Replace, Pencil, Eye, FilePlus2, ChevronDown, BookOpenText, Video, FileText, File as FileGenericIcon, Layers3, Sparkles, Award, CheckCircle, Calendar as CalendarIcon, Info, Settings2, Globe as GlobeIcon, Target, Shield, Clock3, Layout, Sparkles as SparklesIcon, BookOpen, Zap, Target as TargetIcon, BarChart, Users, Tag, Hash, Lock, Unlock, Filter, Palette, EyeOff, ArrowRight, Check, Plus, Minus, Grid3x3, List, Eye as EyeIcon, Maximize2, Minimize2, FolderPlus, FolderOpen, Calendar, Timer, TrendingUp, BarChart2, PieChart, Download, Share2, Bell, Star, Edit, Copy, MoreHorizontal, ExternalLink, HelpCircle, AlertCircle, Info as InfoIcon, ChevronRight, ChevronLeft, FlipVertical, FlipHorizontal, SquareStack, PanelLeft, PanelRight, PanelsTopLeft, Layers } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState, useCallback, ChangeEvent } from 'react';
@@ -44,6 +44,27 @@ import { useTitle } from '@/contexts/title-context';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Toggle } from '@/components/ui/toggle';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+
+// === NUEVAS INTERFACES PARA COMPONENTES INTERACTIVOS ===
+interface InteractiveComponentData {
+  type: 'accordion' | 'flipCards' | 'tabs';
+  items: InteractiveItem[];
+  settings?: {
+    allowMultipleOpen?: boolean;
+    flipDirection?: 'horizontal' | 'vertical';
+    tabPosition?: 'top' | 'left' | 'right' | 'bottom';
+  };
+}
+
+interface InteractiveItem {
+  id: string;
+  title: string;
+  content: string;
+  imageUrl?: string;
+  imagePreview?: string;
+}
 
 // === TIPOS E INTERFACES ===
 interface ApiTemplate {
@@ -84,9 +105,10 @@ const ModuleItem = React.forwardRef<HTMLDivElement, {
   onEditQuiz: (quiz: AppQuiz) => void; 
   isSaving: boolean; 
   onDelete: () => void; 
+  onDuplicate: () => void;
   provided: any 
 }>(
-  ({ module, moduleIndex, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onSaveLessonAsTemplate, onAddBlock, onBlockUpdate, onBlockDelete, onEditQuiz, isSaving, onDelete, provided }, ref) => {
+  ({ module, moduleIndex, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onSaveLessonAsTemplate, onAddBlock, onBlockUpdate, onBlockDelete, onEditQuiz, isSaving, onDelete, onDuplicate, provided }, ref) => {
     const [isExpanded, setIsExpanded] = useState(true);
     
     return (
@@ -147,15 +169,26 @@ const ModuleItem = React.forwardRef<HTMLDivElement, {
                 </div>
               </div>
               
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8 text-gray-400 hover:text-destructive hover:bg-destructive/10" 
-                onClick={(e) => { e.stopPropagation(); onDelete(); }} 
-                disabled={isSaving}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-1">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 text-gray-400 hover:text-primary"
+                  onClick={(e) => { e.stopPropagation(); onDuplicate(); }}
+                  disabled={isSaving}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 text-gray-400 hover:text-destructive hover:bg-destructive/10" 
+                  onClick={(e) => { e.stopPropagation(); onDelete(); }} 
+                  disabled={isSaving}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </CardHeader>
           
@@ -252,8 +285,9 @@ const LessonItem = React.forwardRef<HTMLDivElement, {
   onEditQuiz: (quiz: AppQuiz) => void; 
   isSaving: boolean; 
   onDelete: () => void; 
+  onDuplicate: () => void;
 }>(
-  ({ lesson, lessonIndex, onUpdate, onSaveAsTemplate, onAddBlock, onBlockUpdate, onBlockDelete, onEditQuiz, isSaving, onDelete, ...rest }, ref) => {
+  ({ lesson, lessonIndex, onUpdate, onSaveAsTemplate, onAddBlock, onBlockUpdate, onBlockDelete, onEditQuiz, isSaving, onDelete, onDuplicate, ...rest }, ref) => {
     const [isExpanded, setIsExpanded] = useState(false);
     
     return (
@@ -305,6 +339,22 @@ const LessonItem = React.forwardRef<HTMLDivElement, {
                     <ChevronDown className="h-3.5 w-3.5 rotate-180" /> : 
                     <ChevronDown className="h-3.5 w-3.5" />
                   }
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-7 w-7 text-gray-400 hover:text-primary"
+                  onClick={onDuplicate}
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-7 w-7 text-gray-400 hover:text-primary"
+                  onClick={onSaveAsTemplate}
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
                 </Button>
                 <Button 
                   variant="ghost" 
@@ -365,7 +415,556 @@ const LessonItem = React.forwardRef<HTMLDivElement, {
 );
 LessonItem.displayName = 'LessonItem';
 
-// Componente ContentBlockItem CORREGIDO con editores específicos
+// === NUEVOS COMPONENTES INTERACTIVOS ===
+
+// Componente para editar Acordeón
+const AccordionEditor: React.FC<{
+  data: InteractiveComponentData;
+  onChange: (data: InteractiveComponentData) => void;
+  onImageUpload: (itemId: string, file: File) => Promise<string>;
+}> = ({ data, onChange, onImageUpload }) => {
+  const [expandedItem, setExpandedItem] = useState<string | null>(null);
+  const [uploadingImages, setUploadingImages] = useState<Record<string, boolean>>({});
+
+  const addItem = () => {
+    const newItem: InteractiveItem = {
+      id: generateUniqueId('accordion-item'),
+      title: 'Nueva sección',
+      content: '',
+    };
+    onChange({
+      ...data,
+      items: [...data.items, newItem]
+    });
+  };
+
+  const updateItem = (itemId: string, field: keyof InteractiveItem, value: string) => {
+    onChange({
+      ...data,
+      items: data.items.map(item => 
+        item.id === itemId ? { ...item, [field]: value } : item
+      )
+    });
+  };
+
+  const removeItem = (itemId: string) => {
+    onChange({
+      ...data,
+      items: data.items.filter(item => item.id !== itemId)
+    });
+  };
+
+  const handleImageUpload = async (itemId: string, file: File) => {
+    setUploadingImages(prev => ({ ...prev, [itemId]: true }));
+    try {
+      const imageUrl = await onImageUpload(itemId, file);
+      updateItem(itemId, 'imageUrl', imageUrl);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+    } finally {
+      setUploadingImages(prev => ({ ...prev, [itemId]: false }));
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <Label className="text-lg font-semibold">Editor de Acordeón</Label>
+        <div className="flex items-center gap-2">
+          <Switch
+            checked={data.settings?.allowMultipleOpen || false}
+            onCheckedChange={(checked) => onChange({
+              ...data,
+              settings: { ...data.settings, allowMultipleOpen: checked }
+            })}
+          />
+          <Label className="text-sm">Múltiples abiertos</Label>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {data.items.map((item, index) => (
+          <Collapsible
+            key={item.id}
+            open={expandedItem === item.id}
+            onOpenChange={(open) => {
+              if (!data.settings?.allowMultipleOpen && open) {
+                setExpandedItem(item.id);
+              } else if (!open && expandedItem === item.id) {
+                setExpandedItem(null);
+              }
+            }}
+            className="border rounded-lg overflow-hidden"
+          >
+            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800">
+              <div className="flex items-center gap-3 flex-1">
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
+                  </Button>
+                </CollapsibleTrigger>
+                <div className="flex-1">
+                  <Input
+                    value={item.title}
+                    onChange={(e) => updateItem(item.id, 'title', e.target.value)}
+                    placeholder="Título de la sección"
+                    className="border-0 bg-transparent focus-visible:ring-0 p-0"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500">Sección {index + 1}</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => removeItem(item.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            
+            <CollapsibleContent className="p-4 space-y-4 border-t">
+              {/* Subida de imagen */}
+              <div className="space-y-2">
+                <Label>Imagen de la sección (opcional)</Label>
+                {item.imageUrl ? (
+                  <div className="relative group">
+                    <div className="relative aspect-video rounded-lg overflow-hidden">
+                      <Image
+                        src={item.imageUrl}
+                        alt={item.title}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => document.getElementById(`accordion-image-${item.id}`)?.click()}
+                      >
+                        Cambiar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => updateItem(item.id, 'imageUrl', '')}
+                      >
+                        Eliminar
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <UploadArea
+                    onFileSelect={(file) => file && handleImageUpload(item.id, file)}
+                    accept="image/*"
+                    disabled={uploadingImages[item.id]}
+                    className="aspect-video"
+                  >
+                    {uploadingImages[item.id] ? (
+                      <div className="text-center">
+                        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
+                        <p>Subiendo imagen...</p>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <ImagePlus className="h-8 w-8 mx-auto mb-2" />
+                        <p>Haz clic para subir una imagen</p>
+                      </div>
+                    )}
+                  </UploadArea>
+                )}
+              </div>
+
+              {/* Editor de contenido */}
+              <div className="space-y-2">
+                <Label>Contenido</Label>
+                <RichTextEditor
+                  value={item.content}
+                  onChange={(value) => updateItem(item.id, 'content', value)}
+                  placeholder="Escribe el contenido de esta sección..."
+                  className="min-h-[200px]"
+                />
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        ))}
+      </div>
+
+      <Button onClick={addItem} variant="outline" className="w-full">
+        <PlusCircle className="h-4 w-4 mr-2" />
+        Añadir nueva sección
+      </Button>
+    </div>
+  );
+};
+
+// Componente para editar Tarjetas de Volteo
+const FlipCardsEditor: React.FC<{
+  data: InteractiveComponentData;
+  onChange: (data: InteractiveComponentData) => void;
+  onImageUpload: (itemId: string, side: 'front' | 'back', file: File) => Promise<string>;
+}> = ({ data, onChange, onImageUpload }) => {
+  const [uploadingImages, setUploadingImages] = useState<Record<string, boolean>>({});
+
+  const addCard = () => {
+    const newCard: InteractiveItem = {
+      id: generateUniqueId('flip-card'),
+      title: 'Nueva tarjeta',
+      content: '',
+    };
+    onChange({
+      ...data,
+      items: [...data.items, newCard]
+    });
+  };
+
+  const updateCard = (cardId: string, field: keyof InteractiveItem, value: string) => {
+    onChange({
+      ...data,
+      items: data.items.map(item => 
+        item.id === cardId ? { ...item, [field]: value } : item
+      )
+    });
+  };
+
+  const removeCard = (cardId: string) => {
+    onChange({
+      ...data,
+      items: data.items.filter(item => item.id !== cardId)
+    });
+  };
+
+  const handleImageUpload = async (cardId: string, side: 'front' | 'back', file: File) => {
+    const key = `${cardId}-${side}`;
+    setUploadingImages(prev => ({ ...prev, [key]: true }));
+    try {
+      const imageUrl = await onImageUpload(cardId, file);
+      // Store both front and back images in imageUrl field for simplicity
+      updateCard(cardId, 'imageUrl', imageUrl);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+    } finally {
+      setUploadingImages(prev => ({ ...prev, [key]: false }));
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <Label className="text-lg font-semibold">Editor de Tarjetas de Volteo</Label>
+        <div className="flex items-center gap-2">
+          <Label>Dirección del volteo:</Label>
+          <Select
+            value={data.settings?.flipDirection || 'horizontal'}
+            onValueChange={(value: 'horizontal' | 'vertical') => onChange({
+              ...data,
+              settings: { ...data.settings, flipDirection: value }
+            })}
+          >
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="horizontal">Horizontal</SelectItem>
+              <SelectItem value="vertical">Vertical</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {data.items.map((card, index) => (
+          <motion.div
+            key={card.id}
+            whileHover={{ y: -4 }}
+            className="relative group"
+          >
+            <Card className="h-full">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <Input
+                    value={card.title}
+                    onChange={(e) => updateCard(card.id, 'title', e.target.value)}
+                    placeholder="Título de la tarjeta"
+                    className="border-0 font-semibold text-lg p-0 h-auto"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => removeCard(card.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="text-sm text-gray-500">Tarjeta {index + 1}</div>
+              </CardHeader>
+              
+              <CardContent className="space-y-4">
+                {/* Imagen frontal */}
+                <div className="space-y-2">
+                  <Label className="text-sm">Imagen frontal</Label>
+                  {card.imageUrl ? (
+                    <div className="relative aspect-square rounded-lg overflow-hidden">
+                      <Image
+                        src={card.imageUrl}
+                        alt={`Front of ${card.title}`}
+                        fill
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => document.getElementById(`flip-front-${card.id}`)?.click()}
+                        >
+                          Cambiar
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <UploadArea
+                      onFileSelect={(file) => file && handleImageUpload(card.id, 'front', file)}
+                      accept="image/*"
+                      disabled={uploadingImages[`${card.id}-front`]}
+                      className="aspect-square"
+                    >
+                      {uploadingImages[`${card.id}-front`] ? (
+                        <div className="text-center p-4">
+                          <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+                          <p className="text-sm">Subiendo...</p>
+                        </div>
+                      ) : (
+                        <div className="text-center p-4">
+                          <FlipHorizontal className="h-6 w-6 mx-auto mb-2" />
+                          <p className="text-sm">Imagen frontal</p>
+                        </div>
+                      )}
+                    </UploadArea>
+                  )}
+                </div>
+
+                {/* Contenido trasero */}
+                <div className="space-y-2">
+                  <Label className="text-sm">Contenido trasero</Label>
+                  <RichTextEditor
+                    value={card.content}
+                    onChange={(value) => updateCard(card.id, 'content', value)}
+                    placeholder="Contenido que se verá al voltear la tarjeta..."
+                    className="min-h-[150px]"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+
+      <Button onClick={addCard} variant="outline" className="w-full">
+        <PlusCircle className="h-4 w-4 mr-2" />
+        Añadir nueva tarjeta
+      </Button>
+    </div>
+  );
+};
+
+// Componente para editar Pestañas
+const TabsEditor: React.FC<{
+  data: InteractiveComponentData;
+  onChange: (data: InteractiveComponentData) => void;
+  onImageUpload: (itemId: string, file: File) => Promise<string>;
+}> = ({ data, onChange, onImageUpload }) => {
+  const [activeTab, setActiveTab] = useState<string>(data.items[0]?.id || '');
+  const [uploadingImages, setUploadingImages] = useState<Record<string, boolean>>({});
+
+  const addTab = () => {
+    const newTab: InteractiveItem = {
+      id: generateUniqueId('tab'),
+      title: `Pestaña ${data.items.length + 1}`,
+      content: '',
+    };
+    onChange({
+      ...data,
+      items: [...data.items, newTab]
+    });
+    setActiveTab(newTab.id);
+  };
+
+  const updateTab = (tabId: string, field: keyof InteractiveItem, value: string) => {
+    onChange({
+      ...data,
+      items: data.items.map(item => 
+        item.id === tabId ? { ...item, [field]: value } : item
+      )
+    });
+  };
+
+  const removeTab = (tabId: string) => {
+    const newItems = data.items.filter(item => item.id !== tabId);
+    onChange({
+      ...data,
+      items: newItems
+    });
+    if (activeTab === tabId && newItems.length > 0) {
+      setActiveTab(newItems[0].id);
+    }
+  };
+
+  const handleImageUpload = async (tabId: string, file: File) => {
+    setUploadingImages(prev => ({ ...prev, [tabId]: true }));
+    try {
+      const imageUrl = await onImageUpload(tabId, file);
+      updateTab(tabId, 'imageUrl', imageUrl);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+    } finally {
+      setUploadingImages(prev => ({ ...prev, [tabId]: false }));
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <Label className="text-lg font-semibold">Editor de Pestañas</Label>
+        <div className="flex items-center gap-2">
+          <Label>Posición:</Label>
+          <Select
+            value={data.settings?.tabPosition || 'top'}
+            onValueChange={(value: 'top' | 'left' | 'right' | 'bottom') => onChange({
+              ...data,
+              settings: { ...data.settings, tabPosition: value }
+            })}
+          >
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="top">Superior</SelectItem>
+              <SelectItem value="left">Izquierda</SelectItem>
+              <SelectItem value="right">Derecha</SelectItem>
+              <SelectItem value="bottom">Inferior</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Pestañas de navegación */}
+      <div className="border-b">
+        <div className="flex items-center gap-2 overflow-x-auto">
+          {data.items.map((tab) => (
+            <Button
+              key={tab.id}
+              variant={activeTab === tab.id ? "default" : "ghost"}
+              onClick={() => setActiveTab(tab.id)}
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary"
+            >
+              {tab.title}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 ml-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeTab(tab.id);
+                }}
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </Button>
+          ))}
+          <Button onClick={addTab} variant="ghost" size="icon">
+            <PlusCircle className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Contenido de la pestaña activa */}
+      {data.items.map((tab) => (
+        <div
+          key={tab.id}
+          className={`space-y-4 ${activeTab === tab.id ? 'block' : 'hidden'}`}
+        >
+          <div className="space-y-2">
+            <Label>Título de la pestaña</Label>
+            <Input
+              value={tab.title}
+              onChange={(e) => updateTab(tab.id, 'title', e.target.value)}
+              placeholder="Título de la pestaña"
+            />
+          </div>
+
+          {/* Subida de imagen */}
+          <div className="space-y-2">
+            <Label>Imagen (opcional)</Label>
+            {tab.imageUrl ? (
+              <div className="relative group">
+                <div className="relative aspect-video rounded-lg overflow-hidden">
+                  <Image
+                    src={tab.imageUrl}
+                    alt={tab.title}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => document.getElementById(`tab-image-${tab.id}`)?.click()}
+                  >
+                    Cambiar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => updateTab(tab.id, 'imageUrl', '')}
+                  >
+                    Eliminar
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <UploadArea
+                onFileSelect={(file) => file && handleImageUpload(tab.id, file)}
+                accept="image/*"
+                disabled={uploadingImages[tab.id]}
+                className="aspect-video"
+              >
+                {uploadingImages[tab.id] ? (
+                  <div className="text-center">
+                    <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
+                    <p>Subiendo imagen...</p>
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <ImagePlus className="h-8 w-8 mx-auto mb-2" />
+                    <p>Haz clic para subir una imagen</p>
+                  </div>
+                )}
+              </UploadArea>
+            )}
+          </div>
+
+          {/* Editor de contenido */}
+          <div className="space-y-2">
+            <Label>Contenido</Label>
+            <RichTextEditor
+              value={tab.content}
+              onChange={(value) => updateTab(tab.id, 'content', value)}
+              placeholder="Escribe el contenido de esta pestaña..."
+              className="min-h-[300px]"
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Componente principal de ContentBlockItem actualizado
 const ContentBlockItem = React.forwardRef<HTMLDivElement, { 
   block: ContentBlock; 
   blockIndex: number;
@@ -379,11 +978,19 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, {
     const [isFileUploading, setIsFileUploading] = useState(false);
     const [fileUploadProgress, setFileUploadProgress] = useState(0);
     const [localPreview, setLocalPreview] = useState<string | null>(null);
+    const [selectedComponent, setSelectedComponent] = useState<'text' | 'accordion' | 'flipCards' | 'tabs'>('text');
     const { toast } = useToast();
 
     useEffect(() => {
       return () => { if (localPreview) URL.revokeObjectURL(localPreview); };
     }, [localPreview]);
+
+    // Parsear datos del componente interactivo
+    const interactiveData: InteractiveComponentData = block.content ? JSON.parse(block.content) : {
+      type: 'accordion',
+      items: [],
+      settings: {}
+    };
 
     const handleFileSelect = async (file: File | null) => {
       if (!file) return;
@@ -406,20 +1013,161 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, {
       }
     };
 
+    const handleInteractiveComponentChange = (data: InteractiveComponentData) => {
+      onUpdate('content', JSON.stringify(data));
+    };
+
+    const handleComponentTypeChange = (type: 'accordion' | 'flipCards' | 'tabs') => {
+      const newData: InteractiveComponentData = {
+        type,
+        items: [],
+        settings: type === 'accordion' ? { allowMultipleOpen: false } : 
+                 type === 'flipCards' ? { flipDirection: 'horizontal' } :
+                 { tabPosition: 'top' }
+      };
+      onUpdate('content', JSON.stringify(newData));
+      setSelectedComponent(type);
+    };
+
+    const handleImageUploadForInteractive = async (itemId: string, file: File): Promise<string> => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const base64 = e.target?.result as string;
+          resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    };
+
     const renderBlockContent = () => {
-      if (block.type === 'TEXT') return (
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">Contenido de Texto</Label>
-          <RichTextEditor 
-            value={block.content || ''} 
-            onChange={value => onUpdate('content', value)} 
-            placeholder="Escribe aquí el contenido de la lección..." 
-            className="min-h-[150px] border rounded-lg p-2" 
-            disabled={isSaving} 
-          />
-          <p className="text-xs text-gray-500">Usa el editor para añadir formato, imágenes, enlaces, etc.</p>
-        </div>
-      );
+      if (block.type === 'TEXT') {
+        if (selectedComponent === 'text') {
+          return (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium">Contenido de Texto</Label>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <Layers className="h-4 w-4" />
+                      Componentes Interactivos
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setSelectedComponent('text')}>
+                      <FileText className="h-4 w-4 mr-2" />
+                      Texto Simple
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handleComponentTypeChange('accordion')}>
+                      <ChevronDown className="h-4 w-4 mr-2" />
+                      Acordeón
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleComponentTypeChange('flipCards')}>
+                      <FlipVertical className="h-4 w-4 mr-2" />
+                      Tarjetas de Volteo
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleComponentTypeChange('tabs')}>
+                      <SquareStack className="h-4 w-4 mr-2" />
+                      Pestañas de Información
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              <RichTextEditor 
+                value={block.content || ''} 
+                onChange={value => onUpdate('content', value)} 
+                placeholder="Escribe aquí el contenido de la lección..." 
+                className="min-h-[200px] border rounded-lg" 
+                disabled={isSaving} 
+              />
+              <p className="text-xs text-gray-500">Usa el editor para añadir formato, imágenes, enlaces, etc.</p>
+            </div>
+          );
+        } else {
+          return (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedComponent('text')}
+                    className="gap-2"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Volver a Texto
+                  </Button>
+                  <Badge variant="outline" className="capitalize">
+                    {selectedComponent === 'accordion' && 'Acordeón'}
+                    {selectedComponent === 'flipCards' && 'Tarjetas de Volteo'}
+                    {selectedComponent === 'tabs' && 'Pestañas de Información'}
+                  </Badge>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const newData: InteractiveComponentData = {
+                        ...interactiveData,
+                        items: []
+                      };
+                      handleInteractiveComponentChange(newData);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Limpiar
+                  </Button>
+                </div>
+              </div>
+
+              {selectedComponent === 'accordion' && (
+                <AccordionEditor
+                  data={interactiveData}
+                  onChange={handleInteractiveComponentChange}
+                  onImageUpload={handleImageUploadForInteractive}
+                />
+              )}
+
+              {selectedComponent === 'flipCards' && (
+                <FlipCardsEditor
+                  data={interactiveData}
+                  onChange={handleInteractiveComponentChange}
+                  onImageUpload={handleImageUploadForInteractive}
+                />
+              )}
+
+              {selectedComponent === 'tabs' && (
+                <TabsEditor
+                  data={interactiveData}
+                  onChange={handleInteractiveComponentChange}
+                  onImageUpload={handleImageUploadForInteractive}
+                />
+              )}
+
+              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <div className="flex items-start gap-3">
+                  <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-blue-800 dark:text-blue-300">
+                      Componente Interactivo
+                    </p>
+                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                      {selectedComponent === 'accordion' && 'Los estudiantes podrán expandir y contraer secciones.'}
+                      {selectedComponent === 'flipCards' && 'Los estudiantes podrán voltear las tarjetas para ver más información.'}
+                      {selectedComponent === 'tabs' && 'Los estudiantes podrán cambiar entre pestañas de información.'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+      }
       
       if (block.type === 'VIDEO') return (
         <div className="space-y-2">
@@ -573,7 +1321,11 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, {
 
     const getBlockIcon = () => {
       switch(block.type) {
-        case 'TEXT': return <FileText className="h-4 w-4" />;
+        case 'TEXT': 
+          if (selectedComponent === 'accordion') return <ChevronDown className="h-4 w-4" />;
+          if (selectedComponent === 'flipCards') return <FlipVertical className="h-4 w-4" />;
+          if (selectedComponent === 'tabs') return <SquareStack className="h-4 w-4" />;
+          return <FileText className="h-4 w-4" />;
         case 'VIDEO': return <Video className="h-4 w-4" />;
         case 'FILE': return <FileGenericIcon className="h-4 w-4" />;
         case 'QUIZ': return <Pencil className="h-4 w-4" />;
@@ -583,12 +1335,26 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, {
 
     const getBlockColor = () => {
       switch(block.type) {
-        case 'TEXT': return 'bg-blue-500/10 text-blue-600';
+        case 'TEXT': 
+          if (selectedComponent === 'accordion') return 'bg-green-500/10 text-green-600';
+          if (selectedComponent === 'flipCards') return 'bg-purple-500/10 text-purple-600';
+          if (selectedComponent === 'tabs') return 'bg-amber-500/10 text-amber-600';
+          return 'bg-blue-500/10 text-blue-600';
         case 'VIDEO': return 'bg-red-500/10 text-red-600';
         case 'FILE': return 'bg-amber-500/10 text-amber-600';
         case 'QUIZ': return 'bg-purple-500/10 text-purple-600';
         default: return 'bg-primary/10 text-primary';
       }
+    };
+
+    const getBlockLabel = () => {
+      if (block.type === 'TEXT') {
+        if (selectedComponent === 'accordion') return 'Acordeón';
+        if (selectedComponent === 'flipCards') return 'Tarjetas de Volteo';
+        if (selectedComponent === 'tabs') return 'Pestañas';
+        return 'Texto';
+      }
+      return block.type.toLowerCase();
     };
 
     return (
@@ -610,7 +1376,7 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-xs px-2 py-0.5 capitalize font-medium">
-                {block.type.toLowerCase()}
+                {getBlockLabel()}
               </Badge>
               <span className="text-xs text-gray-500">Elemento #{blockIndex + 1}</span>
             </div>
@@ -659,6 +1425,10 @@ export function CourseEditor({ courseId }: { courseId: string }) {
   const [lessonToSaveAsTemplate, setLessonToSaveAsTemplate] = useState<AppLesson | null>(null);
   const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
   const [quizToEdit, setQuizToEdit] = useState<{ quiz: AppQuiz; onSave: (updatedQuiz: AppQuiz) => void } | null>(null);
+  
+  // Nuevos estados para funcionalidades
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [isExporting, setIsExporting] = useState(false);
 
   // --- Data Fetching ---
   useEffect(() => {
@@ -846,6 +1616,58 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     });
   };
 
+  // Función para duplicar módulo
+  const handleDuplicateModule = (moduleId: string) => {
+    if (!course) return;
+    
+    const moduleToDuplicate = course.modules.find(m => m.id === moduleId);
+    if (!moduleToDuplicate) return;
+
+    const duplicateModule = (module: AppModule): AppModule => {
+      const newModule: AppModule = {
+        ...JSON.parse(JSON.stringify(module)),
+        id: generateUniqueId('module'),
+        title: `${module.title} (Copia)`,
+        order: module.order,
+      };
+
+      // Duplicar lecciones con nuevos IDs
+      newModule.lessons = module.lessons.map(lesson => ({
+        ...JSON.parse(JSON.stringify(lesson)),
+        id: generateUniqueId('lesson'),
+        contentBlocks: lesson.contentBlocks.map(block => ({
+          ...JSON.parse(JSON.stringify(block)),
+          id: generateUniqueId('block'),
+          quiz: block.quiz ? {
+            ...JSON.parse(JSON.stringify(block.quiz)),
+            id: generateUniqueId('quiz'),
+          } : undefined,
+        })),
+      }));
+
+      return newModule;
+    };
+
+    handleStateUpdate(prev => {
+      const index = prev.modules.findIndex(m => m.id === moduleId);
+      const duplicatedModule = duplicateModule(moduleToDuplicate);
+      prev.modules.splice(index + 1, 0, duplicatedModule);
+      
+      // Reordenar todos los módulos
+      prev.modules.forEach((mod, idx) => {
+        mod.order = idx;
+      });
+      
+      return prev;
+    });
+
+    toast({
+      title: "✅ Módulo Duplicado",
+      description: "El módulo se ha duplicado correctamente.",
+      duration: 3000
+    });
+  };
+
   const handleAddLesson = useCallback((moduleIndex: number, template?: ApiTemplate) => {
     handleStateUpdate(prev => {
       let newBlocks: ContentBlock[] = [];
@@ -880,6 +1702,52 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     setActiveModuleIndexForTemplate(null);
   }, [handleStateUpdate]);
 
+  // Función para duplicar lección
+  const handleDuplicateLesson = (moduleId: string, lessonIndex: number) => {
+    if (!course) return;
+    
+    const module = course.modules.find(m => m.id === moduleId);
+    if (!module || !module.lessons[lessonIndex]) return;
+
+    const lessonToDuplicate = module.lessons[lessonIndex];
+    
+    const duplicateLesson = (lesson: AppLesson): AppLesson => {
+      return {
+        ...JSON.parse(JSON.stringify(lesson)),
+        id: generateUniqueId('lesson'),
+        title: `${lesson.title} (Copia)`,
+        contentBlocks: lesson.contentBlocks.map(block => ({
+          ...JSON.parse(JSON.stringify(block)),
+          id: generateUniqueId('block'),
+          quiz: block.quiz ? {
+            ...JSON.parse(JSON.stringify(block.quiz)),
+            id: generateUniqueId('quiz'),
+          } : undefined,
+        })),
+      };
+    };
+
+    handleStateUpdate(prev => {
+      const moduleIndex = prev.modules.findIndex(m => m.id === moduleId);
+      if (moduleIndex !== -1) {
+        const duplicatedLesson = duplicateLesson(lessonToDuplicate);
+        prev.modules[moduleIndex].lessons.splice(lessonIndex + 1, 0, duplicatedLesson);
+        
+        // Reordenar lecciones
+        prev.modules[moduleIndex].lessons.forEach((les, idx) => {
+          les.order = idx;
+        });
+      }
+      return prev;
+    });
+
+    toast({
+      title: "✅ Lección Duplicada",
+      description: "La lección se ha duplicado correctamente.",
+      duration: 3000
+    });
+  };
+
   const handleRemoveModule = useCallback((moduleId: string) => {
     if (!course) return;
     
@@ -897,6 +1765,63 @@ export function CourseEditor({ courseId }: { courseId: string }) {
       }
     });
   }, [course, handleStateUpdate]);
+
+  // Función para exportar plan de estudios
+  const handleExportPlan = async () => {
+    if (!course) return;
+    
+    setIsExporting(true);
+    
+    try {
+      const exportData = {
+        courseTitle: course.title,
+        courseDescription: course.description,
+        modules: course.modules.map(module => ({
+          title: module.title,
+          lessons: module.lessons.map(lesson => ({
+            title: lesson.title,
+            contentBlocks: lesson.contentBlocks.map(block => ({
+              type: block.type,
+              content: block.content || '',
+              quiz: block.quiz ? {
+                title: block.quiz.title,
+                description: block.quiz.description,
+                questions: block.quiz.questions?.length || 0
+              } : undefined
+            }))
+          }))
+        }))
+      };
+
+      // Crear Blob con los datos
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      
+      // Crear enlace de descarga
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `plan-estudio-${course.title.replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "✅ Plan Exportado",
+        description: "El plan de estudios se ha exportado correctamente.",
+        duration: 3000
+      });
+    } catch (error) {
+      toast({
+        title: "❌ Error al Exportar",
+        description: "No se pudo exportar el plan de estudios.",
+        variant: "destructive",
+        duration: 5000
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const onDragEnd = (result: DropResult) => {
     const { source, destination, type } = result;
@@ -981,6 +1906,19 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     }
   };
 
+  // Función para manejar la vista previa del curso
+  const handlePreviewCourse = () => {
+    if (courseId === 'new') {
+      toast({
+        title: "⚠️ Guarda primero el curso",
+        description: "Debes guardar el curso antes de previsualizarlo.",
+        duration: 3000
+      });
+      return;
+    }
+    window.open(`/courses/${courseId}?preview=true`, '_blank');
+  };
+
   if (isLoading || isAuthLoading || !course) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
@@ -1025,6 +1963,73 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     hasPrerequisite: !!course?.prerequisiteId,
   };
 
+  // Componente para vista en cuadrícula
+  const ModuleGridView = ({ module, index }: { module: AppModule; index: number }) => (
+    <Card className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-primary/30 transition-all duration-300 rounded-xl shadow-lg hover:shadow-xl">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Layers3 className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <Badge variant="outline" className="mb-1">
+                Módulo {index + 1}
+              </Badge>
+              <h3 className="font-bold text-lg">{module.title}</h3>
+            </div>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-600 dark:text-gray-400">Lecciones:</span>
+            <Badge variant="secondary">{module.lessons.length}</Badge>
+          </div>
+          <div className="space-y-2">
+            {module.lessons.slice(0, 3).map((lesson, idx) => (
+              <div key={lesson.id} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 dark:bg-gray-800">
+                <BookOpenText className="h-4 w-4 text-blue-500" />
+                <span className="text-sm truncate">{lesson.title}</span>
+              </div>
+            ))}
+            {module.lessons.length > 3 && (
+              <div className="text-center text-sm text-gray-500">
+                +{module.lessons.length - 3} lecciones más
+              </div>
+            )}
+          </div>
+          <div className="flex gap-2 pt-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex-1"
+              onClick={() => {
+                const currentModuleIndex = course.modules.findIndex(m => m.id === module.id);
+                if (currentModuleIndex !== -1) {
+                  handleAddLesson(currentModuleIndex);
+                }
+              }}
+            >
+              <PlusCircle className="h-3.5 w-3.5 mr-1" />
+              Añadir
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="flex-1"
+              onClick={() => handleDuplicateModule(module.id)}
+            >
+              <Copy className="h-3.5 w-3.5 mr-1" />
+              Duplicar
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
       {/* Header */}
@@ -1052,13 +2057,11 @@ export function CourseEditor({ courseId }: { courseId: string }) {
               <Button
                 variant="outline"
                 size="sm"
-                asChild
                 className="gap-2"
+                onClick={handlePreviewCourse}
               >
-                <Link href={`/courses/${courseId === 'new' ? 'preview' : courseId}`} target="_blank">
-                  <Eye className="h-4 w-4" />
-                  Vista previa
-                </Link>
+                <Eye className="h-4 w-4" />
+                Vista previa
               </Button>
               
               <Button
@@ -1282,7 +2285,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             </motion.div>
           </TabsContent>
 
-          {/* Pestaña: Plan de Estudios - REDISEÑADA PROFESIONALMENTE */}
+          {/* Pestaña: Plan de Estudios */}
           <TabsContent value="curriculum" className="space-y-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -1409,41 +2412,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                     </CardContent>
                   </Card>
 
-                  {/* Tarjeta de Tipos de Contenido */}
-                  <Card className="border-2 border-gray-100 dark:border-gray-800 shadow-lg">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-lg font-bold flex items-center gap-2">
-                        <Grid3x3 className="h-4 w-4" />
-                        Distribución de Contenido
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        {['TEXT', 'VIDEO', 'QUIZ', 'FILE'].map((type, index) => {
-                          const colors = ['bg-blue-500', 'bg-red-500', 'bg-purple-500', 'bg-amber-500'];
-                          const labels = ['Texto', 'Video', 'Quiz', 'Archivo'];
-                          const icons = [FileText, Video, Pencil, FileGenericIcon];
-                          const Icon = icons[index];
-                          const count = courseStats.totalBlocks;
-                          
-                          return (
-                            <div key={type} className="flex items-center justify-between p-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-colors">
-                              <div className="flex items-center gap-3">
-                                <div className={`p-2 rounded-lg ${colors[index].replace('bg-', 'bg-').replace('500', '500/10')}`}>
-                                  <Icon className={`h-4 w-4 ${colors[index].replace('bg-', 'text-')}`} />
-                                </div>
-                                <span className="font-medium">{labels[index]}</span>
-                              </div>
-                              <Badge variant="secondary" className="font-semibold">
-                                {Math.floor(count * (index + 1) / 4)}
-                              </Badge>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </CardContent>
-                  </Card>
-
                   {/* Tarjeta de Acciones Rápidas */}
                   <Card className="border-2 border-gray-100 dark:border-gray-800 shadow-lg">
                     <CardHeader className="pb-3">
@@ -1461,17 +2429,27 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                       <Button 
                         variant="ghost" 
                         className="w-full justify-start gap-3 hover:bg-primary/5 hover:text-primary"
-                        onClick={handleAddModule}
+                        onClick={() => {
+                          if (course.modules.length > 0) {
+                            const lastModule = course.modules[course.modules.length - 1];
+                            handleDuplicateModule(lastModule.id);
+                          }
+                        }}
                       >
-                        <FolderPlus className="h-4 w-4" />
-                        <span>Duplicar Módulo</span>
+                        <Copy className="h-4 w-4" />
+                        <span>Duplicar Último Módulo</span>
                       </Button>
                       <Button 
                         variant="ghost" 
                         className="w-full justify-start gap-3 hover:bg-primary/5 hover:text-primary"
-                        onClick={() => {/* Exportar plan */}}
+                        onClick={handleExportPlan}
+                        disabled={isExporting}
                       >
-                        <Download className="h-4 w-4" />
+                        {isExporting ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Download className="h-4 w-4" />
+                        )}
                         <span>Exportar Plan</span>
                       </Button>
                     </CardContent>
@@ -1499,10 +2477,10 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button 
-                                  variant="outline" 
+                                  variant={viewMode === 'grid' ? "default" : "outline"}
                                   size="icon"
                                   className="h-9 w-9"
-                                  onClick={() => {/* Cambiar vista */}}
+                                  onClick={() => setViewMode('grid')}
                                 >
                                   <Grid3x3 className="h-4 w-4" />
                                 </Button>
@@ -1517,10 +2495,10 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button 
-                                  variant="outline" 
+                                  variant={viewMode === 'list' ? "default" : "outline"}
                                   size="icon"
                                   className="h-9 w-9"
-                                  onClick={() => {/* Cambiar vista */}}
+                                  onClick={() => setViewMode('list')}
                                 >
                                   <List className="h-4 w-4" />
                                 </Button>
@@ -1540,7 +2518,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                   variant="outline" 
                                   size="icon"
                                   className="h-9 w-9"
-                                  onClick={() => {/* Previsualizar */}}
+                                  onClick={handlePreviewCourse}
                                 >
                                   <EyeIcon className="h-4 w-4" />
                                 </Button>
@@ -1550,415 +2528,265 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
+                          
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  variant="outline" 
+                                  size="icon"
+                                  className="h-9 w-9"
+                                  onClick={handleExportPlan}
+                                  disabled={isExporting}
+                                >
+                                  {isExporting ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Download className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Exportar plan de estudios</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
 
-                  {/* Lista de Módulos - Diseño Mejorado */}
-                  <DragDropContext onDragEnd={onDragEnd}>
-                    <Droppable droppableId="course-modules" type="MODULES">
-                      {(provided) => (
-                        <div 
-                          {...provided.droppableProps} 
-                          ref={provided.innerRef}
-                          className="space-y-4"
+                  {/* Contenido según modo de vista */}
+                  {viewMode === 'grid' ? (
+                    // Vista en Cuadrícula
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {course.modules.length === 0 ? (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="col-span-2"
                         >
-                          <AnimatePresence mode="popLayout">
-                            {course.modules.length === 0 ? (
-                              <motion.div
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.95 }}
-                              >
-                                <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 shadow-lg">
-                                  <CardContent className="py-12 text-center">
-                                    <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                                      <FolderOpen className="h-8 w-8 text-primary" />
-                                    </div>
-                                    <h3 className="text-xl font-bold mb-2">Comienza tu viaje educativo</h3>
-                                    <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
-                                      Organiza tu conocimiento en módulos estructurados que guiarán a tus estudiantes paso a paso
-                                    </p>
-                                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                                      <Button 
-                                        onClick={handleAddModule}
-                                        className="gap-2 shadow-lg hover:shadow-xl transition-all duration-300"
-                                      >
-                                        <PlusCircle className="h-4 w-4" />
-                                        Crear Primer Módulo
-                                      </Button>
-                                      <Button
-                                        variant="outline"
-                                        onClick={() => setShowTemplateModal(true)}
-                                        className="gap-2"
-                                      >
-                                        <Sparkles className="h-4 w-4" />
-                                        Explorar Plantillas
-                                      </Button>
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              </motion.div>
-                            ) : (
-                              course.modules.map((moduleItem, moduleIndex) => (
-                                <Draggable 
-                                  key={moduleItem.id} 
-                                  draggableId={moduleItem.id} 
-                                  index={moduleIndex}
+                          <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 shadow-lg">
+                            <CardContent className="py-12 text-center">
+                              <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                                <FolderOpen className="h-8 w-8 text-primary" />
+                              </div>
+                              <h3 className="text-xl font-bold mb-2">Comienza tu viaje educativo</h3>
+                              <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                                Organiza tu conocimiento en módulos estructurados que guiarán a tus estudiantes paso a paso
+                              </p>
+                              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                                <Button 
+                                  onClick={handleAddModule}
+                                  className="gap-2 shadow-lg hover:shadow-xl transition-all duration-300"
                                 >
-                                  {(provided) => (
-                                    <motion.div
-                                      ref={provided.innerRef}
-                                      {...provided.draggableProps}
-                                      initial={{ opacity: 0, y: 20 }}
-                                      animate={{ opacity: 1, y: 0 }}
-                                      exit={{ opacity: 0, scale: 0.9 }}
-                                      transition={{ duration: 0.3 }}
-                                      className="group"
-                                    >
-                                      {/* Tarjeta de Módulo Premium */}
-                                      <Card className="border-2 border-gray-200 dark:border-gray-700 hover:border-primary/30 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden">
-                                        {/* Encabezado del Módulo */}
-                                        <CardHeader className="pb-4 bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 border-b">
-                                          <div className="flex items-start justify-between">
-                                            <div className="flex items-start gap-4 flex-1">
-                                              {/* Ícono de arrastre */}
-                                              <div
-                                                {...provided.dragHandleProps}
-                                                className="cursor-grab active:cursor-grabbing p-2 hover:bg-primary/10 rounded-lg transition-all mt-1"
-                                              >
-                                                <GripVertical className="h-5 w-5 text-gray-400 group-hover:text-primary transition-colors" />
-                                              </div>
-                                              
-                                              {/* Contenido del Módulo */}
-                                              <div className="flex-1">
-                                                <div className="flex items-center gap-3 mb-2">
-                                                  <Badge 
-                                                    variant="outline" 
-                                                    className="bg-primary/5 text-primary border-primary/20 font-bold px-3 py-1"
-                                                  >
-                                                    MÓDULO {moduleIndex + 1}
-                                                  </Badge>
-                                                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                                                    <BookOpenText className="h-3.5 w-3.5" />
-                                                    <span>{moduleItem.lessons.length} {moduleItem.lessons.length === 1 ? 'lección' : 'lecciones'}</span>
-                                                  </div>
-                                                </div>
-                                                
-                                                <div className="flex items-center gap-3">
-                                                  <Input
-                                                    value={moduleItem.title}
-                                                    onChange={(e) => {
-                                                      const currentModuleIndex = course.modules.findIndex(
-                                                        (m) => m.id === moduleItem.id
-                                                      );
-                                                      if (currentModuleIndex !== -1) {
-                                                        handleStateUpdate((prev) => {
-                                                          prev.modules[currentModuleIndex].title = e.target.value;
-                                                          return prev;
-                                                        });
-                                                      }
-                                                    }}
-                                                    className="text-xl font-bold bg-transparent border-0 focus-visible:ring-0 p-0 h-auto placeholder:text-gray-400"
-                                                    placeholder="Título del módulo..."
-                                                  />
-                                                  <TooltipProvider>
-                                                    <Tooltip>
-                                                      <TooltipTrigger asChild>
-                                                        <Button 
-                                                          variant="ghost" 
-                                                          size="icon" 
-                                                          className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                          onClick={() => {/* Editar descripción */}}
-                                                        >
-                                                          <Edit className="h-3.5 w-3.5" />
-                                                        </Button>
-                                                      </TooltipTrigger>
-                                                      <TooltipContent>
-                                                        <p>Editar descripción</p>
-                                                      </TooltipContent>
-                                                    </Tooltip>
-                                                  </TooltipProvider>
-                                                </div>
-                                                
-                                                {/* Progreso del Módulo */}
-                                                {moduleItem.lessons.length > 0 && (
-                                                  <div className="mt-3 space-y-1">
-                                                    <div className="flex justify-between text-xs">
-                                                      <span className="text-gray-500">Progreso del módulo</span>
-                                                      <span className="font-semibold">0%</span>
-                                                    </div>
-                                                    <Progress value={0} className="h-1.5" />
-                                                  </div>
-                                                )}
-                                              </div>
-                                            </div>
-                                            
-                                            {/* Acciones del Módulo */}
-                                            <div className="flex items-center gap-1">
-                                              <TooltipProvider>
-                                                <Tooltip>
-                                                  <TooltipTrigger asChild>
-                                                    <Button 
-                                                      variant="ghost" 
-                                                      size="icon"
-                                                      className="h-9 w-9 text-gray-400 hover:text-primary hover:bg-primary/10"
-                                                      onClick={() => {/* Duplicar módulo */}}
-                                                    >
-                                                      <Copy className="h-4 w-4" />
-                                                    </Button>
-                                                  </TooltipTrigger>
-                                                  <TooltipContent>
-                                                    <p>Duplicar módulo</p>
-                                                  </TooltipContent>
-                                                </Tooltip>
-                                              </TooltipProvider>
-                                              
-                                              <TooltipProvider>
-                                                <Tooltip>
-                                                  <TooltipTrigger asChild>
-                                                    <Button 
-                                                      variant="ghost" 
-                                                      size="icon"
-                                                      className="h-9 w-9 text-gray-400 hover:text-destructive hover:bg-destructive/10"
-                                                      onClick={() => handleRemoveModule(moduleItem.id)}
-                                                    >
-                                                      <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                  </TooltipTrigger>
-                                                  <TooltipContent>
-                                                    <p>Eliminar módulo</p>
-                                                  </TooltipContent>
-                                                </Tooltip>
-                                              </TooltipProvider>
-                                              
-                                              <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                  <Button 
-                                                    variant="ghost" 
-                                                    size="icon"
-                                                    className="h-9 w-9 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800"
-                                                  >
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                  </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-48">
-                                                  <DropdownMenuItem>
-                                                    <Eye className="h-4 w-4 mr-2" />
-                                                    Vista previa
-                                                  </DropdownMenuItem>
-                                                  <DropdownMenuItem>
-                                                    <Copy className="h-4 w-4 mr-2" />
-                                                    Duplicar
-                                                  </DropdownMenuItem>
-                                                  <DropdownMenuItem>
-                                                    <ExternalLink className="h-4 w-4 mr-2" />
-                                                    Abrir en nueva pestaña
-                                                  </DropdownMenuItem>
-                                                  <DropdownMenuSeparator />
-                                                  <DropdownMenuItem className="text-destructive">
-                                                    <Trash2 className="h-4 w-4 mr-2" />
-                                                    Eliminar
-                                                  </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                              </DropdownMenu>
-                                            </div>
-                                          </div>
-                                        </CardHeader>
-                                        
-                                        {/* Lecciones del Módulo */}
-                                        <CardContent className="p-0">
-                                          <Droppable droppableId={moduleItem.id} type="LESSONS">
-                                            {(provided) => (
-                                              <div 
-                                                {...provided.droppableProps} 
-                                                ref={provided.innerRef}
-                                                className="space-y-1 p-4 bg-gray-50/50 dark:bg-gray-800/30"
-                                              >
-                                                {moduleItem.lessons.length === 0 ? (
-                                                  <div className="text-center py-8">
-                                                    <BookOpenText className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                                                    <p className="text-gray-500 mb-4">
-                                                      Este módulo está vacío. Añade tu primera lección.
-                                                    </p>
-                                                    <Button
-                                                      variant="outline"
-                                                      size="sm"
-                                                      className="gap-2"
-                                                      onClick={() => {
-                                                        const currentModuleIndex = course.modules.findIndex(
-                                                          (m) => m.id === moduleItem.id
-                                                        );
-                                                        if (currentModuleIndex !== -1) {
-                                                          handleAddLesson(currentModuleIndex);
-                                                        }
-                                                      }}
-                                                    >
-                                                      <PlusCircle className="h-3.5 w-3.5" />
-                                                      Añadir primera lección
-                                                    </Button>
-                                                  </div>
-                                                ) : (
-                                                  <AnimatePresence>
-                                                    {moduleItem.lessons.map((lesson, lessonIndex) => (
-                                                      <Draggable
-                                                        key={lesson.id}
-                                                        draggableId={lesson.id}
-                                                        index={lessonIndex}
-                                                      >
-                                                        {(provided) => (
-                                                          <motion.div
-                                                            ref={provided.innerRef}
-                                                            {...provided.draggableProps}
-                                                            initial={{ opacity: 0, x: -10 }}
-                                                            animate={{ opacity: 1, x: 0 }}
-                                                            exit={{ opacity: 0, x: -10 }}
-                                                            transition={{ duration: 0.2 }}
-                                                          >
-                                                            <LessonCard
-                                                              lesson={lesson}
-                                                              lessonIndex={lessonIndex}
-                                                              moduleItem={moduleItem}
-                                                              onLessonUpdate={(lessonIndex, field, value) => {
-                                                                const currentModuleIndex = course.modules.findIndex(
-                                                                  (m) => m.id === moduleItem.id
-                                                                );
-                                                                if (currentModuleIndex !== -1) {
-                                                                  handleStateUpdate((prev) => {
-                                                                    prev.modules[currentModuleIndex].lessons[lessonIndex][field] = value;
-                                                                    return prev;
-                                                                  });
-                                                                }
-                                                              }}
-                                                              onLessonDelete={(lessonIndex) => {
-                                                                const currentModule = course.modules.find(m => m.id === moduleItem.id);
-                                                                const lesson = currentModule?.lessons[lessonIndex];
-                                                                
-                                                                if (!lesson) return;
-                                                                
-                                                                setItemToDeleteDetails({
-                                                                  name: lesson.title,
-                                                                  onDelete: () => {
-                                                                    handleStateUpdate((prev) => {
-                                                                      const currentModuleIndex = prev.modules.findIndex(m => m.id === moduleItem.id);
-                                                                      if (currentModuleIndex !== -1) {
-                                                                        prev.modules[currentModuleIndex].lessons.splice(lessonIndex, 1);
-                                                                      }
-                                                                      return prev;
-                                                                    });
-                                                                  }
-                                                                });
-                                                              }}
-                                                              onAddBlock={(lessonIndex, type) => {
-                                                                handleStateUpdate((prev) => {
-                                                                  const currentModuleIndex = prev.modules.findIndex(m => m.id === moduleItem.id);
-                                                                  if (currentModuleIndex !== -1 && prev.modules[currentModuleIndex].lessons[lessonIndex]) {
-                                                                    const newBlock: ContentBlock = {
-                                                                      id: generateUniqueId('block'),
-                                                                      type,
-                                                                      content: '',
-                                                                      order: prev.modules[currentModuleIndex].lessons[lessonIndex].contentBlocks.length,
-                                                                      quiz: type === 'QUIZ' ? {
-                                                                        id: generateUniqueId('quiz'),
-                                                                        title: 'Nuevo Quiz',
-                                                                        description: '',
-                                                                        questions: [],
-                                                                        maxAttempts: null,
-                                                                      } : undefined
-                                                                    };
-                                                                    prev.modules[currentModuleIndex].lessons[lessonIndex].contentBlocks.push(newBlock);
-                                                                  }
-                                                                  return prev;
-                                                                });
-                                                              }}
-                                                              onBlockUpdate={(lessonIndex, blockIndex, field, value) => {
-                                                                handleStateUpdate((prev) => {
-                                                                  const currentModuleIndex = prev.modules.findIndex(m => m.id === moduleItem.id);
-                                                                  if (currentModuleIndex !== -1 && 
-                                                                      prev.modules[currentModuleIndex].lessons[lessonIndex] &&
-                                                                      prev.modules[currentModuleIndex].lessons[lessonIndex].contentBlocks[blockIndex]) {
-                                                                    prev.modules[currentModuleIndex].lessons[lessonIndex].contentBlocks[blockIndex][field] = value;
-                                                                  }
-                                                                  return prev;
-                                                                });
-                                                              }}
-                                                              onBlockDelete={(lessonIndex, blockIndex) => {
-                                                                handleStateUpdate((prev) => {
-                                                                  const currentModuleIndex = prev.modules.findIndex(m => m.id === moduleItem.id);
-                                                                  if (currentModuleIndex !== -1 && 
-                                                                      prev.modules[currentModuleIndex].lessons[lessonIndex]) {
-                                                                    prev.modules[currentModuleIndex].lessons[lessonIndex].contentBlocks.splice(blockIndex, 1);
-                                                                  }
-                                                                  return prev;
-                                                                });
-                                                              }}
-                                                              onEditQuiz={handleEditQuiz}
-                                                              dragHandleProps={provided.dragHandleProps}
-                                                              isSaving={isSaving}
-                                                            />
-                                                          </motion.div>
-                                                        )}
-                                                      </Draggable>
-                                                    ))}
-                                                  </AnimatePresence>
-                                                )}
-                                                {provided.placeholder}
-                                              </div>
-                                            )}
-                                          </Droppable>
-                                          
-                                          {/* Pie de Módulo - Añadir Lección */}
-                                          <div className="p-4 border-t bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
-                                            <div className="flex items-center justify-between">
-                                              <div className="text-sm text-gray-500">
-                                                {moduleItem.lessons.length === 0 ? 'Comienza añadiendo lecciones' : 'Añadir nueva lección'}
-                                              </div>
-                                              <div className="flex gap-2">
-                                                <Button
-                                                  variant="outline"
-                                                  size="sm"
-                                                  className="gap-2"
-                                                  onClick={() => {
-                                                    const currentModuleIndex = course.modules.findIndex(
-                                                      (m) => m.id === moduleItem.id
-                                                    );
-                                                    if (currentModuleIndex !== -1) {
-                                                      handleAddLesson(currentModuleIndex);
-                                                    }
-                                                  }}
-                                                >
-                                                  <PlusCircle className="h-3.5 w-3.5" />
-                                                  Lección en Blanco
-                                                </Button>
-                                                <Button
-                                                  variant="outline"
-                                                  size="sm"
-                                                  className="gap-2"
-                                                  onClick={() => {
-                                                    setActiveModuleIndexForTemplate(moduleIndex);
-                                                    setShowTemplateModal(true);
-                                                  }}
-                                                >
-                                                  <Sparkles className="h-3.5 w-3.5" />
-                                                  Desde Plantilla
-                                                </Button>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </CardContent>
-                                      </Card>
-                                    </motion.div>
-                                  )}
-                                </Draggable>
-                              ))
-                            )}
-                          </AnimatePresence>
-                          {provided.placeholder}
-                        </div>
+                                  <PlusCircle className="h-4 w-4" />
+                                  Crear Primer Módulo
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  onClick={() => setShowTemplateModal(true)}
+                                  className="gap-2"
+                                >
+                                  <Sparkles className="h-4 w-4" />
+                                  Explorar Plantillas
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </motion.div>
+                      ) : (
+                        course.modules.map((moduleItem, moduleIndex) => (
+                          <motion.div
+                            key={moduleItem.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <ModuleGridView module={moduleItem} index={moduleIndex} />
+                          </motion.div>
+                        ))
                       )}
-                    </Droppable>
-                  </DragDropContext>
+                    </div>
+                  ) : (
+                    // Vista en Lista (Original con Drag & Drop)
+                    <DragDropContext onDragEnd={onDragEnd}>
+                      <Droppable droppableId="course-modules" type="MODULES">
+                        {(provided) => (
+                          <div 
+                            {...provided.droppableProps} 
+                            ref={provided.innerRef}
+                            className="space-y-4"
+                          >
+                            <AnimatePresence mode="popLayout">
+                              {course.modules.length === 0 ? (
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.95 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  exit={{ opacity: 0, scale: 0.95 }}
+                                >
+                                  <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 shadow-lg">
+                                    <CardContent className="py-12 text-center">
+                                      <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                                        <FolderOpen className="h-8 w-8 text-primary" />
+                                      </div>
+                                      <h3 className="text-xl font-bold mb-2">Comienza tu viaje educativo</h3>
+                                      <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                                        Organiza tu conocimiento en módulos estructurados que guiarán a tus estudiantes paso a paso
+                                      </p>
+                                      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                                        <Button 
+                                          onClick={handleAddModule}
+                                          className="gap-2 shadow-lg hover:shadow-xl transition-all duration-300"
+                                        >
+                                          <PlusCircle className="h-4 w-4" />
+                                          Crear Primer Módulo
+                                        </Button>
+                                        <Button
+                                          variant="outline"
+                                          onClick={() => setShowTemplateModal(true)}
+                                          className="gap-2"
+                                        >
+                                          <Sparkles className="h-4 w-4" />
+                                          Explorar Plantillas
+                                        </Button>
+                                      </div>
+                                    </CardContent>
+                                  </Card>
+                                </motion.div>
+                              ) : (
+                                course.modules.map((moduleItem, moduleIndex) => (
+                                  <Draggable 
+                                    key={moduleItem.id} 
+                                    draggableId={moduleItem.id} 
+                                    index={moduleIndex}
+                                  >
+                                    {(provided) => (
+                                      <motion.div
+                                        ref={provided.innerRef}
+                                        {...provided.draggableProps}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, scale: 0.9 }}
+                                        transition={{ duration: 0.3 }}
+                                      >
+                                        <ModuleItem
+                                          module={moduleItem}
+                                          moduleIndex={moduleIndex}
+                                          onUpdate={(field, value) => {
+                                            handleStateUpdate((prev) => {
+                                              const currentModuleIndex = prev.modules.findIndex(m => m.id === moduleItem.id);
+                                              if (currentModuleIndex !== -1) {
+                                                prev.modules[currentModuleIndex][field] = value;
+                                              }
+                                              return prev;
+                                            });
+                                          }}
+                                          onAddLesson={(type) => {
+                                            const currentModuleIndex = course.modules.findIndex(m => m.id === moduleItem.id);
+                                            if (type === 'template') {
+                                              setActiveModuleIndexForTemplate(currentModuleIndex);
+                                              setShowTemplateModal(true);
+                                            } else {
+                                              handleAddLesson(currentModuleIndex);
+                                            }
+                                          }}
+                                          onLessonUpdate={(lessonIndex, field, value) => {
+                                            handleStateUpdate((prev) => {
+                                              const currentModuleIndex = prev.modules.findIndex(m => m.id === moduleItem.id);
+                                              if (currentModuleIndex !== -1) {
+                                                prev.modules[currentModuleIndex].lessons[lessonIndex][field] = value;
+                                              }
+                                              return prev;
+                                            });
+                                          }}
+                                          onLessonDelete={(lessonIndex) => {
+                                            const currentModule = course.modules.find(m => m.id === moduleItem.id);
+                                            const lesson = currentModule?.lessons[lessonIndex];
+                                            
+                                            if (!lesson) return;
+                                            
+                                            setItemToDeleteDetails({
+                                              name: lesson.title,
+                                              onDelete: () => {
+                                                handleStateUpdate((prev) => {
+                                                  const currentModuleIndex = prev.modules.findIndex(m => m.id === moduleItem.id);
+                                                  if (currentModuleIndex !== -1) {
+                                                    prev.modules[currentModuleIndex].lessons.splice(lessonIndex, 1);
+                                                  }
+                                                  return prev;
+                                                });
+                                              }
+                                            });
+                                          }}
+                                          onSaveLessonAsTemplate={(lessonIndex) => {
+                                            const currentModule = course.modules.find(m => m.id === moduleItem.id);
+                                            const lesson = currentModule?.lessons[lessonIndex];
+                                            if (lesson) {
+                                              setLessonToSaveAsTemplate(lesson);
+                                            }
+                                          }}
+                                          onAddBlock={(lessonIndex, type) => {
+                                            handleStateUpdate((prev) => {
+                                              const currentModuleIndex = prev.modules.findIndex(m => m.id === moduleItem.id);
+                                              if (currentModuleIndex !== -1 && prev.modules[currentModuleIndex].lessons[lessonIndex]) {
+                                                const newBlock: ContentBlock = {
+                                                  id: generateUniqueId('block'),
+                                                  type,
+                                                  content: '',
+                                                  order: prev.modules[currentModuleIndex].lessons[lessonIndex].contentBlocks.length,
+                                                  quiz: type === 'QUIZ' ? {
+                                                    id: generateUniqueId('quiz'),
+                                                    title: 'Nuevo Quiz',
+                                                    description: '',
+                                                    questions: [],
+                                                    maxAttempts: null,
+                                                  } : undefined
+                                                };
+                                                prev.modules[currentModuleIndex].lessons[lessonIndex].contentBlocks.push(newBlock);
+                                              }
+                                              return prev;
+                                            });
+                                          }}
+                                          onBlockUpdate={(lessonIndex, blockIndex, field, value) => {
+                                            handleStateUpdate((prev) => {
+                                              const currentModuleIndex = prev.modules.findIndex(m => m.id === moduleItem.id);
+                                              if (currentModuleIndex !== -1 && 
+                                                  prev.modules[currentModuleIndex].lessons[lessonIndex] &&
+                                                  prev.modules[currentModuleIndex].lessons[lessonIndex].contentBlocks[blockIndex]) {
+                                                prev.modules[currentModuleIndex].lessons[lessonIndex].contentBlocks[blockIndex][field] = value;
+                                              }
+                                              return prev;
+                                            });
+                                          }}
+                                          onBlockDelete={(lessonIndex, blockIndex) => {
+                                            handleStateUpdate((prev) => {
+                                              const currentModuleIndex = prev.modules.findIndex(m => m.id === moduleItem.id);
+                                              if (currentModuleIndex !== -1 && 
+                                                  prev.modules[currentModuleIndex].lessons[lessonIndex]) {
+                                                prev.modules[currentModuleIndex].lessons[lessonIndex].contentBlocks.splice(blockIndex, 1);
+                                              }
+                                              return prev;
+                                            });
+                                          }}
+                                          onEditQuiz={handleEditQuiz}
+                                          isSaving={isSaving}
+                                          onDelete={() => handleRemoveModule(moduleItem.id)}
+                                          onDuplicate={() => handleDuplicateModule(moduleItem.id)}
+                                          provided={provided}
+                                        />
+                                      </motion.div>
+                                    )}
+                                  </Draggable>
+                                ))
+                              )}
+                            </AnimatePresence>
+                            {provided.placeholder}
+                          </div>
+                        )}
+                      </Droppable>
+                    </DragDropContext>
+                  )}
 
                   {/* Botón Flotante para Añadir Módulo */}
                   {course.modules.length > 0 && (
@@ -2306,338 +3134,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
   );
 }
 
-// Componente LessonCard mejorado
-const LessonCard = React.forwardRef<HTMLDivElement, {
-  lesson: AppLesson;
-  lessonIndex: number;
-  moduleItem: AppModule;
-  onLessonUpdate: (lessonIndex: number, field: keyof AppLesson, value: any) => void;
-  onLessonDelete: (lessonIndex: number) => void;
-  onAddBlock: (lessonIndex: number, type: LessonType) => void;
-  onBlockUpdate: (lessonIndex: number, blockIndex: number, field: string, value: any) => void;
-  onBlockDelete: (lessonIndex: number, blockIndex: number) => void;
-  onEditQuiz: (quiz: AppQuiz) => void;
-  dragHandleProps: any;
-  isSaving: boolean;
-}>(({ lesson, lessonIndex, moduleItem, onLessonUpdate, onLessonDelete, onAddBlock, onBlockUpdate, onBlockDelete, onEditQuiz, dragHandleProps, isSaving }, ref) => {
-  const [isExpanded, setIsExpanded] = useState(true);
-  const [showBlockSelector, setShowBlockSelector] = useState(false);
-
-  return (
-    <motion.div
-      ref={ref}
-      className="bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-primary/30 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden mb-3"
-    >
-      {/* Encabezado de Lección */}
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-3 flex-1">
-            {/* Handle de arrastre */}
-            <div
-              {...dragHandleProps}
-              className="cursor-grab active:cursor-grabbing p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all mt-0.5"
-            >
-              <GripVertical className="h-4 w-4 text-gray-400" />
-            </div>
-            
-            {/* Número y tipo de lección */}
-            <div className="flex flex-col items-center gap-1">
-              <Badge 
-                variant="outline" 
-                className="text-xs font-bold bg-blue-500/10 text-blue-600 border-blue-500/20"
-              >
-                {lessonIndex + 1}
-              </Badge>
-              <div className="text-[10px] text-gray-400 font-medium">LECCIÓN</div>
-            </div>
-            
-            {/* Contenido principal */}
-            <div className="flex-1 space-y-2">
-              <div className="flex items-center gap-3">
-                <Input
-                  value={lesson.title}
-                  onChange={e => onLessonUpdate(lessonIndex, 'title', e.target.value)}
-                  placeholder="Título de la lección"
-                  className="text-base font-semibold bg-transparent border-0 focus-visible:ring-0 p-0 h-auto placeholder:text-gray-400"
-                />
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => {/* Editar descripción */}}
-                      >
-                        <Edit className="h-3.5 w-3.5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Editar descripción</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-              
-              {/* Estadísticas rápidas */}
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1 text-xs text-gray-500">
-                  <FileText className="h-3 w-3" />
-                  <span>{lesson.contentBlocks.length} elementos</span>
-                </div>
-                <div className="flex items-center gap-1 text-xs text-gray-500">
-                  <Timer className="h-3 w-3" />
-                  <span>~15 min</span>
-                </div>
-                {lesson.contentBlocks.some(b => b.type === 'QUIZ') && (
-                  <Badge variant="secondary" className="text-xs">
-                    <Pencil className="h-3 w-3 mr-1" />
-                    Incluye quiz
-                  </Badge>
-                )}
-              </div>
-            </div>
-          </div>
-          
-          {/* Acciones */}
-          <div className="flex items-center gap-1">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => setIsExpanded(!isExpanded)}
-                  >
-                    {isExpanded ? 
-                      <ChevronDown className="h-4 w-4 rotate-180 transition-transform" /> : 
-                      <ChevronDown className="h-4 w-4 transition-transform" />
-                    }
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{isExpanded ? 'Contraer' : 'Expandir'}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    className="h-8 w-8 text-gray-400 hover:text-destructive"
-                    onClick={() => onLessonDelete(lessonIndex)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Eliminar lección</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        </div>
-      </div>
-      
-      {/* Contenido expandible */}
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="overflow-hidden"
-          >
-            <div className="px-4 pb-4 border-t pt-4">
-              {/* Selector de tipo de bloque */}
-              <div className="mb-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                    Elementos de la lección
-                  </h4>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                    onClick={() => setShowBlockSelector(!showBlockSelector)}
-                  >
-                    <PlusCircle className="h-3.5 w-3.5" />
-                    Añadir elemento
-                  </Button>
-                </div>
-                
-                {showBlockSelector && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mb-4"
-                  >
-                    <BlockTypeSelectorPremium onSelect={(type) => {
-                      onAddBlock(lessonIndex, type);
-                      setShowBlockSelector(false);
-                    }} />
-                  </motion.div>
-                )}
-                
-                {/* Lista de bloques */}
-                {lesson.contentBlocks.length > 0 ? (
-                  <Droppable droppableId={lesson.id} type="BLOCKS">
-                    {(provided) => (
-                      <div
-                        {...provided.droppableProps}
-                        ref={provided.innerRef}
-                        className="space-y-2"
-                      >
-                        {lesson.contentBlocks.map((block, blockIndex) => (
-                          <Draggable
-                            key={block.id}
-                            draggableId={block.id}
-                            index={blockIndex}
-                          >
-                            {(provided) => (
-                              <ContentBlockItem
-                                block={block}
-                                blockIndex={blockIndex}
-                                onUpdate={(field, value) => onBlockUpdate(lessonIndex, blockIndex, field, value)}
-                                onDelete={() => onBlockDelete(lessonIndex, blockIndex)}
-                                onEditQuiz={() => block.type === 'QUIZ' && block.quiz && onEditQuiz(block.quiz)}
-                                isSaving={isSaving}
-                                dragHandleProps={provided.dragHandleProps}
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                              />
-                            )}
-                          </Draggable>
-                        ))}
-                        {provided.placeholder}
-                      </div>
-                    )}
-                  </Droppable>
-                ) : (
-                  <div className="text-center py-8 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
-                    <FileText className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-                    <p className="text-gray-500 mb-4">
-                      Esta lección está vacía. Añade contenido para comenzar.
-                    </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-2"
-                      onClick={() => setShowBlockSelector(true)}
-                    >
-                      <PlusCircle className="h-3.5 w-3.5" />
-                      Añadir primer elemento
-                    </Button>
-                  </div>
-                )}
-              </div>
-              
-              {/* Métricas de la lección */}
-              <div className="flex items-center justify-between pt-3 border-t text-sm text-gray-500">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1">
-                    <Check className="h-3.5 w-3.5 text-green-500" />
-                    <span>0% completado</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Users className="h-3.5 w-3.5 text-blue-500" />
-                    <span>0 estudiantes</span>
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs"
-                  onClick={() => {/* Ver analytics */}}
-                >
-                  <BarChart2 className="h-3.5 w-3.5 mr-1" />
-                  Ver analíticas
-                </Button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-  );
-});
-LessonCard.displayName = 'LessonCard';
-
-// Componente Premium para Selector de Bloques
-const BlockTypeSelectorPremium = ({ onSelect }: { onSelect: (type: LessonType) => void }) => {
-  const blockTypes = [
-    { 
-      type: 'TEXT' as LessonType, 
-      label: 'Texto', 
-      icon: FileText, 
-      color: 'text-blue-500', 
-      bgColor: 'bg-blue-500/10',
-      description: 'Contenido escrito con editor enriquecido',
-      gradient: 'from-blue-500 to-blue-600'
-    },
-    { 
-      type: 'VIDEO' as LessonType, 
-      label: 'Video', 
-      icon: Video, 
-      color: 'text-red-500', 
-      bgColor: 'bg-red-500/10',
-      description: 'Video educativo o tutorial',
-      gradient: 'from-red-500 to-red-600'
-    },
-    { 
-      type: 'FILE' as LessonType, 
-      label: 'Archivo', 
-      icon: FileGenericIcon, 
-      color: 'text-amber-500', 
-      bgColor: 'bg-amber-500/10',
-      description: 'Documentos, presentaciones, recursos',
-      gradient: 'from-amber-500 to-amber-600'
-    },
-    { 
-      type: 'QUIZ' as LessonType, 
-      label: 'Quiz', 
-      icon: Pencil, 
-      color: 'text-purple-500', 
-      bgColor: 'bg-purple-500/10',
-      description: 'Evaluación interactiva',
-      gradient: 'from-purple-500 to-purple-600'
-    },
-  ];
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-      {blockTypes.map(({ type, label, icon: Icon, color, bgColor, description, gradient }) => (
-        <motion.button
-          key={type}
-          whileHover={{ scale: 1.02, y: -2 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => onSelect(type)}
-          className="group text-left p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-primary/50 bg-white dark:bg-gray-800 transition-all duration-300 hover:shadow-lg"
-        >
-          <div className="flex items-start gap-3">
-            <div className={`p-3 rounded-lg ${bgColor} group-hover:scale-110 transition-transform duration-300`}>
-              <Icon className={`h-5 w-5 ${color}`} />
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center justify-between">
-                <h4 className="font-semibold">{label}</h4>
-                <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-primary group-hover:translate-x-1 transition-all" />
-              </div>
-              <p className="text-sm text-gray-500 mt-1">{description}</p>
-            </div>
-          </div>
-        </motion.button>
-      ))}
-    </div>
-  );
-};
-
-// Componente para Seleccionar Tipo de Bloque (Versión simple)
+// Componente para Seleccionar Tipo de Bloque
 const BlockTypeSelector = ({ onSelect }: { onSelect: (type: LessonType) => void }) => {
   const blockTypes = [
     { type: 'TEXT' as LessonType, label: 'Texto', icon: FileText, color: 'text-blue-500', bgColor: 'bg-blue-500/10' },
@@ -2741,88 +3238,4 @@ const TemplateSelectorModal = ({
               </div>
             )}
           </div>
-        </ScrollArea>
-        
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Cancelar
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-// Modal para Guardar Plantilla
-const SaveTemplateModal = ({ 
-  isOpen, 
-  onClose, 
-  onSave 
-}: { 
-  isOpen: boolean; 
-  onClose: () => void; 
-  onSave: (name: string, description: string) => Promise<void>; 
-}) => {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) return;
-    
-    setIsSaving(true);
-    await onSave(name, description);
-    setIsSaving(false);
-    setName('');
-    setDescription('');
-  };
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Guardar como Plantilla</DialogTitle>
-          <DialogDescription>
-            Esta lección se guardará como plantilla para reutilizar
-          </DialogDescription>
-        </DialogHeader>
-        
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nombre *</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="Nombre de la plantilla"
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="description">Descripción</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-                placeholder="Describe esta plantilla..."
-                rows={3}
-              />
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={onClose} type="button">
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={isSaving || !name.trim()}>
-              {isSaving ? 'Guardando...' : 'Guardar Plantilla'}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-};
+       
