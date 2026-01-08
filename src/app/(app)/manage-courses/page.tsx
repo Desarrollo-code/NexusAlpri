@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { 
   PlusCircle, 
   List, 
@@ -23,8 +23,6 @@ import {
   Download,
   Upload,
   RefreshCw,
-  BarChart3,
-  Clock,
   Globe,
   FileText,
   Archive,
@@ -32,9 +30,6 @@ import {
   BookOpen,
   Layers,
   TrendingUp,
-  Target,
-  CheckCircle,
-  XCircle,
   Copy,
   ChevronDown,
   ChevronUp
@@ -59,7 +54,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
@@ -97,7 +91,6 @@ import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 // Types
@@ -710,22 +703,6 @@ function ManageCoursesPageComponent() {
     startTour('manageCourses', manageCoursesTour);
   }, [setPageTitle, startTour]);
 
-  // Create query string utility
-  const createQueryString = useCallback(
-    (paramsToUpdate: Record<string, string | number | null>) => {
-      const params = new URLSearchParams(searchParams.toString());
-      Object.entries(paramsToUpdate).forEach(([name, value]) => {
-        if (value === null || value === '') {
-          params.delete(name);
-        } else {
-          params.set(name, String(value));
-        }
-      });
-      return params.toString();
-    },
-    [searchParams]
-  );
-
   // Fetch courses
   const fetchCourses = useCallback(async () => {
     if (!user) {
@@ -1002,8 +979,6 @@ function ManageCoursesPageComponent() {
         description: 'Preparando archivo de exportación...',
       });
       
-      // In a real implementation, this would call an API endpoint
-      // For now, we'll simulate the process
       setTimeout(() => {
         toast({
           title: 'Exportación completada',
@@ -1334,7 +1309,7 @@ function ManageCoursesPageComponent() {
               <CourseListView
                 courses={paginatedCourses}
                 isLoading={isLoading}
-                onStatusChange={handleChangeStatus}  // ← Corregido
+                onStatusChange={handleChangeStatus}
                 onDelete={setCourseToDelete}
                 onAssign={setCourseToAssign}
                 onDuplicate={handleDuplicateCourse}
