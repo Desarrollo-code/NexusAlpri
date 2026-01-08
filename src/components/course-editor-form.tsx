@@ -3238,4 +3238,23 @@ const TemplateSelectorModal = ({
               </div>
             )}
           </div>
-       
+        </ScrollArea>
+        
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              // Acción adicional si es necesaria
+              onClose();
+            }}
+          >
+            Cerrar
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
