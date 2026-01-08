@@ -26,7 +26,6 @@ import { useTour } from '@/contexts/tour-context';
 import { coursesTour } from '@/lib/tour-steps';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
@@ -47,7 +46,7 @@ interface ApiCourse extends Omit<PrismaCourse, 'instructor' | '_count' | 'status
 type SortOption = 'newest' | 'popular' | 'title' | 'modules' | 'completion';
 type ViewMode = 'grid' | 'list';
 
-// Stats Card Component similar al de gestión
+// Stats Card Component
 const StatsCard = ({ 
   icon: Icon, 
   label, 
@@ -135,7 +134,7 @@ export default function CoursesPage() {
       const coursePromise = fetch(`/api/courses?${courseParams.toString()}`, { cache: 'no-store' });
       const enrollmentPromise = fetch(`/api/enrollment/${user.id}`, { cache: 'no-store' });
         
-      const [courseResponse, enrollmentResponse] = await Promise.all([coursePromise, enrollmentPromise]);
+      const [courseResponse, enrollmentResponse] = await Promise.all([coursePromise, enrollmentResponse]);
 
       if (!courseResponse.ok) {
         const errorData = await courseResponse.json();
@@ -333,7 +332,7 @@ export default function CoursesPage() {
 
   return (
     <div className="space-y-8 pb-12">
-      {/* Hero Section - Similar al de gestión */}
+      {/* Hero Section */}
       <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-secondary/10 dark:from-primary/20 dark:via-primary/10 dark:to-secondary/20 border border-border/50 p-6 sm:p-8 shadow-sm">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 dark:from-blue-500/10 dark:via-purple-500/10 dark:to-pink-500/10" />
         <div className="relative z-10 max-w-3xl">
@@ -343,7 +342,7 @@ export default function CoursesPage() {
           </p>
         </div>
         
-        {/* Ilustración SVG similar */}
+        {/* Ilustración SVG */}
         <div className="absolute bottom-0 right-0 opacity-15 dark:opacity-20">
           <svg width="280" height="200" viewBox="0 0 280 200" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -383,7 +382,7 @@ export default function CoursesPage() {
         </div>
       </div>
 
-      {/* Stats Dashboard - Similar al de gestión */}
+      {/* Stats Dashboard */}
       <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
         <StatsCard
           icon={BookOpen}
@@ -415,7 +414,7 @@ export default function CoursesPage() {
         />
       </div>
 
-      {/* Controls Bar - Similar al de gestión */}
+      {/* Controls Bar */}
       <Card className="shadow-sm border">
         <CardContent className="p-4 sm:p-6 space-y-4">
           {/* Top Row: Search and Actions */}
@@ -466,30 +465,30 @@ export default function CoursesPage() {
 
               <Button onClick={() => forceStartTour('courses', coursesTour)} variant="outline" className="gap-2">
                 <HelpCircle className="h-4 w-4" />
-                <span className="hidden sm:inline">Guía</span>
+                <span className="hidden sm:inline">Guía Interactiva</span>
               </Button>
             </div>
           </div>
 
-          {/* Bottom Row: Tabs and Quick Filters */}
+          {/* Bottom Row: Filters */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            {/* Status Tabs */}
-            <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full sm:w-auto">
-              <TabsList className="grid w-full grid-cols-4 sm:w-auto overflow-x-auto">
-                <TabsTrigger value="all" className="gap-2 text-xs sm:text-sm">
-                  <Globe className="h-3 w-3 sm:h-4 sm:w-4" />
-                  <span>Todos</span>
-                </TabsTrigger>
-                {allCategories.slice(1, 4).map(cat => (
-                  <TabsTrigger key={cat} value={cat} className="gap-2 text-xs sm:text-sm">
-                    {cat}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
-
-            {/* Quick Filters */}
+            {/* Category Filter */}
             <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center space-x-2">
+                <Select value={activeCategory} onValueChange={setActiveCategory}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Categoría" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allCategories.map(cat => (
+                      <SelectItem key={cat} value={cat}>
+                        {cat === 'all' ? 'Todas las categorías' : cat}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="flex items-center space-x-2">
                 <Switch
                   id="available"
