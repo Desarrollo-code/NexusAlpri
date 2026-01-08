@@ -198,9 +198,9 @@ const EnhancedCourseCard = ({
   const StatusIcon = statusConfig.icon;
 
   return (
-    <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-sm">
+    <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-sm max-w-sm mx-auto">
       {/* Image Header */}
-      <div className="relative h-48 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 overflow-hidden">
+      <div className="relative h-44 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 overflow-hidden">
         {course.imageUrl ? (
           <img 
             src={course.imageUrl} 
@@ -209,7 +209,7 @@ const EnhancedCourseCard = ({
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <BookOpen className="h-16 w-16 text-white/80" />
+            <BookOpen className="h-14 w-14 text-white/80" />
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
@@ -307,10 +307,10 @@ const EnhancedCourseCard = ({
       </div>
 
       {/* Content */}
-      <CardContent className="p-5 space-y-4">
+      <CardContent className="p-4 space-y-3">
         {/* Title and Category */}
         <div className="space-y-2">
-          <h3 className="font-semibold text-lg line-clamp-2 leading-tight group-hover:text-primary transition-colors">
+          <h3 className="font-semibold text-base line-clamp-2 leading-tight group-hover:text-primary transition-colors">
             {course.title}
           </h3>
           <Badge variant="outline" className="text-xs">
@@ -329,12 +329,12 @@ const EnhancedCourseCard = ({
         )}
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-3 gap-3 pt-3 border-t">
+        <div className="grid grid-cols-3 gap-2 pt-3 border-t">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="text-center">
-                  <p className="text-lg font-semibold">{course.modulesCount}</p>
+                  <p className="text-base font-semibold">{course.modulesCount}</p>
                   <p className="text-xs text-muted-foreground">Módulos</p>
                 </div>
               </TooltipTrigger>
@@ -348,7 +348,7 @@ const EnhancedCourseCard = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="text-center border-x">
-                  <p className="text-lg font-semibold">{course.enrollmentsCount}</p>
+                  <p className="text-base font-semibold">{course.enrollmentsCount}</p>
                   <p className="text-xs text-muted-foreground">Inscritos</p>
                 </div>
               </TooltipTrigger>
@@ -362,7 +362,7 @@ const EnhancedCourseCard = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="text-center">
-                  <p className="text-lg font-semibold">{Math.round(course.averageCompletion || 0)}%</p>
+                  <p className="text-base font-semibold">{Math.round(course.averageCompletion || 0)}%</p>
                   <p className="text-xs text-muted-foreground">Completo</p>
                 </div>
               </TooltipTrigger>
@@ -646,18 +646,15 @@ function ManageCoursesPageComponent() {
   return (
     <div className="space-y-8 pb-12">
       {/* Hero Section */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 p-8 text-white shadow-2xl">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-blue-600 to-cyan-600 dark:from-indigo-900 dark:via-blue-900 dark:to-cyan-900 p-8 text-white shadow-2xl">
         <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black)]" />
         <div className="relative z-10 max-w-3xl">
-          <h1 className="text-4xl font-bold tracking-tight mb-4">
-            Gestión de Cursos
-          </h1>
           <p className="text-lg text-white/90">
             Crea, organiza y gestiona todos los cursos de la plataforma con herramientas potentes y fáciles de usar.
           </p>
         </div>
         <div className="absolute bottom-0 right-0 opacity-20">
-          <BookOpen className="h-64 w-64" />
+          <BookOpen className="h-48 w-48" />
         </div>
       </div>
 
