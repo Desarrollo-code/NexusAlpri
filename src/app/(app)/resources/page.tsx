@@ -19,7 +19,16 @@ import {
 } from 'lucide-react';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { ResourceListItem } from '@/components/resources/resource-list-item';
-import { DndContext, type DragEndEvent, MouseSensor, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { 
+  DndContext, 
+  type DragEndEvent, 
+  MouseSensor, 
+  PointerSensor, 
+  TouchSensor, 
+  useSensor, 
+  useSensors,
+  useDroppable 
+} from '@dnd-kit/core';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -45,7 +54,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { type DateRange } from 'react-day-picker';
-import { useDroppable } from '@dnd-kit/core';
 import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
 import { MoveResourceModal } from '@/components/resources/move-resource-modal';
 import { useRecentResources } from '@/hooks/use-recent-resources';

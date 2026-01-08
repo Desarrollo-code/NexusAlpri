@@ -95,7 +95,7 @@ interface ApiCourseForManage {
 }
 
 // Constants
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 10; // Reducido para mejor alineación
 
 const STATUS_CONFIG = {
   all: { 
@@ -198,25 +198,25 @@ const EnhancedCourseCard = ({
   const StatusIcon = statusConfig.icon;
 
   return (
-    <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-sm max-w-sm mx-auto">
+    <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 border h-full flex flex-col">
       {/* Image Header */}
-      <div className="relative h-44 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 overflow-hidden">
+      <div className="relative h-40 bg-gradient-to-br from-primary/20 to-secondary/20 overflow-hidden">
         {course.imageUrl ? (
           <img 
             src={course.imageUrl} 
             alt={course.title}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <BookOpen className="h-14 w-14 text-white/80" />
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30">
+            <BookOpen className="h-12 w-12 text-primary/70 dark:text-primary/50" />
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent dark:from-black/60" />
         
         {/* Status Badge */}
         <div className="absolute top-3 left-3">
-          <Badge className={cn("font-medium shadow-lg", statusConfig.bgColor, statusConfig.color)}>
+          <Badge className={cn("font-medium shadow-sm", statusConfig.bgColor, statusConfig.color, "backdrop-blur-sm")}>
             <StatusIcon className="h-3 w-3 mr-1" />
             {statusConfig.label}
           </Badge>
@@ -225,7 +225,7 @@ const EnhancedCourseCard = ({
         {/* Mandatory Badge */}
         {course.isMandatory && (
           <div className="absolute top-3 right-3">
-            <Badge className="bg-red-500 text-white shadow-lg">
+            <Badge className="bg-destructive text-destructive-foreground shadow-sm backdrop-blur-sm">
               <Sparkles className="h-3 w-3 mr-1" />
               Obligatorio
             </Badge>
@@ -239,7 +239,7 @@ const EnhancedCourseCard = ({
               <Button 
                 size="sm" 
                 variant="secondary"
-                className="h-8 w-8 p-0 rounded-full shadow-lg bg-white/90 hover:bg-white backdrop-blur-sm"
+                className="h-8 w-8 p-0 rounded-full shadow-md bg-background/90 hover:bg-background backdrop-blur-sm"
               >
                 <MoreVertical className="h-4 w-4" />
               </Button>
@@ -307,21 +307,21 @@ const EnhancedCourseCard = ({
       </div>
 
       {/* Content */}
-      <CardContent className="p-4 space-y-3">
+      <CardContent className="p-4 space-y-3 flex-1 flex flex-col">
         {/* Title and Category */}
-        <div className="space-y-2">
-          <h3 className="font-semibold text-base line-clamp-2 leading-tight group-hover:text-primary transition-colors">
+        <div className="space-y-2 flex-1">
+          <h3 className="font-semibold text-sm line-clamp-2 leading-tight group-hover:text-primary transition-colors">
             {course.title}
           </h3>
-          <Badge variant="outline" className="text-xs">
+          <Badge variant="outline" className="text-xs font-normal">
             {course.category}
           </Badge>
         </div>
 
         {/* Instructor */}
         {course.instructor && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <div className="h-6 w-6 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-medium">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2">
+            <div className="h-5 w-5 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-medium">
               {course.instructor.name.charAt(0)}
             </div>
             <span className="truncate">{course.instructor.name}</span>
@@ -329,12 +329,12 @@ const EnhancedCourseCard = ({
         )}
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-3 gap-2 pt-3 border-t">
+        <div className="grid grid-cols-3 gap-1 pt-3 border-t mt-auto">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="text-center">
-                  <p className="text-base font-semibold">{course.modulesCount}</p>
+                  <p className="text-sm font-semibold">{course.modulesCount}</p>
                   <p className="text-xs text-muted-foreground">Módulos</p>
                 </div>
               </TooltipTrigger>
@@ -348,7 +348,7 @@ const EnhancedCourseCard = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="text-center border-x">
-                  <p className="text-base font-semibold">{course.enrollmentsCount}</p>
+                  <p className="text-sm font-semibold">{course.enrollmentsCount}</p>
                   <p className="text-xs text-muted-foreground">Inscritos</p>
                 </div>
               </TooltipTrigger>
@@ -362,7 +362,7 @@ const EnhancedCourseCard = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="text-center">
-                  <p className="text-base font-semibold">{Math.round(course.averageCompletion || 0)}%</p>
+                  <p className="text-sm font-semibold">{Math.round(course.averageCompletion || 0)}%</p>
                   <p className="text-xs text-muted-foreground">Completo</p>
                 </div>
               </TooltipTrigger>
@@ -374,8 +374,8 @@ const EnhancedCourseCard = ({
         </div>
 
         {/* Completion Progress */}
-        <div className="space-y-2">
-          <Progress value={course.averageCompletion || 0} className="h-2" />
+        <div className="space-y-1 pt-2">
+          <Progress value={course.averageCompletion || 0} className="h-1.5" />
         </div>
       </CardContent>
     </Card>
@@ -645,21 +645,29 @@ function ManageCoursesPageComponent() {
 
   return (
     <div className="space-y-8 pb-12">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-blue-600 to-cyan-600 dark:from-indigo-900 dark:via-blue-900 dark:to-cyan-900 p-8 text-white shadow-2xl">
-        <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black)]" />
+      {/* Hero Section - Mejorado con colores adaptables */}
+      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-secondary/10 dark:from-primary/20 dark:via-primary/10 dark:to-secondary/20 border border-border/50 p-6 sm:p-8 shadow-sm">
+        <div className="absolute inset-0 bg-grid-primary/5 [mask-image:linear-gradient(0deg,transparent,black)] dark:bg-grid-primary/10" />
         <div className="relative z-10 max-w-3xl">
-          <p className="text-lg text-white/90">
-            Crea, organiza y gestiona todos los cursos de la plataforma con herramientas potentes y fáciles de usar.
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-3 rounded-lg bg-primary/10 dark:bg-primary/20">
+              <BookOpen className="h-6 w-6 text-primary" />
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              Gestión de Cursos
+            </h1>
+          </div>
+          <p className="text-base text-foreground/80 dark:text-foreground/90">
+            Crea, organiza y gestiona todos los cursos de la plataforma y facilita el trabajo colaborativo en el mundo educativo.
           </p>
         </div>
-        <div className="absolute bottom-0 right-0 opacity-20">
-          <BookOpen className="h-48 w-48" />
+        <div className="absolute bottom-0 right-0 opacity-10 dark:opacity-5">
+          <BookOpen className="h-48 w-48 text-primary" />
         </div>
       </div>
 
       {/* Stats Dashboard */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
         <StatsCard
           icon={BookOpen}
           label="Total de Cursos"
@@ -691,8 +699,8 @@ function ManageCoursesPageComponent() {
       </div>
 
       {/* Controls Bar */}
-      <Card className="shadow-sm">
-        <CardContent className="p-6 space-y-6">
+      <Card className="shadow-sm border">
+        <CardContent className="p-4 sm:p-6 space-y-6">
           {/* Top Row: Tabs and Actions */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             {/* Status Tabs */}
@@ -705,10 +713,11 @@ function ManageCoursesPageComponent() {
                     : allCourses.filter(c => c.status === key).length;
                   
                   return (
-                    <TabsTrigger key={key} value={key} className="gap-2">
-                      <Icon className="h-4 w-4" />
+                    <TabsTrigger key={key} value={key} className="gap-2 text-xs sm:text-sm">
+                      <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
                       <span className="hidden sm:inline">{config.label}</span>
-                      <Badge variant="secondary" className="ml-1">
+                      <span className="sm:hidden">{config.label.substring(0, 3)}</span>
+                      <Badge variant="secondary" className="ml-1 text-xs">
                         {count}
                       </Badge>
                     </TabsTrigger>
@@ -780,6 +789,7 @@ function ManageCoursesPageComponent() {
                 <Button onClick={() => setShowCreateModal(true)} className="gap-2">
                   <PlusCircle className="h-4 w-4" />
                   <span className="hidden sm:inline">Crear curso</span>
+                  <span className="sm:hidden">Crear</span>
                 </Button>
               </div>
             </div>
@@ -911,17 +921,17 @@ function ManageCoursesPageComponent() {
       {/* Courses Display */}
       <div className="space-y-6">
         {isLoading ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {[...Array(6)].map((_, i) => (
-              <Card key={i} className="overflow-hidden">
-                <div className="h-48 bg-muted animate-pulse" />
-                <CardContent className="p-5 space-y-3">
-                  <div className="h-6 bg-muted rounded animate-pulse" />
-                  <div className="h-4 bg-muted rounded w-2/3 animate-pulse" />
-                  <div className="grid grid-cols-3 gap-3 pt-3">
-                    <div className="h-12 bg-muted rounded animate-pulse" />
-                    <div className="h-12 bg-muted rounded animate-pulse" />
-                    <div className="h-12 bg-muted rounded animate-pulse" />
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {[...Array(10)].map((_, i) => (
+              <Card key={i} className="overflow-hidden h-full">
+                <div className="h-40 bg-muted animate-pulse" />
+                <CardContent className="p-4 space-y-3">
+                  <div className="h-5 bg-muted rounded animate-pulse" />
+                  <div className="h-4 bg-muted rounded w-3/4 animate-pulse" />
+                  <div className="grid grid-cols-3 gap-2 pt-3">
+                    <div className="h-8 bg-muted rounded animate-pulse" />
+                    <div className="h-8 bg-muted rounded animate-pulse" />
+                    <div className="h-8 bg-muted rounded animate-pulse" />
                   </div>
                 </CardContent>
               </Card>
@@ -973,9 +983,9 @@ function ManageCoursesPageComponent() {
               </p>
             </div>
 
-            {/* Grid View */}
+            {/* Grid View - 5 cursos por fila en pantallas grandes */}
             {viewMode === 'grid' ? (
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                 {paginatedCourses.map((course) => (
                   <EnhancedCourseCard
                     key={course.id}
@@ -1022,7 +1032,7 @@ function ManageCoursesPageComponent() {
                         <TableRow key={course.id}>
                           <TableCell>
                             <div className="flex items-center gap-3">
-                              <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+                              <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center flex-shrink-0">
                                 {course.imageUrl ? (
                                   <img
                                     src={course.imageUrl}
@@ -1030,7 +1040,7 @@ function ManageCoursesPageComponent() {
                                     className="h-full w-full object-cover rounded-lg"
                                   />
                                 ) : (
-                                  <BookOpen className="h-6 w-6 text-white" />
+                                  <BookOpen className="h-6 w-6 text-primary" />
                                 )}
                               </div>
                               <div className="min-w-0 flex-1">
@@ -1040,7 +1050,7 @@ function ManageCoursesPageComponent() {
                                     {course.category}
                                   </Badge>
                                   {course.isMandatory && (
-                                    <Badge className="text-xs bg-red-500">
+                                    <Badge className="text-xs bg-destructive">
                                       Obligatorio
                                     </Badge>
                                   )}
