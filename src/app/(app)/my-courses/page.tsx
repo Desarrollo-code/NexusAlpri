@@ -284,9 +284,12 @@ export default function MyCoursesPage() {
   }
 
   return (
-    <div className="space-y-8 pb-12">
+    <div className="space-y-8 pb-12" id="my-courses-content">
       {/* Hero Section */}
-      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-secondary/10 dark:from-primary/20 dark:via-primary/10 dark:to-secondary/20 border border-border/50 p-6 sm:p-8 shadow-sm">
+      <div 
+        className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-secondary/10 dark:from-primary/20 dark:via-primary/10 dark:to-secondary/20 border border-border/50 p-6 sm:p-8 shadow-sm"
+        id="my-courses-hero"
+      >
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 dark:from-blue-500/10 dark:via-purple-500/10 dark:to-pink-500/10" />
         <div className="relative z-10 max-w-3xl">
           <p className="text-xl font-medium text-foreground mb-2">Tu espacio de aprendizaje</p>
@@ -336,7 +339,10 @@ export default function MyCoursesPage() {
       </div>
 
       {/* Stats Dashboard */}
-      <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
+      <div 
+        className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4" 
+        id="my-courses-stats"
+      >
         <StatsCard
           icon={BookOpen}
           label="Total de Cursos"
@@ -368,7 +374,10 @@ export default function MyCoursesPage() {
       </div>
 
       {/* Controls Bar */}
-      <Card className="shadow-sm border">
+      <Card 
+        className="shadow-sm border" 
+        id="my-courses-controls"
+      >
         <CardContent className="p-4 sm:p-6 space-y-4">
           {/* Top Row: Search and Actions */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -412,7 +421,12 @@ export default function MyCoursesPage() {
                 </Tooltip>
               </TooltipProvider>
 
-              <Button onClick={() => forceStartTour('myCourses', myCoursesTour)} variant="outline" className="gap-2">
+              <Button 
+                onClick={() => forceStartTour('myCourses', myCoursesTour)} 
+                variant="outline" 
+                className="gap-2"
+                id="my-courses-help-button"
+              >
                 <HelpCircle className="h-4 w-4" />
                 <span className="hidden sm:inline">Guía</span>
               </Button>
@@ -509,7 +523,10 @@ export default function MyCoursesPage() {
         <div className="space-y-8">
           {/* In Progress Courses */}
           {inProgressCourses.length > 0 && (
-            <section className="space-y-4">
+            <section 
+              className="space-y-4" 
+              id="my-courses-in-progress"
+            >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <h2 className="text-xl font-bold text-foreground">Continuar Aprendiendo</h2>
@@ -538,7 +555,10 @@ export default function MyCoursesPage() {
 
           {/* Completed Courses */}
           {completedCourses.length > 0 && (
-            <section className="space-y-4">
+            <section 
+              className="space-y-4" 
+              id="my-courses-completed"
+            >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <h2 className="text-xl font-bold text-foreground">Cursos Completados</h2>

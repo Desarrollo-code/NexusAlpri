@@ -1,3 +1,4 @@
+// src/app/(app)/courses/page.tsx
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
@@ -118,19 +119,8 @@ export default function CoursesPage() {
   
   useEffect(() => {
     setPageTitle('Catálogo de Cursos');
-  }, [setPageTitle]);
-
-  // Inicializar el tour después de que la página se haya cargado
-  useEffect(() => {
-    if (!isLoading && !tourInitialized) {
-      try {
-        startTour('courses', coursesTour);
-        setTourInitialized(true);
-      } catch (err) {
-        console.error('Error al iniciar la guía:', err);
-      }
-    }
-  }, [isLoading, tourInitialized, startTour]);
+    startTour('courses', coursesTour);
+  }, [setPageTitle, startTour]);
 
   const fetchCoursesAndEnrollments = useCallback(async () => {
     if (!user) {
@@ -415,9 +405,12 @@ export default function CoursesPage() {
   }
 
   return (
-    <div className="space-y-8 pb-12">
+    <div className="space-y-8 pb-12" id="courses-content">
       {/* Hero Section */}
-      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-secondary/10 dark:from-primary/20 dark:via-primary/10 dark:to-secondary/20 border border-border/50 p-6 sm:p-8 shadow-sm">
+      <div 
+        className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-secondary/10 dark:from-primary/20 dark:via-primary/10 dark:to-secondary/20 border border-border/50 p-6 sm:p-8 shadow-sm"
+        id="courses-hero"
+      >
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 dark:from-blue-500/10 dark:via-purple-500/10 dark:to-pink-500/10" />
         <div className="relative z-10 max-w-3xl">
           <p className="text-xl font-medium text-foreground mb-2">Explora nuestro catálogo formativo</p>
@@ -467,7 +460,10 @@ export default function CoursesPage() {
       </div>
 
       {/* Stats Dashboard */}
-      <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
+      <div 
+        className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4" 
+        id="courses-stats"
+      >
         <StatsCard
           icon={BookOpen}
           label="Cursos Disponibles"
@@ -499,7 +495,10 @@ export default function CoursesPage() {
       </div>
 
       {/* Controls Bar */}
-      <Card className="shadow-sm border">
+      <Card 
+        className="shadow-sm border" 
+        id="courses-controls"
+      >
         <CardContent className="p-4 sm:p-6 space-y-4">
           {/* Top Row: Search and Actions */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -551,6 +550,7 @@ export default function CoursesPage() {
                 onClick={handleStartTour} 
                 variant="outline" 
                 className="gap-2 bg-primary/10 hover:bg-primary/20"
+                id="courses-help-button"
               >
                 <HelpCircle className="h-4 w-4" />
                 <span className="hidden sm:inline">Guía Interactiva</span>
@@ -713,7 +713,7 @@ export default function CoursesPage() {
           </CardContent>
         </Card>
       ) : Object.keys(groupedCourses).length > 0 ? (
-        <div className="space-y-8">
+        <div className="space-y-8" id="courses-results">
           {Object.entries(groupedCourses)
             .sort(([catA], [catB]) => catA.localeCompare(catB))
             .map(([category, courses]) => (

@@ -323,32 +323,114 @@ export const securityAuditTour: TourStep[] = [
   },
 ];
 
-export const myCoursesTour: TourStep[] = [
-  {
-    target: '#my-courses-header',
-    content: {
-      title: 'Tus Cursos Inscritos',
-      description: 'Esta es tu biblioteca personal de aprendizaje. Todos los cursos en los que te has inscrito aparecen aquí.',
+export const myCoursesTour = {
+  id: 'myCourses',
+  steps: [
+    {
+      target: '#my-courses-hero',
+      content: '¡Bienvenido a tu espacio de aprendizaje! Aquí puedes ver todos los cursos en los que estás inscrito.',
+      placement: 'bottom',
+      title: 'Mis Cursos'
     },
-  },
-  {
-    target: '#my-courses-filters',
-    content: {
-      title: 'Filtra tu Progreso',
-      description: 'Usa los filtros para encontrar rápidamente tus cursos, ya sea que estén "En Progreso" o "Completados".',
+    {
+      target: '#my-courses-stats',
+      content: 'Mira tus estadísticas de aprendizaje: total de cursos, progreso, completados y más.',
+      placement: 'bottom',
+      title: 'Tus Estadísticas'
     },
-  },
-];
+    {
+      target: '#my-courses-controls',
+      content: 'Busca cursos específicos, filtra por estado (todos, en progreso, completados) y accede a la guía interactiva cuando lo necesites.',
+      placement: 'bottom',
+      title: 'Controles y Filtros'
+    },
+    {
+      target: '#my-courses-help-button',
+      content: 'Haz clic aquí para volver a ver esta guía en cualquier momento.',
+      placement: 'left',
+      title: 'Ayuda Rápida'
+    },
+    {
+      target: '#my-courses-in-progress',
+      content: 'Aquí verás los cursos que has comenzado pero aún no has completado. Continúa tu aprendizaje desde donde lo dejaste.',
+      placement: 'top',
+      title: 'Cursos en Progreso'
+    },
+    {
+      target: '#my-courses-completed',
+      content: 'Revisa tus logros y certificados de los cursos que has completado exitosamente.',
+      placement: 'top',
+      title: 'Cursos Completados'
+    }
+  ],
+  options: {
+    highlight: true,
+    overlayColor: 'rgba(0,0,0,0.5)',
+    disableKeyboardNavigation: false,
+    closeButton: true,
+    showProgress: true,
+    showButtons: true,
+    showNavigation: true
+  }
+};
 
-export const coursesTour: TourStep[] = [
-  {
-    target: '#courses-filters',
-    content: {
-      title: 'Encuentra tu Próximo Curso',
-      description: 'Usa la barra de búsqueda y el filtro de categorías para encontrar exactamente el curso que necesitas.',
+export const coursesTour: TourConfig = {
+  id: 'courses',
+  steps: [
+    {
+      target: '#courses-content',
+      title: '🎓 Catálogo de Cursos',
+      content: 'Explora todos los cursos disponibles en NexusAlpri. Encuentra el aprendizaje perfecto para tus objetivos.',
+      placement: 'center',
+      order: 1
     },
-  },
-];
+    {
+      target: '#courses-hero',
+      title: '🚀 Explora Oportunidades',
+      content: 'Esta sección te presenta las posibilidades de aprendizaje disponibles en nuestra plataforma.',
+      placement: 'bottom',
+      order: 2
+    },
+    {
+      target: '#courses-stats',
+      title: '📊 Vista General',
+      content: 'Observa las estadísticas del catálogo: cursos disponibles, en progreso, completados y categorías.',
+      placement: 'bottom',
+      order: 3
+    },
+    {
+      target: '#courses-controls',
+      title: '🔧 Filtros Avanzados',
+      content: 'Usa estos controles para refinar tu búsqueda por categoría, dificultad, obligatoriedad y más.',
+      placement: 'bottom',
+      order: 4
+    },
+    {
+      target: '#courses-help-button',
+      title: '💡 Guía Interactiva',
+      content: '¿Necesitas ayuda para usar el catálogo? Haz clic aquí para reiniciar esta guía.',
+      placement: 'left',
+      order: 5
+    },
+    {
+      target: '#courses-results',
+      title: '📚 Resultados',
+      content: 'Aquí se muestran los cursos que coinciden con tus filtros. Puedes inscribirte directamente desde aquí.',
+      placement: 'top',
+      order: 6
+    }
+  ],
+  options: {
+    highlight: true,
+    overlayOpacity: 0.5,
+    closeOnClickOutside: true,
+    disableScroll: false,
+    showProgress: true,
+    showNavigation: true,
+    showCloseButton: true,
+    scrollPadding: 20
+  }
+};
 
 export const formsTour: TourStep[] = [
   {
