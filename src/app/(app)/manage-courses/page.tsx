@@ -9,7 +9,10 @@ import {
   Search, Download, Upload, RefreshCw, BookOpen, 
   TrendingUp, Copy, ChevronDown, ChevronUp, BookMarked,
   LayoutGrid, LayoutList, X, SlidersHorizontal, Archive,
-  CheckCircle2, Clock, FolderArchive, Sparkles
+  CheckCircle2, Clock, FolderArchive, Sparkles,
+  Settings,
+  BarChart3,
+  FileText
 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
@@ -51,7 +54,11 @@ import {
   DropdownMenuTrigger,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
-  DropdownMenuRadioItem
+  DropdownMenuRadioItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuPortal
 } from '@/components/ui/dropdown-menu';
 import { mapApiCourseToAppCourse } from '@/lib/course-utils';
 import { CourseAssignmentModal } from '@/components/course-assignment-modal';
@@ -95,7 +102,7 @@ interface ApiCourseForManage {
 }
 
 // Constants
-const PAGE_SIZE = 10; // Reducido para mejor alineación
+const PAGE_SIZE = 10;
 
 const STATUS_CONFIG = {
   all: { 
@@ -245,7 +252,7 @@ const EnhancedCourseCard = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+              {/* Acciones principales */}
               <DropdownMenuItem asChild>
                 <Link href={`/manage-courses/${course.id}/edit`}>
                   <Edit className="h-4 w-4 mr-2" />
@@ -258,48 +265,81 @@ const EnhancedCourseCard = ({
                   Vista previa
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href={`/manage-courses/${course.id}/enrollments`}>
-                  <Users className="h-4 w-4 mr-2" />
-                  Ver inscritos
-                </Link>
-              </DropdownMenuItem>
-              {course.isMandatory && (
-                <DropdownMenuItem onClick={() => onAssign(course)}>
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  Asignar usuarios
-                </DropdownMenuItem>
-              )}
+              
+              {/* Submenú para más acciones */}
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <Settings className="h-4 w-4 mr-2" />
+                  Más acciones
+                </DropdownMenuSubTrigger>
+                <DropdownMenuPortal>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem asChild>
+                      <Link href={`/manage-courses/${course.id}/enrollments`}>
+                        <Users className="h-4 w-4 mr-2" />
+                        Ver inscritos
+                      </Link>
+                    </DropdownMenuItem>
+                    {course.isMandatory && (
+                      <DropdownMenuItem onClick={() => onAssign(course)}>
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Asignar usuarios
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem asChild>
+                      <Link href={`/manage-courses/${course.id}/analytics`}>
+                        <BarChart3 className="h-4 w-4 mr-2" />
+                        Analíticas
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    {onDuplicate && (
+                      <DropdownMenuItem onClick={() => onDuplicate(course.id)}>
+                        <Copy className="h-4 w-4 mr-2" />
+                        Duplicar
+                      </DropdownMenuItem>
+                    )}
+                    {onExport && (
+                      <DropdownMenuItem onClick={() => onExport(course.id)}>
+                        <Download className="h-4 w-4 mr-2" />
+                        Exportar
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+              </DropdownMenuSub>
+
               <DropdownMenuSeparator />
-              {onDuplicate && (
-                <DropdownMenuItem onClick={() => onDuplicate(course.id)}>
-                  <Copy className="h-4 w-4 mr-2" />
-                  Duplicar
-                </DropdownMenuItem>
-              )}
-              {onExport && (
-                <DropdownMenuItem onClick={() => onExport(course.id)}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Exportar
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuSeparator />
+              
+              {/* Cambiar estado */}
               <DropdownMenuLabel>Cambiar estado</DropdownMenuLabel>
               <DropdownMenuRadioGroup 
                 value={course.status}
                 onValueChange={(value) => onStatusChange(course.id, value as CourseStatus)}
               >
-                <DropdownMenuRadioItem value="DRAFT">Borrador</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="PUBLISHED">Publicado</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="ARCHIVED">Archivado</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="DRAFT">
+                  <Clock className="h-4 w-4 mr-2" />
+                  Borrador
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="PUBLISHED">
+                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                  Publicado
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="ARCHIVED">
+                  <FolderArchive className="h-4 w-4 mr-2" />
+                  Archivado
+                </DropdownMenuRadioItem>
               </DropdownMenuRadioGroup>
+              
               <DropdownMenuSeparator />
+              
+              {/* Acción peligrosa */}
               <DropdownMenuItem 
                 onClick={() => onDelete(course)}
                 className="text-destructive focus:text-destructive"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                Eliminar
+                Eliminar curso
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -645,24 +685,54 @@ function ManageCoursesPageComponent() {
 
   return (
     <div className="space-y-8 pb-12">
-      {/* Hero Section - Mejorado con colores adaptables */}
+      {/* Hero Section - Mejorada sin título duplicado */}
       <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-secondary/10 dark:from-primary/20 dark:via-primary/10 dark:to-secondary/20 border border-border/50 p-6 sm:p-8 shadow-sm">
-        <div className="absolute inset-0 bg-grid-primary/5 [mask-image:linear-gradient(0deg,transparent,black)] dark:bg-grid-primary/10" />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 dark:from-blue-500/10 dark:via-purple-500/10 dark:to-pink-500/10" />
         <div className="relative z-10 max-w-3xl">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 rounded-lg bg-primary/10 dark:bg-primary/20">
-              <BookOpen className="h-6 w-6 text-primary" />
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Gestión de Cursos
-            </h1>
-          </div>
+          <p className="text-xl font-medium text-foreground mb-2">Gestiona tu contenido educativo</p>
           <p className="text-base text-foreground/80 dark:text-foreground/90">
             Crea, organiza y gestiona todos los cursos de la plataforma y facilita el trabajo colaborativo en el mundo educativo.
           </p>
         </div>
-        <div className="absolute bottom-0 right-0 opacity-10 dark:opacity-5">
-          <BookOpen className="h-48 w-48 text-primary" />
+        
+        {/* Ilustración moderna - SVG 3D mejorado */}
+        <div className="absolute bottom-0 right-0 opacity-15 dark:opacity-20">
+          <svg width="280" height="200" viewBox="0 0 280 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {/* Fondo de gradiente */}
+            <defs>
+              <linearGradient id="bookGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#6366f1" />
+                <stop offset="50%" stopColor="#8b5cf6" />
+                <stop offset="100%" stopColor="#ec4899" />
+              </linearGradient>
+              <linearGradient id="pageGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#f0f9ff" stopOpacity="0.8" />
+                <stop offset="100%" stopColor="#e0f2fe" stopOpacity="0.4" />
+              </linearGradient>
+              <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="4" stdDeviation="8" floodColor="#6366f1" floodOpacity="0.3" />
+              </filter>
+            </defs>
+            
+            {/* Libro principal */}
+            <g filter="url(#shadow)">
+              <path d="M180 60C180 40 200 30 220 40L240 50C260 60 260 80 240 90L220 100C200 110 180 100 180 80V60Z" fill="url(#bookGradient)" />
+              <path d="M180 60L220 40L240 50L200 70L180 60Z" fill="url(#bookGradient)" fillOpacity="0.8" />
+              <path d="M180 80L200 90L240 70L220 60L180 80Z" fill="url(#bookGradient)" fillOpacity="0.6" />
+            </g>
+            
+            {/* Páginas del libro */}
+            <g>
+              <path d="M185 65L225 45L235 50L195 70L185 65Z" fill="url(#pageGradient)" />
+              <path d="M185 75L205 85L235 65L215 55L185 75Z" fill="url(#pageGradient)" fillOpacity="0.7" />
+              <path d="M190 85L210 95L230 75L210 65L190 85Z" fill="url(#pageGradient)" fillOpacity="0.5" />
+            </g>
+            
+            {/* Elementos decorativos */}
+            <circle cx="195" cy="85" r="4" fill="#ffffff" opacity="0.8" />
+            <circle cx="205" cy="95" r="3" fill="#ffffff" opacity="0.6" />
+            <circle cx="215" cy="75" r="3" fill="#ffffff" opacity="0.6" />
+          </svg>
         </div>
       </div>
 
@@ -698,14 +768,68 @@ function ManageCoursesPageComponent() {
         />
       </div>
 
-      {/* Controls Bar */}
+      {/* Controls Bar simplificada */}
       <Card className="shadow-sm border">
-        <CardContent className="p-4 sm:p-6 space-y-6">
-          {/* Top Row: Tabs and Actions */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <CardContent className="p-4 sm:p-6 space-y-4">
+          {/* Top Row: Search and Actions */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            {/* Search Bar */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Buscar cursos por título, descripción o categoría..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 pr-10"
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2"
+                  onClick={() => setSearchQuery('')}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                    >
+                      {viewMode === 'grid' ? (
+                        <LayoutList className="h-4 w-4" />
+                      ) : (
+                        <LayoutGrid className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{viewMode === 'grid' ? 'Vista de lista' : 'Vista de cuadrícula'}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <Button onClick={() => setShowCreateModal(true)} className="gap-2">
+                <PlusCircle className="h-4 w-4" />
+                <span className="hidden sm:inline">Nuevo curso</span>
+                <span className="sm:hidden">Crear</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* Bottom Row: Tabs and Quick Filters */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             {/* Status Tabs */}
-            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full lg:w-auto">
-              <TabsList className="grid w-full grid-cols-4 lg:w-auto">
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full sm:w-auto">
+              <TabsList className="grid w-full grid-cols-4 sm:w-auto">
                 {Object.entries(STATUS_CONFIG).map(([key, config]) => {
                   const Icon = config.icon;
                   const count = key === 'all' 
@@ -726,94 +850,39 @@ function ManageCoursesPageComponent() {
               </TabsList>
             </Tabs>
 
-            {/* Action Buttons */}
-            <div className="flex items-center gap-2">
+            {/* Quick Filters */}
+            <div className="flex items-center gap-3">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       variant="outline"
-                      size="icon"
+                      size="sm"
                       onClick={() => setShowFilters(!showFilters)}
-                      className={cn(showFilters && "bg-accent")}
+                      className={cn("gap-2", showFilters && "bg-accent")}
                     >
                       <SlidersHorizontal className="h-4 w-4" />
+                      <span className="hidden sm:inline">Filtros</span>
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Mostrar filtros</p>
+                    <p>Mostrar/Ocultar filtros</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
 
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={fetchCourses}
-                      disabled={isLoading}
-                    >
-                      <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Actualizar cursos</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-
-              <div className="flex items-center gap-2 border-l pl-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                      >
-                        {viewMode === 'grid' ? (
-                          <LayoutList className="h-4 w-4" />
-                        ) : (
-                          <LayoutGrid className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{viewMode === 'grid' ? 'Vista de lista' : 'Vista de cuadrícula'}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-
-                <Button onClick={() => setShowCreateModal(true)} className="gap-2">
-                  <PlusCircle className="h-4 w-4" />
-                  <span className="hidden sm:inline">Crear curso</span>
-                  <span className="sm:hidden">Crear</span>
+              {hasActiveFilters && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="gap-2 text-xs"
+                >
+                  <X className="h-3 w-3" />
+                  Limpiar
                 </Button>
-              </div>
+              )}
             </div>
-          </div>
-
-          {/* Search Bar */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Buscar cursos por título, descripción o categoría..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-10"
-            />
-            {searchQuery && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2"
-                onClick={() => setSearchQuery('')}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
           </div>
 
           {/* Filters Panel */}
@@ -861,20 +930,6 @@ function ManageCoursesPageComponent() {
                   </label>
                 </div>
               </div>
-
-              {hasActiveFilters && (
-                <div className="flex items-end">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={clearFilters}
-                    className="w-full gap-2"
-                  >
-                    <X className="h-4 w-4" />
-                    Limpiar filtros
-                  </Button>
-                </div>
-              )}
             </div>
           )}
 
@@ -1088,7 +1143,7 @@ function ManageCoursesPageComponent() {
                                   <MoreVertical className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
+                              <DropdownMenuContent align="end" className="w-48">
                                 <DropdownMenuItem asChild>
                                   <Link href={`/manage-courses/${course.id}/edit`}>
                                     <Edit className="h-4 w-4 mr-2" />
