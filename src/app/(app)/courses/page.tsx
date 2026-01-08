@@ -114,16 +114,28 @@ export default function CoursesPage() {
   const [showMandatoryOnly, setShowMandatoryOnly] = useState(false);
   const [showOnlyAvailable, setShowOnlyAvailable] = useState(true);
   const [difficultyFilter, setDifficultyFilter] = useState<string>('all');
+  const [tourInitialized, setTourInitialized] = useState(false);
   
   useEffect(() => {
     setPageTitle('Catálogo de Cursos');
-    startTour('courses', coursesTour);
-  }, [setPageTitle, startTour]);
+  }, [setPageTitle]);
+
+  // Inicializar el tour después de que la página se haya cargado
+  useEffect(() => {
+    if (!isLoading && !tourInitialized) {
+      try {
+        startTour('courses', coursesTour);
+        setTourInitialized(true);
+      } catch (err) {
+        console.error('Error al iniciar la guía:', err);
+      }
+    }
+  }, [isLoading, tourInitialized, startTour]);
 
   const fetchCoursesAndEnrollments = useCallback(async () => {
     if (!user) {
-        setIsLoading(false);
-        return;
+      setIsLoading(false);
+      return;
     }
     
     setIsLoading(true);
@@ -131,32 +143,48 @@ export default function CoursesPage() {
     try {
       const courseParams = new URLSearchParams({ userId: user.id });
       
-      const coursePromise = fetch(`/api/courses?${courseParams.toString()}`, { cache: 'no-store' });
-      const enrollmentPromise = fetch(`/api/enrollment/${user.id}`, { cache: 'no-store' });
-        
-      const [courseResponse, enrollmentResponse] = await Promise.all([coursePromise, enrollmentResponse]);
+      // CORREGIDO: Variables correctamente nombradas
+      const coursesPromise = fetch(`/api/courses?${courseParams.toString()}`, { 
+        cache: 'no-store' 
+      });
+      
+      const enrollmentsPromise = fetch(`/api/enrollment/${user.id}`, { 
+        cache: 'no-store' 
+      });
+      
+      const [coursesResponse, enrollmentsResponse] = await Promise.all([
+        coursesPromise, 
+        enrollmentsPromise
+      ]);
 
-      if (!courseResponse.ok) {
-        const errorData = await courseResponse.json();
+      if (!coursesResponse.ok) {
+        const errorData = await coursesResponse.json().catch(() => ({}));
         throw new Error(errorData.message || 'Error al cargar los cursos');
       }
-      const courseData = await courseResponse.json();
       
+      const courseData = await coursesResponse.json();
       const coursesArray = Array.isArray(courseData?.courses) ? courseData.courses : [];
       setAllApiCourses(coursesArray);
 
-      if (enrollmentResponse?.ok) {
-        const enrollmentData: EnrolledCourse[] = await enrollmentResponse.json();
+      if (enrollmentsResponse.ok) {
+        const enrollmentData = await enrollmentsResponse.json();
         const validEnrollmentIds = Array.isArray(enrollmentData)
-            ? enrollmentData.map(c => c?.id).filter(Boolean)
-            : [];
+          ? enrollmentData
+              .filter((course: EnrolledCourse | null) => course?.id)
+              .map((course: EnrolledCourse) => course.id)
+          : [];
         setEnrolledCourseIds(validEnrollmentIds);
+      } else {
+        console.warn('No se pudieron cargar las inscripciones');
+        setEnrolledCourseIds([]);
       }
 
     } catch (err) {
+      console.error('Error fetching courses:', err);
       const errorMessage = err instanceof Error ? err.message : 'Ocurrió un error desconocido al cargar cursos';
       setError(errorMessage);
       setAllApiCourses([]);
+      setEnrolledCourseIds([]);
       toast({ 
         title: "Error al cargar cursos", 
         description: errorMessage, 
@@ -173,71 +201,98 @@ export default function CoursesPage() {
     }
   }, [isAuthLoading, user, fetchCoursesAndEnrollments]); 
 
-  const allCoursesForDisplay = useMemo(() => allApiCourses.map(mapApiCourseToAppCourse), [allApiCourses]);
+  const allCoursesForDisplay = useMemo(() => {
+    try {
+      return allApiCourses.map(mapApiCourseToAppCourse);
+    } catch (err) {
+      console.error('Error mapping courses:', err);
+      return [];
+    }
+  }, [allApiCourses]);
   
   // Estadísticas generales
   const stats = useMemo(() => {
-    const available = allCoursesForDisplay.filter(c => 
-      c.status === 'PUBLISHED' && !enrolledCourseIds.includes(c.id)
-    ).length;
-    const mandatory = allCoursesForDisplay.filter(c => 
-      c.isMandatory && c.status === 'PUBLISHED' && !enrolledCourseIds.includes(c.id)
-    ).length;
-    const totalCategories = new Set(allCoursesForDisplay.map(c => c.category)).size;
-    const inProgress = enrolledCourseIds.length;
-    const completed = allCoursesForDisplay.filter(c => 
-      c.averageCompletion && c.averageCompletion >= 100
-    ).length;
+    try {
+      const available = allCoursesForDisplay.filter(c => 
+        c.status === 'PUBLISHED' && !enrolledCourseIds.includes(c.id)
+      ).length;
+      const mandatory = allCoursesForDisplay.filter(c => 
+        c.isMandatory && c.status === 'PUBLISHED' && !enrolledCourseIds.includes(c.id)
+      ).length;
+      const totalCategories = new Set(
+        allCoursesForDisplay.map(c => c.category).filter(Boolean)
+      ).size;
+      const inProgress = enrolledCourseIds.length;
+      const completed = allCoursesForDisplay.filter(c => 
+        c.averageCompletion && c.averageCompletion >= 100
+      ).length;
 
-    return { available, mandatory, totalCategories, inProgress, completed };
+      return { available, mandatory, totalCategories, inProgress, completed };
+    } catch (err) {
+      console.error('Error calculating stats:', err);
+      return { available: 0, mandatory: 0, totalCategories: 0, inProgress: 0, completed: 0 };
+    }
   }, [allCoursesForDisplay, enrolledCourseIds]);
 
   const filteredCourses = useMemo(() => {
-    let courses = allCoursesForDisplay.filter(course => {
-      const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            (course.description && course.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                            (course.instructor?.name && course.instructor.name.toLowerCase().includes(searchTerm.toLowerCase()));
-      
-      const isPublished = course.status === 'PUBLISHED';
-      const isNotEnrolled = !enrolledCourseIds.includes(course?.id);
-      const matchesCategory = activeCategory === 'all' || course.category === activeCategory;
-      const matchesMandatory = !showMandatoryOnly || course.isMandatory;
-      const matchesAvailability = !showOnlyAvailable || isNotEnrolled;
-      const matchesDifficulty = difficultyFilter === 'all' || 
-        (course.difficulty?.toLowerCase() === difficultyFilter.toLowerCase());
+    try {
+      let courses = allCoursesForDisplay.filter(course => {
+        const matchesSearch = searchTerm === '' || 
+          course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (course.description && course.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (course.instructor?.name && course.instructor.name.toLowerCase().includes(searchTerm.toLowerCase()));
+        
+        const isPublished = course.status === 'PUBLISHED';
+        const isNotEnrolled = !enrolledCourseIds.includes(course?.id);
+        const matchesCategory = activeCategory === 'all' || course.category === activeCategory;
+        const matchesMandatory = !showMandatoryOnly || course.isMandatory;
+        const matchesAvailability = !showOnlyAvailable || isNotEnrolled;
+        const matchesDifficulty = difficultyFilter === 'all' || 
+          (course.difficulty?.toLowerCase() === difficultyFilter.toLowerCase());
 
-      return matchesSearch && isPublished && matchesCategory && matchesMandatory && matchesAvailability && matchesDifficulty;
-    });
+        return matchesSearch && isPublished && matchesCategory && matchesMandatory && matchesAvailability && matchesDifficulty;
+      });
 
-    // Ordenar cursos
-    courses.sort((a, b) => {
-      switch (sortBy) {
-        case 'popular':
-          return (b.enrollmentsCount || 0) - (a.enrollmentsCount || 0);
-        case 'title':
-          return a.title.localeCompare(b.title);
-        case 'modules':
-          return (b.modulesCount || 0) - (a.modulesCount || 0);
-        case 'completion':
-          return (b.averageCompletion || 0) - (a.averageCompletion || 0);
-        case 'newest':
-        default:
-          return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
-      }
-    });
+      // Ordenar cursos
+      courses.sort((a, b) => {
+        switch (sortBy) {
+          case 'popular':
+            return (b.enrollmentsCount || 0) - (a.enrollmentsCount || 0);
+          case 'title':
+            return a.title.localeCompare(b.title);
+          case 'modules':
+            return (b.modulesCount || 0) - (a.modulesCount || 0);
+          case 'completion':
+            return (b.averageCompletion || 0) - (a.averageCompletion || 0);
+          case 'newest':
+          default:
+            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return dateB - dateA;
+        }
+      });
 
-    return courses;
+      return courses;
+    } catch (err) {
+      console.error('Error filtering courses:', err);
+      return [];
+    }
   }, [allCoursesForDisplay, searchTerm, enrolledCourseIds, activeCategory, sortBy, showMandatoryOnly, showOnlyAvailable, difficultyFilter]);
 
   const groupedCourses = useMemo(() => {
-    return filteredCourses.reduce((acc, course) => {
-      const category = course.category || 'General';
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(course);
-      return acc;
-    }, {} as Record<string, AppCourseType[]>);
+    try {
+      return filteredCourses.reduce((acc, course) => {
+        const category = course.category || 'General';
+        if (!acc[category]) {
+          acc[category] = [];
+        }
+        acc[category].push(course);
+        return acc;
+      }, {} as Record<string, AppCourseType[]>);
+    } catch (err) {
+      console.error('Error grouping courses:', err);
+      return {};
+    }
   }, [filteredCourses]);
 
   const handleEnrollmentChange = (courseId: string, newStatus: boolean) => {
@@ -252,7 +307,18 @@ export default function CoursesPage() {
     }
   };
   
-  const allCategories = useMemo(() => ['all', ...(settings?.resourceCategories || [])], [settings]);
+  const allCategories = useMemo(() => {
+    try {
+      const categories = ['all'];
+      if (settings?.resourceCategories && Array.isArray(settings.resourceCategories)) {
+        categories.push(...settings.resourceCategories);
+      }
+      return [...new Set(categories)];
+    } catch (err) {
+      console.error('Error getting categories:', err);
+      return ['all'];
+    }
+  }, [settings]);
 
   const CourseCardSkeleton = () => (
     <Card className="flex flex-col overflow-hidden h-full">
@@ -281,6 +347,24 @@ export default function CoursesPage() {
   };
 
   const hasActiveFilters = searchTerm !== '' || activeCategory !== 'all' || showMandatoryOnly || !showOnlyAvailable || difficultyFilter !== 'all';
+
+  const handleStartTour = () => {
+    try {
+      forceStartTour('courses', coursesTour);
+      toast({
+        title: "Guía iniciada",
+        description: "Sigue los pasos para aprender a usar el catálogo",
+        variant: "default"
+      });
+    } catch (err) {
+      console.error('Error starting tour:', err);
+      toast({
+        title: "Error al iniciar la guía",
+        description: "Por favor, recarga la página e intenta nuevamente",
+        variant: "destructive"
+      });
+    }
+  };
 
   if (isAuthLoading || isLoading) {
     return (
@@ -463,7 +547,11 @@ export default function CoursesPage() {
                 </Tooltip>
               </TooltipProvider>
 
-              <Button onClick={() => forceStartTour('courses', coursesTour)} variant="outline" className="gap-2">
+              <Button 
+                onClick={handleStartTour} 
+                variant="outline" 
+                className="gap-2 bg-primary/10 hover:bg-primary/20"
+              >
                 <HelpCircle className="h-4 w-4" />
                 <span className="hidden sm:inline">Guía Interactiva</span>
               </Button>
@@ -543,7 +631,10 @@ export default function CoursesPage() {
               {searchTerm && (
                 <Badge variant="secondary" className="gap-1">
                   Búsqueda: {searchTerm}
-                  <button onClick={() => setSearchTerm('')} className="ml-1">
+                  <button 
+                    onClick={() => setSearchTerm('')} 
+                    className="ml-1 hover:bg-muted rounded-full p-0.5"
+                  >
                     <X className="h-3 w-3" />
                   </button>
                 </Badge>
@@ -551,7 +642,10 @@ export default function CoursesPage() {
               {activeCategory !== 'all' && (
                 <Badge variant="secondary" className="gap-1">
                   Categoría: {activeCategory}
-                  <button onClick={() => setActiveCategory('all')} className="ml-1">
+                  <button 
+                    onClick={() => setActiveCategory('all')} 
+                    className="ml-1 hover:bg-muted rounded-full p-0.5"
+                  >
                     <X className="h-3 w-3" />
                   </button>
                 </Badge>
@@ -559,7 +653,10 @@ export default function CoursesPage() {
               {showMandatoryOnly && (
                 <Badge variant="secondary" className="gap-1">
                   Solo obligatorios
-                  <button onClick={() => setShowMandatoryOnly(false)} className="ml-1">
+                  <button 
+                    onClick={() => setShowMandatoryOnly(false)} 
+                    className="ml-1 hover:bg-muted rounded-full p-0.5"
+                  >
                     <X className="h-3 w-3" />
                   </button>
                 </Badge>
@@ -567,7 +664,10 @@ export default function CoursesPage() {
               {!showOnlyAvailable && (
                 <Badge variant="secondary" className="gap-1">
                   Mostrar inscritos
-                  <button onClick={() => setShowOnlyAvailable(true)} className="ml-1">
+                  <button 
+                    onClick={() => setShowOnlyAvailable(true)} 
+                    className="ml-1 hover:bg-muted rounded-full p-0.5"
+                  >
                     <X className="h-3 w-3" />
                   </button>
                 </Badge>
@@ -575,7 +675,10 @@ export default function CoursesPage() {
               {difficultyFilter !== 'all' && (
                 <Badge variant="secondary" className="gap-1">
                   Dificultad: {difficultyFilter}
-                  <button onClick={() => setDifficultyFilter('all')} className="ml-1">
+                  <button 
+                    onClick={() => setDifficultyFilter('all')} 
+                    className="ml-1 hover:bg-muted rounded-full p-0.5"
+                  >
                     <X className="h-3 w-3" />
                   </button>
                 </Badge>
