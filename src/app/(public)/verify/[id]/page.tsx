@@ -70,7 +70,7 @@ export default function VerifyCertificatePage() {
             </Card>
 
             <p className="mt-8 text-sm text-slate-400">
-                &copy; {new Date().getFullYear()} NexusAlpri. Todos los derechos reservados.
+                &copy; {new Date().getFullYear()} NexusAlpri.
             </p>
         </div>
     );

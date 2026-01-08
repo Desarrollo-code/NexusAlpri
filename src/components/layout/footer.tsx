@@ -14,7 +14,7 @@ export function Footer() {
       <div className="container mx-auto py-4 px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row justify-center items-center gap-4 text-center">
             <p className="text-sm">
-              &copy; {new Date().getFullYear()} NexusAlpri. Todos los derechos reservados.
+              &copy; {new Date().getFullYear()} NexusAlpri. 
             </p>
             {/* Cambié el color del separador a blanco para que se vea sobre el azul */}
             <Separator orientation="vertical" className="h-4 hidden md:block bg-white/30" />
