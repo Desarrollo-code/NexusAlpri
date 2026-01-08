@@ -1334,7 +1334,7 @@ function ManageCoursesPageComponent() {
               <CourseListView
                 courses={paginatedCourses}
                 isLoading={isLoading}
-                onStatusChange={handleChangeStatus}
+                onStatusChange={handleChangeStatus}  // ← Corregido
                 onDelete={setCourseToDelete}
                 onAssign={setCourseToAssign}
                 onDuplicate={handleDuplicateCourse}
