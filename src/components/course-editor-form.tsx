@@ -7,28 +7,128 @@ import { useAuth } from '@/contexts/auth-context';
 import { useTitle } from '@/contexts/title-context';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Componentes UI optimizados
+// Componentes UI - Importados individualmente desde sus rutas específicas
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
 import { 
-  Button, Card, CardContent, CardDescription, CardHeader, CardTitle,
-  Input, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-  Badge, Progress, ScrollArea, Separator, Tabs, TabsContent, TabsList, TabsTrigger,
-  Switch, AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
-  Alert, AlertDescription, AlertTitle, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
-  Collapsible, CollapsibleContent, CollapsibleTrigger
-} from '@/components/ui';
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from '@/components/ui/alert-dialog';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle 
+} from '@/components/ui/dialog';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from '@/components/ui/tooltip';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { 
+  Collapsible, 
+  CollapsibleContent, 
+  CollapsibleTrigger 
+} from '@/components/ui/collapsible';
 
-// Iconos esenciales
+// Iconos esenciales - Solo los necesarios
 import { 
-  ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, 
-  Loader2, AlertTriangle, ImagePlus, X, Copy, Eye, FilePlus2, 
-  ChevronDown, BookOpenText, Video, FileText, Layers3, Sparkles, 
-  Award, CheckCircle, Calendar, Settings2, Globe, Target, Shield,
-  Layout, BookOpen, Download, Info, Check, Plus, Grid3x3, List,
-  FolderOpen, EyeOff, Maximize2, Minimize2, File as FileIcon,
-  Zap, Users, Tag, Lock, Filter, Palette, MoreHorizontal, HelpCircle
+  ArrowLeft, 
+  Save, 
+  PlusCircle, 
+  Trash2, 
+  UploadCloud, 
+  GripVertical, 
+  Loader2, 
+  AlertTriangle, 
+  ImagePlus, 
+  X, 
+  Copy, 
+  Eye, 
+  FilePlus2, 
+  ChevronDown, 
+  BookOpenText, 
+  Video, 
+  FileText, 
+  Layers3, 
+  Sparkles, 
+  Award, 
+  CheckCircle, 
+  Calendar as CalendarIcon, 
+  Settings2, 
+  Globe as GlobeIcon, 
+  Target, 
+  Shield,
+  Layout, 
+  BookOpen, 
+  Download, 
+  Info, 
+  Check, 
+  Plus, 
+  Grid3x3, 
+  List,
+  FolderOpen, 
+  File as FileIcon,
+  Zap, 
+  Users, 
+  Tag, 
+  Lock, 
+  Filter, 
+  Palette, 
+  MoreHorizontal, 
+  HelpCircle,
+  ChevronRight,
+  ChevronLeft,
+  ArrowRight,
+  EyeOff,
+  Maximize2,
+  Minimize2,
+  Bell,
+  Star,
+  Edit,
+  ExternalLink,
+  PieChart,
+  BarChart2,
+  TrendingUp,
+  Timer,
+  Calendar,
+  Share2,
+  Hash,
+  Unlock,
+  PanelLeft,
+  PanelRight,
+  PanelsTopLeft,
+  FlipVertical,
+  FlipHorizontal,
+  SquareStack,
+  Layers
 } from 'lucide-react';
 
 import Link from 'next/link';
