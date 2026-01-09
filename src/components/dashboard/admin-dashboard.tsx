@@ -2,7 +2,7 @@
 'use client';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, BookOpenCheck, PlusCircle, BarChart3, Settings, ShieldAlert, Monitor, ArrowRight, LineChart, BookOpen, TrendingUp, Activity } from "lucide-react";
+import { Users, BookOpenCheck, PlusCircle, BarChart3, Settings, ShieldAlert, ArrowRight, BookOpen, TrendingUp, Activity } from "lucide-react";
 import type { AdminDashboardStats, SecurityLog as AppSecurityLog, CalendarEvent, Course, Notification as AppNotification } from '@/types';
 import Link from "next/link";
 import { useState } from "react";
@@ -97,9 +97,15 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
          animate="show"
          className="min-h-screen pb-12"
       >
-         {/* Hero Header - Completely Redesigned */}
+         {/* Hero Header - Banner dinámico usando variables CSS del tema */}
          <motion.div variants={item} className="mb-8">
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-600 dark:from-violet-900 dark:via-purple-900 dark:to-fuchsia-900 p-8 md:p-12">
+            <div className="relative overflow-hidden rounded-3xl p-8 md:p-12" 
+                 style={{
+                    background: `linear-gradient(135deg, 
+                       hsl(var(--primary) / 0.9) 0%, 
+                       hsl(var(--primary) / 0.7) 50%, 
+                       hsl(var(--accent) / 0.8) 100%)`
+                 }}>
                {/* Animated Background Pattern */}
                <div className="absolute inset-0 opacity-10">
                   <div className="absolute inset-0" style={{ 
@@ -108,14 +114,17 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
                   }} />
                </div>
                
-               {/* Floating Orbs */}
+               {/* Floating Orbs - usando colores del tema */}
                <motion.div 
                   animate={{ 
                      x: [0, 30, 0],
                      y: [0, -20, 0],
                   }}
                   transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute top-10 right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"
+                  className="absolute top-10 right-20 w-64 h-64 rounded-full blur-3xl"
+                  style={{ 
+                     background: `hsl(var(--primary) / 0.15)`
+                  }}
                />
                <motion.div 
                   animate={{ 
@@ -123,11 +132,14 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
                      y: [0, 30, 0],
                   }}
                   transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute bottom-10 left-20 w-80 h-80 bg-fuchsia-400/20 rounded-full blur-3xl"
+                  className="absolute bottom-10 left-20 w-80 h-80 rounded-full blur-3xl"
+                  style={{ 
+                     background: `hsl(var(--accent) / 0.2)`
+                  }}
                />
 
                <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-                  <div className="flex-1 text-white">
+                  <div className="flex-1 text-white dark:text-white">
                      <motion.div
                         initial={{ scale: 0, rotate: -180 }}
                         animate={{ scale: 1, rotate: 0 }}
@@ -141,7 +153,7 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
                      <h1 className="text-4xl md:text-6xl font-black mb-3 tracking-tight">
                         ¡Hola, {user?.name}!
                      </h1>
-                     <p className="text-lg md:text-xl text-white/90 max-w-2xl">
+                     <p className="text-lg md:text-xl text-white/90 dark:text-white/90 max-w-2xl">
                         Panel de control administrativo. Supervisa, gestiona y optimiza toda la plataforma desde aquí.
                      </p>
 
@@ -169,7 +181,12 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
                         <motion.div
                            animate={{ rotate: 360 }}
                            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                           className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-pink-400 to-purple-400 rounded-full blur-2xl opacity-50"
+                           className="absolute inset-0 rounded-full blur-2xl opacity-50"
+                           style={{ 
+                              background: `linear-gradient(to right, 
+                                 hsl(var(--primary)), 
+                                 hsl(var(--accent)))`
+                           }}
                         />
                         <div className="relative w-48 h-48 md:w-64 md:h-64">
                            <Image 

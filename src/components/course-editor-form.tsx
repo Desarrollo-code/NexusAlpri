@@ -6,7 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, X, Replace, Pencil, Eye, FilePlus2, ChevronDown, BookOpenText, Video, FileText, File as FileGenericIcon, Layers3, Sparkles, Award, CheckCircle, Calendar as CalendarIcon, Info, Settings2, Globe as GlobeIcon, Target, Shield, Clock3, Layout, Sparkles as SparklesIcon, BookOpen, Zap, Target as TargetIcon, BarChart, Users, Tag, Hash, Lock, Unlock, Filter, Palette, EyeOff, ArrowRight, Check, Plus, Minus, Grid3x3, List, Eye as EyeIcon, Maximize2, Minimize2, FolderPlus, FolderOpen, Calendar, Timer, TrendingUp, BarChart2, PieChart, Download, Share2, Bell, Star, Edit, Copy, MoreHorizontal, ExternalLink, HelpCircle, AlertCircle, Info as InfoIcon, ChevronRight, ChevronLeft, FlipVertical, FlipHorizontal, SquareStack, PanelLeft, PanelRight, PanelsTopLeft, Layers, ChevronRightCircle, Grid, FlipHorizontal2, Table } from 'lucide-react';
+import { 
+  ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, 
+  ImagePlus, X, Replace, Pencil, Eye, FilePlus2, ChevronDown, BookOpenText, Video, 
+  FileText, File as FileGenericIcon, Layers3, Sparkles, Award, Calendar as CalendarIcon, 
+  Info, Settings2, Globe as GlobeIcon, Target, Layout, BookOpen, Copy, ChevronLeft, 
+  ChevronRight, Layers, SquareStack, FlipHorizontal2, Youtube, Upload, List, Grid3x3, 
+  FolderOpen, Plus 
+} from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState, useCallback, ChangeEvent, useRef } from 'react';
@@ -36,16 +43,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Switch } from '@/components/ui/switch';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { CourseAssignmentModal } from '@/components/course-assignment-modal';
-import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
 import { useTitle } from '@/contexts/title-context';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Toggle } from '@/components/ui/toggle';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 // === INTERFACES Y UTILIDADES ===
@@ -234,7 +235,7 @@ const ContentTypeMenu = ({
   );
 };
 
-// === COMPONENTE PARA EDITAR CONTENIDO ===
+// === COMPONENTE PARA EDITAR CONTENIDO ESPECÍFICO ===
 const ContentEditor = ({ 
   type, 
   onSave, 
@@ -244,9 +245,15 @@ const ContentEditor = ({
   onSave: (content: any) => void;
   onCancel: () => void;
 }) => {
+  const { toast } = useToast();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [items, setItems] = useState<Array<{ id: string; title: string; content: string }>>([
+  const [videoSource, setVideoSource] = useState<'url' | 'upload'>('url');
+  const [file, setFile] = useState<File | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [items, setItems] = useState<Array<{ id: string; title: string; content: string; imageFile?: File }>>([
     { id: generateUniqueId('item'), title: '', content: '' }
   ]);
   const [settings, setSettings] = useState({
@@ -255,6 +262,10 @@ const ContentEditor = ({
     tabPosition: 'top' as 'top' | 'left' | 'right' | 'bottom',
   });
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+
   const getContentConfig = () => {
     switch(type) {
       case 'ACCORDION':
@@ -262,53 +273,72 @@ const ContentEditor = ({
           title: 'Acordeón',
           icon: Layers,
           description: 'Crea elementos expandibles',
-          fields: [
-            { name: 'title', label: 'Título del acordeón', placeholder: 'Ej: Preguntas frecuentes' },
-          ]
+          color: 'text-indigo-600',
+          bg: 'bg-indigo-100'
         };
       case 'TABS':
         return {
           title: 'Pestañas',
           icon: SquareStack,
           description: 'Organiza contenido en pestañas',
-          fields: [
-            { name: 'title', label: 'Título de las pestañas', placeholder: 'Ej: Características del producto' },
-          ]
+          color: 'text-pink-600',
+          bg: 'bg-pink-100'
         };
       case 'FLIP_CARDS':
         return {
           title: 'Tarjetas de volteo',
           icon: FlipHorizontal2,
           description: 'Crea tarjetas interactivas que se voltean',
-          fields: [
-            { name: 'title', label: 'Título de las tarjetas', placeholder: 'Ej: Términos y definiciones' },
-          ]
+          color: 'text-teal-600',
+          bg: 'bg-teal-100'
         };
       case 'TEXT':
         return {
           title: 'Texto',
           icon: FileText,
-          description: 'Editor de texto enriquecido',
-          fields: [
-            { name: 'title', label: 'Título del texto', placeholder: 'Ej: Introducción' },
-          ]
+          description: 'Editor de texto simple',
+          color: 'text-blue-600',
+          bg: 'bg-blue-100'
         };
       case 'VIDEO':
         return {
           title: 'Video',
           icon: Video,
-          description: 'Inserta un video',
-          fields: [
-            { name: 'title', label: 'Título del video', placeholder: 'Ej: Tutorial paso a paso' },
-            { name: 'url', label: 'URL del video', placeholder: 'https://...' },
-          ]
+          description: 'Inserta un video desde URL o sube un archivo',
+          color: 'text-red-600',
+          bg: 'bg-red-100'
+        };
+      case 'IMAGE':
+        return {
+          title: 'Imagen',
+          icon: ImagePlus,
+          description: 'Sube una imagen',
+          color: 'text-green-600',
+          bg: 'bg-green-100'
+        };
+      case 'FILE':
+        return {
+          title: 'Archivo',
+          icon: FileGenericIcon,
+          description: 'Sube un archivo',
+          color: 'text-amber-600',
+          bg: 'bg-amber-100'
+        };
+      case 'QUIZ':
+        return {
+          title: 'Quiz',
+          icon: Pencil,
+          description: 'Crea un cuestionario interactivo',
+          color: 'text-purple-600',
+          bg: 'bg-purple-100'
         };
       default:
         return {
           title: type,
           icon: FileText,
           description: 'Añadir contenido',
-          fields: []
+          color: 'text-gray-600',
+          bg: 'bg-gray-100'
         };
     }
   };
@@ -332,55 +362,459 @@ const ContentEditor = ({
     ));
   };
 
-  const handleSave = () => {
-    if (type === 'ACCORDION' || type === 'TABS' || type === 'FLIP_CARDS') {
-      const validItems = items.filter(item => item.title.trim() && item.content.trim());
-      if (validItems.length === 0) {
-        alert('Agrega al menos un elemento válido');
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>, fileType: 'file' | 'image' | 'video') => {
+    if (!e.target.files?.[0]) return;
+    
+    const selectedFile = e.target.files[0];
+    
+    if (fileType === 'image') {
+      if (!selectedFile.type.startsWith('image/')) {
+        toast({ 
+          title: '❌ Error', 
+          description: 'Por favor selecciona un archivo de imagen válido.', 
+          variant: 'destructive' 
+        });
         return;
       }
-      onSave({
-        type,
-        title,
-        items: validItems,
-        settings,
-        interactiveType: type
-      });
-    } else {
-      onSave({
-        type,
-        title,
-        content,
-      });
+      if (selectedFile.size > 5 * 1024 * 1024) {
+        toast({ 
+          title: '❌ Error', 
+          description: 'La imagen no debe superar los 5MB.', 
+          variant: 'destructive' 
+        });
+        return;
+      }
+      setImageFile(selectedFile);
+    } 
+    else if (fileType === 'video') {
+      if (!selectedFile.type.startsWith('video/')) {
+        toast({ 
+          title: '❌ Error', 
+          description: 'Por favor selecciona un archivo de video válido.', 
+          variant: 'destructive' 
+        });
+        return;
+      }
+      if (selectedFile.size > 100 * 1024 * 1024) {
+        toast({ 
+          title: '❌ Error', 
+          description: 'El video no debe superar los 100MB.', 
+          variant: 'destructive' 
+        });
+        return;
+      }
+      setVideoFile(selectedFile);
+    }
+    else {
+      if (selectedFile.size > 50 * 1024 * 1024) {
+        toast({ 
+          title: '❌ Error', 
+          description: 'El archivo no debe superar los 50MB.', 
+          variant: 'destructive' 
+        });
+        return;
+      }
+      setFile(selectedFile);
     }
   };
 
-  return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border shadow-lg p-4 w-full max-w-2xl">
-      <div className="flex items-center gap-3 mb-4">
-        <div className={`p-2 rounded-lg ${type === 'ACCORDION' ? 'bg-indigo-100' : type === 'TABS' ? 'bg-pink-100' : type === 'FLIP_CARDS' ? 'bg-teal-100' : 'bg-blue-100'}`}>
-          <Icon className={`h-5 w-5 ${type === 'ACCORDION' ? 'text-indigo-600' : type === 'TABS' ? 'text-pink-600' : type === 'FLIP_CARDS' ? 'text-teal-600' : 'text-blue-600'}`} />
-        </div>
-        <div>
-          <h3 className="font-semibold text-gray-900 dark:text-white">{config.title}</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{config.description}</p>
-        </div>
-      </div>
+  const handleUploadFile = async (file: File, endpoint: string): Promise<string | null> => {
+    setIsUploading(true);
+    try {
+      const result = await uploadWithProgress(endpoint, file, () => {});
+      if (result?.url) {
+        return result.url;
+      } else {
+        throw new Error('No se recibió URL del archivo');
+      }
+    } catch (err) {
+      console.error('Error al subir archivo:', err);
+      toast({ 
+        title: '❌ Error', 
+        description: (err as Error).message || 'No se pudo subir el archivo.', 
+        variant: 'destructive' 
+      });
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
-      <div className="space-y-4">
-        <div>
-          <Label htmlFor="content-title">Título</Label>
-          <Input
-            id="content-title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder={config.fields[0]?.placeholder || 'Título del contenido'}
-            className="mt-1"
-          />
-        </div>
+  const handleSave = async () => {
+    if (!title.trim()) {
+      toast({ 
+        title: '❌ Error', 
+        description: 'Por favor ingresa un título.', 
+        variant: 'destructive' 
+      });
+      return;
+    }
 
-        {(type === 'ACCORDION' || type === 'TABS' || type === 'FLIP_CARDS') ? (
-          <>
+    let contentToSave = content;
+    let additionalData: any = {};
+
+    try {
+      if (type === 'IMAGE' && imageFile) {
+        const imageUrl = await handleUploadFile(imageFile, '/api/upload/image');
+        if (!imageUrl) return;
+        contentToSave = imageUrl;
+        additionalData.fileName = imageFile.name;
+        additionalData.fileSize = imageFile.size;
+      }
+      else if (type === 'FILE' && file) {
+        const fileUrl = await handleUploadFile(file, '/api/upload/file');
+        if (!fileUrl) return;
+        contentToSave = fileUrl;
+        additionalData.fileName = file.name;
+        additionalData.fileSize = file.size;
+      }
+      else if (type === 'VIDEO') {
+        if (videoSource === 'upload' && videoFile) {
+          const videoUrl = await handleUploadFile(videoFile, '/api/upload/video');
+          if (!videoUrl) return;
+          contentToSave = videoUrl;
+          additionalData.fileName = videoFile.name;
+          additionalData.fileSize = videoFile.size;
+          additionalData.source = 'upload';
+        } else {
+          additionalData.source = 'url';
+        }
+      }
+      else if (type === 'QUIZ') {
+        // Para quiz, el contenido es un objeto JSON
+        contentToSave = JSON.stringify({
+          title,
+          questions: [],
+          settings: {}
+        });
+        additionalData.quizData = {
+          title,
+          questions: [],
+          settings: {}
+        };
+      }
+      else if (type === 'ACCORDION' || type === 'TABS' || type === 'FLIP_CARDS') {
+        // Procesar items con imágenes
+        const processedItems = await Promise.all(items.map(async (item) => {
+          const processedItem: any = { ...item };
+          if (item.imageFile) {
+            const imageUrl = await handleUploadFile(item.imageFile, '/api/upload/image');
+            if (imageUrl) {
+              processedItem.imageUrl = imageUrl;
+            }
+            delete processedItem.imageFile;
+          }
+          return processedItem;
+        }));
+
+        contentToSave = JSON.stringify({
+          items: processedItems,
+          settings,
+          type
+        });
+        additionalData.interactiveData = {
+          items: processedItems,
+          settings,
+          type
+        };
+      }
+
+      onSave({
+        type,
+        title: title.trim(),
+        content: contentToSave,
+        ...additionalData
+      });
+
+    } catch (error) {
+      console.error('Error al guardar contenido:', error);
+    }
+  };
+
+  const renderContentFields = () => {
+    switch(type) {
+      case 'TEXT':
+        return (
+          <div className="space-y-3">
+            <div>
+              <Label htmlFor="text-content">Contenido</Label>
+              <Textarea
+                id="text-content"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Escribe tu texto aquí..."
+                className="min-h-[200px] mt-1"
+              />
+            </div>
+          </div>
+        );
+
+      case 'VIDEO':
+        return (
+          <div className="space-y-4">
+            <div className="border rounded-lg p-3">
+              <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Fuente del video</h4>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant={videoSource === 'url' ? 'default' : 'outline'}
+                  className="h-10"
+                  onClick={() => setVideoSource('url')}
+                >
+                  <Youtube className="h-4 w-4 mr-2" />
+                  URL
+                </Button>
+                <Button
+                  type="button"
+                  variant={videoSource === 'upload' ? 'default' : 'outline'}
+                  className="h-10"
+                  onClick={() => setVideoSource('upload')}
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Subir
+                </Button>
+              </div>
+            </div>
+
+            {videoSource === 'url' ? (
+              <div>
+                <Label htmlFor="video-url">URL del video (YouTube, Vimeo, MP4, etc.)</Label>
+                <Input
+                  id="video-url"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="https://www.youtube.com/watch?v=... o https://ejemplo.com/video.mp4"
+                  className="mt-1"
+                />
+              </div>
+            ) : (
+              <div>
+                <Label htmlFor="video-file">Subir archivo de video</Label>
+                <div className="mt-2">
+                  <input
+                    ref={videoInputRef}
+                    type="file"
+                    className="hidden"
+                    accept="video/*"
+                    onChange={(e) => handleFileChange(e, 'video')}
+                    disabled={isUploading}
+                  />
+                  
+                  {videoFile ? (
+                    <div className="border border-green-200 dark:border-green-800 rounded-lg p-3 bg-green-50 dark:bg-green-900/20">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Video className="h-5 w-5 text-green-600" />
+                          <div>
+                            <p className="font-medium truncate">{videoFile.name}</p>
+                            <p className="text-xs text-gray-500">
+                              {(videoFile.size / (1024 * 1024)).toFixed(2)} MB
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setVideoFile(null);
+                            if (videoInputRef.current) videoInputRef.current.value = '';
+                          }}
+                          className="h-7 w-7"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full h-20 border-dashed"
+                      onClick={() => videoInputRef.current?.click()}
+                      disabled={isUploading}
+                    >
+                      <div className="flex flex-col items-center gap-2">
+                        <UploadCloud className="h-6 w-6 text-gray-400" />
+                        <div>
+                          <p className="text-sm font-medium">Haz clic para seleccionar un video</p>
+                          <p className="text-xs text-gray-500">MP4, MOV, AVI, etc. (máx. 100MB)</p>
+                        </div>
+                      </div>
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+
+      case 'IMAGE':
+        return (
+          <div className="space-y-3">
+            <div>
+              <Label htmlFor="image-file">Subir imagen</Label>
+              <div className="mt-2">
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={(e) => handleFileChange(e, 'image')}
+                  disabled={isUploading}
+                />
+                
+                {imageFile ? (
+                  <div className="border border-green-200 dark:border-green-800 rounded-lg p-3 bg-green-50 dark:bg-green-900/20">
+                    <div className="flex items-center gap-3">
+                      <ImagePlus className="h-5 w-5 text-green-600" />
+                      <div className="flex-1">
+                        <p className="font-medium truncate">{imageFile.name}</p>
+                        <p className="text-xs text-gray-500">
+                          {(imageFile.size / (1024 * 1024)).toFixed(2)} MB
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setImageFile(null);
+                          if (imageInputRef.current) imageInputRef.current.value = '';
+                        }}
+                        className="h-7 w-7"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full h-20 border-dashed"
+                    onClick={() => imageInputRef.current?.click()}
+                    disabled={isUploading}
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <UploadCloud className="h-6 w-6 text-gray-400" />
+                      <div>
+                        <p className="text-sm font-medium">Haz clic para seleccionar una imagen</p>
+                        <p className="text-xs text-gray-500">JPG, PNG, GIF, etc. (máx. 5MB)</p>
+                      </div>
+                    </div>
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'FILE':
+        return (
+          <div className="space-y-3">
+            <div>
+              <Label htmlFor="file-upload">Subir archivo</Label>
+              <div className="mt-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  className="hidden"
+                  onChange={(e) => handleFileChange(e, 'file')}
+                  disabled={isUploading}
+                />
+                
+                {file ? (
+                  <div className="border border-green-200 dark:border-green-800 rounded-lg p-3 bg-green-50 dark:bg-green-900/20">
+                    <div className="flex items-center gap-3">
+                      <FileGenericIcon className="h-5 w-5 text-green-600" />
+                      <div className="flex-1">
+                        <p className="font-medium truncate">{file.name}</p>
+                        <p className="text-xs text-gray-500">
+                          {(file.size / (1024 * 1024)).toFixed(2)} MB • {file.type}
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setFile(null);
+                          if (fileInputRef.current) fileInputRef.current.value = '';
+                        }}
+                        className="h-7 w-7"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full h-20 border-dashed"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <UploadCloud className="h-6 w-6 text-gray-400" />
+                      <div>
+                        <p className="text-sm font-medium">Haz clic para seleccionar un archivo</p>
+                        <p className="text-xs text-gray-500">Cualquier tipo (máx. 50MB)</p>
+                      </div>
+                    </div>
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'QUIZ':
+        return (
+          <div className="space-y-4">
+            <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium text-gray-700 dark:text-gray-300">Configurar Quiz</h4>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Crea preguntas, establece puntuación y configura opciones
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    // Abrir editor de quiz
+                    const quizData = {
+                      id: generateUniqueId('quiz'),
+                      title: title || 'Nuevo Quiz',
+                      questions: [],
+                      passingScore: 70,
+                      timeLimit: null,
+                      attempts: 3,
+                      showResults: true,
+                      randomizeQuestions: false,
+                    };
+                    onSave({
+                      type: 'QUIZ',
+                      title: title.trim(),
+                      content: '',
+                      quizData,
+                      openQuizEditor: true
+                    });
+                  }}
+                >
+                  <Settings2 className="h-4 w-4 mr-2" />
+                  Configurar Quiz
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'ACCORDION':
+      case 'TABS':
+      case 'FLIP_CARDS':
+        return (
+          <div className="space-y-4">
             <div className="border-t pt-4">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-medium text-gray-700 dark:text-gray-300">Elementos</h4>
@@ -413,7 +847,7 @@ const ContentEditor = ({
                         </Button>
                       )}
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <div>
                         <Label htmlFor={`item-title-${item.id}`} className="text-xs">Título</Label>
                         <Input
@@ -433,6 +867,58 @@ const ContentEditor = ({
                           placeholder="Contenido del elemento"
                           className="min-h-[80px] text-sm"
                         />
+                      </div>
+                      <div>
+                        <Label htmlFor={`item-image-${item.id}`} className="text-xs">Imagen (opcional)</Label>
+                        <div className="mt-1">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            id={`item-image-${item.id}`}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                setItems(items.map(i => 
+                                  i.id === item.id ? { ...i, imageFile: file } : i
+                                ));
+                              }
+                            }}
+                          />
+                          {item.imageFile ? (
+                            <div className="flex items-center gap-2">
+                              <ImagePlus className="h-4 w-4 text-green-600" />
+                              <span className="text-sm truncate">{item.imageFile.name}</span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 ml-auto"
+                                onClick={() => {
+                                  setItems(items.map(i => 
+                                    i.id === item.id ? { ...i, imageFile: undefined } : i
+                                  ));
+                                  const input = document.getElementById(`item-image-${item.id}`) as HTMLInputElement;
+                                  if (input) input.value = '';
+                                }}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full"
+                              onClick={() => {
+                                const input = document.getElementById(`item-image-${item.id}`) as HTMLInputElement;
+                                input?.click();
+                              }}
+                            >
+                              <ImagePlus className="h-3.5 w-3.5 mr-1" />
+                              Seleccionar imagen
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -496,31 +982,11 @@ const ContentEditor = ({
                 )}
               </div>
             </div>
-          </>
-        ) : type === 'TEXT' ? (
-          <div>
-            <Label htmlFor="text-content">Contenido</Label>
-            <Textarea
-              id="text-content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Escribe tu contenido aquí..."
-              className="min-h-[150px] mt-1"
-            />
           </div>
-        ) : type === 'VIDEO' ? (
-          <div>
-            <Label htmlFor="video-url">URL del video</Label>
-            <Input
-              id="video-url"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="https://www.youtube.com/watch?v=..."
-              className="mt-1"
-            />
-            <p className="text-xs text-gray-500 mt-2">Soporta YouTube, Vimeo, y archivos de video directos</p>
-          </div>
-        ) : (
+        );
+
+      default:
+        return (
           <div>
             <Label htmlFor="content-value">Contenido</Label>
             <Input
@@ -531,15 +997,52 @@ const ContentEditor = ({
               className="mt-1"
             />
           </div>
-        )}
+        );
+    }
+  };
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-lg border shadow-lg p-4 w-full max-w-2xl">
+      <div className="flex items-center gap-3 mb-4">
+        <div className={`p-2 rounded-lg ${config.bg}`}>
+          <Icon className={`h-5 w-5 ${config.color}`} />
+        </div>
+        <div>
+          <h3 className="font-semibold text-gray-900 dark:text-white">{config.title}</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{config.description}</p>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <Label htmlFor="content-title">Título *</Label>
+          <Input
+            id="content-title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder={`Título del ${config.title.toLowerCase()}`}
+            className="mt-1"
+          />
+        </div>
+
+        {renderContentFields()}
 
         <div className="flex justify-end gap-2 pt-4 border-t">
           <Button variant="outline" size="sm" onClick={onCancel}>
             Cancelar
           </Button>
-          <Button size="sm" onClick={handleSave}>
-            <Save className="h-3.5 w-3.5 mr-2" />
-            Guardar
+          <Button size="sm" onClick={handleSave} disabled={isUploading}>
+            {isUploading ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
+                Subiendo...
+              </>
+            ) : (
+              <>
+                <Save className="h-3.5 w-3.5 mr-2" />
+                Guardar
+              </>
+            )}
           </Button>
         </div>
       </div>
@@ -737,6 +1240,7 @@ const LessonCard = ({ lesson, index, moduleId }: { lesson: AppLesson; index: num
     type: 'TEXT' | 'VIDEO' | 'FILE' | 'IMAGE' | 'QUIZ' | 'ACCORDION' | 'TABS' | 'FLIP_CARDS';
     isEditing: boolean;
   } | null>(null);
+  const [quizToEdit, setQuizToEdit] = useState<AppQuiz | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -752,7 +1256,6 @@ const LessonCard = ({ lesson, index, moduleId }: { lesson: AppLesson; index: num
 
   const handleTitleSave = () => {
     if (editingTitle.trim() !== '' && editingTitle !== lesson.title) {
-      // Aquí deberías llamar a una función para actualizar el título de la lección
       console.log('Actualizar título de lección:', editingTitle);
       toast({
         title: "Título actualizado",
@@ -780,11 +1283,26 @@ const LessonCard = ({ lesson, index, moduleId }: { lesson: AppLesson; index: num
 
   const handleSaveContent = (contentData: any) => {
     console.log('Guardar contenido:', contentData);
+    
+    if (contentData.type === 'QUIZ' && contentData.openQuizEditor) {
+      setQuizToEdit(contentData.quizData);
+      setEditingContent(null);
+    } else {
+      toast({
+        title: "Contenido añadido",
+        description: `Se ha añadido un elemento de tipo ${contentData.type} a la lección.`,
+      });
+      setEditingContent(null);
+    }
+  };
+
+  const handleSaveQuiz = (updatedQuiz: AppQuiz) => {
+    console.log('Quiz guardado:', updatedQuiz);
+    setQuizToEdit(null);
     toast({
-      title: "Contenido añadido",
-      description: `Se ha añadido un elemento de tipo ${contentData.type} a la lección.`,
+      title: "Quiz guardado",
+      description: "El quiz se ha configurado correctamente.",
     });
-    setEditingContent(null);
   };
 
   const handleCancelContent = () => {
@@ -929,6 +1447,28 @@ const LessonCard = ({ lesson, index, moduleId }: { lesson: AppLesson; index: num
           </div>
         </div>
       )}
+
+      {/* Quiz Editor Modal - Comentado temporalmente hasta que se solucione el problema de importación */}
+      {quizToEdit && (
+        <Dialog open={!!quizToEdit} onOpenChange={() => setQuizToEdit(null)}>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>Editor de Quiz</DialogTitle>
+              <DialogDescription>
+                El editor de quiz no está disponible temporalmente.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="p-4 text-center">
+              <p className="text-muted-foreground mb-4">
+                La funcionalidad del editor de quiz estará disponible próximamente.
+              </p>
+              <Button onClick={() => setQuizToEdit(null)}>
+                Cerrar
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
@@ -991,7 +1531,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
   const [certificateTemplates, setCertificateTemplates] = useState<PrismaCertificateTemplate[]>([]);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
-  const [quizToEdit, setQuizToEdit] = useState<{ quiz: AppQuiz; onSave: (updatedQuiz: AppQuiz) => void } | null>(null);
   
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
@@ -1902,7 +2441,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                     </div>
                     
                     <Alert>
-                      <InfoIcon className="h-4 w-4" />
+                      <Info className="h-4 w-4" />
                       <AlertTitle>Listo para publicar</AlertTitle>
                       <AlertDescription>
                         Una vez publicado, el curso estará disponible para los estudiantes asignados.
@@ -2033,16 +2572,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
           onClose={() => setIsAssignmentModalOpen(false)}
           courseId={course.id}
           courseTitle={course.title}
-        />
-      )}
-
-      {/* Quiz Editor Modal */}
-      {quizToEdit && (
-        <QuizEditorModal
-          isOpen={!!quizToEdit}
-          onClose={() => setQuizToEdit(null)}
-          quiz={quizToEdit.quiz}
-          onSave={quizToEdit.onSave}
         />
       )}
     </div>
