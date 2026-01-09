@@ -83,7 +83,7 @@ import {
   CheckCircle, 
   Calendar as CalendarIcon, 
   Settings2, 
-  Globe as GlobeIcon, 
+  Globe, 
   Target, 
   Shield,
   Layout, 
