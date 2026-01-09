@@ -6,7 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, X, Replace, Pencil, Eye, FilePlus2, ChevronDown, BookOpenText, Video, FileText, File as FileGenericIcon, Layers3, Sparkles, Award, CheckCircle, Calendar as CalendarIcon, Info, Settings2, Globe as GlobeIcon, Target, Shield, Clock3, Layout, Sparkles as SparklesIcon, BookOpen, Zap, Target as TargetIcon, BarChart, Users, Tag, Hash, Lock, Unlock, Filter, Palette, EyeOff, ArrowRight, Check, Plus, Minus, Grid3x3, List, Eye as EyeIcon, Maximize2, Minimize2, FolderPlus, FolderOpen, Calendar, Timer, TrendingUp, BarChart2, PieChart, Download, Share2, Bell, Star, Edit, Copy, MoreHorizontal, ExternalLink, HelpCircle, AlertCircle, Info as InfoIcon, ChevronRight, ChevronLeft, FlipVertical, FlipHorizontal, SquareStack, PanelLeft, PanelRight, PanelsTopLeft, Layers, Youtube, Upload, ChevronRightCircle, Grid, FlipHorizontal2, Table } from 'lucide-react';
+import { 
+  ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, 
+  ImagePlus, X, Replace, Pencil, Eye, FilePlus2, ChevronDown, BookOpenText, Video, 
+  FileText, File as FileGenericIcon, Layers3, Sparkles, Award, Calendar as CalendarIcon, 
+  Info, Settings2, Globe as GlobeIcon, Target, Layout, BookOpen, Copy, ChevronLeft, 
+  ChevronRight, Layers, SquareStack, FlipHorizontal2, Youtube, Upload, List, Grid3x3, 
+  FolderOpen 
+} from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState, useCallback, ChangeEvent, useRef } from 'react';
@@ -36,16 +43,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Switch } from '@/components/ui/switch';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { CourseAssignmentModal } from '@/components/course-assignment-modal';
 import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
 import { useTitle } from '@/contexts/title-context';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Toggle } from '@/components/ui/toggle';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 // === INTERFACES Y UTILIDADES ===
@@ -823,7 +825,7 @@ const ContentEditor = ({
                   onClick={addItem}
                   className="h-8"
                 >
-                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  <PlusCircle className="h-3.5 w-3.5 mr-1" />
                   Añadir elemento
                 </Button>
               </div>
@@ -1382,7 +1384,7 @@ const LessonCard = ({ lesson, index, moduleId }: { lesson: AppLesson; index: num
                   setShowContentMenu(!showContentMenu);
                 }}
               >
-                <Plus className="h-3 w-3 mr-1" />
+                <PlusCircle className="h-3 w-3 mr-1" />
                 Contenido
               </Button>
             </PopoverTrigger>
@@ -1440,7 +1442,7 @@ const LessonCard = ({ lesson, index, moduleId }: { lesson: AppLesson; index: num
               size="sm"
               onClick={() => setShowAddContent(true)}
             >
-              <Plus className="h-3 w-3 mr-2" />
+              <PlusCircle className="h-3 w-3 mr-2" />
               Añadir primer elemento
             </Button>
           </div>
@@ -2429,7 +2431,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                     </div>
                     
                     <Alert>
-                      <InfoIcon className="h-4 w-4" />
+                      <Info className="h-4 w-4" />
                       <AlertTitle>Listo para publicar</AlertTitle>
                       <AlertDescription>
                         Una vez publicado, el curso estará disponible para los estudiantes asignados.
@@ -2552,3 +2554,16 @@ export function CourseEditor({ courseId }: { courseId: string }) {
           </ScrollArea>
         </DialogContent>
       </Dialog>
+
+      {/* Assignment Modal */}
+      {isAssignmentModalOpen && (
+        <CourseAssignmentModal
+          isOpen={isAssignmentModalOpen}
+          onClose={() => setIsAssignmentModalOpen(false)}
+          courseId={course.id}
+          courseTitle={course.title}
+        />
+      )}
+    </div>
+  );
+}
