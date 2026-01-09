@@ -1,5 +1,3 @@
-'use client';
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, X, Replace, Pencil, Eye, FilePlus2, ChevronDown, BookOpenText, Video, FileText, File as FileGenericIcon, Layers3, Sparkles, Award, CheckCircle, Calendar as CalendarIcon, Info, Settings2, Globe as GlobeIcon, Target, Shield, Clock3, Layout, Sparkles as SparklesIcon, BookOpen, Zap, Target as TargetIcon, BarChart, Users, Tag, Hash, Lock, Unlock, Filter, Palette, EyeOff, ArrowRight, Check, Plus, Minus, Grid3x3, List, Eye as EyeIcon, Maximize2, Minimize2, FolderPlus, FolderOpen, Calendar, Timer, TrendingUp, BarChart2, PieChart, Download, Share2, Bell, Star, Edit, Copy, MoreHorizontal, ExternalLink, HelpCircle, AlertCircle, Info as InfoIcon, ChevronRight, ChevronLeft, FlipVertical, FlipHorizontal, SquareStack, PanelLeft, PanelRight, PanelsTopLeft, Layers } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useState, useCallback, ChangeEvent } from 'react';
+import React, { useEffect, useState, useCallback, ChangeEvent, useRef } from 'react';
 import type { Course as AppCourse, Module as AppModule, Lesson as AppLesson, LessonType, CourseStatus, Quiz as AppQuiz, ContentBlock } from '@/types';
 import Image from 'next/image';
 import { useToast } from "@/hooks/use-toast";
@@ -126,10 +124,11 @@ const ModuleCard = React.forwardRef<HTMLDivElement, {
   onEdit: () => void;
   onDelete: () => void;
   onDuplicate: () => void;
+  onAddLesson: () => void;
   isExpanded: boolean;
   onToggle: () => void;
   dragHandleProps: any;
-}>(({ module, index, onEdit, onDelete, onDuplicate, isExpanded, onToggle, dragHandleProps }, ref) => (
+}>(({ module, index, onEdit, onDelete, onDuplicate, onAddLesson, isExpanded, onToggle, dragHandleProps }, ref) => (
   <motion.div
     ref={ref}
     initial={{ opacity: 0, y: 10 }}
@@ -174,7 +173,10 @@ const ModuleCard = React.forwardRef<HTMLDivElement, {
             <Button
               variant="ghost"
               size="icon"
-              onClick={onToggle}
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggle();
+              }}
               className="h-8 w-8"
             >
               {isExpanded ? 
@@ -185,7 +187,10 @@ const ModuleCard = React.forwardRef<HTMLDivElement, {
             <Button
               variant="ghost"
               size="icon"
-              onClick={onDuplicate}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDuplicate();
+              }}
               className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
             >
               <Copy className="h-4 w-4" />
@@ -193,7 +198,10 @@ const ModuleCard = React.forwardRef<HTMLDivElement, {
             <Button
               variant="ghost"
               size="icon"
-              onClick={onDelete}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
               className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
             >
               <Trash2 className="h-4 w-4" />
@@ -215,7 +223,15 @@ const ModuleCard = React.forwardRef<HTMLDivElement, {
           </div>
           
           <div className="mt-6 pt-4 border-t">
-            <Button variant="outline" size="sm" className="w-full" onClick={onEdit}>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full" 
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddLesson();
+              }}
+            >
               <PlusCircle className="h-4 w-4 mr-2" />
               Añadir lección
             </Button>
@@ -254,7 +270,10 @@ const LessonCard = ({ lesson, index }: { lesson: AppLesson; index: number }) => 
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setIsExpanded(!isExpanded)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsExpanded(!isExpanded);
+          }}
           className="h-7 w-7"
         >
           {isExpanded ? 
@@ -311,6 +330,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
   const { toast } = useToast();
   const { user, settings, isLoading: isAuthLoading } = useAuth();
   const { setPageTitle } = useTitle();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [course, setCourse] = useState<AppCourse | null>(null);
   const [allCoursesForPrereq, setAllCoursesForPrereq] = useState<AppCourse[]>([]);
@@ -487,10 +507,29 @@ export function CourseEditor({ courseId }: { courseId: string }) {
       name: module?.title,
       onConfirm: () => {
         handleStateUpdate(prev => {
-          prev.modules = prev.modules.filter(m => m.id !== moduleId);
+          // Filtrar el módulo eliminado
+          const updatedModules = prev.modules.filter(m => m.id !== moduleId);
+          
+          // Re-indexar los módulos restantes (actualizar order y títulos si es necesario)
+          updatedModules.forEach((mod, index) => {
+            mod.order = index; // Actualizar el orden numérico
+          });
+          
+          prev.modules = updatedModules;
           return prev;
         });
-        toast({ title: "Módulo eliminado", description: "El módulo se ha eliminado correctamente." });
+        
+        // Limpiar del estado de módulos expandidos si existe
+        setExpandedModules(prev => {
+          const next = new Set(prev);
+          next.delete(moduleId);
+          return next;
+        });
+        
+        toast({ 
+          title: "Módulo eliminado", 
+          description: "El módulo se ha eliminado y el resto ha sido re-indexado." 
+        });
       }
     });
   };
@@ -502,14 +541,50 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const duplicate = JSON.parse(JSON.stringify(module));
     duplicate.id = generateUniqueId('module');
     duplicate.title = `${module.title} (Copia)`;
+    duplicate.order = course.modules.length; // Asignar al final
 
     handleStateUpdate(prev => {
       const index = prev.modules.findIndex(m => m.id === moduleId);
       prev.modules.splice(index + 1, 0, duplicate);
+      
+      // Re-indexar después de insertar
+      prev.modules.forEach((mod, idx) => {
+        mod.order = idx;
+      });
+      
       return prev;
     });
 
-    toast({ title: "✅ Módulo duplicado", description: "El módulo se ha duplicado correctamente." });
+    toast({ 
+      title: "✅ Módulo duplicado", 
+      description: "El módulo se ha duplicado correctamente." 
+    });
+  };
+
+  const handleAddLesson = (moduleId: string) => {
+    handleStateUpdate(prev => {
+      const moduleIndex = prev.modules.findIndex(m => m.id === moduleId);
+      if (moduleIndex === -1) return prev;
+
+      const newLesson: AppLesson = {
+        id: generateUniqueId('lesson'),
+        title: 'Nueva Lección',
+        description: '',
+        order: prev.modules[moduleIndex].lessons.length,
+        contentBlocks: [],
+      };
+
+      prev.modules[moduleIndex].lessons.push(newLesson);
+      return prev;
+    });
+
+    // Expandir el módulo automáticamente
+    setExpandedModules(prev => new Set(prev).add(moduleId));
+
+    toast({
+      title: "Lección añadida",
+      description: "Se ha añadido una nueva lección al módulo.",
+    });
   };
 
   const toggleModuleExpansion = (moduleId: string) => {
@@ -528,16 +603,54 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     if (!e.target.files?.[0]) return;
     
     const file = e.target.files[0];
+    
+    // Validar tipo de archivo
+    if (!file.type.startsWith('image/')) {
+      toast({ 
+        title: '❌ Error', 
+        description: 'Por favor selecciona un archivo de imagen válido.', 
+        variant: 'destructive' 
+      });
+      return;
+    }
+
+    // Validar tamaño (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ 
+        title: '❌ Error', 
+        description: 'La imagen no debe superar los 5MB.', 
+        variant: 'destructive' 
+      });
+      return;
+    }
+
     setIsUploadingImage(true);
 
     try {
       const result = await uploadWithProgress('/api/upload/course-image', file, () => {});
-      updateCourseField('imageUrl', result.url);
-      toast({ title: '✅ Imagen actualizada', description: 'La imagen de portada se ha actualizado.' });
+      
+      if (result?.url) {
+        updateCourseField('imageUrl', result.url);
+        toast({ 
+          title: '✅ Imagen actualizada', 
+          description: 'La imagen de portada se ha actualizado correctamente.' 
+        });
+      } else {
+        throw new Error('No se recibió URL de la imagen');
+      }
     } catch (err) {
-      toast({ title: '❌ Error', description: (err as Error).message, variant: 'destructive' });
+      console.error('Error al subir imagen:', err);
+      toast({ 
+        title: '❌ Error', 
+        description: (err as Error).message || 'No se pudo subir la imagen. Intenta nuevamente.', 
+        variant: 'destructive' 
+      });
     } finally {
       setIsUploadingImage(false);
+      // Limpiar el input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -577,58 +690,129 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" asChild>
-                <Link href="/manage-courses">
-                  <ArrowLeft className="h-5 w-5" />
-                </Link>
-              </Button>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                  {course.title}
-                </h1>
-                <div className="flex items-center gap-2 mt-1">
-                  <StatusBadge status={course.status} />
-                  <span className="text-sm text-muted-foreground">
-                    {courseId === 'new' ? 'Nuevo curso' : 'Editando'}
-                  </span>
+        <div className="container mx-auto px-3 sm:px-4 lg:px-4">
+          <div className="flex flex-col py-4">
+            {/* Fila superior: Título y acciones */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-4">
+                <Button variant="ghost" size="icon" asChild>
+                  <Link href="/manage-courses">
+                    <ArrowLeft className="h-5 w-5" />
+                  </Link>
+                </Button>
+                <div className="max-w-2xl">
+                  <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">
+                    {course.title}
+                  </h1>
+                  <div className="flex items-center gap-2 mt-1">
+                    <StatusBadge status={course.status} />
+                    <span className="text-sm text-muted-foreground">
+                      {courseId === 'new' ? 'Nuevo curso' : 'Editando'}
+                    </span>
+                  </div>
                 </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => window.open(`/courses/${courseId}?preview=true`, '_blank')}
+                  disabled={courseId === 'new'}
+                  className="gap-2"
+                >
+                  <Eye className="h-4 w-4" />
+                  Vista previa
+                </Button>
+                
+                <Button
+                  onClick={handleSaveCourse}
+                  disabled={isSaving || !isDirty}
+                  className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                >
+                  {isSaving ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4" />
+                  )}
+                  {isSaving ? 'Guardando...' : 'Guardar cambios'}
+                </Button>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                onClick={() => window.open(`/courses/${courseId}?preview=true`, '_blank')}
-                disabled={courseId === 'new'}
-                className="gap-2"
-              >
-                <Eye className="h-4 w-4" />
-                Vista previa
-              </Button>
-              
-              <Button
-                onClick={handleSaveCourse}
-                disabled={isSaving || !isDirty}
-                className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
-              >
-                {isSaving ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Save className="h-4 w-4" />
-                )}
-                {isSaving ? 'Guardando...' : 'Guardar cambios'}
-              </Button>
-            </div>
+            {/* Barra de contadores unificada */}
+            {stats && (
+              <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg border">
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                      <Layers3 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                        {stats.modules}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        Módulos
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator orientation="vertical" className="h-8" />
+
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+                      <BookOpen className="h-4 w-4 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                        {stats.lessons}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        Lecciones
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator orientation="vertical" className="h-8" />
+
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
+                      <FileText className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                        {stats.blocks}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        Elementos
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  {stats.hasCertificate && (
+                    <Badge variant="outline" className="gap-1">
+                      <Award className="h-3 w-3" />
+                      Certificado
+                    </Badge>
+                  )}
+                  {stats.isMandatory && (
+                    <Badge variant="default" className="gap-1 bg-amber-500 hover:bg-amber-600">
+                      <AlertTriangle className="h-3 w-3" />
+                      Obligatorio
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid lg:grid-cols-4 gap-8">
+      <main className="container mx-auto px-3 sm:px-4 lg:px-4 py-6">
+        <div className="grid lg:grid-cols-4 gap-6">
           {/* Sidebar */}
           <aside className="lg:col-span-1 space-y-6">
             {/* Course Image */}
@@ -648,71 +832,28 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                     </div>
                   )}
                   <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <label className="cursor-pointer">
-                      <input
-                        type="file"
-                        className="hidden"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                        disabled={isUploadingImage}
-                      />
-                      <Button variant="secondary" size="sm" className="gap-2">
-                        {isUploadingImage ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Replace className="h-4 w-4" />
-                        )}
-                        Cambiar imagen
-                      </Button>
-                    </label>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Quick Stats */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Resumen</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Módulos</span>
-                    <span className="font-semibold">{stats?.modules || 0}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Lecciones</span>
-                    <span className="font-semibold">{stats?.lessons || 0}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Elementos</span>
-                    <span className="font-semibold">{stats?.blocks || 0}</span>
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Certificado</span>
-                    {stats?.hasCertificate ? (
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                    ) : (
-                      <X className="h-4 w-4 text-gray-400" />
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Obligatorio</span>
-                    <Switch
-                      checked={stats?.isMandatory}
-                      onCheckedChange={(checked) => {
-                        updateCourseField('isMandatory', checked);
-                        if (checked) {
-                          setTimeout(() => setIsAssignmentModalOpen(true), 300);
-                        }
-                      }}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      disabled={isUploadingImage}
                     />
+                    <Button 
+                      variant="secondary" 
+                      size="sm" 
+                      className="gap-2"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploadingImage}
+                    >
+                      {isUploadingImage ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Replace className="h-4 w-4" />
+                      )}
+                      Cambiar imagen
+                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -760,7 +901,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
           </aside>
 
           {/* Main Content Area */}
-          <div className="lg:col-span-3 space-y-8">
+          <div className="lg:col-span-3 space-y-6">
             {/* Tab Content */}
             {activeTab === 'basics' && (
               <motion.div
@@ -921,10 +1062,20 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                           <div className="flex items-center justify-between">
                             <Badge variant="outline">Módulo {index + 1}</Badge>
                             <div className="flex items-center gap-1">
-                              <Button variant="ghost" size="icon" className="h-7 w-7">
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-7 w-7"
+                                onClick={() => handleDuplicateModule(module.id)}
+                              >
                                 <Copy className="h-3.5 w-3.5" />
                               </Button>
-                              <Button variant="ghost" size="icon" className="h-7 w-7">
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-7 w-7"
+                                onClick={() => handleDeleteModule(module.id)}
+                              >
                                 <Trash2 className="h-3.5 w-3.5" />
                               </Button>
                             </div>
@@ -974,7 +1125,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                     index={index}
                                     isExpanded={expandedModules.has(module.id)}
                                     onToggle={() => toggleModuleExpansion(module.id)}
-                                    onEdit={() => {}}
+                                    onAddLesson={() => handleAddLesson(module.id)}
                                     onDelete={() => handleDeleteModule(module.id)}
                                     onDuplicate={() => handleDuplicateModule(module.id)}
                                     dragHandleProps={provided.dragHandleProps}
@@ -988,34 +1139,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                       )}
                     </Droppable>
                   </DragDropContext>
-                )}
-
-                {/* Quick Stats */}
-                {stats && stats.modules > 0 && (
-                  <Card>
-                    <CardContent className="p-6">
-                      <div className="grid grid-cols-3 gap-4">
-                        <StatCard
-                          icon={Layers3}
-                          label="Módulos"
-                          value={stats.modules}
-                          color="bg-blue-100 text-blue-600"
-                        />
-                        <StatCard
-                          icon={BookOpen}
-                          label="Lecciones"
-                          value={stats.lessons}
-                          color="bg-green-100 text-green-600"
-                        />
-                        <StatCard
-                          icon={FileText}
-                          label="Elementos"
-                          value={stats.blocks}
-                          color="bg-purple-100 text-purple-600"
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
                 )}
               </motion.div>
             )}
