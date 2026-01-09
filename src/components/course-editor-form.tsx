@@ -46,6 +46,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Toggle } from '@/components/ui/toggle';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 // === INTERFACES Y UTILIDADES ===
 interface ApiTemplate {
@@ -118,6 +119,63 @@ const StatCard = ({ icon: Icon, label, value, color }: { icon: any; label: strin
   </div>
 );
 
+// === COMPONENTE PARA MENÚ DE CONTENIDO ===
+const ContentTypeMenu = ({ 
+  onSelect, 
+  onClose 
+}: { 
+  onSelect: (type: 'TEXT' | 'VIDEO' | 'FILE' | 'IMAGE' | 'QUIZ') => void;
+  onClose: () => void;
+}) => {
+  const contentTypes = [
+    { type: 'TEXT' as const, label: 'Texto', icon: FileText, color: 'text-blue-600', bg: 'bg-blue-100' },
+    { type: 'VIDEO' as const, label: 'Video', icon: Video, color: 'text-red-600', bg: 'bg-red-100' },
+    { type: 'FILE' as const, label: 'Archivo', icon: FileGenericIcon, color: 'text-amber-600', bg: 'bg-amber-100' },
+    { type: 'IMAGE' as const, label: 'Imagen', icon: ImagePlus, color: 'text-green-600', bg: 'bg-green-100' },
+    { type: 'QUIZ' as const, label: 'Quiz', icon: Pencil, color: 'text-purple-600', bg: 'bg-purple-100' },
+  ];
+
+  return (
+    <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border shadow-lg w-64">
+      <div className="mb-2">
+        <h4 className="font-semibold text-sm text-gray-700 dark:text-gray-300">Añadir contenido</h4>
+        <p className="text-xs text-gray-500 dark:text-gray-400">Selecciona el tipo de contenido</p>
+      </div>
+      <div className="space-y-1">
+        {contentTypes.map((item) => {
+          const Icon = item.icon;
+          return (
+            <Button
+              key={item.type}
+              variant="ghost"
+              className="w-full justify-start px-3 py-2 h-auto hover:bg-gray-100 dark:hover:bg-gray-700"
+              onClick={() => {
+                onSelect(item.type);
+                onClose();
+              }}
+            >
+              <div className={`p-2 rounded-md ${item.bg} mr-3`}>
+                <Icon className={`h-4 w-4 ${item.color}`} />
+              </div>
+              <span className="text-sm font-medium">{item.label}</span>
+            </Button>
+          );
+        })}
+      </div>
+      <div className="mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full text-xs text-gray-500 hover:text-gray-700"
+          onClick={onClose}
+        >
+          Cancelar
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 // === COMPONENTES PRINCIPALES ===
 
 const ModuleCard = React.forwardRef<HTMLDivElement, {
@@ -127,128 +185,232 @@ const ModuleCard = React.forwardRef<HTMLDivElement, {
   onDelete: () => void;
   onDuplicate: () => void;
   onAddLesson: () => void;
+  onUpdateTitle: (title: string) => void;
   isExpanded: boolean;
   onToggle: () => void;
   dragHandleProps: any;
-}>(({ module, index, onEdit, onDelete, onDuplicate, onAddLesson, isExpanded, onToggle, dragHandleProps }, ref) => (
-  <motion.div
-    ref={ref}
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="group relative"
-  >
-    <Card className="overflow-hidden border-2 hover:border-primary/20 transition-all duration-300 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
-      <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-primary to-primary/60" />
-      
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-start gap-4 flex-1">
-            <div className="flex flex-col items-center">
-              <div {...dragHandleProps} className="cursor-grab active:cursor-grabbing p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                <GripVertical className="h-4 w-4 text-gray-400" />
-              </div>
-              <Badge variant="secondary" className="mt-2 text-xs font-bold">
-                MÓDULO {index + 1}
-              </Badge>
-            </div>
-            
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <Layers3 className="h-4 w-4 text-primary" />
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-white truncate">
-                  {module.title}
-                </h3>
+}>(({ module, index, onEdit, onDelete, onDuplicate, onAddLesson, onUpdateTitle, isExpanded, onToggle, dragHandleProps }, ref) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingTitle, setEditingTitle] = useState(module.title);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleTitleClick = () => {
+    setIsEditing(true);
+    setEditingTitle(module.title);
+    // Enfocar el input después de un pequeño delay para asegurar que se renderice
+    setTimeout(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }, 10);
+  };
+
+  const handleTitleSave = () => {
+    if (editingTitle.trim() !== '' && editingTitle !== module.title) {
+      onUpdateTitle(editingTitle.trim());
+    }
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleTitleSave();
+    } else if (e.key === 'Escape') {
+      setIsEditing(false);
+      setEditingTitle(module.title);
+    }
+  };
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="group relative"
+    >
+      <Card className="overflow-hidden border-2 hover:border-primary/20 transition-all duration-300 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+        <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-primary to-primary/60" />
+        
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-4 flex-1">
+              <div className="flex flex-col items-center">
+                <div {...dragHandleProps} className="cursor-grab active:cursor-grabbing p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                  <GripVertical className="h-4 w-4 text-gray-400" />
+                </div>
+                <Badge variant="secondary" className="mt-2 text-xs font-bold">
+                  MÓDULO {index + 1}
+                </Badge>
               </div>
               
-              <div className="flex flex-wrap items-center gap-2 mt-2">
-                <Badge variant="outline" className="text-xs">
-                  {module.lessons.length} {module.lessons.length === 1 ? 'lección' : 'lecciones'}
-                </Badge>
-                <span className="text-xs text-gray-500">
-                  {module.lessons.reduce((acc, lesson) => acc + lesson.contentBlocks.length, 0)} elementos
-                </span>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <Layers3 className="h-4 w-4 text-primary" />
+                  {isEditing ? (
+                    <div className="flex-1">
+                      <Input
+                        ref={inputRef}
+                        value={editingTitle}
+                        onChange={(e) => setEditingTitle(e.target.value)}
+                        onBlur={handleTitleSave}
+                        onKeyDown={handleKeyDown}
+                        className="text-lg font-semibold h-9 px-3"
+                        placeholder="Nombre del módulo"
+                      />
+                    </div>
+                  ) : (
+                    <h3 
+                      className="text-lg font-semibold text-gray-800 dark:text-white truncate cursor-pointer hover:text-primary transition-colors"
+                      onClick={handleTitleClick}
+                      title="Haz clic para editar"
+                    >
+                      {module.title}
+                    </h3>
+                  )}
+                </div>
+                
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  <Badge variant="outline" className="text-xs">
+                    {module.lessons.length} {module.lessons.length === 1 ? 'lección' : 'lecciones'}
+                  </Badge>
+                  <span className="text-xs text-gray-500">
+                    {module.lessons.reduce((acc, lesson) => acc + lesson.contentBlocks.length, 0)} elementos
+                  </span>
+                </div>
               </div>
             </div>
+            
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggle();
+                }}
+                className="h-8 w-8"
+              >
+                {isExpanded ? 
+                  <ChevronDown className="h-4 w-4 rotate-180" /> : 
+                  <ChevronDown className="h-4 w-4" />
+                }
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDuplicate();
+                }}
+                className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete();
+                }}
+                className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-          
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggle();
-              }}
-              className="h-8 w-8"
-            >
-              {isExpanded ? 
-                <ChevronDown className="h-4 w-4 rotate-180" /> : 
-                <ChevronDown className="h-4 w-4" />
-              }
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDuplicate();
-              }}
-              className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-            >
-              <Copy className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete();
-              }}
-              className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      
-      {isExpanded && (
-        <CardContent className="pt-0">
-          <div className="space-y-3 mt-4">
-            {module.lessons.map((lesson, lessonIndex) => (
-              <LessonCard
-                key={lesson.id}
-                lesson={lesson}
-                index={lessonIndex}
-              />
-            ))}
-          </div>
-          
-          <div className="mt-6 pt-4 border-t">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="w-full" 
-              onClick={(e) => {
-                e.stopPropagation();
-                onAddLesson();
-              }}
-            >
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Añadir lección
-            </Button>
-          </div>
-        </CardContent>
-      )}
-    </Card>
-  </motion.div>
-));
+        </CardHeader>
+        
+        {isExpanded && (
+          <CardContent className="pt-0">
+            <div className="space-y-3 mt-4">
+              {module.lessons.map((lesson, lessonIndex) => (
+                <LessonCard
+                  key={lesson.id}
+                  lesson={lesson}
+                  index={lessonIndex}
+                  moduleId={module.id}
+                />
+              ))}
+            </div>
+            
+            <div className="mt-6 pt-4 border-t">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddLesson();
+                }}
+              >
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Añadir lección
+              </Button>
+            </div>
+          </CardContent>
+        )}
+      </Card>
+    </motion.div>
+  );
+});
 
 ModuleCard.displayName = 'ModuleCard';
 
-const LessonCard = ({ lesson, index }: { lesson: AppLesson; index: number }) => {
+const LessonCard = ({ lesson, index, moduleId }: { lesson: AppLesson; index: number; moduleId: string }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingTitle, setEditingTitle] = useState(lesson.title);
+  const [showContentMenu, setShowContentMenu] = useState(false);
+  const [showAddContent, setShowAddContent] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleTitleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsEditing(true);
+    setEditingTitle(lesson.title);
+    setTimeout(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }, 10);
+  };
+
+  const handleTitleSave = () => {
+    if (editingTitle.trim() !== '' && editingTitle !== lesson.title) {
+      // Aquí deberías llamar a una función para actualizar el título de la lección
+      console.log('Actualizar título de lección:', editingTitle);
+    }
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleTitleSave();
+    } else if (e.key === 'Escape') {
+      setIsEditing(false);
+      setEditingTitle(lesson.title);
+    }
+  };
+
+  const handleAddContent = (type: 'TEXT' | 'VIDEO' | 'FILE' | 'IMAGE' | 'QUIZ') => {
+    console.log('Añadir contenido tipo:', type, 'a lección:', lesson.id);
+    // Aquí deberías llamar a una función para añadir el contenido
+    setShowContentMenu(false);
+    setShowAddContent(false);
+  };
+
+  // Cerrar menús al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowContentMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
     <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
       <div className="flex items-center justify-between">
@@ -261,7 +423,27 @@ const LessonCard = ({ lesson, index }: { lesson: AppLesson; index: number }) => 
               <Badge variant="outline" className="text-xs">
                 Lección {index + 1}
               </Badge>
-              <h4 className="font-medium truncate">{lesson.title}</h4>
+              {isEditing ? (
+                <div className="flex-1 max-w-md">
+                  <Input
+                    ref={inputRef}
+                    value={editingTitle}
+                    onChange={(e) => setEditingTitle(e.target.value)}
+                    onBlur={handleTitleSave}
+                    onKeyDown={handleKeyDown}
+                    className="h-7 text-sm px-2"
+                    placeholder="Nombre de la lección"
+                  />
+                </div>
+              ) : (
+                <h4 
+                  className="font-medium truncate cursor-pointer hover:text-primary transition-colors"
+                  onClick={handleTitleClick}
+                  title="Haz clic para editar"
+                >
+                  {lesson.title}
+                </h4>
+              )}
             </div>
             <p className="text-xs text-gray-500 mt-1">
               {lesson.contentBlocks.length} elementos
@@ -269,27 +451,80 @@ const LessonCard = ({ lesson, index }: { lesson: AppLesson; index: number }) => 
           </div>
         </div>
         
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsExpanded(!isExpanded);
-          }}
-          className="h-7 w-7"
-        >
-          {isExpanded ? 
-            <ChevronDown className="h-3.5 w-3.5 rotate-180" /> : 
-            <ChevronDown className="h-3.5 w-3.5" />
-          }
-        </Button>
+        <div className="flex items-center gap-1">
+          <Popover open={showContentMenu} onOpenChange={setShowContentMenu}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowContentMenu(!showContentMenu);
+                }}
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Contenido
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 p-0" align="end">
+              <ContentTypeMenu 
+                onSelect={handleAddContent} 
+                onClose={() => setShowContentMenu(false)} 
+              />
+            </PopoverContent>
+          </Popover>
+          
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsExpanded(!isExpanded);
+            }}
+            className="h-7 w-7"
+          >
+            {isExpanded ? 
+              <ChevronDown className="h-3.5 w-3.5 rotate-180" /> : 
+              <ChevronDown className="h-3.5 w-3.5" />
+            }
+          </Button>
+        </div>
       </div>
       
-      {isExpanded && (
+      {showAddContent && !showContentMenu && (
+        <div className="mt-3 pl-11" ref={menuRef}>
+          <ContentTypeMenu 
+            onSelect={handleAddContent} 
+            onClose={() => setShowAddContent(false)} 
+          />
+        </div>
+      )}
+      
+      {isExpanded && lesson.contentBlocks.length > 0 && (
         <div className="mt-3 space-y-2 pl-11">
           {lesson.contentBlocks.map((block, blockIndex) => (
             <ContentBlockPreview key={block.id} block={block} index={blockIndex} />
           ))}
+        </div>
+      )}
+      
+      {isExpanded && lesson.contentBlocks.length === 0 && (
+        <div className="mt-3 pl-11">
+          <div className="p-4 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-center">
+            <FilePlus2 className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+              Esta lección no tiene contenido aún
+            </p>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowAddContent(true)}
+            >
+              <Plus className="h-3 w-3 mr-2" />
+              Añadir primer elemento
+            </Button>
+          </div>
         </div>
       )}
     </div>
@@ -302,6 +537,7 @@ const ContentBlockPreview = ({ block, index }: { block: ContentBlock; index: num
       case 'TEXT': return { icon: FileText, color: 'text-blue-600', bg: 'bg-blue-100' };
       case 'VIDEO': return { icon: Video, color: 'text-red-600', bg: 'bg-red-100' };
       case 'FILE': return { icon: FileGenericIcon, color: 'text-amber-600', bg: 'bg-amber-100' };
+      case 'IMAGE': return { icon: ImagePlus, color: 'text-green-600', bg: 'bg-green-100' };
       case 'QUIZ': return { icon: Pencil, color: 'text-purple-600', bg: 'bg-purple-100' };
       default: return { icon: FileText, color: 'text-gray-600', bg: 'bg-gray-100' };
     }
@@ -563,6 +799,16 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     });
   };
 
+  const handleUpdateModuleTitle = (moduleId: string, newTitle: string) => {
+    handleStateUpdate(prev => {
+      const moduleIndex = prev.modules.findIndex(m => m.id === moduleId);
+      if (moduleIndex !== -1) {
+        prev.modules[moduleIndex].title = newTitle;
+      }
+      return prev;
+    });
+  };
+
   const handleAddLesson = (moduleId: string) => {
     handleStateUpdate(prev => {
       const moduleIndex = prev.modules.findIndex(m => m.id === moduleId);
@@ -812,8 +1058,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-3 sm:px-4 lg:px-4 py-6">
+      {/* Main Content - ESPACIO OPTIMIZADO */}
+      <main className="w-full max-w-[98rem] mx-auto px-2 sm:px-3 lg:px-4 py-6">
         <div className="grid lg:grid-cols-4 gap-6">
           {/* Sidebar */}
           <aside className="lg:col-span-1 space-y-6">
@@ -902,7 +1148,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             </Card>
           </aside>
 
-          {/* Main Content Area */}
+          {/* Main Content Area - ESPACIO EXPANDIDO */}
           <div className="lg:col-span-3 space-y-6">
             {/* Tab Content */}
             {activeTab === 'basics' && (
@@ -987,8 +1233,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-6"
               >
-                {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                {/* Header - CON ESPACIO OPTIMIZADO */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1">
                   <div>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                       Plan de estudios
@@ -1018,7 +1264,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                 </div>
 
                 {/* View Toggle */}
-                <div className="flex items-center gap-2 p-2 bg-gray-100 dark:bg-gray-800 rounded-lg w-fit">
+                <div className="flex items-center gap-2 p-2 bg-gray-100 dark:bg-gray-800 rounded-lg w-fit px-1">
                   <Button
                     variant={viewMode === 'list' ? 'default' : 'ghost'}
                     size="sm"
@@ -1039,9 +1285,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                   </Button>
                 </div>
 
-                {/* Modules List */}
+                {/* Modules List - CON TARJETAS EXPANDIDAS */}
                 {course.modules.length === 0 ? (
-                  <Card className="border-dashed">
+                  <Card className="border-dashed mx-1">
                     <CardContent className="py-12 text-center">
                       <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                         <FolderOpen className="h-8 w-8 text-primary" />
@@ -1057,7 +1303,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                     </CardContent>
                   </Card>
                 ) : viewMode === 'grid' ? (
-                  <div className="grid md:grid-cols-2 gap-6">
+                  <div className="grid md:grid-cols-2 gap-6 px-1">
                     {course.modules.map((module, index) => (
                       <Card key={module.id} className="hover:shadow-lg transition-shadow">
                         <CardHeader>
@@ -1107,40 +1353,45 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                     ))}
                   </div>
                 ) : (
-                  <DragDropContext onDragEnd={() => {}}>
-                    <Droppable droppableId="modules" type="MODULES">
-                      {(provided) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.droppableProps}
-                          className="space-y-4"
-                        >
-                          {course.modules.map((module, index) => (
-                            <Draggable key={module.id} draggableId={module.id} index={index}>
-                              {(provided) => (
-                                <div
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                >
-                                  <ModuleCard
-                                    module={module}
-                                    index={index}
-                                    isExpanded={expandedModules.has(module.id)}
-                                    onToggle={() => toggleModuleExpansion(module.id)}
-                                    onAddLesson={() => handleAddLesson(module.id)}
-                                    onDelete={() => handleDeleteModule(module.id)}
-                                    onDuplicate={() => handleDuplicateModule(module.id)}
-                                    dragHandleProps={provided.dragHandleProps}
-                                  />
-                                </div>
-                              )}
-                            </Draggable>
-                          ))}
-                          {provided.placeholder}
-                        </div>
-                      )}
-                    </Droppable>
-                  </DragDropContext>
+                  // CONTENEDOR DE MÓDULOS CON ANCHO COMPLETO
+                  <div className="w-full px-1">
+                    <DragDropContext onDragEnd={() => {}}>
+                      <Droppable droppableId="modules" type="MODULES">
+                        {(provided) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.droppableProps}
+                            className="space-y-4"
+                          >
+                            {course.modules.map((module, index) => (
+                              <Draggable key={module.id} draggableId={module.id} index={index}>
+                                {(provided) => (
+                                  <div
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    className="w-full"
+                                  >
+                                    <ModuleCard
+                                      module={module}
+                                      index={index}
+                                      isExpanded={expandedModules.has(module.id)}
+                                      onToggle={() => toggleModuleExpansion(module.id)}
+                                      onAddLesson={() => handleAddLesson(module.id)}
+                                      onUpdateTitle={(title) => handleUpdateModuleTitle(module.id, title)}
+                                      onDelete={() => handleDeleteModule(module.id)}
+                                      onDuplicate={() => handleDuplicateModule(module.id)}
+                                      dragHandleProps={provided.dragHandleProps}
+                                    />
+                                  </div>
+                                )}
+                              </Draggable>
+                            ))}
+                            {provided.placeholder}
+                          </div>
+                        )}
+                      </Droppable>
+                    </DragDropContext>
+                  </div>
                 )}
               </motion.div>
             )}
