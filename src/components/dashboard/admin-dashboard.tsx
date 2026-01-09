@@ -1,31 +1,44 @@
 // src/components/dashboard/admin-dashboard.tsx
 'use client';
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Users, BookOpen, Award, Target, TrendingUp, ShieldAlert, Zap, ChevronRight, BarChart3, Settings, PlusCircle, Eye, Bell, Calendar, CheckCircle2, AlertCircle, Clock } from "lucide-react";
-import type { AdminDashboardStats, SecurityLog as AppSecurityLog, CalendarEvent, Course, Notification as AppNotification } from '@/types';
-import Link from "next/link";
+
 import { useState, useMemo } from "react";
+import Link from "next/link";
+import { useRouter } from 'next/navigation';
 import { format, parseISO, isValid } from "date-fns";
 import { es } from "date-fns/locale";
-import { SecurityLogDetailSheet } from "../security/security-log-detail-sheet";
-import { useRouter } from 'next/navigation';
-import { useAuth } from "@/contexts/auth-context";
-import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
-import { AreaChart, Area, PieChart, Pie, Cell, ResponsiveContainer, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Users, BookOpen, Award, Target, TrendingUp, ShieldAlert, 
+  BookOpenCheck, Zap, ChevronRight, Sparkles, Eye, 
+  BarChart3, Settings, Clock, Calendar, Bell, PlusCircle 
+} from "lucide-react";
+import Image from "next/image";
+
+// UI Components
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { motion } from "framer-motion";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ChartConfig, ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
+import { 
+  AreaChart, Area, PieChart, Pie, Cell, 
+  ResponsiveContainer, RadialBarChart, RadialBar,
+  CartesianGrid, XAxis, YAxis, Tooltip, Legend
+} from "recharts";
 
-const COLORS = ['#8b5cf6', '#ec4899', '#f59e0b', '#06b6d4', '#10b981'];
-const ACTIVITY_COLORS = {
-  users: '#8b5cf6',
-  courses: '#10b981',
-  enrollments: '#f59e0b',
-  resources: '#06b6d4'
-};
+// Custom Components
+import { SecurityLogTimeline } from "../security/security-log-timeline";
+import { SecurityLogDetailSheet } from "../security/security-log-detail-sheet";
+import { CalendarWidget } from "./calendar-widget";
+import { HealthStatusWidget } from "./health-status-widget";
+import { NotificationsWidget } from "./notifications-widget";
+import { MetricCard } from "../analytics/metric-card";
 
+// Types & Context
+import type { AdminDashboardStats, SecurityLog as AppSecurityLog, CalendarEvent, Course, Notification as AppNotification } from '@/types';
+import { useAuth } from "@/contexts/auth-context";
+
+// Animations
 const container = {
   hidden: { opacity: 0 },
   show: {
@@ -44,91 +57,68 @@ const item = {
     y: 0,
     transition: {
       type: "spring",
-      stiffness: 120,
-      damping: 15
+      stiffness: 200,
+      damping: 25
     }
   }
 };
 
-// Función segura para formatear fechas - ¡CORREGIDA!
-const safeFormatDate = (dateString?: string | null, formatString: string = 'PPp') => {
-  if (!dateString) return 'Fecha no disponible';
-  
-  try {
-    const date = parseISO(dateString);
-    if (!isValid(date)) return dateString;
-    return format(date, formatString, { locale: es });
-  } catch (error) {
-    console.error('Error formateando fecha:', error);
-    return dateString || 'Fecha inválida';
-  }
+const COLORS = ['#8b5cf6', '#ec4899', '#f59e0b', '#06b6d4', '#10b981'];
+
+// Helper Functions
+const formatDateTick = (tick: string): string => {
+  const date = parseISO(tick);
+  if (!isValid(date)) return tick;
+  return format(date, "d MMM", { locale: es });
 };
 
-// Función segura para formatear ticks del gráfico
-const safeFormatDateTick = (tick: any): string => {
-  if (!tick || typeof tick !== 'string') {
-    return '';
-  }
-  
-  try {
-    const date = parseISO(tick);
-    if (!isValid(date)) return tick;
-    return format(date, "d MMM", { locale: es });
-  } catch (error) {
-    console.error('Error formateando tick:', error);
-    return tick.substring(0, 5); // Solo mostrar parte de la fecha si hay error
-  }
-};
-
-// Función segura para tooltip de fechas
-const safeFormatDateTooltip = (dateString: any) => {
-  if (!dateString || typeof dateString !== 'string') {
-    return 'Fecha no disponible';
-  }
-  
+const formatDateTooltip = (dateString: string) => {
   try {
     const date = parseISO(dateString);
-    if (!isValid(date)) return dateString;
-    return format(date, "EEE, d 'de' MMM", { locale: es });
-  } catch (error) {
-    console.error('Error formateando tooltip:', error);
+    return format(date, "EEEE, d 'de' MMMM", { locale: es });
+  } catch {
     return dateString;
   }
 };
 
-// Componente de métrica compacta
+// Compact Metric Card
 function CompactMetricCard({ 
   title, 
   value, 
   change, 
   icon: Icon, 
-  color 
+  color,
+  onClick 
 }: { 
   title: string; 
   value: number; 
   change?: number; 
   icon: any; 
-  color: string; 
+  color: string;
+  onClick?: () => void;
 }) {
   return (
-    <motion.div variants={item} whileHover={{ scale: 1.02 }}>
-      <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
+    <motion.div variants={item} whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}>
+      <Card 
+        onClick={onClick}
+        className={`relative overflow-hidden cursor-pointer border-0 shadow-sm hover:shadow-md transition-all duration-200 bg-gradient-to-br ${color} p-0`}
+      >
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground">{title}</p>
-              <div className="flex items-baseline gap-2">
-                <p className="text-2xl font-bold">{value?.toLocaleString() || 0}</p>
-                {change !== undefined && !isNaN(change) && (
-                  <Badge variant={change >= 0 ? "default" : "destructive"} className="text-xs h-5">
-                    {change >= 0 ? '+' : ''}{change}%
-                  </Badge>
-                )}
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
+                <Icon className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-white/90">{title}</p>
+                <p className="text-lg font-bold text-white">{value.toLocaleString()}</p>
               </div>
             </div>
-            <div className={`p-2.5 rounded-lg ${color}`}>
-              <Icon className="h-5 w-5 text-white" />
-            </div>
+            {change !== undefined && (
+              <Badge variant="secondary" className={`text-xs ${change >= 0 ? 'bg-green-500/20 text-green-700' : 'bg-red-500/20 text-red-700'}`}>
+                {change >= 0 ? '↑' : '↓'} {Math.abs(change)}%
+              </Badge>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -136,546 +126,362 @@ function CompactMetricCard({
   );
 }
 
-// Item de lista compacta - ¡CORREGIDO!
-function CompactListItem({ 
-  title, 
-  subtitle, 
-  status,
-  href,
-  badge
+// Activity Chart Tabs
+function ActivityChartTabs({ 
+  data, 
+  contentActivityData,
+  view,
+  onViewChange 
 }: { 
-  title?: string; 
-  subtitle?: string; 
-  status?: 'pending' | 'completed' | 'warning';
-  href: string;
-  badge?: string | number;
+  data: any[];
+  contentActivityData: any[];
+  view: string;
+  onViewChange: (view: string) => void;
 }) {
-  const statusIcons = {
-    pending: AlertCircle,
-    completed: CheckCircle2,
-    warning: AlertCircle
-  };
-
-  const statusColors = {
-    pending: 'text-amber-500',
-    completed: 'text-green-500',
-    warning: 'text-red-500'
-  };
-
-  const StatusIcon = status ? statusIcons[status] : null;
-  
-  // Verificar que el título sea un string válido
-  const safeTitle = title || 'Sin título';
-  const safeSubtitle = subtitle || '';
-
   return (
-    <motion.div whileHover={{ x: 4 }}>
-      <Link href={href} className="group">
-        <div className="flex items-center justify-between p-3 hover:bg-accent rounded-lg transition-colors">
-          <div className="flex items-center gap-3 min-w-0">
-            {StatusIcon && <StatusIcon className={`h-4 w-4 flex-shrink-0 ${statusColors[status]}`} />}
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium truncate">{safeTitle}</p>
-              {safeSubtitle && (
-                <p className="text-xs text-muted-foreground truncate">{safeSubtitle}</p>
-              )}
-            </div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 rounded-md bg-blue-500/10">
+            <TrendingUp className="h-4 w-4 text-blue-600" />
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {badge !== undefined && (
-              <Badge variant="secondary" className="text-xs">
-                {typeof badge === 'string' ? badge : badge?.toString()}
-              </Badge>
-            )}
-            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
-          </div>
+          <span className="font-bold text-sm">Actividad</span>
         </div>
-      </Link>
-    </motion.div>
-  );
-}
-
-// Timeline de seguridad simplificado - ¡CORREGIDO!
-function SimpleSecurityTimeline({ 
-  logs, 
-  onLogClick 
-}: { 
-  logs: AppSecurityLog[];
-  onLogClick: (log: AppSecurityLog) => void;
-}) {
-  if (!logs || !Array.isArray(logs)) {
-    return (
-      <div className="text-center py-4 text-muted-foreground">
-        No hay registros de seguridad
+        <Tabs value={view} onValueChange={onViewChange} className="w-auto">
+          <TabsList className="h-8">
+            <TabsTrigger value="users" className="text-xs px-3">Usuarios</TabsTrigger>
+            <TabsTrigger value="courses" className="text-xs px-3">Cursos</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
-    );
-  }
-
-  return (
-    <div className="space-y-1">
-      {logs.slice(0, 5).map((log, idx) => {
-        // Verificar que el log tenga los datos necesarios
-        if (!log || !log.id) return null;
-        
-        const safeEvent = log.event || 'Evento desconocido';
-        const safeTimestamp = log.timestamp || new Date().toISOString();
-        
-        return (
-          <motion.div
-            key={log.id || idx}
-            whileHover={{ x: 4 }}
-            onClick={() => onLogClick(log)}
-            className="flex items-center justify-between p-3 hover:bg-accent rounded-lg transition-colors cursor-pointer"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <ShieldAlert className={`h-4 w-4 flex-shrink-0 ${
-                log.severity === 'HIGH' ? 'text-red-500' :
-                log.severity === 'MEDIUM' ? 'text-amber-500' : 'text-blue-500'
-              }`} />
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium truncate">{safeEvent}</p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {safeFormatDate(safeTimestamp, 'PPp')}
-                </p>
-              </div>
-            </div>
-            <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-          </motion.div>
-        );
-      })}
+      
+      <div className="h-48">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={view === 'users' ? data : contentActivityData}>
+            <defs>
+              <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={view === 'users' ? "#8b5cf6" : "#ec4899"} stopOpacity={0.8}/>
+                <stop offset="95%" stopColor={view === 'users' ? "#8b5cf6" : "#ec4899"} stopOpacity={0.1}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+            <XAxis dataKey="date" tickFormatter={formatDateTick} fontSize={10} />
+            <YAxis fontSize={10} />
+            <Tooltip />
+            <Area 
+              type="monotone" 
+              dataKey="count" 
+              stroke={view === 'users' ? "#8b5cf6" : "#ec4899"} 
+              fill="url(#colorValue)" 
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }
 
 export function AdminDashboard({ 
   adminStats, 
-  securityLogs = [], 
-  upcomingEvents = [], 
-  pendingCourses = [], 
-  notifications = [] 
+  securityLogs, 
+  upcomingEvents, 
+  pendingCourses, 
+  notifications 
 }: {
-  adminStats?: AdminDashboardStats;
-  securityLogs?: AppSecurityLog[];
+  adminStats: AdminDashboardStats;
+  securityLogs: AppSecurityLog[];
   upcomingEvents?: CalendarEvent[];
   pendingCourses?: Course[];
   notifications?: AppNotification[];
 }) {
   const [selectedLog, setSelectedLog] = useState<AppSecurityLog | null>(null);
+  const [activeChart, setActiveChart] = useState<'users' | 'courses'>('users');
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, settings } = useAuth();
 
-  // Asegurar que adminStats tenga valores por defecto - ¡IMPORTANTE!
-  const safeAdminStats = useMemo(() => {
-    if (!adminStats) {
-      return {
-        totalUsers: 0,
-        totalPublishedCourses: 0,
-        totalEnrollments: 0,
-        totalResources: 0,
-        userRegistrationTrend: [],
-        usersByRole: []
-      };
-    }
-    return adminStats;
-  }, [adminStats]);
+  if (!adminStats) return null;
 
-  // Calcular porcentajes de crecimiento de forma segura
+  // Calculate growth percentages
   const calculateGrowth = (current: number, previous: number) => {
-    if (!current && current !== 0) current = 0;
-    if (!previous && previous !== 0) previous = 0;
-    
-    if (previous === 0) {
-      return current > 0 ? 100 : 0;
-    }
-    
-    const growth = Math.round(((current - previous) / previous) * 100);
-    return isNaN(growth) ? 0 : growth;
+    if (previous === 0) return 100;
+    return Math.round(((current - previous) / previous) * 100);
   };
 
-  // Datos simulados para comparación
   const previousStats = {
-    users: Math.round((safeAdminStats.totalUsers || 0) * 0.9),
-    courses: Math.round((safeAdminStats.totalPublishedCourses || 0) * 0.85),
-    enrollments: Math.round((safeAdminStats.totalEnrollments || 0) * 0.95),
-    resources: Math.round((safeAdminStats.totalResources || 0) * 0.88),
+    users: Math.round((adminStats?.totalUsers || 0) * 0.9),
+    courses: Math.round((adminStats?.totalPublishedCourses || 0) * 0.85),
+    enrollments: Math.round((adminStats?.totalEnrollments || 0) * 0.95),
+    resources: Math.round((adminStats?.totalResources || 0) * 0.88),
   };
 
-  // Preparar datos para gráficos de forma segura
-  const userRolesData = useMemo(() => {
-    if (!safeAdminStats.usersByRole || !Array.isArray(safeAdminStats.usersByRole)) {
-      return [];
-    }
-    
-    return safeAdminStats.usersByRole
-      .filter(item => item && item.role && typeof item.count === 'number')
-      .map((item, index) => ({
-        name: item.role,
-        value: item.count,
-        color: COLORS[index % COLORS.length]
-      }));
-  }, [safeAdminStats.usersByRole]);
+  // User roles data for pie chart
+  const userRolesData = (adminStats.usersByRole || []).map(item => ({
+    name: item.role,
+    value: item.count,
+  }));
 
-  const activityData = useMemo(() => {
-    if (!safeAdminStats.userRegistrationTrend || !Array.isArray(safeAdminStats.userRegistrationTrend)) {
-      return Array.from({ length: 14 }, (_, i) => ({
-        date: new Date(Date.now() - (13 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        count: Math.floor(Math.random() * 20) + 5
-      }));
-    }
-    
-    return safeAdminStats.userRegistrationTrend
-      .slice(-14)
-      .filter(item => item && item.date);
-  }, [safeAdminStats.userRegistrationTrend]);
-
-  // Verificar que securityLogs sea un array
-  const safeSecurityLogs = Array.isArray(securityLogs) ? securityLogs : [];
-
-  if (!adminStats) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <p className="text-muted-foreground">Cargando dashboard...</p>
-        </div>
-      </div>
-    );
-  }
+  // Quick actions
+  const quickActions = [
+    { href: '/manage-courses', icon: PlusCircle, label: 'Nuevo Curso', color: 'from-blue-500 to-cyan-500' },
+    { href: '/users', icon: Users, label: 'Usuarios', color: 'from-violet-500 to-purple-500' },
+    { href: '/analytics', icon: BarChart3, label: 'Analíticas', color: 'from-pink-500 to-rose-500' },
+    { href: '/settings', icon: Settings, label: 'Ajustes', color: 'from-amber-500 to-orange-500' },
+  ];
 
   return (
     <motion.div
       variants={container}
       initial="hidden"
       animate="show"
-      className="min-h-screen pb-6 space-y-6"
+      className="space-y-6 pb-8"
     >
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+      {/* Header Section */}
+      <motion.div variants={item} className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Bienvenido, <span className="font-semibold text-primary">{user?.name || 'Administrador'}</span>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            ¡Hola, {user?.name}!
+          </h1>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            Panel de control administrativo
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/analytics">
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Análisis detallado
-            </Link>
-          </Button>
-          <Button size="sm" asChild>
-            <Link href="/manage-courses/new">
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Nuevo curso
-            </Link>
-          </Button>
+        
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 text-green-700 dark:text-green-400 text-sm">
+            <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+            Sistema Online
+          </div>
+          {settings?.dashboardImageUrlAdmin && (
+            <div className="relative h-10 w-10 rounded-full overflow-hidden border-2 border-white shadow">
+              <Image 
+                src={settings.dashboardImageUrlAdmin} 
+                alt="Admin" 
+                width={40} 
+                height={40} 
+                className="object-cover"
+              />
+            </div>
+          )}
         </div>
-      </div>
+      </motion.div>
 
-      {/* Métricas principales */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Metrics Grid - Compact */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <CompactMetricCard
-          title="Usuarios Totales"
-          value={safeAdminStats.totalUsers || 0}
-          change={calculateGrowth(safeAdminStats.totalUsers || 0, previousStats.users)}
+          title="Usuarios"
+          value={adminStats?.totalUsers || 0}
+          change={calculateGrowth(adminStats?.totalUsers || 0, previousStats.users)}
           icon={Users}
-          color="bg-blue-500"
+          color="from-blue-500 to-cyan-500"
+          onClick={() => router.push('/users')}
         />
         <CompactMetricCard
-          title="Cursos Publicados"
-          value={safeAdminStats.totalPublishedCourses || 0}
-          change={calculateGrowth(safeAdminStats.totalPublishedCourses || 0, previousStats.courses)}
+          title="Cursos"
+          value={adminStats?.totalPublishedCourses || 0}
+          change={calculateGrowth(adminStats?.totalPublishedCourses || 0, previousStats.courses)}
           icon={BookOpen}
-          color="bg-purple-500"
+          color="from-violet-500 to-purple-500"
+          onClick={() => router.push('/manage-courses')}
         />
         <CompactMetricCard
           title="Inscripciones"
-          value={safeAdminStats.totalEnrollments || 0}
-          change={calculateGrowth(safeAdminStats.totalEnrollments || 0, previousStats.enrollments)}
+          value={adminStats?.totalEnrollments || 0}
+          change={calculateGrowth(adminStats?.totalEnrollments || 0, previousStats.enrollments)}
           icon={Award}
-          color="bg-pink-500"
+          color="from-pink-500 to-rose-500"
+          onClick={() => router.push('/enrollments')}
         />
         <CompactMetricCard
           title="Recursos"
-          value={safeAdminStats.totalResources || 0}
-          change={calculateGrowth(safeAdminStats.totalResources || 0, previousStats.resources)}
+          value={adminStats?.totalResources || 0}
+          change={calculateGrowth(adminStats?.totalResources || 0, previousStats.resources)}
           icon={Target}
-          color="bg-amber-500"
+          color="from-amber-500 to-orange-500"
+          onClick={() => router.push('/resources')}
         />
       </div>
 
-      {/* Sección principal */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Gráfico de actividad */}
-        <motion.div variants={item} className="lg:col-span-2">
-          <Card className="h-full">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">Actividad de la plataforma</CardTitle>
-                <Badge variant="outline" className="text-xs">
-                  Últimos 14 días
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="h-64">
-              <ChartContainer className="h-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={activityData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                    <XAxis 
-                      dataKey="date" 
-                      fontSize={11}
-                      tickFormatter={safeFormatDateTick}
-                    />
-                    <YAxis fontSize={11} />
-                    <Tooltip 
-                      content={<ChartTooltipContent />}
-                      labelFormatter={safeFormatDateTooltip}
-                    />
-                    <Area 
-                      type="monotone" 
-                      dataKey="count" 
-                      stroke={ACTIVITY_COLORS.users}
-                      fill={ACTIVITY_COLORS.users}
-                      fillOpacity={0.2}
-                      strokeWidth={2}
-                      name="Nuevos usuarios"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Distribución de usuarios */}
-        <motion.div variants={item}>
-          <Card className="h-full">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Distribución de usuarios</CardTitle>
-            </CardHeader>
-            <CardContent className="h-64">
-              {userRolesData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={userRolesData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={40}
-                      outerRadius={60}
-                      paddingAngle={2}
-                      dataKey="value"
-                      label={(entry) => `${entry.name}: ${entry.value}`}
-                    >
-                      {userRolesData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-full flex items-center justify-center text-muted-foreground">
-                  Sin datos de usuarios
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
-
-      {/* Sección secundaria */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Cursos pendientes */}
-        <motion.div variants={item}>
-          <Card className="h-full">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">Cursos pendientes</CardTitle>
-                {pendingCourses && pendingCourses.length > 0 && (
-                  <Badge variant="secondary">{pendingCourses.length}</Badge>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-64">
-                <div className="space-y-1">
-                  {pendingCourses && pendingCourses.length > 0 ? (
-                    pendingCourses.slice(0, 5).map((course, idx) => {
-                      // Verificar que course exista
-                      if (!course) return null;
-                      
-                      return (
-                        <CompactListItem
-                          key={course.id || idx}
-                          title={course.title}
-                          subtitle={`Por: ${course.instructor?.name || 'Instructor no asignado'}`}
-                          status="pending"
-                          href={`/manage-courses/${course.id}/edit`}
-                        />
-                      );
-                    })
-                  ) : (
-                    <div className="text-center py-8">
-                      <CheckCircle2 className="h-12 w-12 text-muted-foreground mx-auto mb-2 opacity-50" />
-                      <p className="text-sm text-muted-foreground">Todos los cursos revisados</p>
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Actividad de seguridad */}
-        <motion.div variants={item}>
-          <Card className="h-full">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">Actividad de seguridad</CardTitle>
-                <Button variant="ghost" size="sm" asChild className="h-8">
-                  <Link href="/security-audit">
-                    <Eye className="h-3 w-3 mr-1" />
-                    Ver todo
-                  </Link>
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-64">
-                <SimpleSecurityTimeline 
-                  logs={safeSecurityLogs} 
-                  onLogClick={setSelectedLog} 
+      {/* Main Dashboard Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - Charts */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Activity Chart */}
+          <motion.div variants={item}>
+            <Card className="border-0 shadow-sm">
+              <CardContent className="p-4">
+                <ActivityChartTabs 
+                  data={adminStats.userRegistrationTrend}
+                  contentActivityData={adminStats.contentActivityTrend}
+                  view={activeChart}
+                  onViewChange={setActiveChart}
                 />
-              </ScrollArea>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Two Column Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* User Distribution */}
+            <motion.div variants={item}>
+              <Card className="border-0 shadow-sm h-full">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="p-1.5 rounded-md bg-violet-500/10">
+                      <Users className="h-4 w-4 text-violet-600" />
+                    </div>
+                    <span className="font-bold text-sm">Distribución de Roles</span>
+                  </div>
+                  <div className="h-40">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={userRolesData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={30}
+                          outerRadius={55}
+                          paddingAngle={2}
+                          dataKey="value"
+                        >
+                          {userRolesData.map((_, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Pending Courses */}
+            <motion.div variants={item}>
+              <Card className="border-0 shadow-sm h-full">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 rounded-md bg-amber-500/10">
+                        <BookOpenCheck className="h-4 w-4 text-amber-600" />
+                      </div>
+                      <span className="font-bold text-sm">Cursos Pendientes</span>
+                    </div>
+                    {pendingCourses && pendingCourses.length > 0 && (
+                      <Badge variant="secondary" className="bg-amber-500/10 text-amber-700">
+                        {pendingCourses.length}
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {pendingCourses && pendingCourses.length > 0 ? (
+                      pendingCourses.slice(0, 3).map((course) => (
+                        <Link 
+                          key={course.id}
+                          href={`/manage-courses/${course.id}/edit`}
+                          className="group flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-medium truncate">{course.title}</p>
+                            <p className="text-xs text-gray-500 flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {course.instructor.name}
+                            </p>
+                          </div>
+                          <ChevronRight className="h-3 w-3 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                        </Link>
+                      ))
+                    ) : (
+                      <div className="text-center py-6">
+                        <p className="text-sm text-gray-500">No hay pendientes</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Right Column - Sidebar */}
+        <div className="space-y-6">
+          {/* Security Logs */}
+          <motion.div variants={item}>
+            <Card className="border-0 shadow-sm">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-md bg-red-500/10">
+                      <ShieldAlert className="h-4 w-4 text-red-600" />
+                    </div>
+                    <span className="font-bold text-sm">Actividad de Seguridad</span>
+                  </div>
+                  <Button variant="ghost" size="sm" asChild className="h-7">
+                    <Link href="/security-audit">
+                      <Eye className="h-3 w-3" />
+                    </Link>
+                  </Button>
+                </div>
+                <div className="max-h-48 overflow-y-auto">
+                  <SecurityLogTimeline 
+                    logs={securityLogs.slice(0, 3)} 
+                    onLogClick={setSelectedLog} 
+                    compact 
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Quick Actions */}
+          <motion.div variants={item}>
+            <Card className="border-0 shadow-sm">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="p-1.5 rounded-md bg-indigo-500/10">
+                    <Zap className="h-4 w-4 text-indigo-600" />
+                  </div>
+                  <span className="font-bold text-sm">Acciones Rápidas</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {quickActions.map((action) => (
+                    <Link key={action.href} href={action.href}>
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className={`p-3 rounded-lg bg-gradient-to-br ${action.color} text-white text-center cursor-pointer`}
+                      >
+                        <action.icon className="h-5 w-5 mx-auto mb-1" />
+                        <p className="text-xs font-bold">{action.label}</p>
+                      </motion.div>
+                    </Link>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Health Status */}
+          <motion.div variants={item}>
+            <HealthStatusWidget />
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Bottom Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Notifications */}
+        <motion.div variants={item} className="lg:col-span-1">
+          <NotificationsWidget notifications={notifications} compact />
         </motion.div>
 
-        {/* Próximos eventos */}
-        <motion.div variants={item}>
-          <Card className="h-full">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">Próximos eventos</CardTitle>
-                <Badge variant="outline" className="text-xs">
-                  <Calendar className="h-3 w-3 mr-1" />
-                  Hoy
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-64">
-                <div className="space-y-1">
-                  {upcomingEvents && upcomingEvents.length > 0 ? (
-                    upcomingEvents.slice(0, 5).map((event, idx) => {
-                      if (!event) return null;
-                      
-                      return (
-                        <CompactListItem
-                          key={event.id || idx}
-                          title={event.title}
-                          subtitle={`${safeFormatDate(event.start, 'HH:mm')} - ${event.location || 'Ubicación no definida'}`}
-                          status={event.type === 'MEETING' ? 'pending' : 'completed'}
-                          href={`/calendar/${event.id}`}
-                        />
-                      );
-                    })
-                  ) : (
-                    <div className="text-center py-8">
-                      <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-2 opacity-50" />
-                      <p className="text-sm text-muted-foreground">No hay eventos próximos</p>
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
+        {/* Calendar */}
+        <motion.div variants={item} className="lg:col-span-2">
+          <CalendarWidget events={upcomingEvents} compact />
         </motion.div>
       </div>
 
-      {/* Sección inferior */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Acciones rápidas */}
-        <motion.div variants={item}>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Zap className="h-5 w-5" />
-                Acciones rápidas
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { href: '/manage-courses', icon: BookOpen, label: 'Gestionar cursos', color: 'border-blue-200 bg-blue-50' },
-                  { href: '/users', icon: Users, label: 'Usuarios', color: 'border-purple-200 bg-purple-50' },
-                  { href: '/analytics', icon: BarChart3, label: 'Analíticas', color: 'border-green-200 bg-green-50' },
-                  { href: '/settings', icon: Settings, label: 'Configuración', color: 'border-amber-200 bg-amber-50' },
-                ].map((action) => (
-                  <Link key={action.href} href={action.href}>
-                    <motion.div 
-                      whileHover={{ scale: 1.02 }}
-                      className={`p-4 rounded-lg border ${action.color} hover:shadow-md transition-all cursor-pointer`}
-                    >
-                      <action.icon className="h-5 w-5 mb-2" />
-                      <p className="text-sm font-medium">{action.label}</p>
-                    </motion.div>
-                  </Link>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Sistema y notificaciones */}
-        <motion.div variants={item}>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Bell className="h-5 w-5" />
-                Sistema
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                    <div>
-                      <p className="text-sm font-medium">Estado del sistema</p>
-                      <p className="text-xs text-muted-foreground">Todos los servicios operativos</p>
-                    </div>
-                  </div>
-                  <Badge variant="outline" className="bg-green-500/10 text-green-700 dark:text-green-400">
-                    Online
-                  </Badge>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Última actualización</span>
-                    <span className="font-medium">Hace 5 min</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Usuarios activos</span>
-                    <span className="font-medium">247</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Cursos activos</span>
-                    <span className="font-medium">156</span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
-
-      {/* Modal de detalle de seguridad */}
+      {/* Security Log Detail */}
       {selectedLog && (
         <SecurityLogDetailSheet 
           log={selectedLog} 
